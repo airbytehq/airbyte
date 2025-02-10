@@ -1069,39 +1069,39 @@ api_budget:
     # Profiles (and global_exclusions share the same endpoint)
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 10          # burst: 10 calls per second
+        - limit: 10 # burst: 10 calls per second
           interval: PT1S
-        - limit: 150         # steady: 150 calls per minute
+        - limit: 150 # steady: 150 calls per minute
           interval: PT1M
       matchers:
         - method: GET
-          url_path_pattern: "^/api/profiles($|/)"  # matches '/profiles' (exact or with trailing slash/extra)
+          url_path_pattern: "^/api/profiles($|/)" # matches '/profiles' (exact or with trailing slash/extra)
     # Events (and events_detailed share the same endpoint)
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 350         # burst: 350 calls per second
+        - limit: 350 # burst: 350 calls per second
           interval: PT1S
-        - limit: 3500        # steady: 3500 calls per minute
+        - limit: 3500 # steady: 3500 calls per minute
           interval: PT1M
       matchers:
         - method: GET
-          url_path_pattern: "^/api/events($|/)"  # matches '/events' and '/events_detailed' if using same endpoint
+          url_path_pattern: "^/api/events($|/)" # matches '/events' and '/events_detailed' if using same endpoint
     # Email Templates
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 10          # burst: 10 calls per second
+        - limit: 10 # burst: 10 calls per second
           interval: PT1S
-        - limit: 150         # steady: 150 calls per minute
+        - limit: 150 # steady: 150 calls per minute
           interval: PT1M
       matchers:
         - method: GET
-          url_path_pattern: "^/api/templates($|/)"  # matches '/templates'
+          url_path_pattern: "^/api/templates($|/)" # matches '/templates'
     # Metrics
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 10          # burst: 10 calls per second
+        - limit: 10 # burst: 10 calls per second
           interval: PT1S
-        - limit: 150         # steady: 150 calls per minute
+        - limit: 150 # steady: 150 calls per minute
           interval: PT1M
       matchers:
         - method: GET
@@ -1109,25 +1109,25 @@ api_budget:
     # Lists (the parent endpoint for lists streams)
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 75          # burst: 75 calls per second
+        - limit: 75 # burst: 75 calls per second
           interval: PT1S
-        - limit: 700         # steady: 700 calls per minute
+        - limit: 700 # steady: 700 calls per minute
           interval: PT1M
       matchers:
         - method: GET
-          url_path_pattern: "^/api/lists$"   # exactly '/lists'
+          url_path_pattern: "^/api/lists$" # exactly '/lists'
     # Lists Detailed (uses a different URL path – note the extra segment)
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 1           # burst: 1 call per second
+        - limit: 1 # burst: 1 call per second
           interval: PT1S
-        - limit: 15          # steady: 15 calls per minute
+        - limit: 15 # steady: 15 calls per minute
           interval: PT1M
       matchers:
         - method: GET
-          url_path_pattern: "^/api/lists/"   # matches any path beginning with '/lists/' (e.g. '/lists/123')
+          url_path_pattern: "^/api/lists/" # matches any path beginning with '/lists/' (e.g. '/lists/123')
           params:
-            "additional-fields[list]": "profile_count"  # Other API budget settings:
+            "additional-fields[list]": "profile_count" # Other API budget settings:
   status_codes_for_ratelimit_hit: [429]
   maximum_attempts_to_acquire: 100000
 
