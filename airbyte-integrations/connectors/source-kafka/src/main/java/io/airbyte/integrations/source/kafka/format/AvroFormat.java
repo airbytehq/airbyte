@@ -45,7 +45,6 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class AvroFormat extends AbstractFormat {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AvroFormat.class);
@@ -65,11 +64,11 @@ public class AvroFormat extends AbstractFormat {
     if (avro_config.has("schema_registry_username")) {
       props.put(SchemaRegistryClientConfig.BASIC_AUTH_CREDENTIALS_SOURCE, "USER_INFO");
       props.put(SchemaRegistryClientConfig.USER_INFO_CONFIG,
-              String.format("%s:%s", avro_config.get("schema_registry_username").asText(), avro_config.get("schema_registry_password").asText()));
+          String.format("%s:%s", avro_config.get("schema_registry_username").asText(), avro_config.get("schema_registry_password").asText()));
     } else {
       // If the registry username is missing; and the sasl_mechanism == OAUTHBEARER
       final JsonNode protocolConfig = config.get("protocol");
-      if(protocolConfig.get("sasl_mechanism").asText().equals(OAuthBearerLoginModule.OAUTHBEARER_MECHANISM)) {
+      if (protocolConfig.get("sasl_mechanism").asText().equals(OAuthBearerLoginModule.OAUTHBEARER_MECHANISM)) {
         props.put(SchemaRegistryClientConfig.BEARER_AUTH_CREDENTIALS_SOURCE, "SASL_OAUTHBEARER_INHERIT");
       }
     }
