@@ -6,6 +6,7 @@
 import urllib.parse
 from datetime import datetime
 from typing import Any, List, Mapping, Optional
+
 import pendulum
 import pytest
 import requests
@@ -13,6 +14,7 @@ from dateutil.relativedelta import relativedelta
 from freezegun import freeze_time
 from integration.config import KlaviyoConfigBuilder
 from source_klaviyo.source import SourceKlaviyo
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -58,6 +60,7 @@ def get_records(stream: Stream, sync_mode: Optional[SyncMode] = SyncMode.full_re
 @pytest.fixture(name="response")
 def response_fixture(mocker):
     return mocker.Mock(spec=requests.Response)
+
 
 class TestSemiIncrementalKlaviyoStream:
     @pytest.mark.parametrize(
