@@ -57,21 +57,14 @@ class Products(Stream, IncrementalMixin):
         yield generate_estimate(self.name, rows_to_emit, median_record_byte_size)
 
         for product in products:
-            if product["id"] < self.count:
+            if product["id"] < 1:
                 updated_at = format_airbyte_time(datetime.datetime.now())
                 product["updated_at"] = updated_at
                 yield product
-                raise AirbyteTracedException(
-                    message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
-                    internal_message=str("????????????????????"),
-                    failure_type="!!!!!!!!!!??????????????",
-                    exception="!!!!!!!!???????@@@@@@@@@",
-                )
         raise AirbyteTracedException(
             message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
             internal_message=str("????????????????????"),
             failure_type="!!!!!!!!!!??????????????",
-            exception="!!!!!!!!???????@@@@@@@@@",
         )
 
         self.state = {"seed": self.seed, "updated_at": updated_at}
