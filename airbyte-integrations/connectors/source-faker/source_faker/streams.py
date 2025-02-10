@@ -62,7 +62,7 @@ class Products(Stream, IncrementalMixin):
                 product["updated_at"] = updated_at
                 yield product
                 if product["id"] == self.count:
-                    return AirbyteTracedException(
+                    raise AirbyteTracedException(
                         message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
                         internal_message=str("????????????????????"),
                         failure_type="!!!!!!!!!!??????????????",
