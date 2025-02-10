@@ -1,14 +1,5 @@
 # S3 Data Lake
 
-:::danger
-
-This connector is in early access, and SHOULD NOT be used for production workloads.
-This connector is subject to breaking changes **without notice**.
-
-We're interested in hearing about your experience! See [Github](https://github.com/airbytehq/airbyte/discussions/50404)
-for more information.
-
-:::
 
 ## Iceberg schema generation
 
