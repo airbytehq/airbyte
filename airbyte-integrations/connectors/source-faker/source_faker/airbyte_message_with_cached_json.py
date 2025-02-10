@@ -15,7 +15,12 @@ class AirbyteMessageWithCachedJSON(AirbyteMessage):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._json = self.json(exclude_unset=True)
+        # Update to use new serializer pattern
+        from airbyte_cdk.models import AirbyteMessageSerializer
+        import orjson
+        self._json = orjson.dumps(
+            AirbyteMessageSerializer.dump(self)
+        ).decode()
         self.json = self.get_json
 
     def get_json(self, **kwargs):
