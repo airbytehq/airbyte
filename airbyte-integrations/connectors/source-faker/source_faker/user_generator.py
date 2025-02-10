@@ -29,8 +29,8 @@ class UserGenerator:
 
         seed_with_offset = self.seed
         if self.seed is not None:
-            # Use hash to ensure consistent seeding across Python versions
-            seed_with_offset = hash((self.seed, current_process().pid)) % (2**32)
+            # Use deterministic seed value
+            seed_with_offset = self.seed
 
         global person
         global address
