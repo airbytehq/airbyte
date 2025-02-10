@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
@@ -90,11 +91,18 @@ interface StreamManager {
 
     /** True if the stream processing has not yet been marked as successful or failed. */
     fun isActive(): Boolean
+
+    /**
+     * If checkpointing by index is enabled, returns the next checkpoint index that will be used.
+     */
+    fun nextCheckpointIndex(): Long
+
+    /** If checkpointing by index is enabled, add counts for the given index. */
+    fun addCountsForIndex(state: Batch.State, index: Long, count: Long)
 }
 
-class DefaultStreamManager(
-    val stream: DestinationStream,
-) : StreamManager {
+class DefaultStreamManager(val stream: DestinationStream, private val checkpointByIndex: Boolean) :
+    StreamManager {
     private val streamResult = CompletableDeferred<StreamResult>()
 
     data class CachedRanges(val state: Batch.State, val ranges: RangeSet<Long>)
@@ -143,13 +151,53 @@ class DefaultStreamManager(
         return receivedComplete.get()
     }
 
+    data class IndexCounts(val consumed: Long, val persistedCount: Long, val completeCount: Long)
+    private val indexStates = ConcurrentHashMap<Long, IndexCounts>()
+
     override fun markCheckpoint(): Pair<Long, Long> {
         val index = recordCount.get()
         val lastCheckpoint = lastCheckpoint.getAndSet(index)
+
+        if (checkpointByIndex) {
+            val segmentSize = index - lastCheckpoint
+            indexStates[nextCheckpointIndex()] = IndexCounts(segmentSize, 0, 0)
+        }
+
         return Pair(index, index - lastCheckpoint)
     }
 
+    override fun nextCheckpointIndex(): Long {
+        return indexStates.keys.max() + 1L
+    }
+
+    override fun addCountsForIndex(state: Batch.State, index: Long, count: Long) {
+        if (!checkpointByIndex) {
+            throw IllegalStateException(
+                "Legacy `addCountsForIndex` should not be called unless checkpointing by index"
+            )
+        }
+        val states =
+            indexStates[index]
+                ?: throw IllegalStateException("Index $index has not been checkpointed")
+
+        indexStates[index] =
+            states.let { counts ->
+                when (state) {
+                    Batch.State.PERSISTED ->
+                        counts.copy(persistedCount = counts.persistedCount + count)
+                    Batch.State.COMPLETE ->
+                        counts.copy(completeCount = counts.completeCount + count)
+                    else -> counts
+                }
+            }
+    }
+
     override fun <B : Batch> updateBatchState(batch: BatchEnvelope<B>) {
+        if (checkpointByIndex) {
+            throw IllegalStateException(
+                "Legacy `updateBatchState` should not be called when checkpointing by index"
+            )
+        }
         rangesState[batch.batch.state]
             ?: throw IllegalArgumentException("Invalid batch state: ${batch.batch.state}")
 
@@ -268,10 +316,20 @@ class DefaultStreamManager(
             return true
         }
 
+        if (checkpointByIndex) {
+            val indexCounts = indexStates[recordCount.get()] ?: return false
+            return indexCounts.persistedCount == indexCounts.completeCount
+        }
+
         return isProcessingCompleteForState(recordCount.get(), Batch.State.COMPLETE)
     }
 
     override fun areRecordsPersistedUntil(index: Long): Boolean {
+        if (checkpointByIndex) {
+            val indexCounts = indexStates[index] ?: return false
+            return indexCounts.persistedCount == indexCounts.consumed
+        }
+
         return isProcessingCompleteForState(index, Batch.State.PERSISTED)
     }
 
@@ -301,8 +359,10 @@ interface StreamManagerFactory {
 
 @Singleton
 @Secondary
-class DefaultStreamManagerFactory : StreamManagerFactory {
+class DefaultStreamManagerFactory(
+    @Value("\${airbyte.destination.core.checkpoint-by-index") val checkpointByIndex: Boolean
+) : StreamManagerFactory {
     override fun create(stream: DestinationStream): StreamManager {
-        return DefaultStreamManager(stream)
+        return DefaultStreamManager(stream, checkpointByIndex)
     }
 }
