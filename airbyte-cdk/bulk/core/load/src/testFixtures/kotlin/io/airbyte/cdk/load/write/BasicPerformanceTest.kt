@@ -91,6 +91,7 @@ data class PerformanceTestSummary(
     val namespace: String?,
     val streamName: String,
     val recordCount: Long?,
+    val expectedRecordCount: Long,
     val emittedRecordCount: Long,
     val recordPerSeconds: Double,
     val megabytePerSeconds: Double,
@@ -133,16 +134,19 @@ abstract class BasicPerformanceTest(
 
     @Test
     open fun testInsertRecords() {
-        testInsertRecords(null)
+        testInsertRecords(validation = null)
     }
 
-    protected fun testInsertRecords(validation: ValidationFunction?) {
+    protected fun testInsertRecords(
+        recordsToInsert: Long? = null,
+        validation: ValidationFunction?,
+    ) {
         runSync(
             testScenario =
                 SingleStreamInsert(
                     idColumn = idColumn,
                     columns = twoStringColumns,
-                    recordsToInsert = defaultRecordsToInsert,
+                    recordsToInsert = recordsToInsert ?: defaultRecordsToInsert,
                     randomizedNamespace = randomizedNamespace,
                     streamName = testInfo.testMethod.get().name,
                 ),
@@ -345,6 +349,7 @@ abstract class BasicPerformanceTest(
                     namespace = testScenario.catalog.streams[0].descriptor.namespace,
                     streamName = testScenario.catalog.streams[0].descriptor.name,
                     recordCount = recordCount,
+                    expectedRecordCount = summary.expectedRecordsCount,
                     emittedRecordCount = summary.records,
                     recordPerSeconds = recordPerSeconds,
                     megabytePerSeconds = megabytePerSeconds,

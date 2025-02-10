@@ -36,26 +36,11 @@ freezegun = "^1.5.1"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.poe.tasks]
-test = { shell = "pytest" }
-ci-test = { shell = "airbyte-ci connectors --name=destination-motherduck test" }
-
-coverage = { shell = "coverage run -m pytest && coverage report" }
-coverage-report = { shell = "coverage report" }
-coverage-html = { shell = "coverage html -d htmlcov && open htmlcov/index.html" }
-coverage-reset = { shell = "coverage erase" }
-
-check = { shell = "ruff check . && mypy ." }
-
-fix = { shell = "ruff format . && ruff check --fix -s || ruff format ." }
-fix-unsafe = { shell = "ruff format . && ruff check --fix --unsafe-fixes . && ruff format ." }
-fix-and-check = { shell = "poe fix && poe check" }
-
-# Use this when building on Mac M1/M2, to deploy and test on local `abctl` instances
-build-arm = { shell = "airbyte-ci connectors --name=destination-motherduck build --architecture=linux/arm64 && NEW_IMAGE=airbyte/destination-motherduck:dev-arm && docker tag airbyte/destination-motherduck:dev ${NEW_IMAGE} && echo Created new image: $NEW_IMAGE && docker run --rm $NEW_IMAGE spec" }
-
-# Use this when building for non-ARM architecture, or when building to deploy to Cloud
-build-amd = { shell = "airbyte-ci connectors --name=destination-motherduck build --architecture=linux/amd64 && NEW_IMAGE=airbyte/destination-motherduck:dev-amd && docker tag airbyte/destination-motherduck:dev ${NEW_IMAGE} && echo Created new image: $NEW_IMAGE && docker run --rm $NEW_IMAGE spec" }
-
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
 [tool.poetry.scripts]
 destination-motherduck = "destination_motherduck.run:run"

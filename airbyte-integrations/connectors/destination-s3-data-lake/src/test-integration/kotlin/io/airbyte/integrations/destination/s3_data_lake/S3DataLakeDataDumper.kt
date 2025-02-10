@@ -19,13 +19,17 @@ import org.apache.iceberg.data.Record
 
 object S3DataLakeDataDumper : DestinationDataDumper {
 
-    private fun toAirbyteValue(record: Record): ObjectValue {
+    private fun toAirbyteValue(record: Record, isRoot: Boolean = false): ObjectValue {
         return ObjectValue(
             LinkedHashMap(
                 record
                     .struct()
                     .fields()
+                    // _airbyte_* fields are handled explicitly by the caller
                     .filterNot { Meta.COLUMN_NAMES.contains(it.name()) }
+                    // _pos is a column name added by iceberg automatically
+                    // during dedupe syncs, so we should drop it.
+                    .filterNot { isRoot && it.name() == "_pos" }
                     .associate { field ->
                         val name = field.name()
                         val airbyteValue =
@@ -92,7 +96,7 @@ object S3DataLakeDataDumper : DestinationDataDumper {
                             ),
                         loadedAt = null,
                         generationId = record.getField(Meta.COLUMN_NAME_AB_GENERATION_ID) as Long,
-                        data = toAirbyteValue(record),
+                        data = toAirbyteValue(record, isRoot = true),
                         airbyteMeta = getMetaData(record)
                     )
                 )
