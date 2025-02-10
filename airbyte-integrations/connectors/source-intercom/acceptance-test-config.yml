@@ -10,6 +10,8 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         status: "succeed"
+      - config_path: "secrets/config_sandbox.json"
+        status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
   discovery:
@@ -17,12 +19,10 @@ acceptance_tests:
       - config_path: "secrets/config.json"
   basic_read:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "secrets/config_sandbox.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-        empty_streams:
-          - name: conversation_parts
-            bypass_reason: Deeply nested response which could not be seeded with sandbox
+        empty_streams: []
   incremental:
     tests:
       - config_path: "secrets/config.json"

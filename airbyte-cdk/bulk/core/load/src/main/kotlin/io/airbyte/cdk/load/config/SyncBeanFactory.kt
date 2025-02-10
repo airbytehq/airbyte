@@ -6,7 +6,9 @@ package io.airbyte.cdk.load.config
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
@@ -37,7 +39,7 @@ class SyncBeanFactory {
     @Singleton
     @Named("diskManager")
     fun diskManager(
-        @Value("\${airbyte.resources.disk.bytes}") availableBytes: Long,
+        @Value("\${airbyte.destination.core.resources.disk.bytes}") availableBytes: Long,
     ): ReservationManager {
         return ReservationManager(availableBytes)
     }
@@ -52,7 +54,7 @@ class SyncBeanFactory {
     @Singleton
     @Named("fileAggregateQueue")
     fun fileAggregateQueue(
-        @Value("\${airbyte.resources.disk.bytes}") availableBytes: Long,
+        @Value("\${airbyte.destination.core.resources.disk.bytes}") availableBytes: Long,
         config: DestinationConfiguration,
         catalog: DestinationCatalog
     ): MultiProducerChannel<FileAggregateMessage> {
@@ -89,4 +91,8 @@ class SyncBeanFactory {
         val channel = Channel<FileTransferQueueMessage>(config.batchQueueDepth)
         return MultiProducerChannel(1, channel, "fileMessageQueue")
     }
+
+    @Singleton
+    @Named("openStreamQueue")
+    class OpenStreamQueue : ChannelMessageQueue<DestinationStream>()
 }

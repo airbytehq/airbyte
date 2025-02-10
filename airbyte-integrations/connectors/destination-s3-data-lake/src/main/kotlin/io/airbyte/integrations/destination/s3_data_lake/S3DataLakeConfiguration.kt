@@ -23,7 +23,9 @@ const val TEST_TABLE = "airbyte_test_table"
 data class S3DataLakeConfiguration(
     override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration,
     override val s3BucketConfiguration: S3BucketConfiguration,
-    override val icebergCatalogConfiguration: IcebergCatalogConfiguration
+    override val icebergCatalogConfiguration: IcebergCatalogConfiguration,
+    override val numProcessRecordsWorkers: Int,
+    override val numProcessBatchWorkers: Int,
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
@@ -33,6 +35,7 @@ data class S3DataLakeConfiguration(
 @Singleton
 class S3DataLakeConfigurationFactory :
     DestinationConfigurationFactory<S3DataLakeSpecification, S3DataLakeConfiguration> {
+
     override fun makeWithoutExceptionHandling(
         pojo: S3DataLakeSpecification
     ): S3DataLakeConfiguration {
@@ -40,6 +43,12 @@ class S3DataLakeConfigurationFactory :
             awsAccessKeyConfiguration = pojo.toAWSAccessKeyConfiguration(),
             s3BucketConfiguration = pojo.toS3BucketConfiguration(),
             icebergCatalogConfiguration = pojo.toIcebergCatalogConfiguration(),
+            // When running in dedup mode, we need to process everything in serial,
+            // so that we don't overwrite newer records with older records.
+            // For the sake of simplicity, just set workers to 1 regardless of
+            // sync mode.
+            numProcessRecordsWorkers = 1,
+            numProcessBatchWorkers = 1,
         )
     }
 }
