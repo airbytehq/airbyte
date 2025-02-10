@@ -188,6 +188,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.6.0   | 2025-02-11 | [53620](https://github.com/airbytehq/airbyte/pull/53620) | Replace ZendeskSupportAuditLogsIncrementalSync with low-code DatetimeBasedCursor |
 | 4.5.0   | 2024-12-02 | [48761](https://github.com/airbytehq/airbyte/pull/48761) | Add `Categories` and `Sections` stream |
 | 4.4.4 | 2025-02-08 | [51943](https://github.com/airbytehq/airbyte/pull/51943) | Update dependencies |
 | 4.4.3 | 2025-02-03 | [52625](https://github.com/airbytehq/airbyte/pull/52625) | Update error message during check for `organization_access_enabled` |
