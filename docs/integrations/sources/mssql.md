@@ -235,6 +235,27 @@ For further detail, see the
   EXEC sys.sp_cdc_start_job @job_type = 'cleanup';
 ```
 
+- If you were are using Transaction Replication then the retention has to be changed using below scripts :
+```text
+
+EXEC sp_changedistributiondb
+  @database = 'distribution',
+  @property = 'max_distretention',
+  @value = 14400 -- 14400 minutes (10 days)
+
+EXEC sp_changedistributiondb
+  @database = 'distribution',
+  @property = 'history_retention',
+  @value = 14400 -- 14400 minutes (10 days)
+
+USE [msdb]
+GO
+EXEC msdb.dbo.sp_update_jobstep @job_name=N'Distribution clean up: distribution', @step_id=1 ,
+		@command=N'EXEC dbo.sp_MSdistribution_cleanup @min_distretention = 0, @max_distretention = 14400'
+GO
+
+```
+
 #### 5. Ensure the SQL Server Agent is running
 
 - MSSQL uses the SQL Server Agent

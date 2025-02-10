@@ -115,6 +115,10 @@ const val CREATE_INDEX_QUERY = """
         CREATE ? INDEX ? ON [?].[?] (?)
     """
 
+const val DROP_TABLE_QUERY = """
+        DROP TABLE [?].[?];
+    """
+
 const val INSERT_INTO_QUERY =
     """
         SET NOCOUNT ON;
@@ -126,7 +130,7 @@ const val INSERT_INTO_QUERY =
 const val MERGE_INTO_QUERY =
     """
         SET NOCOUNT ON;
-        MERGE INTO [?$SCHEMA_KEY].[?$TABLE_KEY] AS Target
+        MERGE INTO [?$SCHEMA_KEY].[?$TABLE_KEY] WITH (TABLOCK) AS Target
         USING (VALUES (?$TEMPLATE_COLUMNS_KEY)) AS Source (?$COLUMNS_KEY)
         ON ?$UNIQUENESS_CONSTRAINT_KEY
         WHEN MATCHED THEN
@@ -307,6 +311,10 @@ class MSSQLQueryBuilder(
         }
 
         createTableIfNotExistsQuery(finalTableSchema).executeUpdate(connection)
+    }
+
+    fun dropTable(connection: Connection) {
+        DROP_TABLE_QUERY.toQuery(outputSchema, tableName).executeUpdate(connection)
     }
 
     fun getFinalTableInsertColumnHeader(): String =

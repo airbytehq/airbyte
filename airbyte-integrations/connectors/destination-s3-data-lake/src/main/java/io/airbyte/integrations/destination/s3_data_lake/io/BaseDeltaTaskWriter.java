@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_data_lake.io;
 
+import io.airbyte.cdk.ConfigErrorException;
 import java.io.IOException;
 import java.util.Set;
 import org.apache.iceberg.FileFormat;
@@ -11,6 +12,7 @@ import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.StructLike;
+import org.apache.iceberg.Table;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.InternalRecordWrapper;
 import org.apache.iceberg.data.Record;
@@ -33,12 +35,17 @@ import org.apache.iceberg.types.Types;
  */
 public abstract class BaseDeltaTaskWriter extends BaseTaskWriter<Record> {
 
+  public static final String NULL_PK_ERROR_MESSAGE =
+      "Detected null value in primary key. The Iceberg protocol disallows this. This is either a bug in the source, or you should use the append/overwrite sync mode.";
+
+  private final Table table;
   private final Schema schema;
   private final Schema deleteSchema;
   private final InternalRecordWrapper wrapper;
   private final InternalRecordWrapper keyWrapper;
 
-  public BaseDeltaTaskWriter(final PartitionSpec spec,
+  public BaseDeltaTaskWriter(final Table table,
+                             final PartitionSpec spec,
                              final FileFormat format,
                              final FileAppenderFactory<Record> appenderFactory,
                              final OutputFileFactory fileFactory,
@@ -47,6 +54,7 @@ public abstract class BaseDeltaTaskWriter extends BaseTaskWriter<Record> {
                              final Schema schema,
                              final Set<Integer> identifierFieldIds) {
     super(spec, format, appenderFactory, fileFactory, io, targetFileSize);
+    this.table = table;
     this.schema = schema;
     this.deleteSchema = TypeUtil.select(schema, identifierFieldIds);
     this.wrapper = new InternalRecordWrapper(schema.asStruct());
@@ -63,7 +71,13 @@ public abstract class BaseDeltaTaskWriter extends BaseTaskWriter<Record> {
     final GenericRecord recordWithIds = GenericRecord.create(deleteSchema);
 
     for (final Types.NestedField idField : deleteSchema.columns()) {
-      recordWithIds.setField(idField.name(), row.getField(idField.name()));
+      Object value = row.getField(idField.name());
+      if (value == null) {
+        throw new ConfigErrorException(
+            "Error in stream " + table.name() + ": " + NULL_PK_ERROR_MESSAGE,
+            null);
+      }
+      recordWithIds.setField(idField.name(), value);
     }
 
     return recordWithIds;

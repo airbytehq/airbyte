@@ -54,13 +54,6 @@
         "title" : "JDBC URL Params",
         "order" : 6
       },
-      "raw_data_schema" : {
-        "type" : "string",
-        "description" : "The schema to write raw tables into (default: airbyte_internal)",
-        "title" : "Raw Table Schema Name",
-        "default" : "airbyte_internal",
-        "order" : 5
-      },
       "ssl_method" : {
         "oneOf" : [ {
           "title" : "Unencrypted",
@@ -123,11 +116,11 @@
         } ],
         "description" : "The encryption method which is used to communicate with the database.",
         "title" : "SSL Method",
-        "order" : 8,
+        "order" : 7,
         "type" : "object"
       }
     },
-    "required" : [ "host", "port", "database", "schema", "raw_data_schema", "ssl_method" ]
+    "required" : [ "host", "port", "database", "schema", "user", "ssl_method" ]
   },
   "supportsIncremental" : true,
   "supportsNormalization" : false,
