@@ -99,7 +99,10 @@ class VersionCheck(Step, ABC):
 
 class VersionIncrementCheck(VersionCheck):
     context: ConnectorContext
-    title = "Connector version increment check"
+
+    @property
+    def title(self) -> str:
+        return "Connector version increment check"
 
     BYPASS_CHECK_FOR = [
         METADATA_FILE_NAME,
@@ -219,7 +222,11 @@ class AcceptanceTests(Step):
     """A step to run acceptance tests for a connector if it has an acceptance test config file."""
 
     context: ConnectorContext
-    title = "Acceptance tests"
+
+    @property
+    def title(self) -> str:
+        return "Acceptance tests"
+
     CONTAINER_TEST_INPUT_DIRECTORY = "/test_input"
     CONTAINER_SECRETS_DIRECTORY = "/test_input/secrets"
     REPORT_LOG_PATH = "/tmp/report_log.jsonl"
@@ -401,7 +408,10 @@ class IncrementalAcceptanceTests(Step):
     It fails if there are new failing tests in the current acceptance tests report log.
     """
 
-    title = "Incremental Acceptance Tests"
+    @property
+    def title(self) -> str:
+        return "Incremental Acceptance Tests"
+
     context: ConnectorContext
 
     async def get_failed_pytest_node_ids(self, current_acceptance_tests_report_log: Artifact) -> Set[str]:
