@@ -61,13 +61,18 @@ class Products(Stream, IncrementalMixin):
                 updated_at = format_airbyte_time(datetime.datetime.now())
                 product["updated_at"] = updated_at
                 yield product
-                if product["id"] == self.count:
-                    raise AirbyteTracedException(
-                        message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
-                        internal_message=str("????????????????????"),
-                        failure_type="!!!!!!!!!!??????????????",
-                        exception="!!!!!!!!???????@@@@@@@@@",
-                    )
+                raise AirbyteTracedException(
+                    message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+                    internal_message=str("????????????????????"),
+                    failure_type="!!!!!!!!!!??????????????",
+                    exception="!!!!!!!!???????@@@@@@@@@",
+                )
+        raise AirbyteTracedException(
+            message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+            internal_message=str("????????????????????"),
+            failure_type="!!!!!!!!!!??????????????",
+            exception="!!!!!!!!???????@@@@@@@@@",
+        )
 
         self.state = {"seed": self.seed, "updated_at": updated_at}
 
