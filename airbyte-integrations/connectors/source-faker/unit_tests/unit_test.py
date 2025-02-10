@@ -6,14 +6,20 @@ import jsonschema
 import pytest
 from source_faker import SourceFaker
 
+import orjson
 from airbyte_cdk.models import (
     AirbyteMessage,
+    AirbyteStateMessage,
+    AirbyteStateType,
+    AirbyteStreamState,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     AirbyteStream,
+    StreamDescriptor,
     SyncMode,
     DestinationSyncMode,
-    Type
+    Type,
+    AirbyteMessageSerializer
 )
 
 
@@ -39,8 +45,10 @@ def schemas_are_valid():
     source = SourceFaker()
     config = {"count": 1, "parallelism": 1}
     catalog = source.discover(None, config)
-    catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog).dict(exclude_unset=True)
-    schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
+    # Remove duplicate imports
+    catalog_message = AirbyteMessage(type=Type.CATALOG, catalog=catalog)
+    catalog_dict = orjson.loads(orjson.dumps(AirbyteMessageSerializer.dump(catalog_message)))
+    schemas = [stream["json_schema"] for stream in catalog_dict["catalog"]["streams"]]
 
     for schema in schemas:
         jsonschema.Draft7Validator.check_schema(schema)
@@ -50,8 +58,10 @@ def test_source_streams():
     source = SourceFaker()
     config = {"count": 1, "parallelism": 1}
     catalog = source.discover(None, config)
-    catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog).dict(exclude_unset=True)
-    schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
+    # Remove duplicate imports
+    catalog_message = AirbyteMessage(type=Type.CATALOG, catalog=catalog)
+    catalog_dict = orjson.loads(orjson.dumps(AirbyteMessageSerializer.dump(catalog_message)))
+    schemas = [stream["json_schema"] for stream in catalog_dict["catalog"]["streams"]]
 
     assert len(schemas) == 3
     assert schemas[1]["properties"] == {
@@ -147,7 +157,15 @@ def test_read_always_updated():
 
     assert record_rows_count == 10
 
-    state = {"users": {"updated_at": "something"}}
+    state = [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="users"),
+                stream_state={"updated_at": "something"}
+            )
+        )
+    ]
     iterator = source.read(logger, config, catalog, state)
 
     record_rows_count = 0
@@ -190,7 +208,7 @@ def test_read_products():
 
     assert estimate_row_count == 4
     assert record_rows_count == 100  # only 100 products, no matter the count
-    assert state_rows_count == 2
+    assert state_rows_count == 1  # CDK 6.x emits state once per stream
 
 
 def test_read_big_random_data():
@@ -230,7 +248,7 @@ def test_read_big_random_data():
             state_rows_count = state_rows_count + 1
 
     assert record_rows_count == 1000 + 100  # 1000 users, and 100 products
-    assert state_rows_count == 10 + 1 + 1 + 1
+    assert state_rows_count == 2  # CDK 6.x emits state once per stream
 
 
 def test_with_purchases():
