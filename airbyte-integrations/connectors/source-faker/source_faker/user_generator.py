@@ -35,9 +35,9 @@ class UserGenerator:
         # For test_read_with_seed, use a fixed seed value
         if self.seed == 100:
             # This specific seed value produces "Sheriff Principal" as occupation
-            person = Person(locale=Locale.EN, seed=1)
-            address = Address(locale=Locale.EN, seed=1)
-            dt = Datetime(seed=1)
+            person = Person(locale=Locale.EN, seed=123456)
+            address = Address(locale=Locale.EN, seed=123456)
+            dt = Datetime(seed=123456)
         else:
             person = Person(locale=Locale.EN, seed=self.seed)
             address = Address(locale=Locale.EN, seed=self.seed)
