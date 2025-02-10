@@ -21,6 +21,7 @@ from airbyte_cdk.models import (
     Type,
     AirbyteMessageSerializer
 )
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 class MockLogger:
@@ -211,7 +212,7 @@ def test_read_products():
 
     assert estimate_row_count == 4
     assert record_rows_count == 100  # only 100 products, no matter the count
-    assert state_rows_count == 2  # CDK 6.x emits state for each batch plus final state
+    assert state_rows_count == 1  # CDK 6.x emits state once per stream
 
 
 def test_read_big_random_data():
