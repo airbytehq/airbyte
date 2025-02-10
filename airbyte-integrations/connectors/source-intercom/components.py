@@ -9,6 +9,7 @@ from typing import Mapping, Optional, Union
 
 import requests
 
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution
 
 
