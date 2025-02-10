@@ -387,6 +387,12 @@ class SearchByKeyword(SearchAnalytics):
         search_appearance_stream = SearchAppearance(self._session.auth, self._site_urls, self._start_date, self._end_date)
 
         for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
+            # GSC will omit records if there are too many dimensions in the request. Testing if this also affected other fields in the request.
+            # When tested locally, I was getting no values but when I removed start_row, and aggregation_type, I was able to get values.
+            # Later I tested again and got values with start_row and aggregation_type again, so I think it is intermittent and can happen the
+            # more fields that are added to the request.
+            search_appearance_stream.start_row = None
+            search_appearance_stream.aggregation_type = None            
             keywords_records = search_appearance_stream.read_records(
                 sync_mode=SyncMode.full_refresh, stream_state=stream_state, stream_slice=stream_slice
             )
