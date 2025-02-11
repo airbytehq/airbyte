@@ -11,7 +11,7 @@ import pytest
 from airbyte_protocol.models import ConnectorSpecification
 
 from live_tests.commons.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_paths_in_connector_config
-from live_tests.commons.models import ExecutionResult, SecretDict
+from live_tests.commons.models import ExecutionResult
 from live_tests.utils import fail_test_on_failing_execution_results, find_all_values_for_key_in_schema, get_spec, get_test_logger
 
 pytestmark = [
@@ -491,7 +491,7 @@ async def test_oauth_is_default_method(target_spec: ConnectorSpecification):
     credentials = advanced_auth.predicate_key[0]
     try:
         one_of_default_method = dpath.util.get(spec_schema, f"/**/{credentials}/oneOf/0")
-    except KeyError as e:  # Key Error when oneOf is not in credentials object
+    except KeyError:  # Key Error when oneOf is not in credentials object
         pytest.skip("Credentials object does not have oneOf option.")
 
     path_in_credentials = "/".join(advanced_auth.predicate_key[1:])
