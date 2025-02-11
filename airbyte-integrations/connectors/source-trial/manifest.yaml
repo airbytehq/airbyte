@@ -1,0 +1,85 @@
+version: 6.33.0
+
+type: DeclarativeSource
+
+description: Get dummy data for checking the connection.
+
+check:
+  type: CheckStream
+  stream_names:
+    - Posts
+
+definitions:
+  streams:
+    Posts:
+      type: DeclarativeStream
+      name: Posts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /posts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Posts"
+  base_requester:
+    type: HttpRequester
+    url_base: https://jsonplaceholder.typicode.com
+
+streams:
+  - $ref: "#/definitions/streams/Posts"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required: []
+    properties: {}
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://jsonplaceholder.typicode.com/posts
+  testedStreams:
+    Posts:
+      hasRecords: true
+      streamHash: 2f951d20d0e06afb40ebad0365111cb53b3b978b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    Posts: true
+
+schemas:
+  Posts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      body:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      userId:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
