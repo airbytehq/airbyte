@@ -41,6 +41,7 @@ Visit `https://developers.piwik.pro/en/latest/platform/getting_started.html#gene
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.14 | 2025-02-08 | [53509](https://github.com/airbytehq/airbyte/pull/53509) | Update dependencies |
 | 0.0.13 | 2025-02-01 | [53013](https://github.com/airbytehq/airbyte/pull/53013) | Update dependencies |
 | 0.0.12 | 2025-01-25 | [52515](https://github.com/airbytehq/airbyte/pull/52515) | Update dependencies |
 | 0.0.11 | 2025-01-18 | [51926](https://github.com/airbytehq/airbyte/pull/51926) | Update dependencies |

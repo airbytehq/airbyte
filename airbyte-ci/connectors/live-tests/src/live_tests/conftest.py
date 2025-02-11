@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, List, Optional
 
 import dagger
 import pytest
-from airbyte_protocol.models import AirbyteCatalog, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification  # type: ignore
+from airbyte_protocol.models import ConfiguredAirbyteCatalog  # type: ignore
 from connection_retriever.audit_logging import get_user_email  # type: ignore
 from connection_retriever.retrieval import ConnectionNotFoundError, get_current_docker_image_tag  # type: ignore
 from rich.prompt import Confirm, Prompt
