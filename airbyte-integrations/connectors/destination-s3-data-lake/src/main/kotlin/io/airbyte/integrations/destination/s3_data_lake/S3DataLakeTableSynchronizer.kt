@@ -19,10 +19,21 @@ enum class ColumnTypeChangeBehavior {
      * Find the supertype between the old and new types, throwing an error if Iceberg does not
      * support safely altering the column in this way.
      */
-    SAFE_SUPERTYPE,
+    SAFE_SUPERTYPE {
+        override val commitImmediately = true
+    },
 
     /** Set the column's type to the new type, executing an incompatible schema change if needed. */
-    OVERWRITE,
+    OVERWRITE {
+        override val commitImmediately = false
+    };
+
+    /**
+     * If true, [S3DataLakeTableSynchronizer.applySchemaChanges] will commit the schema update
+     * itself. If false, the caller is responsible for calling
+     * `schemaUpdateResult.pendingUpdate?.commit()`.
+     */
+    abstract val commitImmediately: Boolean
 }
 
 /**
@@ -163,7 +174,12 @@ class S3DataLakeTableSynchronizer(
         // `apply` just validates that the schema change is valid, it doesn't actually commit().
         // It returns the schema that the table _would_ have after committing.
         val newSchema: Schema = update.apply()
-        return SchemaUpdateResult(newSchema, update)
+        if (columnTypeChangeBehavior.commitImmediately) {
+            update.commit()
+            return SchemaUpdateResult(newSchema, pendingUpdate = null)
+        } else {
+            return SchemaUpdateResult(newSchema, update)
+        }
     }
 }
 
