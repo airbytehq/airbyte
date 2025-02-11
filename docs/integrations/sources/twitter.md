@@ -29,6 +29,7 @@ The Twitter source connector supports the following [sync modes](https://docs.ai
 ## Supported Streams
 
 - [Tweets](https://developer.twitter.com/en/docs/twitter-api/tweets/search/api-reference/get-tweets-search-recent)
+- [Authors](https://developer.twitter.com/en/docs/twitter-api/tweets/search/api-reference/get-tweets-search-recent)
 
 ## Performance considerations
 
@@ -41,6 +42,7 @@ Rate limiting is mentioned in the API [documentation](https://developer.twitter.
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.3.0 | 2024-12-10 | [48870](https://github.com/airbytehq/airbyte/pull/48870) | Add new stream `authors` |
 | 0.2.8 | 2025-02-08 | [53515](https://github.com/airbytehq/airbyte/pull/53515) | Update dependencies |
 | 0.2.7 | 2025-02-01 | [53037](https://github.com/airbytehq/airbyte/pull/53037) | Update dependencies |
 | 0.2.6 | 2025-01-25 | [52432](https://github.com/airbytehq/airbyte/pull/52432) | Update dependencies |
