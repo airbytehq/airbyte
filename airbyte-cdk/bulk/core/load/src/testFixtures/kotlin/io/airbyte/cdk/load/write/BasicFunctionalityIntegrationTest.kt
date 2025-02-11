@@ -1381,7 +1381,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             )
         )
-        val finalStream =
+        val changedStream =
             makeStream(
                 syncId = 43,
                 linkedMapOf("id" to intType, "to_change" to stringType, "to_add" to stringType),
@@ -1390,7 +1390,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         runSync(
             updatedConfig,
-            finalStream,
+            changedStream,
             listOf(
                 InputRecord(
                     randomizedNamespace,
@@ -1409,6 +1409,41 @@ abstract class BasicFunctionalityIntegrationTest(
                     data = mapOf("id" to 42, "to_change" to "val2", "to_add" to "val3"),
                     airbyteMeta = OutputRecord.Meta(syncId = 43),
                 )
+            ),
+            changedStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+
+        // Run a third sync, to verify that the schema is stable after evolution
+        val finalStream = changedStream.copy(minimumGenerationId = 0)
+        runSync(
+            updatedConfig,
+            finalStream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "to_change": "val4", "to_add": "val5"}""",
+                    emittedAtMs = 1234L,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 2,
+                    data = mapOf("id" to 42, "to_change" to "val2", "to_add" to "val3"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                ),
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 2,
+                    data = mapOf("id" to 42, "to_change" to "val4", "to_add" to "val5"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                ),
             ),
             finalStream,
             primaryKey = listOf(listOf("id")),
