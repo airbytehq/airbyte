@@ -24,7 +24,9 @@ env:
 jobs:
   connectors_cd:
     name: Connectors CD
-    runs-on: connector-publish-large
+    # TODO: This is @natikgadzhi's hail mary attempt to fix an alleged race in airbyte-ci,
+    # because he's talented this way. 
+    runs-on: ubuntu-latest-16core
     permissions:
       contents: read
     steps:
