@@ -127,6 +127,18 @@ If these conditions are not met, you may see inaccurate data in the destination 
 taking precendence over newer records). If this happens, you should use the `append` or `overwrite`
 sync mode.
 
+## Branching
+
+Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/branching/) over your data.
+Most query engines target the `main` branch.
+
+This connector leverages those semantics to provide resilient syncs:
+* Within each sync, each microbatch creates a new snapshot
+* During truncate syncs, the connector writes the refreshed data to the `airbyte_staging` branch,
+  and fast-forwards the `main` branch at the end of the sync.
+  * This means that your data remains queryable right up to the end of a truncate sync, at which point
+    it is atomically swapped to the updated version.
+
 ## Changelog
 
 <details>
