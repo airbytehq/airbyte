@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.31.1"
+version = "6.33.1"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 files = [
-    {file = "airbyte_cdk-6.31.1-py3-none-any.whl", hash = "sha256:03383f318d6adf4eaf5d971166b0998aa5682d68422be888426ee8367513ffef"},
-    {file = "airbyte_cdk-6.31.1.tar.gz", hash = "sha256:71478976338c0a3708e0b560072c7cc771bdf2ae047bfcad9ac1bfabf1aaaa57"},
+    {file = "airbyte_cdk-6.33.1-py3-none-any.whl", hash = "sha256:e4a5474aea0d11280f4c9c5bef169b168184da8b23fa9b95b8022dae01dd03d5"},
+    {file = "airbyte_cdk-6.33.1.tar.gz", hash = "sha256:d5c80beb6429df9321fad94d47b5a17be7caa18ff8cab91a554b485bb16f875d"},
 ]
 
 [package.dependencies]
@@ -1070,13 +1070,13 @@ xml = ["lxml (>=4.9.2)"]
 
 [[package]]
 name = "paramiko"
-version = "3.5.0"
+version = "3.5.1"
 description = "SSH2 protocol library"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "paramiko-3.5.0-py3-none-any.whl", hash = "sha256:1fedf06b085359051cd7d0d270cebe19e755a8a921cc2ddbfa647fb0cd7d68f9"},
-    {file = "paramiko-3.5.0.tar.gz", hash = "sha256:ad11e540da4f55cedda52931f1a3f812a8238a7af7f62a60de538cd80bb28124"},
+    {file = "paramiko-3.5.1-py3-none-any.whl", hash = "sha256:43b9a0501fc2b5e70680388d9346cf252cfb7d00b0667c39e80eb43a408b8f61"},
+    {file = "paramiko-3.5.1.tar.gz", hash = "sha256:b2c665bc45b2b215bd7d7f039901b14b067da00f3a11e6640995fd58f2664822"},
 ]
 
 [package.dependencies]
@@ -1416,13 +1416,13 @@ dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "pygments
 
 [[package]]
 name = "pytest-docker"
-version = "3.1.1"
+version = "3.2.0"
 description = "Simple pytest fixtures for Docker and Docker Compose based tests"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pytest-docker-3.1.1.tar.gz", hash = "sha256:2371524804a752aaa766c79b9eee8e634534afddb82597f3b573da7c5d6ffb5f"},
-    {file = "pytest_docker-3.1.1-py3-none-any.whl", hash = "sha256:fd0d48d6feac41f62acbc758319215ec9bb805c2309622afb07c27fa5c5ae362"},
+    {file = "pytest_docker-3.2.0-py3-none-any.whl", hash = "sha256:3e266db66887aa3611b2dfd86fb2a3b42f25f3a29d3f14b6e57a831e93a64f60"},
+    {file = "pytest_docker-3.2.0.tar.gz", hash = "sha256:3d6537564e1582cab39e6cc3d6f3d931e92398af62f8313fc826e436f8233e21"},
 ]
 
 [package.dependencies]

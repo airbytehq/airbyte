@@ -9,7 +9,7 @@ The Airbyte API provides a way for developers to programmatically interact with 
 Our API is a reliable, easy-to-use interface for programmatically controlling the Airbyte platform. It can be extended to:
 
 - Enable users to control Airbyte programmatically and use with Orchestration tools (ex: Airflow)
-- Enable [Powered by Airbyte](https://reference.airbyte.com/reference/powered-by-airbyte)
+- Enable [Airbyte Embedded](https://airbyte.com/ai)
 
 ## Configuring API Access
 
