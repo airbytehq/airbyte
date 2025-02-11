@@ -1413,10 +1413,13 @@ abstract class BasicFunctionalityIntegrationTest(
             changedStream,
             primaryKey = listOf(listOf("id")),
             cursor = null,
+            reason = "Records were incorrect when trying to change the schema."
         )
 
         // Run a third sync, to verify that the schema is stable after evolution
-        val finalStream = changedStream.copy(minimumGenerationId = 0)
+        // (this is relevant for e.g. iceberg, where every column has an ID,
+        // and we need to be able to match the new columns to their ID)
+        val finalStream = changedStream.copy(minimumGenerationId = 0, syncId = 44)
         runSync(
             updatedConfig,
             finalStream,
@@ -1425,7 +1428,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     randomizedNamespace,
                     "test_stream",
                     """{"id": 42, "to_change": "val4", "to_add": "val5"}""",
-                    emittedAtMs = 1234L,
+                    emittedAtMs = 5678L,
                 )
             )
         )
@@ -1439,15 +1442,16 @@ abstract class BasicFunctionalityIntegrationTest(
                     airbyteMeta = OutputRecord.Meta(syncId = 43),
                 ),
                 OutputRecord(
-                    extractedAt = 1234,
+                    extractedAt = 5678,
                     generationId = 2,
                     data = mapOf("id" to 42, "to_change" to "val4", "to_add" to "val5"),
-                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                    airbyteMeta = OutputRecord.Meta(syncId = 44),
                 ),
             ),
             finalStream,
             primaryKey = listOf(listOf("id")),
             cursor = null,
+            reason = "Records were incorrect after running a second sync with the updated schema."
         )
     }
 
