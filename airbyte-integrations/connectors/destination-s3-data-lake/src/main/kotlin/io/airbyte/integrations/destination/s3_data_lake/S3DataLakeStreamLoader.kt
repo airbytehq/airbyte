@@ -29,7 +29,6 @@ class S3DataLakeStreamLoader(
     private val s3DataLakeTableSynchronizer: S3DataLakeTableSynchronizer,
     private val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory,
     private val s3DataLakeUtil: S3DataLakeUtil,
-    private val stagingBranchName: String,
     private val mainBranchName: String
 ) : StreamLoader {
     private lateinit var table: Table
@@ -45,6 +44,7 @@ class S3DataLakeStreamLoader(
         }
     private val incomingSchema =
         s3DataLakeUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
+    private val stagingBranchName = if (stream.shouldBeTruncatedAtEndOfSync()) { DEFAULT_STAGING_BRANCH } else { mainBranchName }
 
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
@@ -74,12 +74,12 @@ class S3DataLakeStreamLoader(
         targetSchema = computeOrExecuteSchemaUpdate().schema
         try {
             logger.info {
-                "maybe creating branch $DEFAULT_STAGING_BRANCH for stream ${stream.descriptor}"
+                "maybe creating branch $stagingBranchName for stream ${stream.descriptor}"
             }
-            table.manageSnapshots().createBranch(DEFAULT_STAGING_BRANCH).commit()
+            table.manageSnapshots().createBranch(stagingBranchName).commit()
         } catch (e: IllegalArgumentException) {
             logger.info {
-                "branch $DEFAULT_STAGING_BRANCH already exists for stream ${stream.descriptor}"
+                "branch $stagingBranchName already exists for stream ${stream.descriptor}"
             }
         }
     }

@@ -62,7 +62,6 @@ class S3DataLakeWriter(
             s3DataLakeTableSynchronizer,
             s3DataLakeTableWriterFactory,
             s3DataLakeUtil,
-            stagingBranchName = DEFAULT_STAGING_BRANCH,
             mainBranchName = icebergConfiguration.icebergCatalogConfiguration.mainBranchName,
         )
     }
