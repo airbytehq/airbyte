@@ -112,7 +112,7 @@ definitions:
 and refer to it in the stream.
 
 This will generate time windows from the start time until the end time, where each window is exactly one day.
-The start time is defined in the config file, while the end time is defined by the `now_utc()` macro, which will evaluate to the current date in the current timezone at runtime. See the section on [string interpolation](../advanced-topics.md#string-interpolation) for more details.
+The start time is defined in the config file, while the end time is defined by the `now_utc()` macro, which will evaluate to the current date in the current timezone at runtime. See the section on [string interpolation](../advanced-topics/string-interpolation.md) for more details.
 
 ```yaml
 definitions:

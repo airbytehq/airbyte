@@ -1,3 +1,0 @@
-# Default to OSS in the absence of an env variable
-deployment:
-  mode: oss

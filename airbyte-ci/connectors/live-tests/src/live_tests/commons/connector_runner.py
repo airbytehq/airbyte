@@ -15,16 +15,18 @@ from pathlib import Path
 import anyio
 import asyncer
 import dagger
+
 from live_tests.commons import errors
 from live_tests.commons.models import Command, ExecutionInputs, ExecutionResult
 from live_tests.commons.proxy import Proxy
 
 
 class ConnectorRunner:
-    IN_CONTAINER_CONFIG_PATH = "/data/config.json"
-    IN_CONTAINER_CONFIGURED_CATALOG_PATH = "/data/catalog.json"
-    IN_CONTAINER_STATE_PATH = "/data/state.json"
-    IN_CONTAINER_OUTPUT_PATH = "/output.txt"
+    DATA_DIR = "/airbyte/data"
+    IN_CONTAINER_CONFIG_PATH = f"{DATA_DIR}/config.json"
+    IN_CONTAINER_CONFIGURED_CATALOG_PATH = f"{DATA_DIR}/catalog.json"
+    IN_CONTAINER_STATE_PATH = f"{DATA_DIR}/state.json"
+    IN_CONTAINER_OUTPUT_PATH = f"{DATA_DIR}/output.txt"
     IN_CONTAINER_OBFUSCATOR_PATH = "/user/local/bin/record_obfuscator.py"
 
     def __init__(
@@ -42,6 +44,7 @@ class ConnectorRunner:
         self.state = execution_inputs.state
         self.duckdb_path = execution_inputs.duckdb_path
         self.actor_id = execution_inputs.actor_id
+        self.hashed_connection_id = execution_inputs.hashed_connection_id
         self.environment_variables = execution_inputs.environment_variables if execution_inputs.environment_variables else {}
 
         self.full_command: list[str] = self._get_full_command(execution_inputs.command)
@@ -117,6 +120,9 @@ class ConnectorRunner:
         self,
     ) -> ExecutionResult:
         container = self._connector_under_test_container
+        current_user = (await container.with_exec(["whoami"]).stdout()).strip()
+        container = container.with_user(current_user)
+        container = container.with_exec(["mkdir", "-p", self.DATA_DIR])
         # Do not cache downstream dagger layers
         container = container.with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
 
@@ -130,13 +136,14 @@ class ConnectorRunner:
         for env_var_name, env_var_value in self.environment_variables.items():
             container = container.with_env_variable(env_var_name, env_var_value)
         if self.config:
-            container = container.with_new_file(self.IN_CONTAINER_CONFIG_PATH, contents=json.dumps(dict(self.config)))
+            container = container.with_new_file(self.IN_CONTAINER_CONFIG_PATH, contents=json.dumps(dict(self.config)), owner=current_user)
         if self.state:
-            container = container.with_new_file(self.IN_CONTAINER_STATE_PATH, contents=json.dumps(self.state))
+            container = container.with_new_file(self.IN_CONTAINER_STATE_PATH, contents=json.dumps(self.state), owner=current_user)
         if self.configured_catalog:
             container = container.with_new_file(
                 self.IN_CONTAINER_CONFIGURED_CATALOG_PATH,
                 contents=self.configured_catalog.json(),
+                owner=current_user,
             )
         if self.http_proxy:
             container = await self.http_proxy.bind_container(container)
@@ -147,7 +154,7 @@ class ConnectorRunner:
             entrypoint = await container.entrypoint()
             assert entrypoint, "The connector container has no entrypoint"
             airbyte_command = entrypoint + self.full_command
-            # We are piping the output to a file to avoid QueryError: file size exceeds limit 134217728
+
             container = container.with_exec(
                 [
                     "sh",
@@ -181,11 +188,14 @@ class ConnectorRunner:
             command=self.command,
             connector_under_test=self.connector_under_test,
             actor_id=self.actor_id,
+            hashed_connection_id=self.hashed_connection_id,
+            configured_catalog=self.configured_catalog,
             stdout_file_path=self.stdout_file_path,
             stderr_file_path=self.stderr_file_path,
             success=success,
             http_dump=await self.http_proxy.retrieve_http_dump() if self.http_proxy else None,
             executed_container=executed_container,
+            config=self.config,
         )
         await execution_result.save_artifacts(self.output_dir, self.duckdb_path)
         return execution_result

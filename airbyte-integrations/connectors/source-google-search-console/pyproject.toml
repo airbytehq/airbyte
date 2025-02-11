@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.5.4"
+version = "1.5.13"
 name = "source-google-search-console"
 description = "Source implementation for Google Search Console."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -29,3 +29,11 @@ requests-mock = "^1.11.0"
 pytest-lazy-fixture = "^0.6.3"
 pytest = "^6.1"
 pytest-mock = "^3.6.1"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

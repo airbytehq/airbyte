@@ -7,11 +7,13 @@ import logging
 from typing import Any, List, Mapping
 
 import requests
+
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import Source
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
+
 
 logger = logging.getLogger("airbyte_logger")
 

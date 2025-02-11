@@ -11,6 +11,7 @@ from pytest import fixture
 from responses import matchers
 from source_jira.source import SourceJira
 
+
 ENV_REQUEST_CACHE_PATH = "REQUEST_CACHE_PATH"
 os.environ["REQUEST_CACHE_PATH"] = ENV_REQUEST_CACHE_PATH
 
@@ -324,7 +325,7 @@ def mock_issues_responses_with_date_filter(config, issues_response):
                 {
                     "maxResults": 50,
                     "fields": "*all",
-                    "jql": "updated >= '2021/01/01 00:00' and project in (1) ORDER BY updated asc",
+                    "jql": "updated >= 1609459200000 and project in (1) ORDER BY updated asc",
                     "expand": "renderedFields,transitions,changelog",
                 }
             )
@@ -339,7 +340,7 @@ def mock_issues_responses_with_date_filter(config, issues_response):
                 {
                     "maxResults": 50,
                     "fields": "*all",
-                    "jql": "updated >= '2021/01/01 00:00' and project in (2) ORDER BY updated asc",
+                    "jql": "updated >= 1609459200000 and project in (2) ORDER BY updated asc",
                     "expand": "renderedFields,transitions,changelog",
                 }
             )
@@ -354,7 +355,7 @@ def mock_issues_responses_with_date_filter(config, issues_response):
                 {
                     "maxResults": 50,
                     "fields": "*all",
-                    "jql": "updated >= '2021/01/01 00:00' and project in (3) ORDER BY updated asc",
+                    "jql": "updated >= 1609459200000 and project in (3) ORDER BY updated asc",
                     "expand": "renderedFields,transitions,changelog",
                 }
             )
@@ -370,7 +371,7 @@ def mock_issues_responses_with_date_filter(config, issues_response):
                 {
                     "maxResults": 50,
                     "fields": "*all",
-                    "jql": "updated >= '2021/01/01 00:00' and project in (4) ORDER BY updated asc",
+                    "jql": "updated >= 1609459200000 and project in (4) ORDER BY updated asc",
                     "expand": "renderedFields,transitions,changelog",
                 }
             )
@@ -548,7 +549,7 @@ def mock_sprints_response(config, sprints_response):
 
 
 def find_stream(stream_name, config):
-    for stream in SourceJira().streams(config=config):
+    for stream in SourceJira(config=config, catalog=None, state=None).streams(config=config):
         if stream.name == stream_name:
             return stream
     raise ValueError(f"Stream {stream_name} not found")

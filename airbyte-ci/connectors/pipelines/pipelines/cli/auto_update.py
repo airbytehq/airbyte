@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 
 import asyncclick as click
 import requests
+
 from pipelines import main_logger
 from pipelines.cli.confirm_prompt import confirm
 from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH
@@ -83,7 +84,7 @@ def check_for_upgrade(
     """Check if the installed version of pipelines is up to date."""
     current_command = " ".join(sys.argv)
     latest_version = _get_latest_version()
-    is_out_of_date = latest_version != __installed_version__
+    is_out_of_date = latest_version > __installed_version__
     if not is_out_of_date:
         main_logger.info(f"airbyte-ci is up to date. Installed version: {__installed_version__}. Latest version: {latest_version}")
         return

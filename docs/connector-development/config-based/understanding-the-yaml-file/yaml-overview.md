@@ -11,7 +11,7 @@ By default, the schema of a stream's data is defined as a [JSONSchema](https://j
 
 Alternately, the stream's data schema can be stored in YAML format inline in the YAML file, by including the optional `schema_loader` key. If the data schema is provided inline, any schema on disk for that stream will be ignored.
 
-More information on how to define a stream's schema can be found [here](../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml)
+More information on how to define a stream's schema can be found [here](https://github.com/airbytehq/airbyte-python-cdk/blob/main/airbyte_cdk/sources/declarative/declarative_component_schema.yaml)
 
 The stream object is represented in the YAML file as:
 

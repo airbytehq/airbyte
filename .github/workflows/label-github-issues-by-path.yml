@@ -8,7 +8,7 @@ on:
 jobs:
   add-label-based-on-file-changes:
     name: "Label PRs based on files changes"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: "Label PR based on changed files"
         uses: actions/labeler@v3

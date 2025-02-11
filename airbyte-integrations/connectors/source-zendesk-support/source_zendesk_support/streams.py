@@ -13,6 +13,7 @@ from urllib.parse import parse_qsl, urlparse
 import pendulum
 import pytz
 import requests
+
 from airbyte_cdk import BackoffStrategy
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
@@ -23,6 +24,7 @@ from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping impor
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
+
 
 DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY: str = "_last_end_time"
@@ -518,7 +520,6 @@ class TicketMetricsStateMigration(StateMigration):
 
 
 class TicketMetrics(SourceZendeskSupportStream):
-
     name = "ticket_metrics"
     cursor_field = "_ab_updated_at"
     should_checkpoint = False
@@ -583,7 +584,6 @@ class TicketMetrics(SourceZendeskSupportStream):
 
 
 class StatelessTicketMetrics(FullRefreshZendeskSupportStream):
-
     response_list_name: str = "ticket_metrics"
     cursor_field: str = "updated_at"
     should_checkpoint = False
@@ -631,7 +631,6 @@ class StatelessTicketMetrics(FullRefreshZendeskSupportStream):
 
 
 class StatefulTicketMetrics(HttpSubStream, IncrementalZendeskSupportStream):
-
     response_list_name: str = "ticket_metric"
     _state_cursor_field: str = "_ab_updated_at"
     _legacy_cursor_field: str = "generated_timestamp"
@@ -1162,3 +1161,11 @@ class ArticleCommentVotes(AbstractVotes, HttpSubStream):
         article_id = stream_slice.get("parent").get("source_id")
         comment_id = stream_slice.get("parent").get("id")
         return f"help_center/articles/{article_id}/comments/{comment_id}/votes"
+
+
+class Categories(FullRefreshZendeskSupportStream):
+    """Categories stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/categories/#list-categories"""
+
+
+class Sections(FullRefreshZendeskSupportStream):
+    """Sections stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/sections/#list-sections"""

@@ -61,9 +61,9 @@ requester:
       key: value
 ```
 
-### Request Options
+### Request Option Component
 
-Some components can add request options to the requests sent to the API endpoint.
+Some components can be configured to inject additional request options to the requests sent to the API endpoint.
 
 Schema:
 
@@ -73,21 +73,64 @@ RequestOption:
   type: object
   required:
     - type
-    - field_name
     - inject_into
   properties:
     type:
       type: string
       enum: [RequestOption]
-    field_name:
-      type: string
     inject_into:
       enum:
         - request_parameter
         - header
         - body_data
         - body_json
+  oneOf:
+    - properties:
+      field_name:
+        type: string
+        description: The key where the value will be injected. Used for non-nested injection
+      field_path:
+        type: array
+          items: 
+            type: string
+          description: For body_json injection, specifies the nested path to the inject values. Particularly useful for GraphQL queries where values need to be injected into the variables object.
 ```
+
+### GraphQL request injection
+
+For `body_json` injections, the `field_path` property is used to provide a list of strings representing a path to a nested key to inject. This is particularly useful when working with GraphQL APIs. GraphQL queries typically accept variables as a separate object in the request body, allowing values to be parameterized without string manipulation of the query itself. As an example, to inject a page size option into a GraphQL query, you might need to provide a `limit` key in the request's `variables` as:
+
+```yaml
+page_size_option:
+  request_option:
+    type: RequestOption
+    inject_into: body_json
+    field_path:
+      - variables
+      - limit
+```
+
+This would inject the following value in the request body:
+
+```json
+{ "variables": { "limit": value }}
+```
+
+Here's an example of what your final request might look like:
+
+```json
+{
+  "query": "query($limit: Int) { users(limit: $limit) { id name } }",
+  "variables": {
+    "limit": 10
+  }
+}
+```
+
+:::note
+Nested key injection is ONLY available for `body_json` injection. All other injection types use the top-level `field_name` instead.
+The `field_name` field is slated to be deprecated in favor of `field_path` in the future.
+:::
 
 ### Request Path
 

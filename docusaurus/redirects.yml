@@ -1,4 +1,6 @@
 # A list of URLs that should be redirected to new paths
+- from: /operator-guides/configuring-airbyte-db
+  to: /deploying-airbyte/integrations/database
 - from: /upgrading-airbyte
   to: /operator-guides/upgrading-airbyte
 - from: /catalog
