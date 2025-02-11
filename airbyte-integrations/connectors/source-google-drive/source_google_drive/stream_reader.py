@@ -74,6 +74,15 @@ DRIVE_SERVICE_SCOPES = [
 def datetime_now() -> datetime:
     return datetime.now(pytz.UTC)
 
+REMOTE_FILE_PERMISSIONS_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "id": {"type": "string"},
+        "file_path": {"type": "string"},
+        "allowed_identity_remote_ids": {"type": "array", "items": {"type": "string"}},
+        "publicly_accessible": {"type": "boolean"},
+    },
+}
 
 class GoogleDriveRemoteFile(RemoteFile):
     id: str
@@ -441,3 +450,8 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                 rfp.member_email_addresses.append(member["email"])
 
             yield rfp.dict()
+
+
+    @property
+    def file_permissions_schema(self) -> Dict[str, Any]:
+        return REMOTE_FILE_PERMISSIONS_SCHEMA
