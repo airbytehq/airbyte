@@ -44,7 +44,13 @@ class S3DataLakeStreamLoader(
         }
     private val incomingSchema =
         s3DataLakeUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
-    private val stagingBranchName = if (stream.shouldBeTruncatedAtEndOfSync()) { DEFAULT_STAGING_BRANCH } else { mainBranchName }
+
+    private val stagingBranchName =
+        if (stream.shouldBeTruncatedAtEndOfSync()) {
+            DEFAULT_STAGING_BRANCH
+        } else {
+            mainBranchName
+        }
 
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
