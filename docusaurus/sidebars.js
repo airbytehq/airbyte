@@ -286,7 +286,20 @@ const buildAConnector = {
             "connector-development/config-based/understanding-the-yaml-file/reference",
           ],
         },
-        "connector-development/config-based/advanced-topics",
+        {
+          type: "category",
+          label: "Advanced Topics",
+          items: [
+            "connector-development/config-based/advanced-topics/component-schema-reference",
+            "connector-development/config-based/advanced-topics/custom-components",
+            "connector-development/config-based/advanced-topics/oauth",
+            "connector-development/config-based/advanced-topics/how-framework-works",
+            "connector-development/config-based/advanced-topics/object-instantiation",
+            "connector-development/config-based/advanced-topics/parameters",
+            "connector-development/config-based/advanced-topics/references",
+            "connector-development/config-based/advanced-topics/string-interpolation",
+          ]
+        },
       ],
     },
 
@@ -547,11 +560,19 @@ module.exports = {
     connectorCatalog,
     buildAConnector,
     "integrations/connector-support-levels",
+    {
+      type: "doc",
+      id: "using-airbyte/oauth",
+    },
     sectionHeader("Using Airbyte"),
     connectionConfigurations,
     {
       type: "doc",
       id: "using-airbyte/core-concepts/typing-deduping",
+    },
+    {
+      type: "doc",
+      id: "using-airbyte/mappings",
     },
     {
       type: "category",
@@ -614,7 +635,6 @@ module.exports = {
         id: "operator-guides/configuring-airbyte",
       },
       items: [
-        "operator-guides/configuring-airbyte-db",
         "operator-guides/configuring-connector-resources",
         "operator-guides/telemetry",
       ],
@@ -645,7 +665,12 @@ module.exports = {
             type: "doc",
             id: "access-management/rbac",
           },
-          items: [{ type: "doc", id: "access-management/role-mapping" }],
+          items: [
+            {
+              type: "doc",
+              id: "access-management/role-mapping"
+            },
+          ],
         },
       ],
     },
@@ -726,8 +751,10 @@ module.exports = {
       label: "Release Notes",
       link: {
         type: "generated-index",
+        description: "We release new self-managed versions of Airbyte regularly. Airbyte Cloud customers always have the latest enhancements.",
       },
       items: [
+        "release_notes/v-1.4",
         "release_notes/v-1.3",
         "release_notes/v-1.2",
         "release_notes/v-1.1",
