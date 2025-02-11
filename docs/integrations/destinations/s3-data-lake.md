@@ -101,6 +101,7 @@ written into the Iceberg file.
 
 | Version | Date       | Pull Request                                               | Subject                                                                      |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------|
+| 0.3.12  | 2025-02-11 | [\#53642](https://github.com/airbytehq/airbyte/pull/53642) | In non-overwrite mode, commit directly to main branch                        |
 | 0.3.11  | 2025-02-12 | [\#53216](https://github.com/airbytehq/airbyte/pull/53216) | Support arbitrary schema change in overwrite / truncate refresh / clear sync |
 | 0.3.10  | 2025-02-11 | [\#53622](https://github.com/airbytehq/airbyte/pull/53622) | Enable the Nessie integration tests                                          |
 | 0.3.9   | 2025-02-10 | [\#53165](https://github.com/airbytehq/airbyte/pull/53165) | Very basic usability improvements and documentation                          |
