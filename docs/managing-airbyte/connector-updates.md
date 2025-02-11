@@ -31,7 +31,7 @@ Each connector's changelog details its update history. You can find it in the [c
 ### Airbyte Cloud
 **Minor and Patch Versions:** These are applied automatically and immediately to your instance. You don't need to take any action.
 
-**Major Versions:** A major version will include notable changes that affect your schema or sync success. We will notify you ahead of time to give you a window to prepare for the change. At the end of the window, we will automatically upgrade your connector to ensure you receive the latest updates. Examples of major version changes are shared in our [breaking change documentation](./using-airbyte/schema-change-management#major-connector-version-upgrades).
+**Major Versions:** A major version will include notable changes that affect your schema or sync success. We will notify you ahead of time to give you a window to prepare for the change. At the end of the window, we will automatically upgrade your connector to ensure you receive the latest updates. Examples of major version changes are shared in our [breaking change documentation](/using-airbyte/schema-change-management#major-connector-version-upgrades).
 
 ## Airbyte Open Source (OSS) and Self-Managed Enterprise (SME)
 
