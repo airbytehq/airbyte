@@ -13,6 +13,7 @@ This connector is in early access, and SHOULD NOT be used for production workloa
 
 | Version | Date       | Pull Request                                               | Subject                                              |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------|
+| 0.1.9   | 2025-02-11 | [53364](https://github.com/airbytehq/airbyte/pull/53364)   | RC7: Revert deletion change.                         |
 | 0.1.8   | 2025-02-11 | [53364](https://github.com/airbytehq/airbyte/pull/53364)   | RC6: Break up deletes into loop to reduce locking.   |
 | 0.1.7   | 2025-02-07 | [53236](https://github.com/airbytehq/airbyte/pull/53236)   | RC5: Use rowlock hint.                               |
 | 0.1.6   | 2025-02-06 | [53192](https://github.com/airbytehq/airbyte/pull/53192)   | RC4: Fix config, timehandling and performance tweak. |

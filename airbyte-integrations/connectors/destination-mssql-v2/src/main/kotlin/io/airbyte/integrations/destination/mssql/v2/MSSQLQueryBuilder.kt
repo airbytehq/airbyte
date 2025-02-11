@@ -157,22 +157,16 @@ const val ALTER_TABLE_MODIFY =
 
 const val DELETE_WHERE_COL_IS_NOT_NULL =
     """
-        deleteLoop:
-        DELETE TOP(5000) FROM [?].[?] WITH (TABLOCK)
+        SET NOCOUNT ON;
+        DELETE FROM [?].[?] WITH (TABLOCK)
         WHERE [?] is not NULL
-
-        IF @@ROWCOUNT > 0
-            GOTO deleteLoop
     """
 
 const val DELETE_WHERE_COL_LESS_THAN =
     """
-        deleteLoop:
-        DELETE TOP(5000) FROM [?].[?] WITH (TABLOCK)
+        SET NOCOUNT ON;
+        DELETE FROM [?].[?] WITH (TABLOCK)
         WHERE [?] < ?
-
-        IF @@ROWCOUNT > 0
-            GOTO deleteLoop
     """
 
 const val SELECT_FROM = """
