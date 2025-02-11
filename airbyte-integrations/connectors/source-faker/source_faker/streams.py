@@ -24,6 +24,8 @@ class Products(Stream, IncrementalMixin):
         self.seed = seed
         self.records_per_slice = records_per_slice
         self.always_updated = always_updated
+        dirname = os.path.dirname(os.path.realpath(__file__))
+        self._schema = read_json(os.path.join(dirname, "schemas", "products.json"))
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
@@ -39,6 +41,10 @@ class Products(Stream, IncrementalMixin):
     @state.setter
     def state(self, value: Mapping[str, Any]):
         self._state = value
+
+    @property
+    def json_schema(self) -> Dict[str, Any]:
+        return self._schema
 
     def load_products(self) -> List[Dict]:
         dirname = os.path.dirname(os.path.realpath(__file__))
@@ -76,6 +82,12 @@ class Users(Stream, IncrementalMixin):
         self.parallelism = parallelism
         self.always_updated = always_updated
         self.generator = UserGenerator(self.name, self.seed)
+        dirname = os.path.dirname(os.path.realpath(__file__))
+        self._schema = read_json(os.path.join(dirname, "schemas", "users.json"))
+
+    @property
+    def json_schema(self) -> Dict[str, Any]:
+        return self._schema
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
@@ -136,6 +148,12 @@ class Purchases(Stream, IncrementalMixin):
         self.parallelism = parallelism
         self.always_updated = always_updated
         self.generator = PurchaseGenerator(self.name, self.seed)
+        dirname = os.path.dirname(os.path.realpath(__file__))
+        self._schema = read_json(os.path.join(dirname, "schemas", "purchases.json"))
+
+    @property
+    def json_schema(self) -> Dict[str, Any]:
+        return self._schema
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:

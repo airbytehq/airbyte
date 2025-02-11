@@ -5,6 +5,7 @@
 import logging
 from typing import Any, List, Mapping, Tuple
 
+from airbyte_cdk.models import AirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
@@ -20,6 +21,10 @@ class SourceFaker(AbstractSource):
             return True, None
         else:
             return False, "Count option is missing"
+
+    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
+        streams = self.streams(config)
+        return AirbyteCatalog(streams=[stream.as_airbyte_stream() for stream in streams])
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         count: int = config["count"] if "count" in config else DEFAULT_COUNT
