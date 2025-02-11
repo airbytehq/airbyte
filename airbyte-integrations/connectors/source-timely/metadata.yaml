@@ -24,6 +24,11 @@ data:
       enabled: true
   releaseDate: 2022-06-22
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "Need to update the start date to be in format `YYYY-MM-DDTHH:mm:ssZ`."
+        upgradeDeadline: "2025-02-23"
   remoteRegistries:
     pypi:
       enabled: false

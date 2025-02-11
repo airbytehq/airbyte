@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - events
+    - users
 
 definitions:
   streams:
@@ -46,6 +46,7 @@ definitions:
         lookback_window: P1M
         cursor_datetime_formats:
           - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
