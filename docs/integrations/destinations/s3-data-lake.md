@@ -102,7 +102,12 @@ rewrite existing data files. This means that we can only handle specific schema 
 * Widening columns
 * Changing the primary key
 
-If your source goes through an unsupported schema change, you must manually edit the table schema.
+If your source goes through an unsupported schema change, the connector will fail at sync time.
+To resolve this, you can either:
+* Manually edit your table schema via Iceberg directly
+* Refresh your connection (removing existing records) / clear your connection
+
+Full refresh overwrite syncs can also handle these schema changes transparently.
 
 ## Deduplication
 
