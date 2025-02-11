@@ -61,7 +61,8 @@ class S3DataLakeStreamLoader(
                 properties = properties
             )
 
-        // Note that we don't commit the schema change here. This is intentional.
+        // Note that if we have columnTypeChangeBehavior OVERWRITE, we don't commit the schema
+        // change immediately. This is intentional.
         // If we commit the schema change right now, then affected columns might become unqueryable.
         // Instead, we write data using the new schema to the staging branch - that data will be
         // unqueryable during the sync (which is fine).
