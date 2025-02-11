@@ -60,6 +60,15 @@ class S3DataLakeStreamLoader(
                 schema = incomingSchema,
                 properties = properties
             )
+        // Note that we don't commit the schema change here. This is intentional.
+        // If we commit the schema change right now, then affected columns might become unqueryable.
+        // Instead, we write data using the new schema to the staging branch - that data will be
+        // unqueryable during the sync (which is fine).
+        // Also note that we're not wrapping the entire sync in a transaction
+        // (i.e. `table.newTransaction()`).
+        // This is also intentional - the airbyte protocol requires that we commit data
+        // incrementally, and if the entire sync is in a transaction, we might crash before we can
+        // commit that transaction.
         targetSchema = computeSchemaUpdate().schema
         try {
             logger.info {
