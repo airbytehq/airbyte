@@ -53,7 +53,7 @@ class S3DataLakeTableWriterFactory(private val s3DataLakeUtil: S3DataLakeUtil) {
                     .getOrDefault(DEFAULT_FILE_FORMAT, DEFAULT_FILE_FORMAT_DEFAULT)
                     .uppercase()
             )
-        val identifierFieldIds = table.schema().identifierFieldIds()
+        val identifierFieldIds = schema.identifierFieldIds()
         val appenderFactory =
             createAppenderFactory(
                 table = table,
@@ -73,6 +73,7 @@ class S3DataLakeTableWriterFactory(private val s3DataLakeUtil: S3DataLakeUtil) {
             Overwrite ->
                 newAppendWriter(
                     table = table,
+                    schema = schema,
                     appenderFactory = appenderFactory,
                     targetFileSize = targetFileSize,
                     outputFileFactory = outputFileFactory,
@@ -81,6 +82,7 @@ class S3DataLakeTableWriterFactory(private val s3DataLakeUtil: S3DataLakeUtil) {
             is Dedupe ->
                 newDeltaWriter(
                     table = table,
+                    schema = schema,
                     identifierFieldIds = identifierFieldIds,
                     appenderFactory = appenderFactory,
                     targetFileSize = targetFileSize,
@@ -99,8 +101,7 @@ class S3DataLakeTableWriterFactory(private val s3DataLakeUtil: S3DataLakeUtil) {
                 schema,
                 table.spec(),
                 identifierFieldIds?.toIntArray(),
-                if (identifierFieldIds != null)
-                    TypeUtil.select(table.schema(), identifierFieldIds.toSet())
+                if (identifierFieldIds != null) TypeUtil.select(schema, identifierFieldIds.toSet())
                 else null,
                 null
             )
@@ -122,6 +123,7 @@ class S3DataLakeTableWriterFactory(private val s3DataLakeUtil: S3DataLakeUtil) {
 
     private fun newAppendWriter(
         table: Table,
+        schema: Schema,
         format: FileFormat,
         appenderFactory: GenericAppenderFactory,
         outputFileFactory: OutputFileFactory,
@@ -144,13 +146,14 @@ class S3DataLakeTableWriterFactory(private val s3DataLakeUtil: S3DataLakeUtil) {
                 outputFileFactory = outputFileFactory,
                 io = table.io(),
                 targetFileSize = targetFileSize,
-                schema = table.schema()
+                schema = schema
             )
         }
     }
 
     private fun newDeltaWriter(
         table: Table,
+        schema: Schema,
         format: FileFormat,
         appenderFactory: GenericAppenderFactory,
         outputFileFactory: OutputFileFactory,
@@ -166,7 +169,7 @@ class S3DataLakeTableWriterFactory(private val s3DataLakeUtil: S3DataLakeUtil) {
                 outputFileFactory = outputFileFactory,
                 io = table.io(),
                 targetFileSize = targetFileSize,
-                schema = table.schema(),
+                schema = schema,
                 identifierFieldIds = identifierFieldIds
             )
         } else {
@@ -178,7 +181,7 @@ class S3DataLakeTableWriterFactory(private val s3DataLakeUtil: S3DataLakeUtil) {
                 outputFileFactory = outputFileFactory,
                 io = table.io(),
                 targetFileSize = targetFileSize,
-                schema = table.schema(),
+                schema = schema,
                 identifierFieldIds = identifierFieldIds
             )
         }
