@@ -138,6 +138,15 @@ class Purchases(Stream, IncrementalMixin):
         self.always_updated = always_updated
         self.generator = PurchaseGenerator(self.name, self.seed)
 
+    def check_dependency(self, configured_catalog=None):
+        """Check if Users stream is present in the configured streams"""
+        if configured_catalog and not any(s.stream.name == "users" for s in configured_catalog.streams):
+            raise AirbyteTracedException(
+                message="Cannot sync purchases without users stream",
+                internal_message="The purchases stream requires the users stream to be configured",
+                failure_type=FailureType.config_error
+            )
+
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
         return self.records_per_slice
@@ -158,14 +167,7 @@ class Purchases(Stream, IncrementalMixin):
         This is a multi-process implementation of read_records.
         We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON
         """
-
-        # Check if Users stream is present in the configured streams
-        if configured_catalog is None or not any(s.stream.name == "users" for s in configured_catalog.streams):
-            raise AirbyteTracedException(
-                message="Cannot sync purchases without users stream",
-                internal_message="The purchases stream requires the users stream to be configured",
-                failure_type=FailureType.config_error
-            )
+        self.check_dependency(configured_catalog)
 
         if "updated_at" in self.state and not self.always_updated:
             return iter([])
