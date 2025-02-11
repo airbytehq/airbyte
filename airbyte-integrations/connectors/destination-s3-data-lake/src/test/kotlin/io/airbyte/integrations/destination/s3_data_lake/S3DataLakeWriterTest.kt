@@ -36,6 +36,7 @@ import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.UpdateSchema
 import org.apache.iceberg.catalog.Catalog
+import org.apache.iceberg.io.CloseableIterable
 import org.apache.iceberg.types.Type.PrimitiveType
 import org.apache.iceberg.types.Types
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -216,9 +217,12 @@ internal class S3DataLakeWriterTest {
         } returns updateSchema
         every { updateSchema.setIdentifierFields(any<Collection<String>>()) } returns updateSchema
         every { updateSchema.commit() } just runs
+        every { updateSchema.apply() } returns icebergSchema
         every { table.refresh() } just runs
         every { table.manageSnapshots().createBranch(any()).commit() } throws
             IllegalArgumentException("branch already exists")
+        every { table.manageSnapshots().fastForwardBranch(any(), any()).commit() } just runs
+        every { table.newScan().planFiles() } returns CloseableIterable.empty()
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
@@ -228,6 +232,8 @@ internal class S3DataLakeWriterTest {
                     val pipeline = secondArg() as MapperPipeline
                     pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
+            every { constructGenerationIdSuffix(any() as Long) } returns ""
+            every { assertGenerationIdSuffixIsOfValidFormat(any()) } just runs
         }
         val destinationCatalog: DestinationCatalog = mockk()
         val tableIdGenerator: TableIdGenerator = mockk()
@@ -257,8 +263,10 @@ internal class S3DataLakeWriterTest {
         verify { updateSchema.addColumn(null, "_airbyte_meta", any()) }
         verify { updateSchema.addColumn(null, "_airbyte_generation_id", Types.LongType.get()) }
         verify { updateSchema.addColumn(null, "id", Types.LongType.get()) }
+        verify(exactly = 0) { updateSchema.commit() }
+
+        runBlocking { streamLoader.close(streamFailure = null) }
         verify { updateSchema.commit() }
-        verify { table.refresh() }
     }
 
     @Test
@@ -361,8 +369,11 @@ internal class S3DataLakeWriterTest {
         every { updateSchema.requireColumn("id") } returns updateSchema
         every { updateSchema.setIdentifierFields(primaryKeys) } returns updateSchema
         every { updateSchema.commit() } just runs
+        every { updateSchema.apply() } returns icebergSchema
         every { table.refresh() } just runs
         every { table.manageSnapshots().createBranch(any()).commit() } just runs
+        every { table.manageSnapshots().fastForwardBranch(any(), any()).commit() } just runs
+        every { table.newScan().planFiles() } returns CloseableIterable.empty()
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
@@ -372,6 +383,8 @@ internal class S3DataLakeWriterTest {
                     val pipeline = secondArg() as MapperPipeline
                     pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(listOf(primaryKeys))
                 }
+            every { constructGenerationIdSuffix(any() as Long) } returns ""
+            every { assertGenerationIdSuffixIsOfValidFormat(any()) } just runs
         }
         val destinationCatalog: DestinationCatalog = mockk()
         val tableIdGenerator: TableIdGenerator = mockk()
@@ -400,7 +413,9 @@ internal class S3DataLakeWriterTest {
         }
         verify(exactly = 1) { updateSchema.requireColumn("id") }
         verify(exactly = 1) { updateSchema.setIdentifierFields(primaryKeys) }
+        verify(exactly = 0) { updateSchema.commit() }
+
+        runBlocking { streamLoader.close(streamFailure = null) }
         verify { updateSchema.commit() }
-        verify { table.refresh() }
     }
 }
