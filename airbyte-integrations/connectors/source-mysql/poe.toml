@@ -1,0 +1,4 @@
+[tool.poe]
+include = [
+    "${POE_GIT_DIR}/poe-tasks/gradle-connector-tasks.toml",
+]

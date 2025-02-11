@@ -1,0 +1,31 @@
+# A shared set of tasks for Airbyte connectors using Gradle.
+#
+# This file should be included in connectors' `poe.toml` as follows:
+#
+# ```toml
+# [tool.poe]
+# include = [
+#     "${POE_GIT_DIR}/poe-tasks/gradle-connector-tasks.toml",
+# ]
+#
+# Within any connector directory, you can then run `poe` or `poe --help` to see the full set of
+# available tasks.
+
+[tool.poe.tasks]
+
+# Test commands
+test = "./gradlew :airbyte-integrations:connectors:${PWD##*/}:test"
+test-fast = "./gradlew :airbyte-integrations:connectors:${PWD##*/}:test -PskipSlowTests=true"
+integration-test = "./gradlew :airbyte-integrations:connectors:${PWD##*/}:integrationTestJava"
+integration-test-fast = "./gradlew :airbyte-integrations:connectors:${PWD##*/}:integrationTestNonDocker"
+
+# Check commands
+check-compile = "./gradlew :airbyte-integrations:connectors:${PWD##*/}:compileKotlin"
+check-spotbugs = "./gradlew :airbyte-integrations:connectors:${PWD##*/}:spotbugsMain"
+check-all = [
+    "check-compile",
+    "check-spotbugs",
+]
+
+# Format commands
+format = "./gradlew :airbyte-integrations:connectors:${PWD##*/}:spotlessApply"
