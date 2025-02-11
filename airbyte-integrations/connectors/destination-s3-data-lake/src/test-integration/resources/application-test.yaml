@@ -5,3 +5,4 @@ airbyte:
         strategy: direct
         input-parts: 1
       record-batch-size-override: 209715200
+      checkpoint-by-index: true

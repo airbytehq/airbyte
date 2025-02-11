@@ -39,8 +39,10 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
 
     inner class RangeState(
         val state: S,
-        val indexRange: Range<Long>? = null,
-    )
+        val countsByCheckpointIndex: MutableMap<Long, Long> = mutableMapOf(),
+    ) {
+        fun withState(newState: S) = RangeState(newState, countsByCheckpointIndex)
+    }
 
     override suspend fun execute() {
         inputFlow.fold(mutableMapOf<K1, RangeState>()) { stateStore, input ->
@@ -59,15 +61,21 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                                 input.value,
                                 state.state,
                             )
-                        val nextRange = state.indexRange.withNextAdjacentValue(input.index)
+                        input.countsByCheckpointIndex.forEach { (index, count) ->
+                            state.countsByCheckpointIndex.merge(
+                                index,
+                                count,
+                                Long::plus
+                            )
+                        }
 
                         if (output != null) {
                             // Publish the emitted output and evict the state.
-                            handleOutput(input.key, nextRange, output)
+                            handleOutput(input.key, state.countsByCheckpointIndex, output)
                             stateStore.remove(input.key)
                         } else {
                             // If there's no output yet, just update the local state.
-                            stateStore[input.key] = RangeState(newState, nextRange)
+                            stateStore[input.key] = state.withState(newState)
                         }
                         stateStore
                     }
@@ -77,7 +85,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         keysToRemove.forEach { key ->
                             stateStore.remove(key)?.let { stored ->
                                 val output = batchAccumulator.finish(stored.state)
-                                handleOutput(key, stored.indexRange!!, output)
+                                handleOutput(key, stored.countsByCheckpointIndex, output)
                             }
                         }
 
@@ -97,13 +105,15 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
         }
     }
 
-    private suspend fun handleOutput(inputKey: K1, nextRange: Range<Long>, output: U) {
+    private suspend fun handleOutput(inputKey: K1,
+                                     counts: Map<Long, Long>,
+                                     output: U) {
 
         // Only publish the output if there's a next step.
         outputQueue?.let {
             val outputKey = outputPartitioner.getOutputKey(inputKey, output)
             // TODO: Fix this, temporary for perf testing
-            val message = PipelineMessage(nextRange.upperEndpoint(), outputKey, output)
+            val message = PipelineMessage(counts, outputKey, output)
             val outputPart = outputPartitioner.getPart(outputKey, it.partitions)
             it.publish(message, outputPart)
         }
@@ -113,7 +123,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
             val update =
                 BatchStateUpdate(
                     stream = inputKey.stream,
-                    indexRange = TreeRangeSet.create(listOf(nextRange)),
+                    countsByCheckpointIndex = counts,
                     state = output.state
                 )
             batchUpdateQueue.publish(update)

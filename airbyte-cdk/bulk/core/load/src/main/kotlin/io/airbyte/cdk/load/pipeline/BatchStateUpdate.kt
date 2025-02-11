@@ -15,7 +15,7 @@ sealed interface BatchUpdate {
 
 data class BatchStateUpdate(
     override val stream: DestinationStream.Descriptor,
-    val indexRange: RangeSet<Long>,
+    val countsByCheckpointIndex: Map<Long, Long>,
     val state: Batch.State,
 ) : BatchUpdate
 

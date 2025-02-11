@@ -164,7 +164,7 @@ class DefaultInputConsumerTask(
                 val record = message.asRecordMarshaledToAirbyteValue()
                 val pipelineMessage =
                     PipelineMessage(
-                        manager.countRecordIn(),
+                        mapOf(),
                         StreamKey(stream),
                         record
                     )
