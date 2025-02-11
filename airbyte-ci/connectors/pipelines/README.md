@@ -721,39 +721,7 @@ Steps
 
 ### <a id="format-subgroup"></a>`format` command subgroup
 
-Available commands:
-
-- `airbyte-ci format check all`
-- `airbyte-ci format fix all`
-
-### Options
-
-| Option              | Required | Default | Mapped environment variable | Description                                                                                 |
-| ------------------- | -------- | ------- | --------------------------- | ------------------------------------------------------------------------------------------- |
-| `--quiet/-q`        | False    | False   |                             | Hide formatter execution details in reporting.                                              |
-| `--ci-requirements` | False    |         |                             | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
-
-### Examples
-
-- Check for formatting errors in the repository: `airbyte-ci format check all`
-- Fix formatting for only python files: `airbyte-ci format fix python`
-
-### <a id="format-check-command"></a>`format check all` command
-
-This command runs formatting checks, but does not format the code in place. It will exit 1 as soon
-as a failure is encountered. To fix errors, use `airbyte-ci format fix all`.
-
-Running `airbyte-ci format check` will run checks on all different types of code. Run
-`airbyte-ci format check --help` for subcommands to check formatting for only certain types of
-files.
-
-### <a id="format-fix-command"></a>`format fix all` command
-
-This command runs formatting checks and reformats any code that would be reformatted, so it's
-recommended to stage changes you might have before running this command.
-
-Running `airbyte-ci format fix all` will format all of the different types of code. Run
-`airbyte-ci format fix --help` for subcommands to format only certain types of files.
+`airbyte-ci format` is no longer available. To format code in this repository, we're using `pre-commit`. Assuming `pre-commit` is installed, `pre-commit run` will run the formatters for you.
 
 ### <a id="poetry-subgroup"></a>`poetry` command subgroup
 
@@ -852,9 +820,12 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 ## Changelog
 
-| Version | PR                                                         | Description                                                                                                                  |
+| Version | PR                                                          | Description                                                                                                                  |
+| 5.1.0   | [#53238](https://github.com/airbytehq/airbyte/pull/53238)  | Add ability to opt out of version increment checks via metadata flag                                                         |
+| 5.0.1   | [#52664](https://github.com/airbytehq/airbyte/pull/52664)  | Update Python version requirement from 3.10 to 3.11.                                                                         |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | 4.49.4  | [#52104](https://github.com/airbytehq/airbyte/pull/52104)  | Stream Gradle task output to the step logger                                                                 |
+| 5.0.0  | [#52647](https://github.com/airbytehq/airbyte/pull/52647)  | Removed migration and formatting commands.                                                                 |
 | 4.49.3  | [#52102](https://github.com/airbytehq/airbyte/pull/52102)  | Load docker image to local docker host for java connectors                                                                 |
 | 4.49.2  | [#52090](https://github.com/airbytehq/airbyte/pull/52090)  | Re-add custom task parameters in GradleTask                                                                                  |
 | 4.49.1  | [#52087](https://github.com/airbytehq/airbyte/pull/52087)  | Wire the `--enable-report-auto-open` correctly for connector tests                                                           |

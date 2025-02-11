@@ -241,6 +241,15 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             dependsOn project.tasks.matching { it.name ==~ /(compile|spotbugs)[a-zA-Z]*Java/ }
         }
 
+        boolean withSlowTests = System.getProperty('skipSlowTests', 'false') == 'false'
+        project.tasks.matching {
+                it.name == 'test' ||
+                it.name == 'integrationTestNonDocker' ||
+                it.name == 'integrationTestJava'
+            }.configureEach {
+            onlyIf { withSlowTests }
+        }
+
         project.configurations {
             testFixturesImplementation.extendsFrom implementation
             testFixturesRuntimeOnly.extendsFrom runtimeOnly

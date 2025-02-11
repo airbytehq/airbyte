@@ -23,7 +23,7 @@ Connectors built with the connector builder always make HTTP requests, receive t
 
 The first step in converting an HTTP response into records is decoding the response body into normalized JSON objects, as the rest of the record processing logic performed by the connector expects to operate on JSON objects.
 
-The HTTP Response Format is used to configure this decoding by declaring what the encoding of the response body is. 
+The HTTP Response Format is used to configure this decoding by declaring what the encoding of the response body is.
 
 Each of the supported formats are explained below.
 
@@ -268,7 +268,7 @@ For the above example, the Iterable response format setting would result in the 
   allowfullscreen
 ></iframe>
 
-After decoding the response into normalized JSON objects (see [Response Decoding](#response-decoding)), the connector must then decide how to extract records from those JSON objects. 
+After decoding the response into normalized JSON objects (see [Response Decoding](#response-decoding)), the connector must then decide how to extract records from those JSON objects.
 
 The Record Selector component contains a few different levers to configure this extraction:
 - Field Path
@@ -435,15 +435,15 @@ For example, say your API response looks like this:
 [
   {
     "id": 1,
-    "status": "pending" 
+    "status": "pending"
   },
   {
     "id": 2,
-    "status": "active" 
+    "status": "active"
   },
   {
     "id": 3,
-    "status": "expired" 
+    "status": "expired"
   }
 ]
 ```
@@ -453,7 +453,7 @@ You can accomplish this by setting the Record Filter to `{{ record.status != 'ex
 
 Any records for which this expression evaluates to `true` will be emitted by the connector, and any for which it evaluates to `false` will be excluded from the output.
 
-Note that Record Filter value must be an [interpolated string](/connector-development/config-based/advanced-topics#string-interpolation) with the filtering condition placed inside double curly braces `{{ }}`.
+Note that Record Filter value must be an [interpolated string](/connector-development/config-based/advanced-topics/string-interpolation.md) with the filtering condition placed inside double curly braces `{{ }}`.
 
 ### Cast Record Fields to Schema Types
 Sometimes the type of a field in the record is not the desired type. If the existing field type can be simply cast to the desired type, this can be solved by setting the stream's declared schema to the desired type and enabling `Cast Record Fields to Schema Types`.

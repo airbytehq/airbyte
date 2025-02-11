@@ -11,6 +11,7 @@ import io.mockk.verify
 import org.apache.iceberg.FileFormat
 import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
+import org.apache.iceberg.Table
 import org.apache.iceberg.TableProperties.WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT
 import org.apache.iceberg.data.Record
 import org.apache.iceberg.io.FileAppenderFactory
@@ -126,6 +127,7 @@ internal class BaseDeltaTaskWriterTest {
         val deltaWriter: RowDataDeltaWriter,
     ) :
         BaseDeltaTaskWriter(
+            mockk<Table>(),
             spec,
             format,
             appenderFactory,
