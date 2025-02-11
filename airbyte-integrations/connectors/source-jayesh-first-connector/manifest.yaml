@@ -1,0 +1,396 @@
+version: 6.33.0
+
+type: DeclarativeSource
+
+description: Featching data
+
+check:
+  type: CheckStream
+  stream_names:
+    - Flights_data
+
+definitions:
+  streams:
+    Flights_data:
+      type: DeclarativeStream
+      name: Flights_data
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/flights
+          http_method: GET
+          request_parameters:
+            access_key: 75c81fd64e9532b4cbebac820fe6f287
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Flights_data"
+    citites_data:
+      type: DeclarativeStream
+      name: citites_data
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/cities
+          http_method: GET
+          request_parameters:
+            access_key: 75c81fd64e9532b4cbebac820fe6f287
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/citites_data"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.aviationstack.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: Access Key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/Flights_data"
+  - $ref: "#/definitions/streams/citites_data"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    Flights_data:
+      hasRecords: true
+      streamHash: ceeef26b7169ab39476af03c098808cafbc58294
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    citites_data:
+      hasRecords: true
+      streamHash: 32f893fd138ec11b8f71d06c4cab74e6efb00e20
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    Flights_data: true
+    citites_data: true
+
+schemas:
+  Flights_data:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      live:
+        type:
+          - object
+          - "null"
+        properties:
+          updated:
+            type:
+              - string
+              - "null"
+          altitude:
+            type:
+              - number
+              - "null"
+          latitude:
+            type:
+              - number
+              - "null"
+          direction:
+            type:
+              - number
+              - "null"
+          is_ground:
+            type:
+              - boolean
+              - "null"
+          longitude:
+            type:
+              - number
+              - "null"
+          speed_vertical:
+            type:
+              - number
+              - "null"
+          speed_horizontal:
+            type:
+              - number
+              - "null"
+      flight:
+        type:
+          - object
+          - "null"
+        properties:
+          iata:
+            type:
+              - string
+              - "null"
+          icao:
+            type:
+              - string
+              - "null"
+          number:
+            type:
+              - string
+              - "null"
+          codeshared:
+            type:
+              - object
+              - "null"
+            properties:
+              flight_iata:
+                type:
+                  - string
+                  - "null"
+              flight_icao:
+                type:
+                  - string
+                  - "null"
+              airline_iata:
+                type:
+                  - string
+                  - "null"
+              airline_icao:
+                type:
+                  - string
+                  - "null"
+              airline_name:
+                type:
+                  - string
+                  - "null"
+              flight_number:
+                type:
+                  - string
+                  - "null"
+      airline:
+        type:
+          - object
+          - "null"
+        properties:
+          iata:
+            type:
+              - string
+              - "null"
+          icao:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      arrival:
+        type:
+          - object
+          - "null"
+        properties:
+          gate:
+            type:
+              - string
+              - "null"
+          iata:
+            type:
+              - string
+              - "null"
+          icao:
+            type:
+              - string
+              - "null"
+          delay:
+            type:
+              - number
+              - "null"
+          actual:
+            type:
+              - string
+              - "null"
+          airport:
+            type:
+              - string
+              - "null"
+          baggage:
+            type:
+              - string
+              - "null"
+          terminal:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          estimated:
+            type:
+              - string
+              - "null"
+          scheduled:
+            type:
+              - string
+              - "null"
+          actual_runway:
+            type:
+              - string
+              - "null"
+          estimated_runway:
+            type:
+              - string
+              - "null"
+      aircraft:
+        type:
+          - object
+          - "null"
+        properties:
+          iata:
+            type:
+              - string
+              - "null"
+          icao:
+            type:
+              - string
+              - "null"
+          icao24:
+            type:
+              - string
+              - "null"
+          registration:
+            type:
+              - string
+              - "null"
+      departure:
+        type:
+          - object
+          - "null"
+        properties:
+          gate:
+            type:
+              - string
+              - "null"
+          iata:
+            type:
+              - string
+              - "null"
+          icao:
+            type:
+              - string
+              - "null"
+          delay:
+            type:
+              - number
+              - "null"
+          actual:
+            type:
+              - string
+              - "null"
+          airport:
+            type:
+              - string
+              - "null"
+          terminal:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          estimated:
+            type:
+              - string
+              - "null"
+          scheduled:
+            type:
+              - string
+              - "null"
+          actual_runway:
+            type:
+              - string
+              - "null"
+          estimated_runway:
+            type:
+              - string
+              - "null"
+      flight_date:
+        type:
+          - string
+          - "null"
+      flight_status:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  citites_data:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      gmt:
+        type:
+          - string
+          - "null"
+      city_id:
+        type:
+          - string
+          - "null"
+      latitude:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      city_name:
+        type:
+          - string
+          - "null"
+      iata_code:
+        type:
+          - string
+          - "null"
+      longitude:
+        type:
+          - string
+          - "null"
+      geoname_id:
+        type:
+          - string
+          - "null"
+      country_iso2:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
