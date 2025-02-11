@@ -1,5 +1,5 @@
 import React from 'react';
-import schema from "../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml";
+import schema from "../data/declarative_component_schema.yaml";
 import ReactMarkdown from 'react-markdown'
 import Heading from '@theme/Heading';
 

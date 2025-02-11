@@ -157,13 +157,22 @@ const val ALTER_TABLE_MODIFY =
 
 const val DELETE_WHERE_COL_IS_NOT_NULL =
     """
-        DELETE FROM [?].[?]
+        deleteLoop:
+        DELETE TOP(5000) FROM [?].[?] WITH (TABLOCK)
         WHERE [?] is not NULL
+
+        IF @@ROWCOUNT > 0
+            GOTO deleteLoop
     """
 
-const val DELETE_WHERE_COL_LESS_THAN = """
-        DELETE FROM [?].[?]
+const val DELETE_WHERE_COL_LESS_THAN =
+    """
+        deleteLoop:
+        DELETE TOP(5000) FROM [?].[?] WITH (TABLOCK)
         WHERE [?] < ?
+
+        IF @@ROWCOUNT > 0
+            GOTO deleteLoop
     """
 
 const val SELECT_FROM = """
@@ -329,7 +338,7 @@ class MSSQLQueryBuilder(
                 outputSchema,
                 tableName,
                 COLUMN_NAME_AB_GENERATION_ID,
-                minGenerationId.toString()
+                minGenerationId.toString(),
             )
             .executeUpdate(connection)
 
