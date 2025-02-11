@@ -18,7 +18,7 @@ include = "source_freshdesk"
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
 backoff = "==1.10.0"
-airbyte-cdk = "^6.0.0"
+airbyte-cdk = "^6.33.2"
 
 [tool.poetry.scripts]
 source-freshdesk = "source_freshdesk.run:run"
