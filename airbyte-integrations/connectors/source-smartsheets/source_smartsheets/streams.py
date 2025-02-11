@@ -10,14 +10,10 @@ from airbyte_cdk.sources.streams import Stream
 from source_smartsheets.sheet import SmartSheetAPIWrapper
 
 
-class SmartsheetStream(Stream):
-    cursor_field = "modifiedAt"
-
+class SmartsheetStreamBase(Stream):
     def __init__(self, smartsheet: SmartSheetAPIWrapper, config: Mapping[str, Any]):
         self.smartsheet = smartsheet
-        self._state = {}
         self._config = config
-        self._start_datetime = self._config.get("start_datetime") or "2020-01-01T00:00:00+00:00"
 
     @property
     def primary_key(self) -> str:
@@ -29,6 +25,15 @@ class SmartsheetStream(Stream):
     @property
     def name(self) -> str:
         return self.smartsheet.name
+
+
+class SmartsheetStream(SmartsheetStreamBase):
+    cursor_field = "modifiedAt"
+
+    def __init__(self, smartsheet: SmartSheetAPIWrapper, config: Mapping[str, Any]):
+        super().__init__(smartsheet, config)
+        self._state = {}
+        self._start_datetime = self._config.get("start_datetime") or "2020-01-01T00:00:00+00:00"
 
     @property
     def state(self) -> Mapping[str, Any]:
@@ -55,4 +60,21 @@ class SmartsheetStream(Stream):
             latest_cursor_value = iso_dt(record[self.cursor_field])
             new_cursor_value = max(latest_cursor_value, current_cursor_value)
             self.state = {self.cursor_field: new_cursor_value.isoformat("T", "seconds")}
+            yield record
+
+
+class SmartsheetReportStream(SmartsheetStreamBase):
+    """
+    Stream for Smartsheet Reports.
+    Reports cannot be filtered by modifiedAt, so this stream does not support incremental sync.
+    """
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        for record in self.smartsheet.read_records():
             yield record
