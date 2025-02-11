@@ -17,8 +17,8 @@ services:
       - AWS_SECRET_ACCESS_KEY=password
       - AWS_REGION=us-east-1
     ports:
-      - 8888:8888
-      - 8080:8080
+      - 8188:8888
+      - 8180:8080
       - 10000:10000
       - 10001:10001
   rest:
@@ -45,8 +45,8 @@ services:
         aliases:
           - warehouse.minio
     ports:
-      - 9001:9001
-      - 9000:9000
+      - 9101:9001
+      - 9100:9000
     command: ["server", "/data", "--console-address", ":9001"]
   mc:
     depends_on:

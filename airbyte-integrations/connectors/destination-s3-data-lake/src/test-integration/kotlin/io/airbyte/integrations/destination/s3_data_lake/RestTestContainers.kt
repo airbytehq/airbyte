@@ -12,26 +12,35 @@ object RestTestContainers {
     private val composeFile = File("src/test-integration/resources/rest/docker-compose.yml")
 
     /**
-     * Define the docker-compose services and their wait strategies so that Testcontainers
-     * won't consider the environment "started" until these ports are truly available.
+     * Define the docker-compose services and their wait strategies, so Testcontainers
+     * won't consider them "started" until they're actually listening on those ports.
      */
     val testcontainers: ComposeContainer = ComposeContainer(composeFile)
-        // Wait.forListeningPort() ensures Testcontainers waits until the container is actually listening.
-        .withExposedService("minio", 9000, Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60)))
-        .withExposedService("rest", 8181, Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60)))
-        // We don't directly interact with spark here, but spark-iceberg depends on minio+rest.
-        .withExposedService("spark-iceberg", 8080, Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60)))
+        // Wait until each service is up on its container port.
+        // The container is still using port 9000 internally for minio,
+        // but no longer mapped to 9000 on the host.
+        .withExposedService(
+            "minio", 9000,
+            Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60))
+        )
+        .withExposedService(
+            "rest", 8181,
+            Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60))
+        )
+        .withExposedService(
+            "spark-iceberg", 8080,
+            Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60))
+        )
 
     private val startRestContainerRunOnce = AtomicBoolean(false)
 
     /**
-     * Start the test containers, or if another thread/class already started them, do nothing.
-     * Because we added wait strategies above, this call will block until all services are actually up.
+     * Start the test containers, or skip if they're already started.
      */
     fun start() {
         if (startRestContainerRunOnce.setOnce()) {
             testcontainers.start()
         }
-        // If they've already started, we don't need to do anything else.
+        // If it's already started, do nothing; the containers remain up.
     }
 }
