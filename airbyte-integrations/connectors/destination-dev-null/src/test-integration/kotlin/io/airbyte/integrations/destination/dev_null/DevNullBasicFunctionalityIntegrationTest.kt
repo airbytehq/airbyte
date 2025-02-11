@@ -24,13 +24,13 @@ class DevNullBasicFunctionalityIntegrationTest :
         isStreamSchemaRetroactive = false,
         supportsDedup = false,
         stringifySchemalessObjects = false,
-        unionBehavior = UnionBehavior.PASS_THROUGH,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
+        unionBehavior = UnionBehavior.PASS_THROUGH,
         preserveUndeclaredFields = false,
+        supportFileTransfer = false,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
-        supportFileTransfer = false,
     ) {
     @Test
     override fun testBasicWrite() {

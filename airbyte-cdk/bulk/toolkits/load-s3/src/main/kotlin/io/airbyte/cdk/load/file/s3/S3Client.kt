@@ -28,8 +28,6 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurati
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketConfigurationProvider
-import io.airbyte.cdk.load.file.NoopProcessor
-import io.airbyte.cdk.load.file.StreamProcessor
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
@@ -37,9 +35,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
-import java.io.ByteArrayOutputStream
 import java.io.InputStream
-import java.io.OutputStream
 import kotlinx.coroutines.flow.flow
 
 data class S3Object(override val key: String, override val storageConfig: S3BucketConfiguration) :
@@ -68,7 +64,7 @@ class S3Client(
                 lastKey = obj.key
                 emit(S3Object(obj.key!!, bucketConfig))
             } // null contents => empty list, not error
-            if (client.listObjects(request).isTruncated == false) {
+            if (response.isTruncated == false) {
                 break
             }
             request = request.copy { marker = lastKey }
@@ -133,39 +129,6 @@ class S3Client(
 
     override suspend fun delete(key: String) {
         delete(S3Object(key, bucketConfig))
-    }
-
-    override suspend fun <U : OutputStream> streamingUpload(
-        key: String,
-        metadata: Map<String, String>,
-        streamProcessor: StreamProcessor<U>?,
-        block: suspend (OutputStream) -> Unit
-    ): S3Object {
-        return streamingUploadInner(key, metadata, streamProcessor, block)
-    }
-
-    private suspend fun <U : OutputStream> streamingUploadInner(
-        key: String,
-        metadata: Map<String, String>,
-        streamProcessor: StreamProcessor<U>?,
-        block: suspend (OutputStream) -> Unit
-    ): S3Object {
-        val request = CreateMultipartUploadRequest {
-            this.bucket = bucketConfig.s3BucketName
-            this.key = key
-            this.metadata = metadata
-        }
-        val response = client.createMultipartUpload(request)
-        val upload =
-            S3MultipartUpload(
-                client,
-                response,
-                ByteArrayOutputStream(),
-                streamProcessor ?: NoopProcessor,
-                uploadConfig
-            )
-        upload.runUsing(block)
-        return S3Object(key, bucketConfig)
     }
 
     override suspend fun startStreamingUpload(
