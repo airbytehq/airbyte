@@ -6,9 +6,9 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import io.airbyte.cdk.load.util.setOnce
 import java.io.File
+import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
 import org.testcontainers.containers.ComposeContainer
-import java.time.Duration
 import org.testcontainers.containers.wait.strategy.Wait
 
 /**
@@ -18,15 +18,18 @@ object NessieTestContainers {
     val testcontainers: ComposeContainer =
         ComposeContainer(File("src/test-integration/resources/nessie/docker-compose.yml"))
             .withExposedService(
-                "nessie", 19120,
+                "nessie",
+                19120,
                 Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60))
             )
             .withExposedService(
-                "minio", 9000,
+                "minio",
+                9000,
                 Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60))
             )
             .withExposedService(
-                "keycloak", 8080,
+                "keycloak",
+                8080,
                 Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60))
             )
     private val startNessieContainerRunOnce = AtomicBoolean(false)
