@@ -122,7 +122,7 @@ const val DROP_TABLE_QUERY = """
 const val INSERT_INTO_QUERY =
     """
         SET NOCOUNT ON;
-        INSERT INTO [?$SCHEMA_KEY].[?$TABLE_KEY] WITH (TABLOCK) (?$COLUMNS_KEY)
+        INSERT INTO [?$SCHEMA_KEY].[?$TABLE_KEY] WITH (ROWLOCK) (?$COLUMNS_KEY)
             SELECT table_value.*
             FROM (VALUES (?$TEMPLATE_COLUMNS_KEY)) table_value(?$COLUMNS_KEY)
     """
@@ -130,7 +130,7 @@ const val INSERT_INTO_QUERY =
 const val MERGE_INTO_QUERY =
     """
         SET NOCOUNT ON;
-        MERGE INTO [?$SCHEMA_KEY].[?$TABLE_KEY] WITH (TABLOCK) AS Target
+        MERGE INTO [?$SCHEMA_KEY].[?$TABLE_KEY] WITH (ROWLOCK) AS Target
         USING (VALUES (?$TEMPLATE_COLUMNS_KEY)) AS Source (?$COLUMNS_KEY)
         ON ?$UNIQUENESS_CONSTRAINT_KEY
         WHEN MATCHED THEN
@@ -157,12 +157,15 @@ const val ALTER_TABLE_MODIFY =
 
 const val DELETE_WHERE_COL_IS_NOT_NULL =
     """
-        DELETE FROM [?].[?]
+        SET NOCOUNT ON;
+        DELETE FROM [?].[?] WITH (ROWLOCK)
         WHERE [?] is not NULL
     """
 
-const val DELETE_WHERE_COL_LESS_THAN = """
-        DELETE FROM [?].[?]
+const val DELETE_WHERE_COL_LESS_THAN =
+    """
+        SET NOCOUNT ON;
+        DELETE FROM [?].[?] WITH (ROWLOCK)
         WHERE [?] < ?
     """
 
@@ -329,7 +332,7 @@ class MSSQLQueryBuilder(
                 outputSchema,
                 tableName,
                 COLUMN_NAME_AB_GENERATION_ID,
-                minGenerationId.toString()
+                minGenerationId.toString(),
             )
             .executeUpdate(connection)
 
