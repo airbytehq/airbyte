@@ -41,9 +41,8 @@ definitions:
   record_selector_with_filter_by_modify_time:
     $ref: "#/definitions/record_selector"
     record_filter:
-      type: CustomRecordFilter
-      class_name: "source_tiktok_marketing.components.semi_incremental_record_filter.PerPartitionRecordFilter"
-      condition: "{{ record['modify_time'] >= stream_state.get('modify_time', config.get('start_date', '')) }}"
+      type: RecordFilter
+      condition: "{{ record['modify_time'] >= stream_interval['start_time'] }}"
       $parameters:
         partition_field: advertiser_id
 
@@ -373,18 +372,16 @@ definitions:
   record_selector_for_daily_reports_streams:
     $ref: "#/definitions/record_selector"
     record_filter:
-      type: CustomRecordFilter
-      class_name: "source_tiktok_marketing.components.semi_incremental_record_filter.PerPartitionRecordFilter"
-      condition: "{{ record['dimensions']['stat_time_day'] >= stream_state.get('stat_time_day', config.get('start_date', '')) }}"
-      $parameters:
-        partition_field: advertiser_id
+      type: RecordFilter
+      condition: "{{ record['dimensions']['stat_time_day'] >= stream_interval['start_time'] }}"
+    $parameters:
+      partition_field: advertiser_id
 
   record_selector_for_hourly_reports_streams:
     $ref: "#/definitions/record_selector"
     record_filter:
-      type: CustomRecordFilter
-      class_name: "source_tiktok_marketing.components.semi_incremental_record_filter.PerPartitionRecordFilter"
-      condition: "{{ record['dimensions']['stat_time_hour'] >= stream_state.get('stat_time_hour', config.get('start_date', '')) }}"
+      type: RecordFilter
+      condition: "{{ record['dimensions']['stat_time_hour'] >= stream_interval['start_time'] }}"
       $parameters:
         partition_field: advertiser_id
 
