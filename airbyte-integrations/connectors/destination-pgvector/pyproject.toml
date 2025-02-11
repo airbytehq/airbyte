@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-pgvector"
-version = "0.1.1"
+version = "0.1.2"
 description = "Airbyte destination implementation for PGVector."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -71,16 +71,9 @@ exclude_also = [
     "\\.\\.\\."
 ]
 
-[tool.poe.tasks]
-test = { shell = "pytest" }
-
-coverage = { shell = "coverage run -m pytest && coverage report" }
-coverage-report = { shell = "coverage report" }
-coverage-html = { shell = "coverage html -d htmlcov || open htmlcov/index.html" }
-coverage-reset = { shell = "coverage erase" }
-
-check = { shell = "ruff check . && mypy ." }
-
-fix = { shell = "ruff format . && ruff check --fix -s || ruff format ." }
-fix-unsafe = { shell = "ruff format . && ruff check --fix --unsafe-fixes . && ruff format ." }
-fix-and-check = { shell = "poe fix && poe check" }
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

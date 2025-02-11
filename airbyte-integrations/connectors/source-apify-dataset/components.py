@@ -5,6 +5,7 @@
 from dataclasses import dataclass
 
 import requests
+
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.types import Record
 

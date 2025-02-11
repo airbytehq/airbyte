@@ -10,19 +10,16 @@ from source_zendesk_chat.components.id_offset_pagination import ZendeskChatIdOff
 
 def _get_paginator(config, id_field) -> ZendeskChatIdOffsetIncrementPaginationStrategy:
     return ZendeskChatIdOffsetIncrementPaginationStrategy(
-        config = config,
-        page_size = 1,
-        id_field = id_field,
-        parameters = {},
+        config=config,
+        page_size=1,
+        id_field=id_field,
+        parameters={},
     )
 
 
 @pytest.mark.parametrize(
     "id_field, last_records, expected",
-    [
-        ("id", [{"id": 1}], 2),
-        ("id", [], None)
-    ],
+    [("id", [{"id": 1}], 2), ("id", [], None)],
 )
 def test_id_offset_increment_pagination_next_page_token(requests_mock, config, id_field, last_records, expected) -> None:
     paginator = _get_paginator(config, id_field)

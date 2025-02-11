@@ -5,6 +5,7 @@
 import logging
 from urllib.parse import parse_qs, urlencode, urlparse
 
+
 # default logger
 logger = logging.getLogger("airbyte")
 
