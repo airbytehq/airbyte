@@ -29,7 +29,7 @@ enum class ColumnTypeChangeBehavior {
     };
 
     /**
-     * If true, [S3DataLakeTableSynchronizer.applySchemaChanges] will commit the schema update
+     * If true, [S3DataLakeTableSynchronizer.maybeApplySchemaChanges] will commit the schema update
      * itself. If false, the caller is responsible for calling
      * `schemaUpdateResult.pendingUpdate?.commit()`.
      */
@@ -65,7 +65,7 @@ class S3DataLakeTableSynchronizer(
      * @param incomingSchema The schema describing incoming data.
      * @return The updated [Schema], after changes have been applied and committed.
      */
-    fun applySchemaChanges(
+    fun maybeApplySchemaChanges(
         table: Table,
         incomingSchema: Schema,
         columnTypeChangeBehavior: ColumnTypeChangeBehavior,

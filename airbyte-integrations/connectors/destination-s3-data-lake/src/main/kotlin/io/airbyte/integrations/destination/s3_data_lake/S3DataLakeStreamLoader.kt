@@ -71,7 +71,7 @@ class S3DataLakeStreamLoader(
         // This is also intentional - the airbyte protocol requires that we commit data
         // incrementally, and if the entire sync is in a transaction, we might crash before we can
         // commit that transaction.
-        targetSchema = computeSchemaUpdate().schema
+        targetSchema = computeOrExecuteSchemaUpdate().schema
         try {
             logger.info {
                 "maybe creating branch $DEFAULT_STAGING_BRANCH for stream ${stream.descriptor}"
@@ -137,7 +137,7 @@ class S3DataLakeStreamLoader(
             // In principle, this doesn't matter, but the iceberg SDK throws an error about
             // stale table metadata without this.
             table.refresh()
-            computeSchemaUpdate().pendingUpdate?.commit()
+            computeOrExecuteSchemaUpdate().pendingUpdate?.commit()
             table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
             if (stream.minimumGenerationId > 0) {
                 logger.info {
@@ -172,8 +172,8 @@ class S3DataLakeStreamLoader(
      * it twice - once at the start of the sync, to get the updated table schema, and once again at
      * the end of the sync, to get a fresh [UpdateSchema] instance.
      */
-    private fun computeSchemaUpdate() =
-        s3DataLakeTableSynchronizer.applySchemaChanges(
+    private fun computeOrExecuteSchemaUpdate() =
+        s3DataLakeTableSynchronizer.maybeApplySchemaChanges(
             table,
             incomingSchema,
             columnTypeChangeBehavior,

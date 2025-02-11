@@ -83,7 +83,7 @@ class S3DataLakeTableSynchronizerTest {
             }
 
         val result =
-            synchronizer.applySchemaChanges(
+            synchronizer.maybeApplySchemaChanges(
                 mockTable,
                 incomingSchema,
                 ColumnTypeChangeBehavior.SAFE_SUPERTYPE
@@ -111,7 +111,7 @@ class S3DataLakeTableSynchronizerTest {
         every { mockTable.schema() } returns existingSchema
 
         val result =
-            synchronizer.applySchemaChanges(
+            synchronizer.maybeApplySchemaChanges(
                 mockTable,
                 incomingSchema,
                 ColumnTypeChangeBehavior.SAFE_SUPERTYPE
@@ -137,7 +137,7 @@ class S3DataLakeTableSynchronizerTest {
         every { mockTable.schema() } returns existingSchema
 
         // Apply changes
-        synchronizer.applySchemaChanges(
+        synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
             ColumnTypeChangeBehavior.SAFE_SUPERTYPE
@@ -158,7 +158,7 @@ class S3DataLakeTableSynchronizerTest {
 
         every { mockTable.schema() } returns existingSchema
 
-        synchronizer.applySchemaChanges(
+        synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
             ColumnTypeChangeBehavior.SAFE_SUPERTYPE
@@ -181,7 +181,7 @@ class S3DataLakeTableSynchronizerTest {
 
         every { mockTable.schema() } returns existingSchema
 
-        synchronizer.applySchemaChanges(
+        synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
             ColumnTypeChangeBehavior.SAFE_SUPERTYPE
@@ -224,7 +224,7 @@ class S3DataLakeTableSynchronizerTest {
         val nestedNameField = userInfoStruct.asSchema().findField("nested_name")
         assertThat(nestedNameField).isNotNull // Just a sanity check in the test
 
-        synchronizer.applySchemaChanges(
+        synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
             ColumnTypeChangeBehavior.SAFE_SUPERTYPE
@@ -246,7 +246,7 @@ class S3DataLakeTableSynchronizerTest {
         every { comparator.compareSchemas(incomingSchema, existingSchema) } returns diff
 
         assertThatThrownBy {
-                synchronizer.applySchemaChanges(
+                synchronizer.maybeApplySchemaChanges(
                     mockTable,
                     incomingSchema,
                     ColumnTypeChangeBehavior.SAFE_SUPERTYPE
@@ -280,7 +280,7 @@ class S3DataLakeTableSynchronizerTest {
         every { superTypeFinder.findSuperType(any(), any(), "complex_col") } returns structType
 
         assertThatThrownBy {
-                synchronizer.applySchemaChanges(
+                synchronizer.maybeApplySchemaChanges(
                     mockTable,
                     incomingSchema,
                     ColumnTypeChangeBehavior.SAFE_SUPERTYPE
@@ -307,7 +307,7 @@ class S3DataLakeTableSynchronizerTest {
 
         every { mockTable.schema() } returns existingSchema
 
-        synchronizer.applySchemaChanges(
+        synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
             ColumnTypeChangeBehavior.SAFE_SUPERTYPE
@@ -352,7 +352,7 @@ class S3DataLakeTableSynchronizerTest {
             )
         } returns Types.LongType.get()
 
-        synchronizer.applySchemaChanges(
+        synchronizer.maybeApplySchemaChanges(
             mockTable,
             incomingSchema,
             ColumnTypeChangeBehavior.SAFE_SUPERTYPE
