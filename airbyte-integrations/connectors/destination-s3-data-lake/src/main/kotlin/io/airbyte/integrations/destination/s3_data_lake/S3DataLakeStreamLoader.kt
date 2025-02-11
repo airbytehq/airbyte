@@ -132,6 +132,10 @@ class S3DataLakeStreamLoader(
             logger.info {
                 "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName."
             }
+            // We've modified the table over the sync (i.e. adding new snapshots)
+            // so we need to refresh here to get the latest table metadata.
+            // In principle, this doesn't matter, but the iceberg SDK throws an error about
+            // stale table metadata without this.
             table.refresh()
             computeSchemaUpdate().pendingUpdate?.commit()
             table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
