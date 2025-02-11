@@ -1,0 +1,3083 @@
+version: 6.33.0
+
+type: DeclarativeSource
+
+description: >-
+  Website: https://wheniwork.com/
+
+  Auth page: https://apidocs.wheniwork.com/external/index.html?repo=login
+
+  API Docs: https://apidocs.wheniwork.com/external/index.html
+
+
+  Simply a nit: I noticed the connector name is snake cased, but the product's
+  website does not snake case their name.
+
+check:
+  type: CheckStream
+  stream_names:
+    - account
+
+definitions:
+  streams:
+    sites:
+      type: DeclarativeStream
+      name: sites
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 5
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: sites
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - sites
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sites"
+    times:
+      type: DeclarativeStream
+      name: times
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: times
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - uid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/times"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uid
+              value: "{{ now_utc().strftime('%s') }}"
+    users:
+      type: DeclarativeStream
+      name: users
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 5
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    blocks:
+      type: DeclarativeStream
+      name: blocks
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 5
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: blocks
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - blocks
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/blocks"
+    account:
+      type: DeclarativeStream
+      name: account
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 5
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: account
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - account
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account"
+    payrolls:
+      type: DeclarativeStream
+      name: payrolls
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 5
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: payrolls
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - payrolls
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/payrolls"
+    requests:
+      type: DeclarativeStream
+      name: requests
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 5
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: requests
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - requests
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/requests"
+    locations:
+      type: DeclarativeStream
+      name: locations
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 5
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: locations
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - locations
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/locations"
+    positions:
+      type: DeclarativeStream
+      name: positions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: positions
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - positions
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/positions"
+    timezones:
+      type: DeclarativeStream
+      name: timezones
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: timezones
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - timezones
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/timezones"
+    payrolls_notices:
+      type: DeclarativeStream
+      name: payrolls_notices
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: payrolls/notices
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: Token expired, Please refresh
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - uid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/payrolls_notices"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uid
+              value: "{{ now_utc() }}"
+    openshiftapprovalrequests:
+      type: DeclarativeStream
+      name: openshiftapprovalrequests
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 5
+            start_from_page: 0
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: openshiftapprovalrequests
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - uid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/openshiftapprovalrequests"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uid
+              value: "{{ now_utc().strftime('%s') }}"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.wheniwork.com/2/
+    authenticator:
+      type: SessionTokenAuthenticator
+      login_requester:
+        type: HttpRequester
+        path: login
+        url_base: https://api.login.wheniwork.com
+        http_method: POST
+        authenticator:
+          type: NoAuth
+        request_headers: {}
+        request_body_json:
+          email: "{{ config['email'] }}"
+          password: "{{ config['password'] }}"
+        request_parameters: {}
+      session_token_path:
+        - token
+      request_authentication:
+        type: Bearer
+
+streams:
+  - $ref: "#/definitions/streams/account"
+  - $ref: "#/definitions/streams/payrolls"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/timezones"
+  - $ref: "#/definitions/streams/payrolls_notices"
+  - $ref: "#/definitions/streams/times"
+  - $ref: "#/definitions/streams/requests"
+  - $ref: "#/definitions/streams/blocks"
+  - $ref: "#/definitions/streams/sites"
+  - $ref: "#/definitions/streams/locations"
+  - $ref: "#/definitions/streams/positions"
+  - $ref: "#/definitions/streams/openshiftapprovalrequests"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - email
+      - password
+    properties:
+      email:
+        type: string
+        description: Email of your when-i-work account
+        order: 0
+        title: Email
+        airbyte_secret: true
+      password:
+        type: string
+        description: Password for your when-i-work account
+        order: 1
+        title: Password
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    sites:
+      hasRecords: true
+      streamHash: f0bf86f84d76d86431f3af19e68f109be6251472
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    times:
+      hasRecords: true
+      streamHash: 0ed6a95089ecc86cb534bdd4d66977ed47a173b3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      hasRecords: true
+      streamHash: ef297575247a4defe28a7a8c88d3f20a0c4bf3ab
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    blocks:
+      hasRecords: true
+      streamHash: 155c58682b9d81a5edc984999def77735b339c23
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    account:
+      hasRecords: true
+      streamHash: 5dc4062ff90289a00c443680422a3a4289118450
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    payrolls:
+      hasRecords: true
+      streamHash: 931d7a55943dbc9dd1d9cb23b67291b10bc74495
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    requests:
+      hasRecords: true
+      streamHash: ef088c4628a3ae2b3f3f570a683a765c781daf70
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    locations:
+      hasRecords: true
+      streamHash: 1cafcd8d6dcd9f916d14868419b1cb8803e22aa2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    positions:
+      hasRecords: true
+      streamHash: 51be2f5104054f5e12d30aea53e8760a09e52b2c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    timezones:
+      hasRecords: true
+      streamHash: b24f34f84a59bf0524f4cda35ccddba8c93030dd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    payrolls_notices:
+      hasRecords: true
+      streamHash: ee8457720aa968c7a07365ee6b7cd28f6bde202e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    openshiftapprovalrequests:
+      hasRecords: true
+      streamHash: 0f81cff9bfe4d534e935d395dfeaac9ce8927baf
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    sites: true
+    times: true
+    users: true
+    blocks: true
+    account: true
+    payrolls: true
+    requests: true
+    locations: true
+    positions: true
+    timezones: true
+    payrolls_notices: true
+    openshiftapprovalrequests: true
+
+schemas:
+  sites:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      radius:
+        type:
+          - number
+          - "null"
+      address:
+        type:
+          - string
+          - "null"
+      latitude:
+        type:
+          - number
+          - "null"
+      place_id:
+        type:
+          - string
+          - "null"
+      longitude:
+        type:
+          - number
+          - "null"
+      account_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      deleted_at:
+        type:
+          - string
+          - "null"
+      is_deleted:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      coordinates:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      location_id:
+        type:
+          - number
+          - "null"
+      postal_code:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  times:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - uid
+    properties:
+      end:
+        type:
+          - string
+          - "null"
+      uid:
+        type: number
+      start:
+        type:
+          - string
+          - "null"
+      times:
+        type:
+          - array
+          - "null"
+      shifts:
+        type:
+          - array
+          - "null"
+      punches:
+        type:
+          - array
+          - "null"
+    additionalProperties: true
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      role:
+        type:
+          - number
+          - "null"
+      sort:
+        type:
+          - object
+          - "null"
+        properties:
+          "5696679":
+            type:
+              - number
+              - "null"
+      uuid:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      avatar:
+        type:
+          - object
+          - "null"
+        properties:
+          url:
+            type:
+              - string
+              - "null"
+          size:
+            type:
+              - string
+              - "null"
+      infotips:
+        type:
+          - string
+          - "null"
+      login_id:
+        type:
+          - number
+          - "null"
+      password:
+        type:
+          - boolean
+          - "null"
+      activated:
+        type:
+          - boolean
+          - "null"
+      affiliate:
+        type:
+          - number
+          - "null"
+      hours_max:
+        type:
+          - number
+          - "null"
+      is_active:
+        type:
+          - boolean
+          - "null"
+      is_hidden:
+        type:
+          - boolean
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      locations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      positions:
+        type:
+          - array
+          - "null"
+      sleep_end:
+        type:
+          - string
+          - "null"
+      account_id:
+        type:
+          - number
+          - "null"
+      avatar_key:
+        type:
+          - string
+          - "null"
+      country_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      deleted_at:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      invited_at:
+        type:
+          - string
+          - "null"
+      is_deleted:
+        type:
+          - boolean
+          - "null"
+      is_payroll:
+        type:
+          - boolean
+          - "null"
+      is_private:
+        type:
+          - boolean
+          - "null"
+      is_trusted:
+        type:
+          - number
+          - "null"
+      last_login:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      hourly_rate:
+        type:
+          - number
+          - "null"
+      middle_name:
+        type:
+          - string
+          - "null"
+      notified_at:
+        type:
+          - string
+          - "null"
+      sleep_start:
+        type:
+          - string
+          - "null"
+      timezone_id:
+        type:
+          - number
+          - "null"
+      country_code:
+        type:
+          - string
+          - "null"
+      is_onboarded:
+        type:
+          - boolean
+          - "null"
+      migration_id:
+        type:
+          - number
+          - "null"
+      my_positions:
+        type:
+          - array
+          - "null"
+      phone_number:
+        type:
+          - string
+          - "null"
+      c2dm_auth_key:
+        type:
+          - number
+          - "null"
+      delete_reason:
+        type:
+          - string
+          - "null"
+      employee_code:
+        type:
+          - string
+          - "null"
+      reminder_time:
+        type:
+          - number
+          - "null"
+      terminated_at:
+        type:
+          - string
+          - "null"
+      timezone_name:
+        type:
+          - string
+          - "null"
+      alert_settings:
+        type:
+          - object
+          - "null"
+        properties:
+          hire:
+            type:
+              - object
+              - "null"
+            properties:
+              sms:
+                type:
+                  - boolean
+                  - "null"
+              email:
+                type:
+                  - boolean
+                  - "null"
+          swaps:
+            type:
+              - object
+              - "null"
+            properties:
+              sms:
+                type:
+                  - boolean
+                  - "null"
+              email:
+                type:
+                  - boolean
+                  - "null"
+          payroll:
+            type:
+              - object
+              - "null"
+            properties:
+              sms:
+                type:
+                  - boolean
+                  - "null"
+          timeoff:
+            type:
+              - object
+              - "null"
+            properties:
+              sms:
+                type:
+                  - boolean
+                  - "null"
+              email:
+                type:
+                  - boolean
+                  - "null"
+          absences:
+            type:
+              - object
+              - "null"
+            properties:
+              sms:
+                type:
+                  - boolean
+                  - "null"
+              email:
+                type:
+                  - boolean
+                  - "null"
+          schedule:
+            type:
+              - object
+              - "null"
+            properties:
+              sms:
+                type:
+                  - boolean
+                  - "null"
+              email:
+                type:
+                  - boolean
+                  - "null"
+          workchat:
+            type:
+              - object
+              - "null"
+            properties:
+              alerts:
+                type:
+                  - boolean
+                  - "null"
+              in_app:
+                type:
+                  - boolean
+                  - "null"
+              badge_icon:
+                type:
+                  - boolean
+                  - "null"
+          ot_alerts:
+            type:
+              - object
+              - "null"
+            properties:
+              sms:
+                type:
+                  - boolean
+                  - "null"
+              email:
+                type:
+                  - boolean
+                  - "null"
+          reminders:
+            type:
+              - object
+              - "null"
+            properties:
+              sms:
+                type:
+                  - boolean
+                  - "null"
+              email:
+                type:
+                  - boolean
+                  - "null"
+          reporting:
+            type:
+              - object
+              - "null"
+            properties:
+              sms:
+                type:
+                  - boolean
+                  - "null"
+              email:
+                type:
+                  - boolean
+                  - "null"
+          attendance:
+            type:
+              - object
+              - "null"
+            properties:
+              sms:
+                type:
+                  - boolean
+                  - "null"
+              email:
+                type:
+                  - boolean
+                  - "null"
+          availability:
+            type:
+              - object
+              - "null"
+            properties:
+              sms:
+                type:
+                  - boolean
+                  - "null"
+              email:
+                type:
+                  - boolean
+                  - "null"
+          new_employee:
+            type:
+              - object
+              - "null"
+            properties:
+              sms:
+                type:
+                  - boolean
+                  - "null"
+              email:
+                type:
+                  - boolean
+                  - "null"
+          shift-bidding:
+            type:
+              - object
+              - "null"
+            properties:
+              sms:
+                type:
+                  - boolean
+                  - "null"
+              email:
+                type:
+                  - boolean
+                  - "null"
+          workplace_alerts:
+            type:
+              - object
+              - "null"
+            properties:
+              sms:
+                type:
+                  - boolean
+                  - "null"
+              email:
+                type:
+                  - boolean
+                  - "null"
+      position_rates:
+        type:
+          - array
+          - "null"
+      deletion_queued:
+        type:
+          - boolean
+          - "null"
+      employment_type:
+        type:
+          - string
+          - "null"
+      hours_preferred:
+        type:
+          - number
+          - "null"
+      suppress_alerts:
+        type:
+          - number
+          - "null"
+      position_quality:
+        type:
+          - array
+          - "null"
+      is_internal_login:
+        type:
+          - boolean
+          - "null"
+      token_valid_after:
+        type:
+          - string
+          - "null"
+      exclude_from_payrolls:
+        type:
+          - number
+          - "null"
+      edit_personal_timesheet:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  blocks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      color:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      end_time:
+        type:
+          - string
+          - "null"
+      is_shared:
+        type:
+          - number
+          - "null"
+      account_id:
+        type:
+          - number
+          - "null"
+      break_time:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      start_time:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      location_id:
+        type:
+          - number
+          - "null"
+      position_id:
+        type:
+          - number
+          - "null"
+      requires_openshift_approval:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  account:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      logo:
+        type:
+          - string
+          - "null"
+      group:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+      place:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          region:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          website:
+            type:
+              - string
+              - "null"
+          latitude:
+            type:
+              - number
+              - "null"
+          locality:
+            type:
+              - string
+              - "null"
+          place_id:
+            type:
+              - string
+              - "null"
+          longitude:
+            type:
+              - number
+              - "null"
+          place_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          subpremise:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          updated_by:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          street_name:
+            type:
+              - string
+              - "null"
+          sub_locality:
+            type:
+              - string
+              - "null"
+          business_name:
+            type:
+              - string
+              - "null"
+          street_number:
+            type:
+              - string
+              - "null"
+          formatted_phone_number:
+            type:
+              - string
+              - "null"
+          international_phone_number:
+            type:
+              - string
+              - "null"
+      company:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          iso2:
+            type:
+              - string
+              - "null"
+          iso3:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          sms_cost:
+            type:
+              - number
+              - "null"
+          is_deleted:
+            type:
+              - boolean
+              - "null"
+          is_enabled:
+            type:
+              - number
+              - "null"
+          updated_by:
+            type:
+              - string
+              - "null"
+          dialing_code:
+            type:
+              - number
+              - "null"
+          sms_credit_cost:
+            type:
+              - number
+              - "null"
+      enabled:
+        type:
+          - boolean
+          - "null"
+      is_demo:
+        type:
+          - boolean
+          - "null"
+      plan_id:
+        type:
+          - number
+          - "null"
+      toggles:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      agent_id:
+        type:
+          - number
+          - "null"
+      features:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      has_saml:
+        type:
+          - boolean
+          - "null"
+      inactive:
+        type:
+          - string
+          - "null"
+      place_id:
+        type:
+          - number
+          - "null"
+      settings:
+        type:
+          - object
+          - "null"
+        properties:
+          swaps:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              enable_drops:
+                type:
+                  - boolean
+                  - "null"
+              enable_swaps:
+                type:
+                  - boolean
+                  - "null"
+              enable_releases:
+                type:
+                  - boolean
+                  - "null"
+              manager_approval:
+                type:
+                  - boolean
+                  - "null"
+              drop_hours_before:
+                type:
+                  - number
+                  - "null"
+              swap_hours_before:
+                type:
+                  - number
+                  - "null"
+              release_hours_before:
+                type:
+                  - number
+                  - "null"
+              enable_partial_openshift:
+                type:
+                  - boolean
+                  - "null"
+              partial_openshift_coverage:
+                type:
+                  - number
+                  - "null"
+          tasks:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+          breaks:
+            type:
+              - object
+              - "null"
+            properties:
+              paid:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  track_missed:
+                    type:
+                      - boolean
+                      - "null"
+              unpaid:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  enabled:
+                    type:
+                      - boolean
+                      - "null"
+                  auto_deduct:
+                    type:
+                      - boolean
+                      - "null"
+                  manually_record:
+                    type:
+                      - boolean
+                      - "null"
+              break_rules:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  rules:
+                    type:
+                      - array
+                      - "null"
+                  enabled:
+                    type:
+                      - boolean
+                      - "null"
+          social:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+          billing:
+            type:
+              - object
+              - "null"
+            properties:
+              recurring:
+                type:
+                  - boolean
+                  - "null"
+          clockin:
+            type:
+              - object
+              - "null"
+            properties:
+              work:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  radius:
+                    type:
+                      - number
+                      - "null"
+                  strict:
+                    type:
+                      - boolean
+                      - "null"
+                  enabled:
+                    type:
+                      - boolean
+                      - "null"
+                  strictOut:
+                    type:
+                      - boolean
+                      - "null"
+              photo:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  enabled:
+                    type:
+                      - boolean
+                      - "null"
+              mobile:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  radius:
+                    type:
+                      - number
+                      - "null"
+                  strict:
+                    type:
+                      - boolean
+                      - "null"
+                  enabled:
+                    type:
+                      - boolean
+                      - "null"
+                  strictOut:
+                    type:
+                      - boolean
+                      - "null"
+              window:
+                type:
+                  - number
+                  - "null"
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+          payroll:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - number
+                  - "null"
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              rounding:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  enabled:
+                    type:
+                      - boolean
+                      - "null"
+                  minuteIncrement:
+                    type:
+                      - number
+                      - "null"
+              hours_max:
+                type:
+                  - number
+                  - "null"
+              timesheets:
+                type:
+                  - boolean
+                  - "null"
+              adp_enabled:
+                type:
+                  - boolean
+                  - "null"
+              adp_viewable:
+                type:
+                  - boolean
+                  - "null"
+              is_onboarded:
+                type:
+                  - boolean
+                  - "null"
+              ot_multiplier:
+                type:
+                  - number
+                  - "null"
+              tips_tracking:
+                type:
+                  - boolean
+                  - "null"
+              dbl_multiplier:
+                type:
+                  - number
+                  - "null"
+              use_sow_for_ot:
+                type:
+                  - boolean
+                  - "null"
+              work_day_start:
+                type:
+                  - string
+                  - "null"
+              hours_dot_daily:
+                type:
+                  - number
+                  - "null"
+              hours_max_daily:
+                type:
+                  - number
+                  - "null"
+              max_enforcement:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  enabled:
+                    type:
+                      - boolean
+                      - "null"
+              ot_alerts_within:
+                type:
+                  - number
+                  - "null"
+              hours_max_enabled:
+                type:
+                  - boolean
+                  - "null"
+              ot_alerts_clockin:
+                type:
+                  - boolean
+                  - "null"
+              reveal_attendance:
+                type:
+                  - boolean
+                  - "null"
+              ot_alerts_clockout:
+                type:
+                  - boolean
+                  - "null"
+              hours_dot_daily_enabled:
+                type:
+                  - boolean
+                  - "null"
+              hours_max_daily_enabled:
+                type:
+                  - boolean
+                  - "null"
+          privacy:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+          timeoff:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              is_public:
+                type:
+                  - boolean
+                  - "null"
+              days_notice:
+                type:
+                  - string
+                  - "null"
+              manager_approval:
+                type:
+                  - boolean
+                  - "null"
+              max_hours_per_day:
+                type:
+                  - number
+                  - "null"
+              supervisor_autoapprove:
+                type:
+                  - boolean
+                  - "null"
+          schedule:
+            type:
+              - object
+              - "null"
+            properties:
+              24hour:
+                type:
+                  - boolean
+                  - "null"
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+              worktags:
+                type:
+                  - boolean
+                  - "null"
+              is_visible:
+                type:
+                  - boolean
+                  - "null"
+              split_shifts:
+                type:
+                  - number
+                  - "null"
+              start_of_week:
+                type:
+                  - number
+                  - "null"
+              positions_only:
+                type:
+                  - boolean
+                  - "null"
+              sort_employees:
+                type:
+                  - number
+                  - "null"
+              track_absences:
+                type:
+                  - boolean
+                  - "null"
+              open_scheduling:
+                type:
+                  - boolean
+                  - "null"
+              preferred_hours:
+                type:
+                  - boolean
+                  - "null"
+              shared_openshifts:
+                type:
+                  - boolean
+                  - "null"
+              shift_acknowledgement:
+                type:
+                  - boolean
+                  - "null"
+          workchat:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              last_enabled_date:
+                type:
+                  - string
+                  - "null"
+              customChannelsAllowed:
+                type:
+                  - boolean
+                  - "null"
+              managedChannelConversationsAllowed:
+                type:
+                  - boolean
+                  - "null"
+          marketing:
+            type:
+              - object
+              - "null"
+            properties:
+              funnel:
+                type:
+                  - string
+                  - "null"
+              attribution_id:
+                type:
+                  - string
+                  - "null"
+          attendance:
+            type:
+              - object
+              - "null"
+            properties:
+              trial:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  enabled:
+                    type:
+                      - boolean
+                      - "null"
+                  activated:
+                    type:
+                      - boolean
+                      - "null"
+          permissions:
+            type:
+              - object
+              - "null"
+            properties:
+              text_credits:
+                type:
+                  - number
+                  - "null"
+          availability:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              is_public:
+                type:
+                  - boolean
+                  - "null"
+              days_notice:
+                type:
+                  - number
+                  - "null"
+          integrations:
+            type:
+              - object
+              - "null"
+            properties:
+              revel:
+                type:
+                  - boolean
+                  - "null"
+              square:
+                type:
+                  - boolean
+                  - "null"
+          conversations:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+          on_demand_pay:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              providers:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    enabled:
+                      type:
+                        - boolean
+                        - "null"
+          payroll_check:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              rejected:
+                type:
+                  - boolean
+                  - "null"
+              requested:
+                type:
+                  - boolean
+                  - "null"
+              is_onboarded:
+                type:
+                  - boolean
+                  - "null"
+              days_to_pay_date:
+                type:
+                  - number
+                  - "null"
+              first_pay_period_id:
+                type:
+                  - number
+                  - "null"
+          role_permissions:
+            type:
+              - object
+              - "null"
+            properties:
+              managers:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  can_manage_account_settings:
+                    type:
+                      - boolean
+                      - "null"
+                  can_manage_workplace_objects:
+                    type:
+                      - boolean
+                      - "null"
+              supervisors:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  can_view_employee_wages:
+                    type:
+                      - boolean
+                      - "null"
+                  can_approve_own_timesheet:
+                    type:
+                      - boolean
+                      - "null"
+                  can_edit_all_shift_details:
+                    type:
+                      - boolean
+                      - "null"
+                  can_edit_employee_timesheets:
+                    type:
+                      - boolean
+                      - "null"
+                  can_manage_workplace_objects:
+                    type:
+                      - boolean
+                      - "null"
+          scheduling_rules:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              max_days_in_week:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  enabled:
+                    type:
+                      - boolean
+                      - "null"
+              max_consecutive_days:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  enabled:
+                    type:
+                      - boolean
+                      - "null"
+              min_hours_between_shifts_diff_day:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  enabled:
+                    type:
+                      - boolean
+                      - "null"
+              min_hours_between_shifts_same_day:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  enabled:
+                    type:
+                      - boolean
+                      - "null"
+      utm_term:
+        type:
+          - string
+          - "null"
+      master_id:
+        type:
+          - number
+          - "null"
+      plan_type:
+        type:
+          - number
+          - "null"
+      real_type:
+        type:
+          - number
+          - "null"
+      subdomain:
+        type:
+          - string
+          - "null"
+      country_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      credit_exp:
+        type:
+          - string
+          - "null"
+      deleted_at:
+        type:
+          - string
+          - "null"
+      is_deleted:
+        type:
+          - boolean
+          - "null"
+      is_invalid:
+        type:
+          - number
+          - "null"
+      plan_units:
+        type:
+          - number
+          - "null"
+      ref_status:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      user_count:
+        type:
+          - number
+          - "null"
+      utm_medium:
+        type:
+          - string
+          - "null"
+      utm_source:
+        type:
+          - string
+          - "null"
+      wb_expires:
+        type:
+          - boolean
+          - "null"
+      billing_zip:
+        type:
+          - string
+          - "null"
+      business_id:
+        type:
+          - string
+          - "null"
+      credit_name:
+        type:
+          - string
+          - "null"
+      has_billing:
+        type:
+          - boolean
+          - "null"
+      industry_id:
+        type:
+          - number
+          - "null"
+      last_active:
+        type:
+          - string
+          - "null"
+      plan_custom:
+        type:
+          - number
+          - "null"
+      ref_plan_id:
+        type:
+          - number
+          - "null"
+      referral_id:
+        type:
+          - number
+          - "null"
+      referred_by:
+        type:
+          - string
+          - "null"
+      time_format:
+        type:
+          - number
+          - "null"
+      timezone_id:
+        type:
+          - number
+          - "null"
+      utm_content:
+        type:
+          - string
+          - "null"
+      billing_city:
+        type:
+          - string
+          - "null"
+      billing_type:
+        type:
+          - number
+          - "null"
+      converted_at:
+        type:
+          - boolean
+          - "null"
+      credit_email:
+        type:
+          - string
+          - "null"
+      payroll_date:
+        type:
+          - string
+          - "null"
+      plan_expires:
+        type:
+          - string
+          - "null"
+      plan_texting:
+        type:
+          - number
+          - "null"
+      split_shifts:
+        type:
+          - number
+          - "null"
+      text_credits:
+        type:
+          - number
+          - "null"
+      trial_length:
+        type:
+          - number
+          - "null"
+      utm_campaign:
+        type:
+          - string
+          - "null"
+      billing_phone:
+        type:
+          - string
+          - "null"
+      billing_state:
+        type:
+          - string
+          - "null"
+      credit_number:
+        type:
+          - string
+          - "null"
+      notifications:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            key:
+              type:
+                - string
+                - "null"
+            show:
+              type:
+                - boolean
+                - "null"
+      previous_type:
+        type:
+          - number
+          - "null"
+      ref_employees:
+        type:
+          - number
+          - "null"
+      referral_code:
+        type:
+          - string
+          - "null"
+      subscriptions:
+        type:
+          - array
+          - "null"
+      tax_exemption:
+        type:
+          - string
+          - "null"
+      timezone_name:
+        type:
+          - string
+          - "null"
+      uses_features:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      billing_engine:
+        type:
+          - number
+          - "null"
+      credit_balance:
+        type:
+          - number
+          - "null"
+      employee_count:
+        type:
+          - number
+          - "null"
+      invalidated_by:
+        type:
+          - string
+          - "null"
+      is_deactivated:
+        type:
+          - number
+          - "null"
+      location_count:
+        type:
+          - number
+          - "null"
+      bad_credit_card:
+        type:
+          - boolean
+          - "null"
+      billing_address:
+        type:
+          - string
+          - "null"
+      billing_country:
+        type:
+          - number
+          - "null"
+      cancelreason_id:
+        type:
+          - number
+          - "null"
+      credit_attempts:
+        type:
+          - number
+          - "null"
+      organization_id:
+        type:
+          - number
+          - "null"
+      place_confirmed:
+        type:
+          - boolean
+          - "null"
+      primary_contact:
+        type:
+          - number
+          - "null"
+      billing_discount:
+        type:
+          - number
+          - "null"
+      limited_features:
+        type:
+          - object
+          - "null"
+        properties:
+          shift_acknowledgement:
+            type:
+              - boolean
+              - "null"
+      previous_plan_id:
+        type:
+          - number
+          - "null"
+      trial_created_at:
+        type:
+          - string
+          - "null"
+      user_count_local:
+        type:
+          - number
+          - "null"
+      credit_eft_number:
+        type:
+          - string
+          - "null"
+      payroll_hours_max:
+        type:
+          - number
+          - "null"
+      required_features:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      additional_features:
+        type:
+          - array
+          - "null"
+      attendance_freemium:
+        type:
+          - boolean
+          - "null"
+      credit_phone_number:
+        type:
+          - string
+          - "null"
+      previous_plan_units:
+        type:
+          - number
+          - "null"
+      credit_recurring_day:
+        type:
+          - number
+          - "null"
+      availability_migrated:
+        type:
+          - number
+          - "null"
+      cancelreason_feedback:
+        type:
+          - string
+          - "null"
+      deactivated_reason_id:
+        type:
+          - number
+          - "null"
+      attendance_alert_manager:
+        type:
+          - number
+          - "null"
+      attendance_alert_employee:
+        type:
+          - number
+          - "null"
+      business_address_confirmed:
+        type:
+          - boolean
+          - "null"
+      is_default_location_address:
+        type:
+          - boolean
+          - "null"
+      payroll_overtime_multiplier:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  payrolls:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      notes:
+        type:
+          - string
+          - "null"
+      offset:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      closed_at:
+        type:
+          - string
+          - "null"
+      is_closed:
+        type:
+          - boolean
+          - "null"
+      is_edited:
+        type:
+          - number
+          - "null"
+      account_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      creator_id:
+        type:
+          - number
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      is_finalized:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  requests:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      paid:
+        type:
+          - boolean
+          - "null"
+      hours:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      type_id:
+        type:
+          - number
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+      end_time:
+        type:
+          - string
+          - "null"
+      completed:
+        type:
+          - number
+          - "null"
+      account_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      creator_id:
+        type:
+          - number
+          - "null"
+      is_all_day:
+        type:
+          - number
+          - "null"
+      start_time:
+        type:
+          - string
+          - "null"
+      type_label:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      updater_id:
+        type:
+          - number
+          - "null"
+      canceled_by:
+        type:
+          - number
+          - "null"
+      user_status:
+        type:
+          - number
+          - "null"
+      completed_at:
+        type:
+          - string
+          - "null"
+      days_completed:
+        type:
+          - number
+          - "null"
+      days_requested:
+        type:
+          - number
+          - "null"
+      allowed_statuses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+    additionalProperties: true
+  locations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      sort:
+        type:
+          - number
+          - "null"
+      place:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          region:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          website:
+            type:
+              - string
+              - "null"
+          latitude:
+            type:
+              - number
+              - "null"
+          locality:
+            type:
+              - string
+              - "null"
+          place_id:
+            type:
+              - string
+              - "null"
+          longitude:
+            type:
+              - number
+              - "null"
+          place_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          subpremise:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          updated_by:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          street_name:
+            type:
+              - string
+              - "null"
+          sub_locality:
+            type:
+              - string
+              - "null"
+          business_name:
+            type:
+              - string
+              - "null"
+          street_number:
+            type:
+              - string
+              - "null"
+          formatted_phone_number:
+            type:
+              - string
+              - "null"
+          international_phone_number:
+            type:
+              - string
+              - "null"
+      radius:
+        type:
+          - number
+          - "null"
+      address:
+        type:
+          - string
+          - "null"
+      latitude:
+        type:
+          - number
+          - "null"
+      place_id:
+        type:
+          - number
+          - "null"
+      longitude:
+        type:
+          - number
+          - "null"
+      max_hours:
+        type:
+          - number
+          - "null"
+      account_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      deleted_at:
+        type:
+          - string
+          - "null"
+      ip_address:
+        type:
+          - string
+          - "null"
+      is_default:
+        type:
+          - number
+          - "null"
+      is_deleted:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      coordinates:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      place_confirmed:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  positions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      sort:
+        type:
+          - number
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      account_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      is_deleted:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      tips_tracking:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  timezones:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      offset:
+        type:
+          - number
+          - "null"
+      olson_id:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  payrolls_notices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - uid
+    properties:
+      uid:
+        type: string
+      times:
+        type:
+          - array
+          - "null"
+      shifts:
+        type:
+          - array
+          - "null"
+      notices:
+        type:
+          - array
+          - "null"
+      punches:
+        type:
+          - array
+          - "null"
+    additionalProperties: true
+  openshiftapprovalrequests:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - uid
+    properties:
+      uid:
+        type: number
+      more:
+        type:
+          - boolean
+          - "null"
+      page:
+        type:
+          - number
+          - "null"
+      total:
+        type:
+          - number
+          - "null"
+      openshiftapprovalrequests:
+        type:
+          - array
+          - "null"
+    additionalProperties: true
