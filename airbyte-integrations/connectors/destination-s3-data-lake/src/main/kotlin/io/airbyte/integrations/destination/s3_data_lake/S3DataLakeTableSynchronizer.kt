@@ -160,12 +160,10 @@ class S3DataLakeTableSynchronizer(
             update.setIdentifierFields(updatedIdentifierFields)
         }
 
-        // Commit all changes and refresh the table schema
+        // `apply` just validates that the schema change is valid, it doesn't actually commit().
+        // It returns the schema that the table _would_ have after committing.
         val newSchema: Schema = update.apply()
         return SchemaUpdateResult(newSchema, update)
-        //        table.refresh()
-        //
-        //        return table.schema()
     }
 }
 
