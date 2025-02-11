@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "jsonplaceholder.typicode.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-connector-ai
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.33.2@sha256:066e63498764b2367dbbf779dad61f72bef54fd93000b95c9491971f6a044197
+  connectorSubtype: api
+  connectorType: source
+  definitionId: e8a2d545-e860-4f39-a0ed-c07fbe164fc8
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-connector-ai
+  githubIssueLabel: source-connector-ai
+  icon: icon.svg
+  license: MIT
+  name: connector_ai
+  releaseDate: 2025-02-11
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/connector-ai
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

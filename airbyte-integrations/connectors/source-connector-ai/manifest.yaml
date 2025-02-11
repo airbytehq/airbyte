@@ -1,0 +1,144 @@
+version: 6.33.0
+
+type: DeclarativeSource
+
+description: "y"
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+  base_requester:
+    type: HttpRequester
+    url_base: https://jsonplaceholder.typicode.com
+
+streams:
+  - $ref: "#/definitions/streams/users"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required: []
+    properties: {}
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    users: true
+  testedStreams:
+    users:
+      streamHash: c886c75cb7169f667917fd68752a27d0ae1c69db
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://jsonplaceholder.typicode.com/posts
+
+schemas:
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          geo:
+            type:
+              - object
+              - "null"
+            properties:
+              lat:
+                type:
+                  - string
+                  - "null"
+              lng:
+                type:
+                  - string
+                  - "null"
+          street:
+            type:
+              - string
+              - "null"
+          suite:
+            type:
+              - string
+              - "null"
+          zipcode:
+            type:
+              - string
+              - "null"
+      company:
+        type:
+          - object
+          - "null"
+        properties:
+          bs:
+            type:
+              - string
+              - "null"
+          catchPhrase:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - id
