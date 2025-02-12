@@ -153,7 +153,7 @@ class TestGlobalExclusionsStream:
                     "id": "00AA0A0AA0AA000AAAAAAA0AA0",
                     "attributes": {
                         "updated": "2023-03-10T20:36:36+00:00",
-                        "subscriptions": {"email": {"marketing": {"suppressions": [{"reason": "SUPPRESSED"}]}}},
+                        "subscriptions": {"email": {"marketing": {"suppression": [{"reason": "SUPPRESSED"}]}}},
                     },
                 },
                 {
