@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: bc617b5f-1b9e-4a2d-bebe-782fd454a771
-  dockerImageTag: 0.4.13
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-timely
   documentationUrl: https://docs.airbyte.com/integrations/sources/timely
   githubIssueLabel: source-timely
@@ -24,6 +24,11 @@ data:
       enabled: true
   releaseDate: 2022-06-22
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "Need to update the start date to be in format `YYYY-MM-DDTHH:mm:ssZ`."
+        upgradeDeadline: "2025-02-23"
   remoteRegistries:
     pypi:
       enabled: false

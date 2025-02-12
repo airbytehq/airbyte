@@ -1,0 +1,16 @@
+version: 2
+sources:
+- name: test_normalization
+  quoting:
+    database: true
+    schema: false
+    identifier: false
+  tables:
+  - name: airbyte_raw_1_prefix_startwith_number
+  - name: airbyte_raw_dedup_cdc_excluded
+  - name: airbyte_raw_dedup_exchange_rate
+  - name: airbyte_raw_exchange_rate
+  - name: airbyte_raw_multiple_column_names_conflicts
+  - name: airbyte_raw_pos_dedup_cdcx
+  - name: airbyte_raw_renamed_dedup_cdc_excluded
+  - name: airbyte_raw_types_testing
