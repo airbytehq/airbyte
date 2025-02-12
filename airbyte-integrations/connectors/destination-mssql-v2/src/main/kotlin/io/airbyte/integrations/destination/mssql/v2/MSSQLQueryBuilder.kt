@@ -157,12 +157,15 @@ const val ALTER_TABLE_MODIFY =
 
 const val DELETE_WHERE_COL_IS_NOT_NULL =
     """
-        DELETE FROM [?].[?]
+        SET NOCOUNT ON;
+        DELETE FROM [?].[?] WITH (TABLOCK)
         WHERE [?] is not NULL
     """
 
-const val DELETE_WHERE_COL_LESS_THAN = """
-        DELETE FROM [?].[?]
+const val DELETE_WHERE_COL_LESS_THAN =
+    """
+        SET NOCOUNT ON;
+        DELETE FROM [?].[?] WITH (TABLOCK)
         WHERE [?] < ?
     """
 
@@ -329,7 +332,7 @@ class MSSQLQueryBuilder(
                 outputSchema,
                 tableName,
                 COLUMN_NAME_AB_GENERATION_ID,
-                minGenerationId.toString()
+                minGenerationId.toString(),
             )
             .executeUpdate(connection)
 

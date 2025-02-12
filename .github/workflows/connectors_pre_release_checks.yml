@@ -1,4 +1,4 @@
-name: Connectors Version Increment Check
+name: Connectors Pre-Release Checks
 
 concurrency:
   # This is the name of the concurrency group. It is used to prevent concurrent runs of the same workflow.
@@ -20,9 +20,11 @@ on:
       - "airbyte-integrations/connectors/**/*"
 jobs:
   connectors_ci:
-    name: Connectors Version Increment Check
+    name: Connector Pre-Release Checks
     runs-on: linux-20.04-large # Custom runner, defined in GitHub org settings
-    if: github.event.pull_request.head.repo.fork != true
+    if: >
+      github.event.pull_request.head.repo.fork != true &&
+      github.event.pull_request.draft == false
     timeout-minutes: 22
     steps:
       - name: Checkout Airbyte
@@ -51,4 +53,4 @@ jobs:
           github_token: ${{ env.PAT }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors --modified test --only-step=version_inc_check --global-status-check-context='Version increment check for Java connectors' --global-status-check-description='Checking if java connectors modified in this PR got their version bumped'"
+          subcommand: "connectors --modified test --only-step=version_inc_check --only-step=qa_checks --global-status-check-context='Connectors Pre-Release Check' --global-status-check-description='Checking if connectors modified in this PR are ready for release'"
