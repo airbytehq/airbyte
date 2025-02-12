@@ -275,7 +275,7 @@ class SourceBoxFileText(AbstractSource):
         try:
             box_client = get_box_ccg_client(config)
             user = box_client.users.get_user_me()
-            # logger.info(f"box_subject_type: {config.get('box_subject_type')}, box_subject_id: {config.get('box_subject_id')}")
+            logger.debug(f"box_subject_type: {config.get('box_subject_type')}, box_subject_id: {config.get('box_subject_id')}")
             logger.info(f"Logged into Box as: {user.name} ({user.id} - {user.login})")
         except BoxAPIError as e:
             logger.error(f"Unable to connect to Box API with the provided credentials - {e}")
