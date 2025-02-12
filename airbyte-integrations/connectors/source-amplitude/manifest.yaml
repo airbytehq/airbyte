@@ -637,7 +637,7 @@ streams:
       decoder:
         type: GzipDecoder
         decoder:
-          type: JsonLineDecoder
+          type: JsonlDecoder
   incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: server_upload_time
