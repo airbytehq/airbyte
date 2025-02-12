@@ -270,6 +270,9 @@
                         },
                         "item_status": {
                             "type": "string"
+                        },
+                        "text_representation": {
+                            "type": "string"
                         }
                     }
                 },
