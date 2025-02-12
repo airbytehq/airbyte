@@ -1,7 +1,11 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 200
   allowedHosts:
     hosts:
-      - TODO # Please change to the hostname of the source.
+      - box.com
+      - boxcloud.com
   registries:
     oss:
       enabled: true
