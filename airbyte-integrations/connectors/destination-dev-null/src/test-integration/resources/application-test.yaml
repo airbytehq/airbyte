@@ -1,0 +1,4 @@
+airbyte:
+  destination:
+    connector:
+      load-strategy: direct

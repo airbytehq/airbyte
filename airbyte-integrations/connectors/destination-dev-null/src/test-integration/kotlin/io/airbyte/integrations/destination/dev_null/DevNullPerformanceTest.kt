@@ -5,8 +5,10 @@
 package io.airbyte.integrations.destination.dev_null
 
 import io.airbyte.cdk.load.write.BasicPerformanceTest
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
+@Disabled("Performance tests are not run in CI")
 class DevNullPerformanceTest :
     BasicPerformanceTest(
         configContents = DevNullTestUtils.loggingConfigContents,
