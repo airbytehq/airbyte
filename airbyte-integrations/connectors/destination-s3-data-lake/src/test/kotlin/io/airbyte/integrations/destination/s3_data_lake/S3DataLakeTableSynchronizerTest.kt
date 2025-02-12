@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_data_lake
 
+import io.airbyte.cdk.ConfigErrorException
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.just
@@ -253,7 +254,7 @@ class S3DataLakeTableSynchronizerTest {
                     ColumnTypeChangeBehavior.SAFE_SUPERTYPE
                 )
             }
-            .isInstanceOf(IllegalArgumentException::class.java)
+            .isInstanceOf(ConfigErrorException::class.java)
             .hasMessageContaining("Adding nested columns more than 1 level deep is not supported")
 
         // No calls to commit
@@ -287,7 +288,7 @@ class S3DataLakeTableSynchronizerTest {
                     ColumnTypeChangeBehavior.SAFE_SUPERTYPE
                 )
             }
-            .isInstanceOf(IllegalArgumentException::class.java)
+            .isInstanceOf(ConfigErrorException::class.java)
             .hasMessageContaining("Currently only primitive type updates are supported.")
 
         // No updates or commits
@@ -386,8 +387,10 @@ class S3DataLakeTableSynchronizerTest {
                     ColumnTypeChangeBehavior.SAFE_SUPERTYPE
                 )
             }
-            .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessage("""Conversion for column "age" between int and string is not allowed.""")
+            .isInstanceOf(ConfigErrorException::class.java)
+            .hasMessage(
+                """Schema evolution for column "age" between int and string is not allowed."""
+            )
     }
 
     @Test
