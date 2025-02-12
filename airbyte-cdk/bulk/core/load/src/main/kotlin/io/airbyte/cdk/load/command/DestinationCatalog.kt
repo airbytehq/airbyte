@@ -35,6 +35,11 @@ data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()
             ?: throw IllegalArgumentException("Stream not found: namespace=$namespace, name=$name")
     }
 
+    fun getStream(descriptor: DestinationStream.Descriptor): DestinationStream {
+        return byDescriptor[descriptor]
+            ?: throw IllegalArgumentException("Stream not found: $descriptor")
+    }
+
     fun asProtocolObject(): ConfiguredAirbyteCatalog =
         ConfiguredAirbyteCatalog().withStreams(streams.map { it.asProtocolObject() })
 
