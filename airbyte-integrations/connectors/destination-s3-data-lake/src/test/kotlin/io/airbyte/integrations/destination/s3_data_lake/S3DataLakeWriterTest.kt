@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
@@ -30,6 +31,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.UpdateSchema
@@ -133,6 +135,8 @@ internal class S3DataLakeWriterTest {
                     pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
         }
+        val destinationCatalog: DestinationCatalog = mockk()
+        val tableIdGenerator: TableIdGenerator = mockk()
         val s3DataLakeWriter =
             S3DataLakeWriter(
                 s3DataLakeTableWriterFactory = s3DataLakeTableWriterFactory,
@@ -142,7 +146,9 @@ internal class S3DataLakeWriterTest {
                     S3DataLakeTableSynchronizer(
                         S3DataLakeTypesComparator(),
                         S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
-                    )
+                    ),
+                catalog = destinationCatalog,
+                tableIdGenerator = tableIdGenerator,
             )
         val streamLoader = s3DataLakeWriter.createStreamLoader(stream = stream)
         assertNotNull(streamLoader)
@@ -223,6 +229,8 @@ internal class S3DataLakeWriterTest {
                     pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
         }
+        val destinationCatalog: DestinationCatalog = mockk()
+        val tableIdGenerator: TableIdGenerator = mockk()
         val s3DataLakeWriter =
             S3DataLakeWriter(
                 s3DataLakeTableWriterFactory = s3DataLakeTableWriterFactory,
@@ -233,8 +241,11 @@ internal class S3DataLakeWriterTest {
                         S3DataLakeTypesComparator(),
                         S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
                     ),
+                catalog = destinationCatalog,
+                tableIdGenerator = tableIdGenerator,
             )
-        s3DataLakeWriter.createStreamLoader(stream = stream)
+        val streamLoader = s3DataLakeWriter.createStreamLoader(stream = stream)
+        runBlocking { streamLoader.start() }
 
         verify(exactly = 0) { updateSchema.deleteColumn(any()) }
         verify(exactly = 0) { updateSchema.updateColumn(any(), any<PrimitiveType>()) }
@@ -362,6 +373,8 @@ internal class S3DataLakeWriterTest {
                     pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(listOf(primaryKeys))
                 }
         }
+        val destinationCatalog: DestinationCatalog = mockk()
+        val tableIdGenerator: TableIdGenerator = mockk()
         val s3DataLakeWriter =
             S3DataLakeWriter(
                 s3DataLakeTableWriterFactory = s3DataLakeTableWriterFactory,
@@ -372,9 +385,12 @@ internal class S3DataLakeWriterTest {
                         S3DataLakeTypesComparator(),
                         S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
                     ),
+                catalog = destinationCatalog,
+                tableIdGenerator = tableIdGenerator,
             )
 
-        s3DataLakeWriter.createStreamLoader(stream = stream)
+        val streamLoader = s3DataLakeWriter.createStreamLoader(stream = stream)
+        runBlocking { streamLoader.start() }
 
         verify(exactly = 0) { updateSchema.deleteColumn(any()) }
         verify(exactly = 0) { updateSchema.updateColumn(any(), any<PrimitiveType>()) }

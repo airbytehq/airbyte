@@ -24,7 +24,7 @@ class DataSourceFactory {
         dataSource.maximumPoolSize = 10
         dataSource.minimumIdle = 0
         dataSource.idleTimeout = 60000
-        dataSource.leakDetectionThreshold = dataSource.connectionTimeout + 30000
+        dataSource.leakDetectionThreshold = 0
         return dataSource
     }
 }

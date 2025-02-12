@@ -10,8 +10,10 @@ import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
+import java.time.ZoneOffset
 
 /**
  * Iceberg doesn't have a TimeWithTimezone type. So map expectedRecords' TimeWithTimezone to
@@ -19,17 +21,26 @@ import io.airbyte.cdk.load.test.util.OutputRecord
  */
 object S3DataLakeExpectedRecordMapper : ExpectedRecordMapper {
     override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord {
-        val mappedData = mapTimeTzToTimeNtz(expectedRecord.data)
+        val mappedData = mapTemporalTypesToUtc(expectedRecord.data)
         return expectedRecord.copy(data = mappedData as ObjectValue)
     }
 
-    private fun mapTimeTzToTimeNtz(value: AirbyteValue): AirbyteValue =
+    /**
+     * We write parquet, which stores all X_with_timezone types in UTC. So we need to map the
+     * expected values into UTC.
+     */
+    private fun mapTemporalTypesToUtc(value: AirbyteValue): AirbyteValue =
         when (value) {
-            is TimeWithTimezoneValue -> TimeWithoutTimezoneValue(value.value.toLocalTime())
-            is ArrayValue -> ArrayValue(value.values.map { mapTimeTzToTimeNtz(it) })
+            is TimeWithTimezoneValue ->
+                TimeWithoutTimezoneValue(
+                    value.value.withOffsetSameInstant(ZoneOffset.UTC).toLocalTime()
+                )
+            is TimestampWithTimezoneValue ->
+                TimestampWithTimezoneValue(value.value.withOffsetSameInstant(ZoneOffset.UTC))
+            is ArrayValue -> ArrayValue(value.values.map { mapTemporalTypesToUtc(it) })
             is ObjectValue ->
                 ObjectValue(
-                    value.values.mapValuesTo(linkedMapOf()) { (_, v) -> mapTimeTzToTimeNtz(v) }
+                    value.values.mapValuesTo(linkedMapOf()) { (_, v) -> mapTemporalTypesToUtc(v) }
                 )
             else -> value
         }
