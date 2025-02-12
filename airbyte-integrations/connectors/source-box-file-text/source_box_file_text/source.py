@@ -255,9 +255,11 @@ class BoxFolder(Stream):
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         items = box_folder_items_get_by_id(self.client, self.folder_id, is_recursive=self.is_recursive)
+        logger.info(f"Reading records for folder {self.folder_id}")
         for item in items:
             airbyte_item: StreamData = item.file.to_dict()
             airbyte_item["text_representation"] = item.text_representation
+            logger.info(f"Reading file {item.file.id} - {item.file.name}")
             yield airbyte_item
 
 

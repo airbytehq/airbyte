@@ -110,7 +110,12 @@ def box_file_text_extract(client: BoxClient, file_id: str) -> str:
 
     # Download and truncate the raw content
     raw_content = _do_request(client, url)
-    return raw_content if raw_content else ""
+
+    # check to see if rawcontent is bytes
+    if isinstance(raw_content, bytes):
+        return raw_content.decode("utf-8")
+    else:
+        return raw_content
 
 
 def box_folder_items_get_by_id(
