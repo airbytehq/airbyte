@@ -30,6 +30,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
+import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
@@ -406,5 +407,51 @@ internal class S3DataLakeStreamLoaderTest {
 
         runBlocking { streamLoader.close(streamFailure = null) }
         verify { updateSchema.commit() }
+    }
+
+    @Test
+    fun testColumnTypeChangeBehaviorNonOverwrite() {
+        val stream =
+            DestinationStream(
+                descriptor = DestinationStream.Descriptor(namespace = "namespace", name = "name"),
+                importType = Append,
+                schema =
+                    ObjectType(
+                        linkedMapOf(
+                            "id" to FieldType(IntegerType, nullable = false),
+                            "name" to FieldType(StringType, nullable = true),
+                        ),
+                    ),
+                generationId = 1,
+                minimumGenerationId = 0,
+                syncId = 1,
+            )
+        val icebergConfiguration: S3DataLakeConfiguration = mockk()
+        val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory = mockk()
+        val s3DataLakeUtil: S3DataLakeUtil = mockk {
+            every { toIcebergSchema(any(), any<MapperPipeline>()) } answers
+                {
+                    val pipeline = secondArg() as MapperPipeline
+                    pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
+                }
+        }
+        val streamLoader =
+            S3DataLakeStreamLoader(
+                icebergConfiguration,
+                stream,
+                S3DataLakeTableSynchronizer(
+                    S3DataLakeTypesComparator(),
+                    S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
+                ),
+                s3DataLakeTableWriterFactory,
+                s3DataLakeUtil,
+                stagingBranchName = DEFAULT_STAGING_BRANCH,
+                mainBranchName = "main",
+            )
+
+        assertEquals(
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE,
+            streamLoader.columnTypeChangeBehavior,
+        )
     }
 }

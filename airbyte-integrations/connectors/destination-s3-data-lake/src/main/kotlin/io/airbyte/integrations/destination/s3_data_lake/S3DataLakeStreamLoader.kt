@@ -37,7 +37,7 @@ class S3DataLakeStreamLoader(
     private val pipeline = IcebergParquetPipelineFactory().create(stream)
 
     // If we're executing a truncate, then force the schema change.
-    private val columnTypeChangeBehavior: ColumnTypeChangeBehavior =
+    internal val columnTypeChangeBehavior: ColumnTypeChangeBehavior =
         if (stream.isSingleGenerationTruncate()) {
             ColumnTypeChangeBehavior.OVERWRITE
         } else {
