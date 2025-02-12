@@ -1,4 +1,4 @@
-version: 6.13.0
+version: 6.33.2
 
 type: DeclarativeSource
 
@@ -36,8 +36,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page_token
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_page_token\", {}) }}"
@@ -113,8 +113,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page_token
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_page_token\", {}) }}"
@@ -160,8 +160,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page_token
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_page_token\", {}) }}"
@@ -205,8 +205,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page_token
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_page_token\", {}) }}"
@@ -268,6 +268,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /scheduled_events/{{ stream_partition.scheduled_event_id }}/invitees
           http_method: GET
+          request_parameters:
+            sort: created_at:desc
         record_selector:
           type: RecordSelector
           extractor:
@@ -278,8 +280,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page_token
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_page_token\", {}) }}"
@@ -295,6 +297,17 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/scheduled_events"
               incremental_dependency: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
       transformations:
         - type: AddFields
           fields:
@@ -360,47 +373,47 @@ metadata:
     event_invitees: true
   testedStreams:
     event_types:
-      streamHash: 4c1310231c9bd1e66521aac1c5aef4b39f8d293e
+      streamHash: bbaa3be604a2bd58db16e79012ee5a11696e010a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     api_user:
-      hasRecords: true
-      streamHash: 89616df9d5c615927a5b44f7bc9a68541928966f
+      streamHash: 264696c3f04444a817331cc18adb9afac4c9a2ff
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     groups:
-      hasRecords: true
-      streamHash: 0250844f83a715609adf5aa47606a6c18bcf4fd5
+      streamHash: 1ceb9d2b0b536bf5e3e70cf14eb845a5e14ebfb4
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     organization_memberships:
-      hasRecords: true
-      streamHash: c76ba6b4c59702b70ca141f8a5929a45fb03244a
+      streamHash: d58b4ca528b7d26396f0ae46cc65d1803ac0df9d
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     scheduled_events:
-      streamHash: 4cdced197d98143caf16e8772affebcd91b76f6b
+      streamHash: b30d14e9220df86bf9814359fb0e8379910247ac
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     event_invitees:
-      streamHash: 96c7d5e34a7b7918a345ed9097c8f6c8501cdb90
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: ec4452df55193102f12b6cefe67a6f6e8c0a86b8
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: https://developer.calendly.com/api-docs/d7755e2f9e5fe-calendly-api
 
@@ -561,10 +574,6 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      avatar_url:
-        type:
-          - string
-          - "null"
       created_at:
         type:
           - string
@@ -574,6 +583,10 @@ schemas:
           - string
           - "null"
       email:
+        type:
+          - string
+          - "null"
+      locale:
         type:
           - string
           - "null"
@@ -671,6 +684,10 @@ schemas:
               - string
               - "null"
           email:
+            type:
+              - string
+              - "null"
+          locale:
             type:
               - string
               - "null"
@@ -835,6 +852,18 @@ schemas:
             type:
               - string
               - "null"
+          status:
+            type:
+              - string
+              - "null"
+      meeting_notes_html:
+        type:
+          - string
+          - "null"
+      meeting_notes_plain:
+        type:
+          - string
+          - "null"
       name:
         type:
           - string
@@ -885,9 +914,7 @@ schemas:
               - string
               - "null"
       created_at:
-        type:
-          - string
-          - "null"
+        type: string
       email:
         type:
           - string
@@ -945,6 +972,10 @@ schemas:
         type:
           - string
           - "null"
+      text_reminder_number:
+        type:
+          - string
+          - "null"
       timezone:
         type:
           - string
@@ -962,3 +993,4 @@ schemas:
         type: string
     required:
       - uri
+      - created_at
