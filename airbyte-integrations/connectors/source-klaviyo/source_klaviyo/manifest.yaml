@@ -1963,7 +1963,7 @@ spec:
         examples: [1, 2, 3]
         description: >-
           The number of worker threads to use for the sync.
-          The performance upper boundary is based on the limit of your Chargebee plan.
+          The performance upper boundary is based on the limit of your Klaviyo plan.
           More info about the rate limit plan tiers can be found on Klaviyo's API <a href="https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling">docs</a>.
         order: 3
     required: ["api_key"]

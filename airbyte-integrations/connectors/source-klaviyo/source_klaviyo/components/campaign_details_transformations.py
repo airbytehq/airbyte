@@ -15,6 +15,16 @@ from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 
 class CampaignsDetailedTransformation(RecordTransformation):
+    """
+    Campaigns detailed stream fetches detailed campaigns info:
+    estimated_recipient_count: integer
+    campaign_messages: list of objects.
+
+    To get this data CampaignsDetailedTransformation makes extra API requests:
+    https://a.klaviyo.com/api/campaign-recipient-estimations/{campaign_id}
+    https://developers.klaviyo.com/en/v2024-10-15/reference/get_messages_for_campaign
+    """
+
     config: Config
 
     api_revision = "2024-10-15"
