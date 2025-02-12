@@ -6,7 +6,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_box_file_text.source import BoxFileTextStream
+from source_box_data_extract.source import BoxFileTextStream
 
 # @pytest.fixture
 # def patch_base_class(mocker):
