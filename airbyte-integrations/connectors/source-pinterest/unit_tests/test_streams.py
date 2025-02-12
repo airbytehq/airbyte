@@ -8,10 +8,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
-from airbyte_cdk import AirbyteTracedException
-from airbyte_cdk.models.airbyte_protocol import SyncMode
-from airbyte_cdk.sources.declarative.types import StreamSlice
-from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from source_pinterest.streams import (
     AnalyticsApiBackoffStrategyDecorator,
     NonJSONResponse,
@@ -22,8 +18,14 @@ from source_pinterest.streams import (
 )
 from source_pinterest.utils import get_analytics_columns
 
+from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.models.airbyte_protocol import SyncMode
+from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+
 from .conftest import get_stream_by_name
 from .utils import create_requests_response
+
 
 os.environ["REQUEST_CACHE_PATH"] = "/tmp"
 _ANY_STREAM_NAME = "any_stream_name"
@@ -80,7 +82,8 @@ def test_parse_response_with_sensitive_data(requests_mock, test_config):
         json={"items": [{"id": "CatalogsFeeds1", "credentials": {"password": "bla"}}]},
     )
     actual_response = [
-        dict(record) for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh)
+        dict(record)
+        for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh)
         for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
     ]
     assert actual_response == [{"id": "CatalogsFeeds1"}]
@@ -122,7 +125,9 @@ def test_response_action(requests_mock, patch_base_class, http_status, expected_
     ),
 )
 @patch("time.sleep", return_value=None)
-def test_declarative_stream_response_action_on_max_rate_limit_error(mock_sleep, requests_mock, test_response, status_code, expected_response_action):
+def test_declarative_stream_response_action_on_max_rate_limit_error(
+    mock_sleep, requests_mock, test_response, status_code, expected_response_action
+):
     response_mock = create_requests_response(requests_mock, status_code, {})
     error_handler = PinterestErrorHandler(logger=MagicMock(), stream_name="any_stream_name")
     assert error_handler.interpret_response(response_mock).response_action == expected_response_action

@@ -4,144 +4,191 @@
 
 package io.airbyte.cdk.load.task.implementor
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.google.common.collect.Range
-import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.Deserializer
-import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.DestinationMessage
+import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.MessageQueue
+import io.airbyte.cdk.load.message.MultiProducerChannel
+import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.SyncManager
-import io.airbyte.cdk.load.task.MockTaskLauncher
+import io.airbyte.cdk.load.task.DefaultDestinationTaskLauncher
 import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.util.write
+import io.airbyte.cdk.load.write.BatchAccumulator
 import io.airbyte.cdk.load.write.StreamLoader
-import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifySequence
 import io.mockk.mockk
-import jakarta.inject.Inject
 import java.nio.file.Files
 import kotlin.io.path.outputStream
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-@MicronautTest(
-    environments =
-        [
-            "MockDestinationCatalog",
-        ]
-)
 class ProcessRecordsTaskTest {
+    private lateinit var config: DestinationConfiguration
     private lateinit var diskManager: ReservationManager
+    private lateinit var deserializer: ProtocolMessageDeserializer
+    private lateinit var streamLoader: StreamLoader
+    private lateinit var batchAccumulator: BatchAccumulator
+    private lateinit var inputQueue: MessageQueue<FileAggregateMessage>
     private lateinit var processRecordsTaskFactory: DefaultProcessRecordsTaskFactory
-    private lateinit var launcher: MockTaskLauncher
-    @Inject lateinit var syncManager: SyncManager
+    private lateinit var launcher: DefaultDestinationTaskLauncher
+    private lateinit var outputQueue: MultiProducerChannel<BatchEnvelope<*>>
+    private lateinit var syncManager: SyncManager
 
     @BeforeEach
     fun setup() {
+        config = mockk(relaxed = true)
         diskManager = mockk(relaxed = true)
-        launcher = MockTaskLauncher()
+        inputQueue = mockk(relaxed = true)
+        outputQueue = mockk(relaxed = true)
+        syncManager = mockk(relaxed = true)
+        streamLoader = mockk(relaxed = true)
+        batchAccumulator = mockk(relaxed = true)
+        coEvery { config.processEmptyFiles } returns false
+        coEvery { syncManager.getOrAwaitStreamLoader(any()) } returns streamLoader
+        coEvery { streamLoader.createBatchAccumulator() } returns batchAccumulator
+        launcher = mockk(relaxed = true)
+        deserializer = mockk(relaxed = true)
+        coEvery { deserializer.deserialize(any()) } answers
+            {
+                DestinationRecord(
+                    stream = MockDestinationCatalogFactory.stream1.descriptor,
+                    message =
+                        AirbyteMessage()
+                            .withRecord(
+                                AirbyteRecordMessage()
+                                    .withEmittedAt(0L)
+                                    .withData(
+                                        JsonNodeFactory.instance.numberNode(
+                                            firstArg<String>().toLong()
+                                        )
+                                    )
+                            ),
+                    serialized = "ignored",
+                    schema = io.airbyte.cdk.load.data.IntegerType
+                )
+            }
         processRecordsTaskFactory =
             DefaultProcessRecordsTaskFactory(
-                MockDeserializer(),
+                config,
+                deserializer,
                 syncManager,
                 diskManager,
+                inputQueue,
+                outputQueue,
             )
     }
 
     class MockBatch(
+        override val groupId: String?,
         override val state: Batch.State,
-        val reportedByteSize: Long,
-        val recordCount: Long,
-        val pmChecksum: Long,
-        override val groupId: String? = null
-    ) : Batch
-
-    class MockStreamLoader : StreamLoader {
-        override val stream: DestinationStream = MockDestinationCatalogFactory.stream1
-
-        data class SumAndCount(val sum: Long = 0, val count: Long = 0)
-
-        override suspend fun processRecords(
-            records: Iterator<DestinationRecord>,
-            totalSizeBytes: Long
-        ): Batch {
-            // Do a simple sum of the record values and count
-            // To demonstrate that the primed data was actually processed
-            val (sum, count) =
-                records.asSequence().fold(SumAndCount()) { acc, record ->
-                    SumAndCount(
-                        acc.sum + (record.data as IntegerValue).value.toLong(),
-                        acc.count + 1
-                    )
-                }
-            return MockBatch(
-                state = Batch.State.COMPLETE,
-                reportedByteSize = totalSizeBytes,
-                recordCount = count,
-                pmChecksum = sum
-            )
-        }
-
-        override suspend fun processFile(file: DestinationFile): Batch {
-            return MockBatch(
-                state = Batch.State.COMPLETE,
-                reportedByteSize = file.fileMessage.bytes ?: 0,
-                recordCount = 1,
-                pmChecksum = 1
-            )
-        }
+        recordIterator: Iterator<DestinationRecordAirbyteValue>
+    ) : Batch {
+        val records = recordIterator.asSequence().toList()
     }
 
-    class MockDeserializer : Deserializer<DestinationMessage> {
-        override fun deserialize(serialized: String): DestinationMessage {
-            return DestinationRecord(
-                stream = MockDestinationCatalogFactory.stream1.descriptor,
-                data = IntegerValue(serialized.toLong()),
-                emittedAtMs = 0L,
-                meta = null,
-                serialized = serialized,
-            )
+    private val recordCount = 1024
+    private val serializedRecords = (0 until 1024).map { "$it" }
+    private fun makeFile(index: Int): SpilledRawMessagesLocalFile {
+        val mockFile = Files.createTempFile("test_$index", ".jsonl")
+        mockFile.outputStream().use { outputStream ->
+            serializedRecords.map { "$it\n" }.forEach { outputStream.write(it) }
         }
+        return SpilledRawMessagesLocalFile(
+            localFile = mockFile,
+            totalSizeBytes = 999L,
+            indexRange = Range.closed(0, recordCount.toLong())
+        )
     }
 
     @Test
-    fun testProcessRecordsTask() = runTest {
+    fun `test standard workflow`() = runTest {
         val byteSize = 999L
         val recordCount = 1024L
+        val descriptor = MockDestinationCatalogFactory.stream1.descriptor
 
-        val mockFile = Files.createTempFile("test", ".jsonl")
-        val file =
-            SpilledRawMessagesLocalFile(
-                localFile = mockFile,
-                totalSizeBytes = byteSize,
-                indexRange = Range.closed(0, recordCount)
-            )
+        // Put three files on the flow.
+        val files = (0 until 3).map { makeFile(it) }
+        coEvery { inputQueue.consume() } returns
+            files.map { FileAggregateMessage(descriptor, it) }.asFlow()
+
+        // Process records returns batches in 3 states.
+        coEvery { batchAccumulator.processRecords(any(), any()) } answers
+            {
+                MockBatch(
+                    groupId = null,
+                    state = Batch.State.PERSISTED,
+                    recordIterator = firstArg()
+                )
+            } andThenAnswer
+            {
+                MockBatch(groupId = null, state = Batch.State.COMPLETE, recordIterator = firstArg())
+            } andThenAnswer
+            {
+                MockBatch(
+                    groupId = "foo",
+                    state = Batch.State.PERSISTED,
+                    recordIterator = firstArg()
+                )
+            }
+
+        // Run the task.
         val task =
             processRecordsTaskFactory.make(
                 taskLauncher = launcher,
-                stream = MockDestinationCatalogFactory.stream1.descriptor,
-                file = file
             )
-        mockFile.outputStream().use { outputStream ->
-            (0 until recordCount).forEach { outputStream.write("$it\n") }
-        }
 
-        syncManager.registerStartedStreamLoader(MockStreamLoader())
         task.execute()
 
-        Assertions.assertEquals(1, launcher.batchEnvelopes.size)
-        val batch = launcher.batchEnvelopes[0].batch as MockBatch
-        Assertions.assertEquals(Batch.State.COMPLETE, batch.state)
-        Assertions.assertEquals(999, batch.reportedByteSize)
-        Assertions.assertEquals(recordCount, batch.recordCount)
-        Assertions.assertEquals((0 until recordCount).sum(), batch.pmChecksum)
-        Assertions.assertFalse(Files.exists(mockFile), "ensure task deleted file")
-        coVerify { diskManager.release(byteSize) }
+        fun batchMatcher(groupId: String?, state: Batch.State): (BatchEnvelope<*>) -> Boolean = {
+            it.ranges.encloses(Range.closed(0, recordCount)) &&
+                it.streamDescriptor == descriptor &&
+                it.batch.groupId == groupId &&
+                it.batch.state == state &&
+                it.batch is MockBatch &&
+                (it.batch as MockBatch)
+                    .records
+                    .map { record -> (record.data as IntegerValue).value.toString() }
+                    .toSet() == serializedRecords.toSet()
+        }
+
+        // Verify the batch was *handled* 3 times but *published* ONLY when it is not complete AND
+        // group id is null.
+        coVerify(exactly = 1) {
+            outputQueue.publish(match { batchMatcher(null, Batch.State.PERSISTED)(it) })
+        }
+        coVerifySequence {
+            launcher.handleNewBatch(
+                MockDestinationCatalogFactory.stream1.descriptor,
+                match { batchMatcher(null, Batch.State.PERSISTED)(it) }
+            )
+            launcher.handleNewBatch(
+                MockDestinationCatalogFactory.stream1.descriptor,
+                match { batchMatcher(null, Batch.State.COMPLETE)(it) }
+            )
+            launcher.handleNewBatch(
+                MockDestinationCatalogFactory.stream1.descriptor,
+                match { batchMatcher("foo", Batch.State.PERSISTED)(it) }
+            )
+        }
+
+        files.forEach {
+            Assertions.assertFalse(Files.exists(it.localFile), "ensure task deleted file $it")
+        }
+        coVerify(exactly = 3) { diskManager.release(byteSize) }
     }
 }

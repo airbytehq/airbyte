@@ -103,6 +103,12 @@ acceptance_tests:
             bypass_reason: "Data for the stream only available for 2 years. Expired for now. Seeding in progress."
           - name: GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
             bypass_reason: "Data for the stream only available for 2 years. Expired for now. Seeding in progress."
+          - name: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE
+            bypass_reason: "Data for the stream only available for 90 days. Expired and too tedious to keep up to date. Test creds also don't have access: 'Forbidden. You don't have permission to access this resource.'"
+          - name: ListFinancialEvents
+            bypass_reason: "Data doesn't exist during the test time window. Requesting very large time windows on Amazon is prohibitively slow w/ our plan's rate limits"
+          - name: ListFinancialEventGroups
+            bypass_reason: "Data doesn't exist during the test time window. Requesting very large time windows on Amazon is prohibitively slow w/ our plan's rate limits"
   incremental:
     tests:
       - config_path: "secrets/config.json"

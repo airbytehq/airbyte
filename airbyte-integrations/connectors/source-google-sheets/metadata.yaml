@@ -6,11 +6,11 @@ data:
     hosts:
       - "*.googleapis.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
   connectorSubtype: file
   connectorType: source
   definitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
-  dockerImageTag: 0.7.4
+  dockerImageTag: 0.9.1
   dockerRepository: airbyte/source-google-sheets
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
   githubIssueLabel: source-google-sheets
@@ -28,29 +28,32 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
   supportLevel: certified
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
-        - name: google-sheets_service_config_dev_null
-          id: 758d197a-864f-45d3-9d5d-0a52fd9c0a22
+        - name: temp-google-sheets_service_config_dev_null
+          id: 035f390f-591f-4bb5-b6d5-52145627befb
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
-        - name: SECRET_SOURCE-GOOGLE_SHEETS_CREDS
+        - name: SECRET_SOURCE-GOOGLE-SHEETS__CREDS
           fileName: config.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE-GOOGLE_SHEETS_SERVICE_CREDS
+        - name: SECRET_SOURCE-GOOGLE-SHEETS_SERVICE__CREDS
           fileName: service_config.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE-GOOGLE_SHEETS_WITH_URL_CREDS
+        - name: SECRET_SOURCE-GOOGLE-SHEETS_WITH_URL__CREDS
           fileName: config_with_url.json
           secretStore:
             type: GSM

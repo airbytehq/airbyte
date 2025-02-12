@@ -1,0 +1,37 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.2.2"
+name = "destination_sftp_json"
+description = "Destination implementation for Sftp Json."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destinations/sftp-json"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "destination_sftp_json"
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.12"
+paramiko = "^3.5.0"
+smart-open = "^7.0.5"
+airbyte-cdk = "^6.22"
+
+[tool.poetry.scripts]
+destination-sftp-json = "destination_sftp_json.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
+pytest-docker = "^3.1.1"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

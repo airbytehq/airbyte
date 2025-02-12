@@ -76,7 +76,17 @@ Pexels-API's [API reference]https://www.pexels.com/api/documentation) has v1 at 
 
 | Version | Date       | Pull Request                                            | Subject        |
 | :------ | :--------- | :------------------------------------------------------ | :------------- |
-| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.11 | 2025-02-08 | [53477](https://github.com/airbytehq/airbyte/pull/53477) | Update dependencies |
+| 0.2.10 | 2025-02-01 | [52990](https://github.com/airbytehq/airbyte/pull/52990) | Update dependencies |
+| 0.2.9 | 2025-01-25 | [52533](https://github.com/airbytehq/airbyte/pull/52533) | Update dependencies |
+| 0.2.8 | 2025-01-18 | [51923](https://github.com/airbytehq/airbyte/pull/51923) | Update dependencies |
+| 0.2.7 | 2025-01-11 | [51374](https://github.com/airbytehq/airbyte/pull/51374) | Update dependencies |
+| 0.2.6 | 2024-12-28 | [50680](https://github.com/airbytehq/airbyte/pull/50680) | Update dependencies |
+| 0.2.5 | 2024-12-21 | [50274](https://github.com/airbytehq/airbyte/pull/50274) | Update dependencies |
+| 0.2.4 | 2024-12-14 | [49708](https://github.com/airbytehq/airbyte/pull/49708) | Update dependencies |
+| 0.2.3 | 2024-12-12 | [49324](https://github.com/airbytehq/airbyte/pull/49324) | Update dependencies |
+| 0.2.2 | 2024-12-11 | [47678](https://github.com/airbytehq/airbyte/pull/47678) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-15 | [44097](https://github.com/airbytehq/airbyte/pull/44097) | Refactor connector to manifest-only format |
 | 0.1.14 | 2024-08-12 | [43817](https://github.com/airbytehq/airbyte/pull/43817) | Update dependencies |
 | 0.1.13 | 2024-08-03 | [43057](https://github.com/airbytehq/airbyte/pull/43057) | Update dependencies |

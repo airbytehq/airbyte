@@ -1,9 +1,28 @@
 data:
+  ab_internal:
+    ql: 300
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   connectorSubtype: file
+  connectorTestSuitesOptions:
+    - suite: integrationTests
+      testSecrets:
+        - fileName: insufficient_roles_config.json
+          name: SECRET_DESTINATION-GCS_NO_MULTIPART_ROLE_CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: config.json
+          name: SECRET_DESTINATION-GCS__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: destination
   definitionId: ca8f6566-e555-4b40-943a-545bf123117a
-  dockerImageTag: 0.4.6
+  dockerImageTag: 0.4.8
   dockerRepository: airbyte/destination-gcs
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/gcs
   githubIssueLabel: destination-gcs
   icon: googlecloudstorage.svg
   license: ELv2
@@ -20,24 +39,7 @@ data:
         resourceRequirements:
           memory_limit: 1Gi
           memory_request: 1Gi
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/gcs
+  supportLevel: community
   tags:
     - language:java
-  ab_internal:
-    sl: 100
-    ql: 300
-  supportLevel: community
-  connectorTestSuitesOptions:
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_DESTINATION-GCS_NO_MULTIPART_ROLE_CREDS
-          fileName: insufficient_roles_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-GCS__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -5,6 +5,7 @@
 from pathlib import Path
 
 import pytest
+
 from pipelines.airbyte_ci.connectors.build_image.steps import build_customization, manifest_only_connectors
 from pipelines.consts import BUILD_PLATFORMS
 from pipelines.models.steps import StepStatus
@@ -93,7 +94,7 @@ class TestBuildConnectorImage:
 
         mocker.patch.object(
             manifest_only_connectors.BuildConnectorImages,
-            "_get_image_user",
+            "get_image_user",
             return_value="airbyte",
         )
 
