@@ -9,7 +9,6 @@ from source_tiktok_marketing.components.advertiser_ids_partition_router import (
     SingleAdvertiserIdPerPartition,
 )
 from source_tiktok_marketing.components.hourly_datetime_based_cursor import HourlyDatetimeBasedCursor
-from source_tiktok_marketing.components.semi_incremental_record_filter import PerPartitionRecordFilter
 from source_tiktok_marketing.components.transformations import TransformEmptyMetrics
 
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
@@ -134,42 +133,6 @@ def test_stream_slices_single(config, expected, requests_mock, json_data):
         requests_mock.get("https://business-api.tiktok.com/open_api/v1.3/oauth2/advertiser/get/", json=json_data)
     actual = list(router.stream_slices())
     assert actual == expected
-
-
-@pytest.mark.parametrize(
-    "records, state, slice, expected",
-    [
-        (
-            [{"id": 1, "start_time": "2024-01-01"}, {"id": 2, "start_time": "2024-01-01"}],
-            {},
-            {},
-            [{"id": 1, "start_time": "2024-01-01"}, {"id": 2, "start_time": "2024-01-01"}],
-        ),
-        (
-            [{"advertiser_id": 1, "start_time": "2022-01-01"}, {"advertiser_id": 1, "start_time": "2024-01-02"}],
-            {"states": [{"partition": {"advertiser_id": 1, "parent_slice": {}}, "cursor": {"start_time": "2023-12-31"}}]},
-            {"advertiser_id": 1},
-            [{"advertiser_id": 1, "start_time": "2024-01-02"}],
-        ),
-        (
-            [{"advertiser_id": 2, "start_time": "2022-01-01"}, {"advertiser_id": 2, "start_time": "2024-01-02"}],
-            {"states": [{"partition": {"advertiser_id": 1, "parent_slice": {}}, "cursor": {"start_time": "2023-12-31"}}]},
-            {"advertiser_id": 2},
-            [{"advertiser_id": 2, "start_time": "2022-01-01"}, {"advertiser_id": 2, "start_time": "2024-01-02"}],
-        ),
-    ],
-)
-def test_record_filter(records, state, slice, expected):
-    config = {"credentials": {"auth_type": "oauth2.0", "advertiser_id": "11111111111"}}
-    record_filter = PerPartitionRecordFilter(
-        config=config,
-        parameters={"partition_field": "advertiser_id"},
-        condition="{{ record['start_time'] >= stream_state.get('start_time', config.get('start_date', '')) }}",
-    )
-    filtered_records = list(
-        record_filter.filter_records(records=records, stream_state=state, stream_slice=StreamSlice(partition=slice, cursor_slice={}))
-    )
-    assert filtered_records == expected
 
 
 def test_hourly_datetime_based_cursor():
