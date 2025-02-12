@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_data_lake
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.integrations.destination.s3_data_lake.S3DataLakeTypesComparator.Companion.PARENT_CHILD_SEPARATOR
 import io.airbyte.integrations.destination.s3_data_lake.S3DataLakeTypesComparator.Companion.splitIntoParentAndLeaf
 import jakarta.inject.Singleton
@@ -100,8 +101,10 @@ class S3DataLakeTableSynchronizer(
                             incomingType = incomingField.type(),
                             columnName = columnName
                         )
-                    require(superType is PrimitiveType) {
-                        "Currently only primitive type updates are supported. Attempted type: $superType"
+                    if (superType !is PrimitiveType) {
+                        throw ConfigErrorException(
+                            "Currently only primitive type updates are supported. Attempted type: $superType"
+                        )
                     }
                     update.updateColumn(columnName, superType)
                 }
@@ -127,7 +130,7 @@ class S3DataLakeTableSynchronizer(
 
             // Only 1-level nesting is supported
             if (parentPath.count { it == PARENT_CHILD_SEPARATOR } > 0) {
-                throw IllegalArgumentException(
+                throw ConfigErrorException(
                     "Adding nested columns more than 1 level deep is not supported: $newColumnFqn"
                 )
             }
