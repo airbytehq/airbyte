@@ -241,9 +241,6 @@ class GlueAssumeRoleWriteTest :
         ),
     )
 
-@Disabled(
-    "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
-)
 class NessieMinioWriteTest :
     S3DataLakeWriteTest(
         getConfig(),
@@ -316,6 +313,7 @@ class NessieMinioWriteTest :
 // so run singlethreaded.
 @Execution(ExecutionMode.SAME_THREAD)
 class RestWriteTest : S3DataLakeWriteTest(getConfig(), NoopDestinationCleaner) {
+
     @Test
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
     override fun testFunkyCharacters() {
@@ -324,16 +322,16 @@ class RestWriteTest : S3DataLakeWriteTest(getConfig(), NoopDestinationCleaner) {
 
     override val manyStreamCount = 5
 
-    @Disabled(
-        "This just does not seem to work with the rest catalog provided by apache as a quick start. Seems to not like any sort of concurrency"
-    )
+    @Disabled("This doesn't seem to work with concurrency, etc.")
     @Test
     override fun testManyStreamsCompletion() {
         super.testManyStreamsCompletion()
     }
 
     companion object {
+
         fun getConfig(): String {
+            // We retrieve the ephemeral host/port from the updated RestTestContainers
             val minioEndpoint = RestTestContainers.testcontainers.getServiceHost("minio", 9000)
             val restEndpoint = RestTestContainers.testcontainers.getServiceHost("rest", 8181)
 
@@ -348,7 +346,7 @@ class RestWriteTest : S3DataLakeWriteTest(getConfig(), NoopDestinationCleaner) {
                 "s3_bucket_region": "us-east-1",
                 "access_key_id": "admin",
                 "secret_access_key": "password",
-                "s3_endpoint": "http://$minioEndpoint:9000",
+                "s3_endpoint": "http://$minioEndpoint:9100",
                 "warehouse_location": "s3://warehouse/",
                 "main_branch_name": "main"
             }
@@ -358,6 +356,7 @@ class RestWriteTest : S3DataLakeWriteTest(getConfig(), NoopDestinationCleaner) {
         @JvmStatic
         @BeforeAll
         fun setup() {
+            // Start the testcontainers environment once before any tests run
             RestTestContainers.start()
         }
     }
