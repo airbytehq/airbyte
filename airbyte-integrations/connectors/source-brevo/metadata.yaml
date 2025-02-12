@@ -26,6 +26,8 @@ data:
   releaseDate: 2024-11-28
   releaseStage: alpha
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
   documentationUrl: https://docs.airbyte.com/integrations/sources/brevo
   tags:
     - language:manifest-only
