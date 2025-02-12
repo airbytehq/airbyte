@@ -154,11 +154,34 @@ definitions:
       schema: "#/definitions/global_exclusions_schema"
     retriever:
       $ref: "#/definitions/profiles_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          "additional-fields[profile]": "subscriptions"
       record_selector:
         $ref: "#/definitions/selector"
         record_filter:
           type: RecordFilter
-          condition: "{{ record['attributes']['subscriptions']['email']['marketing']['suppressions'] }}"
+          condition: "{{ record['attributes']['subscriptions']['email']['marketing']['suppression'] }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["updated"]
+            value: "{{ record.get('attributes', {}).get('updated') }}"
+          - type: AddedFieldDefinition
+            path:
+              [
+                "attributes",
+                "subscriptions",
+                "email",
+                "marketing",
+                "suppressions",
+              ]
+            value: "{{ record['attributes']['subscriptions']['email']['marketing']['suppression'] }}"
+      - type: RemoveFields
+        field_pointers:
+          [["attributes", "subscriptions", "email", "marketing", "suppression"]]
 
   events_stream:
     # Docs: https://developers.klaviyo.com/en/reference/get_events
