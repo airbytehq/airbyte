@@ -29,7 +29,7 @@ data:
     breakingChanges:
       1.0.0:
         message: "Streams were renamed and normalized, you need to update your schema and resync all data."
-        upgradeDeadline: " 2025-02-28"
+        upgradeDeadline: "2025-02-28"
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/track-pms
   tags:
