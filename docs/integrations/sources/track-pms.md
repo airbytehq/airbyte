@@ -103,7 +103,7 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 
 | Version          | Date       | Subject        |
 |------------------|------------|----------------|
-| 0.1.1 | 2025-01-16 | Fix housekeeping_work_orders incremental field; add reservations endpoint |
+| 1.0.0 | 2025-01-16 | Fix housekeeping_work_orders incremental field; add reservations endpoint |
 | 0.1.0 | 2025-01-16 | Move kebab case streams to snake case; alphabetize streams |
 | 0.0.1 | 2024-10-18 | Initial release by [@blakeflei](https://github.com/blakeflei) via Connector Builder|
 </details>
