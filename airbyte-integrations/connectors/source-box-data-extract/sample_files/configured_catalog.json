@@ -2,7 +2,7 @@
     "streams": [
         {
             "stream": {
-                "name": "box_folder",
+                "name": "stream_text_representation_folder",
                 "supported_sync_modes": [
                     "full_refresh"
                 ],

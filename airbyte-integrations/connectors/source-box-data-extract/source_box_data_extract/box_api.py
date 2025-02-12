@@ -115,7 +115,7 @@ def box_file_text_extract(client: BoxClient, file_id: str) -> str:
         return raw_content
 
 
-def box_folder_items_get_by_id(
+def box_folder_text_representation(
     client: BoxClient, folder_id: str, is_recursive: bool = False, by_pass_text_extraction: bool = False
 ) -> Iterable[BoxFileExtended]:
     # folder items iterator
@@ -128,6 +128,6 @@ def box_folder_items_get_by_id(
                 text_representation = ""
             yield BoxFileExtended(file=file, text_representation=text_representation)
         elif item.type == "folder" and is_recursive:
-            yield from box_folder_items_get_by_id(
+            yield from box_folder_text_representation(
                 client=client, folder_id=item.id, is_recursive=is_recursive, by_pass_text_extraction=by_pass_text_extraction
             )

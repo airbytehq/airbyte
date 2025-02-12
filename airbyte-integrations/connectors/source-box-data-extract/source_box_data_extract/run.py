@@ -7,9 +7,9 @@ import sys
 
 from airbyte_cdk.entrypoint import launch
 
-from .source import SourceBoxFileText
+from .source import SourceBoxDataExtract
 
 
 def run():
-    source = SourceBoxFileText()
+    source = SourceBoxDataExtract()
     launch(source, sys.argv[1:])
