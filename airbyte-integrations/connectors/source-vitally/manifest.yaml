@@ -225,7 +225,7 @@ definitions:
           $ref: "#/schemas/users"
   base_requester:
     type: HttpRequester
-    url_base: "{{ config[\"api_url\"] }}" + "/resources"
+    url_base: "https://" + {{ config[\"domain\"] + "." if config.domain else "" }} + "rest.vitally.io/resources"
     authenticator:
       type: BasicHttpAuthenticator
       password: "{{ config[\"basic_auth_header\"] }}"
@@ -245,15 +245,17 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - api_url
+      - domain
       - status
       - secret_token
     properties:
-      api_url:
+      domain:
         type: string
         order: 0
-        title: API URL
-        default: https://rest.vitally.io/
+        title: Custom Domain
+        description: >-
+          Provide only the domain part, like https://{your-domain}.rest.vitally.io/. 
+          Keep empty if you don't have a subdomain.
       status:
         type: string
         description: >-
