@@ -20,8 +20,6 @@ def get_box_ccg_client(config: Mapping[str, Any]) -> BoxClient:
     box_subject_type = config["box_subject_type"]
     box_subject_id = config["box_subject_id"]
 
-    logger.info(f"box_subject_type: {box_subject_type}, box_subject_id: {box_subject_id}")
-
     if box_subject_type == "enterprise":
         enterprise_id = box_subject_id
         user_id = None
@@ -69,7 +67,6 @@ def _do_request(box_client: BoxClient, url: str):
     try:
         access_token = box_client.auth.retrieve_token().access_token
     except BoxSDKError as e:
-        # logger.error(f"Unable to retrieve access token: {e.message}", exc_info=True)
         raise
 
     resp = requests.get(url, headers={"Authorization": f"Bearer {access_token}"})
@@ -90,7 +87,7 @@ def box_file_text_extract(client: BoxClient, file_id: str) -> str:
     )
     # Check if any representations exist
     if not file_text_representation.representations.entries:
-        # logger.warning(f"No representation for file {file_text_representation.id}")
+        logger.debug(f"No representation for file {file_text_representation.id}")
         return ""
 
     # Find the "extracted_text" representation
