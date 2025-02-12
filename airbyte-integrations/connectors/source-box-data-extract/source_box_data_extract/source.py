@@ -64,6 +64,7 @@ class SourceBoxDataExtract(AbstractSource):
         box_folder_text_representation_stream = StreamTextRepresentationFolder(box_client, config["box_folder_id"], is_recursive=config.get("is_recursive", False))
 
         return [box_folder_text_representation_stream]
+
 # Streams
 class StreamTextRepresentationFolder(Stream):
     """
