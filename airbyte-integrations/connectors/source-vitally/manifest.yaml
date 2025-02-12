@@ -225,7 +225,7 @@ definitions:
           $ref: "#/schemas/users"
   base_requester:
     type: HttpRequester
-    url_base: "htps://" {{ config['domain'] + "." if config.domain else "" }} + "rest.vitally.io/resources"
+    url_base: "https://" {{ config['domain'] + "." if config.domain else "" }} + "rest.vitally.io/resources"
     authenticator:
       type: BasicHttpAuthenticator
       password: "{{ config[\"basic_auth_header\"] }}"
