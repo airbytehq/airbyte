@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_data_lake
 
+import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -31,6 +32,7 @@ class S3DataLakeTableSynchronizerTest {
     // Mocks
     private lateinit var mockTable: Table
     private lateinit var mockUpdateSchema: UpdateSchema
+    private lateinit var mockNewSchema: Schema
 
     // Collaborators under test
     private val comparator = spyk(S3DataLakeTypesComparator())
@@ -42,6 +44,7 @@ class S3DataLakeTableSynchronizerTest {
         // Prepare the mocks before each test
         mockTable = mockk(relaxed = true)
         mockUpdateSchema = mockk(relaxed = true)
+        mockNewSchema = mockk(relaxed = true)
 
         // By default, let table.schema() return an empty schema. Tests can override this as needed.
         every { mockTable.schema() } returns Schema(listOf())
@@ -49,11 +52,11 @@ class S3DataLakeTableSynchronizerTest {
         // Table.updateSchema() should return the mock UpdateSchema
         every { mockTable.updateSchema().allowIncompatibleChanges() } returns mockUpdateSchema
 
+        // apply should return a fake schema
+        every { mockUpdateSchema.apply() } returns mockNewSchema
+
         // No-op for the commit call unless specifically tested for. We'll verify calls later.
         every { mockUpdateSchema.commit() } just runs
-
-        // Similarly for refresh.
-        every { mockTable.refresh() } just runs
     }
 
     /** Helper to build a schema with [Types.NestedField]s. */
@@ -80,10 +83,15 @@ class S3DataLakeTableSynchronizerTest {
                 S3DataLakeTypesComparator.ColumnDiff()
             }
 
-        val result = synchronizer.applySchemaChanges(mockTable, incomingSchema)
+        val result =
+            synchronizer.maybeApplySchemaChanges(
+                mockTable,
+                incomingSchema,
+                ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            )
 
         // We expect the original schema to be returned
-        assertThat(result).isSameAs(existingSchema)
+        assertThat(result).isEqualTo(SchemaUpdateResult(existingSchema, pendingUpdate = null))
 
         // Verify that no calls to updateSchema() manipulation were made
         verify(exactly = 0) { mockUpdateSchema.deleteColumn(any()) }
@@ -103,18 +111,22 @@ class S3DataLakeTableSynchronizerTest {
 
         every { mockTable.schema() } returns existingSchema
 
-        val result = synchronizer.applySchemaChanges(mockTable, incomingSchema)
+        val result =
+            synchronizer.maybeApplySchemaChanges(
+                mockTable,
+                incomingSchema,
+                ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+            )
 
         // The result is a new schema after changes, but we can only verify calls on the mock
         // Here we expect remove_me to be deleted.
         verify { mockUpdateSchema.deleteColumn("remove_me") }
         verify { mockUpdateSchema.commit() }
-        verify { mockTable.refresh() }
 
         // The final returned schema is the table's schema after refresh
         // Since we aren't actually applying changes, just assert that it's whatever the mock
         // returns
-        assertThat(result).isEqualTo(mockTable.schema())
+        assertThat(result).isEqualTo(SchemaUpdateResult(mockNewSchema, pendingUpdate = null))
     }
 
     @Test
@@ -126,13 +138,16 @@ class S3DataLakeTableSynchronizerTest {
         every { mockTable.schema() } returns existingSchema
 
         // Apply changes
-        synchronizer.applySchemaChanges(mockTable, incomingSchema)
+        synchronizer.maybeApplySchemaChanges(
+            mockTable,
+            incomingSchema,
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+        )
 
         // Verify that "age" is updated to LONG
         verify { mockUpdateSchema.updateColumn("age", Types.LongType.get()) }
         // And that changes are committed
         verify { mockUpdateSchema.commit() }
-        verify { mockTable.refresh() }
     }
 
     @Test
@@ -144,12 +159,15 @@ class S3DataLakeTableSynchronizerTest {
 
         every { mockTable.schema() } returns existingSchema
 
-        synchronizer.applySchemaChanges(mockTable, incomingSchema)
+        synchronizer.maybeApplySchemaChanges(
+            mockTable,
+            incomingSchema,
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+        )
 
         // We expect makeColumnOptional("make_optional") to be called
         verify { mockUpdateSchema.makeColumnOptional("make_optional") }
         verify { mockUpdateSchema.commit() }
-        verify { mockTable.refresh() }
     }
 
     @Test
@@ -164,11 +182,14 @@ class S3DataLakeTableSynchronizerTest {
 
         every { mockTable.schema() } returns existingSchema
 
-        synchronizer.applySchemaChanges(mockTable, incomingSchema)
+        synchronizer.maybeApplySchemaChanges(
+            mockTable,
+            incomingSchema,
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+        )
 
         verify { mockUpdateSchema.addColumn(null, "new_col", Types.StringType.get()) }
         verify { mockUpdateSchema.commit() }
-        verify { mockTable.refresh() }
     }
 
     @Test
@@ -204,11 +225,14 @@ class S3DataLakeTableSynchronizerTest {
         val nestedNameField = userInfoStruct.asSchema().findField("nested_name")
         assertThat(nestedNameField).isNotNull // Just a sanity check in the test
 
-        synchronizer.applySchemaChanges(mockTable, incomingSchema)
+        synchronizer.maybeApplySchemaChanges(
+            mockTable,
+            incomingSchema,
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+        )
 
         verify { mockUpdateSchema.addColumn("user_info", "nested_name", Types.StringType.get()) }
         verify { mockUpdateSchema.commit() }
-        verify { mockTable.refresh() }
     }
 
     @Test
@@ -222,7 +246,13 @@ class S3DataLakeTableSynchronizerTest {
             S3DataLakeTypesComparator.ColumnDiff(newColumns = mutableListOf("outer~inner~leaf"))
         every { comparator.compareSchemas(incomingSchema, existingSchema) } returns diff
 
-        assertThatThrownBy { synchronizer.applySchemaChanges(mockTable, incomingSchema) }
+        assertThatThrownBy {
+                synchronizer.maybeApplySchemaChanges(
+                    mockTable,
+                    incomingSchema,
+                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                )
+            }
             .isInstanceOf(IllegalArgumentException::class.java)
             .hasMessageContaining("Adding nested columns more than 1 level deep is not supported")
 
@@ -250,7 +280,13 @@ class S3DataLakeTableSynchronizerTest {
             Types.StructType.of(Types.NestedField.optional(1, "field", Types.StringType.get()))
         every { superTypeFinder.findSuperType(any(), any(), "complex_col") } returns structType
 
-        assertThatThrownBy { synchronizer.applySchemaChanges(mockTable, incomingSchema) }
+        assertThatThrownBy {
+                synchronizer.maybeApplySchemaChanges(
+                    mockTable,
+                    incomingSchema,
+                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                )
+            }
             .isInstanceOf(IllegalArgumentException::class.java)
             .hasMessageContaining("Currently only primitive type updates are supported.")
 
@@ -272,13 +308,16 @@ class S3DataLakeTableSynchronizerTest {
 
         every { mockTable.schema() } returns existingSchema
 
-        synchronizer.applySchemaChanges(mockTable, incomingSchema)
+        synchronizer.maybeApplySchemaChanges(
+            mockTable,
+            incomingSchema,
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+        )
 
         // We expect setIdentifierFields(listOf("id")) to be called
         verify { mockUpdateSchema.requireColumn("id") }
         verify { mockUpdateSchema.setIdentifierFields(listOf("id")) }
         verify { mockUpdateSchema.commit() }
-        verify { mockTable.refresh() }
     }
 
     @Test
@@ -314,7 +353,11 @@ class S3DataLakeTableSynchronizerTest {
             )
         } returns Types.LongType.get()
 
-        synchronizer.applySchemaChanges(mockTable, incomingSchema)
+        synchronizer.maybeApplySchemaChanges(
+            mockTable,
+            incomingSchema,
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+        )
 
         // Verify calls, in any order
         verify { mockUpdateSchema.deleteColumn("remove_me") }
@@ -325,6 +368,53 @@ class S3DataLakeTableSynchronizerTest {
         verify { mockUpdateSchema.setIdentifierFields(listOf("id")) }
 
         verify { mockUpdateSchema.commit() }
-        verify { mockTable.refresh() }
+    }
+
+    @Test
+    fun `test fail on incompatible type change`() {
+        val existingSchema =
+            buildSchema(Types.NestedField.optional(2, "age", Types.IntegerType.get()))
+        val incomingSchema =
+            buildSchema(Types.NestedField.optional(2, "age", Types.StringType.get()))
+
+        every { mockTable.schema() } returns existingSchema
+
+        assertThatThrownBy {
+                synchronizer.maybeApplySchemaChanges(
+                    mockTable,
+                    incomingSchema,
+                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                )
+            }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessage("""Conversion for column "age" between int and string is not allowed.""")
+    }
+
+    @Test
+    fun `test overwrite on incompatible type change`() {
+        val existingSchema =
+            buildSchema(Types.NestedField.optional(2, "age", Types.IntegerType.get()))
+        val incomingSchema =
+            buildSchema(Types.NestedField.optional(2, "age", Types.StringType.get()))
+
+        every { mockTable.schema() } returns existingSchema
+
+        val (schema, pendingUpdate) =
+            synchronizer.maybeApplySchemaChanges(
+                mockTable,
+                incomingSchema,
+                ColumnTypeChangeBehavior.OVERWRITE
+            )
+
+        verify { mockUpdateSchema.deleteColumn("age") }
+        verify { mockUpdateSchema.addColumn("age", Types.StringType.get()) }
+        verify(exactly = 0) { mockUpdateSchema.commit() }
+        // reminder: apply() doesn't actually make any changes, it just verifies
+        // that the schema change is valid
+        verify { mockUpdateSchema.apply() }
+        confirmVerified(mockUpdateSchema)
+
+        assertThat(schema).isSameAs(mockNewSchema)
+        assertThat(pendingUpdate).isNotNull
     }
 }

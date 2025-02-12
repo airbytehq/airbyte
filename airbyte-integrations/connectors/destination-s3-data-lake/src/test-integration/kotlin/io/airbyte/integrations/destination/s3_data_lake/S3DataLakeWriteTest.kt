@@ -161,7 +161,7 @@ abstract class S3DataLakeWriteTest(
      * throw them as a ConfigError.
      */
     @Test
-    fun testDedupNullPk() {
+    open fun testDedupNullPk() {
         val failure = expectFailure {
             runSync(
                 updatedConfig,

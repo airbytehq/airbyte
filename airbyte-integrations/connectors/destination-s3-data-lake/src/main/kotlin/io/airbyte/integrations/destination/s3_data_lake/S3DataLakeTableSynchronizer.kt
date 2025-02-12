@@ -13,6 +13,29 @@ import org.apache.iceberg.UpdateSchema
 import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Type.PrimitiveType
 
+/** Describes how the [S3DataLakeTableSynchronizer] handles column type changes. */
+enum class ColumnTypeChangeBehavior {
+    /**
+     * Find the supertype between the old and new types, throwing an error if Iceberg does not
+     * support safely altering the column in this way.
+     */
+    SAFE_SUPERTYPE {
+        override val commitImmediately = true
+    },
+
+    /** Set the column's type to the new type, executing an incompatible schema change if needed. */
+    OVERWRITE {
+        override val commitImmediately = false
+    };
+
+    /**
+     * If true, [S3DataLakeTableSynchronizer.maybeApplySchemaChanges] will commit the schema update
+     * itself. If false, the caller is responsible for calling
+     * `schemaUpdateResult.pendingUpdate?.commit()`.
+     */
+    abstract val commitImmediately: Boolean
+}
+
 /**
  * Applies schema changes to an Iceberg [Table], including nested columns (struct fields).
  *
@@ -30,7 +53,6 @@ class S3DataLakeTableSynchronizer(
     private val comparator: S3DataLakeTypesComparator,
     private val superTypeFinder: S3DataLakeSuperTypeFinder,
 ) {
-
     /**
      * Compare [table]'s current schema with [incomingSchema] and apply changes as needed:
      *
@@ -43,13 +65,17 @@ class S3DataLakeTableSynchronizer(
      * @param incomingSchema The schema describing incoming data.
      * @return The updated [Schema], after changes have been applied and committed.
      */
-    fun applySchemaChanges(table: Table, incomingSchema: Schema): Schema {
+    fun maybeApplySchemaChanges(
+        table: Table,
+        incomingSchema: Schema,
+        columnTypeChangeBehavior: ColumnTypeChangeBehavior,
+    ): SchemaUpdateResult {
         val existingSchema = table.schema()
         val diff = comparator.compareSchemas(incomingSchema, existingSchema)
 
         if (!diff.hasChanges()) {
             // If no differences, return the existing schema as-is.
-            return existingSchema
+            return SchemaUpdateResult(existingSchema, pendingUpdate = null)
         }
 
         val update: UpdateSchema = table.updateSchema().allowIncompatibleChanges()
@@ -66,18 +92,27 @@ class S3DataLakeTableSynchronizer(
                 incomingSchema.findField(columnName)
                     ?: error("Field \"$columnName\" not found in the incoming schema!")
 
-            val superType: Type =
-                superTypeFinder.findSuperType(
-                    existingType = existingField.type(),
-                    incomingType = incomingField.type(),
-                    columnName = columnName
-                )
-            require(superType is PrimitiveType) {
-                "Currently only primitive type updates are supported. Attempted type: $superType"
+            when (columnTypeChangeBehavior) {
+                ColumnTypeChangeBehavior.SAFE_SUPERTYPE -> {
+                    val superType: Type =
+                        superTypeFinder.findSuperType(
+                            existingType = existingField.type(),
+                            incomingType = incomingField.type(),
+                            columnName = columnName
+                        )
+                    require(superType is PrimitiveType) {
+                        "Currently only primitive type updates are supported. Attempted type: $superType"
+                    }
+                    update.updateColumn(columnName, superType)
+                }
+                ColumnTypeChangeBehavior.OVERWRITE -> {
+                    // Even when allowIncompatibleChanges is enabled, Iceberg still doesn't allow
+                    // arbitrary type changes.
+                    // So we have to drop+add the column here.
+                    update.deleteColumn(columnName)
+                    update.addColumn(columnName, incomingField.type())
+                }
             }
-
-            // Update the column to the supertype
-            update.updateColumn(columnName, superType)
         }
 
         // 3) Mark columns newly optional
@@ -136,10 +171,16 @@ class S3DataLakeTableSynchronizer(
             update.setIdentifierFields(updatedIdentifierFields)
         }
 
-        // Commit all changes and refresh the table schema
-        update.commit()
-        table.refresh()
-
-        return table.schema()
+        // `apply` just validates that the schema change is valid, it doesn't actually commit().
+        // It returns the schema that the table _would_ have after committing.
+        val newSchema: Schema = update.apply()
+        if (columnTypeChangeBehavior.commitImmediately) {
+            update.commit()
+            return SchemaUpdateResult(newSchema, pendingUpdate = null)
+        } else {
+            return SchemaUpdateResult(newSchema, update)
+        }
     }
 }
+
+data class SchemaUpdateResult(val schema: Schema, val pendingUpdate: UpdateSchema?)
