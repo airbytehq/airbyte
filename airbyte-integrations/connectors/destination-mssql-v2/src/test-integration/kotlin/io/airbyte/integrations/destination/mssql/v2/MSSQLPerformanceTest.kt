@@ -61,10 +61,21 @@ class MSSQLPerformanceTest :
         dataValidator = MSSQLDataValidator(),
         defaultRecordsToInsert = 10000,
     ) {
+
     @Test
     override fun testInsertRecords() {
         testInsertRecords(recordsToInsert = 100000) {}
     }
+
+    @Test
+    override fun testRefreshingRecords() {
+        testRefreshingRecords { perfSummary ->
+            perfSummary.forEach { streamSummary ->
+                assertEquals(streamSummary.expectedRecordCount, streamSummary.recordCount)
+            }
+        }
+    }
+
     @Test
     override fun testInsertRecordsWithDedup() {
         testInsertRecordsWithDedup { perfSummary ->
