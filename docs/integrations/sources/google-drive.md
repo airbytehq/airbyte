@@ -282,6 +282,7 @@ If enabled, sends subdirectory folder structure along with source file names to 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.2.0 | 2025-02-14 | [52099](https://github.com/airbytehq/airbyte/pull/52099) | Introduce ACLs and Permissions streams |
 | 0.1.2 | 2025-02-08 | [53320](https://github.com/airbytehq/airbyte/pull/53320) | Update dependencies |
 | 0.1.1 | 2025-02-01 | [43895](https://github.com/airbytehq/airbyte/pull/43895) | Update dependencies |
 | 0.1.0 | 2025-01-27 | [52572](https://github.com/airbytehq/airbyte/pull/52572) | Promoting release candidate 0.1.0-rc.1 to a main version. |
