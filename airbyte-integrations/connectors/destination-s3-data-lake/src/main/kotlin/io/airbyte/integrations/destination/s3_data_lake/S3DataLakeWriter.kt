@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableWriterFactory
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import javax.inject.Singleton
 import org.apache.iceberg.catalog.TableIdentifier
@@ -26,6 +27,7 @@ class S3DataLakeWriter(
     private val icebergTableSynchronizer: IcebergTableSynchronizer,
     private val catalog: DestinationCatalog,
     private val tableIdGenerator: TableIdGenerator,
+    private val streamStateStore: StreamStateStore<S3DataLakeStreamState>
 ) : DestinationWriter {
     override suspend fun setup() {
         super.setup()
@@ -69,6 +71,7 @@ class S3DataLakeWriter(
             icebergUtil,
             stagingBranchName = DEFAULT_STAGING_BRANCH,
             mainBranchName = icebergConfiguration.icebergCatalogConfiguration.mainBranchName,
+            streamStateStore = streamStateStore,
         )
     }
 }
