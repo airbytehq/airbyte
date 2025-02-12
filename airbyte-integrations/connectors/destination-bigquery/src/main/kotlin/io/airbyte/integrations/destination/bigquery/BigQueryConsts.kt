@@ -22,4 +22,7 @@ object BigQueryConsts {
     const val CDC_DELETION_MODE: String = "cdc_deletion_mode"
     const val NAMESPACE_PREFIX: String = "n"
     const val NULL_MARKER: String = "\\N"
+    const val GCS_LOAD_MAX_BAD_RECORDS: String = "max_bad_records"
+    const val GCS_BUCKET_PATH_BAD_RECORDS: String = "gcs_bucket_path_bad_records"
+    const val GCS_KEEP_BAD_RECORDS: String = "keep_bad_records"
 }
