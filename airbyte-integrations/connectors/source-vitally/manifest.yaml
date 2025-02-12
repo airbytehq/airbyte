@@ -253,7 +253,7 @@ spec:
         type: string
         order: 0
         title: API URL
-        default: https://yourdomain.rest.vitally.io/
+        default: https://rest.vitally.io/
       status:
         type: string
         description: >-
