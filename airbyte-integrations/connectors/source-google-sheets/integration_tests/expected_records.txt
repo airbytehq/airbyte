@@ -1,26 +1,26 @@
-{"stream":"Sheet1-one-col","data":{"ID":"aa"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"bb"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"1"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"2"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"3"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"4"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"5"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"6"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"7"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"8"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"9"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"10"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"11"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"12"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"13"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"14"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"15"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"16"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"17"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"18"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"19"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"20"},"emitted_at":1673989565000}
-{"stream":"Sheet1-one-col","data":{"ID":"21"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"aa"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"bb"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"1"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"2"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"3"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"4"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"5"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"6"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"7"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"8"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"9"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"10"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"11"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"12"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"13"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"14"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"15"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"16"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"17"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"18"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"19"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"20"},"emitted_at":1673989565000}
+{"stream":"Sheet1 one col&special name%?","data":{"ID":"21"},"emitted_at":1673989565000}
 {"stream":"Sheet2-two-cols","data":{"ID":"a","Name":"a"},"emitted_at":1673989565000}
 {"stream":"Sheet2-two-cols","data":{"ID":"b","Name":"b"},"emitted_at":1673989565000}
 {"stream":"Sheet2-two-cols","data":{"ID":"c","Name":"c"},"emitted_at":1673989565000}

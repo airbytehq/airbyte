@@ -1,4 +1,4 @@
-version: 6.5.2
+version: 6.13.0
 
 type: DeclarativeSource
 
@@ -12,26 +12,15 @@ description: >
   Visit https://www.shipstation.com/docs/api/ for API documentation
 
 
-  Authentication setup
-
-
-  To get your API key and secret in ShipStation:
-
-
-  ↳ Go to Account Settings.
-
-
-  ↳ Select Account from the side navigation, then choose API Settings.
-
-
-  ↳ Click "Generate New API Keys" if no key and secret are listed yet.
+  Authentication setup to get your API key and secret in ShipStation:
+  1. Go to Account Settings.
+  2. Select Account from the side navigation, then choose API Settings.
+  3. Click "Generate New API Keys" if no key and secret are listed yet.
 
 
   ** IMPORTANT **
-
-  ↳If you've already generated your API keys, the existing API keys will be
+  If you've already generated your API keys, the existing API keys will be
   displayed here and the button will read Regenerate API Keys.
-
 
   If you already have API keys, do NOT generate new ones. Instead, copy your
   existing key and secret.
@@ -57,6 +46,13 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: carriers
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: X-Rate-Limit-Reset
         record_selector:
           type: RecordSelector
           extractor:
@@ -80,6 +76,13 @@ definitions:
           request_parameters:
             sortBy: CreateDate
             sortDir: ASC
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: X-Rate-Limit-Reset
         record_selector:
           type: RecordSelector
           extractor:
@@ -119,6 +122,13 @@ definitions:
           request_parameters:
             sortBy: CreateDate
             sortDir: ASC
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: X-Rate-Limit-Reset
         record_selector:
           type: RecordSelector
           extractor:
@@ -158,6 +168,13 @@ definitions:
           request_parameters:
             sortBy: CreateDate
             sortDir: ASC
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: X-Rate-Limit-Reset
         record_selector:
           type: RecordSelector
           extractor:
@@ -197,6 +214,13 @@ definitions:
           request_parameters:
             sortBy: CreateDate
             sortDir: ASC
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: X-Rate-Limit-Reset
         record_selector:
           type: RecordSelector
           extractor:
@@ -236,6 +260,13 @@ definitions:
           request_parameters:
             sortBy: CreateDate
             sortDir: ASC
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: X-Rate-Limit-Reset
         record_selector:
           type: RecordSelector
           extractor:
@@ -273,6 +304,13 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: stores/marketplaces
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: X-Rate-Limit-Reset
         record_selector:
           type: RecordSelector
           extractor:
@@ -295,6 +333,13 @@ definitions:
           http_method: GET
           request_parameters:
             showInactive: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: X-Rate-Limit-Reset
         record_selector:
           type: RecordSelector
           extractor:
@@ -317,6 +362,13 @@ definitions:
           http_method: GET
           request_parameters:
             showInactive: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: X-Rate-Limit-Reset
         record_selector:
           type: RecordSelector
           extractor:
@@ -337,6 +389,13 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: warehouses
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: X-Rate-Limit-Reset
         record_selector:
           type: RecordSelector
           extractor:
@@ -357,6 +416,13 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: webhooks
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: X-Rate-Limit-Reset
         record_selector:
           type: RecordSelector
           extractor:
@@ -423,78 +489,78 @@ metadata:
     webhooks: true
   testedStreams:
     carriers:
-      hasRecords: true
-      streamHash: e365e82d0239da73f190b402ee7cfe13f8fe58ef
+      streamHash: be6881466bb754c5f6621be3a6306b003f0a1126
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     customers:
       hasRecords: true
-      streamHash: e8cbba0585b48a12cabb6313cdfd050fef6c4c51
+      streamHash: 3a71f1ee22fa339d523546b8a164e54a489f846d
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     fulfillments:
       hasRecords: true
-      streamHash: b68f160d28ffc12b752300c1feccdd7a2e8b66f4
+      streamHash: 026dd04339d7d2e8d28e14782ea35d10a7bf30be
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     orders:
       hasRecords: true
-      streamHash: 3adbe3ee45da8c8700cea208472e17db81bbee00
+      streamHash: 45644cfa093d9cd5b58ca0f85edf1e1620096f13
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     products:
       hasRecords: true
-      streamHash: d6f4c42c64de31036fd0b00e7071d5692957681a
+      streamHash: 207832c3ee203757005d808a810dbd255b452524
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     shipments:
       hasRecords: true
-      streamHash: 627deb767611e61857e3123c4493fdfc0da3c950
+      streamHash: 9c218e5a365690e48888bd107f02f895acf92d64
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     marketplaces:
       hasRecords: true
-      streamHash: 060465f8f4ec23444675c486fd49a4a1b65280ac
+      streamHash: d72e0c9db9ffc1ac6bf17860a840e37cfbfa17ac
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     stores:
       hasRecords: true
-      streamHash: 2d9578ddd41be28bb1ecddb8f01cdcbb22883224
+      streamHash: aa10efd59d28a0cd50bdc22e18be9dba458fcd6b
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     users:
       hasRecords: true
-      streamHash: 540b75b8772f77bee87fc03c27df87537e4b3f47
+      streamHash: b75954dd09746a00462bcca1681247be67b629b1
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     warehouses:
       hasRecords: true
-      streamHash: 547e90797b9e2c7a9be2ea9192fa332d025e2193
+      streamHash: d0f0fec91ccb3c4214207779068160fb6285d67f
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     webhooks:
       hasRecords: true
-      streamHash: 815e1dc0e79c1e285234c61a28c06942700c8c42
+      streamHash: 3efcf73498c5b57812f9492cdafbbf5334a8b67e
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
