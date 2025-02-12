@@ -3583,6 +3583,26 @@ definitions:
             - path:
                 - email
               value: "{{ record['name'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - phone
+              value: "{{ record['phone'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - username
+              value: "{{ record['username'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - createdBy
+              value: "{{ record['createdBy'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - updatedBy
+              value: "{{ record['updatedBy'] | hash('md5') }}"
     accounting_accounts:
       type: DeclarativeStream
       name: accounting_accounts
@@ -3843,6 +3863,61 @@ definitions:
             - path:
                 - email
               value: "{{ record['email'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - achAccountNumber
+              value: "{{ record['achAccountNumber'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - achRoutingNumber
+              value: "{{ record['achRoutingNumber'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - fax
+              value: "{{ record['fax'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - taxId
+              value: "{{ record['taxId'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - taxName
+              value: "{{ record['taxName'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - taxStreetAddress
+              value: "{{ record['taxStreetAddress'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - taxExtendedAddress
+              value: "{{ record['taxExtendedAddress'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - website
+              value: "{{ record['website'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - notes
+              value: "{{ record['notes'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - createdBy
+              value: "{{ record['createdBy'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - updatedBy
+              value: "{{ record['updatedBy'] | hash('md5') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updatedAt
@@ -4231,6 +4306,51 @@ definitions:
             - path:
                 - secondaryEmail
               value: "{{ record['secondaryEmail'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - achAccountNumber
+              value: "{{ record['achAccountNumber'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - achRoutingNumber
+              value: "{{ record['achRoutingNumber'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - homePhone
+              value: "{{ record['homePhone'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - otherPhone
+              value: "{{ record['otherPhone'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - fax
+              value: "{{ record['fax'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - taxId
+              value: "{{ record['taxId'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - workPhone
+              value: "{{ record['workPhone'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - createdBy
+              value: "{{ record['createdBy'] | hash('md5') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - updatedBy
+              value: "{{ record['updatedBy'] | hash('md5') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updatedAt
@@ -5795,7 +5915,7 @@ metadata:
       responsesAreSuccessful: true
     contacts:
       hasRecords: true
-      streamHash: 2af797db5121358520fc3d086abe63b12b97782b
+      streamHash: cfbd534d251454f371cad0b8db46054c6df0e34c
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6026,7 +6146,7 @@ metadata:
       responsesAreSuccessful: true
     contacts_companies:
       hasRecords: true
-      streamHash: c8b203f03d1e49e9c990b26bcb48e68a85cddb61
+      streamHash: 3ed745925f076caf77c45465e2f5e58e24e2aa28
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6054,7 +6174,7 @@ metadata:
       responsesAreSuccessful: true
     users_pii_redacted:
       hasRecords: true
-      streamHash: c5c232f2fe4d894ff54b9238f584cd4a04e0ab98
+      streamHash: 07084bef8f0495deee620d9ec27cd972187a6324
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6082,7 +6202,7 @@ metadata:
       responsesAreSuccessful: true
     owners_pii_redacted:
       hasRecords: true
-      streamHash: d08e76a3e73b3afc07ecbb3066f29559c96cd9a7
+      streamHash: bbf1007b30bcf67a2be3568f24d439e6e1474300
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6117,7 +6237,7 @@ metadata:
       responsesAreSuccessful: true
     contacts_pii_redacted:
       hasRecords: true
-      streamHash: 3a24453fe732de5e4624a389f2f9e687a04d8658
+      streamHash: 22ba3e8724c2afd9b7444965b1b677f5a62ad47e
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -11178,11 +11298,11 @@ schemas:
           - object
           - "null"
         properties:
-          custom_1:
+          custom_5:
             type:
               - string
               - "null"
-          custom_2:
+          custom_6:
             type:
               - string
               - "null"
@@ -11225,6 +11345,10 @@ schemas:
       updatedAt:
         type: string
       updatedBy:
+        type:
+          - string
+          - "null"
+      workPhone:
         type:
           - string
           - "null"
@@ -25437,6 +25561,10 @@ schemas:
     properties:
       id:
         type: number
+      fax:
+        type:
+          - string
+          - "null"
       name:
         type:
           - string
