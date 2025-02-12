@@ -7,7 +7,7 @@ data:
       - amplitude.com
       - analytics.eu.amplitude.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.33.3@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.33.3@sha256:999e7b6e9bbb035e961a7f38fa1a06c6b20a60e4e2de1862a2ac4fc4340505c8
   connectorSubtype: api
   connectorType: source
   definitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
