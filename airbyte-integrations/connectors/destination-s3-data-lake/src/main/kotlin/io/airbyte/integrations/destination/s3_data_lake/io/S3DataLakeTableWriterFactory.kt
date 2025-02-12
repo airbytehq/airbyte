@@ -148,6 +148,7 @@ class S3DataLakeTableWriterFactory(private val s3DataLakeUtil: S3DataLakeUtil) {
     ): BaseTaskWriter<Record> {
         return if (table.spec().isUnpartitioned) {
             UnpartitionedDeltaWriter(
+                table,
                 spec = table.spec(),
                 format = format,
                 appenderFactory = appenderFactory,
@@ -159,6 +160,7 @@ class S3DataLakeTableWriterFactory(private val s3DataLakeUtil: S3DataLakeUtil) {
             )
         } else {
             PartitionedDeltaWriter(
+                table,
                 spec = table.spec(),
                 format = format,
                 appenderFactory = appenderFactory,
