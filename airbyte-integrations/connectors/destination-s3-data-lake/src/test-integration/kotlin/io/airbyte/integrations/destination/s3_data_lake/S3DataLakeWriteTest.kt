@@ -201,6 +201,11 @@ class GlueWriteTest :
         )
     ) {
     @Test
+    override fun resumeAfterCancelledTruncate() {
+        super.resumeAfterCancelledTruncate()
+    }
+
+    @Test
     fun testNameConflicts() {
         assumeTrue(verifyDataWriting)
         fun makeStream(

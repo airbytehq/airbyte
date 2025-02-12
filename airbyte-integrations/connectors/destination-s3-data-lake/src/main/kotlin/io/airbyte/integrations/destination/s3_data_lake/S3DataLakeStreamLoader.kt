@@ -17,6 +17,7 @@ import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableWriter
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
+import org.apache.iceberg.Snapshot
 import org.apache.iceberg.Table
 import org.apache.iceberg.UpdateSchema
 
@@ -45,12 +46,20 @@ class S3DataLakeStreamLoader(
     private val incomingSchema =
         s3DataLakeUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
 
-    private val stagingBranchName =
-        if (stream.shouldBeTruncatedAtEndOfSync()) {
-            DEFAULT_STAGING_BRANCH
-        } else {
-            mainBranchName
+    private val stagingBranchName = DEFAULT_STAGING_BRANCH
+
+    private fun isStagingBranchAhead(): Boolean {
+        // Get snapshots for the branch and main
+        val branchSnapshot: Snapshot? = table.refs()[stagingBranchName]?.snapshotId()?.let { table.snapshot(it) }
+        val mainSnapshot: Snapshot? = table.refs()[mainBranchName]?.snapshotId()?.let { table.snapshot(it) }
+
+        // If either branch doesn't exist or doesn't have a snapshot, it can't be ahead
+        if (branchSnapshot == null || mainSnapshot == null) {
+            return false
         }
+
+        return branchSnapshot != mainSnapshot
+    }
 
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
@@ -78,14 +87,16 @@ class S3DataLakeStreamLoader(
         // incrementally, and if the entire sync is in a transaction, we might crash before we can
         // commit that transaction.
         targetSchema = computeOrExecuteSchemaUpdate().schema
+        if (stream.shouldBeTruncatedAtEndOfSync() || isStagingBranchAhead()) { DEFAULT_STAGING_BRANCH } else { mainBranchName }
+
         try {
             logger.info {
-                "maybe creating branch $stagingBranchName for stream ${stream.descriptor}"
+                "maybe creating branch $DEFAULT_STAGING_BRANCH for stream ${stream.descriptor}"
             }
-            table.manageSnapshots().createBranch(stagingBranchName).commit()
+            table.manageSnapshots().createBranch(DEFAULT_STAGING_BRANCH).commit()
         } catch (e: IllegalArgumentException) {
             logger.info {
-                "branch $stagingBranchName already exists for stream ${stream.descriptor}"
+                "branch $DEFAULT_STAGING_BRANCH already exists for stream ${stream.descriptor}"
             }
         }
     }
@@ -168,6 +179,8 @@ class S3DataLakeStreamLoader(
                     .manageSnapshots()
                     .fastForwardBranch(mainBranchName, stagingBranchName)
                     .commit()
+
+                table.manageSnapshots().fastForwardBranch(DEFAULT_STAGING_BRANCH, mainBranchName).commit()
             }
         }
     }
