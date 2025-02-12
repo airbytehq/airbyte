@@ -5,7 +5,7 @@
 
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_box_file_text.source import IncrementalBoxFileTextStream
+from source_box_data_extract.source import IncrementalBoxFileTextStream
 
 # @fixture
 # def patch_incremental_base_class(mocker):

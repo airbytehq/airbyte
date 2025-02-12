@@ -4,7 +4,7 @@
 
 from unittest.mock import MagicMock
 
-from source_box_file_text.source import SourceBoxFileText
+from source_box_data_extract.source import SourceBoxFileText
 
 
 def test_check_connection(mocker):
