@@ -3,6 +3,6 @@
 #
 
 
-from .source import SourceBoxFileText
+from .source import SourceBoxDataExtract
 
-__all__ = ["SourceBoxFileText"]
+__all__ = ["SourceBoxDataExtract"]
