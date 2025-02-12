@@ -73,7 +73,8 @@ class CheckpointManagerTest {
         override val catalog: DestinationCatalog,
         override val syncManager: SyncManager,
         override val outputConsumer: MockOutputConsumer,
-        override val timeProvider: TimeProvider
+        override val timeProvider: TimeProvider,
+        override val checkpointById: Boolean = false
     ) : StreamsCheckpointManager<MockCheckpoint>()
 
     sealed class TestEvent
