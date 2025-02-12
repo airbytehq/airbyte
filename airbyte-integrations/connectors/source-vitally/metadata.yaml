@@ -2,8 +2,6 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "htps://*.rest.vitally.io"
-      - "https://rest.vitally.io"
       - "https://*.rest.vitally.io"
       - "https://rest.vitally.io"
   registryOverrides:
