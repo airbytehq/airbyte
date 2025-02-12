@@ -10,16 +10,18 @@ from typing import TYPE_CHECKING, Any, Dict, List, Literal, Sequence
 from urllib.parse import parse_qsl, urlparse
 
 import pyarrow as pa
-from airbyte_cdk import DestinationSyncMode
-from airbyte_cdk.sql import exceptions as exc
-from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, DEBUG_MODE
-from airbyte_cdk.sql.secrets import SecretString
-from airbyte_cdk.sql.shared.sql_processor import SqlConfig, SqlProcessorBase, SQLRuntimeError
 from duckdb_engine import DuckDBEngineWarning
 from overrides import overrides
 from pydantic import Field
 from sqlalchemy import Executable, TextClause, create_engine, text
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
+
+from airbyte_cdk import DestinationSyncMode
+from airbyte_cdk.sql import exceptions as exc
+from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, DEBUG_MODE
+from airbyte_cdk.sql.secrets import SecretString
+from airbyte_cdk.sql.shared.sql_processor import SqlConfig, SqlProcessorBase, SQLRuntimeError
+
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import Connection, Engine
@@ -259,17 +261,10 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         sync_mode: DestinationSyncMode,
     ) -> None:
         """Write the temp table into the final table using the provided write strategy."""
-        if sync_mode == DestinationSyncMode.overwrite:
-            # Note: No need to check for schema compatibility
-            # here, because we are fully replacing the table.
-            self._swap_temp_table_with_final_table(
-                stream_name=stream_name,
-                temp_table_name=temp_table_name,
-                final_table_name=final_table_name,
-            )
-            return
-
-        if sync_mode == DestinationSyncMode.append:
+        if sync_mode == DestinationSyncMode.append or sync_mode == DestinationSyncMode.overwrite:
+            # Because overwrite drops the table and reinsert all the data
+            # we can use the same logic as append.
+            # The table is dropped during (_ensure_table_exists)
             self._ensure_compatible_table_schema(
                 stream_name=stream_name,
                 table_name=final_table_name,

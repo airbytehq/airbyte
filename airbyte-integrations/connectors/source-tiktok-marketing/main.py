@@ -4,5 +4,6 @@
 
 from source_tiktok_marketing.run import run
 
+
 if __name__ == "__main__":
     run()

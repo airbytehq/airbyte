@@ -9,6 +9,7 @@ import dagger
 import semver
 import yaml  # type: ignore
 from connector_ops.utils import METADATA_FILE_NAME, PYPROJECT_FILE_NAME  # type: ignore
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.connectors.dagger_fs import dagger_read_file, dagger_write_file

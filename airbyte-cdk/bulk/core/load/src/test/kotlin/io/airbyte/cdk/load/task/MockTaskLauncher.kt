@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.task
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchEnvelope
-import io.airbyte.cdk.load.message.DestinationFile
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
@@ -18,10 +17,6 @@ class MockTaskLauncher : DestinationTaskLauncher {
     val batchEnvelopes = mutableListOf<BatchEnvelope<*>>()
 
     override suspend fun handleSetupComplete() {
-        throw NotImplementedError()
-    }
-
-    override suspend fun handleStreamStarted(stream: DestinationStream.Descriptor) {
         throw NotImplementedError()
     }
 
@@ -38,14 +33,6 @@ class MockTaskLauncher : DestinationTaskLauncher {
 
     override suspend fun handleTeardownComplete(success: Boolean) {
         throw NotImplementedError()
-    }
-
-    override suspend fun handleFile(
-        stream: DestinationStream.Descriptor,
-        file: DestinationFile,
-        index: Long
-    ) {
-        throw NotImplementedError("This destination does not support file transfer.")
     }
 
     override suspend fun handleException(e: Exception) {

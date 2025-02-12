@@ -31,7 +31,7 @@ run-name: "Approve Regression Tests #${{ github.event.inputs.pr }}"
 jobs:
   approve-regression-tests:
     name: "Approve Regression Tests"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Get job variables
         id: job-vars

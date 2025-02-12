@@ -5,8 +5,9 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
 from source_typeform import SourceTypeform
+
+from airbyte_cdk.entrypoint import launch
 
 
 def run():

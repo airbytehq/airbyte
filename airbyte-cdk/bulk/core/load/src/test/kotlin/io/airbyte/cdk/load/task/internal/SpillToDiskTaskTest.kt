@@ -8,10 +8,9 @@ import com.google.common.collect.Range
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.command.MockDestinationConfiguration
-import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.file.DefaultSpillFileProvider
 import io.airbyte.cdk.load.file.SpillFileProvider
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordSerialized
 import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.DestinationStreamEventQueue
 import io.airbyte.cdk.load.message.DestinationStreamQueueSupplier
@@ -27,7 +26,6 @@ import io.airbyte.cdk.load.state.TimeWindowTrigger
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.MockTaskLauncher
 import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
-import io.airbyte.cdk.load.test.util.StubDestinationMessageFactory
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -94,10 +92,10 @@ class SpillToDiskTaskTest {
                     StreamRecordEvent(
                         3L,
                         2L,
-                        StubDestinationMessageFactory.makeRecord(
-                            MockDestinationCatalogFactory.stream1,
-                            "test 3",
-                        ),
+                        DestinationRecordSerialized(
+                            MockDestinationCatalogFactory.stream1.descriptor,
+                            ""
+                        )
                     )
                 // flush strategy returns true, so we flush
                 coEvery { flushStrategy.shouldFlush(any(), any(), any()) } returns true
@@ -134,10 +132,10 @@ class SpillToDiskTaskTest {
                     StreamRecordEvent(
                         3L,
                         2L,
-                        StubDestinationMessageFactory.makeRecord(
-                            MockDestinationCatalogFactory.stream1,
-                            "test 3",
-                        ),
+                        DestinationRecordSerialized(
+                            MockDestinationCatalogFactory.stream1.descriptor,
+                            ""
+                        )
                     )
 
                 // must publish 1 record message so range isn't empty
@@ -254,13 +252,10 @@ class SpillToDiskTaskTest {
                         StreamRecordEvent(
                             index = index,
                             sizeBytes = Fixtures.SERIALIZED_SIZE_BYTES,
-                            record =
-                                DestinationRecord(
-                                    stream = MockDestinationCatalogFactory.stream1.descriptor,
-                                    data = NullValue,
-                                    emittedAtMs = 0,
-                                    meta = null,
-                                    serialized = "test${index}",
+                            payload =
+                                DestinationRecordSerialized(
+                                    MockDestinationCatalogFactory.stream1.descriptor,
+                                    "",
                                 ),
                         ),
                     ),
