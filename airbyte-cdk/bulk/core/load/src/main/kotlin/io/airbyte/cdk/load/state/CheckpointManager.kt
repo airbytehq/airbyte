@@ -13,7 +13,7 @@ import io.airbyte.cdk.load.util.use
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
-import io.micronaut.context.annotation.Value
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -290,11 +290,13 @@ class DefaultCheckpointManager(
     override val syncManager: SyncManager,
     override val outputConsumer: suspend (Reserved<CheckpointMessage>) -> Unit,
     override val timeProvider: TimeProvider,
-    @Value("\${airbyte.destination.core.checkpoint-by-id:false}")
-    override val checkpointById: Boolean = false
+    @Named("checkpointById") override val checkpointById: Boolean = false,
 ) : StreamsCheckpointManager<Reserved<CheckpointMessage>>() {
+    private val log = KotlinLogging.logger {}
+
     init {
         lastFlushTimeMs.set(timeProvider.currentTimeMillis())
+        log.info { "Checkpoint manager initialized with checkpointById: $checkpointById" }
     }
 }
 

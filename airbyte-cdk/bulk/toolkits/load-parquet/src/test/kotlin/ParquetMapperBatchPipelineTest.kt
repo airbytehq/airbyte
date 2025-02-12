@@ -9,7 +9,7 @@ import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
 
-class ParquetMapperPipelineTest {
+class ParquetMapperBatchPipelineTest {
     @Test
     fun `test conversions nested in unions`() {
         val stream = mockk<DestinationStream>()

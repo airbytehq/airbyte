@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -31,8 +31,8 @@ class StreamManagerTest {
         val manager1 = DefaultStreamManager(stream1)
         val manager2 = DefaultStreamManager(stream2)
 
-        Assertions.assertEquals(0, manager1.getNextCheckpointId().id)
-        Assertions.assertEquals(0, manager2.getNextCheckpointId().id)
+        Assertions.assertEquals(0, manager1.getCurrentCheckpointId().id)
+        Assertions.assertEquals(0, manager2.getCurrentCheckpointId().id)
 
         // Incrementing once yields (n, n)
         repeat(10) { manager1.incrementReadCount() }
@@ -41,8 +41,8 @@ class StreamManagerTest {
         Assertions.assertEquals(10, index)
         Assertions.assertEquals(10, count)
 
-        Assertions.assertEquals(1, manager1.getNextCheckpointId().id)
-        Assertions.assertEquals(0, manager2.getNextCheckpointId().id)
+        Assertions.assertEquals(1, manager1.getCurrentCheckpointId().id)
+        Assertions.assertEquals(0, manager2.getCurrentCheckpointId().id)
 
         // Incrementing a second time yields (n + m, m)
         repeat(5) { manager1.incrementReadCount() }
@@ -51,14 +51,14 @@ class StreamManagerTest {
         Assertions.assertEquals(15, index2)
         Assertions.assertEquals(5, count2)
 
-        Assertions.assertEquals(2, manager1.getNextCheckpointId().id)
-        Assertions.assertEquals(0, manager2.getNextCheckpointId().id)
+        Assertions.assertEquals(2, manager1.getCurrentCheckpointId().id)
+        Assertions.assertEquals(0, manager2.getCurrentCheckpointId().id)
 
         // Never incrementing yields (0, 0)
         val (index3, count3) = manager2.markCheckpoint()
 
-        Assertions.assertEquals(2, manager1.getNextCheckpointId().id)
-        Assertions.assertEquals(1, manager2.getNextCheckpointId().id)
+        Assertions.assertEquals(2, manager1.getCurrentCheckpointId().id)
+        Assertions.assertEquals(1, manager2.getCurrentCheckpointId().id)
 
         Assertions.assertEquals(0, index3)
         Assertions.assertEquals(0, count3)
@@ -66,8 +66,8 @@ class StreamManagerTest {
         // Incrementing twice in a row yields (n + m + 0, 0)
         val (index4, count4) = manager1.markCheckpoint()
 
-        Assertions.assertEquals(3, manager1.getNextCheckpointId().id)
-        Assertions.assertEquals(1, manager2.getNextCheckpointId().id)
+        Assertions.assertEquals(3, manager1.getCurrentCheckpointId().id)
+        Assertions.assertEquals(1, manager2.getCurrentCheckpointId().id)
 
         Assertions.assertEquals(15, index4)
         Assertions.assertEquals(0, count4)
@@ -478,7 +478,7 @@ class StreamManagerTest {
     @Test
     fun `test persisted counts`() {
         val manager = DefaultStreamManager(stream1)
-        val checkpointId = manager.getNextCheckpointId()
+        val checkpointId = manager.getCurrentCheckpointId()
 
         repeat(10) { manager.incrementReadCount() }
         manager.markCheckpoint()
@@ -488,28 +488,17 @@ class StreamManagerTest {
         Assertions.assertFalse(manager.areRecordsPersistedUntilCheckpoint(checkpointId))
         manager.incrementPersistedCount(checkpointId, 5)
         Assertions.assertTrue(manager.areRecordsPersistedUntilCheckpoint(checkpointId))
-
-        // Should throw if we try to persist more than the total count
-        assertThrows<IllegalStateException> { manager.incrementPersistedCount(checkpointId, 1) }
-    }
-
-    @Test
-    fun `test persisting un unmarked checkpoint throws`() {
-        val manager = DefaultStreamManager(stream1)
-        val checkpointId = manager.getNextCheckpointId()
-
-        assertThrows<IllegalStateException> { manager.incrementPersistedCount(checkpointId, 1) }
     }
 
     @Test
     fun `test persisted count for multiple checkpoints`() {
         val manager = DefaultStreamManager(stream1)
 
-        val checkpointId1 = manager.getNextCheckpointId()
+        val checkpointId1 = manager.getCurrentCheckpointId()
         repeat(10) { manager.incrementReadCount() }
         manager.markCheckpoint()
 
-        val checkpointId2 = manager.getNextCheckpointId()
+        val checkpointId2 = manager.getCurrentCheckpointId()
         repeat(15) { manager.incrementReadCount() }
         manager.markCheckpoint()
 
@@ -529,13 +518,14 @@ class StreamManagerTest {
     fun `test persisted count for multiple checkpoints out of order`() {
         val manager = DefaultStreamManager(stream1)
 
-        val checkpointId1 = manager.getNextCheckpointId()
+        val checkpointId1 = manager.getCurrentCheckpointId()
 
         repeat(10) { manager.incrementReadCount() }
         manager.markCheckpoint()
 
-        val checkpointId2 = manager.getNextCheckpointId()
+        val checkpointId2 = manager.getCurrentCheckpointId()
         repeat(15) { manager.incrementReadCount() }
+
         manager.markCheckpoint()
 
         Assertions.assertFalse(manager.areRecordsPersistedUntilCheckpoint(checkpointId1))
@@ -555,7 +545,7 @@ class StreamManagerTest {
     fun `test completion implies persistence`() {
         val manager = DefaultStreamManager(stream1)
 
-        val checkpointId1 = manager.getNextCheckpointId()
+        val checkpointId1 = manager.getCurrentCheckpointId()
 
         repeat(10) { manager.incrementReadCount() }
         manager.markCheckpoint()
@@ -569,9 +559,6 @@ class StreamManagerTest {
         // Can still count persisted (but without effect)
         manager.incrementPersistedCount(checkpointId1, 10)
         Assertions.assertTrue(manager.areRecordsPersistedUntilCheckpoint(checkpointId1))
-
-        // Completed should also throw if we try to complete more than the total count
-        assertThrows<IllegalStateException> { manager.incrementCompletedCount(checkpointId1, 1) }
     }
 
     @Test
@@ -589,12 +576,12 @@ class StreamManagerTest {
 
         cases.forEach { steps ->
             val manager = DefaultStreamManager(stream1)
-            val checkpointId1 = manager.getNextCheckpointId()
+            val checkpointId1 = manager.getCurrentCheckpointId()
 
             repeat(10) { manager.incrementReadCount() }
             manager.markCheckpoint()
 
-            val checkpointId2 = manager.getNextCheckpointId()
+            val checkpointId2 = manager.getCurrentCheckpointId()
             repeat(20) { manager.incrementReadCount() }
             manager.markCheckpoint()
 
@@ -617,5 +604,16 @@ class StreamManagerTest {
                 }
             }
         }
+    }
+
+    @Test
+    fun `do not throw when counting before marking`() {
+        val manager1 = DefaultStreamManager(stream1)
+
+        Assertions.assertEquals(0, manager1.getCurrentCheckpointId().id)
+
+        repeat(10) { manager1.incrementReadCount() }
+        manager1.incrementPersistedCount(manager1.getCurrentCheckpointId(), 10)
+        assertDoesNotThrow { manager1.markCheckpoint() }
     }
 }

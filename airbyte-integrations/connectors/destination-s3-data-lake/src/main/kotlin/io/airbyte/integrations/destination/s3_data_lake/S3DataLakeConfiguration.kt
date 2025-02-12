@@ -25,15 +25,12 @@ data class S3DataLakeConfiguration(
     override val s3BucketConfiguration: S3BucketConfiguration,
     override val icebergCatalogConfiguration: IcebergCatalogConfiguration,
     override val numProcessRecordsWorkers: Int,
-    override val numProcessBatchWorkers: Int,
+    override val maxMessageQueueMemoryUsageRatio: Double
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
     IcebergCatalogConfigurationProvider,
-    S3BucketConfigurationProvider {
-    override val recordBatchSizeBytes: Long
-        get() = 1500 * 1024 * 1024
-}
+    S3BucketConfigurationProvider {}
 
 @Singleton
 class S3DataLakeConfigurationFactory :
@@ -50,8 +47,8 @@ class S3DataLakeConfigurationFactory :
             // so that we don't overwrite newer records with older records.
             // For the sake of simplicity, just set workers to 1 regardless of
             // sync mode.
-            numProcessRecordsWorkers = 1,
-            numProcessBatchWorkers = 1,
+            numProcessRecordsWorkers = pojo.numWorkers ?: 2,
+            maxMessageQueueMemoryUsageRatio = pojo.maxMessageQueueMemoryUseRatio ?: 0.2,
         )
     }
 }
