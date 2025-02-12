@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-import pendulum
 import requests
 
 from airbyte_cdk.models import FailureType
@@ -15,6 +14,7 @@ from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.airbyte_datetime_helpers import ab_datetime_parse
 
 
 logger = logging.getLogger("airbyte")
@@ -83,7 +83,7 @@ class TransformDatetimesToRFC3339(RecordTransformation):
         for item in record:
             if item in self.date_time_fields and record[item]:
                 try:
-                    record[item] = pendulum.parse(record[item]).to_rfc3339_string()
+                    record[item] = str(ab_datetime_parse(record[item]))
                 except Exception as e:
                     logger.error(f"Error converting {item} to RFC3339 format: {e}")
                     raise AirbyteTracedException(
