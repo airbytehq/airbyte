@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_data_lake
 
+import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -367,5 +368,53 @@ class S3DataLakeTableSynchronizerTest {
         verify { mockUpdateSchema.setIdentifierFields(listOf("id")) }
 
         verify { mockUpdateSchema.commit() }
+    }
+
+    @Test
+    fun `test fail on incompatible type change`() {
+        val existingSchema =
+            buildSchema(Types.NestedField.optional(2, "age", Types.IntegerType.get()))
+        val incomingSchema =
+            buildSchema(Types.NestedField.optional(2, "age", Types.StringType.get()))
+
+        every { mockTable.schema() } returns existingSchema
+
+        assertThatThrownBy {
+                synchronizer.maybeApplySchemaChanges(
+                    mockTable,
+                    incomingSchema,
+                    ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                )
+            }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessage("""Conversion for column "age" between int and string is not allowed.""")
+    }
+
+    @Test
+    fun `test overwrite on incompatible type change`() {
+        val existingSchema =
+            buildSchema(Types.NestedField.optional(2, "age", Types.IntegerType.get()))
+        val incomingSchema =
+            buildSchema(Types.NestedField.optional(2, "age", Types.StringType.get()))
+
+        every { mockTable.schema() } returns existingSchema
+
+        val (schema, pendingUpdate) =
+            synchronizer.maybeApplySchemaChanges(
+                mockTable,
+                incomingSchema,
+                ColumnTypeChangeBehavior.OVERWRITE
+            )
+
+        verify { mockUpdateSchema.deleteColumn("age") }
+        verify { mockUpdateSchema.addColumn("age", Types.StringType.get()) }
+        verify(exactly = 0) { mockUpdateSchema.commit() }
+        // reminder: apply() doesn't actually make any changes, it just verifies
+        // that the schema change is valid
+        verify { mockUpdateSchema.apply() }
+        confirmVerified(mockUpdateSchema)
+
+        assertThat(schema).isSameAs(mockNewSchema)
+        assertThat(pendingUpdate).isNotNull
     }
 }
