@@ -971,9 +971,9 @@ fun main() {
         StreamConfig(
             StreamId(
                 finalNamespace = "no_raw_tables_experiment",
-                finalName = "typing_deduping_final_table",
+                finalName = "old_final_table_10mb",
                 rawNamespace = "no_raw_tables_experiment",
-                rawName = "input_raw_table",
+                rawName = "raw_table_10mb",
                 originalNamespace = "unused",
                 originalName = "unused",
             ),

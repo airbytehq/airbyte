@@ -1,5 +1,5 @@
 -- create table --------------------------------
-CREATE  TABLE `dataline-integration-testing`.`no_raw_tables_experiment`.`typing_deduping_final_table` (
+CREATE  TABLE `dataline-integration-testing`.`no_raw_tables_experiment`.`old_final_table_10mb` (
   _airbyte_raw_id STRING NOT NULL,
   _airbyte_extracted_at TIMESTAMP NOT NULL,
   _airbyte_meta JSON NOT NULL,
@@ -32,7 +32,7 @@ CLUSTER BY `primary_key`, `_airbyte_extracted_at`;
 
 
 -- "fast" T+D query -------------------------------
-MERGE `dataline-integration-testing`.`no_raw_tables_experiment`.`typing_deduping_final_table` target_table
+MERGE `dataline-integration-testing`.`no_raw_tables_experiment`.`old_final_table_10mb` target_table
 USING (
   WITH intermediate_data AS (
   SELECT
@@ -73,7 +73,7 @@ END, wide_number_mode=>'round')
   _airbyte_extracted_at,
   _airbyte_meta,
   _airbyte_generation_id
-  FROM `dataline-integration-testing`.`no_raw_tables_experiment`.`input_raw_table`
+  FROM `dataline-integration-testing`.`no_raw_tables_experiment`.`raw_table_10mb`
   WHERE (
       _airbyte_loaded_at IS NULL
       
@@ -185,7 +185,7 @@ new_record.`json_object`,
   new_record._airbyte_extracted_at,
   new_record._airbyte_generation_id
 );
-UPDATE `dataline-integration-testing`.`no_raw_tables_experiment`.`input_raw_table`
+UPDATE `dataline-integration-testing`.`no_raw_tables_experiment`.`raw_table_10mb`
 SET `_airbyte_loaded_at` = CURRENT_TIMESTAMP()
 WHERE `_airbyte_loaded_at` IS NULL
   
@@ -201,7 +201,7 @@ WHERE `_airbyte_loaded_at` IS NULL
 
 
 -- "slow" T+D query -------------------------------
-MERGE `dataline-integration-testing`.`no_raw_tables_experiment`.`typing_deduping_final_table` target_table
+MERGE `dataline-integration-testing`.`no_raw_tables_experiment`.`old_final_table_10mb` target_table
 USING (
   WITH intermediate_data AS (
   SELECT
@@ -351,7 +351,7 @@ END] AS column_errors,
   _airbyte_extracted_at,
   _airbyte_meta,
   _airbyte_generation_id
-  FROM `dataline-integration-testing`.`no_raw_tables_experiment`.`input_raw_table`
+  FROM `dataline-integration-testing`.`no_raw_tables_experiment`.`raw_table_10mb`
   WHERE (
       _airbyte_loaded_at IS NULL
       
@@ -463,7 +463,7 @@ new_record.`json_object`,
   new_record._airbyte_extracted_at,
   new_record._airbyte_generation_id
 );
-UPDATE `dataline-integration-testing`.`no_raw_tables_experiment`.`input_raw_table`
+UPDATE `dataline-integration-testing`.`no_raw_tables_experiment`.`raw_table_10mb`
 SET `_airbyte_loaded_at` = CURRENT_TIMESTAMP()
 WHERE `_airbyte_loaded_at` IS NULL
   

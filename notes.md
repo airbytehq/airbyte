@@ -37,11 +37,11 @@ LOAD DATA OVERWRITE dataline-integration-testing.no_raw_tables_experiment.input_
 )
 FROM FILES (
   format = 'CSV',
-  uris = ['gs://no_raw_tables/massive_data_10MB.csv'],
+  uris = ['gs://no_raw_tables/massive_data_2_final_version_(1)_final_10MB.csv'],
   skip_leading_rows = 1
 );
 
-CREATE OR REPLACE TABLE dataline-integration-testing.no_raw_tables_experiment.raw_table_100mb (
+CREATE OR REPLACE TABLE dataline-integration-testing.no_raw_tables_experiment.raw_table_10mb (
   _airbyte_raw_id STRING,
   _airbyte_extracted_at TIMESTAMP,
   _airbyte_loaded_at TIMESTAMP,
@@ -62,7 +62,7 @@ AS SELECT
   42
 FROM `dataline-integration-testing.no_raw_tables_experiment.input_typed_data` AS t;
 
-CREATE OR REPLACE TABLE dataline-integration-testing.no_raw_tables_experiment.new_table_100gb (
+CREATE OR REPLACE TABLE dataline-integration-testing.no_raw_tables_experiment.new_table_10mb (
   _airbyte_raw_id STRING,
   _airbyte_extracted_at TIMESTAMP,
   _airbyte_meta STRING,
