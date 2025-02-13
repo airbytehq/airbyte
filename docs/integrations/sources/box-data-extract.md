@@ -25,7 +25,8 @@ Choose the which Box folder conatins the files you want to process:
 - `Recursive`: Read the folders recursively.
 
 If you are using Box AI you'll need:
-- `Ask AI Prompt`: What prompt to send the AI about the document
+- `Ask AI Prompt`: If using the Ask AI, what prompt to send the AI about the document
+- `Extract AI Prompt`: If using the Extract AI, what prompt to send the AI about the document
 
 ## Setup guide
 
@@ -78,8 +79,9 @@ The Box Data Extract source connector supports the following [sync modes](https:
 
 ## Supported Streams
 
-- [File text extraction](https://developer.box.com/guides/representations/text/)
-- [AI Ask](https://developer.box.com/guides/box-ai/ai-tutorials/ask-questions/)
+- [File text extraction](https://developer.box.com/guides/representations/text/): Extract a text representation from your Box documents
+- [AI Ask](https://developer.box.com/guides/box-ai/ai-tutorials/ask-questions/): Ask AI something about your Box documents
+- [AI Extract](https://developer.box.com/guides/box-ai/ai-tutorials/extract-metadata/): Extract structured data from your Box documents
 
 
 ## Changelog
@@ -89,7 +91,8 @@ The Box Data Extract source connector supports the following [sync modes](https:
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.5 | 2024-10-23 | | Adding Box Ask AI stream |
-| 0.1.4 | 2024-10-12 | | Initial release by [@BoxDevRel](https://github.com/box-community/airbyte) |
+| 0.1.6 | 2025-02-13 | | Adding Box Extract AI stream |
+| 0.1.5 | 2025-02-13 | | Adding Box Ask AI stream |
+| 0.1.4 | 2025-02-12 | | Initial release by [@BoxDevRel](https://github.com/box-community/airbyte) |
 
 </details>
