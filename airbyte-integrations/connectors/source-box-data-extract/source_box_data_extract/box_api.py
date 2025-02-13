@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
-from box_sdk_gen import BoxCCGAuth, BoxClient, BoxSDKError, CCGConfig, File, FileMini, FolderMini, Items, WebLink
+from box_sdk_gen import BoxCCGAuth, BoxClient, BoxSDKError, CCGConfig, File, FileMini, FolderMini, Items, WebLink,AiAsk,CreateAiAskMode,AiItemBase,AiItemBaseTypeField,AiResponseFull
 
 logger = logging.getLogger("airbyte")
 
@@ -113,6 +113,12 @@ def box_file_text_extract(client: BoxClient, file_id: str) -> str:
         return raw_content.decode("utf-8")
     else:
         return raw_content
+    
+def box_file_ask_ai(client: BoxClient, file_id: str, prompt:str)-> str:
+    mode = CreateAiAskMode.SINGLE_ITEM_QA
+    ai_item = AiItemBase(id=file_id,type=AiItemBaseTypeField.FILE)
+    response =  client.ai.create_ai_ask(mode=mode, prompt=prompt, items=[ai_item])
+    return response.answer
 
 
 def box_folder_text_representation(
@@ -130,4 +136,19 @@ def box_folder_text_representation(
         elif item.type == "folder" and is_recursive:
             yield from box_folder_text_representation(
                 client=client, folder_id=item.id, is_recursive=is_recursive, by_pass_text_extraction=by_pass_text_extraction
+            )
+
+def box_folder_ask_ai(client: BoxClient, folder_id: str, prompt:str,is_recursive: bool = False, by_pass_text_extraction: bool = False)-> Iterable[BoxFileExtended]:
+    # folder items iterator
+    for item in client.folders.get_folder_items(folder_id).entries:
+        if item.type == "file":
+            file = box_file_get_by_id(client=client, file_id=item.id)
+            if not by_pass_text_extraction:
+                text_representation = box_file_ask_ai(client=client, file_id=item.id, prompt=prompt)
+            else:
+                text_representation = ""
+            yield BoxFileExtended(file=file, text_representation=text_representation)
+        elif item.type == "folder" and is_recursive:
+            yield from box_folder_ask_ai(
+                client=client, folder_id=item.id,prompt=prompt, is_recursive=is_recursive, by_pass_text_extraction=by_pass_text_extraction
             )

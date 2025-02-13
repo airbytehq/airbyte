@@ -56,3 +56,9 @@ connectionSpecification:
       description: >-
         Read the folders recursively.
       order: 5
+    ask_ai_prompt:
+      type: string
+      title: Ask AI Prompt
+      description: >-
+        Prompt to use in Ask AI Stream.
+      order: 6
