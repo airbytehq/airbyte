@@ -1,68 +1,68 @@
 [
-    {
-        "type": "FieldType.STRING",
-        "key": "property_id",
-        "prompt": "Property id"
-    },
-    {
-        "type": "FieldType.STRING",
-        "key": "property_type",
-        "prompt": "Property type",
-        "options": [
-            {
-                "key": "HAB-1"
-            },
-            {
-                "key": "HAB-2"
-            },
-            {
-                "key": "HAB-3"
-            }
-        ]
-    },
-    {
-        "type": "FieldType.DATE",
-        "key": "lease_start_date",
-        "prompt": "Lease Start Date in YYYY-MM-DD format"
-    },
-    {
-        "type": "FieldType.DATE",
-        "key": "lease_end_date",
-        "prompt": "Lease End Date in YYYY-MM-DD format"
-    },
-    {
-        "type": "FieldType.FLOAT",
-        "key": "monthly_rent",
-        "prompt": "Monthly Rent as a float including cents"
-    },
-    {
-        "type": "FieldType.STRING",
-        "key": "property_address",
-        "prompt": "Property Address"
-    },
-    {
-        "type": "FieldType.STRING",
-        "key": "lessee_name",
-        "prompt": "Lessee Name"
-    },
-    {
-        "type": "FieldType.STRING",
-        "key": "lessee_email",
-        "prompt": "Lessee Email"
-    },
-    {
-        "type": "FieldType.DATE",
-        "key": "agreement_date",
-        "prompt": "Agreement Term in years"
-    },
-    {
-        "type": "FieldType.INTEGER",
-        "key": "agreement_term",
-        "prompt": "Agreement Date in YYYY-MM-DD format"
-    },
-    {
-        "type": "FieldType.INTEGER",
-        "key": "number_of_bedrooms",
-        "prompt": "Number of bedrooms as an integer"
-    }
+  {
+    "type": "FieldType.STRING",
+    "key": "property_id",
+    "prompt": "Property id"
+  },
+  {
+    "type": "FieldType.STRING",
+    "key": "property_type",
+    "prompt": "Property type",
+    "options": [
+      {
+        "key": "HAB-1"
+      },
+      {
+        "key": "HAB-2"
+      },
+      {
+        "key": "HAB-3"
+      }
+    ]
+  },
+  {
+    "type": "FieldType.DATE",
+    "key": "lease_start_date",
+    "prompt": "Lease Start Date in YYYY-MM-DD format"
+  },
+  {
+    "type": "FieldType.DATE",
+    "key": "lease_end_date",
+    "prompt": "Lease End Date in YYYY-MM-DD format"
+  },
+  {
+    "type": "FieldType.FLOAT",
+    "key": "monthly_rent",
+    "prompt": "Monthly Rent as a float including cents"
+  },
+  {
+    "type": "FieldType.STRING",
+    "key": "property_address",
+    "prompt": "Property Address"
+  },
+  {
+    "type": "FieldType.STRING",
+    "key": "lessee_name",
+    "prompt": "Lessee Name"
+  },
+  {
+    "type": "FieldType.STRING",
+    "key": "lessee_email",
+    "prompt": "Lessee Email"
+  },
+  {
+    "type": "FieldType.DATE",
+    "key": "agreement_date",
+    "prompt": "Agreement Term in years"
+  },
+  {
+    "type": "FieldType.INTEGER",
+    "key": "agreement_term",
+    "prompt": "Agreement Date in YYYY-MM-DD format"
+  },
+  {
+    "type": "FieldType.INTEGER",
+    "key": "number_of_bedrooms",
+    "prompt": "Number of bedrooms as an integer"
+  }
 ]
