@@ -9,14 +9,10 @@ import time
 import concurrent.futures
 from datetime import datetime, date, time as dt_time, timedelta
 
-# pip install pytz google-cloud-storage
-import pytz  
-from google.cloud import storage
+import pytz  # pip install pytz
+from google.cloud import storage  # pip install google-cloud-storage
 
 
-# -------------------------------
-# LOGGING SETUP
-# -------------------------------
 logging.basicConfig(
     format="%(asctime)s %(levelname)s %(message)s",
     level=logging.INFO,
@@ -24,9 +20,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# -------------------------------
-# HELPER FUNCTIONS
-# -------------------------------
 def random_string(length=8):
     letters = string.ascii_letters
     return ''.join(random.choice(letters) for _ in range(length))
@@ -58,8 +51,8 @@ def random_offset_str():
     offset_hours = random.randint(-12, 12)
     return f"+{offset_hours}" if offset_hours >= 0 else str(offset_hours)
 
-def random_datetime_with_offset(start_year=2000, end_year=2025):
-    dt_naive = random_datetime(start_year, end_year)
+def random_datetime_with_offset():
+    dt_naive = random_datetime()
     return dt_naive.isoformat() + random_offset_str()
 
 def random_time_naive():
@@ -91,37 +84,36 @@ def random_json_object():
     }
 
 
-# -------------------------------
-# CSV GENERATION FUNCTION
-# -------------------------------
-def generate_csv(
+def generate_csv_part(
     project_id: str,
     bucket_name: str,
+    blob_name: str,
     target_size_mb: int,
     duplicate_pct: int = 20,
     chunk_size: int = 100 * 1024 * 1024,
     log_frequency: int = 100_000
-) -> str:
+):
     """
-    Generate and upload one CSV file of size ~target_size_mb MB to GCS,
-    returning a string message summarizing results.
+    Generates one CSV "part" of ~target_size_mb MB in GCS under blob_name.
+    Re-uses the random data logic, including duplicates and random ±H timezones.
     """
-    start_cursor = datetime(2025, 1, 1, 12, 0, 0)
-    cursor_increment = timedelta(minutes=1)
+
+    # We'll have a 'cursor' column that increments by 1 min/row
+    START_CURSOR = datetime(2025, 1, 1, 12, 0, 0)
+    CURSOR_INCREMENT = timedelta(minutes=1)
 
     target_size_bytes = target_size_mb * 1024 * 1024
-    blob_name = f"massive_data_{target_size_mb}MB.csv"
 
-    logger.info("Starting CSV generation for ~%d MB => %s", target_size_mb, blob_name)
+    logger.info(f"Generating part '{blob_name}', target ~{target_size_mb} MB")
 
     storage_client = storage.Client(project=project_id)
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(blob_name)
 
+    # Delete if exists
     if blob.exists():
-        logger.info(f"Blob {blob_name} already exists. Deleting it...")
+        logger.info(f"Blob {blob_name} exists. Deleting...")
         blob.delete()
-        logger.info("Deleted existing blob.")
 
     start_time = time.time()
 
@@ -150,7 +142,7 @@ def generate_csv(
         row_buffer = io.StringIO()
         csv_writer = csv.writer(row_buffer, quoting=csv.QUOTE_MINIMAL)
 
-        # Write header
+        # Write header for each part
         row_buffer.seek(0)
         row_buffer.truncate(0)
         csv_writer.writerow(headers)
@@ -159,9 +151,9 @@ def generate_csv(
         gcs_file.write(row_bytes)
         total_bytes_written += len(row_bytes)
 
-        # Generate rows until target size reached
+        # Generate rows until we exceed target size
         while total_bytes_written < target_size_bytes:
-            # Duplicate PK logic
+            # Randomly reuse PK
             if used_pks and (random.random() < (duplicate_pct / 100.0)):
                 row_pk = random.choice(used_pks)
             else:
@@ -169,11 +161,9 @@ def generate_csv(
                 used_pks.append(row_pk)
                 current_pk += 1
 
-            # Cursor
-            row_cursor_time = start_cursor + (cursor_increment * row_count)
+            row_cursor_time = START_CURSOR + (CURSOR_INCREMENT * row_count)
             row_cursor_str = row_cursor_time.isoformat()
 
-            # Random data
             row_string = random_string()
             row_bool = random_bool()
             row_integer = random_int()
@@ -204,80 +194,105 @@ def generate_csv(
                 json.dumps(obj_val),
             ]
 
-            # Write row to CSV
             row_buffer.seek(0)
             row_buffer.truncate(0)
             csv_writer.writerow(row_data)
             row_text = row_buffer.getvalue()
 
-            # Encode + write
             row_bytes = row_text.encode("utf-8")
             gcs_file.write(row_bytes)
             total_bytes_written += len(row_bytes)
             row_count += 1
 
-            # Progress log
             if row_count % log_frequency == 0:
                 percent_complete = (total_bytes_written / target_size_bytes) * 100
                 logger.info(
-                    f"[{blob_name}] Progress: {row_count:,} rows, "
-                    f"{total_bytes_written / (1024 * 1024):,.2f} MB written "
-                    f"({percent_complete:.2f}% complete)."
+                    f"[{blob_name}] rows={row_count:,}, "
+                    f"{total_bytes_written / (1024 * 1024):,.2f} MB, "
+                    f"{percent_complete:.2f}% complete"
                 )
 
-    # Calculate speed
     end_time = time.time()
-    duration_seconds = end_time - start_time
-    mb_written = total_bytes_written / (1024 * 1024)
-    speed_mbps = mb_written / duration_seconds if duration_seconds > 0 else 0.0
-
-    msg = (
-        f"[{blob_name}] Completed: {row_count:,} rows, {total_bytes_written:,} bytes, "
-        f"{duration_seconds:.2f} s, {speed_mbps:.2f} MB/s"
+    duration_s = end_time - start_time
+    speed_mb_s = (total_bytes_written / 1024 / 1024) / duration_s if duration_s > 0 else 0
+    logger.info(
+        f"[{blob_name}] Done. {row_count:,} rows, "
+        f"{total_bytes_written:,} bytes in {duration_s:.2f}s, "
+        f"{speed_mb_s:.2f} MB/s"
     )
-    logger.info(msg)
-    return msg
+
+
+def compose_final(
+    project_id: str,
+    bucket_name: str,
+    final_blob_name: str,
+    part_names: list
+):
+    """
+    Use GCS Compose to merge multiple part objects in order
+    into a single final blob (final_blob_name).
+    Up to 32 parts can be composed at a time.
+    """
+    logger.info(f"Composing final object '{final_blob_name}' from parts: {part_names}")
+    client = storage.Client(project=project_id)
+    bucket = client.bucket(bucket_name)
+
+    final_blob = bucket.blob(final_blob_name)
+    if final_blob.exists():
+        logger.info(f"Final blob {final_blob_name} exists. Deleting first...")
+        final_blob.delete()
+
+    # Make list of blob objects from the part names
+    part_blobs = [bucket.blob(name) for name in part_names]
+
+    # If you have more than 32 parts, you'd do a multi-step compose
+    final_blob.compose(part_blobs)
+
+    logger.info(f"Composed {final_blob_name} from {len(part_names)} parts.")
 
 
 def main():
     """
-    Creates multiple CSV files in parallel with different sizes in MB,
-    using ThreadPoolExecutor.
+    Example for creating ONE 100GB final CSV via 5 parallel parts of 20GB each.
     """
     PROJECT_ID = "dataline-integration-testing"
     BUCKET_NAME = "no_raw_tables"
 
-    # List of file sizes in MB
-    sizes_mb = [1, 10, 100, 1_000, 10_000]  # etc.
+    # We'll create 5 parts, each ~20 GB => total ~100 GB
+    PART_SIZES_MB = [10_000, 10_000, 10_000, 10_000, 10_000, 10_000, 10_000, 10_000, 10_000, 10_000]
+    PART_NAMES = [f"mydata_part_{i}.csv" for i in range(len(PART_SIZES_MB))]
+    FINAL_NAME = "mydata_final_100GB.csv"
 
-    # Number of parallel workers. Adjust for your environment.
-    # If random data generation is CPU-bound, you might consider
-    # ProcessPoolExecutor for true parallel CPU usage.
-    max_workers = 5
-
-    results = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_size = {}
-        for size in sizes_mb:
-            future = executor.submit(
-                generate_csv,
+    # 1) Generate each part in parallel
+    start_time = time.time()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        futures = []
+        for i, size_mb in enumerate(PART_SIZES_MB):
+            part_name = PART_NAMES[i]
+            fut = executor.submit(
+                generate_csv_part,
                 project_id=PROJECT_ID,
                 bucket_name=BUCKET_NAME,
-                target_size_mb=size
+                blob_name=part_name,
+                target_size_mb=size_mb
             )
-            future_to_size[future] = size
+            futures.append(fut)
 
-        for future in concurrent.futures.as_completed(future_to_size):
-            size = future_to_size[future]
-            try:
-                result = future.result()
-                results.append(result)
-            except Exception as e:
-                logger.error(f"Error generating {size} MB file: {e}", exc_info=True)
+        # Wait for all parts to finish
+        for fut in concurrent.futures.as_completed(futures):
+            fut.result()  # propagate any exceptions
 
-    logger.info("All parallel tasks complete.")
-    for r in results:
-        logger.info("Result: %s", r)
+    # 2) Compose them into final
+    compose_final(
+        project_id=PROJECT_ID,
+        bucket_name=BUCKET_NAME,
+        final_blob_name=FINAL_NAME,
+        part_names=PART_NAMES
+    )
+    end_time = time.time()
+
+    total_duration = end_time - start_time
+    logger.info(f"All done! Single final CSV is {FINAL_NAME}, took {total_duration:.2f} seconds.")
 
 
 if __name__ == "__main__":
