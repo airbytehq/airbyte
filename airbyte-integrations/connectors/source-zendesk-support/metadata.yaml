@@ -31,7 +31,7 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true 
+      enableProgressiveRollout: true
     breakingChanges:
       1.0.0:
         message: "`cursor_field` for `Tickets` stream is changed to `generated_timestamp`"
@@ -52,7 +52,7 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes:
-              - "tags"         
+              - "tags"
   suggestedStreams:
     streams:
       - brands
