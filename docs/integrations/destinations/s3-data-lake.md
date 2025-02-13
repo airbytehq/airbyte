@@ -139,6 +139,17 @@ This connector leverages those semantics to provide resilient syncs:
   * This means that your data remains queryable right up to the end of a truncate sync, at which point
     it is atomically swapped to the updated version.
 
+## Catalog-specific information
+
+### AWS Glue
+
+If you have an existing Glue table, and you want to replace that table with an Airbyte-managed Iceberg table,
+you must first drop the Glue table. Otherwise you will encounter an error `Input Glue table is not an iceberg table: <your table name>`.
+
+Note that dropping Glue tables from the console [may not immediately delete them](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glue/client/batch_delete_table.html).
+You must either wait for AWS to finish their background processing, or manually call the AWS API to
+drop all table versions.
+
 ## Changelog
 
 <details>
