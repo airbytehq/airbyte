@@ -9,7 +9,7 @@ import time
 import concurrent.futures
 from datetime import datetime, date, time as dt_time, timedelta
 
-import pytz  # pip install pytz
+# import pytz  # pip install pytz
 from google.cloud import storage  # pip install google-cloud-storage
 
 
@@ -296,4 +296,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    print(datetime.now().isoformat())
+    # main()

@@ -90,6 +90,19 @@ def random_json_object():
         "score": random_float(0, 100)
     }
 
+def random_datetime_tz(start_year=2000, end_year=2025):
+    """Generate a random datetime with a random timezone."""
+    naive_dt = random_datetime(start_year, end_year)
+    timezone = random.choice(pytz.all_timezones)
+    return pytz.timezone(timezone).localize(naive_dt)
+
+def random_time_with_timezone():
+    """
+    Generate a random 'time with timezone' string.
+    We'll produce something like HH:MM:SS±HHMM (no colon in the offset).
+    """
+    dt_with_tz = random_datetime_tz()
+    return dt_with_tz.isoformat().split("T")[1]
 
 # -------------------------------
 # CSV GENERATION FUNCTION
@@ -99,7 +112,7 @@ def generate_csv(
     bucket_name: str,
     target_size_mb: int,
     duplicate_pct: int = 20,
-    chunk_size: int = 100 * 1024 * 1024,
+    chunk_size: int = 500 * 1024 * 1024,
     log_frequency: int = 100_000
 ) -> str:
     """
@@ -110,7 +123,7 @@ def generate_csv(
     cursor_increment = timedelta(minutes=1)
 
     target_size_bytes = target_size_mb * 1024 * 1024
-    blob_name = f"massive_data_{target_size_mb}MB.csv"
+    blob_name = f"massive_data_2_final_version_(1)_final_{target_size_mb}MB.csv"
 
     logger.info("Starting CSV generation for ~%d MB => %s", target_size_mb, blob_name)
 
@@ -180,9 +193,12 @@ def generate_csv(
             row_float_val = random_float()
             row_date_str = random_date().isoformat()
 
-            ts_with_tz = random_datetime_with_offset()
+            # Timestamps
+            ts_with_tz = random_datetime_tz().isoformat()  
             ts_no_tz = random_datetime().isoformat()
-            t_with_tz = random_time_with_offset()
+
+            # Times
+            t_with_tz = random_time_with_timezone()
             t_no_tz = random_time_naive().isoformat()
 
             arr_val = random_array()
@@ -248,7 +264,7 @@ def main():
     BUCKET_NAME = "no_raw_tables"
 
     # List of file sizes in MB
-    sizes_mb = [1, 10, 100, 1_000, 10_000]  # etc.
+    sizes_mb = [100_000]  # etc.
 
     # Number of parallel workers. Adjust for your environment.
     # If random data generation is CPU-bound, you might consider
