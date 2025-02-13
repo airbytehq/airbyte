@@ -1,16 +1,16 @@
 data:
   ab_internal:
-    ql: 400
-    sl: 200
+    ql: 300
+    sl: 300
   allowedHosts:
     hosts:
       - box.com
       - boxcloud.com
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: false
+  # registries:
+  #   oss:
+  #     enabled: true
+  #   cloud:
+  #     enabled: false
   remoteRegistries:
     pypi:
       enabled: true
@@ -28,11 +28,12 @@ data:
   githubIssueLabel: source-box-data-extract
   icon: icon.svg
   license: MIT
-  name: Box Files Source
-  releaseDate: TODO
+  name: Box Data Extract
+  releaseDate: 2025-02-15
   supportLevel: community
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/box-data-extract
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"
