@@ -63,3 +63,10 @@ connectionSpecification:
       description: >-
         Prompt to use in Ask AI Stream.
       order: 6
+    extract_ai_prompt:
+      type: string
+      always_show: true
+      title: Extract AI Prompt
+      description: >-
+        Prompt to use in Extract AI Stream.
+      order: 6
