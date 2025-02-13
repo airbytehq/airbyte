@@ -61,19 +61,6 @@ definitions:
     requester: "#/definitions/requester"
     paginator: "#/definitions/paginator"
 
-  semi_incremental_retriever:
-    $ref: "#/definitions/base_retriever"
-    record_selector:
-      $ref: "#/definitions/selector"
-      record_filter:
-        # Removing the record filter will migrate `lists_detailed` to concurrency,
-        # which will cause it to fail due to rate limits.
-        # Rate limiting for this stream should be implemented first.
-        type: RecordFilter
-        condition: |
-          {% set starting_point = stream_state.get('updated', config.get('start_date')) %}
-          {{ starting_point and record.get('attributes', {}).get('updated') > starting_point or not starting_point }}
-
   profiles_retriever:
     $ref: "#/definitions/base_retriever"
     paginator:
@@ -106,12 +93,13 @@ definitions:
 
   base_semi_incremental_stream:
     $ref: "#/definitions/base_stream"
-    retriever: "#/definitions/semi_incremental_retriever"
+    retriever: "#/definitions/base_retriever"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "updated"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+      is_client_side_incremental: true
 
   # Incremental streams
   profiles_stream:
@@ -253,7 +241,7 @@ definitions:
       type: InlineSchemaLoader
       schema: "#/definitions/lists_detailed_schema"
     retriever:
-      $ref: "#/definitions/semi_incremental_retriever"
+      $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
@@ -1061,6 +1049,75 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
 
+api_budget:
+  type: HTTPAPIBudget
+  # Each policy here uses a MovingWindowCallRatePolicy with two rates:
+  # one for burst (per-second) and one for steady (per-minute).
+  policies:
+    # Profiles (and global_exclusions share the same endpoint)
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10 # burst: 10 calls per second
+          interval: PT1S
+        - limit: 150 # steady: 150 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/profiles($|/)" # matches '/profiles' (exact or with trailing slash/extra)
+    # Events (and events_detailed share the same endpoint)
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 350 # burst: 350 calls per second
+          interval: PT1S
+        - limit: 3500 # steady: 3500 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/events($|/)" # matches '/events' and '/events_detailed' if using same endpoint
+    # Email Templates
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10 # burst: 10 calls per second
+          interval: PT1S
+        - limit: 150 # steady: 150 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/templates($|/)" # matches '/templates'
+    # Metrics
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10 # burst: 10 calls per second
+          interval: PT1S
+        - limit: 150 # steady: 150 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/metrics($|/)"
+    # Lists (the parent endpoint for lists streams)
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 75 # burst: 75 calls per second
+          interval: PT1S
+        - limit: 700 # steady: 700 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/lists$" # exactly '/lists'
+    # Lists Detailed (uses a different URL path – note the extra segment)
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1 # burst: 1 call per second
+          interval: PT1S
+        - limit: 15 # steady: 15 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/lists/" # matches any path beginning with '/lists/' (e.g. '/lists/123')
+          params:
+            "additional-fields[list]": "profile_count" # Other API budget settings:
+  status_codes_for_ratelimit_hit: [429]
+
 # Klaviyo's rate limiting is different by endpoints:
 # - XS: 1/s burst; 15/m steady
 # - S: 3/s burst; 60/m steady
@@ -1085,5 +1142,5 @@ metadata:
 # Based on the above, the only threads that allow for slicing and hence might perform more concurrent HTTP requests are `events` and `events_detailed`. There are no slicing for the others and hence the concurrency is limited by the number of streams querying the same endpoint. Given that the event endpoint is XL, we will set a default concurrency to 10.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  default_concurrency: "{{ config.get('num_workers', 25) }}"
   max_concurrency: 50
