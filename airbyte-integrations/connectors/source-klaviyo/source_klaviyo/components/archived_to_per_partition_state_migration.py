@@ -22,10 +22,11 @@ DEFAULT_START_DATE = "2012-01-01T00:00:00Z"
 
 
 class ArchivedToPerPartitionStateMigration(StateMigration, ABC):
-    declarative_stream: DeclarativeStream
-    config: Config
     """
-    Moves old state for per partition format. Cursor value from archived object to partition with archived=true.
+    Updates old format state to new per partitioned format.
+    Partitions: [{archived: True}, {archived: False}]
+    Default built in airbyte cdk migration will recognise only top-level field cursor value(updated_at),
+    but for partition {archived: True} source should use cursor value from archived object.
 
     Example input state:
     {
@@ -33,17 +34,21 @@ class ArchivedToPerPartitionStateMigration(StateMigration, ABC):
         "archived": {
           "updated_at": "2021-10-10T00:00:00+00:00"
         }
-      }
+    }
+
     Example output state:
     {
-        "partition":{ "archived":"true","campaign_type":"sms" },
+        "partition":{ "archived":"true" },
         "cursor":{ "updated_at":"2021-10-10T00:00:00+00:00" }
     }
     {
-        "partition":{ "archived":"false","campaign_type":"sms" },
+        "partition":{ "archived":"false" },
         "cursor":{ "updated_at":"2020-10-10T00:00:00+00:00" }
     }
     """
+
+    declarative_stream: DeclarativeStream
+    config: Config
 
     def __init__(self, declarative_stream: DeclarativeStream, config: Config):
         self._config = config
@@ -77,6 +82,35 @@ class ArchivedToPerPartitionStateMigration(StateMigration, ABC):
 
 
 class CampaignsStateMigration(ArchivedToPerPartitionStateMigration):
+    """
+    Campaigns stream has 2 partition field: archived and campaign_type(email, sms).
+
+    Example input state:
+    {
+        "updated_at": "2020-10-10T00:00:00+00:00",
+        "archived": {
+          "updated_at": "2021-10-10T00:00:00+00:00"
+        }
+      }
+    Example output state:
+    {
+        "partition":{ "archived":"true","campaign_type":"sms" },
+        "cursor":{ "updated_at":"2021-10-10T00:00:00+00:00" }
+    }
+    {
+        "partition":{ "archived":"true","campaign_type":"email" },
+        "cursor":{ "updated_at":"2021-10-10T00:00:00+00:00" }
+    }
+    {
+        "partition":{ "archived":"false","campaign_type":"sms" },
+        "cursor":{ "updated_at":"2020-10-10T00:00:00+00:00" }
+    }
+    {
+        "partition":{ "archived":"false","campaign_type":"email" },
+        "cursor":{ "updated_at":"2020-10-10T00:00:00+00:00" }
+    }
+    """
+
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not self.should_migrate(stream_state):
             return stream_state
