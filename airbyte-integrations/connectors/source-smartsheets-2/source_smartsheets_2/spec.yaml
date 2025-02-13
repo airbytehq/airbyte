@@ -81,6 +81,7 @@ connectionSpecification:
           - Row Permalink
           - Row Number
           - Row Version
+          - Row Parent ID
     include-patterns:
       order: 7
       type: array

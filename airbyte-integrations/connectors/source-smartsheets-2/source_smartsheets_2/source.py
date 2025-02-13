@@ -102,6 +102,10 @@ METADATA_MAPPING: dict[str, tuple[ColumnType, Callable[[Any], Optional[str]]]] =
         ColumnType.TEXT_NUMBER,
         lambda sheet, row, kwargs: str(row.version),
     ),
+    "Row Parent ID": (
+        ColumnType.TEXT_NUMBER,
+        lambda sheet, row, kwargs: str(row.parent_id),
+    ),
 }
 
 
