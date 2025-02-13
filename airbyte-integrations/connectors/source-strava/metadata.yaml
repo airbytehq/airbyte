@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "strava.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-strava
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.33.4@sha256:8fd974de2be41d6acad43a3d43576f9940a04c4f289164a2b1a5846d6f676b65
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 7a4327c4-315a-11ec-8d3d-0242ac130003
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-strava
+  githubIssueLabel: source-strava
+  icon: icon.svg
+  license: MIT
+  name: Strava
+  releaseDate: 2025-02-13
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/strava
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
