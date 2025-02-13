@@ -5,7 +5,7 @@ plugins {
 airbyteBulkConnector {
     core = 'extract'
     toolkits = ['extract-jdbc']
-    cdk = '0.318'
+    cdk = '0.324'
 }
 
 application {
@@ -14,6 +14,7 @@ application {
 
 dependencies {
     implementation 'com.sap.cloud.db.jdbc:ngdbc:2.22.12'
+    implementation project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-extract-jdbc')
 
     testImplementation platform('org.testcontainers:testcontainers-bom:1.20.1')
 }

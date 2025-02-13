@@ -34,15 +34,33 @@ data class SapHanaSourceConfiguration(
     override val jdbcProperties: Map<String, String>,
     val defaultSchema: String,
     override val namespaces: Set<String>,
-    val cursorConfiguration: CursorConfiguration,
+    val incremental: IncrementalConfiguration,
     override val maxConcurrency: Int,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     override val checkpointTargetInterval: Duration,
     override val checkPrivileges: Boolean,
 ) : JdbcSourceConfiguration {
-    override val global = cursorConfiguration is CdcCursor
-    override val maxSnapshotReadDuration: Duration?
-        get() = Duration.ofMinutes(5)
+    val cdc: CdcIncrementalConfiguration? = incremental as? CdcIncrementalConfiguration
+    override val global: Boolean = false
+    override val maxSnapshotReadDuration: Duration? = cdc?.initialLoadTimeout
+
+    override fun isCdc(): Boolean {
+        return cdc != null
+    }
+}
+
+sealed interface IncrementalConfiguration
+
+data object UserDefinedCursorIncrementalConfiguration : IncrementalConfiguration
+
+data class CdcIncrementalConfiguration(
+    val initialLoadTimeout: Duration,
+    val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior,
+) : IncrementalConfiguration
+
+enum class InvalidCdcCursorPositionBehavior {
+    FAIL_SYNC,
+    RESET_SYNC,
 }
 
 @Singleton
@@ -113,6 +131,25 @@ class SapHanaSourceConfigurationFactory :
         if ((pojo.concurrency ?: 0) <= 0) {
             throw ConfigErrorException("Concurrency setting should be positive")
         }
+        val incrementalConfiguration: IncrementalConfiguration =
+            when (val inc = pojo.getIncrementalConfigurationSpecificationValue()) {
+                UserDefinedCursorConfigurationSpecification ->
+                    UserDefinedCursorIncrementalConfiguration
+                is CdcCursorConfigurationSpecification ->
+                    CdcIncrementalConfiguration(
+                        initialLoadTimeout =
+                            Duration.ofHours(inc.initialLoadTimeoutHours!!.toLong()),
+                        invalidCdcCursorPositionBehavior =
+                            when (inc.invalidCdcCursorPositionBehavior) {
+                                "Fail sync" -> InvalidCdcCursorPositionBehavior.FAIL_SYNC
+                                "Re-sync data" -> InvalidCdcCursorPositionBehavior.RESET_SYNC
+                                else ->
+                                    throw ConfigErrorException(
+                                        "Unknown value ${inc.invalidCdcCursorPositionBehavior}"
+                                    )
+                            },
+                    )
+            }
         return SapHanaSourceConfiguration(
             realHost = realHost,
             realPort = realPort,
@@ -122,10 +159,10 @@ class SapHanaSourceConfigurationFactory :
             jdbcProperties = jdbcProperties,
             defaultSchema = defaultSchema,
             namespaces = pojo.schemas?.toSet() ?: setOf(defaultSchema),
-            cursorConfiguration = pojo.getCursorConfigurationValue(),
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,
+            incremental = incrementalConfiguration,
         )
     }
 }

@@ -164,7 +164,7 @@ class SapHanaSourceOperations :
             is Limit -> listOf(SelectQuery.Binding(Jsons.numberNode(n), LongFieldType))
         }
 
-    override val globalCursor: MetaField? = null
+    override val globalCursor: FieldOrMetaField = TriggerTableConfig.CURSOR_FIELD
 
     override val globalMetaFields: Set<MetaField> = emptySet()
 

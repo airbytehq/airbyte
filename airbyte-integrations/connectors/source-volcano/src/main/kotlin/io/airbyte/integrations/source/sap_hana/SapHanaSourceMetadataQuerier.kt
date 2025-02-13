@@ -25,7 +25,6 @@ private val log = KotlinLogging.logger {}
 class SapHanaSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
 ) : MetadataQuerier by base {
-    // TODO: Might need a redo on all functions below.
 
     override fun fields(streamID: StreamIdentifier): List<Field> {
         val table: TableName = findTableName(streamID) ?: return listOf()
