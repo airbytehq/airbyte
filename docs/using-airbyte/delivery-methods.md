@@ -9,7 +9,7 @@ Airbyte supports two methods for delivering source data to the destination.
 - Replicate records
 - Copy raw files
 
-This article explains the difference between these methods, when you should each one, and how to configure this option in Airbyte.
+This article explains the difference between these methods, when you should use each one, and how to configure this option in Airbyte.
 
 ## Replicate records
 
@@ -17,15 +17,15 @@ When you replicate records, you extract and load structured records into your de
 
 For most connectors, this is the only option you have. It's ideal for working with structured data like databases, spreadsheets, JSON, and APIs.
 
-![Moving individual fields from a source to a destination](delivery-method-replicate.png)
-
 ## Copy raw files
 
 When you copy raw files, you copy files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. In this case, Airbyte is strictly focused on data movement, and pays no attention to structure or processing.
 
 This choice is ideal for unstructured text, non-text data like multimedia, and compressed files. However, it's only available on specific connectors that are designed to handle unstructured data, like those related to blob storage solutions.
 
-![Moving raw files from a source to a destination without regard for their contents or structure](delivery-method-copy-raw.png)
+To ensure your source and destination credentials remain isolated, Airbyte uses a temporary local staging location. The flow is illustrated below.
+
+![Moving raw files from a source to a destination without regard for their contents or structure](images/delivery-method-copy-raw.png)
 
 ### Supported versions and limitations
 
