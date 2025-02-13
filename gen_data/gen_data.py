@@ -5,7 +5,8 @@ import json
 import logging
 import io
 import csv
-from datetime import datetime, date, time, timedelta
+import time
+from datetime import datetime, date, time as dt_time, timedelta
 
 # pip install pytz google-cloud-storage if not already installed
 import pytz  
@@ -64,7 +65,6 @@ def random_offset_str():
     Range: -12 to +12
     """
     offset_hours = random.randint(-12, 12)
-    # If offset_hours >= 0, explicitly include the plus sign
     if offset_hours >= 0:
         return f"+{offset_hours}"
     else:
@@ -79,18 +79,16 @@ def random_datetime_with_offset(start_year=2000, end_year=2025):
     return dt_naive.isoformat() + random_offset_str()
 
 def random_time_naive():
-    """
-    Generate a random time without timezone, e.g. HH:MM:SS.
-    """
+    """Generate a random time (HH:MM:SS)."""
     hour = random.randint(0, 23)
     minute = random.randint(0, 59)
     second = random.randint(0, 59)
-    return time(hour, minute, second)
+    return dt_time(hour, minute, second)
 
 def random_time_with_offset():
     """
     Generate a random time HH:MM:SS and append ±H offset.
-    Example: 09:25:13+5
+    Example: "09:25:13+5"
     """
     t = random_time_naive()
     return t.isoformat() + random_offset_str()
@@ -120,57 +118,47 @@ def random_json_object():
 # -------------------------------
 # MAIN
 # -------------------------------
-def main():
+def generate_csv(
+    project_id: str,
+    bucket_name: str,
+    target_size_mb: int,
+    duplicate_pct: int = 20,
+    chunk_size: int = 1 * 1024 * 1024,
+    log_frequency: int = 100_000
+):
     """
-    Generates a CSV file in GCS of ~10 MB (by default).
-    Deletes any existing file with the same name beforehand.
-    Has columns for times/timestamps with random ±H offsets (e.g. +5, -3).
-    Logs progress, uses integer PK with duplicates, etc.
+    Generate and upload one CSV file of size ~target_size_mb MB to GCS.
+    - project_id: GCP project
+    - bucket_name: GCS bucket
+    - target_size_mb: approximate MB size
+    - duplicate_pct: % chance to reuse PK
+    - chunk_size: GCS upload chunk size
+    - log_frequency: rows between progress logs
     """
-    # ------------------------------------
-    # CONFIGURATIONS
-    # ------------------------------------
-    PROJECT_ID = "dataline-integration-testing"
-    BUCKET_NAME = "no_raw_tables"
-    
-    TARGET_SIZE_MB = 10  # Adjust as needed
-    TARGET_SIZE_BYTES = TARGET_SIZE_MB * 1024 * 1024
-    
-    # The file name in GCS depends on MB
-    BLOB_NAME = f"massive_data_{TARGET_SIZE_MB}MB.csv"
 
-    # Probability that a row reuses an existing PK (for duplicates)
-    DUPLICATE_PCT = 20  # 20%
+    start_cursor = datetime(2025, 1, 1, 12, 0, 0)
+    cursor_increment = timedelta(minutes=1)
 
-    # Start time for the 'cursor' column
-    START_CURSOR = datetime(2025, 1, 1, 12, 0, 0)
-    CURSOR_INCREMENT = timedelta(minutes=1)
+    target_size_bytes = target_size_mb * 1024 * 1024
+    blob_name = f"massive_data_{target_size_mb}MB.csv"
 
-    # For ~10 MB, 1 MB chunk is fine. Increase for bigger files.
-    CHUNK_SIZE = 1 * 1024 * 1024
+    logger.info("Starting CSV generation. Target size: %d MB", target_size_mb)
+    logger.info("Project: %s, Bucket: %s, Blob: %s", project_id, bucket_name, blob_name)
 
-    # Logging frequency
-    LOG_FREQUENCY = 100_000
+    # Setup GCS
+    storage_client = storage.Client(project=project_id)
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(blob_name)
 
-    logger.info(f"Starting CSV generation. Target size: {TARGET_SIZE_MB} MB.")
-    logger.info("Project: %s, Bucket: %s, Blob: %s", PROJECT_ID, BUCKET_NAME, BLOB_NAME)
-
-    # ------------------------------------
-    # CREATE GCS CLIENT & BLOB
-    # ------------------------------------
-    storage_client = storage.Client(project=PROJECT_ID)
-    bucket = storage_client.bucket(BUCKET_NAME)
-    blob = bucket.blob(BLOB_NAME)
-
-    # Delete the file if it already exists
+    # Delete existing blob if any
     if blob.exists():
-        logger.info(f"Blob {BLOB_NAME} already exists in bucket {BUCKET_NAME}. Deleting it...")
+        logger.info(f"Blob {blob_name} already exists. Deleting it...")
         blob.delete()
         logger.info("Deleted existing blob.")
 
-    # Open the new blob in binary mode for streaming
-    with blob.open("wb", chunk_size=CHUNK_SIZE) as gcs_file:
-        # CSV headers
+    start_time = time.time()
+
+    with blob.open("wb", chunk_size=chunk_size) as gcs_file:
         headers = [
             "primary_key",
             "cursor",
@@ -192,11 +180,10 @@ def main():
         current_pk = 1
         total_bytes_written = 0
 
-        # We'll use csv.writer on a StringIO buffer to handle quoting
         row_buffer = io.StringIO()
         csv_writer = csv.writer(row_buffer, quoting=csv.QUOTE_MINIMAL)
 
-        # Write the header row
+        # Write header
         row_buffer.seek(0)
         row_buffer.truncate(0)
         csv_writer.writerow(headers)
@@ -205,34 +192,31 @@ def main():
         gcs_file.write(row_bytes)
         total_bytes_written += len(row_bytes)
 
-        # Generate data until we exceed the target size
-        while total_bytes_written < TARGET_SIZE_BYTES:
-            # Decide if we reuse a PK or create a new one
-            if used_pks and (random.random() < (DUPLICATE_PCT / 100.0)):
+        # Generate rows until target size reached
+        while total_bytes_written < target_size_bytes:
+            # Duplicate PK logic
+            if used_pks and (random.random() < (duplicate_pct / 100.0)):
                 row_pk = random.choice(used_pks)
             else:
                 row_pk = current_pk
                 used_pks.append(row_pk)
                 current_pk += 1
 
-            # Cursor increments by 1 minute for each row
-            row_cursor_time = START_CURSOR + (CURSOR_INCREMENT * row_count)
+            # Cursor
+            row_cursor_time = start_cursor + (cursor_increment * row_count)
             row_cursor_str = row_cursor_time.isoformat()
 
-            # Random fields
+            # Random data
             row_string = random_string()
             row_bool = random_bool()
             row_integer = random_int()
             row_float_val = random_float()
             row_date_str = random_date().isoformat()
 
-            # Timestamps with random ±H offset
-            ts_with_tz = random_datetime_with_offset()  # e.g. "2024-10-11T09:12:37+5"
+            ts_with_tz = random_datetime_with_offset()
             ts_no_tz = random_datetime().isoformat()
-
-            # Times with random ±H offset
-            t_with_tz = random_time_with_offset()       # e.g. "09:25:13-2"
-            t_no_tz = random_time_naive().isoformat()   # e.g. "09:25:13"
+            t_with_tz = random_time_with_offset()
+            t_no_tz = random_time_naive().isoformat()
 
             arr_val = random_array()
             obj_val = random_json_object()
@@ -253,35 +237,56 @@ def main():
                 json.dumps(obj_val),
             ]
 
-            # Write to CSV (StringIO)
+            # Write row to CSV
             row_buffer.seek(0)
             row_buffer.truncate(0)
             csv_writer.writerow(row_data)
             row_text = row_buffer.getvalue()
 
-            # Encode and write to GCS
+            # Encode + write
             row_bytes = row_text.encode("utf-8")
             gcs_file.write(row_bytes)
             total_bytes_written += len(row_bytes)
             row_count += 1
 
-            # Log progress occasionally
-            if row_count % LOG_FREQUENCY == 0:
-                percent_complete = (total_bytes_written / TARGET_SIZE_BYTES) * 100
+            # Progress log
+            if row_count % log_frequency == 0:
+                percent_complete = (total_bytes_written / target_size_bytes) * 100
                 logger.info(
-                    f"Progress: {row_count:,} rows, "
+                    f"Progress for {blob_name}: {row_count:,} rows, "
                     f"{total_bytes_written / (1024 * 1024):,.2f} MB written "
                     f"({percent_complete:.2f}% complete)."
                 )
 
+    # Calc speed
+    end_time = time.time()
+    duration_seconds = end_time - start_time
+    mb_written = total_bytes_written / (1024 * 1024)
+    speed_mbps = mb_written / duration_seconds if duration_seconds > 0 else 0.0
+
     logger.info(
-        f"Done! Wrote ~{total_bytes_written:,} bytes in {row_count:,} rows "
-        f"to gs://{BUCKET_NAME}/{BLOB_NAME}."
+        f"File {blob_name} done! {total_bytes_written:,} bytes, {row_count:,} rows, "
+        f"elapsed time {duration_seconds:.2f} s, speed {speed_mbps:.2f} MB/s."
     )
-    logger.info(f"Approx. {DUPLICATE_PCT}% of rows have duplicate primary keys.")
-    logger.info(
-        "For bigger datasets, consider parallel or distributed generation for better performance."
-    )
+
+
+def main():
+    """
+    Demonstrates generating multiple files of different sizes,
+    each with random CSV data in GCS.
+    """
+    PROJECT_ID = "dataline-integration-testing"
+    BUCKET_NAME = "no_raw_tables"
+
+    # List of file sizes in MB (adjust as needed)
+    sizes_mb = [10, 100, 1000, 10000]
+
+    for size in sizes_mb:
+        generate_csv(
+            project_id=PROJECT_ID,
+            bucket_name=BUCKET_NAME,
+            target_size_mb=size
+        )
 
 
 if __name__ == "__main__":
