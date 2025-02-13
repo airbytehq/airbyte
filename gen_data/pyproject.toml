@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "gen-data"
+version = "0.1.0"
+description = ""
+authors = ["Francis Genet <francis.genet@airbyte.io>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pytz = "^2025.1"
+google-cloud-storage = "^3.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
