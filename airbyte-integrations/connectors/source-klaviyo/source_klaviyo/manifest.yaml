@@ -1117,7 +1117,6 @@ api_budget:
           params:
             "additional-fields[list]": "profile_count" # Other API budget settings:
   status_codes_for_ratelimit_hit: [429]
-  maximum_attempts_to_acquire: 100000
 
 # Klaviyo's rate limiting is different by endpoints:
 # - XS: 1/s burst; 15/m steady
