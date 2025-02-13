@@ -77,6 +77,11 @@ class PostgresSqlGenerator(namingTransformer: NamingConventionTransformer, casca
             // rather than making up an arbitrary length limit.
             return SQLDataType.VARCHAR
         }
+
+        if (airbyteProtocolType == AirbyteProtocolType.NUMBER) {
+            return SQLDataType.DECIMAL
+        }
+
         return super.toDialectType(airbyteProtocolType)
     }
 
