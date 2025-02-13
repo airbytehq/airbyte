@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from source_shopify.auth import ShopifyAuthenticator
-from source_shopify.source import ConnectionCheckTest, SourceShopify
+from source_shopify.source import ConnectionCheckTest, ShopifyScopes, SourceShopify
 from source_shopify.streams.streams import (
     AbandonedCheckouts,
     Articles,
@@ -307,3 +307,46 @@ def test_get_shop_id(config, read_records, expected_shop_id, expected_error):
         else:
             actual_shop_id = check_test.get_shop_id()
             assert actual_shop_id == expected_shop_id
+
+
+def test_test_connection(config):
+    config.pop("shop", None)
+    check_test = ConnectionCheckTest(config)
+    expected = (False, "The `Shopify Store` name is missing. Make sure it's entered and valid.")
+    assert check_test.test_connection() == expected
+
+
+def test_format_stream_name() -> None:
+    source = SourceShopify()
+    assert source.format_stream_name("test_stream") == "TestStream"
+
+
+def test_user_scopes_generate_full_list_of_streams(config, mocker):
+    source = SourceShopify()
+
+    # the list of the scopes we expect user to have
+    expected_user_scopes = [
+        "read_customers",
+        "read_orders",
+        "read_draft_orders",
+        "read_products",
+        "read_inventory",
+        "read_publications",
+        "read_content",
+        "read_price_rules",
+        "read_discounts",
+        "read_locations",
+        "read_inventory",
+        "read_merchant_managed_fulfillment_orders",
+        "read_shopify_payments_payouts",
+        "read_online_store_pages",
+    ]
+
+    # patch the output for the critical methods
+    mocker.patch.object(ShopifyAuthenticator, "get_auth_header", return_value={"X-Shopify-Access-Token": "test_toke"})
+    mocker.patch.object(ConnectionCheckTest, "get_shop_id", return_value=123456)
+    mocker.patch.object(ShopifyScopes, "get_user_scopes", return_value=expected_user_scopes)
+
+    # Adjust this number based on the actual permitted streams
+    expected_streams_number = 45
+    assert len(source.streams(config)) == expected_streams_number

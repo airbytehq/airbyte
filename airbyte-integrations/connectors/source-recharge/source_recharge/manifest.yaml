@@ -280,6 +280,14 @@ definitions:
     $parameters:
       name: "events"
       data_path: "events"
+  # BUNDLE SELECTIONS
+  bundle_selections_stream:
+    description: >-
+      Bundle Selections Stream: https://developer.rechargepayments.com/2021-11/bundle_selections/bundle_selection_list
+    $ref: "#/definitions/base_incremental_stream"
+    $parameters:
+      name: "bundle_selections"
+      data_path: "bundle_selections"
 
 streams:
   - "#/definitions/addresses_stream"
@@ -293,6 +301,7 @@ streams:
   - "#/definitions/shop_stream"
   - "#/definitions/subscriptions_stream"
   - "#/definitions/events_stream"
+  - "#/definitions/bundle_selections_stream"
   # The `orders` stream remains implemented in `streams.py` due to:
   # 1. Inability to resolve `$ref` conditionally
   # 2. Inability to dynamically switch between paginators (diff api versions, require diff pagination approach) (or create the CustomPaginator component)
