@@ -2,15 +2,15 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.31.1"
+version = "6.33.3"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 groups = ["main"]
 markers = "python_version <= \"3.11\""
 files = [
-    {file = "airbyte_cdk-6.31.1-py3-none-any.whl", hash = "sha256:03383f318d6adf4eaf5d971166b0998aa5682d68422be888426ee8367513ffef"},
-    {file = "airbyte_cdk-6.31.1.tar.gz", hash = "sha256:71478976338c0a3708e0b560072c7cc771bdf2ae047bfcad9ac1bfabf1aaaa57"},
+    {file = "airbyte_cdk-6.33.3-py3-none-any.whl", hash = "sha256:c410c542cfcf6a592d487dd39c16bca6a22b77246434e56df58e2b93c18913d4"},
+    {file = "airbyte_cdk-6.33.3.tar.gz", hash = "sha256:2b58ad111adc8e1c38ea297951510c025f4b1af321264d937a0376cd2cd3d3a3"},
 ]
 
 [package.dependencies]
@@ -1132,7 +1132,7 @@ version = "2.1.2"
 description = "Python datetimes made easy"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
-groups = ["main"]
+groups = ["dev"]
 markers = "python_version <= \"3.11\""
 files = [
     {file = "pendulum-2.1.2-cp27-cp27m-macosx_10_15_x86_64.whl", hash = "sha256:b6c352f4bd32dff1ea7066bd31ad0f71f8d8100b9ff709fb343f3b86cee43efe"},
@@ -1551,7 +1551,7 @@ version = "2020.1"
 description = "The Olson timezone database for Python."
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-groups = ["main"]
+groups = ["dev"]
 markers = "python_version <= \"3.11\""
 files = [
     {file = "pytzdata-2020.1-py2.py3-none-any.whl", hash = "sha256:e1e14750bcf95016381e4d472bad004eef710f2d6417240904070b3d6654485f"},
@@ -1564,7 +1564,7 @@ version = "6.0.2"
 description = "YAML parser and emitter for Python"
 optional = false
 python-versions = ">=3.8"
-groups = ["main", "dev"]
+groups = ["main"]
 markers = "python_version <= \"3.11\""
 files = [
     {file = "PyYAML-6.0.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:0a9a2848a5b7feac301353437eb7d5957887edbf81d56e903999a75a3d743086"},
@@ -1918,27 +1918,6 @@ files = [
 
 [package.dependencies]
 requests = ">=2.0.1,<3.0.0"
-
-[[package]]
-name = "responses"
-version = "0.25.6"
-description = "A utility library for mocking out the `requests` Python library."
-optional = false
-python-versions = ">=3.8"
-groups = ["dev"]
-markers = "python_version <= \"3.11\""
-files = [
-    {file = "responses-0.25.6-py3-none-any.whl", hash = "sha256:9cac8f21e1193bb150ec557875377e41ed56248aed94e4567ed644db564bacf1"},
-    {file = "responses-0.25.6.tar.gz", hash = "sha256:eae7ce61a9603004e76c05691e7c389e59652d91e94b419623c12bbfb8e331d8"},
-]
-
-[package.dependencies]
-pyyaml = "*"
-requests = ">=2.30.0,<3.0"
-urllib3 = ">=1.25.10,<3.0"
-
-[package.extras]
-tests = ["coverage (>=6.0.0)", "flake8", "mypy", "pytest (>=7.0.0)", "pytest-asyncio", "pytest-cov", "pytest-httpserver", "tomli", "tomli-w", "types-PyYAML", "types-requests"]
 
 [[package]]
 name = "serpyco-rs"
@@ -2296,4 +2275,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.12"
-content-hash = "e819dd409be663f77fcb7cdb74eb75ef631424b0b933a40be9cac18b262433ed"
+content-hash = "03171bdbc0b0bd8ae34f888bba183f6e6d894e5edb7586ba15286e028b7ef717"

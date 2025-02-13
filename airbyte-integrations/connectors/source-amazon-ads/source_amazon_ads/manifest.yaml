@@ -2170,12 +2170,10 @@ definitions:
       authenticator:
         type: NoAuth
     download_decoder:
-      type: CompositeRawDecoder
-      parser:
-        type: GzipParser
-        inner_parser:
-          type: JsonParser
-          encoding: utf
+      type: GzipDecoder
+      decoder:
+        type: JsonDecoder
+        encoding: utf
     download_extractor:
       type: DpathExtractor
       field_path: []
