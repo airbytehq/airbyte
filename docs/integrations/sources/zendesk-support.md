@@ -144,6 +144,7 @@ The Zendesk Support source connector supports the following streams:
 - [Triggers](https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-ticket-triggers) \(Incremental\)
 - [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/) \(Incremental\)
 - [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
+- [UserIdentities](https://developer.zendesk.com/api-reference/ticketing/users/user_identities/) \(Incremental\)
 - [UserFields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
 - [Categories](https://developer.zendesk.com/api-reference/help_center/help-center-api/categories/#list-categories)
 - [Sections](https://developer.zendesk.com/api-reference/help_center/help-center-api/sections/#list-sections)
@@ -188,6 +189,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.6.0   | 2024-12-09 | [47939](https://github.com/airbytehq/airbyte/pull/47939) | Add `User Identities` stream                                                                                                                                                                                                         |
 | 4.5.0   | 2024-12-02 | [48761](https://github.com/airbytehq/airbyte/pull/48761) | Add `Categories` and `Sections` stream |
 | 4.4.4 | 2025-02-08 | [51943](https://github.com/airbytehq/airbyte/pull/51943) | Update dependencies |
 | 4.4.3 | 2025-02-03 | [52625](https://github.com/airbytehq/airbyte/pull/52625) | Update error message during check for `organization_access_enabled` |
