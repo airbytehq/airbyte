@@ -16,19 +16,19 @@ import com.azure.storage.blob.specialized.BlobInputStream
 import com.azure.storage.blob.specialized.BlockBlobClient
 import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfiguration
 import io.mockk.every
-import io.mockk.verify
-import io.mockk.mockk
-import io.mockk.slot
 import io.mockk.just
+import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.slot
+import io.mockk.verify
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -43,35 +43,34 @@ class AzureBlobClientTest {
     fun setup() {
         serviceClient = mockk()
         containerClient = mockk()
-        blobConfig = AzureBlobStorageConfiguration(
-            accountName = "testAccount",
-            containerName = "testContainer",
-            sharedAccessSignature = "null",
-        )
-        every { serviceClient.getBlobContainerClient(blobConfig.containerName) } returns containerClient
+        blobConfig =
+            AzureBlobStorageConfiguration(
+                accountName = "testAccount",
+                containerName = "testContainer",
+                sharedAccessSignature = "null",
+            )
+        every { serviceClient.getBlobContainerClient(blobConfig.containerName) } returns
+            containerClient
 
-        azureBlobClient = AzureBlobClient(
-            serviceClient = serviceClient,
-            blobConfig = blobConfig,
-        )
+        azureBlobClient =
+            AzureBlobClient(
+                serviceClient = serviceClient,
+                blobConfig = blobConfig,
+            )
     }
 
     @Test
     fun `list - returns only blobs that match prefix`() = runBlocking {
         val prefix = "testPrefix"
-        val blobItem1 = mockk<BlobItem> {
-            every { name } returns "testPrefix-blob1"
-        }
-        val blobItem2 = mockk<BlobItem> {
-            every { name } returns "testPrefix-blob2"
-        }
-        val blobItem3 = mockk<BlobItem> {
-            every { name } returns "other-blob"
-        }
+        val blobItem1 = mockk<BlobItem> { every { name } returns "testPrefix-blob1" }
+        val blobItem2 = mockk<BlobItem> { every { name } returns "testPrefix-blob2" }
+        val blobItem3 = mockk<BlobItem> { every { name } returns "other-blob" }
 
-        val pagedIterable = mockk<PagedIterable<BlobItem>> {
-            every { iterator() } returns mutableListOf(blobItem1, blobItem2, blobItem3).iterator()
-        }
+        val pagedIterable =
+            mockk<PagedIterable<BlobItem>> {
+                every { iterator() } returns
+                    mutableListOf(blobItem1, blobItem2, blobItem3).iterator()
+            }
 
         every { containerClient.listBlobs() } returns pagedIterable
 
@@ -88,9 +87,10 @@ class AzureBlobClientTest {
     @Test
     fun `list - no blobs returned`() = runBlocking {
         val prefix = "emptyPrefix"
-        val pagedIterable = mockk<PagedIterable<BlobItem>> {
-            every { iterator() } returns mutableListOf<BlobItem>().iterator()
-        }
+        val pagedIterable =
+            mockk<PagedIterable<BlobItem>> {
+                every { iterator() } returns mutableListOf<BlobItem>().iterator()
+            }
 
         every { containerClient.listBlobs() } returns pagedIterable
 
@@ -141,12 +141,10 @@ class AzureBlobClientTest {
         val copyOperation = mockk<SyncPoller<BlobCopyInfo, Void>>(relaxed = true)
 
         every {
-            serviceClient.getBlobContainerClient(blobConfig.containerName)
-                .getBlobClient(sourceKey)
+            serviceClient.getBlobContainerClient(blobConfig.containerName).getBlobClient(sourceKey)
         } returns sourceBlobClient
         every {
-            serviceClient.getBlobContainerClient(blobConfig.containerName)
-                .getBlobClient(destKey)
+            serviceClient.getBlobContainerClient(blobConfig.containerName).getBlobClient(destKey)
         } returns destBlobClient
         every { sourceBlobClient.blobUrl } returns "http://fakeurl/sourceBlob"
         every {
@@ -155,16 +153,15 @@ class AzureBlobClientTest {
                 null,
             )
         } returns copyOperation
-        every { copyOperation.waitForCompletion() } throws BlobStorageException(
-            "Copy failed",
-            null,
-            null,
-        )
+        every { copyOperation.waitForCompletion() } throws
+            BlobStorageException(
+                "Copy failed",
+                null,
+                null,
+            )
 
         assertThrows(BlobStorageException::class.java) {
-            runBlocking {
-                azureBlobClient.move(sourceKey, destKey)
-            }
+            runBlocking { azureBlobClient.move(sourceKey, destKey) }
         }
     }
 
@@ -176,22 +173,14 @@ class AzureBlobClientTest {
 
         val blobClient = mockk<BlobClient>()
         val blobInputStream = mockk<BlobInputStream>()
-        every { blobInputStream.available() } answers {
-            inputStream.available()
-        }
-        every { blobInputStream.read(capture(slot())) } answers {
-            inputStream.read(firstArg())
-        }
-        every { blobInputStream.close() } answers {
-            inputStream.close()
-        }
+        every { blobInputStream.available() } answers { inputStream.available() }
+        every { blobInputStream.read(capture(slot())) } answers { inputStream.read(firstArg()) }
+        every { blobInputStream.close() } answers { inputStream.close() }
 
         every { containerClient.getBlobClient(key) } returns blobClient
         every { blobClient.openInputStream() } returns blobInputStream
 
-        val result = azureBlobClient.get(key) { input ->
-            input.readBytes().decodeToString()
-        }
+        val result = azureBlobClient.get(key) { input -> input.readBytes().decodeToString() }
 
         assertEquals("Hello World", result)
         verify(exactly = 1) { blobClient.openInputStream() }
@@ -203,17 +192,15 @@ class AzureBlobClientTest {
         val blobClient = mockk<BlobClient>()
 
         every { containerClient.getBlobClient(key) } returns blobClient
-        every { blobClient.openInputStream() } throws BlobStorageException(
-            "Not Found",
-            null,
-            null,
-        )
+        every { blobClient.openInputStream() } throws
+            BlobStorageException(
+                "Not Found",
+                null,
+                null,
+            )
 
-        assertThrows(BlobStorageException::class.java)
-        {
-            runBlocking {
-                azureBlobClient.get(key) {}
-            }
+        assertThrows(BlobStorageException::class.java) {
+            runBlocking { azureBlobClient.get(key) {} }
         }
     }
 
@@ -253,12 +240,9 @@ class AzureBlobClientTest {
         every { blobClient.properties } throws BlobStorageException("Not Found", null, null)
 
         assertThrows(BlobStorageException::class.java) {
-            runBlocking {
-                azureBlobClient.getMetadata(key)
-            }
+            runBlocking { azureBlobClient.getMetadata(key) }
         }
     }
-
 
     @Test
     fun `put - uploads byte array successfully`() = runBlocking {
@@ -275,9 +259,7 @@ class AzureBlobClientTest {
 
         verify(exactly = 1) {
             blobClient.upload(
-                withArg { bd : BinaryData ->
-                    assertArrayEquals(testBytes, bd.toBytes())
-                },
+                withArg { bd: BinaryData -> assertArrayEquals(testBytes, bd.toBytes()) },
                 true,
             )
         }
@@ -298,9 +280,7 @@ class AzureBlobClientTest {
         } throws BlobStorageException("Upload failed", null, null)
 
         assertThrows(BlobStorageException::class.java) {
-            runBlocking {
-                azureBlobClient.put(key, testBytes)
-            }
+            runBlocking { azureBlobClient.put(key, testBytes) }
         }
     }
 
@@ -325,11 +305,12 @@ class AzureBlobClientTest {
         every { httpResponse.statusCode } returns 404
 
         every { containerClient.getBlobClient(key) } returns blobClient
-        every { blobClient.delete() } throws BlobStorageException(
-            "Not Found",
-            httpResponse,
-            null,
-        )
+        every { blobClient.delete() } throws
+            BlobStorageException(
+                "Not Found",
+                httpResponse,
+                null,
+            )
 
         // Should not throw
         azureBlobClient.delete(key)
@@ -344,16 +325,15 @@ class AzureBlobClientTest {
         every { httpResponse.statusCode } returns 403
 
         every { containerClient.getBlobClient(key) } returns blobClient
-        every { blobClient.delete() } throws BlobStorageException(
-            "Forbidden",
-            httpResponse,
-            null,
-        )
+        every { blobClient.delete() } throws
+            BlobStorageException(
+                "Forbidden",
+                httpResponse,
+                null,
+            )
 
         assertThrows(BlobStorageException::class.java) {
-            runBlocking {
-                azureBlobClient.delete(key)
-            }
+            runBlocking { azureBlobClient.delete(key) }
         }
     }
 
@@ -363,9 +343,8 @@ class AzureBlobClientTest {
         val metadata = mapOf("test" to "value")
 
         val blockBlobClient = mockk<BlockBlobClient>()
-        val blobClient = mockk<BlobClient> {
-            every { getBlockBlobClient() } returns blockBlobClient
-        }
+        val blobClient =
+            mockk<BlobClient> { every { getBlockBlobClient() } returns blockBlobClient }
 
         every { containerClient.getBlobClient(key) } returns blobClient
 
@@ -379,23 +358,22 @@ class AzureBlobClientTest {
     fun `startStreamingUpload - throws exception on invalid block blob client`(): Unit =
         runBlocking {
             val key = "invalidBlockBlob"
-            val blobClient = mockk<BlobClient> {
-                every { getBlockBlobClient() } throws BlobStorageException(
-                    "Cannot get block blob client",
-                    null,
-                    null,
-                )
-            }
+            val blobClient =
+                mockk<BlobClient> {
+                    every { getBlockBlobClient() } throws
+                        BlobStorageException(
+                            "Cannot get block blob client",
+                            null,
+                            null,
+                        )
+                }
 
             every { containerClient.getBlobClient(key) } returns blobClient
 
             assertThrows(
                 BlobStorageException::class.java,
             ) {
-                runBlocking {
-                    azureBlobClient.startStreamingUpload(key, emptyMap())
-                }
+                runBlocking { azureBlobClient.startStreamingUpload(key, emptyMap()) }
             }
-
         }
 }

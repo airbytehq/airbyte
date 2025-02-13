@@ -7,8 +7,6 @@ import io.airbyte.cdk.load.util.setOnce
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedInputStream
 import java.nio.ByteBuffer
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import java.util.Base64
 import java.util.concurrent.ConcurrentSkipListMap
 import java.util.concurrent.atomic.AtomicBoolean
@@ -26,8 +24,8 @@ class AzureBlobStreamingUpload(
     private val blockIds = ConcurrentSkipListMap<Int, String>()
 
     /**
-     * Each part that arrives is treated as a new block. We must generate unique block IDs
-     * for each call (Azure requires base64-encoded strings).
+     * Each part that arrives is treated as a new block. We must generate unique block IDs for each
+     * call (Azure requires base64-encoded strings).
      */
     override suspend fun uploadPart(part: ByteArray, index: Int) {
         // Generate a unique block id. We’ll just use index or a random
@@ -46,14 +44,13 @@ class AzureBlobStreamingUpload(
             )
         }
 
-
         // Keep track of the blocks in the order they arrived (or the index).
         blockIds[index] = blockId
     }
 
     /**
-     * After all parts are uploaded, we finalize by committing the block list in ascending order.
-     * If no parts were uploaded, we skip.
+     * After all parts are uploaded, we finalize by committing the block list in ascending order. If
+     * no parts were uploaded, we skip.
      */
     override suspend fun complete(): AzureBlob {
         if (isComplete.setOnce()) {
@@ -61,7 +58,9 @@ class AzureBlobStreamingUpload(
             // The `withLock` ensures only the first call does the commit logic
 
             if (blockIds.isEmpty()) {
-                log.warn { "No blocks uploaded. Committing empty blob: ${blockBlobClient.blobName}" }
+                log.warn {
+                    "No blocks uploaded. Committing empty blob: ${blockBlobClient.blobName}"
+                }
             } else {
                 // Sort by the “index” if you want strictly in ascending order:
                 // but we stored them in arrival order, which may be good enough
@@ -79,10 +78,9 @@ class AzureBlobStreamingUpload(
         return AzureBlob(blockBlobClient.blobName, config)
     }
 
-
     private fun generateBlockId(index: Int): String {
         // Create a fixed-size ByteBuffer to store all components
-        val buffer = ByteBuffer.allocate(32)  // Fixed size buffer
+        val buffer = ByteBuffer.allocate(32) // Fixed size buffer
 
         // Write prefix (padded to 10 bytes)
         BLOB_ID_PREFIX.padEnd(10, ' ').forEach { buffer.put(it.code.toByte()) }
@@ -92,13 +90,9 @@ class AzureBlobStreamingUpload(
 
         // Generate random suffix (exactly 12 chars)
         val suffixChars = ('A'..'Z') + ('0'..'9')
-        (1..12).forEach { _ ->
-            buffer.put(suffixChars.random().code.toByte())
-        }
+        (1..12).forEach { _ -> buffer.put(suffixChars.random().code.toByte()) }
 
         // Encode the entire fixed-length buffer to Base64
         return Base64.getEncoder().encodeToString(buffer.array())
     }
-
-
 }

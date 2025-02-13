@@ -17,9 +17,18 @@ class AzureBlobStorageClientFactory(
         val endpoint =
             "https://${azureBlobStorageConfigurationProvider.azureBlobStorageConfiguration.accountName}.blob.core.windows.net"
 
-        val azureServiceClient = BlobServiceClientBuilder().endpoint(endpoint)
-            .sasToken(azureBlobStorageConfigurationProvider.azureBlobStorageConfiguration.sharedAccessSignature).buildClient()
+        val azureServiceClient =
+            BlobServiceClientBuilder()
+                .endpoint(endpoint)
+                .sasToken(
+                    azureBlobStorageConfigurationProvider.azureBlobStorageConfiguration
+                        .sharedAccessSignature
+                )
+                .buildClient()
 
-        return AzureBlobClient(azureServiceClient, azureBlobStorageConfigurationProvider.azureBlobStorageConfiguration)
+        return AzureBlobClient(
+            azureServiceClient,
+            azureBlobStorageConfigurationProvider.azureBlobStorageConfiguration
+        )
     }
 }

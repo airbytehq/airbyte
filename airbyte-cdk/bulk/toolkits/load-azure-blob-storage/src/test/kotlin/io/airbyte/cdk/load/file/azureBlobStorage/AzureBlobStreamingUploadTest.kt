@@ -1,20 +1,20 @@
 package io.airbyte.cdk.load.file.azureBlobStorage
 
-import com.azure.storage.blob.specialized.BlockBlobClient
+// import io.mockk.Awaits
 import com.azure.storage.blob.models.BlobStorageException
 import com.azure.storage.blob.models.BlockBlobItem
+import com.azure.storage.blob.specialized.BlockBlobClient
 import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfiguration
-import io.mockk.mockk
-import io.mockk.just
-import io.mockk.runs
 import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.verify
-//import io.mockk.Awaits
+import java.io.InputStream
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.io.InputStream
 
 class AzureBlobStreamingUploadTest {
 
@@ -26,11 +26,12 @@ class AzureBlobStreamingUploadTest {
     @BeforeEach
     fun setup() {
         blockBlobClient = mockk()
-        config = AzureBlobStorageConfiguration(
-            accountName = "fakeAccount",
-            containerName = "fakeContainer",
-            sharedAccessSignature = "null"
-        )
+        config =
+            AzureBlobStorageConfiguration(
+                accountName = "fakeAccount",
+                containerName = "fakeContainer",
+                sharedAccessSignature = "null"
+            )
         metadata = mapOf("env" to "dev", "author" to "testUser")
 
         // By default, let's assume blobName returns something
@@ -53,7 +54,8 @@ class AzureBlobStreamingUploadTest {
 
         // Assert
         // 1) Verify stageBlock was called
-        //    We don't know the exact base64 block ID from generateBlockId, but we can match using "any()"
+        //    We don't know the exact base64 block ID from generateBlockId, but we can match using
+        // "any()"
         verify(exactly = 1) {
             blockBlobClient.stageBlock(
                 any(), // the base64-encoded ID
@@ -64,7 +66,7 @@ class AzureBlobStreamingUploadTest {
     }
 
     @Test
-    fun `uploadPart - throws exception if stageBlock fails`() : Unit = runBlocking {
+    fun `uploadPart - throws exception if stageBlock fails`(): Unit = runBlocking {
         // Arrange
         val partData = ByteArray(10) { 0xA }
         every { blockBlobClient.stageBlock(any(), any<InputStream>(), any()) } throws
@@ -72,9 +74,7 @@ class AzureBlobStreamingUploadTest {
 
         // Act & Assert
         assertThrows(BlobStorageException::class.java) {
-            runBlocking {
-                streamingUpload.uploadPart(partData, 0)
-            }
+            runBlocking { streamingUpload.uploadPart(partData, 0) }
         }
     }
 
@@ -121,10 +121,13 @@ class AzureBlobStreamingUploadTest {
         // The code sorts by the keys in ascending order (0,1,2). We verify that
         // commitBlockList is called with the values in ascending order of index.
         verify(exactly = 1) {
-            blockBlobClient.commitBlockList(withArg { blockList ->
-                // We can't easily check the entire Base64 ID but can check it has 3 items
-                assertEquals(3, blockList.size)
-            }, true)
+            blockBlobClient.commitBlockList(
+                withArg { blockList ->
+                    // We can't easily check the entire Base64 ID but can check it has 3 items
+                    assertEquals(3, blockList.size)
+                },
+                true
+            )
         }
         verify(exactly = 1) { blockBlobClient.setMetadata(metadata) }
         // Confirm the returned object
@@ -171,12 +174,9 @@ class AzureBlobStreamingUploadTest {
         every { blockBlobClient.commitBlockList(any(), true) } throws
             BlobStorageException("Commit failed", null, null)
 
-
         // Act & Assert
         assertThrows(BlobStorageException::class.java) {
-            runBlocking {
-                streamingUpload.complete()
-            }
+            runBlocking { streamingUpload.complete() }
         }
 
         // Ensure metadata was never set

@@ -39,7 +39,7 @@ interface AzureBlobStorageSpecification {
     @get:JsonProperty("shared_access_signature")
     @get:JsonSchemaInject(
         json =
-        """{"examples":["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],"airbyte_secret": true,"always_show": true}"""
+            """{"examples":["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],"airbyte_secret": true,"always_show": true}"""
     )
     val azureBlobStorageSharedAccessSignature: String
 
@@ -55,7 +55,7 @@ interface AzureBlobStorageSpecification {
 data class AzureBlobStorageConfiguration(
     val accountName: String,
     val containerName: String,
-    val sharedAccessSignature : String
+    val sharedAccessSignature: String
 )
 
 interface AzureBlobStorageConfigurationProvider {

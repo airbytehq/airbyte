@@ -1,37 +1,17 @@
 package io.airbyte.cdk.load.file.azureBlobStorage
 
 import com.azure.core.util.BinaryData
-import com.azure.storage.blob.BlobClient
-import com.azure.storage.blob.BlobContainerClient
 import com.azure.storage.blob.BlobServiceClient
-import com.azure.storage.blob.BlobServiceClientBuilder
-import com.azure.storage.blob.models.BlobProperties
 import com.azure.storage.blob.models.BlobStorageException
-import com.azure.storage.blob.models.CopyStatusType
-import com.azure.storage.blob.options.BlockBlobOutputStreamOptions
-import com.azure.storage.blob.specialized.BlockBlobClient
 import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfiguration
-import io.airbyte.cdk.load.file.NoopProcessor
-import io.airbyte.cdk.load.file.StreamProcessor
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
-import kotlinx.coroutines.Dispatchers
+import java.io.InputStream
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.withContext
-import java.io.ByteArrayInputStream
-import java.io.InputStream
-import java.io.OutputStream
-import java.time.Duration
-import java.util.Base64
-import java.util.concurrent.ConcurrentHashMap
 
-
-
-/**
- * Represents a single blob in Azure.
- */
+/** Represents a single blob in Azure. */
 data class AzureBlob(
     override val key: String,
     override val storageConfig: AzureBlobStorageConfiguration
@@ -42,12 +22,11 @@ class AzureBlobClient(
     private val blobConfig: AzureBlobStorageConfiguration
 ) : ObjectStorageClient<AzureBlob> {
 
-    /**
-     * List all blobs that start with [prefix]. We emit them as a Flow.
-     */
+    /** List all blobs that start with [prefix]. We emit them as a Flow. */
     override suspend fun list(prefix: String): Flow<AzureBlob> = flow {
         val containerClient = serviceClient.getBlobContainerClient(blobConfig.containerName)
-        val pager = containerClient.listBlobs() // you can pass ListBlobsOptions if you want prefix etc.
+        val pager =
+            containerClient.listBlobs() // you can pass ListBlobsOptions if you want prefix etc.
 
         // If you need to filter by prefix:
         // val pager = containerClient.listBlobs(ListBlobsOptions().setPrefix(prefix), null)
@@ -60,21 +39,17 @@ class AzureBlobClient(
         }
     }
 
-    /**
-     * Move is not a single operation in Azure; we have to do a copy + delete.
-     */
+    /** Move is not a single operation in Azure; we have to do a copy + delete. */
     override suspend fun move(remoteObject: AzureBlob, toKey: String): AzureBlob {
         return move(remoteObject.key, toKey)
     }
 
     override suspend fun move(key: String, toKey: String): AzureBlob {
-        val sourceBlob = serviceClient
-            .getBlobContainerClient(blobConfig.containerName)
-            .getBlobClient(key)
+        val sourceBlob =
+            serviceClient.getBlobContainerClient(blobConfig.containerName).getBlobClient(key)
 
-        val destBlob = serviceClient
-            .getBlobContainerClient(blobConfig.containerName)
-            .getBlobClient(toKey)
+        val destBlob =
+            serviceClient.getBlobContainerClient(blobConfig.containerName).getBlobClient(toKey)
 
         // Start copy
         val copyResp = destBlob.beginCopy(sourceBlob.blobUrl, null)
@@ -86,26 +61,20 @@ class AzureBlobClient(
         return AzureBlob(toKey, blobConfig)
     }
 
-    /**
-     * Fetch the blob as an InputStream, pass it to [block].
-     */
+    /** Fetch the blob as an InputStream, pass it to [block]. */
     override suspend fun <U> get(key: String, block: (InputStream) -> U): U {
-        val blobClient = serviceClient
-            .getBlobContainerClient(blobConfig.containerName)
-            .getBlobClient(key)
+        val blobClient =
+            serviceClient.getBlobContainerClient(blobConfig.containerName).getBlobClient(key)
 
         blobClient.openInputStream().use { inputStream ->
             return block(inputStream)
         }
     }
 
-    /**
-     * Returns the user-defined metadata on the blob.
-     */
+    /** Returns the user-defined metadata on the blob. */
     override suspend fun getMetadata(key: String): Map<String, String> {
-        val blobClient = serviceClient
-            .getBlobContainerClient(blobConfig.containerName)
-            .getBlobClient(key)
+        val blobClient =
+            serviceClient.getBlobContainerClient(blobConfig.containerName).getBlobClient(key)
 
         val props = blobClient.properties
         // The Azure SDK has "metadata" as a Map<String,String>.
@@ -113,32 +82,24 @@ class AzureBlobClient(
         return props?.metadata ?: emptyMap()
     }
 
-    /**
-     * Upload a small byte array in a single shot.
-     */
+    /** Upload a small byte array in a single shot. */
     override suspend fun put(key: String, bytes: ByteArray): AzureBlob {
-        val blobClient = serviceClient
-            .getBlobContainerClient(blobConfig.containerName)
-            .getBlobClient(key)
+        val blobClient =
+            serviceClient.getBlobContainerClient(blobConfig.containerName).getBlobClient(key)
 
         blobClient.upload(BinaryData.fromBytes(bytes), true)
         return AzureBlob(key, blobConfig)
     }
 
-    /**
-     * Delete a blob by remoteObject
-     */
+    /** Delete a blob by remoteObject */
     override suspend fun delete(remoteObject: AzureBlob) {
         delete(remoteObject.key)
     }
 
-    /**
-     * Delete a blob by key
-     */
+    /** Delete a blob by key */
     override suspend fun delete(key: String) {
-        val blobClient = serviceClient
-            .getBlobContainerClient(blobConfig.containerName)
-            .getBlobClient(key)
+        val blobClient =
+            serviceClient.getBlobContainerClient(blobConfig.containerName).getBlobClient(key)
         try {
             blobClient.delete()
         } catch (e: BlobStorageException) {
@@ -154,13 +115,12 @@ class AzureBlobClient(
         key: String,
         metadata: Map<String, String>
     ): StreamingUpload<AzureBlob> {
-        val blobClient = serviceClient
-            .getBlobContainerClient(blobConfig.containerName)
-            .getBlobClient(key)
-            .getBlockBlobClient()
+        val blobClient =
+            serviceClient
+                .getBlobContainerClient(blobConfig.containerName)
+                .getBlobClient(key)
+                .getBlockBlobClient()
 
         return AzureBlobStreamingUpload(blobClient, blobConfig, metadata)
     }
-
 }
-
