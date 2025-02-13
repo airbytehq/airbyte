@@ -24,6 +24,9 @@ Choose the which Box folder conatins the files you want to process:
 - `Folder ID`: Folder to retreive data from.
 - `Recursive`: Read the folders recursively.
 
+If you are using Box AI you'll need:
+- `Ask AI Prompt`: What prompt to send the AI about the document
+
 ## Setup guide
 
 ## Set up Box Data Extract
