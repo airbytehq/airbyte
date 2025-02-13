@@ -79,6 +79,7 @@ The Box Data Extract source connector supports the following [sync modes](https:
 ## Supported Streams
 
 - [File text extraction](https://developer.box.com/guides/representations/text/)
+- [AI Ask](https://developer.box.com/guides/box-ai/ai-tutorials/ask-questions/)
 
 
 ## Changelog
@@ -88,6 +89,7 @@ The Box Data Extract source connector supports the following [sync modes](https:
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.4 | 2024-10-24 | | Initial release by [@BoxDevRel](https://github.com/box-community/airbyte) |
+| 0.1.5 | 2024-10-23 | | Adding Box Ask AI stream |
+| 0.1.4 | 2024-10-12 | | Initial release by [@BoxDevRel](https://github.com/box-community/airbyte) |
 
 </details>
