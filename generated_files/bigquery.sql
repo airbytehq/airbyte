@@ -1,4 +1,4 @@
--- create table --------------------------
+-- create table --------------------------------
 CREATE  TABLE `dataline-integration-testing`.`no_raw_tables_experiment`.`typing_deduping_final_table` (
   _airbyte_raw_id STRING NOT NULL,
   _airbyte_extracted_at TIMESTAMP NOT NULL,
@@ -11,8 +11,8 @@ CREATE  TABLE `dataline-integration-testing`.`no_raw_tables_experiment`.`typing_
 `integer` INT64,
 `float` NUMERIC,
 `date` DATE,
-`datetime_with_timezone` TIMESTAMP,
-`datetime_without_timezone` DATETIME,
+`timestamp_with_timezone` TIMESTAMP,
+`timestamp_without_timezone` DATETIME,
 `time_with_timezone` STRING,
 `time_without_timezone` TIME,
 `array` JSON,
@@ -30,7 +30,8 @@ CLUSTER BY `primary_key`, `_airbyte_extracted_at`;
 
 
 
--- "fast" T+D query -------------------------
+
+-- "fast" T+D query -------------------------------
 MERGE `dataline-integration-testing`.`no_raw_tables_experiment`.`typing_deduping_final_table` target_table
 USING (
   WITH intermediate_data AS (
@@ -49,8 +50,8 @@ CAST(JSON_VALUE(`_airbyte_data`, '$."bool"') as BOOL) as `bool`,
 CAST(JSON_VALUE(`_airbyte_data`, '$."integer"') as INT64) as `integer`,
 CAST(JSON_VALUE(`_airbyte_data`, '$."float"') as NUMERIC) as `float`,
 CAST(JSON_VALUE(`_airbyte_data`, '$."date"') as DATE) as `date`,
-CAST(JSON_VALUE(`_airbyte_data`, '$."datetime_with_timezone"') as TIMESTAMP) as `datetime_with_timezone`,
-CAST(JSON_VALUE(`_airbyte_data`, '$."datetime_without_timezone"') as DATETIME) as `datetime_without_timezone`,
+CAST(JSON_VALUE(`_airbyte_data`, '$."timestamp_with_timezone"') as TIMESTAMP) as `timestamp_with_timezone`,
+CAST(JSON_VALUE(`_airbyte_data`, '$."timestamp_without_timezone"') as DATETIME) as `timestamp_without_timezone`,
 JSON_VALUE(`_airbyte_data`, '$."time_with_timezone"') as `time_with_timezone`,
 CAST(JSON_VALUE(`_airbyte_data`, '$."time_without_timezone"') as TIME) as `time_without_timezone`,
 PARSE_JSON(CASE
@@ -75,8 +76,8 @@ END, wide_number_mode=>'round')
   FROM `dataline-integration-testing`.`no_raw_tables_experiment`.`input_raw_table`
   WHERE (
       _airbyte_loaded_at IS NULL
-
-    )
+      
+    ) 
 ), new_records AS (
   SELECT
   `primary_key`,
@@ -86,8 +87,8 @@ END, wide_number_mode=>'round')
 `integer`,
 `float`,
 `date`,
-`datetime_with_timezone`,
-`datetime_without_timezone`,
+`timestamp_with_timezone`,
+`timestamp_without_timezone`,
 `time_with_timezone`,
 `time_without_timezone`,
 `array`,
@@ -118,8 +119,8 @@ SELECT `primary_key`,
 `integer`,
 `float`,
 `date`,
-`datetime_with_timezone`,
-`datetime_without_timezone`,
+`timestamp_with_timezone`,
+`timestamp_without_timezone`,
 `time_with_timezone`,
 `time_without_timezone`,
 `array`,
@@ -137,8 +138,8 @@ WHEN MATCHED AND (target_table.`cursor` < new_record.`cursor` OR (target_table.`
 `integer` = new_record.`integer`,
 `float` = new_record.`float`,
 `date` = new_record.`date`,
-`datetime_with_timezone` = new_record.`datetime_with_timezone`,
-`datetime_without_timezone` = new_record.`datetime_without_timezone`,
+`timestamp_with_timezone` = new_record.`timestamp_with_timezone`,
+`timestamp_without_timezone` = new_record.`timestamp_without_timezone`,
 `time_with_timezone` = new_record.`time_with_timezone`,
 `time_without_timezone` = new_record.`time_without_timezone`,
 `array` = new_record.`array`,
@@ -155,8 +156,8 @@ WHEN NOT MATCHED  THEN INSERT (
 `integer`,
 `float`,
 `date`,
-`datetime_with_timezone`,
-`datetime_without_timezone`,
+`timestamp_with_timezone`,
+`timestamp_without_timezone`,
 `time_with_timezone`,
 `time_without_timezone`,
 `array`,
@@ -173,8 +174,8 @@ new_record.`bool`,
 new_record.`integer`,
 new_record.`float`,
 new_record.`date`,
-new_record.`datetime_with_timezone`,
-new_record.`datetime_without_timezone`,
+new_record.`timestamp_with_timezone`,
+new_record.`timestamp_without_timezone`,
 new_record.`time_with_timezone`,
 new_record.`time_without_timezone`,
 new_record.`array`,
@@ -184,10 +185,11 @@ new_record.`json_object`,
   new_record._airbyte_extracted_at,
   new_record._airbyte_generation_id
 );
-
 UPDATE `dataline-integration-testing`.`no_raw_tables_experiment`.`input_raw_table`
 SET `_airbyte_loaded_at` = CURRENT_TIMESTAMP()
-WHERE `_airbyte_loaded_at` IS NULL;
+WHERE `_airbyte_loaded_at` IS NULL
+  
+;
 
 
 
@@ -198,7 +200,7 @@ WHERE `_airbyte_loaded_at` IS NULL;
 
 
 
--- "slow" T+D query ----------------------------
+-- "slow" T+D query -------------------------------
 MERGE `dataline-integration-testing`.`no_raw_tables_experiment`.`typing_deduping_final_table` target_table
 USING (
   WITH intermediate_data AS (
@@ -217,8 +219,8 @@ SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."bool"') as BOOL) as `bool`,
 SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."integer"') as INT64) as `integer`,
 SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."float"') as NUMERIC) as `float`,
 SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."date"') as DATE) as `date`,
-SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."datetime_with_timezone"') as TIMESTAMP) as `datetime_with_timezone`,
-SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."datetime_without_timezone"') as DATETIME) as `datetime_without_timezone`,
+SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."timestamp_with_timezone"') as TIMESTAMP) as `timestamp_with_timezone`,
+SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."timestamp_without_timezone"') as DATETIME) as `timestamp_without_timezone`,
 JSON_VALUE(`_airbyte_data`, '$."time_with_timezone"') as `time_with_timezone`,
 SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."time_without_timezone"') as TIME) as `time_without_timezone`,
 PARSE_JSON(CASE
@@ -292,17 +294,17 @@ CASE
   ELSE NULL
 END,
 CASE
-  WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."datetime_with_timezone"') IS NOT NULL)
-    AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."datetime_with_timezone"')) != 'null')
-    AND (SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."datetime_with_timezone"') as TIMESTAMP) IS NULL)
-    THEN JSON '{"field":"datetime_with_timezone","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}'
+  WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."timestamp_with_timezone"') IS NOT NULL)
+    AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."timestamp_with_timezone"')) != 'null')
+    AND (SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."timestamp_with_timezone"') as TIMESTAMP) IS NULL)
+    THEN JSON '{"field":"timestamp_with_timezone","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}'
   ELSE NULL
 END,
 CASE
-  WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."datetime_without_timezone"') IS NOT NULL)
-    AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."datetime_without_timezone"')) != 'null')
-    AND (SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."datetime_without_timezone"') as DATETIME) IS NULL)
-    THEN JSON '{"field":"datetime_without_timezone","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}'
+  WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."timestamp_without_timezone"') IS NOT NULL)
+    AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."timestamp_without_timezone"')) != 'null')
+    AND (SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."timestamp_without_timezone"') as DATETIME) IS NULL)
+    THEN JSON '{"field":"timestamp_without_timezone","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}'
   ELSE NULL
 END,
 CASE
@@ -352,8 +354,8 @@ END] AS column_errors,
   FROM `dataline-integration-testing`.`no_raw_tables_experiment`.`input_raw_table`
   WHERE (
       _airbyte_loaded_at IS NULL
-
-    )
+      
+    ) 
 ), new_records AS (
   SELECT
   `primary_key`,
@@ -363,8 +365,8 @@ END] AS column_errors,
 `integer`,
 `float`,
 `date`,
-`datetime_with_timezone`,
-`datetime_without_timezone`,
+`timestamp_with_timezone`,
+`timestamp_without_timezone`,
 `time_with_timezone`,
 `time_without_timezone`,
 `array`,
@@ -395,8 +397,8 @@ SELECT `primary_key`,
 `integer`,
 `float`,
 `date`,
-`datetime_with_timezone`,
-`datetime_without_timezone`,
+`timestamp_with_timezone`,
+`timestamp_without_timezone`,
 `time_with_timezone`,
 `time_without_timezone`,
 `array`,
@@ -414,8 +416,8 @@ WHEN MATCHED AND (target_table.`cursor` < new_record.`cursor` OR (target_table.`
 `integer` = new_record.`integer`,
 `float` = new_record.`float`,
 `date` = new_record.`date`,
-`datetime_with_timezone` = new_record.`datetime_with_timezone`,
-`datetime_without_timezone` = new_record.`datetime_without_timezone`,
+`timestamp_with_timezone` = new_record.`timestamp_with_timezone`,
+`timestamp_without_timezone` = new_record.`timestamp_without_timezone`,
 `time_with_timezone` = new_record.`time_with_timezone`,
 `time_without_timezone` = new_record.`time_without_timezone`,
 `array` = new_record.`array`,
@@ -432,8 +434,8 @@ WHEN NOT MATCHED  THEN INSERT (
 `integer`,
 `float`,
 `date`,
-`datetime_with_timezone`,
-`datetime_without_timezone`,
+`timestamp_with_timezone`,
+`timestamp_without_timezone`,
 `time_with_timezone`,
 `time_without_timezone`,
 `array`,
@@ -450,8 +452,8 @@ new_record.`bool`,
 new_record.`integer`,
 new_record.`float`,
 new_record.`date`,
-new_record.`datetime_with_timezone`,
-new_record.`datetime_without_timezone`,
+new_record.`timestamp_with_timezone`,
+new_record.`timestamp_without_timezone`,
 new_record.`time_with_timezone`,
 new_record.`time_without_timezone`,
 new_record.`array`,
@@ -461,7 +463,8 @@ new_record.`json_object`,
   new_record._airbyte_extracted_at,
   new_record._airbyte_generation_id
 );
-
 UPDATE `dataline-integration-testing`.`no_raw_tables_experiment`.`input_raw_table`
 SET `_airbyte_loaded_at` = CURRENT_TIMESTAMP()
-WHERE `_airbyte_loaded_at` IS NULL;
+WHERE `_airbyte_loaded_at` IS NULL
+  
+;

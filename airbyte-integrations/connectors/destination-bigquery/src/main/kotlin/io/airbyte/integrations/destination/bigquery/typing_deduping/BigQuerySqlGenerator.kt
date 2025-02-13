@@ -8,6 +8,8 @@ import com.google.common.annotations.VisibleForTesting
 import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.base.destination.typing_deduping.Array
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer
+import java.io.FileOutputStream
+import java.io.PrintWriter
 import java.time.Instant
 import java.util.*
 import java.util.function.Function
@@ -987,8 +989,8 @@ fun main() {
                     col("integer") to AirbyteProtocolType.INTEGER,
                     col("float") to AirbyteProtocolType.NUMBER,
                     col("date") to AirbyteProtocolType.DATE,
-                    col("datetime_with_timezone") to AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE,
-                    col("datetime_without_timezone") to AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE,
+                    col("timestamp_with_timezone") to AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE,
+                    col("timestamp_without_timezone") to AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE,
                     col("time_with_timezone") to AirbyteProtocolType.TIME_WITH_TIMEZONE,
                     col("time_without_timezone") to AirbyteProtocolType.TIME_WITHOUT_TIMEZONE,
                     col("array") to Array(AirbyteProtocolType.UNKNOWN),
@@ -1018,5 +1020,25 @@ fun main() {
             minRawTimestamp = Optional.empty(),
             useExpensiveSaferCasting = true,
         )
-    println()
+
+    PrintWriter(FileOutputStream("/Users/edgao/code/airbyte/generated_files/bigquery.sql")).use { out ->
+        fun printSql(sql: Sql) {
+            sql.transactions.forEach { txn ->
+                txn.forEach { statement ->
+                    out.println(statement)
+                }
+            }
+        }
+
+        out.println("-- create table --------------------------------")
+        printSql(createTableSql)
+
+        repeat(10) { out.println() }
+        out.println("""-- "fast" T+D query -------------------------------""")
+        printSql(fastUpdateTableSql)
+
+        repeat(10) { out.println() }
+        out.println("""-- "slow" T+D query -------------------------------""")
+        printSql(slowUpdateTableSql)
+    }
 }
