@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.file.azureBlobStorage
 
 import com.azure.storage.blob.specialized.BlockBlobClient
@@ -78,7 +82,7 @@ class AzureBlobStreamingUpload(
         return AzureBlob(blockBlobClient.blobName, config)
     }
 
-    private fun generateBlockId(index: Int): String {
+    fun generateBlockId(index: Int): String {
         // Create a fixed-size ByteBuffer to store all components
         val buffer = ByteBuffer.allocate(32) // Fixed size buffer
 

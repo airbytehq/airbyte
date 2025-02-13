@@ -1,6 +1,9 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.file.azureBlobStorage
 
-// import io.mockk.Awaits
 import com.azure.storage.blob.models.BlobStorageException
 import com.azure.storage.blob.models.BlockBlobItem
 import com.azure.storage.blob.specialized.BlockBlobClient
@@ -11,8 +14,12 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
 import java.io.InputStream
+import java.nio.charset.StandardCharsets
+import java.util.Base64
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -53,15 +60,8 @@ class AzureBlobStreamingUploadTest {
         streamingUpload.uploadPart(partData, index)
 
         // Assert
-        // 1) Verify stageBlock was called
-        //    We don't know the exact base64 block ID from generateBlockId, but we can match using
-        // "any()"
         verify(exactly = 1) {
-            blockBlobClient.stageBlock(
-                any(), // the base64-encoded ID
-                any<InputStream>(),
-                partData.size.toLong()
-            )
+            blockBlobClient.stageBlock(any(), any<InputStream>(), partData.size.toLong())
         }
     }
 
@@ -181,5 +181,50 @@ class AzureBlobStreamingUploadTest {
 
         // Ensure metadata was never set
         verify(exactly = 0) { blockBlobClient.setMetadata(any()) }
+    }
+
+    @Test
+    fun `generateBlockId - verifies fixed-size buffer structure`() {
+        // Set up a real instance (mocks only for constructor args).
+        val mockClient = mockk<BlockBlobClient>(relaxed = true)
+        val config = AzureBlobStorageConfiguration("acc", "key", "container")
+        val metadata = emptyMap<String, String>()
+        val streamingUpload = AzureBlobStreamingUpload(mockClient, config, metadata)
+
+        // Call the private method with a test index, e.g., 42
+        val blockIdEncoded = streamingUpload.generateBlockId(42)
+
+        // The length of the string should always be the same
+        assertEquals(streamingUpload.generateBlockId(1).length, blockIdEncoded.length)
+
+        // Decode the Base64 string into raw bytes
+        val decodedBytes = Base64.getDecoder().decode(blockIdEncoded)
+
+        // We expect exactly 32 bytes:
+        //  - 10 bytes for the prefix ("block" + 5 spaces),
+        //  - 10 bytes for the zero-padded index,
+        //  - 12 bytes for the random suffix
+        assertEquals(32, decodedBytes.size)
+
+        // Check the prefix is "block     " (that's 5 letters + 5 spaces).
+        val prefixBytes = decodedBytes.copyOfRange(0, 10)
+        val prefixString = prefixBytes.toString(StandardCharsets.US_ASCII)
+        assertEquals("block     ", prefixString, "Prefix must be 'block' + 5 spaces.")
+
+        // Check the next 10 bytes contain the zero-padded index (42 => "0000000042")
+        val indexBytes = decodedBytes.copyOfRange(10, 20)
+        val indexString = indexBytes.toString(StandardCharsets.US_ASCII)
+        assertEquals("0000000042", indexString, "Index must be 10 digits, zero-padded.")
+
+        // Finally, check that the last 12 bytes are uppercase letters (A-Z) or digits (0-9)
+        val suffixBytes = decodedBytes.copyOfRange(20, 32)
+        val suffixString = suffixBytes.toString(StandardCharsets.US_ASCII)
+        assertEquals(12, suffixString.length)
+        suffixString.forEach { c ->
+            assertTrue(
+                (c in 'A'..'Z') || (c in '0'..'9'),
+                "Suffix character '$c' must be uppercase alphanumeric."
+            )
+        }
     }
 }

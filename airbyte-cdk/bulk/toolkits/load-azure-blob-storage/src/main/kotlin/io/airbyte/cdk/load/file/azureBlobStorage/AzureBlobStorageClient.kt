@@ -1,8 +1,13 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.file.azureBlobStorage
 
 import com.azure.core.util.BinaryData
 import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.models.BlobStorageException
+import com.azure.storage.blob.models.ListBlobsOptions
 import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfiguration
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
@@ -25,18 +30,12 @@ class AzureBlobClient(
     /** List all blobs that start with [prefix]. We emit them as a Flow. */
     override suspend fun list(prefix: String): Flow<AzureBlob> = flow {
         val containerClient = serviceClient.getBlobContainerClient(blobConfig.containerName)
-        val pager =
-            containerClient.listBlobs() // you can pass ListBlobsOptions if you want prefix etc.
 
-        // If you need to filter by prefix:
-        // val pager = containerClient.listBlobs(ListBlobsOptions().setPrefix(prefix), null)
-
-        for (blobItem in pager) {
-            val key = blobItem.name
-            if (key.startsWith(prefix)) {
-                emit(AzureBlob(key, blobConfig))
-            }
-        }
+        containerClient
+            .listBlobs(ListBlobsOptions().setPrefix(prefix), null)
+            .map { it.name }
+            .filter { it.startsWith(prefix) }
+            .forEach { emit(AzureBlob(it, blobConfig)) }
     }
 
     /** Move is not a single operation in Azure; we have to do a copy + delete. */

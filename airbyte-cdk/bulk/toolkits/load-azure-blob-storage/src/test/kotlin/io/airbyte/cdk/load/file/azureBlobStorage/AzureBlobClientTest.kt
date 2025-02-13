@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.file.azureBlobStorage
 
 import com.azure.core.http.HttpResponse
@@ -72,7 +76,7 @@ class AzureBlobClientTest {
                     mutableListOf(blobItem1, blobItem2, blobItem3).iterator()
             }
 
-        every { containerClient.listBlobs() } returns pagedIterable
+        every { containerClient.listBlobs(any(), any()) } returns pagedIterable
 
         val results = azureBlobClient.list(prefix).toList()
 
@@ -81,7 +85,7 @@ class AzureBlobClientTest {
         assertTrue(results.any { it.key == "testPrefix-blob2" })
         assertFalse(results.any { it.key == "other-blob" })
 
-        verify(exactly = 1) { containerClient.listBlobs() }
+        verify(exactly = 1) { containerClient.listBlobs(any(), null) }
     }
 
     @Test
@@ -92,12 +96,12 @@ class AzureBlobClientTest {
                 every { iterator() } returns mutableListOf<BlobItem>().iterator()
             }
 
-        every { containerClient.listBlobs() } returns pagedIterable
+        every { containerClient.listBlobs(any(), any()) } returns pagedIterable
 
         val results = azureBlobClient.list(prefix).toList()
         assertTrue(results.isEmpty())
 
-        verify(exactly = 1) { containerClient.listBlobs() }
+        verify(exactly = 1) { containerClient.listBlobs(any(), null) }
     }
 
     @Test
