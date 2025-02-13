@@ -11,7 +11,7 @@ data:
   connectorType: source
   definitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerImageTag: 2.6.5-rc.1
-  release:
+  releases:
     rolloutConfiguration:
       enableProgressiveRollout: true
   dockerRepository: airbyte/source-salesforce
