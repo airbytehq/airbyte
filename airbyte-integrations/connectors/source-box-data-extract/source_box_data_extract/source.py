@@ -3,9 +3,10 @@
 #
 
 
+import json
 import logging
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 from airbyte_cdk.models import AirbyteMessage, AirbyteStream, ConfiguredAirbyteStream, SyncMode
@@ -15,7 +16,8 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from box_sdk_gen import BoxAPIError, BoxClient, File, Folder, Items
 
-from .box_api import box_folder_text_representation, get_box_ccg_client
+from .box_api import box_folder_text_representation, get_box_ccg_client,box_folder_ask_ai
+from .schemas import get_generic_json_schema
 
 logger = logging.getLogger("airbyte")
 
@@ -36,6 +38,7 @@ The approach here is not authoritative, and devs are free to use their own judge
 
 There are additional required TODOs in the files within the integration_tests folder and the spec.yaml file.
 """
+
 
 # Source
 class SourceBoxDataExtract(AbstractSource):
@@ -63,7 +66,9 @@ class SourceBoxDataExtract(AbstractSource):
         box_client = get_box_ccg_client(config)
         box_folder_text_representation_stream = StreamTextRepresentationFolder(box_client, config["box_folder_id"], is_recursive=config.get("is_recursive", False))
 
-        return [box_folder_text_representation_stream]
+        box_folder_ask_ai_stream = StreamAIAskFolder(box_client, config["box_folder_id"], config["ask_ai_prompt"], is_recursive=config.get("is_recursive", False))
+
+        return [box_folder_text_representation_stream, box_folder_ask_ai_stream]
 
 # Streams
 class StreamTextRepresentationFolder(Stream):
@@ -77,7 +82,6 @@ class StreamTextRepresentationFolder(Stream):
     client: BoxClient = None
     folder_id: str = None
     is_recursive: bool = False
-    # folder: Folder
 
     def __init__(self, client: BoxClient, folder_id: str, is_recursive: bool = False):
         self.client = client
@@ -90,8 +94,10 @@ class StreamTextRepresentationFolder(Stream):
         :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
           If the stream has no primary keys, return None.
         """
-        # in theory it represents the id of the item
         return "id"
+    
+    def get_json_schema(self):
+        return get_generic_json_schema()
 
     def read_records(
         self,
@@ -100,13 +106,52 @@ class StreamTextRepresentationFolder(Stream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        logger.info(f"Reading records for folder {self.folder_id}")
+        logger.info(f"Extracting text representation for files in folder {self.folder_id} {'recursively' if self.is_recursive else ''}")
         items = box_folder_text_representation(self.client, self.folder_id, is_recursive=self.is_recursive)
         for item in items:
             airbyte_item: StreamData = item.file.to_dict()
             airbyte_item["text_representation"] = item.text_representation
             logger.info(f"Reading file {item.file.id} - {item.file.name}")
             yield airbyte_item
+
+class StreamAIAskFolder(Stream):
+    client: BoxClient = None
+    folder_id: str = None
+    is_recursive: bool = False
+    prompt: str = None
+
+    def __init__(self, client: BoxClient, folder_id: str,prompt:str, is_recursive: bool = False):
+        self.client = client
+        self.folder_id = folder_id
+        self.is_recursive = is_recursive
+        self.prompt = prompt
+
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        """
+        :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
+          If the stream has no primary keys, return None.
+        """
+        return "id"
+    
+    def get_json_schema(self):
+        return get_generic_json_schema()
+    
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        logger.info(f"Asking AI {self.prompt} for all files in folder {self.folder_id} {'recursively' if self.is_recursive else ''}")
+        items = box_folder_ask_ai(self.client, self.folder_id,prompt=self.prompt, is_recursive=self.is_recursive)
+        for item in items:
+            airbyte_item: StreamData = item.file.to_dict()
+            airbyte_item["text_representation"] = item.text_representation
+            logger.info(f"Reading file {item.file.id} - {item.file.name}")
+            yield airbyte_item        
 
 # region Dead code
 
