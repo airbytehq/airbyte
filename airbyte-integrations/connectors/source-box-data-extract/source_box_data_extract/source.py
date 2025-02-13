@@ -17,7 +17,13 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
-from .box_api import box_folder_ai_ask, box_folder_ai_extract, box_folder_text_representation, get_box_ccg_client,box_folder_ai_extract_structured
+from .box_api import (
+    box_folder_ai_ask,
+    box_folder_ai_extract,
+    box_folder_ai_extract_structured,
+    box_folder_text_representation,
+    get_box_ccg_client,
+)
 from .schemas import get_generic_json_schema
 
 
@@ -79,9 +85,18 @@ class SourceBoxDataExtract(AbstractSource):
         )
 
         box_folder_extract_structured_ai_stream = StreamAIExtractStructuredFolder(
-            client=box_client, folder_id=config["box_folder_id"], fields_json_str=config["extract_structured_ai_fields"], is_recursive=config.get("is_recursive", False))
+            client=box_client,
+            folder_id=config["box_folder_id"],
+            fields_json_str=config["extract_structured_ai_fields"],
+            is_recursive=config.get("is_recursive", False),
+        )
 
-        return [box_folder_text_representation_stream, box_folder_ask_ai_stream, box_folder_extract_ai_stream, box_folder_extract_structured_ai_stream]
+        return [
+            box_folder_text_representation_stream,
+            box_folder_ask_ai_stream,
+            box_folder_extract_ai_stream,
+            box_folder_extract_structured_ai_stream,
+        ]
 
 
 # Streams
@@ -238,13 +253,18 @@ class StreamAIExtractStructuredFolder(Stream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        logger.info(f"Extracting Struvctured AI {self.fields_json_str} for all files in folder {self.folder_id} {'recursively' if self.is_recursive else ''}")
-        items = box_folder_ai_extract_structured(self.client, self.folder_id, fields_json_str=self.fields_json_str, is_recursive=self.is_recursive)
+        logger.info(
+            f"Extracting Struvctured AI {self.fields_json_str} for all files in folder {self.folder_id} {'recursively' if self.is_recursive else ''}"
+        )
+        items = box_folder_ai_extract_structured(
+            self.client, self.folder_id, fields_json_str=self.fields_json_str, is_recursive=self.is_recursive
+        )
         for item in items:
             airbyte_item: StreamData = item.file.to_dict()
             airbyte_item["text_representation"] = item.text_representation
             logger.info(f"Reading file {item.file.id} - {item.file.name}")
             yield airbyte_item
+
 
 # region Dead code
 

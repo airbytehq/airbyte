@@ -3,9 +3,7 @@
     {
       "stream": {
         "name": "stream_text_representation_folder",
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
@@ -29,11 +27,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "sha1"
-              ]
+              "required": ["type", "id", "sha1"]
             },
             "sequence_id": {
               "type": "string"
@@ -81,13 +75,7 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "type",
-                        "id",
-                        "sequence_id",
-                        "etag",
-                        "name"
-                      ]
+                      "required": ["type", "id", "sequence_id", "etag", "name"]
                     },
                     {
                       "type": "object",
@@ -108,13 +96,7 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "type",
-                        "id",
-                        "sequence_id",
-                        "etag",
-                        "name"
-                      ]
+                      "required": ["type", "id", "sequence_id", "etag", "name"]
                     },
                     {
                       "type": "object",
@@ -135,21 +117,12 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "type",
-                        "id",
-                        "sequence_id",
-                        "etag",
-                        "name"
-                      ]
+                      "required": ["type", "id", "sequence_id", "etag", "name"]
                     }
                   ]
                 }
               },
-              "required": [
-                "total_count",
-                "entries"
-              ]
+              "required": ["total_count", "entries"]
             },
             "created_at": {
               "type": "string"
@@ -185,12 +158,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "name",
-                "login"
-              ]
+              "required": ["type", "id", "name", "login"]
             },
             "modified_by": {
               "type": "object",
@@ -208,12 +176,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "name",
-                "login"
-              ]
+              "required": ["type", "id", "name", "login"]
             },
             "owned_by": {
               "type": "object",
@@ -231,12 +194,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "name",
-                "login"
-              ]
+              "required": ["type", "id", "name", "login"]
             },
             "shared_link": {
               "type": "null"
@@ -260,13 +218,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "sequence_id",
-                "etag",
-                "name"
-              ]
+              "required": ["type", "id", "sequence_id", "etag", "name"]
             },
             "item_status": {
               "type": "string"
@@ -284,9 +236,7 @@
     {
       "stream": {
         "name": "stream_ai_ask_folder",
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
@@ -310,11 +260,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "sha1"
-              ]
+              "required": ["type", "id", "sha1"]
             },
             "sequence_id": {
               "type": "string"
@@ -362,13 +308,7 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "type",
-                        "id",
-                        "sequence_id",
-                        "etag",
-                        "name"
-                      ]
+                      "required": ["type", "id", "sequence_id", "etag", "name"]
                     },
                     {
                       "type": "object",
@@ -389,13 +329,7 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "type",
-                        "id",
-                        "sequence_id",
-                        "etag",
-                        "name"
-                      ]
+                      "required": ["type", "id", "sequence_id", "etag", "name"]
                     },
                     {
                       "type": "object",
@@ -416,21 +350,12 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "type",
-                        "id",
-                        "sequence_id",
-                        "etag",
-                        "name"
-                      ]
+                      "required": ["type", "id", "sequence_id", "etag", "name"]
                     }
                   ]
                 }
               },
-              "required": [
-                "total_count",
-                "entries"
-              ]
+              "required": ["total_count", "entries"]
             },
             "created_at": {
               "type": "string"
@@ -466,12 +391,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "name",
-                "login"
-              ]
+              "required": ["type", "id", "name", "login"]
             },
             "modified_by": {
               "type": "object",
@@ -489,12 +409,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "name",
-                "login"
-              ]
+              "required": ["type", "id", "name", "login"]
             },
             "owned_by": {
               "type": "object",
@@ -512,12 +427,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "name",
-                "login"
-              ]
+              "required": ["type", "id", "name", "login"]
             },
             "shared_link": {
               "type": "null"
@@ -541,13 +451,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "sequence_id",
-                "etag",
-                "name"
-              ]
+              "required": ["type", "id", "sequence_id", "etag", "name"]
             },
             "item_status": {
               "type": "string"
@@ -565,9 +469,7 @@
     {
       "stream": {
         "name": "stream_ai_extract_folder",
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
@@ -591,11 +493,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "sha1"
-              ]
+              "required": ["type", "id", "sha1"]
             },
             "sequence_id": {
               "type": "string"
@@ -643,13 +541,7 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "type",
-                        "id",
-                        "sequence_id",
-                        "etag",
-                        "name"
-                      ]
+                      "required": ["type", "id", "sequence_id", "etag", "name"]
                     },
                     {
                       "type": "object",
@@ -670,13 +562,7 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "type",
-                        "id",
-                        "sequence_id",
-                        "etag",
-                        "name"
-                      ]
+                      "required": ["type", "id", "sequence_id", "etag", "name"]
                     },
                     {
                       "type": "object",
@@ -697,21 +583,12 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "type",
-                        "id",
-                        "sequence_id",
-                        "etag",
-                        "name"
-                      ]
+                      "required": ["type", "id", "sequence_id", "etag", "name"]
                     }
                   ]
                 }
               },
-              "required": [
-                "total_count",
-                "entries"
-              ]
+              "required": ["total_count", "entries"]
             },
             "created_at": {
               "type": "string"
@@ -747,12 +624,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "name",
-                "login"
-              ]
+              "required": ["type", "id", "name", "login"]
             },
             "modified_by": {
               "type": "object",
@@ -770,12 +642,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "name",
-                "login"
-              ]
+              "required": ["type", "id", "name", "login"]
             },
             "owned_by": {
               "type": "object",
@@ -793,12 +660,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "name",
-                "login"
-              ]
+              "required": ["type", "id", "name", "login"]
             },
             "shared_link": {
               "type": "null"
@@ -822,13 +684,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "sequence_id",
-                "etag",
-                "name"
-              ]
+              "required": ["type", "id", "sequence_id", "etag", "name"]
             },
             "item_status": {
               "type": "string"
@@ -846,9 +702,7 @@
     {
       "stream": {
         "name": "stream_ai_extract_structured_folder",
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
@@ -872,11 +726,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "sha1"
-              ]
+              "required": ["type", "id", "sha1"]
             },
             "sequence_id": {
               "type": "string"
@@ -924,13 +774,7 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "type",
-                        "id",
-                        "sequence_id",
-                        "etag",
-                        "name"
-                      ]
+                      "required": ["type", "id", "sequence_id", "etag", "name"]
                     },
                     {
                       "type": "object",
@@ -951,13 +795,7 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "type",
-                        "id",
-                        "sequence_id",
-                        "etag",
-                        "name"
-                      ]
+                      "required": ["type", "id", "sequence_id", "etag", "name"]
                     },
                     {
                       "type": "object",
@@ -978,21 +816,12 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "type",
-                        "id",
-                        "sequence_id",
-                        "etag",
-                        "name"
-                      ]
+                      "required": ["type", "id", "sequence_id", "etag", "name"]
                     }
                   ]
                 }
               },
-              "required": [
-                "total_count",
-                "entries"
-              ]
+              "required": ["total_count", "entries"]
             },
             "created_at": {
               "type": "string"
@@ -1028,12 +857,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "name",
-                "login"
-              ]
+              "required": ["type", "id", "name", "login"]
             },
             "modified_by": {
               "type": "object",
@@ -1051,12 +875,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "name",
-                "login"
-              ]
+              "required": ["type", "id", "name", "login"]
             },
             "owned_by": {
               "type": "object",
@@ -1074,12 +893,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "name",
-                "login"
-              ]
+              "required": ["type", "id", "name", "login"]
             },
             "shared_link": {
               "type": "null"
@@ -1103,13 +917,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "type",
-                "id",
-                "sequence_id",
-                "etag",
-                "name"
-              ]
+              "required": ["type", "id", "sequence_id", "etag", "name"]
             },
             "item_status": {
               "type": "string"
