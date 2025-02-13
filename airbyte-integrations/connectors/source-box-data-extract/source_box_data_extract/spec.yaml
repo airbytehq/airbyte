@@ -73,7 +73,8 @@ connectionSpecification:
     extract_structured_ai_fields:
       type: string
       always_show: true
+      multiline: true
       title: Extract Structured AI Prompt
       description: >-
         Prompt to use in Extract Strctured AI Stream.
-      order: 7
+      order: 8
