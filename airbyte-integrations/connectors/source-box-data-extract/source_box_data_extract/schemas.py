@@ -1,9 +1,11 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 import json
 from typing import Dict
 
 
-def get_generic_json_schema()->Dict:
-        generic_schema = '''
+def get_generic_json_schema() -> Dict:
+    generic_schema = """
         {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -229,5 +231,5 @@ def get_generic_json_schema()->Dict:
         }
         }
 
-        '''
-        return json.loads(generic_schema)
+        """
+    return json.loads(generic_schema)
