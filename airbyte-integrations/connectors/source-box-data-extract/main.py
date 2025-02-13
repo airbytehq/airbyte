@@ -4,5 +4,6 @@
 
 from source_box_data_extract.run import run
 
+
 if __name__ == "__main__":
     run()
