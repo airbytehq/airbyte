@@ -1203,7 +1203,7 @@ definitions:
             configuration:
               adProduct: SPONSORED_BRANDS
               groupBy: ["purchasedAsin"]
-              columns: # TODO: make configurable
+              columns:
                 [
                   "campaignBudgetCurrencyCode",
                   "campaignName",
@@ -1246,7 +1246,7 @@ definitions:
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["campaign"]
-              columns: # TODO: make configurable
+              columns:
                 [
                   "addToCart",
                   "addToCartClicks",
@@ -1336,7 +1336,7 @@ definitions:
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["adGroup"]
-              columns: # TODO: make configurable
+              columns:
                 [
                   "addToCart",
                   "addToCartClicks",
@@ -1426,7 +1426,7 @@ definitions:
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["advertiser"]
-              columns: # TODO: make configurable
+              columns:
                 [
                   "addToCart",
                   "addToCartRate",
@@ -1519,7 +1519,7 @@ definitions:
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["targeting"]
-              columns: # TODO: make configurable
+              columns:
                 [
                   "addToCart",
                   "addToCartClicks",
@@ -1604,7 +1604,7 @@ definitions:
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["asin"]
-              columns: # TODO: make configurable
+              columns:
                 [
                   "adGroupId",
                   "adGroupName",
@@ -1656,7 +1656,7 @@ definitions:
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["campaign"]
-              columns: # TODO: make configurable
+              columns:
                 [
                   "campaignName",
                   "campaignId",
@@ -1716,7 +1716,7 @@ definitions:
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["campaign", "adGroup"]
-              columns: # TODO: make configurable
+              columns:
                 [
                   "campaignName",
                   "campaignId",
@@ -1773,7 +1773,7 @@ definitions:
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["targeting"]
-              columns: # TODO: make configurable
+              columns:
                 [
                   "campaignName",
                   "campaignId",
@@ -1839,7 +1839,7 @@ definitions:
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["targeting"]
-              columns: # TODO: make configurable
+              columns:
                 [
                   "campaignName",
                   "campaignId",
@@ -1910,7 +1910,7 @@ definitions:
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["advertiser"]
-              columns: # TODO: make configurable
+              columns:
                 [
                   "campaignName",
                   "campaignId",
@@ -1970,7 +1970,7 @@ definitions:
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["asin"]
-              columns: # TODO: make configurable
+              columns:
                 [
                   "campaignName",
                   "campaignId",
@@ -2019,7 +2019,7 @@ definitions:
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["asin"]
-              columns: # TODO: make configurable
+              columns:
                 [
                   "campaignName",
                   "campaignId",
