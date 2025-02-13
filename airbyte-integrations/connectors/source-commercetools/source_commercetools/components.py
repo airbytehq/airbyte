@@ -15,7 +15,6 @@ from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 logger = logging.getLogger("airbyte")
 
 
-@dataclass
 class CommerceToolsOauth2Authenticator(DeclarativeOauth2Authenticator):
     @backoff.on_exception(
         backoff.expo,
