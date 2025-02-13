@@ -957,3 +957,59 @@ class BigQuerySqlGenerator
         }
     }
 }
+
+fun main() {
+    fun col(name: String) =
+        ColumnId(
+            name = name,
+            originalName = name,
+            canonicalName = name,
+        )
+    val streamConfig =
+        StreamConfig(
+            StreamId(
+                finalNamespace = "no_raw_tables_experiment",
+                finalName = "typing_deduping_final_table",
+                rawNamespace = "no_raw_tables_experiment",
+                rawName = "input_raw_table",
+                originalNamespace = "unused",
+                originalName = "unused",
+            ),
+            postImportAction = ImportType.DEDUPE,
+            primaryKey = listOf(col("primary_key")),
+            cursor = Optional.of(col("cursor")),
+            columns =
+                linkedMapOf(
+                    col("primary_key") to AirbyteProtocolType.INTEGER,
+                    col("cursor") to AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE,
+                    col("string") to AirbyteProtocolType.STRING,
+                    col("bool") to AirbyteProtocolType.BOOLEAN,
+                    col("integer") to AirbyteProtocolType.INTEGER,
+                    col("float") to AirbyteProtocolType.NUMBER,
+                    col("date") to AirbyteProtocolType.DATE,
+                    col("datetime_with_timezone") to AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE,
+                    col("datetime_without_timezone") to AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE,
+                    col("time_with_timezone") to AirbyteProtocolType.TIME_WITH_TIMEZONE,
+                    col("time_without_timezone") to AirbyteProtocolType.TIME_WITHOUT_TIMEZONE,
+                    col("array") to Array(AirbyteProtocolType.UNKNOWN),
+                    col("json_object") to Struct(linkedMapOf()),
+                ),
+            generationId = 42,
+            minimumGenerationId = 0,
+            syncId = 21,
+        )
+    val generator =
+        BigQuerySqlGenerator(
+            projectId = "dataline-integration-testing",
+            datasetLocation = "us-west1"
+        )
+    val createTableSql = generator.createTable(streamConfig, suffix = "", force = false)
+    val updateTableSql =
+        generator.updateTable(
+            streamConfig,
+            finalSuffix = "",
+            minRawTimestamp = Optional.empty(),
+            useExpensiveSaferCasting = false
+        )
+    println()
+}
