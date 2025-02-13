@@ -8,7 +8,6 @@ import urllib.parse
 from datetime import datetime, timedelta
 from typing import Any, List, Mapping, Optional
 from unittest import mock
-from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from unittest.mock import patch
 
 import freezegun
@@ -26,6 +25,7 @@ from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
@@ -55,11 +55,11 @@ def read_records(stream_name: str, config: Mapping[str, Any], states: Mapping[st
     for stream_name_key in states:
         state.with_stream_state(stream_name_key, states[stream_name_key])
     source = SourceKlaviyo(CatalogBuilder().build(), config, state.build())
-    output = read(source,
+    output = read(
+        source,
         config,
-        CatalogBuilder()
-        .with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name))
-        .build(),)
+        CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name)).build(),
+    )
     return [r.record.data for r in output.records]
 
 
