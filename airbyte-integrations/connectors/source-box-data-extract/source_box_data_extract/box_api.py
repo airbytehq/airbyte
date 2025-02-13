@@ -134,10 +134,12 @@ def box_file_ai_ask(client: BoxClient, file_id: str, prompt: str) -> str:
     response = client.ai.create_ai_ask(mode=mode, prompt=prompt, items=[ai_item])
     return response.answer
 
-def box_file_ai_extract(client: BoxClient, file_id: str,prompt:str) -> str:
+
+def box_file_ai_extract(client: BoxClient, file_id: str, prompt: str) -> str:
     ai_item = AiItemBase(id=file_id, type=AiItemBaseTypeField.FILE)
-    response = client.ai.create_ai_extract(prompt=prompt,items=[ai_item])
+    response = client.ai.create_ai_extract(prompt=prompt, items=[ai_item])
     return response.answer
+
 
 def box_folder_text_representation(
     client: BoxClient, folder_id: str, is_recursive: bool = False, by_pass_text_extraction: bool = False
@@ -174,6 +176,7 @@ def box_folder_ai_ask(
                 client=client, folder_id=item.id, prompt=prompt, is_recursive=is_recursive, by_pass_text_extraction=by_pass_text_extraction
             )
 
+
 def box_folder_ai_extract(
     client: BoxClient, folder_id: str, prompt: str, is_recursive: bool = False, by_pass_text_extraction: bool = False
 ) -> Iterable[BoxFileExtended]:
@@ -190,4 +193,3 @@ def box_folder_ai_extract(
             yield from box_folder_ai_extract(
                 client=client, folder_id=item.id, prompt=prompt, is_recursive=is_recursive, by_pass_text_extraction=by_pass_text_extraction
             )
-
