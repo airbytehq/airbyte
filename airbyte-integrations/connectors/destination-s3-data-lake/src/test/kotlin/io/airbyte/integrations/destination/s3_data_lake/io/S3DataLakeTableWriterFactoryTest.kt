@@ -80,7 +80,8 @@ internal class S3DataLakeTableWriterFactoryTest {
                     Dedupe(
                         primaryKey = listOf(primaryKeyIds.map { it.toString() }),
                         cursor = primaryKeyIds.map { it.toString() }
-                    )
+                    ),
+                tableSchema,
             )
         assertNotNull(writer)
         assertEquals(PartitionedDeltaWriter::class.java, writer.javaClass)
@@ -138,7 +139,8 @@ internal class S3DataLakeTableWriterFactoryTest {
                     Dedupe(
                         primaryKey = listOf(primaryKeyIds.map { it.toString() }),
                         cursor = primaryKeyIds.map { it.toString() }
-                    )
+                    ),
+                tableSchema,
             )
         assertNotNull(writer)
         assertEquals(UnpartitionedDeltaWriter::class.java, writer.javaClass)
@@ -191,7 +193,8 @@ internal class S3DataLakeTableWriterFactoryTest {
             factory.create(
                 table = table,
                 generationId = "ab-generation-id-${Random.nextLong(100)}",
-                importType = Append
+                importType = Append,
+                tableSchema,
             )
         assertNotNull(writer)
         assertEquals(PartitionedAppendWriter::class.java, writer.javaClass)
@@ -244,7 +247,8 @@ internal class S3DataLakeTableWriterFactoryTest {
             factory.create(
                 table = table,
                 generationId = "ab-generation-id-${Random.nextLong(100)}",
-                importType = Append
+                importType = Append,
+                tableSchema,
             )
         assertNotNull(writer)
         assertEquals(UnpartitionedAppendWriter::class.java, writer.javaClass)

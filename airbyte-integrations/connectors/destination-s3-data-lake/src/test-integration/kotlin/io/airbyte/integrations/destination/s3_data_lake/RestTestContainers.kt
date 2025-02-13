@@ -6,46 +6,47 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import io.airbyte.cdk.load.util.setOnce
 import java.io.File
+import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
 import org.testcontainers.containers.ComposeContainer
+import org.testcontainers.containers.wait.strategy.Wait
 
-/**
- * Shared test containers for all Rest catalog tests, so that we don't launch redundant docker
- * containers
- */
 object RestTestContainers {
-    val composeFile = File("src/test-integration/resources/rest/docker-compose.yml")
-    val testcontainers: ComposeContainer =
-        ComposeContainer(composeFile)
-            .withExposedService("minio", 9000)
-            .withExposedService("rest", 8181)
-            // we don't directly interact with spark,
-            // but this container depends on minio+rest,
-            // so it's an easy proxy for everything being started.
-            .withExposedService("spark-iceberg", 8080)
-    private val startRestContainerRunOnce = AtomicBoolean(false)
+
+    private val composeFile = File("src/test-integration/resources/rest/docker-compose.yml")
 
     /**
-     * Start the test containers, or if another thread already called this method, wait for them to
-     * finish starting
+     * Define the docker-compose services and their wait strategies, so Testcontainers won't
+     * consider them "started" until they're actually listening on those ports.
      */
+    val testcontainers: ComposeContainer =
+        ComposeContainer(composeFile)
+            // Wait until each service is up on its container port.
+            // The container is still using port 9000 internally for minio,
+            // but no longer mapped to 9000 on the host.
+            .withExposedService(
+                "minio",
+                9000,
+                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60))
+            )
+            .withExposedService(
+                "rest",
+                8181,
+                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60))
+            )
+            .withExposedService(
+                "spark-iceberg",
+                8080,
+                Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60))
+            )
+
+    private val startRestContainerRunOnce = AtomicBoolean(false)
+
+    /** Start the test containers, or skip if they're already started. */
     fun start() {
         if (startRestContainerRunOnce.setOnce()) {
             testcontainers.start()
-        } else {
-            // afaict there's no method to wait for the containers to start
-            // so just poll until these methods stop throwing exceptions
-            while (true) {
-                try {
-                    testcontainers.getServicePort("spark-iceberg", 8080)
-                } catch (e: IllegalStateException) {
-                    // do nothing
-                }
-                break
-            }
         }
+        // If it's already started, do nothing; the containers remain up.
     }
-
-    // intentionally no stop method - testcontainers automatically stop when their parent java
-    // process exits (via ryuk)
 }
