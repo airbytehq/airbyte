@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
-from box_sdk_gen import BoxCCGAuth, BoxClient, BoxSDKError, CCGConfig, File, FileMini, FolderMini, Items, WebLink,AiAsk,CreateAiAskMode,AiItemBase,AiItemBaseTypeField,AiResponseFull
+from box_sdk_gen import BoxCCGAuth, BoxClient, BoxSDKError, CCGConfig, File, AiAsk,CreateAiAskMode,AiItemBase,AiItemBaseTypeField,AiResponseFull
 
 logger = logging.getLogger("airbyte")
 
