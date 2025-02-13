@@ -6,16 +6,12 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import io.airbyte.cdk.AirbyteDestinationRunner
 import io.airbyte.cdk.load.command.aws.AwsToolkitConstants
-import io.github.oshai.kotlinlogging.KotlinLogging
-
-private val logger = KotlinLogging.logger {}
 
 object S3DataLakeDestination {
     val additionalMicronautEnvs = listOf(AwsToolkitConstants.MICRONAUT_ENVIRONMENT)
 
     @JvmStatic
     fun main(args: Array<String>) {
-        logger.info { "EDGAO DEBUG" }
         AirbyteDestinationRunner.run(*args, additionalMicronautEnvs = additionalMicronautEnvs)
     }
 }
