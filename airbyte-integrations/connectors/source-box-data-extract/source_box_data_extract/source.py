@@ -77,7 +77,7 @@ class StreamTextRepresentationFolder(Stream):
     client: BoxClient = None
     folder_id: str = None
     is_recursive: bool = False
-    folder: Folder
+    # folder: Folder
 
     def __init__(self, client: BoxClient, folder_id: str, is_recursive: bool = False):
         self.client = client
