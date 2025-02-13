@@ -7,6 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import requests
 from box_sdk_gen import (
     AiAsk,
+    AiExtractResponse,
     AiItemBase,
     AiItemBaseTypeField,
     AiResponseFull,
@@ -15,10 +16,9 @@ from box_sdk_gen import (
     BoxSDKError,
     CCGConfig,
     CreateAiAskMode,
-    File,
     CreateAiExtractStructuredFields,
     CreateAiExtractStructuredFieldsOptionsField,
-    AiExtractResponse,  
+    File,
 )
 from requests_cache import Dict
 
@@ -145,27 +145,29 @@ def box_file_ai_extract(client: BoxClient, file_id: str, prompt: str) -> str:
     response = client.ai.create_ai_extract(prompt=prompt, items=[ai_item])
     return response.answer
 
-def box_file_ai_extract_structured(client: BoxClient, file_id: str, fields_json_str:str) -> str:
+
+def box_file_ai_extract_structured(client: BoxClient, file_id: str, fields_json_str: str) -> str:
     ai_item = AiItemBase(id=file_id, type=AiItemBaseTypeField.FILE)
     fields_list = json.loads(fields_json_str)
-    ai_fields=[]
-    options=[]
+    ai_fields = []
+    options = []
     for field in fields_list:
-        field_options=field.get("options")
+        field_options = field.get("options")
         if field_options is not None:
-            
             for option in field.get("options"):
                 options.append(CreateAiExtractStructuredFieldsOptionsField(key=option.get("key")))
 
-        ai_fields.append(CreateAiExtractStructuredFields(
-            key=field.get("key"),
-            description=field.get("description"),
-            display_name=field.get("display_name"),
-            prompt=field.get("prompt"),
-            type=field.get("type"),
-            options=options if options is not None and len(options)>0 else None,
-            ))
-    response:AiExtractResponse = client.ai.create_ai_extract_structured(items=[ai_item],fields=ai_fields)
+        ai_fields.append(
+            CreateAiExtractStructuredFields(
+                key=field.get("key"),
+                description=field.get("description"),
+                display_name=field.get("display_name"),
+                prompt=field.get("prompt"),
+                type=field.get("type"),
+                options=options if options is not None and len(options) > 0 else None,
+            )
+        )
+    response: AiExtractResponse = client.ai.create_ai_extract_structured(items=[ai_item], fields=ai_fields)
     return json.dumps(response.to_dict(), indent=2)
 
 
@@ -222,6 +224,7 @@ def box_folder_ai_extract(
                 client=client, folder_id=item.id, prompt=prompt, is_recursive=is_recursive, by_pass_text_extraction=by_pass_text_extraction
             )
 
+
 def box_folder_ai_extract_structured(
     client: BoxClient, folder_id: str, fields_json_str: str, is_recursive: bool = False, by_pass_text_extraction: bool = False
 ) -> Iterable[BoxFileExtended]:
@@ -236,5 +239,9 @@ def box_folder_ai_extract_structured(
             yield BoxFileExtended(file=file, text_representation=text_representation)
         elif item.type == "folder" and is_recursive:
             yield from box_folder_ai_extract_structured(
-                client=client, folder_id=item.id, fields_json_str=fields_json_str, is_recursive=is_recursive, by_pass_text_extraction=by_pass_text_extraction
+                client=client,
+                folder_id=item.id,
+                fields_json_str=fields_json_str,
+                is_recursive=is_recursive,
+                by_pass_text_extraction=by_pass_text_extraction,
             )
