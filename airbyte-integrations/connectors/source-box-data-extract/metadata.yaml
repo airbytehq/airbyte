@@ -23,7 +23,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 852b8bda-6a51-4fc6-854e-6beace1614a8
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/source-box-data-extract
   githubIssueLabel: source-box-data-extract
   icon: icon.svg
