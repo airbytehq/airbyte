@@ -1004,12 +1004,19 @@ fun main() {
             datasetLocation = "us-west1"
         )
     val createTableSql = generator.createTable(streamConfig, suffix = "", force = false)
-    val updateTableSql =
+    val fastUpdateTableSql =
         generator.updateTable(
             streamConfig,
             finalSuffix = "",
             minRawTimestamp = Optional.empty(),
-            useExpensiveSaferCasting = false
+            useExpensiveSaferCasting = false,
+        )
+    val slowUpdateTableSql =
+        generator.updateTable(
+            streamConfig,
+            finalSuffix = "",
+            minRawTimestamp = Optional.empty(),
+            useExpensiveSaferCasting = true,
         )
     println()
 }
