@@ -407,6 +407,7 @@ class SearchByKeyword(SearchAnalytics):
             for keyword in keywords:
                 filters = {"dimension": "searchAppearance", "operator": "equals", "expression": keyword}
                 stream_slice["dimensionFilterGroups"] = [{"groupType": "and", "filters": filters}]
+                stream_slice["dimensions"] = self.dimensions
 
                 yield stream_slice
 
