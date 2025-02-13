@@ -13,7 +13,7 @@ CREATE TABLE dataline-integration-testing.no_raw_tables_experiment.<raw_table_na
   _airbyte_generation_id INT64
 )
 PARTITION BY
-  RANGE_BUCKET(_airbyte_generation_id, GENERATE_ARRAY(0, 10_000, 5))
+  RANGE_BUCKET(_airbyte_generation_id, GENERATE_ARRAY(0, 10000, 5))
 CLUSTER BY
   _airbyte_extracted_at
 ```
@@ -56,4 +56,25 @@ FROM FILES (
   uris = ['gs://no_raw_tables/massive_data_10MB.csv'],
   skip_leading_rows = 1
 );
+
+CREATE TABLE dataline-integration-testing.no_raw_tables_experiment.input_raw_table_10mb (
+  _airbyte_raw_id STRING,
+  _airbyte_extracted_at TIMESTAMP,
+  _airbyte_loaded_at TIMESTAMP,
+  _airbyte_data STRING,
+  _airbyte_meta STRING,
+  _airbyte_generation_id INT64
+)
+PARTITION BY
+  RANGE_BUCKET(_airbyte_generation_id, GENERATE_ARRAY(0, 10000, 5))
+CLUSTER BY
+  _airbyte_extracted_at
+AS SELECT
+  generate_uuid(),
+  ts_with_tz,
+  cast(null as timestamp),
+  to_json_string(t),
+  "{\"changes\":[],\"sync_id\":42}",
+  42
+FROM `dataline-integration-testing.no_raw_tables_experiment.input_typed_data` AS t LIMIT 5
 ```
