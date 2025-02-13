@@ -58,16 +58,11 @@ class AzureBlobStreamingUpload(
      */
     override suspend fun complete(): AzureBlob {
         if (isComplete.setOnce()) {
-            // If called multiple times, only allow first to proceed
-            // The `withLock` ensures only the first call does the commit logic
-
             if (blockIds.isEmpty()) {
                 log.warn {
                     "No blocks uploaded. Committing empty blob: ${blockBlobClient.blobName}"
                 }
             } else {
-                // Sort by the “index” if you want strictly in ascending order:
-                // but we stored them in arrival order, which may be good enough
                 val blockList = blockIds.values.toList()
                 log.info { "Committing block list for ${blockBlobClient.blobName}: $blockList" }
                 blockBlobClient.commitBlockList(blockIds.values.toList(), true) // Overwrite = true
