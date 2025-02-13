@@ -1206,81 +1206,6 @@ definitions:
         - type: RemoveFields
           field_pointers:
             - - _links
-    folio_logs:
-      type: DeclarativeStream
-      name: folio_logs
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: size
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: pms/folios/{{ stream_interval.folio_id }}/logs
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
-          request_headers:
-            accept: application/json
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - _embedded
-              - logs
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/folios"
-              parent_key: id
-              partition_field: folio_id
-      primary_key:
-        - folio_id
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/folio_logs"
-      transformations:
-        - type: RemoveFields
-          field_pointers:
-            - - _links
-        - type: AddFields
-          fields:
-            - path:
-                - folio_id
-              value: "{{ stream_interval.folio_id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - params
     rate_types:
       type: DeclarativeStream
       name: rate_types
@@ -1401,6 +1326,81 @@ definitions:
         - type: RemoveFields
           field_pointers:
             - - _links
+    folios_logs:
+      type: DeclarativeStream
+      name: folios_logs
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: pms/folios/{{ stream_interval.folio_id }}/logs
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 10
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: >-
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 305
+          request_headers:
+            accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - logs
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/folios"
+              parent_key: id
+              partition_field: folio_id
+      primary_key:
+        - folio_id
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/folios_logs"
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - _links
+        - type: AddFields
+          fields:
+            - path:
+                - folio_id
+              value: "{{ stream_interval.folio_id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - params
     fractionals:
       type: DeclarativeStream
       name: fractionals
@@ -5740,8 +5740,8 @@ streams:
   - $ref: "#/definitions/streams/custom_fields"
   - $ref: "#/definitions/streams/date_groups"
   - $ref: "#/definitions/streams/documents"
-  - $ref: "#/definitions/streams/folio_logs"
   - $ref: "#/definitions/streams/folios"
+  - $ref: "#/definitions/streams/folios_logs"
   - $ref: "#/definitions/streams/folios_master_rules"
   - $ref: "#/definitions/streams/folios_rules"
   - $ref: "#/definitions/streams/fractionals"
@@ -5948,13 +5948,6 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    folio_logs:
-      hasRecords: true
-      streamHash: 85d6c4caec6765aff95cc324ab7ba31f3f1aa9fb
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
     rate_types:
       hasRecords: true
       streamHash: 55b038aa873a42257ad4aeece2d430645c609eb1
@@ -5965,6 +5958,13 @@ metadata:
     date_groups:
       hasRecords: true
       streamHash: 29ec2bfa283a470274a27b5e023216190573b227
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    folios_logs:
+      hasRecords: true
+      streamHash: 67698f580c02e8f4e927a254313dafdffb704bba
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6396,9 +6396,9 @@ metadata:
     contracts: true
     crm_tasks: true
     documents: true
-    folio_logs: true
     rate_types: true
     date_groups: true
+    folios_logs: true
     fractionals: true
     groups_tags: true
     nodes_types: true
@@ -11806,38 +11806,6 @@ schemas:
           - number
           - "null"
     additionalProperties: true
-  folio_logs:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - folio_id
-      - id
-    properties:
-      type:
-        type:
-          - string
-          - "null"
-      id:
-        type: number
-      message:
-        type:
-          - string
-          - "null"
-      folio_id:
-        type: number
-      createdAt:
-        type:
-          - string
-          - "null"
-      createdBy:
-        type:
-          - string
-          - "null"
-      typeLabel:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
   rate_types:
     type: object
     $schema: http://json-schema.org/schema#
@@ -12134,6 +12102,38 @@ schemas:
           - string
           - "null"
       updatedBy:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  folios_logs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - folio_id
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      message:
+        type:
+          - string
+          - "null"
+      folio_id:
+        type: number
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      typeLabel:
         type:
           - string
           - "null"

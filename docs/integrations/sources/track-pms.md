@@ -35,8 +35,8 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 | custom_fields | id | DefaultPaginator | ✅ |  ❌  |
 | date_groups | id | DefaultPaginator | ✅ |  ❌  |
 | documents | id | DefaultPaginator | ✅ |  ❌  |
-| folio_logs | folio_id.id | DefaultPaginator | ✅ |  ❌  |
 | folios | id | DefaultPaginator | ✅ |  ❌  |
+| folios_logs | folio_id.id | DefaultPaginator | ✅ |  ❌  |
 | folios_master_rules | id | DefaultPaginator | ✅ |  ❌  |
 | folios_rules | id | DefaultPaginator | ✅ |  ❌  |
 | fractionals | id | DefaultPaginator | ✅ |  ❌  |
@@ -103,6 +103,7 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 
 | Version          | Date       | Subject        |
 |------------------|------------|----------------|
+| 2.0.0 | 2025-02-13 | Rename and alphabetize folio_id stream |
 | 1.0.0 | 2025-01-16 | Fix housekeeping_work_orders incremental field; add reservations endpoint |
 | 0.1.0 | 2025-01-16 | Move kebab case streams to snake case; alphabetize streams |
 | 0.0.1 | 2024-10-18 | Initial release by [@blakeflei](https://github.com/blakeflei) via Connector Builder|
