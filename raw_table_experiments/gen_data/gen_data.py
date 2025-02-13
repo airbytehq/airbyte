@@ -40,14 +40,14 @@ def random_int(min_val=0, max_val=1000):
 def random_float(min_val=0, max_val=1000):
     return round(random.uniform(min_val, max_val), 2)
 
-def random_date(start_year=2000, end_year=2025):
+def random_date(start_year=2020, end_year=2025):
     start_date = date(start_year, 1, 1)
     end_date = date(end_year, 12, 31)
     delta = end_date - start_date
     random_days = random.randint(0, delta.days)
     return start_date + timedelta(days=random_days)
 
-def random_datetime(start_year=2000, end_year=2025):
+def random_datetime(start_year=2020, end_year=2025):
     start_dt = datetime(start_year, 1, 1)
     end_dt = datetime(end_year, 12, 31, 23, 59, 59)
     delta = end_dt - start_dt
@@ -58,7 +58,7 @@ def random_offset_str():
     offset_hours = random.randint(-12, 12)
     return f"+{offset_hours}" if offset_hours >= 0 else str(offset_hours)
 
-def random_datetime_with_offset(start_year=2000, end_year=2025):
+def random_datetime_with_offset(start_year=2020, end_year=2025):
     dt_naive = random_datetime(start_year, end_year)
     return dt_naive.isoformat() + random_offset_str()
 
@@ -90,7 +90,7 @@ def random_json_object():
         "score": random_float(0, 100)
     }
 
-def random_datetime_tz(start_year=2000, end_year=2025):
+def random_datetime_tz(start_year=2020, end_year=2025):
     """Generate a random datetime with a random timezone."""
     naive_dt = random_datetime(start_year, end_year)
     timezone = random.choice(pytz.all_timezones)
