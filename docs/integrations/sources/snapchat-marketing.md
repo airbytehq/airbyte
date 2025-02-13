@@ -143,7 +143,8 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 1.5.0 | 2024-11-26 | [44170](https://github.com/airbytehq/airbyte/pull/44170) | Added Optional filters - Organization & Ad Account IDs  |
+| 1.5.1 | 2025-02-08 | [53569](https://github.com/airbytehq/airbyte/pull/53569) | Update dependencies |
+| 1.5.0 | 2024-11-26 | [44170](https://github.com/airbytehq/airbyte/pull/44170) | Added Optional filters - Organization & Ad Account IDs |
 | 1.4.2 | 2025-02-01 | [53083](https://github.com/airbytehq/airbyte/pull/53083) | Update dependencies |
 | 1.4.1 | 2025-01-25 | [52403](https://github.com/airbytehq/airbyte/pull/52403) | Update dependencies |
 | 1.4.0 | 2025-01-23 | [52110](https://github.com/airbytehq/airbyte/pull/52110) | Make incremental per-partition streams concurrent |
