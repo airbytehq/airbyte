@@ -17,8 +17,13 @@ services:
       - AWS_SECRET_ACCESS_KEY=password
       - AWS_REGION=us-east-1
     ports:
-      - 8888:8888
-      - 8080:8080
+      # We have to use a different external port to avoid conflict with other running
+      # integration test containers using the same ports. For some reason, the getMappedPort
+      # from testcontainers does not seem to pick up the actual mapped port and ends up
+      # returning a random port. You would expect it in this case to return 8180 for example.
+      # but that not the case
+      - 8188:8888
+      - 8180:8080
       - 10000:10000
       - 10001:10001
   rest:
@@ -45,8 +50,9 @@ services:
         aliases:
           - warehouse.minio
     ports:
-      - 9001:9001
-      - 9000:9000
+      # See comment above about why we are mapping different port
+      - 9101:9001
+      - 9100:9000
     command: ["server", "/data", "--console-address", ":9001"]
   mc:
     depends_on:

@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: exchange_rate
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: "\"column`_'with\"\"_quotes\" is not null"
+    columns:
+      - name: '"HKD@spéçiäl & characters"'
+        # description: check special charactesrs
+        #  Use special characters in column names and make sure they are correctly parsed in the JSON blob and populated
+        tests:
+          - not_null
+
+  - name: dedup_exchange_rate
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          # description: check_deduplication_by_primary_key
+          #  The final table for this stream should have unique composite primary key values.
+          combination_of_columns:
+            - id
+            - currency
+            - NZD
+
+  - name: renamed_dedup_cdc_excluded
+# TODO: create/fix github issue in dbt-core/adapters repository to handle schema changes (outside airbyte's control)
+# Disabling because incremental dbt is not handling quotes well atm (dbt 0.21.0)
+#    tests:
+#      - dbt_utils.expression_is_true:
+#          expression: "\"column`_'with\"\"_quotes\" is not null"
+    columns:
+      - name: name
+        tests:
+          - not_null
