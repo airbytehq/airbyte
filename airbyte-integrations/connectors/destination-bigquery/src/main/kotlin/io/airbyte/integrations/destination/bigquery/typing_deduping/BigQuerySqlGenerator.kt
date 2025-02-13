@@ -1021,7 +1021,7 @@ fun main() {
             useExpensiveSaferCasting = true,
         )
 
-    PrintWriter(FileOutputStream("/Users/edgao/code/airbyte/generated_files/bigquery.sql")).use { out ->
+    PrintWriter(FileOutputStream("/Users/edgao/code/airbyte/raw_table_experiments/generated_files/bigquery.sql")).use { out ->
         fun printSql(sql: Sql) {
             sql.transactions.forEach { txn ->
                 txn.forEach { statement ->
