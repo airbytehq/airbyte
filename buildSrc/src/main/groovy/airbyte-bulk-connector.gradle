@@ -216,8 +216,7 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 testLogging() {
                     events 'skipped', 'started', 'passed', 'failed'
                     exceptionFormat 'full'
-                    // Swallow the logs when running in airbyte-ci, rely on test reports instead.
-                    showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
+                    showStandardStreams = true
                 }
 
                 // Always re-run integration tests no matter what.
