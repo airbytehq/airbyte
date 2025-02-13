@@ -1,0 +1,47 @@
+[
+  {
+    "id": "source-oracle-enterprise",
+    "name": "Oracle",
+    "label": "enterprise",
+    "icon": "https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/resources/connector_stubs/v0/icons/oracle.svg",
+    "url": "https://docs.airbyte.com/integrations/enterprise-connectors/source-oracle",
+    "type": "enterprise_source",
+    "definitionId": "196a42fc-39f2-473f-88ff-d68b2ea702e9"
+  },
+  {
+    "id": "source-workday-enterprise",
+    "name": "Workday",
+    "label": "enterprise",
+    "icon": "https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/resources/connector_stubs/v0/icons/workday.svg",
+    "url": "https://docs.airbyte.com/integrations/enterprise-connectors/source-workday",
+    "type": "enterprise_source",
+    "definitionId": "7b8b9550-331c-46c8-a299-943fb6ae2a72"
+  },
+  {
+    "id": "source-servicenow",
+    "name": "ServiceNow",
+    "label": "enterprise",
+    "icon": "https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/resources/connector_stubs/v0/icons/service-now.svg",
+    "url": "https://docs.airbyte.com/integrations/enterprise-connectors/source-service-now",
+    "type": "enterprise_source",
+    "definitionId": "23867633-144a-4d7f-845a-a8bd9b9b9e5d"
+  },
+  {
+    "id": "source-sap-hana",
+    "name": "SAP HANA",
+    "label": "enterprise",
+    "icon": "https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/resources/connector_stubs/v0/icons/sap-hana.svg",
+    "url": "https://docs.airbyte.com/integrations/enterprise-connectors/source-sap-hana",
+    "type": "enterprise_source",
+    "definitionId": "b6935898-aadb-46ae-99ca-d697207994c1"
+  },
+  {
+    "id": "source-netsuite-enterprise",
+    "name": "Netsuite",
+    "label": "enterprise",
+    "icon": "https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/resources/connector_stubs/v0/icons/netsuite.svg",
+    "url": "https://docs.airbyte.com/integrations/enterprise-connectors/source-netsuite",
+    "type": "enterprise_source",
+    "definitionId": "b979cb59-34b3-4f8b-9bf7-ae82d6371e2a"
+  }
+]
