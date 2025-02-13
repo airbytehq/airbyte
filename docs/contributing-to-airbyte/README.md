@@ -18,6 +18,7 @@ If you see an issue that isn't tagged that you're interested in, post a comment 
 
 - Bug fixes, features, and enhancements to existing API source connectors.
 - New API sources built with the Connector Builder.
+- New streams and features for existing connectors in Connector Builder: error backoff, pagination, incremental syncs, etc.
 - Migrating existing sources from Python to the Connector Builder.
 - Bug fixes, features, and enhancements to the following database sources: Postgres, MySQL, MSSQL.
 - Bug fixes to the following destinations: BigQuery, Snowflake, Redshift, S3, and Postgres.
