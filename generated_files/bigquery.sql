@@ -11,10 +11,10 @@ CREATE  TABLE `dataline-integration-testing`.`no_raw_tables_experiment`.`typing_
 `integer` INT64,
 `float` NUMERIC,
 `date` DATE,
-`timestamp_with_timezone` TIMESTAMP,
-`timestamp_without_timezone` DATETIME,
-`time_with_timezone` STRING,
-`time_without_timezone` TIME,
+`ts_with_tz` TIMESTAMP,
+`ts_without_tz` DATETIME,
+`time_with_tz` STRING,
+`time_no_tz` TIME,
 `array` JSON,
 `json_object` JSON
 )
@@ -50,10 +50,10 @@ CAST(JSON_VALUE(`_airbyte_data`, '$."bool"') as BOOL) as `bool`,
 CAST(JSON_VALUE(`_airbyte_data`, '$."integer"') as INT64) as `integer`,
 CAST(JSON_VALUE(`_airbyte_data`, '$."float"') as NUMERIC) as `float`,
 CAST(JSON_VALUE(`_airbyte_data`, '$."date"') as DATE) as `date`,
-CAST(JSON_VALUE(`_airbyte_data`, '$."timestamp_with_timezone"') as TIMESTAMP) as `timestamp_with_timezone`,
-CAST(JSON_VALUE(`_airbyte_data`, '$."timestamp_without_timezone"') as DATETIME) as `timestamp_without_timezone`,
-JSON_VALUE(`_airbyte_data`, '$."time_with_timezone"') as `time_with_timezone`,
-CAST(JSON_VALUE(`_airbyte_data`, '$."time_without_timezone"') as TIME) as `time_without_timezone`,
+CAST(JSON_VALUE(`_airbyte_data`, '$."ts_with_tz"') as TIMESTAMP) as `ts_with_tz`,
+CAST(JSON_VALUE(`_airbyte_data`, '$."ts_without_tz"') as DATETIME) as `ts_without_tz`,
+JSON_VALUE(`_airbyte_data`, '$."time_with_tz"') as `time_with_tz`,
+CAST(JSON_VALUE(`_airbyte_data`, '$."time_no_tz"') as TIME) as `time_no_tz`,
 PARSE_JSON(CASE
   WHEN JSON_QUERY(`_airbyte_data`, '$."array"') IS NULL
     OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$."array"'), wide_number_mode=>'round')) != 'array'
@@ -87,10 +87,10 @@ END, wide_number_mode=>'round')
 `integer`,
 `float`,
 `date`,
-`timestamp_with_timezone`,
-`timestamp_without_timezone`,
-`time_with_timezone`,
-`time_without_timezone`,
+`ts_with_tz`,
+`ts_without_tz`,
+`time_with_tz`,
+`time_no_tz`,
 `array`,
 `json_object`,
     to_json(json_set(
@@ -119,10 +119,10 @@ SELECT `primary_key`,
 `integer`,
 `float`,
 `date`,
-`timestamp_with_timezone`,
-`timestamp_without_timezone`,
-`time_with_timezone`,
-`time_without_timezone`,
+`ts_with_tz`,
+`ts_without_tz`,
+`time_with_tz`,
+`time_no_tz`,
 `array`,
 `json_object`, _airbyte_meta, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_generation_id
 FROM numbered_rows
@@ -138,10 +138,10 @@ WHEN MATCHED AND (target_table.`cursor` < new_record.`cursor` OR (target_table.`
 `integer` = new_record.`integer`,
 `float` = new_record.`float`,
 `date` = new_record.`date`,
-`timestamp_with_timezone` = new_record.`timestamp_with_timezone`,
-`timestamp_without_timezone` = new_record.`timestamp_without_timezone`,
-`time_with_timezone` = new_record.`time_with_timezone`,
-`time_without_timezone` = new_record.`time_without_timezone`,
+`ts_with_tz` = new_record.`ts_with_tz`,
+`ts_without_tz` = new_record.`ts_without_tz`,
+`time_with_tz` = new_record.`time_with_tz`,
+`time_no_tz` = new_record.`time_no_tz`,
 `array` = new_record.`array`,
 `json_object` = new_record.`json_object`,
   _airbyte_meta = new_record._airbyte_meta,
@@ -156,10 +156,10 @@ WHEN NOT MATCHED  THEN INSERT (
 `integer`,
 `float`,
 `date`,
-`timestamp_with_timezone`,
-`timestamp_without_timezone`,
-`time_with_timezone`,
-`time_without_timezone`,
+`ts_with_tz`,
+`ts_without_tz`,
+`time_with_tz`,
+`time_no_tz`,
 `array`,
 `json_object`,
   _airbyte_meta,
@@ -174,10 +174,10 @@ new_record.`bool`,
 new_record.`integer`,
 new_record.`float`,
 new_record.`date`,
-new_record.`timestamp_with_timezone`,
-new_record.`timestamp_without_timezone`,
-new_record.`time_with_timezone`,
-new_record.`time_without_timezone`,
+new_record.`ts_with_tz`,
+new_record.`ts_without_tz`,
+new_record.`time_with_tz`,
+new_record.`time_no_tz`,
 new_record.`array`,
 new_record.`json_object`,
   new_record._airbyte_meta,
@@ -219,10 +219,10 @@ SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."bool"') as BOOL) as `bool`,
 SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."integer"') as INT64) as `integer`,
 SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."float"') as NUMERIC) as `float`,
 SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."date"') as DATE) as `date`,
-SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."timestamp_with_timezone"') as TIMESTAMP) as `timestamp_with_timezone`,
-SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."timestamp_without_timezone"') as DATETIME) as `timestamp_without_timezone`,
-JSON_VALUE(`_airbyte_data`, '$."time_with_timezone"') as `time_with_timezone`,
-SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."time_without_timezone"') as TIME) as `time_without_timezone`,
+SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."ts_with_tz"') as TIMESTAMP) as `ts_with_tz`,
+SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."ts_without_tz"') as DATETIME) as `ts_without_tz`,
+JSON_VALUE(`_airbyte_data`, '$."time_with_tz"') as `time_with_tz`,
+SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."time_no_tz"') as TIME) as `time_no_tz`,
 PARSE_JSON(CASE
   WHEN JSON_QUERY(`_airbyte_data`, '$."array"') IS NULL
     OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$."array"'), wide_number_mode=>'round')) != 'array'
@@ -294,31 +294,31 @@ CASE
   ELSE NULL
 END,
 CASE
-  WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."timestamp_with_timezone"') IS NOT NULL)
-    AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."timestamp_with_timezone"')) != 'null')
-    AND (SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."timestamp_with_timezone"') as TIMESTAMP) IS NULL)
-    THEN JSON '{"field":"timestamp_with_timezone","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}'
+  WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."ts_with_tz"') IS NOT NULL)
+    AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."ts_with_tz"')) != 'null')
+    AND (SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."ts_with_tz"') as TIMESTAMP) IS NULL)
+    THEN JSON '{"field":"ts_with_tz","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}'
   ELSE NULL
 END,
 CASE
-  WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."timestamp_without_timezone"') IS NOT NULL)
-    AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."timestamp_without_timezone"')) != 'null')
-    AND (SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."timestamp_without_timezone"') as DATETIME) IS NULL)
-    THEN JSON '{"field":"timestamp_without_timezone","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}'
+  WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."ts_without_tz"') IS NOT NULL)
+    AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."ts_without_tz"')) != 'null')
+    AND (SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."ts_without_tz"') as DATETIME) IS NULL)
+    THEN JSON '{"field":"ts_without_tz","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}'
   ELSE NULL
 END,
 CASE
-  WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."time_with_timezone"') IS NOT NULL)
-    AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."time_with_timezone"')) != 'null')
-    AND (JSON_VALUE(`_airbyte_data`, '$."time_with_timezone"') IS NULL)
-    THEN JSON '{"field":"time_with_timezone","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}'
+  WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."time_with_tz"') IS NOT NULL)
+    AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."time_with_tz"')) != 'null')
+    AND (JSON_VALUE(`_airbyte_data`, '$."time_with_tz"') IS NULL)
+    THEN JSON '{"field":"time_with_tz","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}'
   ELSE NULL
 END,
 CASE
-  WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."time_without_timezone"') IS NOT NULL)
-    AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."time_without_timezone"')) != 'null')
-    AND (SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."time_without_timezone"') as TIME) IS NULL)
-    THEN JSON '{"field":"time_without_timezone","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}'
+  WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."time_no_tz"') IS NOT NULL)
+    AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."time_no_tz"')) != 'null')
+    AND (SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$."time_no_tz"') as TIME) IS NULL)
+    THEN JSON '{"field":"time_no_tz","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}'
   ELSE NULL
 END,
 CASE
@@ -365,10 +365,10 @@ END] AS column_errors,
 `integer`,
 `float`,
 `date`,
-`timestamp_with_timezone`,
-`timestamp_without_timezone`,
-`time_with_timezone`,
-`time_without_timezone`,
+`ts_with_tz`,
+`ts_without_tz`,
+`time_with_tz`,
+`time_no_tz`,
 `array`,
 `json_object`,
     to_json(json_set(
@@ -397,10 +397,10 @@ SELECT `primary_key`,
 `integer`,
 `float`,
 `date`,
-`timestamp_with_timezone`,
-`timestamp_without_timezone`,
-`time_with_timezone`,
-`time_without_timezone`,
+`ts_with_tz`,
+`ts_without_tz`,
+`time_with_tz`,
+`time_no_tz`,
 `array`,
 `json_object`, _airbyte_meta, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_generation_id
 FROM numbered_rows
@@ -416,10 +416,10 @@ WHEN MATCHED AND (target_table.`cursor` < new_record.`cursor` OR (target_table.`
 `integer` = new_record.`integer`,
 `float` = new_record.`float`,
 `date` = new_record.`date`,
-`timestamp_with_timezone` = new_record.`timestamp_with_timezone`,
-`timestamp_without_timezone` = new_record.`timestamp_without_timezone`,
-`time_with_timezone` = new_record.`time_with_timezone`,
-`time_without_timezone` = new_record.`time_without_timezone`,
+`ts_with_tz` = new_record.`ts_with_tz`,
+`ts_without_tz` = new_record.`ts_without_tz`,
+`time_with_tz` = new_record.`time_with_tz`,
+`time_no_tz` = new_record.`time_no_tz`,
 `array` = new_record.`array`,
 `json_object` = new_record.`json_object`,
   _airbyte_meta = new_record._airbyte_meta,
@@ -434,10 +434,10 @@ WHEN NOT MATCHED  THEN INSERT (
 `integer`,
 `float`,
 `date`,
-`timestamp_with_timezone`,
-`timestamp_without_timezone`,
-`time_with_timezone`,
-`time_without_timezone`,
+`ts_with_tz`,
+`ts_without_tz`,
+`time_with_tz`,
+`time_no_tz`,
 `array`,
 `json_object`,
   _airbyte_meta,
@@ -452,10 +452,10 @@ new_record.`bool`,
 new_record.`integer`,
 new_record.`float`,
 new_record.`date`,
-new_record.`timestamp_with_timezone`,
-new_record.`timestamp_without_timezone`,
-new_record.`time_with_timezone`,
-new_record.`time_without_timezone`,
+new_record.`ts_with_tz`,
+new_record.`ts_without_tz`,
+new_record.`time_with_tz`,
+new_record.`time_no_tz`,
 new_record.`array`,
 new_record.`json_object`,
   new_record._airbyte_meta,
