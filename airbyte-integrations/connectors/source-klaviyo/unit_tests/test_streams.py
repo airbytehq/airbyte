@@ -17,7 +17,8 @@ from source_klaviyo.source import SourceKlaviyo
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
@@ -25,6 +26,7 @@ _ANY_ATTEMPT_COUNT = 123
 API_KEY = "some_key"
 START_DATE = pendulum.datetime(2020, 10, 10)
 CONFIG = {"api_key": API_KEY, "start_date": START_DATE}
+CONFIG_NO_DATE = {"api_key": API_KEY}
 
 EVENTS_STREAM_DEFAULT_START_DATE = "2012-01-01T00:00:00+00:00"
 EVENTS_STREAM_CONFIG_START_DATE = "2021-11-08T00:00:00+00:00"
@@ -41,8 +43,24 @@ def get_step_diff(provided_date: str) -> int:
     return (freeze_date - provided_date).days // 7
 
 
-def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
-    source = SourceKlaviyo(CatalogBuilder().build(), KlaviyoConfigBuilder().build(), StateBuilder().build())
+def read_records(stream_name: str, config: Mapping[str, Any], states: Mapping[str, Any] = dict()) -> List[Mapping[str, Any]]:
+    state = StateBuilder()
+    for stream_name_key in states:
+        state.with_stream_state(stream_name_key, states[stream_name_key])
+    source = SourceKlaviyo(CatalogBuilder().build(), config, state.build())
+    output = read(
+        source,
+        config,
+        CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name)).build(),
+    )
+    return [r.record.data for r in output.records]
+
+
+def get_stream_by_name(stream_name: str, config: Mapping[str, Any], states: Mapping[str, Any] = dict()) -> Stream:
+    state = StateBuilder()
+    for stream_name_key in states:
+        state.with_stream_state(stream_name_key, states[stream_name_key])
+    source = SourceKlaviyo(CatalogBuilder().build(), KlaviyoConfigBuilder().build(), state.build())
     matches_by_name = [stream_config for stream_config in source.streams(config) if stream_config.name == stream_name]
     if not matches_by_name:
         raise ValueError("Please provide a valid stream name.")
@@ -67,7 +85,7 @@ class TestSemiIncrementalKlaviyoStream:
         ("start_date", "stream_state", "input_records", "expected_records"),
         (
             (
-                "2021-11-08T00:00:00+00:00",
+                "2021-11-08T00:00:00Z",
                 "2022-11-07T00:00:00+00:00",
                 [
                     {"attributes": {"updated": "2022-11-08T00:00:00+00:00"}},
@@ -80,7 +98,7 @@ class TestSemiIncrementalKlaviyoStream:
                 ],
             ),
             (
-                "2021-11-08T00:00:00+00:00",
+                "2021-11-09T00:00:00Z",
                 None,
                 [
                     {"attributes": {"updated": "2022-11-08T00:00:00+00:00"}},
@@ -92,14 +110,13 @@ class TestSemiIncrementalKlaviyoStream:
                     {"attributes": {"updated": "2023-11-08T00:00:00+00:00"}, "updated": "2023-11-08T00:00:00+00:00"},
                 ],
             ),
-            ("2021-11-08T00:00:00+00:00", "2022-11-07T00:00:00+00:00", [], []),
+            ("2021-11-08T00:00:00Z", "2022-11-07T00:00:00+00:00", [], []),
         ),
     )
     def test_read_records(self, start_date, stream_state, input_records, expected_records, requests_mock):
-        stream = get_stream_by_name("metrics", CONFIG | {"start_date": start_date})
+        state = {"metrics": {"updated": stream_state}} if stream_state else {}
         requests_mock.register_uri("GET", f"https://a.klaviyo.com/api/metrics", status_code=200, json={"data": input_records})
-        stream.stream_state = {stream.cursor_field: stream_state if stream_state else start_date}
-        records = get_records(stream=stream, sync_mode=SyncMode.incremental)
+        records = read_records("metrics", CONFIG_NO_DATE | {"start_date": start_date}, state)
         assert records == expected_records
 
 

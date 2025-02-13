@@ -184,6 +184,9 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                     events 'skipped', 'started', 'passed', 'failed'
                     exceptionFormat 'full'
                 }
+
+                // Always re-run integration tests no matter what.
+                outputs.upToDateWhen { false }
             }
 
             // For historical reasons (i.e. airbyte-ci), this task is called integrationTestJava.
@@ -216,6 +219,9 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                     // Swallow the logs when running in airbyte-ci, rely on test reports instead.
                     showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
                 }
+
+                // Always re-run integration tests no matter what.
+                outputs.upToDateWhen { false }
             }
 
             project.dependencies {

@@ -1341,6 +1341,120 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    /**
+     * Some destinations have better support for schema evolution in single-generation truncate
+     * syncs. For example, if a destination imposes limitations on column type changes, we can
+     * actually ignore those limits in a truncate sync (because we're dropping all older data
+     * anyway).
+     */
+    @Test
+    open fun testOverwriteSchemaEvolution() {
+        assumeTrue(verifyDataWriting)
+        fun makeStream(
+            syncId: Long,
+            schema: LinkedHashMap<String, FieldType>,
+            generationId: Long,
+            minimumGenerationId: Long,
+        ) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(schema),
+                generationId = generationId,
+                minimumGenerationId = minimumGenerationId,
+                syncId,
+            )
+        runSync(
+            updatedConfig,
+            makeStream(
+                syncId = 42,
+                linkedMapOf("id" to intType, "to_drop" to stringType, "to_change" to intType),
+                generationId = 1,
+                minimumGenerationId = 0,
+            ),
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "to_drop": "val1", "to_change": 42}""",
+                    emittedAtMs = 1234L,
+                )
+            )
+        )
+        val changedStream =
+            makeStream(
+                syncId = 43,
+                linkedMapOf("id" to intType, "to_change" to stringType, "to_add" to stringType),
+                generationId = 2,
+                minimumGenerationId = 2,
+            )
+        runSync(
+            updatedConfig,
+            changedStream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "to_change": "val2", "to_add": "val3"}""",
+                    emittedAtMs = 1234L,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 2,
+                    data = mapOf("id" to 42, "to_change" to "val2", "to_add" to "val3"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                )
+            ),
+            changedStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            reason = "Records were incorrect when trying to change the schema."
+        )
+
+        // Run a third sync, to verify that the schema is stable after evolution
+        // (this is relevant for e.g. iceberg, where every column has an ID,
+        // and we need to be able to match the new columns to their ID)
+        val finalStream = changedStream.copy(minimumGenerationId = 0, syncId = 44)
+        runSync(
+            updatedConfig,
+            finalStream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "to_change": "val4", "to_add": "val5"}""",
+                    emittedAtMs = 5678L,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 2,
+                    data = mapOf("id" to 42, "to_change" to "val2", "to_add" to "val3"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                ),
+                OutputRecord(
+                    extractedAt = 5678,
+                    generationId = 2,
+                    data = mapOf("id" to 42, "to_change" to "val4", "to_add" to "val5"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 44),
+                ),
+            ),
+            finalStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            reason = "Records were incorrect after running a second sync with the updated schema."
+        )
+    }
+
     @Test
     open fun testDedup() {
         assumeTrue(supportsDedup)
