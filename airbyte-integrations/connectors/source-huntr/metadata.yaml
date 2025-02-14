@@ -17,13 +17,13 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e1b1016c-04d5-41e6-b4ed-46f0893bb02a
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-huntr
   githubIssueLabel: source-huntr
   icon: icon.svg
   license: MIT
   name: Huntr
-  releaseDate: 2025-01-15
+  releaseDate: 2025-01-24
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/huntr

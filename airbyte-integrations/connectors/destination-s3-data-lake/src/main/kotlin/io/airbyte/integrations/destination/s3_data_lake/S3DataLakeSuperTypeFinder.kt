@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_data_lake
 
+import io.airbyte.cdk.ConfigErrorException
 import jakarta.inject.Singleton
 import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Type.PrimitiveType
@@ -29,7 +30,7 @@ class S3DataLakeSuperTypeFinder(private val s3DataLakeTypesComparator: S3DataLak
      * - If they are deeply equal (according to [S3DataLakeTypesComparator.typesAreEqual]), returns
      * the [existingType] as-is.
      * - Otherwise, attempts to combine them into a valid supertype.
-     * - Throws [IllegalArgumentException] if no valid supertype can be found.
+     * - Throws [ConfigErrorException] if no valid supertype can be found.
      */
     fun findSuperType(existingType: Type, incomingType: Type, columnName: String): Type {
         // If the two types are already deeply equal, return one of them (arbitrary).
@@ -42,7 +43,7 @@ class S3DataLakeSuperTypeFinder(private val s3DataLakeTypesComparator: S3DataLak
 
     /**
      * Combines two top-level [Type]s. If exactly one is primitive and the other is non-primitive,
-     * no supertype is possible => throws [IllegalArgumentException].
+     * no supertype is possible => throws [ConfigErrorException].
      */
     private fun combineTypes(existingType: Type, incomingType: Type, columnName: String): Type {
         if (existingType.isPrimitiveType != incomingType.isPrimitiveType) {
@@ -65,7 +66,7 @@ class S3DataLakeSuperTypeFinder(private val s3DataLakeTypesComparator: S3DataLak
     /**
      * Checks whether either type is unsupported or unmapped (e.g. BINARY, DECIMAL, FIXED, etc.).
      *
-     * @throws IllegalArgumentException if either type is unsupported.
+     * @throws ConfigErrorException if either type is unsupported.
      */
     private fun validateTypeIds(typeId1: TypeID, typeId2: TypeID) {
         val providedTypes = listOf(typeId1, typeId2)
@@ -86,7 +87,7 @@ class S3DataLakeSuperTypeFinder(private val s3DataLakeTypesComparator: S3DataLak
      * equal, but the top-level ID is the same. You may want to consider e.g. TIMESTAMP with/without
      * UTC).
      * - If they have different IDs, tries known promotions (INT->LONG, FLOAT->DOUBLE).
-     * - If promotion is not allowed, throws [IllegalArgumentException].
+     * - If promotion is not allowed, throws [ConfigErrorException].
      */
     private fun combinePrimitives(
         existingType: PrimitiveType,
@@ -124,15 +125,13 @@ class S3DataLakeSuperTypeFinder(private val s3DataLakeTypesComparator: S3DataLak
         }
     }
 
-    /**
-     * Helper function to throw a standardized [IllegalArgumentException] for invalid type combos.
-     */
+    /** Helper function to throw a standardized [ConfigErrorException] for invalid type combos. */
     private fun throwIllegalTypeCombination(
         existingType: Type,
         incomingType: Type,
         columnName: String
     ): Nothing =
-        throw IllegalArgumentException(
-            "Conversion for column \"$columnName\" between $existingType and $incomingType is not allowed."
+        throw ConfigErrorException(
+            "Schema evolution for column \"$columnName\" between $existingType and $incomingType is not allowed."
         )
 }

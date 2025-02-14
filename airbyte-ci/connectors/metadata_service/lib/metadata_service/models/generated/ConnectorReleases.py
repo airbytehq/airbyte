@@ -14,15 +14,20 @@ class RolloutConfiguration(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    enableProgressiveRollout: Optional[bool] = Field(False, description="Whether to enable progressive rollout for the connector.")
+    enableProgressiveRollout: Optional[bool] = Field(
+        False, description="Whether to enable progressive rollout for the connector."
+    )
     initialPercentage: Optional[conint(ge=0, le=100)] = Field(
-        0, description="The percentage of users that should receive the new version initially."
+        0,
+        description="The percentage of users that should receive the new version initially.",
     )
     maxPercentage: Optional[conint(ge=0, le=100)] = Field(
-        50, description="The percentage of users who should receive the release candidate during the test phase before full rollout."
+        50,
+        description="The percentage of users who should receive the release candidate during the test phase before full rollout.",
     )
     advanceDelayMinutes: Optional[conint(ge=10)] = Field(
-        10, description="The number of minutes to wait before advancing the rollout percentage."
+        10,
+        description="The number of minutes to wait before advancing the rollout percentage.",
     )
 
 
@@ -31,20 +36,34 @@ class StreamBreakingChangeScope(BaseModel):
         extra = Extra.forbid
 
     scopeType: Any = Field("stream", const=True)
-    impactedScopes: List[str] = Field(..., description="List of streams that are impacted by the breaking change.", min_items=1)
+    impactedScopes: List[str] = Field(
+        ...,
+        description="List of streams that are impacted by the breaking change.",
+        min_items=1,
+    )
 
 
 class BreakingChangeScope(BaseModel):
-    __root__: StreamBreakingChangeScope = Field(..., description="A scope that can be used to limit the impact of a breaking change.")
+    __root__: StreamBreakingChangeScope = Field(
+        ...,
+        description="A scope that can be used to limit the impact of a breaking change.",
+    )
 
 
 class VersionBreakingChange(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    upgradeDeadline: date = Field(..., description="The deadline by which to upgrade before the breaking change takes effect.")
-    message: str = Field(..., description="Descriptive message detailing the breaking change.")
-    deadlineAction: Optional[Literal["auto_upgrade", "disable"]] = Field(None, description="Action to do when the deadline is reached.")
+    upgradeDeadline: date = Field(
+        ...,
+        description="The deadline by which to upgrade before the breaking change takes effect.",
+    )
+    message: str = Field(
+        ..., description="Descriptive message detailing the breaking change."
+    )
+    deadlineAction: Optional[Literal["auto_upgrade", "disable"]] = Field(
+        None, description="Action to do when the deadline is reached."
+    )
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",

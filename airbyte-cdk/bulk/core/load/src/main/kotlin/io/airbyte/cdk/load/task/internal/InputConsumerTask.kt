@@ -111,7 +111,6 @@ class DefaultInputConsumerTask(
             is DestinationFileStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
                 manager.markEndOfStream(true)
-                fileTransferQueue.close()
                 val envelope =
                     BatchEnvelope(
                         SimpleBatch(Batch.State.COMPLETE),
@@ -196,6 +195,7 @@ class DefaultInputConsumerTask(
         } finally {
             log.info { "Closing record queues" }
             catalog.streams.forEach { recordQueueSupplier.get(it.descriptor).close() }
+            fileTransferQueue.close()
         }
     }
 }

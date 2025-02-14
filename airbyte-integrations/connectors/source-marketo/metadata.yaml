@@ -6,11 +6,11 @@ data:
     hosts:
       - "*.mktorest.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
   connectorSubtype: api
   connectorType: source
   definitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
-  dockerImageTag: 1.4.12
+  dockerImageTag: 1.4.14
   dockerRepository: airbyte/source-marketo
   documentationUrl: https://docs.airbyte.com/integrations/sources/marketo
   githubIssueLabel: source-marketo

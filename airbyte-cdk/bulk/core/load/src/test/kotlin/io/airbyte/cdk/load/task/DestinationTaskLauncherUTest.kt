@@ -35,7 +35,6 @@ import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
 import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTask
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
-import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.mockk.Called
 import io.mockk.coEvery
@@ -68,7 +67,6 @@ class DestinationTaskLauncherUTest {
 
     // Checkpoint Tasks
     private val flushCheckpointsTaskFactory: FlushCheckpointsTaskFactory = mockk(relaxed = true)
-    private val timedFlushTask: TimedForcedCheckpointFlushTask = mockk(relaxed = true)
     private val updateCheckpointsTask: UpdateCheckpointsTask = mockk(relaxed = true)
     private val config: DestinationConfiguration = mockk(relaxed = true)
 
@@ -105,7 +103,6 @@ class DestinationTaskLauncherUTest {
             closeStreamTaskFactory,
             teardownTaskFactory,
             flushCheckpointsTaskFactory,
-            timedFlushTask,
             updateCheckpointsTask,
             failStreamTaskFactory,
             failSyncTaskFactory,
@@ -242,5 +239,18 @@ class DestinationTaskLauncherUTest {
         job.join()
 
         coVerify(exactly = numOpenStreamWorkers) { openStreamTaskFactory.make() }
+
+        coVerify(exactly = 0) { openStreamQueue.publish(any()) }
+    }
+
+    @Test
+    fun `test streams opened when setup completes`() = runTest {
+        val launcher = getDefaultDestinationTaskLauncher(false)
+
+        coEvery { openStreamQueue.publish(any()) } returns Unit
+
+        launcher.handleSetupComplete()
+
+        coVerify(exactly = catalog.streams.size) { openStreamQueue.publish(any()) }
     }
 }

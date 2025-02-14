@@ -16,6 +16,10 @@ import jakarta.inject.Singleton
 class MockTaskLauncher : DestinationTaskLauncher {
     val batchEnvelopes = mutableListOf<BatchEnvelope<*>>()
 
+    override suspend fun handleSetupComplete() {
+        throw NotImplementedError()
+    }
+
     override suspend fun handleNewBatch(
         stream: DestinationStream.Descriptor,
         wrapped: BatchEnvelope<*>
