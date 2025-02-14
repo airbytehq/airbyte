@@ -27,7 +27,7 @@ private val logger = KotlinLogging.logger {}
 class S3DataLakeStreamLoader(
     private val icebergConfiguration: S3DataLakeConfiguration,
     override val stream: DestinationStream,
-    private val s3DataLakeTableSynchronizer: S3DataLakeTableSynchronizer,
+    private val icebergTableSynchronizer: IcebergTableSynchronizer,
     private val icebergTableWriterFactory: IcebergTableWriterFactory,
     private val s3DataLakeUtil: S3DataLakeUtil,
     private val icebergUtil: IcebergUtil,
@@ -175,7 +175,7 @@ class S3DataLakeStreamLoader(
      * the end of the sync, to get a fresh [UpdateSchema] instance.
      */
     private fun computeOrExecuteSchemaUpdate() =
-        s3DataLakeTableSynchronizer.maybeApplySchemaChanges(
+        icebergTableSynchronizer.maybeApplySchemaChanges(
             table,
             incomingSchema,
             columnTypeChangeBehavior,

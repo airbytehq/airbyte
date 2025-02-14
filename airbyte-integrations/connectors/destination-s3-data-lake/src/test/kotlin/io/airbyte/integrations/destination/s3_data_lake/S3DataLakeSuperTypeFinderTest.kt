@@ -15,10 +15,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 
-/** Comprehensive test suite for [S3DataLakeSuperTypeFinder]. */
+/** Comprehensive test suite for [IcebergSuperTypeFinder]. */
 class S3DataLakeSuperTypeFinderTest {
 
-    private val superTypeFinder = S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator())
+    private val superTypeFinder = IcebergSuperTypeFinder(IcebergTypesComparator())
 
     @Test
     fun testIdenticalPrimitiveTypes() {

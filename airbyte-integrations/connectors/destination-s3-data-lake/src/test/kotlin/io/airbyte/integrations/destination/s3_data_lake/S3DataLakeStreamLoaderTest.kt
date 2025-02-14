@@ -144,9 +144,9 @@ internal class S3DataLakeStreamLoaderTest {
             S3DataLakeStreamLoader(
                 icebergConfiguration,
                 stream,
-                S3DataLakeTableSynchronizer(
-                    S3DataLakeTypesComparator(),
-                    S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
+                IcebergTableSynchronizer(
+                    IcebergTypesComparator(),
+                    IcebergSuperTypeFinder(IcebergTypesComparator()),
                 ),
                 icebergTableWriterFactory,
                 s3DataLakeUtil,
@@ -244,9 +244,9 @@ internal class S3DataLakeStreamLoaderTest {
             S3DataLakeStreamLoader(
                 icebergConfiguration,
                 stream,
-                S3DataLakeTableSynchronizer(
-                    S3DataLakeTypesComparator(),
-                    S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
+                IcebergTableSynchronizer(
+                    IcebergTypesComparator(),
+                    IcebergSuperTypeFinder(IcebergTypesComparator()),
                 ),
                 icebergTableWriterFactory,
                 s3DataLakeUtil,
@@ -396,9 +396,9 @@ internal class S3DataLakeStreamLoaderTest {
             S3DataLakeStreamLoader(
                 icebergConfiguration,
                 stream,
-                S3DataLakeTableSynchronizer(
-                    S3DataLakeTypesComparator(),
-                    S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
+                IcebergTableSynchronizer(
+                    IcebergTypesComparator(),
+                    IcebergSuperTypeFinder(IcebergTypesComparator()),
                 ),
                 icebergTableWriterFactory,
                 s3DataLakeUtil,
@@ -453,9 +453,9 @@ internal class S3DataLakeStreamLoaderTest {
             S3DataLakeStreamLoader(
                 icebergConfiguration,
                 stream,
-                S3DataLakeTableSynchronizer(
-                    S3DataLakeTypesComparator(),
-                    S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
+                IcebergTableSynchronizer(
+                    IcebergTypesComparator(),
+                    IcebergSuperTypeFinder(IcebergTypesComparator()),
                 ),
                 icebergTableWriterFactory,
                 s3DataLakeUtil,

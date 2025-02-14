@@ -3,7 +3,7 @@
  */
 package io.airbyte.integrations.destination.s3_data_lake
 
-import io.airbyte.integrations.destination.s3_data_lake.S3DataLakeTypesComparator.Companion.splitIntoParentAndLeaf
+import io.airbyte.integrations.destination.s3_data_lake.IcebergTypesComparator.Companion.splitIntoParentAndLeaf
 import org.apache.iceberg.Schema
 import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Types
@@ -11,10 +11,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 
-/** Comprehensive test suite for [S3DataLakeTypesComparator]. */
+/** Comprehensive test suite for [IcebergTypesComparator]. */
 class S3DataLakeTypesComparatorTest {
 
-    private val comparator = S3DataLakeTypesComparator()
+    private val comparator = IcebergTypesComparator()
 
     /**
      * Helper function to create a simple Iceberg [Types.NestedField].

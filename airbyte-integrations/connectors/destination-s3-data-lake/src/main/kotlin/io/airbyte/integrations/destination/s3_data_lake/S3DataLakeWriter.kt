@@ -21,7 +21,7 @@ class S3DataLakeWriter(
     private val icebergConfiguration: S3DataLakeConfiguration,
     private val s3DataLakeUtil: S3DataLakeUtil,
     private val icebergUtil: IcebergUtil,
-    private val s3DataLakeTableSynchronizer: S3DataLakeTableSynchronizer,
+    private val icebergTableSynchronizer: IcebergTableSynchronizer,
     private val catalog: DestinationCatalog,
     private val tableIdGenerator: TableIdGenerator,
 ) : DestinationWriter {
@@ -61,7 +61,7 @@ class S3DataLakeWriter(
         return S3DataLakeStreamLoader(
             icebergConfiguration,
             stream,
-            s3DataLakeTableSynchronizer,
+            icebergTableSynchronizer,
             icebergTableWriterFactory,
             s3DataLakeUtil,
             icebergUtil,

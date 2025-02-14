@@ -17,7 +17,7 @@ import org.apache.iceberg.types.Types
  * - Columns that changed from required to optional.
  */
 @Singleton
-class S3DataLakeTypesComparator {
+class IcebergTypesComparator {
 
     companion object {
         /** Separator used to represent nested field paths: parent~child. */
