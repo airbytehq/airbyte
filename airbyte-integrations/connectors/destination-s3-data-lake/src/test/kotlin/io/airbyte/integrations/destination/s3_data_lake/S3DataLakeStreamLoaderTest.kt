@@ -128,6 +128,7 @@ internal class S3DataLakeStreamLoaderTest {
         every { table.manageSnapshots().createBranch(any()).commit() } just runs
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
+            every { createNamespaceWithGlueHandling(any(), any()) } just runs
             every { createTable(any(), any(), any(), any()) } returns table
             every { toCatalogProperties(any()) } returns mapOf()
             every { toIcebergSchema(any(), any<MapperPipeline>()) } answers
@@ -222,6 +223,7 @@ internal class S3DataLakeStreamLoaderTest {
         every { table.newScan().planFiles() } returns CloseableIterable.empty()
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
+            every { createNamespaceWithGlueHandling(any(), any()) } just runs
             every { createTable(any(), any(), any(), any()) } returns table
             every { toCatalogProperties(any()) } returns mapOf()
             every { toIcebergSchema(any(), any<MapperPipeline>()) } answers
@@ -370,6 +372,7 @@ internal class S3DataLakeStreamLoaderTest {
         every { table.newScan().planFiles() } returns CloseableIterable.empty()
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
+            every { createNamespaceWithGlueHandling(any(), any()) } just runs
             every { createTable(any(), any(), any(), any()) } returns table
             every { toCatalogProperties(any()) } returns mapOf()
             every { toIcebergSchema(any(), any<MapperPipeline>()) } answers

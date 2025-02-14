@@ -98,6 +98,7 @@ internal class S3DataLakeUtilTest {
             every { tableExists(tableIdGenerator.toTableIdentifier(streamDescriptor)) } returns
                 false
         }
+        s3DataLakeUtil.createNamespaceWithGlueHandling(streamDescriptor, catalog)
         val table =
             s3DataLakeUtil.createTable(
                 streamDescriptor = streamDescriptor,
@@ -134,6 +135,7 @@ internal class S3DataLakeUtilTest {
             every { tableExists(tableIdGenerator.toTableIdentifier(streamDescriptor)) } returns
                 false
         }
+        s3DataLakeUtil.createNamespaceWithGlueHandling(streamDescriptor, catalog)
         val table =
             s3DataLakeUtil.createTable(
                 streamDescriptor = streamDescriptor,
@@ -161,6 +163,7 @@ internal class S3DataLakeUtilTest {
             every { namespaceExists(any()) } returns true
             every { tableExists(tableIdGenerator.toTableIdentifier(streamDescriptor)) } returns true
         }
+        s3DataLakeUtil.createNamespaceWithGlueHandling(streamDescriptor, catalog)
         val table =
             s3DataLakeUtil.createTable(
                 streamDescriptor = streamDescriptor,

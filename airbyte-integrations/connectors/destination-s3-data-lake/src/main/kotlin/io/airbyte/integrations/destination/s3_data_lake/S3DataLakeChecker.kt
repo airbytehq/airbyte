@@ -33,6 +33,7 @@ class S3DataLakeChecker(
                 Types.NestedField.required(1, "id", Types.IntegerType.get()),
                 Types.NestedField.optional(2, "data", Types.StringType.get()),
             )
+        s3DataLakeUtil.createNamespaceWithGlueHandling(testTableIdentifier, catalog)
         val table =
             s3DataLakeUtil.createTable(
                 testTableIdentifier,

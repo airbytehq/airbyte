@@ -53,6 +53,7 @@ class S3DataLakeStreamLoader(
     override suspend fun start() {
         val properties = s3DataLakeUtil.toCatalogProperties(config = icebergConfiguration)
         val catalog = s3DataLakeUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
+        s3DataLakeUtil.createNamespaceWithGlueHandling(stream.descriptor, catalog)
         table =
             s3DataLakeUtil.createTable(
                 streamDescriptor = stream.descriptor,

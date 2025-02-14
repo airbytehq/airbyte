@@ -109,24 +109,8 @@ class S3DataLakeUtil(
         return CatalogUtil.buildIcebergCatalog(catalogName, properties, Configuration())
     }
 
-    /**
-     * Builds (if necessary) an Iceberg [Table]. This includes creating the table's namespace if it
-     * does not already exist. If the [Table] already exists, it is loaded from the [Catalog].
-     *
-     * @param streamDescriptor The [DestinationStream.Descriptor] that contains the Airbyte stream's
-     * namespace and name.
-     * @param catalog The Iceberg [Catalog] that contains the [Table] or should contain it once
-     * created.
-     * @param schema The Iceberg [Schema] associated with the [Table].
-     * @param properties The [Table] configuration properties derived from the [Catalog].
-     * @return The Iceberg [Table], created if it does not yet exist.
-     */
-    fun createTable(
-        streamDescriptor: DestinationStream.Descriptor,
-        catalog: Catalog,
-        schema: Schema,
-        properties: Map<String, String>
-    ): Table {
+    /** Create the namespace if it doesn't already exist. */
+    fun createNamespace(streamDescriptor: DestinationStream.Descriptor, catalog: Catalog) {
         val tableIdentifier = tableIdGenerator.toTableIdentifier(streamDescriptor)
         synchronized(tableIdentifier.namespace()) {
             if (
@@ -145,15 +129,46 @@ class S3DataLakeUtil(
                     logger.info {
                         "Namespace '${tableIdentifier.namespace()}' was likely created by another thread during parallel operations."
                     }
-                } catch (e: ConcurrentModificationException) {
-                    // do the same for AWS Glue
-                    logger.info {
-                        "Namespace '${tableIdentifier.namespace()}' was likely created by another thread during parallel operations."
-                    }
                 }
             }
         }
+    }
 
+    fun createNamespaceWithGlueHandling(
+        streamDescriptor: DestinationStream.Descriptor,
+        catalog: Catalog
+    ) {
+        try {
+            createNamespace(streamDescriptor, catalog)
+        } catch (e: ConcurrentModificationException) {
+            // glue catalog throws its own special exception
+            logger.info {
+                "Namespace '${streamDescriptor.namespace}' was likely created by another thread during parallel operations."
+            }
+        }
+    }
+
+    /**
+     * Builds (if necessary) an Iceberg [Table]. If the [Table] already exists, it is loaded from
+     * the [Catalog].
+     *
+     * Assumes the namespace already exists. Use [createNamespace] if this is not guaranteed.
+     *
+     * @param streamDescriptor The [DestinationStream.Descriptor] that contains the Airbyte stream's
+     * namespace and name.
+     * @param catalog The Iceberg [Catalog] that contains the [Table] or should contain it once
+     * created.
+     * @param schema The Iceberg [Schema] associated with the [Table].
+     * @param properties The [Table] configuration properties derived from the [Catalog].
+     * @return The Iceberg [Table], created if it does not yet exist.
+     */
+    fun createTable(
+        streamDescriptor: DestinationStream.Descriptor,
+        catalog: Catalog,
+        schema: Schema,
+        properties: Map<String, String>
+    ): Table {
+        val tableIdentifier = tableIdGenerator.toTableIdentifier(streamDescriptor)
         return if (!catalog.tableExists(tableIdentifier)) {
             logger.info { "Creating Iceberg table '$tableIdentifier'...." }
             catalog
