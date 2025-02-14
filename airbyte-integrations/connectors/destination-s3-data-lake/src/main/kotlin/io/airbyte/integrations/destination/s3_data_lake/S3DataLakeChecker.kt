@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.s3_data_lake
 import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.integrations.destination.s3_data_lake.io.IcebergTableCleaner
+import io.airbyte.integrations.destination.s3_data_lake.io.IcebergUtil
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import javax.inject.Singleton
 import org.apache.iceberg.Schema
@@ -16,6 +17,7 @@ import org.apache.iceberg.types.Types
 class S3DataLakeChecker(
     private val icebergTableCleaner: IcebergTableCleaner,
     private val s3DataLakeUtil: S3DataLakeUtil,
+    private val icebergUtil: IcebergUtil,
     private val tableIdGenerator: TableIdGenerator,
 ) : DestinationChecker<S3DataLakeConfiguration> {
 
@@ -24,7 +26,7 @@ class S3DataLakeChecker(
     }
     private fun catalogValidation(config: S3DataLakeConfiguration) {
         val catalogProperties = s3DataLakeUtil.toCatalogProperties(config)
-        val catalog = s3DataLakeUtil.createCatalog(DEFAULT_CATALOG_NAME, catalogProperties)
+        val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, catalogProperties)
 
         val testTableIdentifier = DestinationStream.Descriptor(TEST_NAMESPACE, TEST_TABLE)
 
@@ -35,7 +37,7 @@ class S3DataLakeChecker(
             )
         s3DataLakeUtil.createNamespaceWithGlueHandling(testTableIdentifier, catalog)
         val table =
-            s3DataLakeUtil.createTable(
+            icebergUtil.createTable(
                 testTableIdentifier,
                 catalog,
                 testTableSchema,

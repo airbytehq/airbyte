@@ -28,12 +28,12 @@ internal class S3DataLakeTableCleanerTest {
     @Test
     fun testClearingTableWithPrefix() {
         val catalog: Catalog = mockk { every { dropTable(any(), true) } returns true }
-        val s3DataLakeUtil: S3DataLakeUtil = mockk()
+        val icebergUtil: IcebergUtil = mockk()
         val tableIdentifier: TableIdentifier = mockk()
         val fileIo: S3FileIO = mockk { every { deletePrefix(any()) } returns Unit }
         val tableLocation = "table/location"
 
-        val cleaner = IcebergTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
+        val cleaner = IcebergTableCleaner(icebergUtil)
 
         cleaner.clearTable(
             catalog = catalog,
@@ -49,12 +49,12 @@ internal class S3DataLakeTableCleanerTest {
     @Test
     fun testClearingTableWithoutPrefix() {
         val catalog: Catalog = mockk { every { dropTable(any(), true) } returns true }
-        val s3DataLakeUtil: S3DataLakeUtil = mockk()
+        val icebergUtil: IcebergUtil = mockk()
         val tableIdentifier: TableIdentifier = mockk()
         val fileIo: FileIO = mockk()
         val tableLocation = "table/location"
 
-        val cleaner = IcebergTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
+        val cleaner = IcebergTableCleaner(icebergUtil)
 
         cleaner.clearTable(
             catalog = catalog,
@@ -69,10 +69,10 @@ internal class S3DataLakeTableCleanerTest {
 
     @Test
     fun `deleteGenerationId handles empty scan results gracefully`() {
-        val s3DataLakeUtil: S3DataLakeUtil = mockk {
+        val icebergUtil: IcebergUtil = mockk {
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
         }
-        val cleaner = IcebergTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
+        val cleaner = IcebergTableCleaner(icebergUtil)
         val generationIdSuffix = "ab-generation-id-0-e"
 
         val tasks = CloseableIterable.empty<FileScanTask>()
@@ -87,10 +87,10 @@ internal class S3DataLakeTableCleanerTest {
 
     @Test
     fun `deleteGenerationId deletes matching file via deleteFile`() {
-        val s3DataLakeUtil: S3DataLakeUtil = mockk {
+        val icebergUtil: IcebergUtil = mockk {
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
         }
-        val cleaner = IcebergTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
+        val cleaner = IcebergTableCleaner(icebergUtil)
         val generationIdSuffix = "ab-generation-id-0-e"
         val filePathToDelete = "path/to/gen-5678/foo-bar-ab-generation-id-0-e.parquet"
         val fileScanTask = mockk<FileScanTask>()
@@ -114,7 +114,7 @@ internal class S3DataLakeTableCleanerTest {
         }
 
         verify {
-            s3DataLakeUtil.assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
+            icebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
             table.newDelete().toBranch(eq("staging"))
             delete.deleteFile(filePathToDelete)
             delete.commit()
@@ -123,10 +123,10 @@ internal class S3DataLakeTableCleanerTest {
 
     @Test
     fun `deleteGenerationId should not delete non matching file via deleteFile`() {
-        val s3DataLakeUtil: S3DataLakeUtil = mockk {
+        val icebergUtil: IcebergUtil = mockk {
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
         }
-        val cleaner = IcebergTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
+        val cleaner = IcebergTableCleaner(icebergUtil)
         val generationIdSuffix = "ab-generation-id-10-e"
         val filePathToDelete = "path/to/gen-5678/foo-bar-ab-generation-id-10-e.parquet"
         val fileScanTask = mockk<FileScanTask>()
@@ -150,7 +150,7 @@ internal class S3DataLakeTableCleanerTest {
         }
 
         verify(exactly = 0) {
-            s3DataLakeUtil.assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
+            icebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationIdSuffix)
             table.newDelete().toBranch(any())
             delete.deleteFile(any<DataFile>())
             delete.commit()

@@ -54,11 +54,13 @@ import org.junit.jupiter.api.assertThrows
 internal class S3DataLakeUtilTest {
 
     private lateinit var s3DataLakeUtil: S3DataLakeUtil
+    private lateinit var icebergUtil: IcebergUtil
     private val tableIdGenerator = SimpleTableIdGenerator()
 
     @BeforeEach
     fun setup() {
-        s3DataLakeUtil = S3DataLakeUtil(tableIdGenerator, assumeRoleCredentials = null)
+        icebergUtil = IcebergUtil(tableIdGenerator)
+        s3DataLakeUtil = S3DataLakeUtil(icebergUtil, assumeRoleCredentials = null)
     }
 
     @Test
@@ -70,8 +72,7 @@ internal class S3DataLakeUtilTest {
                 URI to "http://localhost:19120/api/v1",
                 WAREHOUSE_LOCATION to "s3://test/"
             )
-        val catalog =
-            s3DataLakeUtil.createCatalog(catalogName = catalogName, properties = properties)
+        val catalog = icebergUtil.createCatalog(catalogName = catalogName, properties = properties)
         assertNotNull(catalog)
         assertEquals(catalogName, catalog.name())
         assertEquals(NessieCatalog::class.java, catalog.javaClass)
@@ -100,7 +101,7 @@ internal class S3DataLakeUtilTest {
         }
         s3DataLakeUtil.createNamespaceWithGlueHandling(streamDescriptor, catalog)
         val table =
-            s3DataLakeUtil.createTable(
+            icebergUtil.createTable(
                 streamDescriptor = streamDescriptor,
                 catalog = catalog,
                 schema = schema,
@@ -137,7 +138,7 @@ internal class S3DataLakeUtilTest {
         }
         s3DataLakeUtil.createNamespaceWithGlueHandling(streamDescriptor, catalog)
         val table =
-            s3DataLakeUtil.createTable(
+            icebergUtil.createTable(
                 streamDescriptor = streamDescriptor,
                 catalog = catalog,
                 schema = schema,
@@ -165,7 +166,7 @@ internal class S3DataLakeUtilTest {
         }
         s3DataLakeUtil.createNamespaceWithGlueHandling(streamDescriptor, catalog)
         val table =
-            s3DataLakeUtil.createTable(
+            icebergUtil.createTable(
                 streamDescriptor = streamDescriptor,
                 catalog = catalog,
                 schema = schema,
@@ -218,7 +219,7 @@ internal class S3DataLakeUtilTest {
             )
         val schema = Schema(columns)
         val icebergRecord =
-            s3DataLakeUtil.toRecord(
+            icebergUtil.toRecord(
                 record = airbyteRecord,
                 pipeline = pipeline,
                 tableSchema = schema,
@@ -270,7 +271,7 @@ internal class S3DataLakeUtilTest {
             )
         val schema = Schema(columns, setOf(1))
         val icebergRecord =
-            s3DataLakeUtil.toRecord(
+            icebergUtil.toRecord(
                 record = airbyteRecord,
                 pipeline = pipeline,
                 tableSchema = schema,
@@ -317,7 +318,7 @@ internal class S3DataLakeUtilTest {
             )
         val schema = Schema(columns, setOf(1))
         val icebergRecord =
-            s3DataLakeUtil.toRecord(
+            icebergUtil.toRecord(
                 record = airbyteRecord,
                 pipeline = pipeline,
                 tableSchema = schema,
@@ -381,7 +382,7 @@ internal class S3DataLakeUtilTest {
     fun `assertGenerationIdSuffixIsOfValidFormat accepts valid format`() {
         val validGenerationId = "ab-generation-id-123-e"
         assertDoesNotThrow {
-            s3DataLakeUtil.assertGenerationIdSuffixIsOfValidFormat(validGenerationId)
+            icebergUtil.assertGenerationIdSuffixIsOfValidFormat(validGenerationId)
         }
     }
 
@@ -389,8 +390,8 @@ internal class S3DataLakeUtilTest {
     fun `assertGenerationIdSuffixIsOfValidFormat throws exception for invalid prefix`() {
         val invalidGenerationId = "invalid-generation-id-123"
         val exception =
-            assertThrows<S3DataLakeUtil.InvalidFormatException> {
-                s3DataLakeUtil.assertGenerationIdSuffixIsOfValidFormat(invalidGenerationId)
+            assertThrows<IcebergUtil.InvalidFormatException> {
+                icebergUtil.assertGenerationIdSuffixIsOfValidFormat(invalidGenerationId)
             }
         assertEquals(
             "Invalid format: $invalidGenerationId. Expected format is 'ab-generation-id-<number>-e'",
@@ -402,8 +403,8 @@ internal class S3DataLakeUtilTest {
     fun `assertGenerationIdSuffixIsOfValidFormat throws exception for missing number`() {
         val invalidGenerationId = "ab-generation-id-"
         val exception =
-            assertThrows<S3DataLakeUtil.InvalidFormatException> {
-                s3DataLakeUtil.assertGenerationIdSuffixIsOfValidFormat(invalidGenerationId)
+            assertThrows<IcebergUtil.InvalidFormatException> {
+                icebergUtil.assertGenerationIdSuffixIsOfValidFormat(invalidGenerationId)
             }
         assertEquals(
             "Invalid format: $invalidGenerationId. Expected format is 'ab-generation-id-<number>-e'",
@@ -416,7 +417,7 @@ internal class S3DataLakeUtilTest {
         val stream = mockk<DestinationStream>()
         every { stream.generationId } returns 42
         val expectedSuffix = "ab-generation-id-42-e"
-        val result = s3DataLakeUtil.constructGenerationIdSuffix(stream)
+        val result = icebergUtil.constructGenerationIdSuffix(stream)
         assertEquals(expectedSuffix, result)
     }
 
@@ -426,7 +427,7 @@ internal class S3DataLakeUtilTest {
         every { stream.generationId } returns -1
         val exception =
             assertThrows<IllegalArgumentException> {
-                s3DataLakeUtil.constructGenerationIdSuffix(stream)
+                icebergUtil.constructGenerationIdSuffix(stream)
             }
         assertEquals(
             "GenerationId must be non-negative. Provided: ${stream.generationId}",
@@ -454,7 +455,7 @@ internal class S3DataLakeUtilTest {
                 syncId = 1,
             )
         val pipeline = ParquetMapperPipelineFactory().create(stream)
-        val schema = s3DataLakeUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
+        val schema = icebergUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
         assertEquals(primaryKeys.toSet(), schema.identifierFieldNames())
         assertEquals(6, schema.columns().size)
         assertNotNull(schema.findField("id"))
@@ -484,7 +485,7 @@ internal class S3DataLakeUtilTest {
                 syncId = 1,
             )
         val pipeline = ParquetMapperPipelineFactory().create(stream)
-        val schema = s3DataLakeUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
+        val schema = icebergUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
         assertEquals(emptySet<String>(), schema.identifierFieldNames())
         assertEquals(6, schema.columns().size)
         assertNotNull(schema.findField("id"))

@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
+import io.airbyte.integrations.destination.s3_data_lake.io.IcebergUtil
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableWriterFactory
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import javax.inject.Singleton
@@ -19,6 +20,7 @@ class S3DataLakeWriter(
     private val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory,
     private val icebergConfiguration: S3DataLakeConfiguration,
     private val s3DataLakeUtil: S3DataLakeUtil,
+    private val icebergUtil: IcebergUtil,
     private val s3DataLakeTableSynchronizer: S3DataLakeTableSynchronizer,
     private val catalog: DestinationCatalog,
     private val tableIdGenerator: TableIdGenerator,
@@ -62,6 +64,7 @@ class S3DataLakeWriter(
             s3DataLakeTableSynchronizer,
             s3DataLakeTableWriterFactory,
             s3DataLakeUtil,
+            icebergUtil,
             stagingBranchName = DEFAULT_STAGING_BRANCH,
             mainBranchName = icebergConfiguration.icebergCatalogConfiguration.mainBranchName,
         )

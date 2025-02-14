@@ -67,11 +67,11 @@ internal class S3DataLakeTableWriterFactoryTest {
             every { schema() } returns tableSchema
             every { spec() } returns tableSpec
         }
-        val s3DataLakeUtil: S3DataLakeUtil = mockk {
+        val icebergUtil: IcebergUtil = mockk {
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
         }
 
-        val factory = S3DataLakeTableWriterFactory(s3DataLakeUtil = s3DataLakeUtil)
+        val factory = S3DataLakeTableWriterFactory(icebergUtil)
         val writer =
             factory.create(
                 table = table,
@@ -126,11 +126,11 @@ internal class S3DataLakeTableWriterFactoryTest {
             every { schema() } returns tableSchema
             every { spec() } returns tableSpec
         }
-        val s3DataLakeUtil: S3DataLakeUtil = mockk {
+        val icebergUtil: IcebergUtil = mockk {
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
         }
 
-        val factory = S3DataLakeTableWriterFactory(s3DataLakeUtil = s3DataLakeUtil)
+        val factory = S3DataLakeTableWriterFactory(icebergUtil)
         val writer =
             factory.create(
                 table = table,
@@ -184,11 +184,11 @@ internal class S3DataLakeTableWriterFactoryTest {
             every { schema() } returns tableSchema
             every { spec() } returns tableSpec
         }
-        val s3DataLakeUtil: S3DataLakeUtil = mockk {
+        val icebergUtil: IcebergUtil = mockk {
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
         }
 
-        val factory = S3DataLakeTableWriterFactory(s3DataLakeUtil = s3DataLakeUtil)
+        val factory = S3DataLakeTableWriterFactory(icebergUtil)
         val writer =
             factory.create(
                 table = table,
@@ -238,11 +238,11 @@ internal class S3DataLakeTableWriterFactoryTest {
             every { schema() } returns tableSchema
             every { spec() } returns tableSpec
         }
-        val s3DataLakeUtil: S3DataLakeUtil = mockk {
+        val icebergUtil: IcebergUtil = mockk {
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
         }
 
-        val factory = S3DataLakeTableWriterFactory(s3DataLakeUtil = s3DataLakeUtil)
+        val factory = S3DataLakeTableWriterFactory(icebergUtil)
         val writer =
             factory.create(
                 table = table,

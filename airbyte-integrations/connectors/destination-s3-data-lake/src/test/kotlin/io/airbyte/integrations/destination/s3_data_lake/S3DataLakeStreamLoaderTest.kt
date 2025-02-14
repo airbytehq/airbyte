@@ -23,6 +23,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.integrations.destination.s3_data_lake.io.IcebergUtil
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableWriterFactory
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import io.mockk.every
@@ -127,10 +128,12 @@ internal class S3DataLakeStreamLoaderTest {
         val table: Table = mockk { every { schema() } returns icebergSchema }
         every { table.manageSnapshots().createBranch(any()).commit() } just runs
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
-            every { createCatalog(any(), any()) } returns catalog
             every { createNamespaceWithGlueHandling(any(), any()) } just runs
-            every { createTable(any(), any(), any(), any()) } returns table
             every { toCatalogProperties(any()) } returns mapOf()
+        }
+        val icebergUtil: IcebergUtil = mockk {
+            every { createCatalog(any(), any()) } returns catalog
+            every { createTable(any(), any(), any(), any()) } returns table
             every { toIcebergSchema(any(), any<MapperPipeline>()) } answers
                 {
                     val pipeline = secondArg() as MapperPipeline
@@ -147,6 +150,7 @@ internal class S3DataLakeStreamLoaderTest {
                 ),
                 s3DataLakeTableWriterFactory,
                 s3DataLakeUtil,
+                icebergUtil,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,
                 mainBranchName = "main",
             )
@@ -222,10 +226,12 @@ internal class S3DataLakeStreamLoaderTest {
         every { table.manageSnapshots().fastForwardBranch(any(), any()).commit() } just runs
         every { table.newScan().planFiles() } returns CloseableIterable.empty()
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
-            every { createCatalog(any(), any()) } returns catalog
             every { createNamespaceWithGlueHandling(any(), any()) } just runs
-            every { createTable(any(), any(), any(), any()) } returns table
             every { toCatalogProperties(any()) } returns mapOf()
+        }
+        val icebergUtil: IcebergUtil = mockk {
+            every { createCatalog(any(), any()) } returns catalog
+            every { createTable(any(), any(), any(), any()) } returns table
             every { toIcebergSchema(any(), any<MapperPipeline>()) } answers
                 {
                     val pipeline = secondArg() as MapperPipeline
@@ -244,6 +250,7 @@ internal class S3DataLakeStreamLoaderTest {
                 ),
                 s3DataLakeTableWriterFactory,
                 s3DataLakeUtil,
+                icebergUtil,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,
                 mainBranchName = "main",
             )
@@ -371,10 +378,12 @@ internal class S3DataLakeStreamLoaderTest {
         every { table.manageSnapshots().fastForwardBranch(any(), any()).commit() } just runs
         every { table.newScan().planFiles() } returns CloseableIterable.empty()
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
-            every { createCatalog(any(), any()) } returns catalog
             every { createNamespaceWithGlueHandling(any(), any()) } just runs
-            every { createTable(any(), any(), any(), any()) } returns table
             every { toCatalogProperties(any()) } returns mapOf()
+        }
+        val icebergUtil: IcebergUtil = mockk {
+            every { createCatalog(any(), any()) } returns catalog
+            every { createTable(any(), any(), any(), any()) } returns table
             every { toIcebergSchema(any(), any<MapperPipeline>()) } answers
                 {
                     val pipeline = secondArg() as MapperPipeline
@@ -393,6 +402,7 @@ internal class S3DataLakeStreamLoaderTest {
                 ),
                 s3DataLakeTableWriterFactory,
                 s3DataLakeUtil,
+                icebergUtil,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,
                 mainBranchName = "main",
             )
@@ -431,7 +441,8 @@ internal class S3DataLakeStreamLoaderTest {
             )
         val icebergConfiguration: S3DataLakeConfiguration = mockk()
         val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory = mockk()
-        val s3DataLakeUtil: S3DataLakeUtil = mockk {
+        val s3DataLakeUtil: S3DataLakeUtil = mockk()
+        val icebergUtil: IcebergUtil = mockk {
             every { toIcebergSchema(any(), any<MapperPipeline>()) } answers
                 {
                     val pipeline = secondArg() as MapperPipeline
@@ -448,6 +459,7 @@ internal class S3DataLakeStreamLoaderTest {
                 ),
                 s3DataLakeTableWriterFactory,
                 s3DataLakeUtil,
+                icebergUtil,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,
                 mainBranchName = "main",
             )
