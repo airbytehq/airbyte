@@ -1197,9 +1197,9 @@ definitions:
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
-            name: "purchasedAsin report {{ stream_slice.start_time }}"
-            startDate: "{{ stream_slice.start_time }}"
-            endDate: "{{ stream_slice.end_time }}"
+            name: "purchasedAsin report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_BRANDS
               groupBy: ["purchasedAsin"]
@@ -1240,9 +1240,9 @@ definitions:
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
-            name: "campaigns report {{ stream_slice.start_time }}"
-            startDate: "{{ stream_slice.start_time }}"
-            endDate: "{{ stream_slice.end_time }}"
+            name: "campaigns report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["campaign"]
@@ -1330,9 +1330,9 @@ definitions:
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
-            name: "adGroups report {{ stream_slice.start_time }}"
-            startDate: "{{ stream_slice.start_time }}"
-            endDate: "{{ stream_slice.end_time }}"
+            name: "adGroups report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["adGroup"]
@@ -1420,9 +1420,9 @@ definitions:
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
-            name: "productAds report {{ stream_slice.start_time }}"
-            startDate: "{{ stream_slice.start_time }}"
-            endDate: "{{ stream_slice.end_time }}"
+            name: "productAds report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["advertiser"]
@@ -1513,9 +1513,9 @@ definitions:
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
-            name: "targets report {{ stream_slice.start_time }}"
-            startDate: "{{ stream_slice.start_time }}"
-            endDate: "{{ stream_slice.end_time }}"
+            name: "targets report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["targeting"]
@@ -1598,9 +1598,9 @@ definitions:
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
-            name: "asins report {{ stream_slice.start_time }}"
-            startDate: "{{ stream_slice.start_time }}"
-            endDate: "{{ stream_slice.end_time }}"
+            name: "asins report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
               groupBy: ["asin"]
@@ -1650,9 +1650,9 @@ definitions:
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
-            name: "campaigns report {{ stream_slice.start_time }}"
-            startDate: "{{ stream_slice.start_time }}"
-            endDate: "{{ stream_slice.end_time }}"
+            name: "campaigns report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["campaign"]
@@ -1710,9 +1710,9 @@ definitions:
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
-            name: "adGroups report {{ stream_slice.start_time }}"
-            startDate: "{{ stream_slice.start_time }}"
-            endDate: "{{ stream_slice.end_time }}"
+            name: "adGroups report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["campaign", "adGroup"]
@@ -1767,9 +1767,9 @@ definitions:
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
-            name: "keywords report {{ stream_slice.start_time }}"
-            startDate: "{{ stream_slice.start_time }}"
-            endDate: "{{ stream_slice.end_time }}"
+            name: "keywords report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["targeting"]
@@ -1833,9 +1833,9 @@ definitions:
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
-            name: "targets report {{ stream_slice.start_time }}"
-            startDate: "{{ stream_slice.start_time }}"
-            endDate: "{{ stream_slice.end_time }}"
+            name: "targets report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["targeting"]
@@ -1904,9 +1904,9 @@ definitions:
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
-            name: "productAds report {{ stream_slice.start_time }}"
-            startDate: "{{ stream_slice.start_time }}"
-            endDate: "{{ stream_slice.end_time }}"
+            name: "productAds report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["advertiser"]
@@ -1964,9 +1964,9 @@ definitions:
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
-            name: "asins_keywords report {{ stream_slice.start_time }}"
-            startDate: "{{ stream_slice.start_time }}"
-            endDate: "{{ stream_slice.end_time }}"
+            name: "asins_keywords report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["asin"]
@@ -2013,9 +2013,9 @@ definitions:
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
-            name: "asins_targets report {{ stream_slice.start_time }}"
-            startDate: "{{ stream_slice.start_time }}"
-            endDate: "{{ stream_slice.end_time }}"
+            name: "asins_targets report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
               groupBy: ["asin"]
@@ -2078,7 +2078,7 @@ definitions:
     - type: AddFields
       fields:
         - path: ["reportDate"]
-          value: "{{ stream_slice.end_time }}"
+          value: "{{ stream_interval.end_time }}"
     - type: AddFields
       fields:
         - path: ["profileId"]
@@ -2133,9 +2133,9 @@ definitions:
         Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
         Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
       request_body_json:
-        name: "purchasedAsin report {{ stream_slice.start_time }}"
-        startDate: "{{ stream_slice.start_time }}"
-        endDate: "{{ stream_slice.end_time }}"
+        name: "purchasedAsin report {{ stream_interval.start_time }}"
+        startDate: "{{ stream_interval.start_time }}"
+        endDate: "{{ stream_interval.end_time }}"
         configuration:
           adProduct: OVERRIDDEN_REPORT_TYPE # Placeholder value. Each report stream overrides the adProduct value to the respective report name
           groupBy: ["LIST_OF_GROUP_BY_METRICS"]
