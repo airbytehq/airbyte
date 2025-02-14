@@ -36,7 +36,7 @@ class GcsDataLakeChecker(
                 Types.NestedField.required(1, "id", Types.IntegerType.get()),
                 Types.NestedField.optional(2, "data", Types.StringType.get()),
             )
-        gcsDataLakeUtil.createNamespaceWithGlueHandling(testTableIdentifier, catalog)
+        icebergUtil.createNamespace(testTableIdentifier, catalog)
         val table =
             icebergUtil.createTable(
                 testTableIdentifier,

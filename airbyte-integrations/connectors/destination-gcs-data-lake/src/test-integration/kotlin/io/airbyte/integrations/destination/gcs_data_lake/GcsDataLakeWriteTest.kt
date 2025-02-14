@@ -10,7 +10,6 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.aws.asMicronautProperties
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
@@ -44,12 +43,10 @@ abstract class GcsDataLakeWriteTest(
     BasicFunctionalityIntegrationTest(
         configContents,
         GcsDataLakeSpecification::class.java,
-        S3DataLakeDataDumper,
+        GcsDataLakeDataDumper,
         destinationCleaner,
-        S3DataLakeExpectedRecordMapper,
+        GcsDataLakeExpectedRecordMapper,
         additionalMicronautEnvs = GcsDataLakeDestination.additionalMicronautEnvs,
-        micronautProperties =
-            S3DataLakeTestUtil.getAwsAssumeRoleCredentials().asMicronautProperties(),
         isStreamSchemaRetroactive = true,
         supportsDedup = true,
         stringifySchemalessObjects = true,
@@ -67,7 +64,7 @@ abstract class GcsDataLakeWriteTest(
             ),
         nullUnknownTypes = true,
         nullEqualsUnset = true,
-        configUpdater = S3DataLakeConfigUpdater,
+        configUpdater = GcsDataLakeConfigUpdater,
     ) {
     /**
      * This test differs from the base test in two critical aspects:
@@ -192,11 +189,10 @@ abstract class GcsDataLakeWriteTest(
 
 class GlueWriteTest :
     GcsDataLakeWriteTest(
-        Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
-        S3DataLakeDestinationCleaner(
-            S3DataLakeTestUtil.getCatalog(
-                S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
-                S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
+        Files.readString(GcsDataLakeTestUtil.GLUE_CONFIG_PATH),
+        GcsDataLakeDestinationCleaner(
+            GcsDataLakeTestUtil.getCatalog(
+                GcsDataLakeTestUtil.parseConfig(GcsDataLakeTestUtil.GLUE_CONFIG_PATH)
             )
         )
     ) {
@@ -229,17 +225,6 @@ class GlueWriteTest :
         assertContains(failure.message, "Detected naming conflicts between streams")
     }
 }
-
-class GlueAssumeRoleWriteTest :
-    GcsDataLakeWriteTest(
-        Files.readString(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
-        S3DataLakeDestinationCleaner(
-            S3DataLakeTestUtil.getCatalog(
-                S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
-                S3DataLakeTestUtil.getAwsAssumeRoleCredentials()
-            )
-        ),
-    )
 
 class NessieMinioWriteTest :
     GcsDataLakeWriteTest(

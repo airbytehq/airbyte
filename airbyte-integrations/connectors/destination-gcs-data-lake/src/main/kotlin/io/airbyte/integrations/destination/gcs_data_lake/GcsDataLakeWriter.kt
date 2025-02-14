@@ -13,7 +13,7 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableWriterFactory
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
-import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
+import io.airbyte.integrations.destination.gcs_data_lake.io.GcsDataLakeUtil
 import javax.inject.Singleton
 import org.apache.iceberg.catalog.TableIdentifier
 
@@ -21,7 +21,7 @@ import org.apache.iceberg.catalog.TableIdentifier
 class GcsDataLakeWriter(
     private val icebergTableWriterFactory: IcebergTableWriterFactory,
     private val icebergConfiguration: GcsDataLakeConfiguration,
-    private val s3DataLakeUtil: S3DataLakeUtil,
+    private val gcsDataLakeUtil: GcsDataLakeUtil,
     private val icebergUtil: IcebergUtil,
     private val icebergTableSynchronizer: IcebergTableSynchronizer,
     private val catalog: DestinationCatalog,
@@ -60,12 +60,12 @@ class GcsDataLakeWriter(
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
-        return S3DataLakeStreamLoader(
+        return GcsDataLakeStreamLoader(
             icebergConfiguration,
             stream,
             icebergTableSynchronizer,
             icebergTableWriterFactory,
-            s3DataLakeUtil,
+            gcsDataLakeUtil,
             icebergUtil,
             stagingBranchName = DEFAULT_STAGING_BRANCH,
             mainBranchName = icebergConfiguration.icebergCatalogConfiguration.mainBranchName,

@@ -17,7 +17,7 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableWriterFactory
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamLoader
-import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
+import io.airbyte.integrations.destination.gcs_data_lake.io.GcsDataLakeUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
@@ -31,7 +31,7 @@ class GcsDataLakeStreamLoader(
     override val stream: DestinationStream,
     private val icebergTableSynchronizer: IcebergTableSynchronizer,
     private val icebergTableWriterFactory: IcebergTableWriterFactory,
-    private val s3DataLakeUtil: S3DataLakeUtil,
+    private val gcsDataLakeUtil: GcsDataLakeUtil,
     private val icebergUtil: IcebergUtil,
     private val stagingBranchName: String,
     private val mainBranchName: String
@@ -54,9 +54,9 @@ class GcsDataLakeStreamLoader(
         "something about the `table` lateinit var is confusing spotbugs"
     )
     override suspend fun start() {
-        val properties = s3DataLakeUtil.toCatalogProperties(config = icebergConfiguration)
+        val properties = gcsDataLakeUtil.toCatalogProperties(config = icebergConfiguration)
         val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
-        s3DataLakeUtil.createNamespaceWithGlueHandling(stream.descriptor, catalog)
+        icebergUtil.createNamespace(stream.descriptor, catalog)
         table =
             icebergUtil.createTable(
                 streamDescriptor = stream.descriptor,

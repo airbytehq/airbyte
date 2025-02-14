@@ -83,7 +83,9 @@ object GcsDataLakeDataDumper : DestinationDataDumper {
             )
         val table =
             catalog.loadTable(
-                TableIdGeneratorFactory(config).create().toTableIdentifier(stream.descriptor)
+                GcsDataLakeTableIdGeneratorFactory(config)
+                    .create()
+                    .toTableIdentifier(stream.descriptor)
             )
 
         val outputRecords = mutableListOf<OutputRecord>()

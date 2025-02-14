@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.gcs_data_lake
 
 import io.airbyte.cdk.load.check.CheckIntegrationTest
 import io.airbyte.cdk.load.check.CheckTestConfig
-import io.airbyte.integrations.destination.s3_data_lake.S3DataLakeTestUtil.GLUE_CONFIG_PATH
+import io.airbyte.integrations.destination.gcs_data_lake.GcsDataLakeTestUtil.GLUE_CONFIG_PATH
 
 class GcsDataLakeCheckTest :
     CheckIntegrationTest<GcsDataLakeSpecification>(

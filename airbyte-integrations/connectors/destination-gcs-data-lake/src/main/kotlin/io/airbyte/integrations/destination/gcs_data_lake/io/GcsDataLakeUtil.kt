@@ -10,11 +10,6 @@ import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.RestCatalogConfiguration
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.integrations.destination.gcs_data_lake.GcsDataLakeConfiguration
-import io.airbyte.integrations.destination.s3_data_lake.ACCESS_KEY_ID
-import io.airbyte.integrations.destination.s3_data_lake.AWS_CREDENTIALS_MODE
-import io.airbyte.integrations.destination.s3_data_lake.AWS_CREDENTIALS_MODE_STATIC_CREDS
-import io.airbyte.integrations.destination.s3_data_lake.GlueCredentialsProvider
-import io.airbyte.integrations.destination.s3_data_lake.SECRET_ACCESS_KEY
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import org.apache.iceberg.CatalogProperties
@@ -165,15 +160,7 @@ class GcsDataLakeUtil(private val icebergUtil: IcebergUtil) {
                 AwsClientProperties.CLIENT_REGION to region,
             )
 
-        val clientProperties =
-            if (catalogConfig.awsArnRoleConfiguration.roleArn != null) {
-                buildRoleBasedClientProperties(
-                    catalogConfig.awsArnRoleConfiguration.roleArn!!,
-                    config
-                )
-            } else {
-                buildKeyBasedClientProperties(config)
-            }
+        val clientProperties = buildKeyBasedClientProperties(config)
 
         return baseGlueProperties + clientProperties
     }
