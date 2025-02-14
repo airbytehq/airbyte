@@ -16,7 +16,9 @@ import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableCleane
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableWriterFactory
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
+import org.apache.iceberg.UpdateSchema
 
 private val logger = KotlinLogging.logger {}
 
@@ -31,7 +33,18 @@ class S3DataLakeStreamLoader(
     private val mainBranchName: String
 ) : StreamLoader {
     private lateinit var table: Table
+    private lateinit var targetSchema: Schema
     private val pipeline = IcebergParquetPipelineFactory().create(stream)
+
+    // If we're executing a truncate, then force the schema change.
+    internal val columnTypeChangeBehavior: ColumnTypeChangeBehavior =
+        if (stream.isSingleGenerationTruncate()) {
+            ColumnTypeChangeBehavior.OVERWRITE
+        } else {
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+        }
+    private val incomingSchema =
+        s3DataLakeUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
 
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
@@ -40,7 +53,6 @@ class S3DataLakeStreamLoader(
     override suspend fun start() {
         val properties = s3DataLakeUtil.toCatalogProperties(config = icebergConfiguration)
         val catalog = s3DataLakeUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
-        val incomingSchema = s3DataLakeUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
         table =
             s3DataLakeUtil.createTable(
                 streamDescriptor = stream.descriptor,
@@ -49,8 +61,17 @@ class S3DataLakeStreamLoader(
                 properties = properties
             )
 
-        s3DataLakeTableSynchronizer.applySchemaChanges(table, incomingSchema)
-
+        // Note that if we have columnTypeChangeBehavior OVERWRITE, we don't commit the schema
+        // change immediately. This is intentional.
+        // If we commit the schema change right now, then affected columns might become unqueryable.
+        // Instead, we write data using the new schema to the staging branch - that data will be
+        // unqueryable during the sync (which is fine).
+        // Also note that we're not wrapping the entire sync in a transaction
+        // (i.e. `table.newTransaction()`).
+        // This is also intentional - the airbyte protocol requires that we commit data
+        // incrementally, and if the entire sync is in a transaction, we might crash before we can
+        // commit that transaction.
+        targetSchema = computeOrExecuteSchemaUpdate().schema
         try {
             logger.info {
                 "maybe creating branch $DEFAULT_STAGING_BRANCH for stream ${stream.descriptor}"
@@ -72,7 +93,8 @@ class S3DataLakeStreamLoader(
             .create(
                 table = table,
                 generationId = s3DataLakeUtil.constructGenerationIdSuffix(stream),
-                importType = stream.importType
+                importType = stream.importType,
+                schema = targetSchema,
             )
             .use { writer ->
                 logger.info { "Writing records to branch $stagingBranchName" }
@@ -81,7 +103,7 @@ class S3DataLakeStreamLoader(
                         s3DataLakeUtil.toRecord(
                             record = record,
                             stream = stream,
-                            tableSchema = table.schema(),
+                            tableSchema = targetSchema,
                             pipeline = pipeline,
                         )
                     writer.write(icebergRecord)
@@ -110,6 +132,12 @@ class S3DataLakeStreamLoader(
             logger.info {
                 "No stream failure detected. Committing changes from staging branch '$stagingBranchName' to main branch '$mainBranchName."
             }
+            // We've modified the table over the sync (i.e. adding new snapshots)
+            // so we need to refresh here to get the latest table metadata.
+            // In principle, this doesn't matter, but the iceberg SDK throws an error about
+            // stale table metadata without this.
+            table.refresh()
+            computeOrExecuteSchemaUpdate().pendingUpdate?.commit()
             table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
             if (stream.minimumGenerationId > 0) {
                 logger.info {
@@ -137,4 +165,17 @@ class S3DataLakeStreamLoader(
             }
         }
     }
+
+    /**
+     * We can't just cache the SchemaUpdateResult from [start], because when we try to `commit()` it
+     * in [close], Iceberg throws a stale table metadata exception. So instead we have to calculate
+     * it twice - once at the start of the sync, to get the updated table schema, and once again at
+     * the end of the sync, to get a fresh [UpdateSchema] instance.
+     */
+    private fun computeOrExecuteSchemaUpdate() =
+        s3DataLakeTableSynchronizer.maybeApplySchemaChanges(
+            table,
+            incomingSchema,
+            columnTypeChangeBehavior,
+        )
 }
