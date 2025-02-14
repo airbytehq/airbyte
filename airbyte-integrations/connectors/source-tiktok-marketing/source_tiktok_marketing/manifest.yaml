@@ -38,14 +38,6 @@ definitions:
       type: DpathExtractor
       field_path: ["data", "list"]
 
-  record_selector_with_filter_by_modify_time:
-    $ref: "#/definitions/record_selector"
-    record_filter:
-      type: RecordFilter
-      condition: "{{ record['modify_time'] >= stream_interval['start_time'] }}"
-      $parameters:
-        partition_field: advertiser_id
-
   retriever:
     type: SimpleRetriever
     requester:
@@ -369,21 +361,11 @@ definitions:
       schema:
         $ref: "#/definitions/schemas/creative_assets_videos"
 
-  record_selector_for_daily_reports_streams:
-    $ref: "#/definitions/record_selector"
-    record_filter:
-      type: RecordFilter
-      condition: "{{ record['dimensions']['stat_time_day'] >= stream_interval['start_time'] }}"
-    $parameters:
-      partition_field: advertiser_id
-
   record_selector_for_hourly_reports_streams:
     $ref: "#/definitions/record_selector"
     record_filter:
       type: RecordFilter
       condition: "{{ record['dimensions']['stat_time_hour'] >= stream_interval['start_time'] }}"
-      $parameters:
-        partition_field: advertiser_id
 
   base_report_retriever:
     type: SimpleRetriever
@@ -395,14 +377,14 @@ definitions:
         data_level: '{{ parameters["data_level"] }}'
         dimensions: '{{ parameters["dimensions"] | string }}'
         metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency", "video_play_actions", "video_watched_2s", "video_watched_6s", "average_video_play", "average_video_play_per_user", "video_views_p25", "video_views_p50", "video_views_p75", "video_views_p100", "profile_visits", "likes", "comments", "shares", "follows", "clicks_on_music_disc", "real_time_app_install", "real_time_app_install_cost", "app_install"]) | string }}'
-        start_date: "{{ stream_interval['start_time'] }}"
-        end_date: "{{ stream_interval['end_time'] }}"
+        start_date: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%d %H:%M:%S') }}"
+        end_date: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%d %H:%M:%S') }}"
         filtering: '{{ parameters["filtering"] | string if parameters.get("filtering") and config.get("include_deleted", False)}}'
       authenticator:
         $ref: "#/definitions/authenticator"
       request_body_json: {}
     record_selector:
-      $ref: "#/definitions/record_selector_for_daily_reports_streams"
+        $ref: "#/definitions/record_selector"
     paginator:
       $ref: "#/definitions/paginator_page_increment"
       pagination_strategy:
@@ -432,8 +414,7 @@ definitions:
       datetime_format: "%Y-%m-%d"
 
   report_hourly_incremental_sync:
-    type: CustomIncrementalSync
-    class_name: source_tiktok_marketing.components.hourly_datetime_based_cursor.HourlyDatetimeBasedCursor
+    type: DatetimeBasedCursor
     cursor_field: "stat_time_hour"
     lookback_window: "P{{ config.get('attribution_window', 0) }}D"
     cursor_granularity: "PT1H"
@@ -441,15 +422,15 @@ definitions:
     cursor_datetime_formats:
       - "%Y-%m-%d %H:%M:%S"
       - "%Y-%m-%dT%H:%M:%SZ"
-    datetime_format: "%Y-%m-%d"
+    datetime_format: "%Y-%m-%d %H:%M:%S"
     start_datetime:
       type: MinMaxDatetime
-      datetime: "{{ config.get('start_date', '2016-09-01') }}"
-      datetime_format: "%Y-%m-%d"
+      datetime: "{{ format_datetime(config.get('start_date', '2016-09-01'), '%Y-%m-%d %H:%M:%S', '%Y-%m-%d') }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
     end_datetime:
       type: MinMaxDatetime
-      datetime: "{{ config.get('end_date', today_utc()) }}"
-      datetime_format: "%Y-%m-%d"
+      datetime: "{{ format_datetime(config.get('end_date', today_utc()), '%Y-%m-%d %H:%M:%S', '%Y-%m-%d') }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
 
   base_report_daily:
     schema_loader:
@@ -459,7 +440,7 @@ definitions:
     retriever:
       $ref: "#/definitions/base_report_retriever"
       record_selector:
-        $ref: "#/definitions/record_selector_for_daily_reports_streams"
+        $ref: "#/definitions/record_selector"
     incremental_sync:
       $ref: "#/definitions/report_daily_incremental_sync"
 
@@ -706,7 +687,7 @@ definitions:
         $ref: "#/definitions/authenticator"
       request_body_json: {}
     record_selector:
-      $ref: "#/definitions/record_selector_for_daily_reports_streams"
+        $ref: "#/definitions/record_selector"
     paginator:
       $ref: "#/definitions/paginator_page_increment"
       pagination_strategy:
