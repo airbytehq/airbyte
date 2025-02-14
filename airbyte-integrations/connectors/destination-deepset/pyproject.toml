@@ -15,7 +15,7 @@ repository = "https://github.com/airbytehq/airbyte"
 packages = [{ include = "destination_deepset" }, { include = "main.py" }]
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "^3.10,<3.12"
 airbyte-cdk = "^0"
 httpx = "^0.28.1"
 tenacity = "^9.0.0"
