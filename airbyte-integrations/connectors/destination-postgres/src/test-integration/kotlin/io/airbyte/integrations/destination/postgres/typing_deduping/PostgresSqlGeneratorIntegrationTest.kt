@@ -173,11 +173,11 @@ class PostgresSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Post
             PostgresSqlGenerator(
                 PostgresSQLNameTransformer(),
                 cascadeDrop = false,
-                unconstrainedNumber = false
+                unconstrainedNumber = true,
             )
 
         createRawTable(streamId)
-        createFinalTable(incrementalDedupStream, "")
+        destinationHandler.execute(generator.createTable(incrementalDedupStream, "", false))
         insertRawTableRecords(
             streamId,
             listOf(
@@ -212,10 +212,11 @@ class PostgresSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Post
                     """
                         {
                           "_airbyte_raw_id": "7e1fac0c-017e-4ad6-bc78-334a34d64fce",
-                          "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                          "_airbyte_extracted_at": "2023-01-01T00:00:00.000000Z",
+                          "_airbyte_meta": {"changes":[],"sync_id":null},
                           "id1": 6,
                           "id2": 100,
-                          "updated_at": "2023-01-01T01:00:00Z",
+                          "updated_at": "2023-01-01T01:00:00.000000Z",
                           "number": 10325.876543219876543
                         }
                     """.trimIndent()
