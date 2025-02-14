@@ -52,6 +52,7 @@ The maximum sync speed is limited by the number of requests per second per API k
 
 | Version | Date       | Pull Request                                             | Subject                    |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------- |
+| 0.2.13 | 2025-02-14 | [53688](https://github.com/airbytehq/airbyte/pull/53688) | Enable the connector on cloud registry |
 | 0.2.12 | 2025-02-08 | [53475](https://github.com/airbytehq/airbyte/pull/53475) | Update dependencies |
 | 0.2.11 | 2025-02-01 | [53021](https://github.com/airbytehq/airbyte/pull/53021) | Update dependencies |
 | 0.2.10 | 2025-01-25 | [52522](https://github.com/airbytehq/airbyte/pull/52522) | Update dependencies |

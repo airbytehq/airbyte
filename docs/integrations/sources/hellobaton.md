@@ -56,6 +56,7 @@ The connector is rate limited at 1000 requests per minute per api key. If you fi
 
 | Version | Date       | Pull Request                                             | Subject                             |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------- |
+| 0.3.15 | 2025-02-14 | [53688](https://github.com/airbytehq/airbyte/pull/53688) | Enable the connector on cloud registry |
 | 0.3.14 | 2025-02-08 | [53286](https://github.com/airbytehq/airbyte/pull/53286) | Update dependencies |
 | 0.3.13 | 2025-02-01 | [52772](https://github.com/airbytehq/airbyte/pull/52772) | Update dependencies |
 | 0.3.12 | 2025-01-25 | [52292](https://github.com/airbytehq/airbyte/pull/52292) | Update dependencies |
