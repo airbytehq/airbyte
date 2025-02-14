@@ -14,7 +14,7 @@ data:
       packageName: airbyte-source-mailersend
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
