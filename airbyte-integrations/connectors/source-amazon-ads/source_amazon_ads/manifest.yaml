@@ -2063,7 +2063,7 @@ definitions:
       datetime: "{{ config.get('start_date', today_utc().strftime('%Y-%m-%d') ) }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
-      datetime: "{{ today_utc().strftime('%Y-%m-%d') }}"
+      datetime: "{{ today_utc() }}"
       datetime_format: "%Y-%m-%d"
     cursor_granularity: "P1D"
     step: "P{{ config.get('events_time_step', 30) }}D"
