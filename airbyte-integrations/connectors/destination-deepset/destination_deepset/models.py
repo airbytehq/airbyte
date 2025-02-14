@@ -22,7 +22,7 @@ __all__ = [
 
 
 @unique
-class Filetypes(str, Enum):
+class Filetypes(StrEnum):
     """Available stream formats for Airbyte's source connectors"""
 
     AVRO = "avro"
