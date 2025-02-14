@@ -1,0 +1,226 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "cartPredicate": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "createdBy": {
+      "additionalProperties": true,
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "isPlatformClient": {
+          "type": "boolean"
+        },
+        "user": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "typeId": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "description": {
+      "additionalProperties": true,
+      "properties": {
+        "en-CA": {
+          "type": "string"
+        },
+        "en-US": {
+          "type": "string"
+        },
+        "es-MX": {
+          "type": "string"
+        },
+        "fr-CA": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "isActive": {
+      "type": "boolean"
+    },
+    "key": {
+      "type": "string"
+    },
+    "lastMessageSequenceNumber": {
+      "type": "integer"
+    },
+    "lastModifiedAt": {
+      "type": "string"
+    },
+    "lastModifiedBy": {
+      "additionalProperties": true,
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "isPlatformClient": {
+          "type": "boolean"
+        },
+        "user": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "typeId": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "name": {
+      "additionalProperties": true,
+      "properties": {
+        "en-CA": {
+          "type": "string"
+        },
+        "en-US": {
+          "type": "string"
+        },
+        "es-MX": {
+          "type": "string"
+        },
+        "fr-CA": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "references": {
+      "type": "array"
+    },
+    "requiresDiscountCode": {
+      "type": "boolean"
+    },
+    "sortOrder": {
+      "type": "string"
+    },
+    "stackingMode": {
+      "type": "string"
+    },
+    "stores": {
+      "items": {
+        "additionalProperties": true,
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "typeId": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "target": {
+      "additionalProperties": true,
+      "properties": {
+        "predicate": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "validFrom": {
+      "type": "string"
+    },
+    "validUntil": {
+      "type": "string"
+    },
+    "value": {
+      "additionalProperties": true,
+      "properties": {
+        "applicationMode": {
+          "type": "string"
+        },
+        "money": {
+          "items": {
+            "additionalProperties": true,
+            "properties": {
+              "centAmount": {
+                "type": "integer"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "fractionDigits": {
+                "type": "integer"
+              },
+              "type": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "permyriad": {
+          "type": "integer"
+        },
+        "product": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "typeId": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "supplyChannel": {
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "typeId": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "type": {
+          "type": "string"
+        },
+        "variantId": {
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "versionModifiedAt": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

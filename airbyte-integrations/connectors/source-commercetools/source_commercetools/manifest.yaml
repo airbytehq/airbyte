@@ -138,6 +138,12 @@ definitions:
       name: "product-discounts"
       path: "product-discounts"
 
+  cart-discounts_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "cart-discounts"
+      path: "cart-discounts"
+
 
 streams:
   - "#/definitions/customers_stream"
@@ -149,6 +155,7 @@ streams:
   - "#/definitions/inventory_stream"
   - "#/definitions/standalone-prices_stream"
   - "#/definitions/product-discounts_stream"
+  - "#/definitions/cart-discounts_stream"
 
 spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/commercetools
