@@ -509,12 +509,12 @@ definitions:
                   id:
                     type: ["null", string]
               links:
-                type: ["null", string]
+                type: ["null", object]
                 properties:
                   self:
-                    type: ["null", object]
+                    type: ["null", string]
                   related:
-                    type: ["null", object]
+                    type: ["null", string]
 
     subscriptions:
       type: ["null", object]
@@ -1132,12 +1132,12 @@ definitions:
                   id:
                     type: ["null", string]
               links:
-                type: ["null", string]
+                type: ["null", object]
                 properties:
                   self:
-                    type: ["null", object]
+                    type: ["null", string]
                   related:
-                    type: ["null", object]
+                    type: ["null", string]
 
   lists_schema:
     $schema: "http://json-schema.org/draft-07/schema#"
