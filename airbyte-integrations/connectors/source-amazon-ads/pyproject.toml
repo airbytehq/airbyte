@@ -27,7 +27,7 @@ responses = "^0.25"
 freezegun = "*"
 requests-mock = "*"
 pytest-mock = "*"
-
+pendulum = "*"
 
 [tool.poe]
 include = [
