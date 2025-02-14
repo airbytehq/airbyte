@@ -7,7 +7,7 @@ data:
     ql: 100
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   remoteRegistries:
