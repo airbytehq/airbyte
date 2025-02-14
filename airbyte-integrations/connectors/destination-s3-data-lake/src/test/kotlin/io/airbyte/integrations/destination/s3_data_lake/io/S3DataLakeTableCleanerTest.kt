@@ -33,7 +33,7 @@ internal class S3DataLakeTableCleanerTest {
         val fileIo: S3FileIO = mockk { every { deletePrefix(any()) } returns Unit }
         val tableLocation = "table/location"
 
-        val cleaner = S3DataLakeTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
+        val cleaner = IcebergTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
 
         cleaner.clearTable(
             catalog = catalog,
@@ -54,7 +54,7 @@ internal class S3DataLakeTableCleanerTest {
         val fileIo: FileIO = mockk()
         val tableLocation = "table/location"
 
-        val cleaner = S3DataLakeTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
+        val cleaner = IcebergTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
 
         cleaner.clearTable(
             catalog = catalog,
@@ -72,7 +72,7 @@ internal class S3DataLakeTableCleanerTest {
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
         }
-        val cleaner = S3DataLakeTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
+        val cleaner = IcebergTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
         val generationIdSuffix = "ab-generation-id-0-e"
 
         val tasks = CloseableIterable.empty<FileScanTask>()
@@ -90,7 +90,7 @@ internal class S3DataLakeTableCleanerTest {
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
         }
-        val cleaner = S3DataLakeTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
+        val cleaner = IcebergTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
         val generationIdSuffix = "ab-generation-id-0-e"
         val filePathToDelete = "path/to/gen-5678/foo-bar-ab-generation-id-0-e.parquet"
         val fileScanTask = mockk<FileScanTask>()
@@ -126,7 +126,7 @@ internal class S3DataLakeTableCleanerTest {
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
         }
-        val cleaner = S3DataLakeTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
+        val cleaner = IcebergTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
         val generationIdSuffix = "ab-generation-id-10-e"
         val filePathToDelete = "path/to/gen-5678/foo-bar-ab-generation-id-10-e.parquet"
         val fileScanTask = mockk<FileScanTask>()

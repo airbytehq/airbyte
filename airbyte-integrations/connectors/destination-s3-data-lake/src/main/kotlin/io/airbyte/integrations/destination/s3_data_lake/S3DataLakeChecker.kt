@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableCleaner
+import io.airbyte.integrations.destination.s3_data_lake.io.IcebergTableCleaner
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import javax.inject.Singleton
 import org.apache.iceberg.Schema
@@ -14,7 +14,7 @@ import org.apache.iceberg.types.Types
 
 @Singleton
 class S3DataLakeChecker(
-    private val s3DataLakeTableCleaner: S3DataLakeTableCleaner,
+    private val icebergTableCleaner: IcebergTableCleaner,
     private val s3DataLakeUtil: S3DataLakeUtil,
     private val tableIdGenerator: TableIdGenerator,
 ) : DestinationChecker<S3DataLakeConfiguration> {
@@ -42,7 +42,7 @@ class S3DataLakeChecker(
                 catalogProperties,
             )
 
-        s3DataLakeTableCleaner.clearTable(
+        icebergTableCleaner.clearTable(
             catalog,
             tableIdGenerator.toTableIdentifier(testTableIdentifier),
             table.io(),

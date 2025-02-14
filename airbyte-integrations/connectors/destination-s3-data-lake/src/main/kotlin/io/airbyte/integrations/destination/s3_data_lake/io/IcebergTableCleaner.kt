@@ -16,7 +16,7 @@ import org.apache.iceberg.io.SupportsPrefixOperations
  * catalog implementations do not clear the underlying files written to table storage.
  */
 @Singleton
-class S3DataLakeTableCleaner(private val s3DataLakeUtil: S3DataLakeUtil) {
+class IcebergTableCleaner(private val s3DataLakeUtil: S3DataLakeUtil) {
 
     /**
      * Clears the table identified by the provided [TableIdentifier]. This removes all data and

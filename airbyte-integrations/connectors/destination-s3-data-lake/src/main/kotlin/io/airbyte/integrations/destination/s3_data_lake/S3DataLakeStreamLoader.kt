@@ -12,7 +12,7 @@ import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.StreamLoader
-import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableCleaner
+import io.airbyte.integrations.destination.s3_data_lake.io.IcebergTableCleaner
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableWriterFactory
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -148,8 +148,8 @@ class S3DataLakeStreamLoader(
                     (0 until stream.minimumGenerationId).map(
                         s3DataLakeUtil::constructGenerationIdSuffix
                     )
-                val s3DataLakeTableCleaner = S3DataLakeTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
-                s3DataLakeTableCleaner.deleteGenerationId(
+                val icebergTableCleaner = IcebergTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
+                icebergTableCleaner.deleteGenerationId(
                     table,
                     stagingBranchName,
                     generationIdsToDelete

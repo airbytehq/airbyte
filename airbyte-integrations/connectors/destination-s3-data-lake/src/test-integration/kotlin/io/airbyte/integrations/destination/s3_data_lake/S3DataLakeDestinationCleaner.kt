@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.s3_data_lake
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.IntegrationTest.Companion.isNamespaceOld
 import io.airbyte.cdk.load.test.util.IntegrationTest.Companion.randomizedNamespaceRegex
-import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableCleaner
+import io.airbyte.integrations.destination.s3_data_lake.io.IcebergTableCleaner
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +29,7 @@ class S3DataLakeDestinationCleaner(private val catalog: Catalog) : DestinationCl
 
         // we're passing explicit TableIdentifier to clearTable, so just use SimpleTableIdGenerator
         val tableCleaner =
-            S3DataLakeTableCleaner(
+            IcebergTableCleaner(
                 S3DataLakeUtil(
                     SimpleTableIdGenerator(),
                     S3DataLakeTestUtil.getAwsAssumeRoleCredentials()
