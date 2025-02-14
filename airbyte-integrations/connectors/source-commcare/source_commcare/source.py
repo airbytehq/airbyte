@@ -248,13 +248,14 @@ class Form(IncrementalStream):
     cursor_field = "indexed_on"
     primary_key = "id"
 
-    def __init__(self, start_date, app_id, name, xmlns, schema, **kwargs):
+    def __init__(self, start_date, app_id, name, xmlns, schema, include_archived, **kwargs):
         super().__init__(**kwargs)
         self.app_id = app_id
         self._cursor_value = parse_datetime_with_microseconds(start_date)
         self.streamname = name
         self.xmlns = xmlns
         self.schema = schema
+        self.include_archived = include_archived
 
     @property
     def name(self):
@@ -279,7 +280,7 @@ class Form(IncrementalStream):
             "indexed_on_start": ix.strftime(self.dateformat_for_query),
             "order_by": "indexed_on",
             "limit": "1000",
-            "include_archived": True,
+            "include_archived": self.include_archived,
             "xmlns": self.xmlns,
         }
         if next_page_token:
@@ -393,7 +394,7 @@ class SourceCommcare(AbstractSource):
         # Sorted by name
         for k in sorted(name2xmlns):
             key = name2xmlns[k]
-            stream = Form(name=k, xmlns=key, schema=self.base_schema(), **form_args)
+            stream = Form(name=k, xmlns=key, schema=self.base_schema(), include_archived=config["include_archived"], **form_args)
             streams.append(stream)
 
         stream = Case(

@@ -42,3 +42,9 @@ connectionSpecification:
       title: Form Fields to be Excluded
       description: Forms field which you don't want to pull
       order: 4
+    include_archived:
+      type: boolean
+      title: Include Archived Forms
+      description: Include archived forms in the replication
+      default: false
+      order: 5
