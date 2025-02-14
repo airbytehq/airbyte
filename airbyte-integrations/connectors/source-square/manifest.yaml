@@ -1210,7 +1210,7 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: >-
-      {{ 'https://connect.squaresandbox.com/v2' if config['is_sandbox'] else
+      {{ 'https://connect.squareupsandbox.com/v2' if config['is_sandbox'] else
       'https://connect.squareup.com/v2' }}
     authenticator:
       type: SelectiveAuthenticator
