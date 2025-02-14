@@ -255,6 +255,7 @@ class Form(IncrementalStream):
         self.streamname = name
         self.xmlns = xmlns
         self.schema = schema
+        self.include_archived = kwargs.get("include_archived", False)
 
     @property
     def name(self):
@@ -279,7 +280,7 @@ class Form(IncrementalStream):
             "indexed_on_start": ix.strftime(self.dateformat_for_query),
             "order_by": "indexed_on",
             "limit": "1000",
-            "include_archived": True,
+            "include_archived": self.include_archived,
             "xmlns": self.xmlns,
         }
         if next_page_token:
@@ -366,6 +367,7 @@ class SourceCommcare(AbstractSource):
             "start_date": config["start_date"],
             "form_fields_to_exclude": form_fields_to_exclude,
             "project_space": config["project_space"],
+            "include_archived": config["include_archived"],
             **args,
         }
         streams = []
