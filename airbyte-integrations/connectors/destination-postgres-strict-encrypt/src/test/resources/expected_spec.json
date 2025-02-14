@@ -346,7 +346,7 @@
       "unconstrained_number": {
         "type": "boolean",
         "default": false,
-        "description": "Create numeric columns as unconstrained DECIMAL instead of NUMBER(38, 9). This will allow increased precision in numeric values.",
+        "description": "Create numeric columns as unconstrained DECIMAL instead of NUMBER(38, 9). This will allow increased precision in numeric values. (this is disabled by default for backwards compatibility, but is recommended to enable)",
         "title": "Unconstrained numeric columns",
         "order": 12
       }
