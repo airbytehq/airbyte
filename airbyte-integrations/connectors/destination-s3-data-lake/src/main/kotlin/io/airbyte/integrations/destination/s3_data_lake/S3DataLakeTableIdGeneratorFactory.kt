@@ -9,26 +9,12 @@ import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.RestCatalogConfiguration
 import io.airbyte.cdk.load.data.Transformations
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.tableIdOf
 import io.micronaut.context.annotation.Factory
 import javax.inject.Singleton
-import org.apache.iceberg.catalog.Namespace
 import org.apache.iceberg.catalog.TableIdentifier
-
-/**
- * Convert our internal stream descriptor to an Iceberg [TableIdentifier]. Implementations should
- * handle catalog-specific naming restrictions.
- */
-// TODO accept default namespace in config as a val here
-interface TableIdGenerator {
-    fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier
-}
-
-class SimpleTableIdGenerator(private val configNamespace: String? = "") : TableIdGenerator {
-    override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier {
-        val namespace = stream.namespace ?: configNamespace
-        return tableIdOf(namespace!!, stream.name)
-    }
-}
 
 /** AWS Glue requires lowercase database+table names. */
 class GlueTableIdGenerator(private val databaseName: String?) : TableIdGenerator {
@@ -67,7 +53,3 @@ class TableIdGeneratorFactory(private val s3DataLakeConfiguration: S3DataLakeCon
                 )
         }
 }
-
-// iceberg namespace+name must both be nonnull.
-private fun tableIdOf(namespace: String, name: String) =
-    TableIdentifier.of(Namespace.of(namespace), name)
