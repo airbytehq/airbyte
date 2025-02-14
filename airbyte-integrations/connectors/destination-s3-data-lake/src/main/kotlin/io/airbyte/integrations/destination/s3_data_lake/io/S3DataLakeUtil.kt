@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.RestCatalogConfiguration
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.integrations.destination.s3_data_lake.ACCESS_KEY_ID
 import io.airbyte.integrations.destination.s3_data_lake.ASSUME_ROLE_ARN
 import io.airbyte.integrations.destination.s3_data_lake.ASSUME_ROLE_EXTERNAL_ID

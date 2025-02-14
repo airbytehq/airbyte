@@ -35,7 +35,7 @@ const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
 
 @Singleton
 class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
-    internal class InvalidFormatException(message: String) : Exception(message)
+    class InvalidFormatException(message: String) : Exception(message)
 
     private val generationIdRegex = Regex("""ab-generation-id-\d+-e""")
 
