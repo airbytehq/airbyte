@@ -23,15 +23,15 @@ Before starting this tutorial, make sure you have the following:
 
 - Basic familiarity with Terraform is helpful, but not required.
 
-- A code editor, like Visual Studio Code, optionally with a Terraform extension installed.
+- Install a code editor, like Visual Studio Code, optionally with a Terraform extension.
 
 - Ensure [Terraform is installed](https://developer.hashicorp.com/terraform/install) on your machine.
 
-- Airbyte credentials:
+- Obtain your Airbyte credentials:
 
-    - **Cloud**: [An API application](using-airbyte/configuring-api-access.md) in Airbyte, your client ID, and your client secret.
+    - [An API application](using-airbyte/configuring-api-access.md) in Airbyte, your client ID, and your client secret.
 
-    - **Self-Managed**: Your username and password, and if you're running locally, your server URL (usually `http://localhost:8000/api/public/v1/`).
+    - If you're running locally, your server URL (usually `http://localhost:8000/api/public/v1/`).
 
     - Your workspace ID. To get your workspace ID, open your workspace in Airbyte, then copy the ID from the URL. It looks like this: `039da657-f061-493e-a836-9bce86bc5e35`.
 
@@ -61,6 +61,8 @@ The main issue with this method is that JSON strings can technically contain any
 
 ### How to choose
 
+This tutorial demonstrates how to use both options.
+
 - For Airbyte and Marketplace connectors, you can choose which type of resource you prefer. Airbyte generally recommends using a JSON configuration. Based on the feedback we receive, JSON causes less Terraform drift and makes upgrades less problematic in the long run.
 
 - For custom connectors, only weakly typed JSON configurations are possible.
@@ -69,13 +71,7 @@ The main issue with this method is that JSON strings can technically contain any
 
 Download the Terraform provider and configure it to run with your Airbyte instance.
 
-1. Create a directory to house your Terraform project, navigate to it, and create a file called `main.tf`.
-
-    ```bash
-    mkdir terraform-airbyte
-    cd terraform-airbyte
-    touch main.tf
-    ```
+1. Create a directory to house your Terraform project, navigate to it, and create a file named `main.tf`.
 
 2. Go to https://registry.terraform.io/providers/airbytehq/airbyte/latest.
 
@@ -98,100 +94,47 @@ Download the Terraform provider and configure it to run with your Airbyte instan
 
 4. Configure the Airbyte provider to use your credentials, but don't put your sensitive data into `main.tf`. Instead, insert variables you'll populate later.
 
-    <Tabs>
-    <TabItem value="Cloud" label="Cloud" default>
-        ```hcl title="main.tf"
-        terraform {
-            required_providers {
-                airbyte = {
-                source = "airbytehq/airbyte"
-                version = "0.6.5"
-                }
+    ```hcl title="main.tf"
+    terraform {
+        required_providers {
+            airbyte = {
+            source = "airbytehq/airbyte"
+            version = "0.6.5"
             }
         }
+    }
 
-        provider "airbyte" {
-            // highlight-start
-            client_id = var.client_id
-            client_secret = var.client_secret
-            // highlight-end
-        }
-        ```
-    </TabItem>
-    <TabItem value="Self-Managed" label="Self-Managed">
-        ```hcl title="main.tf"
-        terraform {
-            required_providers {
-                airbyte = {
-                source = "airbytehq/airbyte"
-                version = "0.6.5"
-                }
-            }
-        }
+    provider "airbyte" {
+        // highlight-start
+        client_id = var.client_id
+        client_secret = var.client_secret
 
-        provider "airbyte" {
-            // highlight-start
-            username = var.username
-            password = var.password
-
-            # Only if running locally
-            server_url = "http://localhost:8000/api/public/v1/"
-            // highlight-end
-        }
-        ```
-    </TabItem>
-    </Tabs>
-
-5. In your terminal, create a file called `variables.tf`. This file stores sensitive variables you don't want to appear in `main.tf`, plus other values you'll reuse often.
-
-    ```bash
-    touch variables.tf
+        # Include server_url if running locally
+        server_url = "http://localhost:8000/api/public/v1/"
+        // highlight-end
+    }
     ```
 
-6. Populate `variables.tf` and define your variables.
+5. In your terminal, create a file named `variables.tf`. This file stores sensitive variables you don't want to appear in `main.tf`, plus other values you'll reuse often.
 
-    <Tabs>
-    <TabItem value="Cloud" label="Cloud" default>
+6. Populate `variables.tf`. Define `client_id`, `client_secret`, and `workspace_id`.
 
-        ```hcl title="variables.tf"
-        variable "client_id" {
-            type = string
-            default = "YOUR_CLIENT_ID"
-        }
+    ```hcl title="variables.tf"
+    variable "client_id" {
+        type = string
+        default = "YOUR_CLIENT_ID"
+    }
 
-        variable "client_secret" {
-            type = string
-            default = "YOUR_CLIENT_SECRET"
-        }
+    variable "client_secret" {
+        type = string
+        default = "YOUR_CLIENT_SECRET"
+    }
 
-        variable "workspace_id" {
-            type = string
-            default = "YOUR_AIRBYTE_WORKSPACE_ID"
-        }
-        ```
-
-    </TabItem>
-    <TabItem value="Self-Managed" label="Self-Managed">
-
-        ```hcl title="variables.tf"
-        variable "username" {
-            type = string
-            default = "YOUR_USER_NAME"
-        }
-
-        variable "password" {
-            type = string
-            default = "YOUR_PASSWORD"
-        }
-
-        variable "workspace_id" {
-            type = string
-            default = "YOUR_AIRBYTE_WORKSPACE_ID"
-        }
-        ```
-
-    </TabItem>
-    </Tabs>
+    variable "workspace_id" {
+        type = string
+        default = "YOUR_AIRBYTE_WORKSPACE_ID"
+    }
+    ```
 
 7. Run `terraform init`. Terraform tells you it initialized successfully. If it didn't, check your code against the code samples above.
 
@@ -206,23 +149,6 @@ Add a source from which you want to get data. In this example, you add Stripe as
 1. Add your source to `main.tf`.
 
     <Tabs>
-    <TabItem value="Strongly typed" label="Strongly typed" default>
-        ```hcl title="main.tf"
-        resource "airbyte_source_stripe" "my_source_stripe" {
-            configuration = {
-                source_type = "stripe"
-                account_id = "YOUR_STRIPE_ACCOUNT_ID"
-                client_secret = "YOUR_STRIPE_CLIENT_SECRET"
-                start_date = "2023-07-01T00:00:00Z"
-                lookback_window_days = 0
-                slice_range = 365
-            }
-            name = "Stripe"
-            workspace_id = var.workspace_id
-        }
-        ```
-    </TabItem>
-
     <TabItem value="JSON" label="JSON">
         
         For this and any other Airbyte or Marketplace connector, you can define the source type in the JSON string.
@@ -261,6 +187,24 @@ Add a source from which you want to get data. In this example, you add Stripe as
         ```
 
     </TabItem>
+    <TabItem value="Strongly typed" label="Strongly typed">
+        ```hcl title="main.tf"
+        resource "airbyte_source_stripe" "my_source_stripe" {
+            configuration = {
+                source_type = "stripe"
+                account_id = "YOUR_STRIPE_ACCOUNT_ID"
+                client_secret = "YOUR_STRIPE_CLIENT_SECRET"
+                start_date = "2023-07-01T00:00:00Z"
+                lookback_window_days = 0
+                slice_range = 365
+            }
+            name = "Stripe"
+            workspace_id = var.workspace_id
+        }
+        ```
+    </TabItem>
+
+    
     </Tabs>
 
 2. Run `terraform apply`. Terraform tells you it will add 1 resource. Type `yes` and press <kbd>Enter</kbd>.
@@ -274,11 +218,39 @@ Add a destination to which you want to send data. In this example, you add BigQu
 1. Add your destination to `main.tf`.
 
     :::tip
-    For BigQuery, you must use a [service account](https://cloud.google.com/iam/docs/service-account-overview) with credentials provided as a JSON string. It's helpful to wrap your credentials JSON in [jsonencode](https://developer.hashicorp.com/terraform/language/functions/jsonencode). This way, you don't have to manually escape slashes and newlines in your credentials and your Terraform code can be human-readable.
+    For BigQuery, you must use a [service account](https://cloud.google.com/iam/docs/service-account-overview) with credentials provided as a JSON string. This creates a unique situation that isn't true for all destinations.
+
+    - If you're using the JSON configuration, use a heredoc and write the JSON string yourself to avoid encoding issues. Escape all slashes and newlines as illustrated in the code sample below.
+    
+    - If you're using the strongly typed configuration, it's helpful to wrap your credentials JSON in [jsonencode](https://developer.hashicorp.com/terraform/language/functions/jsonencode). This way, you don't have to manually escape slashes and newlines in your credentials and your Terraform code looks more human-readable.    
     :::
 
     <Tabs>
-    <TabItem value="Strongly typed" label="Strongly typed" default>
+    <TabItem value="JSON" label="JSON">
+
+        ```hcl title="main.tf"
+        resource "airbyte_destination_custom" "my_destination_bigquery_custom" {
+            configuration = <<-EOF
+                {
+                    "destination_type": "BigQuery",
+                    "credentials_json": "{ \"type\": \"service_account\", \"project_id\": \"YOUR_PROJECT_ID\", \"private_key_id\": \"YOUR_PRIVATE_KEY_ID\", \"private_key\": \"-----BEGIN PRIVATE KEY-----\\n...YOUR_KEY...\\n-----END PRIVATE KEY-----\\n\", \"client_email\": \"you@example.iam.gserviceaccount.com\", \"client_id\": \"YOUR_CLIENT_ID\", \"auth_uri\": \"https://accounts.google.com/o/oauth2/auth\", \"token_uri\": \"https://oauth2.googleapis.com/token\", \"auth_provider_x509_cert_url\": \"https://www.googleapis.com/oauth2/v1/certs\", \"client_x509_cert_url\": \"https://www.googleapis.com/robot/v1/metadata/x509/you@example.iam.gserviceaccount.com\", \"universe_domain\": \"googleapis.com\" }",
+                    "loading_method": {
+                        "method": "Standard",
+                        "batched_standard_inserts": {}
+                    },
+                    "dataset_id": "YOUR_DATASET_ID",
+                    "dataset_location": "us-central1",
+                    "project_id": "YOUR_PROJECT_ID",
+                    "transformation_priority": "batch"
+                }
+            EOF
+            name          = "BigQuery"
+            workspace_id  = var.workspace_id
+        }
+        ```
+
+    </TabItem>
+    <TabItem value="Strongly typed" label="Strongly typed">
 
         ```hcl title="main.tf"
         resource "airbyte_destination_bigquery" "my_destination_bigquery" {
@@ -306,31 +278,6 @@ Add a destination to which you want to send data. In this example, you add BigQu
             }
             name         = "BigQuery"
             workspace_id = var.workspace_id
-        }
-        ```
-
-    </TabItem>
-
-    <TabItem value="JSON" label="JSON">
-
-        ```hcl title="main.tf"
-        resource "airbyte_destination_custom" "my_destination_bigquery_custom" {
-            configuration = <<-EOF
-                {
-                    "destination_type": "BigQuery",
-                    "credentials_json": "{ \"type\": \"service_account\", \"project_id\": \"YOUR_PROJECT_ID\", \"private_key_id\": \"YOUR_PRIVATE_KEY_ID\", \"private_key\": \"-----BEGIN PRIVATE KEY-----\\n...YOUR_KEY...\\n-----END PRIVATE KEY-----\\n\", \"client_email\": \"you@example.iam.gserviceaccount.com\", \"client_id\": \"YOUR_CLIENT_ID\", \"auth_uri\": \"https://accounts.google.com/o/oauth2/auth\", \"token_uri\": \"https://oauth2.googleapis.com/token\", \"auth_provider_x509_cert_url\": \"https://www.googleapis.com/oauth2/v1/certs\", \"client_x509_cert_url\": \"https://www.googleapis.com/robot/v1/metadata/x509/you@example.iam.gserviceaccount.com\", \"universe_domain\": \"googleapis.com\" }",
-                    "loading_method": {
-                        "method": "Standard",
-                        "batched_standard_inserts": {}
-                    },
-                    "dataset_id": "YOUR_DATASET_ID",
-                    "dataset_location": "us-central1",
-                    "project_id": "YOUR_PROJECT_ID",
-                    "transformation_priority": "batch"
-                }
-            EOF
-            name          = "BigQuery"
-            workspace_id  = var.workspace_id
         }
         ```
 
