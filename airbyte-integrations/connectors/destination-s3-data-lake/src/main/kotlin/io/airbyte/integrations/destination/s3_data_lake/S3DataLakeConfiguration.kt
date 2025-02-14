@@ -30,7 +30,10 @@ data class S3DataLakeConfiguration(
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
     IcebergCatalogConfigurationProvider,
-    S3BucketConfigurationProvider
+    S3BucketConfigurationProvider {
+    override val recordBatchSizeBytes: Long
+        get() = 1500 * 1024 * 1024
+}
 
 @Singleton
 class S3DataLakeConfigurationFactory :
