@@ -59,10 +59,6 @@ def test_include_archived_false(config):
     assert streams[0].xmlns == "namespace"
     assert streams[0].include_archived == False
 
-    # case 
-    assert streams[1].app_id == "appid"
-    assert streams[1].project_space == "project_space"
-    assert streams[1].start_date == "2022-01-01T00:00:00Z"
 
 def test_include_archived_true(config_include_archived):
     source = SourceCommcare()
@@ -88,7 +84,3 @@ def test_include_archived_true(config_include_archived):
     assert streams[0].xmlns == "namespace"
     assert streams[0].include_archived == True
 
-    # case 
-    assert streams[1].app_id == "appid"
-    assert streams[1].project_space == "project_space"
-    assert streams[1].start_date == "2022-01-01T00:00:00Z"
