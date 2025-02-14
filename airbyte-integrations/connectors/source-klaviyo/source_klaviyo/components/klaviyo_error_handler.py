@@ -6,11 +6,11 @@ import requests
 from requests.exceptions import InvalidURL
 
 from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
 
 
-class KlaviyoErrorHandler(DefaultErrorHandler):
+class KlaviyoErrorHandler(CompositeErrorHandler):
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         """
         We have seen `[Errno -3] Temporary failure in name resolution` a couple of times on two different connections
