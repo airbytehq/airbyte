@@ -5,6 +5,8 @@
 package io.airbyte.integrations.destination.s3_data_lake
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergSuperTypeFinder
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTypesComparator
 import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Type.TypeID.DOUBLE
 import org.apache.iceberg.types.Type.TypeID.LONG

@@ -6,8 +6,9 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.integrations.destination.s3_data_lake.io.IcebergTableCleaner
-import io.airbyte.integrations.destination.s3_data_lake.io.IcebergUtil
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import javax.inject.Singleton
 import org.apache.iceberg.Schema

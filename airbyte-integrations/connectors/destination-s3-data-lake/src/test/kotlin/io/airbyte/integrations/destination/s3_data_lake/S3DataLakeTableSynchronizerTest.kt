@@ -5,6 +5,11 @@
 package io.airbyte.integrations.destination.s3_data_lake
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergSuperTypeFinder
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTypesComparator
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.SchemaUpdateResult
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.just

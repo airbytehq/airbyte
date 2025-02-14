@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.s3_data_lake.io
+package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
-import io.airbyte.integrations.destination.s3_data_lake.TableIdGenerator
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import javax.inject.Singleton
 import org.apache.hadoop.conf.Configuration
@@ -30,6 +30,8 @@ import org.apache.iceberg.data.Record
 import org.apache.iceberg.exceptions.AlreadyExistsException
 
 private val logger = KotlinLogging.logger {}
+
+const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
 
 @Singleton
 class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {

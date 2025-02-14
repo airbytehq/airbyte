@@ -9,6 +9,9 @@ import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.RestCatalogConfiguration
 import io.airbyte.cdk.load.data.Transformations
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.tableIdOf
 import io.micronaut.context.annotation.Factory
 import javax.inject.Singleton
 import org.apache.iceberg.catalog.TableIdentifier

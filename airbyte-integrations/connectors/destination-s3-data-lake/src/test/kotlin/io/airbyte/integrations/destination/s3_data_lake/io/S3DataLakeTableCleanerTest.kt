@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.s3_data_lake.io
 
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.mockk.Runs
 import io.mockk.called
 import io.mockk.every

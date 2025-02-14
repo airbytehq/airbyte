@@ -6,6 +6,12 @@ package io.airbyte.integrations.destination.s3_data_lake.io
 
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableWriterFactory
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.PartitionedAppendWriter
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.PartitionedDeltaWriter
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.UnpartitionedAppendWriter
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.UnpartitionedDeltaWriter
 import io.mockk.every
 import io.mockk.mockk
 import java.nio.ByteBuffer

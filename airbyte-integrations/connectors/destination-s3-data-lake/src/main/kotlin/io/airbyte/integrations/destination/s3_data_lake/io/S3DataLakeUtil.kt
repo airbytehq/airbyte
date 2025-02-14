@@ -35,7 +35,6 @@ import org.apache.iceberg.aws.s3.S3FileIOProperties
 import org.apache.iceberg.catalog.Catalog
 import org.projectnessie.client.NessieConfigConstants
 
-const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
 private const val AWS_REGION = "aws.region"
 
 private val logger = KotlinLogging.logger {}

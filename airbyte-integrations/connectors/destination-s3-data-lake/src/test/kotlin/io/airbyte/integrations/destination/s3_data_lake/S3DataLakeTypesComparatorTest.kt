@@ -3,7 +3,8 @@
  */
 package io.airbyte.integrations.destination.s3_data_lake
 
-import io.airbyte.integrations.destination.s3_data_lake.IcebergTypesComparator.Companion.splitIntoParentAndLeaf
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTypesComparator
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTypesComparator.Companion.splitIntoParentAndLeaf
 import org.apache.iceberg.Schema
 import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Types
