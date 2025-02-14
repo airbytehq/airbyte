@@ -25,8 +25,11 @@ import org.jooq.impl.DSL
 import org.jooq.impl.DefaultDataType
 import org.jooq.impl.SQLDataType
 
-class PostgresSqlGenerator(namingTransformer: NamingConventionTransformer, cascadeDrop: Boolean) :
-    JdbcSqlGenerator(namingTransformer, cascadeDrop) {
+class PostgresSqlGenerator(
+    namingTransformer: NamingConventionTransformer,
+    cascadeDrop: Boolean,
+    private val unconstrainedNumber: Boolean,
+) : JdbcSqlGenerator(namingTransformer, cascadeDrop) {
     override fun buildStreamId(
         namespace: String,
         name: String,
@@ -78,7 +81,7 @@ class PostgresSqlGenerator(namingTransformer: NamingConventionTransformer, casca
             return SQLDataType.VARCHAR
         }
 
-        if (airbyteProtocolType == AirbyteProtocolType.NUMBER) {
+        if (airbyteProtocolType == AirbyteProtocolType.NUMBER && unconstrainedNumber) {
             return SQLDataType.DECIMAL
         }
 
