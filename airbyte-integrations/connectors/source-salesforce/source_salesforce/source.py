@@ -10,7 +10,7 @@ import isodate
 import pendulum
 from dateutil.relativedelta import relativedelta
 from pendulum.parsing.exceptions import ParserError
-from requests import codes, exceptions, JSONDecodeError  # type: ignore[import]
+from requests import JSONDecodeError, codes, exceptions  # type: ignore[import]
 
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import (
