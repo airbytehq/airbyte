@@ -2,66 +2,64 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "0.0.0"
+version = "6.33.6"
 description = "A framework for writing Airbyte Connectors."
 optional = false
-python-versions = ">=3.10,<3.13"
-files = []
-develop = false
+python-versions = "<3.13,>=3.10"
+files = [
+    {file = "airbyte_cdk-6.33.6-py3-none-any.whl", hash = "sha256:0bb357e6e7dc97465c110120b7cfad9071828fee0eac80ae3a9695767b1a7751"},
+    {file = "airbyte_cdk-6.33.6.tar.gz", hash = "sha256:326fb6c465db2d6b477cb997bdbb78940522b44e161f8f05535989f5b6589303"},
+]
 
 [package.dependencies]
-airbyte-protocol-models-dataclasses = "^0.14"
-avro = {version = ">=1.11.2,<1.13.0", optional = true}
+airbyte-protocol-models-dataclasses = ">=0.14,<0.15"
+avro = {version = ">=1.11.2,<1.13.0", optional = true, markers = "extra == \"file-based\""}
 backoff = "*"
 cachetools = "*"
 cryptography = ">=42.0.5,<44.0.0"
-dpath = "^2.1.6"
-dunamai = "^1.22.0"
-fastavro = {version = "~1.8.0", optional = true}
+dpath = ">=2.1.6,<3.0.0"
+dunamai = ">=1.22.0,<2.0.0"
+fastavro = {version = ">=1.8.0,<1.9.0", optional = true, markers = "extra == \"file-based\""}
 genson = "1.3.0"
-isodate = "~0.6.1"
-Jinja2 = "~3.1.2"
-jsonref = "~0.2"
-jsonschema = "~4.17.3"
-markdown = {version = "*", optional = true}
+isodate = ">=0.6.1,<0.7.0"
+Jinja2 = ">=3.1.2,<3.2.0"
+jsonref = ">=0.2,<0.3"
+jsonschema = ">=4.17.3,<4.18.0"
+langchain_core = "0.1.42"
+markdown = {version = "*", optional = true, markers = "extra == \"file-based\""}
+nltk = "3.9.1"
 numpy = "<2"
-orjson = "^3.10.7"
+orjson = ">=3.10.7,<4.0.0"
 pandas = "2.2.2"
-pdf2image = {version = "1.16.3", optional = true}
-"pdfminer.six" = {version = "20221105", optional = true}
+pdf2image = {version = "1.16.3", optional = true, markers = "extra == \"file-based\""}
+"pdfminer.six" = {version = "20221105", optional = true, markers = "extra == \"file-based\""}
 psutil = "6.1.0"
-pyarrow = {version = "~15.0.0", optional = true}
-pydantic = "^2.7"
-pyjwt = "^2.8.0"
-pyrate-limiter = "~3.1.0"
-pytesseract = {version = "0.3.10", optional = true}
-python-calamine = {version = "0.2.3", optional = true}
-python-dateutil = "^2.9.0"
-python-snappy = {version = "0.7.3", optional = true}
-python-ulid = "^3.0.0"
+pyarrow = {version = ">=15.0.0,<15.1.0", optional = true, markers = "extra == \"file-based\""}
+pydantic = ">=2.7,<3.0"
+pyjwt = ">=2.8.0,<3.0.0"
+pyrate-limiter = ">=3.1.0,<3.2.0"
+pytesseract = {version = "0.3.10", optional = true, markers = "extra == \"file-based\""}
+python-calamine = {version = "0.2.3", optional = true, markers = "extra == \"file-based\""}
+python-dateutil = ">=2.9.0,<3.0.0"
+python-snappy = {version = "0.7.3", optional = true, markers = "extra == \"file-based\""}
+python-ulid = ">=3.0.0,<4.0.0"
 pytz = "2024.2"
-PyYAML = "^6.0.1"
-rapidfuzz = "^3.10.1"
+PyYAML = ">=6.0.1,<7.0.0"
+rapidfuzz = ">=3.10.1,<4.0.0"
 requests = "*"
 requests_cache = "*"
-serpyco-rs = "^1.10.2"
-Unidecode = "^1.3"
-unstructured = {version = "0.10.27", extras = ["docx", "pptx"], optional = true}
-"unstructured.pytesseract" = {version = ">=0.3.12", optional = true}
+serpyco-rs = ">=1.10.2,<2.0.0"
+Unidecode = ">=1.3,<2.0"
+unstructured = {version = "0.10.27", extras = ["docx", "pptx"], optional = true, markers = "extra == \"file-based\""}
+"unstructured.pytesseract" = {version = ">=0.3.12", optional = true, markers = "extra == \"file-based\""}
 wcmatch = "10.0"
-whenever = "^0.6.16"
+whenever = ">=0.6.16,<0.7.0"
 xmltodict = ">=0.13,<0.15"
 
 [package.extras]
 file-based = ["avro (>=1.11.2,<1.13.0)", "fastavro (>=1.8.0,<1.9.0)", "markdown", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (>=15.0.0,<15.1.0)", "pytesseract (==0.3.10)", "python-calamine (==0.2.3)", "python-snappy (==0.7.3)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
-sql = ["sqlalchemy (>=2.0,<3.0,!=2.0.36)"]
+sql = ["sqlalchemy (>=2.0,!=2.0.36,<3.0)"]
 vector-db-based = ["cohere (==4.21)", "langchain (==0.1.16)", "openai[embeddings] (==0.27.9)", "tiktoken (==0.8.0)"]
-
-[package.source]
-type = "git"
-url = "https://github.com/airbytehq/airbyte-python-cdk.git"
-reference = "aldogonzalez8/sync-metadata-records2"
-resolved_reference = "afdd60a5d57d663156916dc77557988d44aeedb7"
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
@@ -84,6 +82,28 @@ files = [
     {file = "annotated_types-0.7.0-py3-none-any.whl", hash = "sha256:1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53"},
     {file = "annotated_types-0.7.0.tar.gz", hash = "sha256:aff07c09a53a08bc8cfccb9c85b05f1aa9a2a6f23728d790723543408344ce89"},
 ]
+
+[[package]]
+name = "anyio"
+version = "4.8.0"
+description = "High level compatibility layer for multiple asynchronous event loop implementations"
+optional = false
+python-versions = ">=3.9"
+files = [
+    {file = "anyio-4.8.0-py3-none-any.whl", hash = "sha256:b5011f270ab5eb0abf13385f851315585cc37ef330dd88e27ec3d34d651fd47a"},
+    {file = "anyio-4.8.0.tar.gz", hash = "sha256:1d9fe889df5212298c0c0723fa20479d1b94883a2df44bd3897aa91083316f7a"},
+]
+
+[package.dependencies]
+exceptiongroup = {version = ">=1.0.2", markers = "python_version < \"3.11\""}
+idna = ">=2.8"
+sniffio = ">=1.1"
+typing_extensions = {version = ">=4.5", markers = "python_version < \"3.13\""}
+
+[package.extras]
+doc = ["Sphinx (>=7.4,<8.0)", "packaging", "sphinx-autodoc-typehints (>=1.2.0)", "sphinx_rtd_theme"]
+test = ["anyio[trio]", "coverage[toml] (>=7)", "exceptiongroup (>=1.2.0)", "hypothesis (>=4.0)", "psutil (>=5.9)", "pytest (>=7.0)", "trustme", "truststore (>=0.9.1)", "uvloop (>=0.21)"]
+trio = ["trio (>=0.26.1)"]
 
 [[package]]
 name = "attributes-doc"
@@ -857,6 +877,38 @@ protobuf = ">=3.20.2,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4
 grpc = ["grpcio (>=1.44.0,<2.0.0.dev0)"]
 
 [[package]]
+name = "h11"
+version = "0.14.0"
+description = "A pure-Python, bring-your-own-I/O implementation of HTTP/1.1"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "h11-0.14.0-py3-none-any.whl", hash = "sha256:e3fe4ac4b851c468cc8363d500db52c2ead036020723024a109d37346efaa761"},
+    {file = "h11-0.14.0.tar.gz", hash = "sha256:8f19fbbe99e72420ff35c00b27a34cb9937e902a8b810e2c88300c6f0a3b699d"},
+]
+
+[[package]]
+name = "httpcore"
+version = "1.0.7"
+description = "A minimal low-level HTTP client."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "httpcore-1.0.7-py3-none-any.whl", hash = "sha256:a3fff8f43dc260d5bd363d9f9cf1830fa3a458b332856f34282de498ed420edd"},
+    {file = "httpcore-1.0.7.tar.gz", hash = "sha256:8551cb62a169ec7162ac7be8d4817d561f60e08eaa485234898414bb5a8a0b4c"},
+]
+
+[package.dependencies]
+certifi = "*"
+h11 = ">=0.13,<0.15"
+
+[package.extras]
+asyncio = ["anyio (>=4.0,<5.0)"]
+http2 = ["h2 (>=3,<5)"]
+socks = ["socksio (==1.*)"]
+trio = ["trio (>=0.22.0,<1.0)"]
+
+[[package]]
 name = "httplib2"
 version = "0.22.0"
 description = "A comprehensive HTTP client library."
@@ -869,6 +921,30 @@ files = [
 
 [package.dependencies]
 pyparsing = {version = ">=2.4.2,<3.0.0 || >3.0.0,<3.0.1 || >3.0.1,<3.0.2 || >3.0.2,<3.0.3 || >3.0.3,<4", markers = "python_version > \"3.0\""}
+
+[[package]]
+name = "httpx"
+version = "0.28.1"
+description = "The next generation HTTP client."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad"},
+    {file = "httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc"},
+]
+
+[package.dependencies]
+anyio = "*"
+certifi = "*"
+httpcore = "==1.*"
+idna = "*"
+
+[package.extras]
+brotli = ["brotli", "brotlicffi"]
+cli = ["click (==8.*)", "pygments (==2.*)", "rich (>=10,<14)"]
+http2 = ["h2 (>=3,<5)"]
+socks = ["socksio (==1.*)"]
+zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "idna"
@@ -938,6 +1014,31 @@ files = [
 ]
 
 [[package]]
+name = "jsonpatch"
+version = "1.33"
+description = "Apply JSON-Patches (RFC 6902)"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, !=3.6.*"
+files = [
+    {file = "jsonpatch-1.33-py2.py3-none-any.whl", hash = "sha256:0ae28c0cd062bbd8b8ecc26d7d164fbbea9652a1a3693f3b956c1eae5145dade"},
+    {file = "jsonpatch-1.33.tar.gz", hash = "sha256:9fcd4009c41e6d12348b4a0ff2563ba56a2923a7dfee731d004e212e1ee5030c"},
+]
+
+[package.dependencies]
+jsonpointer = ">=1.9"
+
+[[package]]
+name = "jsonpointer"
+version = "3.0.0"
+description = "Identify specific nodes in a JSON document (RFC 6901)"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "jsonpointer-3.0.0-py2.py3-none-any.whl", hash = "sha256:13e088adc14fca8b6aa8177c044e12701e6ad4b28ff10e65f2267a90109c9942"},
+    {file = "jsonpointer-3.0.0.tar.gz", hash = "sha256:2b2d729f2091522d61c3b31f82e11870f60b68f43fbc705cb76bf4b832af59ef"},
+]
+
+[[package]]
 name = "jsonref"
 version = "0.2"
 description = "An implementation of JSON Reference for Python"
@@ -968,6 +1069,28 @@ format = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validat
 format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validator", "rfc3986-validator (>0.1.0)", "uri-template", "webcolors (>=1.11)"]
 
 [[package]]
+name = "langchain-core"
+version = "0.1.42"
+description = "Building applications with LLMs through composability"
+optional = false
+python-versions = "<4.0,>=3.8.1"
+files = [
+    {file = "langchain_core-0.1.42-py3-none-any.whl", hash = "sha256:c5653ffa08a44f740295c157a24c0def4a753333f6a2c41f76bf431cd00be8b5"},
+    {file = "langchain_core-0.1.42.tar.gz", hash = "sha256:40751bf60ea5d8e2b2efe65290db434717ee3834870c002e40e2811f09d814e6"},
+]
+
+[package.dependencies]
+jsonpatch = ">=1.33,<2.0"
+langsmith = ">=0.1.0,<0.2.0"
+packaging = ">=23.2,<24.0"
+pydantic = ">=1,<3"
+PyYAML = ">=5.3"
+tenacity = ">=8.1.0,<9.0.0"
+
+[package.extras]
+extended-testing = ["jinja2 (>=3,<4)"]
+
+[[package]]
 name = "langdetect"
 version = "1.0.9"
 description = "Language detection library ported from Google's language-detection."
@@ -980,6 +1103,27 @@ files = [
 
 [package.dependencies]
 six = "*"
+
+[[package]]
+name = "langsmith"
+version = "0.1.147"
+description = "Client library to connect to the LangSmith LLM Tracing and Evaluation Platform."
+optional = false
+python-versions = "<4.0,>=3.8.1"
+files = [
+    {file = "langsmith-0.1.147-py3-none-any.whl", hash = "sha256:7166fc23b965ccf839d64945a78e9f1157757add228b086141eb03a60d699a15"},
+    {file = "langsmith-0.1.147.tar.gz", hash = "sha256:2e933220318a4e73034657103b3b1a3a6109cc5db3566a7e8e03be8d6d7def7a"},
+]
+
+[package.dependencies]
+httpx = ">=0.23.0,<1"
+orjson = {version = ">=3.9.14,<4.0.0", markers = "platform_python_implementation != \"PyPy\""}
+pydantic = {version = ">=1,<3", markers = "python_full_version < \"3.12.4\""}
+requests = ">=2,<3"
+requests-toolbelt = ">=1.0.0,<2.0.0"
+
+[package.extras]
+langsmith-pyo3 = ["langsmith-pyo3 (>=0.1.0rc2,<0.2.0)"]
 
 [[package]]
 name = "lxml"
@@ -1426,13 +1570,13 @@ files = [
 
 [[package]]
 name = "packaging"
-version = "24.2"
+version = "23.2"
 description = "Core utilities for Python packages"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.7"
 files = [
-    {file = "packaging-24.2-py3-none-any.whl", hash = "sha256:09abb1bccd265c01f4a3aa3f7a7db064b36514d2cba19a2f694fe6150451a759"},
-    {file = "packaging-24.2.tar.gz", hash = "sha256:c228a6dc5e932d346bc5739379109d49e8853dd8223571c7c5b55260edc0b97f"},
+    {file = "packaging-23.2-py3-none-any.whl", hash = "sha256:8c491190033a9af7e1d931d0b5dacc2ef47509b34dd0de67ed209b5203fc88c7"},
+    {file = "packaging-23.2.tar.gz", hash = "sha256:048fb0e9405036518eaaf48a55953c750c11e1a1b68e0dd1a9d62ed0c092cfc5"},
 ]
 
 [[package]]
@@ -2636,6 +2780,20 @@ requests = ">=2.0.0"
 rsa = ["oauthlib[signedtoken] (>=3.0.0)"]
 
 [[package]]
+name = "requests-toolbelt"
+version = "1.0.0"
+description = "A utility belt for advanced users of python-requests"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+files = [
+    {file = "requests-toolbelt-1.0.0.tar.gz", hash = "sha256:7681a0a3d047012b5bdc0ee37d7f8f07ebe76ab08caeccfc3921ce23c88d5bc6"},
+    {file = "requests_toolbelt-1.0.0-py2.py3-none-any.whl", hash = "sha256:cccfdd665f0a24fcf4726e690f65639d272bb0637b9b92dfd91a5568ccf6bd06"},
+]
+
+[package.dependencies]
+requests = ">=2.0.1,<3.0.0"
+
+[[package]]
 name = "rsa"
 version = "4.9"
 description = "Pure-Python RSA implementation"
@@ -2715,6 +2873,17 @@ files = [
 ]
 
 [[package]]
+name = "sniffio"
+version = "1.3.1"
+description = "Sniff out which async library your code is running under"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "sniffio-1.3.1-py3-none-any.whl", hash = "sha256:2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2"},
+    {file = "sniffio-1.3.1.tar.gz", hash = "sha256:f4324edc670a0f49750a81b895f35c3adb843cca46f0530f79fc1babb23789dc"},
+]
+
+[[package]]
 name = "soupsieve"
 version = "2.6"
 description = "A modern CSS selector implementation for Beautiful Soup."
@@ -2738,6 +2907,21 @@ files = [
 
 [package.extras]
 widechars = ["wcwidth"]
+
+[[package]]
+name = "tenacity"
+version = "8.5.0"
+description = "Retry code until it succeeds"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "tenacity-8.5.0-py3-none-any.whl", hash = "sha256:b594c2a5945830c267ce6b79a166228323ed52718f30302c1359836112346687"},
+    {file = "tenacity-8.5.0.tar.gz", hash = "sha256:8bc6c0c8a09b31e6cad13c47afbed1a567518250a9a171418582ed8d9c20ca78"},
+]
+
+[package.extras]
+doc = ["reno", "sphinx"]
+test = ["pytest", "tornado (>=4.5)", "typeguard"]
 
 [[package]]
 name = "tomli"
@@ -3108,4 +3292,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.12"
-content-hash = "faabecf4679b10ce17e71c5f6030ef01ac2e90484574bbf944e54c1225ef3a5b"
+content-hash = "466460e7a7ed1717a12533b01bea9c8c0575f9ae705e74f3a8766a44895dcdb8"
