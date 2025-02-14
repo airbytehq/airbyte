@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from enum import Enum, unique
+from enum import StrEnum, unique
 from pathlib import Path
 from typing import Any, AnyStr, Dict, Optional
 
