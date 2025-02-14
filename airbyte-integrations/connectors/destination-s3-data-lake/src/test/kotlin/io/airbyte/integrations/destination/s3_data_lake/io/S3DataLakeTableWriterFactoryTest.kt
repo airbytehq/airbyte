@@ -71,7 +71,7 @@ internal class S3DataLakeTableWriterFactoryTest {
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
         }
 
-        val factory = S3DataLakeTableWriterFactory(icebergUtil)
+        val factory = IcebergTableWriterFactory(icebergUtil)
         val writer =
             factory.create(
                 table = table,
@@ -130,7 +130,7 @@ internal class S3DataLakeTableWriterFactoryTest {
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
         }
 
-        val factory = S3DataLakeTableWriterFactory(icebergUtil)
+        val factory = IcebergTableWriterFactory(icebergUtil)
         val writer =
             factory.create(
                 table = table,
@@ -188,7 +188,7 @@ internal class S3DataLakeTableWriterFactoryTest {
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
         }
 
-        val factory = S3DataLakeTableWriterFactory(icebergUtil)
+        val factory = IcebergTableWriterFactory(icebergUtil)
         val writer =
             factory.create(
                 table = table,
@@ -242,7 +242,7 @@ internal class S3DataLakeTableWriterFactoryTest {
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } returns Unit
         }
 
-        val factory = S3DataLakeTableWriterFactory(icebergUtil)
+        val factory = IcebergTableWriterFactory(icebergUtil)
         val writer =
             factory.create(
                 table = table,

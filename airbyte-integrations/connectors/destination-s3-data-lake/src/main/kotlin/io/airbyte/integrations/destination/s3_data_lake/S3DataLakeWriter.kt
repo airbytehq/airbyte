@@ -9,15 +9,15 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
+import io.airbyte.integrations.destination.s3_data_lake.io.IcebergTableWriterFactory
 import io.airbyte.integrations.destination.s3_data_lake.io.IcebergUtil
-import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableWriterFactory
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import javax.inject.Singleton
 import org.apache.iceberg.catalog.TableIdentifier
 
 @Singleton
 class S3DataLakeWriter(
-    private val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory,
+    private val icebergTableWriterFactory: IcebergTableWriterFactory,
     private val icebergConfiguration: S3DataLakeConfiguration,
     private val s3DataLakeUtil: S3DataLakeUtil,
     private val icebergUtil: IcebergUtil,
@@ -62,7 +62,7 @@ class S3DataLakeWriter(
             icebergConfiguration,
             stream,
             s3DataLakeTableSynchronizer,
-            s3DataLakeTableWriterFactory,
+            icebergTableWriterFactory,
             s3DataLakeUtil,
             icebergUtil,
             stagingBranchName = DEFAULT_STAGING_BRANCH,

@@ -13,8 +13,8 @@ import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.integrations.destination.s3_data_lake.io.IcebergTableCleaner
+import io.airbyte.integrations.destination.s3_data_lake.io.IcebergTableWriterFactory
 import io.airbyte.integrations.destination.s3_data_lake.io.IcebergUtil
-import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableWriterFactory
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
@@ -28,7 +28,7 @@ class S3DataLakeStreamLoader(
     private val icebergConfiguration: S3DataLakeConfiguration,
     override val stream: DestinationStream,
     private val s3DataLakeTableSynchronizer: S3DataLakeTableSynchronizer,
-    private val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory,
+    private val icebergTableWriterFactory: IcebergTableWriterFactory,
     private val s3DataLakeUtil: S3DataLakeUtil,
     private val icebergUtil: IcebergUtil,
     private val stagingBranchName: String,
@@ -91,7 +91,7 @@ class S3DataLakeStreamLoader(
         totalSizeBytes: Long,
         endOfStream: Boolean
     ): Batch {
-        s3DataLakeTableWriterFactory
+        icebergTableWriterFactory
             .create(
                 table = table,
                 generationId = icebergUtil.constructGenerationIdSuffix(stream),

@@ -23,8 +23,8 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.integrations.destination.s3_data_lake.io.IcebergTableWriterFactory
 import io.airbyte.integrations.destination.s3_data_lake.io.IcebergUtil
-import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableWriterFactory
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import io.mockk.every
 import io.mockk.just
@@ -102,7 +102,7 @@ internal class S3DataLakeStreamLoaderTest {
                 ),
                 Types.NestedField.of(12, false, COLUMN_NAME_AB_GENERATION_ID, Types.LongType.get()),
             )
-        val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory = mockk()
+        val icebergTableWriterFactory: IcebergTableWriterFactory = mockk()
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
             every { accessKeyId } returns "access-key"
             every { secretAccessKey } returns "secret-access-key"
@@ -148,7 +148,7 @@ internal class S3DataLakeStreamLoaderTest {
                     S3DataLakeTypesComparator(),
                     S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
                 ),
-                s3DataLakeTableWriterFactory,
+                icebergTableWriterFactory,
                 s3DataLakeUtil,
                 icebergUtil,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,
@@ -179,7 +179,7 @@ internal class S3DataLakeStreamLoaderTest {
             Schema(
                 Types.NestedField.of(2, true, "name", Types.StringType.get()),
             )
-        val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory = mockk()
+        val icebergTableWriterFactory: IcebergTableWriterFactory = mockk()
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
             every { accessKeyId } returns "access-key"
             every { secretAccessKey } returns "secret-access-key"
@@ -248,7 +248,7 @@ internal class S3DataLakeStreamLoaderTest {
                     S3DataLakeTypesComparator(),
                     S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
                 ),
-                s3DataLakeTableWriterFactory,
+                icebergTableWriterFactory,
                 s3DataLakeUtil,
                 icebergUtil,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,
@@ -331,7 +331,7 @@ internal class S3DataLakeStreamLoaderTest {
                 Types.NestedField.of(12, false, COLUMN_NAME_AB_GENERATION_ID, Types.LongType.get()),
             )
         val icebergSchema = Schema(columns, emptySet())
-        val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory = mockk()
+        val icebergTableWriterFactory: IcebergTableWriterFactory = mockk()
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
             every { accessKeyId } returns "access-key"
             every { secretAccessKey } returns "secret-access-key"
@@ -400,7 +400,7 @@ internal class S3DataLakeStreamLoaderTest {
                     S3DataLakeTypesComparator(),
                     S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
                 ),
-                s3DataLakeTableWriterFactory,
+                icebergTableWriterFactory,
                 s3DataLakeUtil,
                 icebergUtil,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,
@@ -440,7 +440,7 @@ internal class S3DataLakeStreamLoaderTest {
                 syncId = 1,
             )
         val icebergConfiguration: S3DataLakeConfiguration = mockk()
-        val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory = mockk()
+        val icebergTableWriterFactory: IcebergTableWriterFactory = mockk()
         val s3DataLakeUtil: S3DataLakeUtil = mockk()
         val icebergUtil: IcebergUtil = mockk {
             every { toIcebergSchema(any(), any<MapperPipeline>()) } answers
@@ -457,7 +457,7 @@ internal class S3DataLakeStreamLoaderTest {
                     S3DataLakeTypesComparator(),
                     S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator()),
                 ),
-                s3DataLakeTableWriterFactory,
+                icebergTableWriterFactory,
                 s3DataLakeUtil,
                 icebergUtil,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,

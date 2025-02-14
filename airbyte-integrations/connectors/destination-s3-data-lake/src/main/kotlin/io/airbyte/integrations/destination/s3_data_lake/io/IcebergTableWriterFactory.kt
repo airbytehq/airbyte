@@ -30,7 +30,7 @@ import org.apache.iceberg.util.PropertyUtil
  * and whether primary keys are configured on the destination table's schema.
  */
 @Singleton
-class S3DataLakeTableWriterFactory(private val icebergUtil: IcebergUtil) {
+class IcebergTableWriterFactory(private val icebergUtil: IcebergUtil) {
     /**
      * Creates a new [BaseTaskWriter] based on the configuration of the destination target [Table].
      *
