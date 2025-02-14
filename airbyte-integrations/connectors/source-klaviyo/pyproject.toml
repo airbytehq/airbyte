@@ -28,7 +28,6 @@ pytest = "^6.1"
 pytest-mock = "^3.12.0"
 requests-mock = "^1.9.3"
 freezegun = "*"
-pendulum="2.1.2"
 
 [tool.poe]
 include = [
