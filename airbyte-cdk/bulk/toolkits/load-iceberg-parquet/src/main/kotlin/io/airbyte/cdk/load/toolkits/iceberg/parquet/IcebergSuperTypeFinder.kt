@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.s3_data_lake
+package io.airbyte.cdk.load.toolkits.iceberg.parquet
 
 import io.airbyte.cdk.ConfigErrorException
 import jakarta.inject.Singleton
@@ -19,22 +19,22 @@ import org.apache.iceberg.types.Types.*
  * The "supertype" is a type to which both input types can safely be promoted without data loss. For
  * instance, INT can be promoted to LONG, FLOAT can be promoted to DOUBLE, etc.
  *
- * @property S3DataLakeTypesComparator comparator used to verify deep type equality.
+ * @property IcebergTypesComparator comparator used to verify deep type equality.
  */
 @Singleton
-class S3DataLakeSuperTypeFinder(private val s3DataLakeTypesComparator: S3DataLakeTypesComparator) {
+class IcebergSuperTypeFinder(private val icebergTypesComparator: IcebergTypesComparator) {
     private val unsupportedTypeIds = setOf(BINARY, DECIMAL, FIXED, UUID, MAP, TIMESTAMP_NANO)
 
     /**
      * Returns a supertype for [existingType] and [incomingType] if one exists.
-     * - If they are deeply equal (according to [S3DataLakeTypesComparator.typesAreEqual]), returns
-     * the [existingType] as-is.
+     * - If they are deeply equal (according to [IcebergTypesComparator.typesAreEqual]), returns the
+     * [existingType] as-is.
      * - Otherwise, attempts to combine them into a valid supertype.
      * - Throws [ConfigErrorException] if no valid supertype can be found.
      */
     fun findSuperType(existingType: Type, incomingType: Type, columnName: String): Type {
         // If the two types are already deeply equal, return one of them (arbitrary).
-        if (s3DataLakeTypesComparator.typesAreEqual(incomingType, existingType)) {
+        if (icebergTypesComparator.typesAreEqual(incomingType, existingType)) {
             return existingType
         }
         // Otherwise, attempt to combine them into a valid supertype.
