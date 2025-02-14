@@ -248,14 +248,14 @@ class Form(IncrementalStream):
     cursor_field = "indexed_on"
     primary_key = "id"
 
-    def __init__(self, start_date, app_id, name, xmlns, schema, **kwargs):
+    def __init__(self, start_date, app_id, name, xmlns, schema, include_archived, **kwargs):
         super().__init__(**kwargs)
         self.app_id = app_id
         self._cursor_value = parse_datetime_with_microseconds(start_date)
         self.streamname = name
         self.xmlns = xmlns
         self.schema = schema
-        self.include_archived = kwargs.get("include_archived", False)
+        self.include_archived = include_archived
 
     @property
     def name(self):
@@ -367,7 +367,6 @@ class SourceCommcare(AbstractSource):
             "start_date": config["start_date"],
             "form_fields_to_exclude": form_fields_to_exclude,
             "project_space": config["project_space"],
-            "include_archived": config["include_archived"],
             **args,
         }
         streams = []
@@ -395,7 +394,7 @@ class SourceCommcare(AbstractSource):
         # Sorted by name
         for k in sorted(name2xmlns):
             key = name2xmlns[k]
-            stream = Form(name=k, xmlns=key, schema=self.base_schema(), **form_args)
+            stream = Form(name=k, xmlns=key, schema=self.base_schema(), include_archived=config["include_archived"], **form_args)
             streams.append(stream)
 
         stream = Case(
