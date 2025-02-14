@@ -36,5 +36,6 @@ data:
       - "*.us.deepset.ai"
       - "*.cloud.deepset.ai"
   ab_internal:
-    sl: 200
+    sl: 100
+    ql: 100
   supportsFileTransfer: true
