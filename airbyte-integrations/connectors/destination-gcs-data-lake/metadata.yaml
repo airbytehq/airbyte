@@ -1,0 +1,46 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
+  connectorSubtype: file
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-ICEBERG_V2_S3_GLUE_CONFIG
+          fileName: glue.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-ICEBERG_V2_S3_GLUE_ASSUME_ROLE_CONFIG
+          fileName: glue_assume_role.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-ICEBERG_V2_S3_GLUE_ASSUME_ROLE_SYSTEM_AWS_CONFIG
+          fileName: glue_aws_assume_role.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorType: destination
+  definitionId: e7362fce-82a3-42b8-8bc2-84200cbf22f7
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/destination-gcs-data-lake
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/gcs-data-lake
+  githubIssueLabel: destination-gcs-data-lake
+  icon: icon.svg
+  license: ELv2
+  name: GCS Data Lake
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  supportsRefreshes: true
+  tags:
+    - language:java
+metadataSpecVersion: "1.0"
