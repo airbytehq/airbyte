@@ -392,6 +392,7 @@ class SearchByKeyword(SearchAnalytics):
     groupType: "and" - Whether all filters in this group must return true ("and"), or one or more must return true (not yet supported).
     filters: {"dimension": "searchAppearance", "operator": "equals", "expression": keyword}
     """
+    search_types = ["web", "news", "image", "video", "discover", "googleNews"]
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
