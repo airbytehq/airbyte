@@ -21,6 +21,8 @@ from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
 from source_google_drive.utils import get_folder_id
 
 from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
@@ -73,32 +75,6 @@ DRIVE_SERVICE_SCOPES = [
 
 def datetime_now() -> datetime:
     return datetime.now(pytz.UTC)
-
-
-FILE_PERMISSIONS_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "id": {"type": "string"},
-        "file_path": {"type": "string"},
-        "allowed_identity_remote_ids": {"type": "array", "items": {"type": "string"}},
-        "publicly_accessible": {"type": "boolean"},
-    },
-}
-
-IDENTITIES_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "id": {"type": "string"},
-        "remote_id": {"type": "string"},
-        "parent_id": {"type": ["null", "string"]},
-        "name": {"type": ["null", "string"]},
-        "description": {"type": ["null", "string"]},
-        "email_address": {"type": ["null", "string"]},
-        "member_email_addresses": {"type": ["null", "array"]},
-        "type": {"type": "string"},
-        "modified_at": {"type": "string"},
-    },
-}
 
 
 class GoogleDriveRemoteFile(RemoteFile):
@@ -470,8 +446,8 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
 
     @property
     def file_permissions_schema(self) -> Dict[str, Any]:
-        return FILE_PERMISSIONS_SCHEMA
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("file_permissions")
 
     @property
     def identities_schema(self) -> Dict[str, Any]:
-        return IDENTITIES_SCHEMA
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("identities")
