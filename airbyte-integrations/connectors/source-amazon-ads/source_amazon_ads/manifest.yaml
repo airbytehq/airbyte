@@ -138,7 +138,7 @@ definitions:
           path: v2/portfolios/extended
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
         partition_router:
           type: SubstreamPartitionRouter
@@ -169,7 +169,7 @@ definitions:
           path: sd/campaigns
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           request_params:
             stateFilter: "{{ ','.join(config['state_filter']) }}"
@@ -201,7 +201,7 @@ definitions:
           error_handler:
             $ref: "#/definitions/basic_error_handler"
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
         partition_router:
           type: SubstreamPartitionRouter
@@ -231,7 +231,7 @@ definitions:
           error_handler:
             $ref: "#/definitions/basic_error_handler"
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
         partition_router:
           type: SubstreamPartitionRouter
@@ -261,7 +261,7 @@ definitions:
           error_handler:
             $ref: "#/definitions/basic_error_handler"
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
         partition_router:
           type: SubstreamPartitionRouter
@@ -291,7 +291,7 @@ definitions:
           error_handler:
             $ref: "#/definitions/basic_error_handler"
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
         partition_router:
           type: SubstreamPartitionRouter
@@ -324,7 +324,7 @@ definitions:
           error_handler:
             $ref: "#/definitions/basic_error_handler"
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
         partition_router:
           type: SubstreamPartitionRouter
@@ -366,7 +366,7 @@ definitions:
             $ref: "#/definitions/basic_error_handler"
           http_method: GET
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
         partition_router:
           type: SubstreamPartitionRouter
@@ -396,7 +396,7 @@ definitions:
             $ref: "#/definitions/basic_error_handler"
           http_method: POST
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
             Accept: application/vnd.sbcampaignresource.v4+json
             Content-Type: application/vnd.sbcampaignresource.v4+json
@@ -442,7 +442,7 @@ definitions:
           path: sb/v4/adGroups/list
           http_method: POST
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
             Accept: application/vnd.sbadgroupresource.v4+json
             Content-Type: application/vnd.sbadgroupresource.v4+json
@@ -485,7 +485,7 @@ definitions:
           path: sp/campaigns/list
           http_method: POST
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
             Accept: application/vnd.spCampaign.v3+json
             Content-Type: application/vnd.spCampaign.v3+json
@@ -529,7 +529,7 @@ definitions:
           path: /sp/adGroups/list
           http_method: POST
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
             Accept: application/vnd.spAdGroup.v3+json
             Content-Type: application/vnd.spAdGroup.v3+json
@@ -571,7 +571,7 @@ definitions:
           path: sp/keywords/list
           http_method: POST
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
             Accept: application/vnd.spKeyword.v3+json
             Content-Type: application/vnd.spKeyword.v3+json
@@ -613,7 +613,7 @@ definitions:
           path: sp/negativeKeywords/list
           http_method: POST
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
             Accept: application/vnd.spNegativeKeyword.v3+json
             Content-Type: application/vnd.spNegativeKeyword.v3+json
@@ -655,7 +655,7 @@ definitions:
           path: sp/campaignNegativeKeywords/list
           http_method: POST
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
             Accept: application/vnd.spCampaignNegativeKeyword.v3+json
             Content-Type: application/vnd.spCampaignNegativeKeyword.v3+json
@@ -697,7 +697,7 @@ definitions:
           path: sp/productAds/list
           http_method: POST
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
             Accept: application/vnd.spProductAd.v3+json
             Content-Type: application/vnd.spProductAd.v3+json
@@ -739,7 +739,7 @@ definitions:
           path: sp/targets/list
           http_method: POST
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
             Accept: application/vnd.spTargetingClause.v3+json
             Content-Type: application/vnd.spTargetingClause.v3+json
@@ -889,7 +889,7 @@ definitions:
           path: /attribution/report
           http_method: POST
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           request_body_json:
             reportType: "PRODUCTS"
@@ -970,7 +970,7 @@ definitions:
           path: /attribution/report
           http_method: POST
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           request_body_json:
             reportType: "PERFORMANCE"
@@ -1048,7 +1048,7 @@ definitions:
           path: /attribution/report
           http_method: POST
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           request_body_json:
             reportType: "PERFORMANCE"
@@ -1126,7 +1126,7 @@ definitions:
           path: /attribution/report
           http_method: POST
           request_headers:
-            Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+            Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
           request_body_json:
             reportType: "PERFORMANCE"
@@ -2082,7 +2082,7 @@ definitions:
     - type: AddFields
       fields:
         - path: ["profileId"]
-          value: "{{ stream_slice['profileId'] }}"
+          value: "{{ stream_partition['profileId'] }}"
 
   basic_async_retriever:
     type: AsyncRetriever
@@ -2130,7 +2130,7 @@ definitions:
       authenticator: "#/definitions/oauth_authenticator"
       http_method: POST
       request_headers:
-        Amazon-Advertising-API-Scope: "{{ stream_slice['profileId'] }}"
+        Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
         Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
       request_body_json:
         name: "purchasedAsin report {{ stream_slice.start_time }}"
