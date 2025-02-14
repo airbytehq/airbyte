@@ -3,7 +3,7 @@
 #
 
 
-from typing import Dict, Optional
+from typing import Dict
 
 import pytest
 import requests

@@ -6,10 +6,10 @@
 from typing import Any, Dict, Literal, Union
 
 import dpath.util
-from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel, Field
 
 from airbyte_cdk import OneOfOptionConfig
-from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
 
 
 class OAuthCredentials(BaseModel):
@@ -58,6 +58,16 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
         order=0,
         pattern="^https://drive.google.com/.+",
         pattern_descriptor="https://drive.google.com/drive/folders/MY-FOLDER-ID",
+    )
+
+    delivery_method: DeliverRecords | DeliverRawFiles = Field(
+        title="Delivery Method",
+        discriminator="delivery_type",
+        type="object",
+        order=1,
+        display_type="radio",
+        group="advanced",
+        default="use_records_transfer",
     )
 
     credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(

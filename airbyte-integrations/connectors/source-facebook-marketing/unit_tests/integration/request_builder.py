@@ -12,6 +12,9 @@ from airbyte_cdk.test.mock_http.request import HttpRequest
 from .config import ACCESS_TOKEN, ACCOUNT_ID
 
 
+API_VERSION = "v21.0"
+
+
 def get_account_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:
     return RequestBuilder.get_account_endpoint(access_token=ACCESS_TOKEN, account_id=account_id)
 
@@ -97,7 +100,7 @@ class RequestBuilder:
 
     def build(self) -> HttpRequest:
         return HttpRequest(
-            url=f"https://graph.facebook.com/v19.0/{self._account_sub_path()}{self._resource}",
+            url=f"https://graph.facebook.com/{API_VERSION}/{self._account_sub_path()}{self._resource}",
             query_params=self._query_params,
             body=self._body,
         )
