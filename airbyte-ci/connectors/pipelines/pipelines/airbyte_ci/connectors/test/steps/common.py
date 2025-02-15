@@ -541,7 +541,9 @@ class LiveTests(Step):
             "--durations": ["3"],  # Show the 3 slowest tests in the report
         }
 
-    title =f"Connector {self.test_suite.title()} Tests"
+    @property
+    def title(self) -> str:
+        return f"Connector {self.test_suite.title()} Tests"
 
     def _test_command(self) -> List[str]:
         """
