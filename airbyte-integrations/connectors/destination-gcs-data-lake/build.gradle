@@ -10,7 +10,7 @@ airbyteBulkConnector {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.s3_data_lake.GcsDataLakeDestination'
+    mainClass = 'io.airbyte.integrations.destination.gcs_data_lake.GcsDataLakeDestination'
 
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 
@@ -20,7 +20,6 @@ application {
 
 ext {
     apacheIcebergVersion = '1.7.0'
-    awsSdkVersion = '2.29.9'
     junitVersion = '5.11.3'
 }
 
@@ -38,11 +37,7 @@ dependencies {
     implementation("org.apache.iceberg:iceberg-api:${project.ext.apacheIcebergVersion}")
     implementation("org.apache.iceberg:iceberg-core:${project.ext.apacheIcebergVersion}")
     implementation("org.apache.iceberg:iceberg-data:${project.ext.apacheIcebergVersion}")
-    implementation("org.apache.iceberg:iceberg-aws:${project.ext.apacheIcebergVersion}")
     implementation("org.apache.iceberg:iceberg-nessie:${project.ext.apacheIcebergVersion}")
-    implementation("software.amazon.awssdk:s3:${project.ext.awsSdkVersion}")
-    implementation("software.amazon.awssdk:sts:${project.ext.awsSdkVersion}")
-    implementation("software.amazon.awssdk:glue:${project.ext.awsSdkVersion}")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
     implementation("org.apache.hadoop:hadoop-common:3.4.1")
     implementation("org.projectnessie.nessie:nessie-client:0.99.0")

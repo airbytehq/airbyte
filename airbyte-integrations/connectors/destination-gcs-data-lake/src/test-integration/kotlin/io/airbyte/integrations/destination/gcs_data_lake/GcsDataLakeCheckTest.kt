@@ -16,5 +16,4 @@ class GcsDataLakeCheckTest :
             ),
         // TODO we maybe should add some configs that are expected to fail `check`
         failConfigFilenamesAndFailureReasons = mapOf(),
-        additionalMicronautEnvs = GcsDataLakeDestination.additionalMicronautEnvs,
     )

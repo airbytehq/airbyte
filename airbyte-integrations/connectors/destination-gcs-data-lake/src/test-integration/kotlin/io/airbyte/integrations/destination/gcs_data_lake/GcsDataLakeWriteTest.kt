@@ -46,7 +46,6 @@ abstract class GcsDataLakeWriteTest(
         GcsDataLakeDataDumper,
         destinationCleaner,
         GcsDataLakeExpectedRecordMapper,
-        additionalMicronautEnvs = GcsDataLakeDestination.additionalMicronautEnvs,
         isStreamSchemaRetroactive = true,
         supportsDedup = true,
         stringifySchemalessObjects = true,

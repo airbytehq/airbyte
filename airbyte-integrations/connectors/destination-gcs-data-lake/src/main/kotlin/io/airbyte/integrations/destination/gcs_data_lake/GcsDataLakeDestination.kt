@@ -5,13 +5,10 @@
 package io.airbyte.integrations.destination.gcs_data_lake
 
 import io.airbyte.cdk.AirbyteDestinationRunner
-import io.airbyte.cdk.load.command.aws.AwsToolkitConstants
 
 object GcsDataLakeDestination {
-    val additionalMicronautEnvs = listOf(AwsToolkitConstants.MICRONAUT_ENVIRONMENT)
-
     @JvmStatic
     fun main(args: Array<String>) {
-        AirbyteDestinationRunner.run(*args, additionalMicronautEnvs = additionalMicronautEnvs)
+        AirbyteDestinationRunner.run(*args)
     }
 }
