@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.s3_data_lake.io
+package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
@@ -30,7 +30,7 @@ import org.apache.iceberg.util.PropertyUtil
  * and whether primary keys are configured on the destination table's schema.
  */
 @Singleton
-class S3DataLakeTableWriterFactory(private val s3DataLakeUtil: S3DataLakeUtil) {
+class IcebergTableWriterFactory(private val icebergUtil: IcebergUtil) {
     /**
      * Creates a new [BaseTaskWriter] based on the configuration of the destination target [Table].
      *
@@ -45,7 +45,7 @@ class S3DataLakeTableWriterFactory(private val s3DataLakeUtil: S3DataLakeUtil) {
         importType: ImportType,
         schema: Schema
     ): BaseTaskWriter<Record> {
-        s3DataLakeUtil.assertGenerationIdSuffixIsOfValidFormat(generationId)
+        icebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationId)
         val format =
             FileFormat.valueOf(
                 table
