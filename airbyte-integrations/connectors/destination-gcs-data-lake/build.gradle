@@ -38,6 +38,7 @@ dependencies {
     implementation("org.apache.iceberg:iceberg-core:${project.ext.apacheIcebergVersion}")
     implementation("org.apache.iceberg:iceberg-data:${project.ext.apacheIcebergVersion}")
     implementation("org.apache.iceberg:iceberg-nessie:${project.ext.apacheIcebergVersion}")
+    implementation("org.apache.iceberg:iceberg-gcp:${project.ext.apacheIcebergVersion}")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
     implementation("org.apache.hadoop:hadoop-common:3.4.1")
     implementation("org.projectnessie.nessie:nessie-client:0.99.0")

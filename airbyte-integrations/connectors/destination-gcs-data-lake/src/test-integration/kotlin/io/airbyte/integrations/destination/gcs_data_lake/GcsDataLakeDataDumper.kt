@@ -76,11 +76,7 @@ object GcsDataLakeDataDumper : DestinationDataDumper {
         stream: DestinationStream
     ): List<OutputRecord> {
         val config = GcsDataLakeTestUtil.getConfig(spec)
-        val catalog =
-            GcsDataLakeTestUtil.getCatalog(
-                config,
-                GcsDataLakeTestUtil.getAwsAssumeRoleCredentials()
-            )
+        val catalog = GcsDataLakeTestUtil.getCatalog(config)
         val table =
             catalog.loadTable(
                 GcsDataLakeTableIdGeneratorFactory(config)

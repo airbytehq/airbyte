@@ -18,10 +18,6 @@ import org.apache.iceberg.CatalogUtil
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_GLUE
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_NESSIE
 import org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_REST
-import org.apache.iceberg.aws.AwsClientProperties
-import org.apache.iceberg.aws.AwsProperties
-import org.apache.iceberg.aws.s3.S3FileIO
-import org.apache.iceberg.aws.s3.S3FileIOProperties
 import org.apache.iceberg.catalog.Catalog
 import org.projectnessie.client.NessieConfigConstants
 
