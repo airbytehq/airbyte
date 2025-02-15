@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Tuple
 
 import anyio
+import requests
 import semver
 import yaml
 from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification  # type: ignore
@@ -468,9 +469,9 @@ class CheckConnectorVersionIncrement(Step):
     that the connector version has been incremented before publishing. This avoids
     failures and prevents rewriting an existing container under the same version tag.
     
-    Unlike the test pipeline version check, this check cannot be opted out of to ensure
-    safe publishing. It can only be overridden by setting the OVERRIDE_VERSION_INCREMENT
-    environment variable to 'true', which is automatically set for manual workflow runs.
+    Version increment checks are always enforced for automated merges to master.
+    Manual workflow runs (triggered via GitHub UI) can bypass this check by setting
+    the OVERRIDE_VERSION_INCREMENT environment variable to 'true'.
     """
     context: PublishConnectorContext
 
@@ -479,6 +480,7 @@ class CheckConnectorVersionIncrement(Step):
     async def _run(self) -> StepResult:
         # Check if version increment check should be overridden (manual workflow)
         if os.getenv("OVERRIDE_VERSION_INCREMENT") == "true":
+            self.context.logger.info("Manual workflow detected - version increment check will be bypassed")
             return StepResult(
                 step=self,
                 status=StepStatus.SUCCESS,
@@ -486,20 +488,41 @@ class CheckConnectorVersionIncrement(Step):
             )
 
         # Check if version was incremented using the same logic as VersionIncrementCheck
-        master_metadata_response = requests.get(f"{GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/metadata.yaml")
-        if not master_metadata_response.ok:
+        try:
+            master_metadata_response = requests.get(f"{GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/metadata.yaml")
+            if not master_metadata_response.ok:
+                return StepResult(
+                    step=self,
+                    status=StepStatus.SUCCESS,
+                    stdout="No metadata file found on master, assuming this is a new connector.",
+                )
+        except requests.RequestException as e:
             return StepResult(
                 step=self,
-                status=StepStatus.SUCCESS,
-                stdout="No metadata file found on master, assuming this is a new connector.",
+                status=StepStatus.FAILURE,
+                stderr=f"Failed to fetch master metadata: {str(e)}",
             )
         
-        master_metadata = yaml.safe_load(master_metadata_response.text)
-        master_version = semver.Version.parse(master_metadata["data"]["dockerImageTag"])
-        current_version = semver.Version.parse(self.context.connector.version)
+        try:
+            master_metadata = yaml.safe_load(master_metadata_response.text)
+            master_version = semver.Version.parse(master_metadata["data"]["dockerImageTag"])
+            current_version = semver.Version.parse(self.context.connector.version)
+        except (yaml.YAMLError, KeyError) as e:
+            return StepResult(
+                step=self,
+                status=StepStatus.FAILURE,
+                stderr=f"Failed to parse master metadata: {str(e)}",
+            )
+        except ValueError as e:
+            return StepResult(
+                step=self,
+                status=StepStatus.FAILURE,
+                stderr=f"Failed to parse version numbers: {str(e)}",
+            )
 
         # Check if version was incremented
         if master_version >= current_version:
+            self.context.logger.warning(f"Version not incremented: master={master_version}, current={current_version}")
             return StepResult(
                 step=self,
                 status=StepStatus.FAILURE,

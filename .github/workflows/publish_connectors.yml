@@ -28,7 +28,8 @@ jobs:
         id: publish-modified-connectors
         if: github.event_name == 'push'
         env:
-          OVERRIDE_VERSION_INCREMENT: ${{ github.event_name == 'workflow_dispatch' }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "master"
@@ -54,6 +55,8 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         env:
           OVERRIDE_VERSION_INCREMENT: ${{ github.event_name == 'workflow_dispatch' }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"
