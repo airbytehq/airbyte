@@ -120,7 +120,7 @@ The connector is restricted by Xero [API rate limits](https://developer.xero.com
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
-| 3.0.0 | 2025-02-16 | [x](https://github.com/airbytehq/airbyte/pull/x) | Make OAuth2 authenticator declarative |
+| 3.0.0 | 2025-02-16 | [54127](https://github.com/airbytehq/airbyte/pull/54127) | Make OAuth2 authenticator declarative |
 | 2.1.1 | 2025-02-08 | [43841](https://github.com/airbytehq/airbyte/pull/43841) | Update dependencies |
 | 2.1.0 | 2024-10-23 | [47264](https://github.com/airbytehq/airbyte/pull/47264) | Migrate to Manifest-only |
 | 2.0.1 | 2025-01-10 | [51034](https://github.com/airbytehq/airbyte/pull/51034) | Fix for time part being removed from all datetimes fields |
