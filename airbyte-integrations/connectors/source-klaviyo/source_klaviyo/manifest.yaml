@@ -2036,6 +2036,26 @@ api_budget:
   # Each policy here uses a MovingWindowCallRatePolicy with two rates:
   # one for burst (per-second) and one for steady (per-minute).
   policies:
+    # Campaigns and Campaigns Detailed
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10 # burst: 10 calls per second
+          interval: PT1S
+        - limit: 150 # steady: 150 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/campaigns($|/)" # matches '/campaigns'
+    # Flows
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 3 # burst: 3 calls per second
+          interval: PT1S
+        - limit: 60 # steady: 60 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/flows($|/)" # matches '/flows'
     # Profiles (and global_exclusions share the same endpoint)
     - type: MovingWindowCallRatePolicy
       rates:
