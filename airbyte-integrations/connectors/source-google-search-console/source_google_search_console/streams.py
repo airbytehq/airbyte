@@ -371,7 +371,19 @@ class SearchAppearance(SearchAnalytics):
     primary_key = None
     dimensions = ["searchAppearance"]
 
-
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Union[Dict[str, Any], str]]:
+        data = super().request_body_json(stream_state, stream_slice, next_page_token)
+        
+        fields_to_remove = ["aggregationType", "startRow", "rowLimit", "dataState"]
+        for field in fields_to_remove:
+            data.pop(field, None)
+    
+        return data
 class SearchByKeyword(SearchAnalytics):
     """
     Adds searchAppearance value to dimensionFilterGroups in json body
@@ -380,13 +392,14 @@ class SearchByKeyword(SearchAnalytics):
     groupType: "and" - Whether all filters in this group must return true ("and"), or one or more must return true (not yet supported).
     filters: {"dimension": "searchAppearance", "operator": "equals", "expression": keyword}
     """
+    search_types = ["web", "news", "image", "video", "discover", "googleNews"]
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         search_appearance_stream = SearchAppearance(self._session.auth, self._site_urls, self._start_date, self._end_date)
 
-        for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
+        for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):    
             keywords_records = search_appearance_stream.read_records(
                 sync_mode=SyncMode.full_refresh, stream_state=stream_state, stream_slice=stream_slice
             )
@@ -395,6 +408,7 @@ class SearchByKeyword(SearchAnalytics):
             for keyword in keywords:
                 filters = {"dimension": "searchAppearance", "operator": "equals", "expression": keyword}
                 stream_slice["dimensionFilterGroups"] = [{"groupType": "and", "filters": filters}]
+                stream_slice["dimensions"] = self.dimensions
 
                 yield stream_slice
 
