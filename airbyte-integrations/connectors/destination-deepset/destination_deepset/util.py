@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from time import time
 from traceback import format_exc
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from urllib.parse import unquote, urlparse
+
+from pydantic import BaseModel
 
 from airbyte_cdk.models import (
     AirbyteErrorTraceMessage,
@@ -18,10 +20,6 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
-
-
-if TYPE_CHECKING:
-    from pydantic import BaseModel
 
 
 def get(obj: dict[str, Any] | BaseModel, key_path: str, default: Any = None) -> Any:

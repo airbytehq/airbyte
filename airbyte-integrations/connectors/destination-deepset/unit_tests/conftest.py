@@ -3,15 +3,11 @@
 from __future__ import annotations
 
 import secrets
-from typing import TYPE_CHECKING, Any
+from typing import Any, Mapping
 
 import pytest
 from destination_deepset.api import DeepsetCloudApi
 from destination_deepset.models import DeepsetCloudConfig, DeepsetCloudFile
-
-
-if TYPE_CHECKING:
-    from collections.abc import Mapping
 
 
 @pytest.fixture()

@@ -2,35 +2,61 @@
 
 from __future__ import annotations
 
+import json
 from logging import Logger
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any, Mapping
 from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
+from destination_deepset.api import DeepsetCloudApi
 from destination_deepset.destination import DestinationDeepset
 from destination_deepset.writer import DeepsetCloudFileWriter
 
+from airbyte_cdk import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, Level, Status, Type
-
-
-if TYPE_CHECKING:
-    from collections.abc import Mapping
-
-    from destination_deepset.api import DeepsetCloudApi
 
 
 @pytest.fixture()
 def configured_catalog() -> ConfiguredAirbyteCatalog:
-    path = Path("sample_files/configured_catalog.json")
-    return ConfiguredAirbyteCatalog.parse_file(path)
+    """A configured catalog with a single stream."""
+    return ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="test_unstructured",
+                    json_schema={},
+                    supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+                    source_defined_cursor=True,
+                    default_cursor_field=["_ab_source_file_last_modified"],
+                ),
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            )
+        ]
+    )
 
 
 @pytest.fixture()
 def input_messages() -> list[AirbyteMessage]:
+    messages = []
+
     with Path("sample_files/messages.jsonl").open() as f:
-        return [AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage.parse_raw(line)) for line in f]
+        for line in f:
+            data = json.loads(line)
+            messages.append(
+                AirbyteMessage(
+                    type=Type.RECORD,
+                    record=AirbyteRecordMessage(
+                        data=data["data"],
+                        emitted_at=data["emitted_at"],
+                        stream=data["stream"],
+                    ),
+                ),
+            )
+
+    return messages
 
 
 @pytest.fixture()

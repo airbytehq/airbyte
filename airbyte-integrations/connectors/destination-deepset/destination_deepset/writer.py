@@ -2,16 +2,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any, Mapping
 
 from airbyte_cdk.models import AirbyteMessage, DestinationSyncMode
 from destination_deepset import util
 from destination_deepset.api import APIError, DeepsetCloudApi
 from destination_deepset.models import DeepsetCloudConfig, DeepsetCloudFile
-
-
-if TYPE_CHECKING:
-    from collections.abc import Mapping
 
 
 class WriterError:

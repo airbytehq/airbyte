@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import secrets
-from typing import TYPE_CHECKING, Any
+from typing import Any, Mapping
 from uuid import UUID, uuid4
 
 import pytest
@@ -12,10 +12,6 @@ from destination_deepset.models import DeepsetCloudConfig, DeepsetCloudFile
 from destination_deepset.writer import DeepsetCloudFileWriter
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteTraceMessage, Level, TraceType, Type
-
-
-if TYPE_CHECKING:
-    from collections.abc import Mapping
 
 
 @pytest.fixture()

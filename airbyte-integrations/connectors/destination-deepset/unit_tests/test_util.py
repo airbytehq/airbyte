@@ -65,7 +65,7 @@ def test_get_trace_message(message: str, exception: Exception | None, expected: 
     assert airbyte_message.trace.type == TraceType.ERROR
     assert airbyte_message.trace.error.message == error_message
     assert airbyte_message.trace.error.internal_message == internal_error_message
-    assert airbyte_message.trace.error.failure_type == FailureType.transient_error
+    assert airbyte_message.trace.error.failure_type == FailureType.transient_error.value
 
 
 def test_get_log_message() -> None:
