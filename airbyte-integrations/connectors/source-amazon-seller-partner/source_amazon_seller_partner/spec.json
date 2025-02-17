@@ -263,6 +263,10 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "app_id": {
+            "type": "string",
+            "path_in_connector_config": ["app_id"]
+          },
           "lwa_app_id": {
             "type": "string",
             "path_in_connector_config": ["lwa_app_id"]
