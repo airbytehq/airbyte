@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Sitemap Stream Record",
+  "type": "object",
+  "properties": {
+    "content": {
+      "type": "string",
+      "description": "The textual content of the webpage."
+    },
+    "url": {
+      "type": "string",
+      "description": "The URL of the webpage."
+    },
+    "lastmod": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The last modified timestamp of the webpage."
+    },
+    "changefreq": {
+      "type": "string",
+      "description": "The change frequency value specified in the sitemap."
+    },
+    "priority": {
+      "type": "string",
+      "description": "The priority value specified in the sitemap."
+    }
+  },
+  "required": [
+    "content",
+    "url",
+    "lastmod"
+  ]
+}
+

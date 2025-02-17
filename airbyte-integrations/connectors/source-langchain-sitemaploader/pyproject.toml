@@ -1,0 +1,34 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.0"
+name = "source-langchain-sitemaploader"
+description = "Source implementation for langchain-sitemaploader."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/langchain-sitemaploader"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+packages = [ { include = "source_langchain_sitemaploader" }, {include = "main.py" } ]
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = { git = "https://github.com/johannhartmann/airbyte-python-cdk.git", rev = "main" }
+lxml = "^5.3.1"
+fake-useragent = "^2.0.3"
+beautifulsoup4 = "^4.13.3"
+langchain-community = "^0.3.17"
+langchain-core = "^0.3.35"
+langchain-openai = "^0.3.5"
+
+[tool.poetry.scripts]
+source-langchain-sitemaploader = "source_langchain_sitemaploader.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "*"
+pytest-mock = "*"
+pytest = "*"
+

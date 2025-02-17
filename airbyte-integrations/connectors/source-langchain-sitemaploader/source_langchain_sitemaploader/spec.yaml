@@ -1,0 +1,11 @@
+documentationUrl: "https://docs.airbyte.com/integrations/sources/langchain-sitemaploader"
+connectionSpecification:
+  $schema: "http://json-schema.org/draft-07/schema#"
+  title: "LangChain Sitemap Loader Source Spec"
+  type: object
+  required:
+    - sitemap_url
+  properties:
+    sitemap_url:
+      type: string
+      description: "The URL to the sitemap from which to load pages."
