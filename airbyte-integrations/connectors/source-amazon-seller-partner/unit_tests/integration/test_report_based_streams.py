@@ -57,6 +57,7 @@ STREAMS = (
     ("GET_FBA_REIMBURSEMENTS_DATA", "csv"),
 )
 
+
 class ReportProcessingStatus(str, Enum):
     CANCELLED = "CANCELLED"
     DONE = "DONE"

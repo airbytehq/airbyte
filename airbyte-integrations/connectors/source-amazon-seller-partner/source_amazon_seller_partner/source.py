@@ -23,7 +23,6 @@ class SourceAmazonSellerPartner(YamlDeclarativeSource):
         endpoint, marketplace_id, _ = get_marketplaces(config.get("aws_environment"))[config.get("region")]
         return {"endpoint": endpoint, "marketplace_id": marketplace_id}
 
-
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
