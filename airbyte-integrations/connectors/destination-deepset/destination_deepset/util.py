@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from time import time
 from traceback import format_exc
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any
 from urllib.parse import unquote, urlparse
 
 from airbyte_cdk.models import (
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from pydantic import BaseModel
 
 
-def get(obj: Union[Dict[str, Any], BaseModel], key_path: str, default: Optional[Any] = None) -> Any:
+def get(obj: dict[str, Any] | BaseModel, key_path: str, default: Any = None) -> Any:
     """Get the value of an arbitrarily nested key in a dictionary or Pydantic model instance
 
     Args:
@@ -35,7 +35,7 @@ def get(obj: Union[Dict[str, Any], BaseModel], key_path: str, default: Optional[
     Returns:
         Any: The value found at the specified key path.
     """
-    obj = obj if isinstance(obj, dict) else obj.dict()
+    obj = obj if isinstance(obj, dict) else obj.model_dump()
 
     current = obj
     keys = key_path.split(".")
@@ -49,7 +49,7 @@ def get(obj: Union[Dict[str, Any], BaseModel], key_path: str, default: Optional[
     return current
 
 
-def get_trace_message(message: str, exception: Optional[Exception] = None) -> AirbyteMessage:
+def get_trace_message(message: str, exception: Exception | None = None) -> AirbyteMessage:
     """Return a the message formatted as an `AirbyteMessage` of type `TRACE`.
 
     Args:
@@ -104,7 +104,7 @@ def get_file_write_mode(destination_sync_mode: DestinationSyncMode) -> str:
     return write_modes.get(destination_sync_mode) or fallback_keep
 
 
-def generate_name(document_key: str, stream: str, namespace: Optional[str] = None) -> str:
+def generate_name(document_key: str, stream: str, namespace: str | None = None) -> str:
     """Generate a unique name for the record using the document key.
 
     Args:

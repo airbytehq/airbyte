@@ -18,7 +18,7 @@ packages = [{ include = "destination_deepset" }, { include = "main.py" }]
 python = "^3.10,<3.12"
 airbyte-cdk = "^6"
 httpx = "^0.28.1"
-tenacity = "^9.0.0"
+tenacity = "^8"
 
 [tool.poetry.scripts]
 destination-deepset = "destination_deepset.run:run"

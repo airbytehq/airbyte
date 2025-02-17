@@ -36,7 +36,7 @@ def config() -> Mapping[str, Any]:
 
 @pytest.fixture()
 def client(config: Mapping[str, Any]) -> DeepsetCloudApi:
-    return DeepsetCloudApi(config=DeepsetCloudConfig.parse_obj(config))
+    return DeepsetCloudApi(config=DeepsetCloudConfig.model_validate(config))
 
 
 @pytest.fixture()

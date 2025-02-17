@@ -33,7 +33,7 @@ class DeepsetCloudFileWriter:
             DeepsetCloudFileWriter: An instance of this class.
         """
         try:
-            parsed_config = DeepsetCloudConfig.parse_obj(config)
+            parsed_config = DeepsetCloudConfig.model_validate(config)
         except ValueError as ex:
             msg = "Failed to parse configuration into deepset cloud configuration."
             raise WriterError(msg) from ex

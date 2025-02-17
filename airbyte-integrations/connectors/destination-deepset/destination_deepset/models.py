@@ -5,9 +5,9 @@ from __future__ import annotations
 import json
 from enum import StrEnum, unique
 from pathlib import Path
-from typing import Any, AnyStr, Dict, Optional
+from typing import Any
 
-from pydantic import BaseModel, Extra, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
 from airbyte_cdk.models import AirbyteRecordMessage
 from destination_deepset import util
@@ -33,8 +33,9 @@ class Filetypes(StrEnum):
 
 
 class DeepsetCloudConfig(BaseModel):
-    class Config:
-        extra = Extra.allow
+    """Configuration for the deepset cloud destination."""
+
+    model_config = ConfigDict(extra="allow")
 
     api_key: str = Field(title="API Key", description="Your deepset cloud API key", min_length=8)
     base_url: HttpUrl = Field(
@@ -47,8 +48,9 @@ class DeepsetCloudConfig(BaseModel):
 
 
 class FileData(BaseModel):
-    class Config:
-        extra = Extra.allow
+    """Data for a file to be synced to deepset cloud."""
+
+    model_config = ConfigDict(extra="allow")
 
     content: str = Field(
         title="Content",
@@ -58,19 +60,19 @@ class FileData(BaseModel):
         title="Document Key",
         description="A unique identifier for the processed file which can be used as a primary key.",
     )
-    last_modified: Optional[str] = Field(
+    last_modified: str | None = Field(
         None,
         alias="_ab_source_file_last_modified",
         title="Last Modified",
         description="The last modified timestamp of the file.",
     )
-    file_url: Optional[str] = Field(
+    file_url: str | None = Field(
         None,
         alias="_ab_source_file_url",
         title="File URL",
         description="The fully qualified URL to the file on the remote server.",
     )
-    file_parse_error: Optional[str] = Field(
+    file_parse_error: str | None = Field(
         None,
         alias="_ab_source_file_parse_error",
         title="File Parse Error",
@@ -80,8 +82,8 @@ class FileData(BaseModel):
 
 class DeepsetCloudFile(BaseModel):
     name: str = Field(title="Name", description="File Name")
-    content: AnyStr = Field(title="Content", description="File Content")
-    meta: Dict[str, Any] = Field(default_factory={}, title="Meta Data", description="File Meta Data")
+    content: bytes | str = Field(title="Content", description="File Content")
+    meta: dict[str, Any] = Field(default_factory={}, title="Meta Data", description="File Meta Data")
 
     @property
     def meta_as_string(self) -> str:
@@ -90,7 +92,7 @@ class DeepsetCloudFile(BaseModel):
 
     @classmethod
     def from_record(cls, record: AirbyteRecordMessage) -> DeepsetCloudFile:
-        data = FileData.parse_obj(record.data)
+        data = FileData.model_validate(record.data)
         name = Path(util.generate_name(data.document_key, record.stream, namespace=record.namespace))
 
         return cls(
