@@ -491,12 +491,10 @@ definitions:
             sort: "{'field': 'updated_at', 'order': 'ascending'}"
             query: >-
               { 'operator': 'OR', 'value': [ { 'field': 'updated_at',
-              'operator': '>', 'value': {{ stream_slice.get('prior_state',
-              stream_state.get('prior_state', {})).get('updated_at') or
+              'operator': '>', 'value': {{ stream_interval.get('start_time', {}) or
               format_datetime(config['start_date'], '%s') }} }, { 'field':
               'updated_at', 'operator': '=', 'value': {{
-              stream_slice.get('prior_state', stream_state.get('prior_state',
-              {})).get('updated_at') or format_datetime(config['start_date'],
+              stream_interval.get('start_time', {}) or format_datetime(config['start_date'],
               '%s') }} }, ], }
             pagination: >-
               { 'per_page': 150, 'page': {{
@@ -562,12 +560,10 @@ definitions:
             sort: "{'field': 'updated_at', 'order': 'ascending'}"
             query: >-
               { 'operator': 'OR', 'value': [ { 'field': 'updated_at',
-              'operator': '>', 'value': {{ stream_slice.get('prior_state',
-              stream_state.get('prior_state', {})).get('updated_at') or
+              'operator': '>', 'value': {{ stream_interval.get('start_time', {}) or
               format_datetime(config['start_date'], '%s') }} }, { 'field':
               'updated_at', 'operator': '=', 'value': {{
-              stream_slice.get('prior_state', stream_state.get('prior_state',
-              {})).get('updated_at') or format_datetime(config['start_date'],
+              stream_interval.get('start_time', {}) or format_datetime(config['start_date'],
               '%s') }} }, ], }
             pagination: >-
               { 'per_page': 150, 'page': {{
