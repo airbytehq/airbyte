@@ -288,6 +288,14 @@ def apply_python_development_overrides(context: ConnectorContext, connector_cont
             connector_container.with_user("root")
             .with_exec(
                 [
+                    "apt-get",
+                    "install",
+                    "-y",
+                    "git",
+                ]
+            )
+            .with_exec(
+                [
                     "pip",
                     "install",
                     f"git+https://github.com/airbytehq/airbyte-python-cdk.git#{cdk_ref}",

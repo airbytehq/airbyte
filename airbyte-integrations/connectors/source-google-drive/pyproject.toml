@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.0.12"
+version = "0.2.0"
 name = "source-google-drive"
 description = "Source implementation for Google Drive."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,12 +16,12 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_google_drive"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "^3.10,<3.12"
 google-api-python-client = "==2.104.0"
 google-auth-httplib2 = "==0.1.1"
 google-auth-oauthlib = "==1.1.0"
 google-api-python-client-stubs = "==1.18.0"
-airbyte-cdk = {extras = ["file-based"], version = "^1"}
+airbyte-cdk = {extras = ["file-based"], version = "^6.33.6"}
 
 
 [tool.poetry.scripts]
@@ -30,3 +30,11 @@ source-google-drive = "source_google_drive.run:run"
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.12.0"
 pytest = "^7.4"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

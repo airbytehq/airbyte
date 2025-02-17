@@ -8,10 +8,11 @@ import io.airbyte.cdk.ConnectorUncleanExitException
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.command.FeatureFlag
-import io.airbyte.cdk.load.test.util.IntegrationTest
+import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
@@ -23,11 +24,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Assertions.assertFalse
 
+private val logger = KotlinLogging.logger {}
+
 class NonDockerizedDestination(
     command: String,
     configContents: String?,
     catalog: ConfiguredAirbyteCatalog?,
     useFileTransfer: Boolean,
+    additionalMicronautEnvs: List<String>,
+    micronautProperties: Map<Property, String>,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val destinationStdinPipe: PrintWriter
@@ -42,11 +47,8 @@ class NonDockerizedDestination(
 
     init {
         if (useFileTransfer) {
-            IntegrationTest.nonDockerMockEnvVars.set("USE_FILE_TRANSFER", "true")
             val fileContentStr = "123"
             file.writeText(fileContentStr)
-        } else {
-            IntegrationTest.nonDockerMockEnvVars.set("USE_FILE_TRANSFER", "false")
         }
         val destinationStdin = PipedInputStream()
         // This could probably be a channel, somehow. But given the current structure,
@@ -64,6 +66,8 @@ class NonDockerizedDestination(
                 catalog = catalog,
                 inputStream = destinationStdin,
                 featureFlags = featureFlags,
+                additionalMicronautEnvs = additionalMicronautEnvs,
+                micronautProperties = micronautProperties.mapKeys { (k, _) -> k.micronautProperty },
             )
     }
 
@@ -112,12 +116,15 @@ class NonDockerizedDestination(
     }
 }
 
-class NonDockerizedDestinationFactory : DestinationProcessFactory() {
+class NonDockerizedDestinationFactory(
+    private val additionalMicronautEnvs: List<String>,
+) : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,
         configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
         useFileTransfer: Boolean,
+        micronautProperties: Map<Property, String>,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         // TODO pass test name into the destination process
@@ -126,6 +133,8 @@ class NonDockerizedDestinationFactory : DestinationProcessFactory() {
             configContents,
             catalog,
             useFileTransfer,
+            additionalMicronautEnvs,
+            micronautProperties,
             *featureFlags
         )
     }
