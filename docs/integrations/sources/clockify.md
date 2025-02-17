@@ -9,6 +9,7 @@ The Airbyte Source for [Clockify](https://clockify.me)
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.5.0   | 2025-02-10 | [53240](https://github.com/airbytehq/airbyte/pull/53240) | Added holidays and scheduling streams to fetching                               |
 | 0.4.10 | 2025-02-08 | [53429](https://github.com/airbytehq/airbyte/pull/53429) | Update dependencies |
 | 0.4.9 | 2025-02-01 | [52910](https://github.com/airbytehq/airbyte/pull/52910) | Update dependencies |
 | 0.4.8 | 2025-01-25 | [52166](https://github.com/airbytehq/airbyte/pull/52166) | Update dependencies |
