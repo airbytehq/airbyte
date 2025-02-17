@@ -7,6 +7,7 @@ https://docs.airbyte.com/connector-development/tutorials/custom-python-connector
 
 from typing import Any, Iterable, List, Mapping, Optional, Tuple
 import logging
+from bs4 import BeautifulSoup
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -22,6 +23,15 @@ class SitemapStream(Stream):
     A stream that loads and yields records from a sitemap.
 
     Each record contains the page content (as "content") and associated metadata.
+    The content can be cleaned by removing specified HTML elements (e.g., navigation bars,
+    headers, footers) before being returned. This is useful for extracting the main content
+    of pages while excluding boilerplate elements.
+
+    Attributes:
+        sitemap_url (str): URL of the sitemap to process
+        filter_urls (List[str]): List of URLs to exclude from processing
+        remove_elements (List[str]): List of HTML element types (e.g., 'nav', 'header')
+            to remove from each page's content before returning
     """
 
     # No natural primary key for this source
@@ -34,9 +44,27 @@ class SitemapStream(Stream):
     source_defined_cursor = True
     default_cursor_field = ["lastmod"]
 
-    def __init__(self, sitemap_url: str, **kwargs: Any):
+    def __init__(
+        self,
+        sitemap_url: str,
+        filter_urls: Optional[List[str]] = None,
+        remove_elements: Optional[List[str]] = None,
+        **kwargs: Any,
+    ):
+        """
+        Initialize the SitemapStream.
+
+        Args:
+            sitemap_url: URL of the sitemap to process
+            filter_urls: Optional list of URLs to exclude from processing
+            remove_elements: Optional list of HTML elements to remove from page content
+                (e.g., ['nav', 'header', 'footer'])
+            **kwargs: Additional keyword arguments passed to the parent Stream class
+        """
         super().__init__(**kwargs)
         self.sitemap_url = sitemap_url
+        self.filter_urls = filter_urls or []  # Default to empty list if None
+        self.remove_elements = remove_elements or []  # Default to empty list if None
 
     def read_records(
         self,
@@ -45,8 +73,8 @@ class SitemapStream(Stream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        # Initialize the SiteMapLoader with the sitemap URL.
-        loader = SitemapLoader(web_path=self.sitemap_url)
+        # Initialize the SiteMapLoader with the sitemap URL and filter_urls.
+        loader = SitemapLoader(web_path=self.sitemap_url, filter_urls=self.filter_urls)
         # (Optional: adjust settings, e.g., loader.requests_per_second, loader.requests_kwargs)
         docs = loader.load()
 
@@ -60,9 +88,30 @@ class SitemapStream(Stream):
             priority = doc.metadata.get("priority")
             # If no state exists or this record's cursor is more recent than the stored one, yield it.
             if state_cursor is None or record_cursor > state_cursor:
+                # Only process the HTML content if we have elements to remove
+                if self.remove_elements:
+                    # Parse the HTML content using BeautifulSoup
+                    # We use 'html.parser' as it's built into Python and handles most HTML well
+                    soup = BeautifulSoup(doc.page_content, "html.parser")
+
+                    # Iterate through each element type specified in remove_elements
+                    # (e.g., 'nav', 'header', 'footer') and remove all instances
+                    for element_type in self.remove_elements:
+                        # Find all elements of the current type in the document
+                        elements = soup.find_all(element_type)
+                        # Remove each element and its contents from the document
+                        for element in elements:
+                            element.decompose()
+
+                    # Extract the cleaned text content after removing elements
+                    cleaned_content = str(soup.get_text())
+                else:
+                    # If no elements need to be removed, use the original content
+                    cleaned_content = doc.page_content
+
                 yield {
                     "url": url,
-                    "content": doc.page_content,
+                    "content": cleaned_content,
                     "lastmod": record_cursor,
                     "changefreq": changefreq,
                     "priority": priority,
@@ -113,4 +162,12 @@ class SourceLangchainSitemapLoader(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         sitemap_url = config["sitemap_url"]
-        return [SitemapStream(sitemap_url=sitemap_url)]
+        filter_urls = config.get("filter_urls")
+        remove_elements = config.get("remove_elements")
+        return [
+            SitemapStream(
+                sitemap_url=sitemap_url,
+                filter_urls=filter_urls,
+                remove_elements=remove_elements,
+            )
+        ]

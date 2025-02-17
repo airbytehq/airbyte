@@ -4,8 +4,23 @@ connectionSpecification:
   title: "LangChain Sitemap Loader Source Spec"
   type: object
   required:
-    - sitemap_url
+  - sitemap_url
   properties:
     sitemap_url:
       type: string
+      format: uri
+      title: "Url"
       description: "The URL to the sitemap from which to load pages."
+    filter_urls:
+      type: array
+      title: "Filter URLs"
+      items:
+        type: string
+        format: uri
+      description: "A list of URLs that should be excluded from the import."
+    remove_elements:
+      type: array
+      title: "Remove Elements"
+      items:
+        type: string
+      description: "A list of HTML elements (e.g., nav, header) to be removed before loading."

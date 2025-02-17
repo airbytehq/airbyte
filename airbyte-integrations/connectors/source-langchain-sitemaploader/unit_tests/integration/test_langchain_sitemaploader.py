@@ -90,6 +90,6 @@ def test_integration_read_records(monkeypatch, valid_config):
     # Verify that two records were yielded with expected content and metadata.
     assert len(records) == 2
     assert records[0]["content"] == "Fake content 1"
-    assert records[0]["metadata"]["loc"] == "https://example.com/page1"
+    assert records[0]["url"] == "https://example.com/page1"
     assert records[1]["content"] == "Fake content 2"
-    assert records[1]["metadata"]["loc"] == "https://example.com/page2"
+    assert records[1]["url"] == "https://example.com/page2"
