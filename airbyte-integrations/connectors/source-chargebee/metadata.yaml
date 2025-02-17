@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 686473f1-76d9-4994-9cc7-9b13da46147c
-  dockerImageTag: 0.10.0
+  dockerImageTag: 0.10.0-rc.1
   dockerRepository: airbyte/source-chargebee
   documentationUrl: https://docs.airbyte.com/integrations/sources/chargebee
   githubIssueLabel: source-chargebee
@@ -28,6 +28,9 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   suggestedStreams:
     streams:
       - subscription
