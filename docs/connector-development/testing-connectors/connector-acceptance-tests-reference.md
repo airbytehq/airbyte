@@ -14,7 +14,7 @@ The Standard Test Suite use pytest as a test runner and was built as pytest plug
 
 Each test suite has a timeout and will fail if the limit is exceeded.
 
-See all the test cases, their description, and inputs in [Connector Acceptance Tests](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/contributing-to-airbyte/building-new-connector/connector-acceptance-tests.md).
+See all the test cases, their description, and inputs described in the sections below.
 
 ## Setting up standard acceptance tests for your connector
 
@@ -75,7 +75,7 @@ And test via one of the two following Options
 Learn how to use and install [`airbyte-ci` here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md). Once installed, `airbyte-ci connectors test` command will run unit, integration, and acceptance tests against your connector. Pass `--name <your_connector_name>` to test just one connector.
 
 ```bash
-airbyte-ci connectors --name=<name-of-your-connector></name-of-your-connector> --use-remote-secrets=false test
+airbyte-ci connectors --name=<name-of-your-connector></name-of-your-connector> test
 ```
 
 ### Option 2 (Debugging): Run against the acceptance tests on your branch
