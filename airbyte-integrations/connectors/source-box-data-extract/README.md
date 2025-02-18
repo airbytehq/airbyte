@@ -1,7 +1,13 @@
-# Box Generated Source
+# Box Data Extract Source
 
 This is the repository for the Box Generated source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/box-generated).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/box-data-extract).
+
+This connector leverages AI to extract structured data directly from documents stored in Box, going beyond simple metadata transfer.
+
+For example, a company managing lease contracts can automatically capture key details and populate their system of record. Likewise, a financial institution can extract critical data from loan application documents—such as bank statements and W-2s—and integrate it into approval workflows.
+
+By prioritizing content intelligence over metadata movement, this connector unlocks new opportunities for automation and AI-driven insights.
 
 ## Local development
 
@@ -22,8 +28,8 @@ poetry install --with dev
 
 ### Create credentials
 
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/box-generated)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_box_generated/spec.yaml` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/box-data-extract)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_box_data_extract/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file.
 
@@ -31,10 +37,10 @@ See `sample_files/sample_config.json` for a sample config file.
 ### Locally running the connector
 
 ```
-poetry run source-box-generated spec
-poetry run source-box-generated check --config secrets/config.json
-poetry run source-box-generated discover --config secrets/config.json
-poetry run source-box-generated read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run source-box-data-extract spec
+poetry run source-box-data-extract check --config secrets/config.json
+poetry run source-box-data-extract discover --config secrets/config.json
+poetry run source-box-data-extract read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
 ### Running tests
@@ -50,20 +56,20 @@ poetry run pytest tests
 1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
 2. Run the following command to build the docker image:
 ```bash
-airbyte-ci connectors --name=source-box-generated build
+airbyte-ci connectors --name=source-box-data-extract build
 ```
 
-An image will be available on your host with the tag `airbyte/source-box-generated:dev`.
+An image will be available on your host with the tag `airbyte/source-box-data-extract:dev`.
 
 
 ### Running as a docker container
 
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-box-generated:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-box-generated:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-box-generated:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-box-generated:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-box-data-extract:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-box-data-extract:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-box-data-extract:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-box-data-extract:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ### Running our CI test suite
@@ -71,7 +77,7 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
 
 ```bash
-airbyte-ci connectors --name=source-box-generated test
+airbyte-ci connectors --name=source-box-data-extract test
 ```
 
 ### Customizing acceptance Tests
@@ -93,12 +99,12 @@ Please commit the changes to `pyproject.toml` and `poetry.lock` files.
 ## Publishing a new version of the connector
 
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
-1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-box-generated test`
+1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-box-data-extract test`
 2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
     - bump the `dockerImageTag` value in in `metadata.yaml`
     - bump the `version` value in `pyproject.toml`
 3. Make sure the `metadata.yaml` content is up to date.
-4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/box-generated.md`).
+4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/box-data-extract.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
