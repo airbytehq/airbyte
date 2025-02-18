@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.s3_data_lake
+package io.airbyte.cdk.load.toolkits.iceberg.parquet
 
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
@@ -10,7 +10,6 @@ import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
-import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.time.Instant
 import java.util.LinkedHashMap

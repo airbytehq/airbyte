@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.command.aws.asMicronautProperties
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergWriteTest
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import java.nio.file.Files

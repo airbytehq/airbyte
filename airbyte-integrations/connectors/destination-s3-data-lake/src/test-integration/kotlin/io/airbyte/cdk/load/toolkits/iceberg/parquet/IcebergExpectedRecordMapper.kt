@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.s3_data_lake
+package io.airbyte.cdk.load.toolkits.iceberg.parquet
 
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
