@@ -53,7 +53,7 @@ abstract class S3DataLakeWriteTest(
 class GlueWriteTest :
     S3DataLakeWriteTest(
         Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
-        S3DataLakeDestinationCleaner(
+        IcebergDestinationCleaner(
             S3DataLakeTestUtil.getCatalog(
                 S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
                 S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
@@ -94,7 +94,7 @@ class GlueWriteTest :
 class GlueAssumeRoleWriteTest :
     S3DataLakeWriteTest(
         Files.readString(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
-        S3DataLakeDestinationCleaner(
+        IcebergDestinationCleaner(
             S3DataLakeTestUtil.getCatalog(
                 S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
                 S3DataLakeTestUtil.getAwsAssumeRoleCredentials()
