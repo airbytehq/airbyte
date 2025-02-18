@@ -35,7 +35,7 @@ airbyte-integrations/connectors/**/integration_tests/temp
 *.egg-info
 __pycache__
 .eggs
-.venv
+/.venv*
 .mypy_cache
 .ruff_cache
 .ipynb_checkpoints

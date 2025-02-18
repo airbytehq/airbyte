@@ -1,81 +1,191 @@
 {
   "streams": [
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "generation_id": null,
+      "minimum_generation_id": null,
+      "primary_key": null,
       "stream": {
-        "name": "customer_stream",
+        "default_cursor_field": null,
+        "is_resumable": true,
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "discount_stream",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "dispute_stream",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "transaction_stream",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
         "name": "merchant_account_stream",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "source_defined_primary_key": [["id"]]
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_id": null,
+      "sync_mode": "full_refresh"
     },
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "generation_id": null,
+      "minimum_generation_id": null,
+      "primary_key": null,
       "stream": {
+        "default_cursor_field": [
+          "created_at"
+        ],
+        "is_resumable": true,
+        "json_schema": {},
+        "name": "customer_stream",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_id": null,
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "generation_id": null,
+      "minimum_generation_id": null,
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "is_resumable": true,
+        "json_schema": {},
+        "name": "discount_stream",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_id": null,
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "generation_id": null,
+      "minimum_generation_id": null,
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "is_resumable": true,
+        "json_schema": {},
         "name": "plan_stream",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "source_defined_primary_key": [["id"]]
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_id": null,
+      "sync_mode": "full_refresh"
     },
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "generation_id": null,
+      "minimum_generation_id": null,
+      "primary_key": null,
       "stream": {
-        "name": "subscription_stream",
+        "default_cursor_field": [
+          "created_at"
+        ],
+        "is_resumable": true,
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
-        "source_defined_primary_key": [["id"]]
+        "name": "transaction_stream",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_id": null,
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "generation_id": null,
+      "minimum_generation_id": null,
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": [
+          "created_at"
+        ],
+        "is_resumable": true,
+        "json_schema": {},
+        "name": "subscription_stream",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_id": null,
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "generation_id": null,
+      "minimum_generation_id": null,
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": [
+          "received_date"
+        ],
+        "is_resumable": true,
+        "json_schema": {},
+        "name": "dispute_stream",
+        "namespace": null,
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ],
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_id": null,
+      "sync_mode": "full_refresh"
     }
   ]
 }
