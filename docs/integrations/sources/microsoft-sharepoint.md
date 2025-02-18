@@ -300,7 +300,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
-| 0.6.0   | 2025-02-20 | [xxxxx](https://github.com/airbytehq/airbyte/pull/xxxxx) | Implement file transfer mode to move raw files                            |
+| 0.6.0   | 2025-02-20 | [54140](https://github.com/airbytehq/airbyte/pull/54140) | Implement file transfer mode to move raw files                            |
 | 0.5.2   | 2024-08-24 | [45646](https://github.com/airbytehq/airbyte/pull/45646) | Fix: handle wrong folder name                                             |
 | 0.5.1   | 2024-08-24 | [44660](https://github.com/airbytehq/airbyte/pull/44660) | Update dependencies                                                       |
 | 0.5.0   | 2024-08-19 | [42983](https://github.com/airbytehq/airbyte/pull/42983) | Migrate to CDK v4.5.1                                                     |
