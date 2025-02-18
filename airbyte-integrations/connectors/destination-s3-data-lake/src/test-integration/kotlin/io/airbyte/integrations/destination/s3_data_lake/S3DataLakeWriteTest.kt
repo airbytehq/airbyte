@@ -18,11 +18,11 @@ import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.OutputRecord
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.BaseDeltaTaskWriter
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
-import io.airbyte.integrations.destination.s3_data_lake.io.BaseDeltaTaskWriter
 import java.nio.file.Files
 import java.util.Base64
 import kotlin.test.assertContains
@@ -34,6 +34,8 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.parallel.Execution
+import org.junit.jupiter.api.parallel.ExecutionMode
 
 abstract class S3DataLakeWriteTest(
     configContents: String,
@@ -159,7 +161,7 @@ abstract class S3DataLakeWriteTest(
      * throw them as a ConfigError.
      */
     @Test
-    fun testDedupNullPk() {
+    open fun testDedupNullPk() {
         val failure = expectFailure {
             runSync(
                 updatedConfig,
@@ -239,9 +241,6 @@ class GlueAssumeRoleWriteTest :
         ),
     )
 
-@Disabled(
-    "This is currently disabled until we are able to make it run via airbyte-ci. It works as expected locally"
-)
 class NessieMinioWriteTest :
     S3DataLakeWriteTest(
         getConfig(),
@@ -287,7 +286,8 @@ class NessieMinioWriteTest :
                 "catalog_type": {
                   "catalog_type": "NESSIE",
                   "server_uri": "http://$nessieEndpoint:19120/api/v1",
-                  "access_token": "$authToken"
+                  "access_token": "$authToken",
+                  "namespace": "<DEFAULT_NAMESPACE_PLACEHOLDER>"
                 },
                 "s3_bucket_name": "demobucket",
                 "s3_bucket_region": "us-east-1",
@@ -304,6 +304,60 @@ class NessieMinioWriteTest :
         @BeforeAll
         fun setup() {
             NessieTestContainers.start()
+        }
+    }
+}
+
+// the basic REST catalog behaves poorly with multithreading,
+// even across multiple streams.
+// so run singlethreaded.
+@Execution(ExecutionMode.SAME_THREAD)
+class RestWriteTest : S3DataLakeWriteTest(getConfig(), NoopDestinationCleaner) {
+
+    @Test
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+
+    override val manyStreamCount = 5
+
+    @Disabled("This doesn't seem to work with concurrency, etc.")
+    @Test
+    override fun testManyStreamsCompletion() {
+        super.testManyStreamsCompletion()
+    }
+
+    companion object {
+
+        fun getConfig(): String {
+            // We retrieve the ephemeral host/port from the updated RestTestContainers
+            val minioEndpoint = RestTestContainers.testcontainers.getServiceHost("minio", 9000)
+            val restEndpoint = RestTestContainers.testcontainers.getServiceHost("rest", 8181)
+
+            return """
+            {
+                "catalog_type": {
+                  "catalog_type": "REST",
+                  "server_uri": "http://$restEndpoint:8181",
+                  "namespace": "<DEFAULT_NAMESPACE_PLACEHOLDER>"
+                },
+                "s3_bucket_name": "warehouse",
+                "s3_bucket_region": "us-east-1",
+                "access_key_id": "admin",
+                "secret_access_key": "password",
+                "s3_endpoint": "http://$minioEndpoint:9100",
+                "warehouse_location": "s3://warehouse/",
+                "main_branch_name": "main"
+            }
+            """.trimIndent()
+        }
+
+        @JvmStatic
+        @BeforeAll
+        fun setup() {
+            // Start the testcontainers environment once before any tests run
+            RestTestContainers.start()
         }
     }
 }

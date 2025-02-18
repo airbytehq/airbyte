@@ -24,19 +24,11 @@ coverage = "^7.5.3"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.poe.tasks]
-test = { shell = "pytest" }
-
-coverage = { shell = "coverage run -m pytest && coverage report" }
-coverage-report = { shell = "coverage report" }
-coverage-html = { shell = "coverage html -d htmlcov && open htmlcov/index.html" }
-coverage-reset = { shell = "coverage erase" }
-
-check = { shell = "ruff check . && mypy ." }
-
-fix = { shell = "ruff format . && ruff check --fix -s || ruff format ." }
-fix-unsafe = { shell = "ruff format . && ruff check --fix --unsafe-fixes . && ruff format ." }
-fix-and-check = { shell = "poe fix && poe check" }
-
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
 [tool.poetry.scripts]
 destination-duckdb = "destination_duckdb.run:run"
