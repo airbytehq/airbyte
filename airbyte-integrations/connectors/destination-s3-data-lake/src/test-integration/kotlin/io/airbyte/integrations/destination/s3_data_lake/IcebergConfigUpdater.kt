@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.s3_data_lake
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.DefaultNamespaceResult
 
-object S3DataLakeConfigUpdater : ConfigurationUpdater {
+object IcebergConfigUpdater : ConfigurationUpdater {
     // TODO maybe we should replace our hardcoded config strings with this? unclear
     override fun update(config: String): String = config
 

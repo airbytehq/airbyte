@@ -75,7 +75,7 @@ abstract class S3DataLakeWriteTest(
             ),
         nullUnknownTypes = true,
         nullEqualsUnset = true,
-        configUpdater = S3DataLakeConfigUpdater,
+        configUpdater = IcebergConfigUpdater,
     ) {
     /**
      * This test differs from the base test in two critical aspects:
