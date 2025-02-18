@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.33.2.dev1"
+version = "6.34.0.dev2"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 files = [
-    {file = "airbyte_cdk-6.33.2.dev1-py3-none-any.whl", hash = "sha256:7c030f9226d6b6e0de906b083bcb734b187f47bdc99babfd6b6f29f58b5458df"},
-    {file = "airbyte_cdk-6.33.2.dev1.tar.gz", hash = "sha256:a4380f7cceab6a044e643c89784f03ffaeb83747d74e1d6341eb09152480511d"},
+    {file = "airbyte_cdk-6.34.0.dev2-py3-none-any.whl", hash = "sha256:87067caec78ebee1e2a389d17c84be05633b8cf1e0f1ef57361d18b989d7d3b4"},
+    {file = "airbyte_cdk-6.34.0.dev2.tar.gz", hash = "sha256:039f9715938c93e887f38c71ab1b635231ab38ecf6af41578a0885ce68176a74"},
 ]
 
 [package.dependencies]
@@ -1990,13 +1990,13 @@ files = [
 
 [[package]]
 name = "tzlocal"
-version = "5.2"
+version = "5.3"
 description = "tzinfo object for the local timezone"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "tzlocal-5.2-py3-none-any.whl", hash = "sha256:49816ef2fe65ea8ac19d19aa7a1ae0551c834303d5014c6d5a62e4cbda8047b8"},
-    {file = "tzlocal-5.2.tar.gz", hash = "sha256:8d399205578f1a9342816409cc1e46a93ebd5755e39ea2d85334bea911bf0e6e"},
+    {file = "tzlocal-5.3-py3-none-any.whl", hash = "sha256:3814135a1bb29763c6e4f08fd6e41dbb435c7a60bfbb03270211bcc537187d8c"},
+    {file = "tzlocal-5.3.tar.gz", hash = "sha256:2fafbfc07e9d8b49ade18f898d6bcd37ae88ce3ad6486842a2e4f03af68323d2"},
 ]
 
 [package.dependencies]
@@ -2158,4 +2158,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.12"
-content-hash = "3b08bdcad82a5043181b577d40fd90c4a697460de2af9be7fa7093754b3287d1"
+content-hash = "2b2c5ea38a73dbf20720415e74984b8e2146f23510c0de50073194dac9fa67c4"
