@@ -11,8 +11,6 @@ from source_box_data_extract.box_api import get_box_ccg_client
 from source_box_data_extract.source import StreamTextRepresentationFolder
 
 
-
-
 @pytest.fixture
 def sample_config() -> Mapping[str, Any]:
     return {
@@ -31,6 +29,3 @@ def test_stream_text_representation_folder(sample_config):
     assert stream.folder_id == sample_config["folder_id"]
     assert stream.client == client
     assert stream.primary_key == "id"
-
-
-
