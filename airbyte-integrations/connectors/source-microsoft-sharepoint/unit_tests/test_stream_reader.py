@@ -2,9 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import os
-
 from datetime import datetime
-from unittest.mock import MagicMock, Mock, PropertyMock, call, patch, ANY
+from unittest.mock import ANY, MagicMock, Mock, PropertyMock, call, patch
 
 import pytest
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
@@ -17,6 +16,7 @@ from source_microsoft_sharepoint.stream_reader import (
 from wcmatch.glob import GLOBSTAR, globmatch
 
 from airbyte_cdk import AirbyteTracedException
+
 
 TEST_LOCAL_DIRECTORY = "/tmp/airbyte-file-transfer"
 

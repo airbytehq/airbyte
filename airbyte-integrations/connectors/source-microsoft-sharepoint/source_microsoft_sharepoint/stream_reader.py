@@ -8,14 +8,14 @@ import re
 from datetime import datetime
 from functools import lru_cache
 from io import IOBase
-from typing import Iterable, List, Optional, Tuple, Dict
+from os import makedirs, path
+from os.path import getsize
+from typing import Dict, Iterable, List, Optional, Tuple
 
 import requests
 import smart_open
 from msal import ConfidentialClientApplication
 from office365.graph_client import GraphClient
-from os.path import getsize
-from os import makedirs, path
 
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
