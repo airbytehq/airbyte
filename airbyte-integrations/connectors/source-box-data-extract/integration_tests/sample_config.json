@@ -1,3 +1,11 @@
 {
-  "fix-me": "TODO"
+  "client_id": "<<replace with your client id>>",
+  "client_secret": "<<replace with your client secret>>",
+  "box_subject_type": "user",
+  "box_subject_id": "<<replace with your box subject id>>",
+  "box_folder_id": "0",
+  "is_recursive": false,
+  "ask_ai_prompt": "Summary of the document",
+  "extract_ai_prompt": "Extract data from document",
+  "extract_structured_ai_fields": "[{\"type\":\"FieldType.STRING\",\"key\":\"property_id\",\"prompt\":\"Propertyid\"},{\"type\":\"FieldType.STRING\",\"key\":\"property_type\",\"prompt\":\"Propertytype\",\"options\":[{\"key\":\"HAB-1\"},{\"key\":\"HAB-2\"},{\"key\":\"HAB-3\"}]},{\"type\":\"FieldType.DATE\",\"key\":\"lease_start_date\",\"prompt\":\"LeaseStartDateinYYYY-MM-DDformat\"},{\"type\":\"FieldType.DATE\",\"key\":\"lease_end_date\",\"prompt\":\"LeaseEndDateinYYYY-MM-DDformat\"},{\"type\":\"FieldType.FLOAT\",\"key\":\"monthly_rent\",\"prompt\":\"MonthlyRentasafloatincludingcents\"},{\"type\":\"FieldType.STRING\",\"key\":\"property_address\",\"prompt\":\"PropertyAddress\"},{\"type\":\"FieldType.STRING\",\"key\":\"lessee_name\",\"prompt\":\"LesseeName\"},{\"type\":\"FieldType.STRING\",\"key\":\"lessee_email\",\"prompt\":\"LesseeEmail\"},{\"type\":\"FieldType.DATE\",\"key\":\"agreement_date\",\"prompt\":\"AgreementTerminyears\"},{\"type\":\"FieldType.INTEGER\",\"key\":\"agreement_term\",\"prompt\":\"AgreementDateinYYYY-MM-DDformat\"},{\"type\":\"FieldType.INTEGER\",\"key\":\"number_of_bedrooms\",\"prompt\":\"Numberofbedroomsasaninteger\"}]"
 }
