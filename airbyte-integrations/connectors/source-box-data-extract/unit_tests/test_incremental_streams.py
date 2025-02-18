@@ -17,4 +17,3 @@ import pytest
 @pytest.mark.skip(reason="This connector does not support incremental streams yet")
 def test_incremental_stream():
     assert True
-
