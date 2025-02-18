@@ -1822,7 +1822,7 @@ class Forms(ClientSideIncrementalStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
-        params["formTypes"] = ["hubspot", "captured", "flow", "blog_comment"]
+        params["formTypes"] = ["hubspot", "captured", "flow", "blog_comment", "all"]
         return params
 
 
