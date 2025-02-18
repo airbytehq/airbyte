@@ -225,7 +225,6 @@ const buildAConnector = {
       label: "No-Code Connector Builder",
       items: [
         "connector-development/connector-builder-ui/overview",
-        "connector-development/connector-builder-ui/connector-builder-compatibility",
         "connector-development/connector-builder-ui/tutorial",
         "connector-development/connector-builder-ui/ai-assist",
         {
