@@ -191,21 +191,35 @@ Airbyte outputs each stream into its own raw table in `airbyte_internal` schema 
 overriden by user) and a final table with Typed columns. Contents in raw table are _NOT_
 deduplicated.
 
+**Note:** By default, Airbyte creates permanent tables. If you prefer transient tables, create a
+dedicated transient database for Airbyte. For more information, refer
+to[Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html)
+
 ### Raw Table schema
 
-| Airbyte field          | Description                                                        | Column type              |
-| ---------------------- | ------------------------------------------------------------------ | ------------------------ |
-| \_airbyte_raw_id       | A UUID assigned to each processed event                            | VARCHAR                  |
-| \_airbyte_extracted_at | A timestamp for when the event was pulled from the data source     | TIMESTAMP WITH TIME ZONE |
-| \_airbyte_loaded_at    | Timestamp to indicate when the record was loaded into Typed tables | TIMESTAMP WITH TIME ZONE |
-| \_airbyte_data         | A JSON blob with the event data.                                   | VARIANT                  |
+The raw table contains these fields:
+- `_airbyte_raw_id`
+- `_airbyte_generation_id`
+- `_airbyte_extracted_at`
+- `_airbyte_loaded_at`
+- `_airbyte_meta`
+- `_airbyte_data`
+
+`_airbyte_data` is a JSON blob with the event data. See [here](/understanding-airbyte/airbyte-metadata-fields)
+for more information about the other fields.
 
 **Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table
 could be subject to change in future versions.
 
-**Note:** By default, Airbyte creates permanent tables. If you prefer transient tables, create a
-dedicated transient database for Airbyte. For more information, refer
-to[ Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html)
+### Final Table schema
+
+The final table contains these fields, in addition to the columns declared in your stream schema:
+- `airbyte_raw_id`
+- `_airbyte_generation_id`
+- `airbyte_extracted_at`
+- `_airbyte_meta`
+
+Again, see [here](/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
 
 ## Data type map
 
