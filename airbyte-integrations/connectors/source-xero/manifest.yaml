@@ -1613,30 +1613,25 @@ definitions:
     url_base: https://api.xero.com/api.xro/2.0/
     authenticator:
       type: OAuthAuthenticator
-      # scopes:
-      #   - offline_access
-      #   - accounting.transactions.read
-      #   - accounting.reports.read
-      #   - accounting.budgets.read
-      #   - accounting.reports.tenninetynine.read
-      #   - accounting.journals.read
-      #   - accounting.settings.read
-      #   - accounting.contacts.read
-      #   - accounting.attachments.read
-      #   - assets.read files.read projects.read
-      #   - openid
       client_id: "{{ config['client_id'] }}"
       client_secret: "{{ config['client_secret'] }}"
       access_token_value: "{{ config['client_access_token'] }}"
       grant_type: refresh_token
-      # expires_in_name: expires_in
+      expires_in_name: expires_in
       refresh_request_body: {}
       token_refresh_endpoint: https://identity.xero.com/connect/token
       refresh_token: "{{ config['client_refresh_token'] }}"
+      token_expiry_date: "{{ config['token_expiry_date'] }}"
+      refresh_request_headers:
+          Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
       refresh_token_updater:
         refresh_token_name: refresh_token
         refresh_token_config_path:
           - client_refresh_token
+        access_token_config_path:
+          - client_access_token
+        token_expiry_date_config_path:
+          - token_expiry_date
 
 streams:
   - $ref: "#/definitions/streams/bank_transactions"
@@ -1671,8 +1666,6 @@ spec:
       - start_date
       - client_id
       - client_secret
-      - client_access_token
-      - client_refresh_token
     properties:
       tenant_id:
         type: string
@@ -1716,16 +1709,20 @@ spec:
         title: Refresh token
         airbyte_secret: true
         order: 5
+      token_expiry_date:
+        type: string
+        description: The amount of seconds until the access token expires.
+        format: date-time
     additionalProperties: true
   advanced_auth:
     auth_flow_type: oauth2.0
     oauth_config_specification:
       oauth_connector_input_specification:
-        consent_url: https://login.xero.com/identity/connect/authorize?response_type=code&client_id={{ client_id_value }}&scope={{ scope_value }}&redirect_uri={{ redirect_uri_value }}
+        consent_url: https://login.xero.com/identity/connect/authorize?response_type=code&{{client_id_param}}&{{scope_param}}&{{redirect_uri_param}}
         scope: offline_access accounting.transactions.read accounting.reports.read accounting.budgets.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings.read accounting.contacts.read accounting.attachments.read assets.read files.read projects.read openid
         access_token_url: https://identity.xero.com/connect/token
         access_token_headers:
-          Authorization: "{{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
+          Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
         access_token_params:
           grant_type: authorization_code
           code: "{{ auth_code_value }}"
