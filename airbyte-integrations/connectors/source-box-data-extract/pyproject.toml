@@ -15,9 +15,9 @@ repository = "https://github.com/airbytehq/airbyte"
 packages = [{ include = "source_box_data_extract" }, { include = "main.py" }]
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.12"
+python = "^3.11,<3.12"
 airbyte-cdk = "^6"
-box-sdk-gen = "^1.8.0"
+box-sdk-gen = "^1.11.1"
 
 [tool.poetry.scripts]
 source-box-data-extract = "source_box_data_extract.run:run"
