@@ -18,6 +18,8 @@ import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.OutputRecord
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.BaseDeltaTaskWriter
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
@@ -40,11 +42,17 @@ import org.junit.jupiter.api.parallel.ExecutionMode
 abstract class S3DataLakeWriteTest(
     configContents: String,
     destinationCleaner: DestinationCleaner,
+    tableIdGenerator: TableIdGenerator,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents,
         S3DataLakeSpecification::class.java,
-        S3DataLakeDataDumper,
+        IcebergDataDumper(tableIdGenerator) { spec ->
+            S3DataLakeTestUtil.getCatalog(
+                S3DataLakeTestUtil.getConfig(spec),
+                S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
+            )
+        },
         destinationCleaner,
         S3DataLakeExpectedRecordMapper,
         additionalMicronautEnvs = S3DataLakeDestination.additionalMicronautEnvs,
@@ -198,7 +206,8 @@ class GlueWriteTest :
                 S3DataLakeTestUtil.parseConfig(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
                 S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
             )
-        )
+        ),
+        GlueTableIdGenerator(null),
     ) {
     @Test
     fun testNameConflicts() {
@@ -239,13 +248,15 @@ class GlueAssumeRoleWriteTest :
                 S3DataLakeTestUtil.getAwsAssumeRoleCredentials()
             )
         ),
+        GlueTableIdGenerator(null),
     )
 
 class NessieMinioWriteTest :
     S3DataLakeWriteTest(
         getConfig(),
         // we're writing to ephemeral testcontainers, so no need to clean up after ourselves
-        NoopDestinationCleaner
+        NoopDestinationCleaner,
+        SimpleTableIdGenerator(),
     ) {
 
     companion object {
@@ -312,7 +323,8 @@ class NessieMinioWriteTest :
 // even across multiple streams.
 // so run singlethreaded.
 @Execution(ExecutionMode.SAME_THREAD)
-class RestWriteTest : S3DataLakeWriteTest(getConfig(), NoopDestinationCleaner) {
+class RestWriteTest :
+    S3DataLakeWriteTest(getConfig(), NoopDestinationCleaner, SimpleTableIdGenerator()) {
 
     @Test
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
