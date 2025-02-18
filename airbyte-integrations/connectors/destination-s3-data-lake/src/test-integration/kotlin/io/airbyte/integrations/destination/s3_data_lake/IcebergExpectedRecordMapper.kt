@@ -19,7 +19,7 @@ import java.time.ZoneOffset
  * Iceberg doesn't have a TimeWithTimezone type. So map expectedRecords' TimeWithTimezone to
  * TimeWithoutTimezone.
  */
-object S3DataLakeExpectedRecordMapper : ExpectedRecordMapper {
+object IcebergExpectedRecordMapper : ExpectedRecordMapper {
     override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord {
         val mappedData = mapTemporalTypesToUtc(expectedRecord.data)
         return expectedRecord.copy(data = mappedData as ObjectValue)

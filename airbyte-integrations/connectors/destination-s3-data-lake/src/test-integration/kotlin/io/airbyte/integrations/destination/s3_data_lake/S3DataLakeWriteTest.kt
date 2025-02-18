@@ -54,7 +54,7 @@ abstract class S3DataLakeWriteTest(
             )
         },
         destinationCleaner,
-        S3DataLakeExpectedRecordMapper,
+        IcebergExpectedRecordMapper,
         additionalMicronautEnvs = S3DataLakeDestination.additionalMicronautEnvs,
         micronautProperties =
             S3DataLakeTestUtil.getAwsAssumeRoleCredentials().asMicronautProperties(),
