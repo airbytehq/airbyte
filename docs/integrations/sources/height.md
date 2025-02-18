@@ -37,6 +37,7 @@ API Documentation: https://height.notion.site/API-documentation-643aea5bf01742de
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | ---- | ---------------- |
+| 0.0.15 | 2025-02-15 | [53793](https://github.com/airbytehq/airbyte/pull/53793) | Update dependencies |
 | 0.0.14 | 2025-02-08 | [53247](https://github.com/airbytehq/airbyte/pull/53247) | Update dependencies |
 | 0.0.13 | 2025-02-01 | [52741](https://github.com/airbytehq/airbyte/pull/52741) | Update dependencies |
 | 0.0.12 | 2025-01-25 | [52264](https://github.com/airbytehq/airbyte/pull/52264) | Update dependencies |
