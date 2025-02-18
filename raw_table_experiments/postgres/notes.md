@@ -20,7 +20,9 @@ CREATE INDEX IF NOT EXISTS raw_table_10mb_loaded_at ON no_raw_tables_experiment.
 
 test setup:
 ```sql
-create table "no_raw_tables_experiment"."input_typed_data" (
+create schema if not exists no_raw_tables_experiment;
+drop table if exists no_raw_tables_experiment.input_typed_data_10mb;
+create table no_raw_tables_experiment.input_typed_data_10mb (
   "primary_key" bigint,
   "cursor" timestamp,
   "string" varchar,
@@ -33,6 +35,15 @@ create table "no_raw_tables_experiment"."input_typed_data" (
   "time_with_tz" time with time zone,
   "time_no_tz" time,
   "array" jsonb,
-  "json_object" jsonb,
+  "json_object" jsonb
 );
+
+```
+
+```shell
+gcloud --project dataline-integration-testing sql import csv \
+  no-raw-table-experiment \
+  'gs://no_raw_tables/10mb_noheader.csv' \
+  --database postgres \
+  --table no_raw_tables_experiment.input_typed_data_10mb
 ```
