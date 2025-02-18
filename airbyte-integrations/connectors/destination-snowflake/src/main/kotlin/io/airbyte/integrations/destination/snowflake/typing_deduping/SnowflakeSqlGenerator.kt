@@ -25,6 +25,8 @@ import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil
 import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
+import java.io.FileOutputStream
+import java.io.PrintWriter
 import java.time.Instant
 import java.util.*
 
@@ -685,3 +687,86 @@ class SnowflakeSqlGenerator(
         }
     }
 }
+
+fun main() {
+    fun col(name: String) =
+        ColumnId(
+            name = name,
+            originalName = name,
+            canonicalName = name,
+        )
+    val streamConfig =
+        StreamConfig(
+            StreamId(
+                finalNamespace = "no_raw_tables_experiment",
+                finalName = "old_final_table_10mb",
+                rawNamespace = "no_raw_tables_experiment",
+                rawName = "raw_table_10mb",
+                originalNamespace = "unused",
+                originalName = "unused",
+            ),
+            postImportAction = ImportType.DEDUPE,
+            primaryKey = listOf(col("primary_key")),
+            cursor = Optional.of(col("cursor")),
+            columns =
+                linkedMapOf(
+                    col("primary_key") to AirbyteProtocolType.INTEGER,
+                    col("cursor") to AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE,
+                    col("string") to AirbyteProtocolType.STRING,
+                    col("bool") to AirbyteProtocolType.BOOLEAN,
+                    col("integer") to AirbyteProtocolType.INTEGER,
+                    col("float") to AirbyteProtocolType.NUMBER,
+                    col("date") to AirbyteProtocolType.DATE,
+                    col("ts_with_tz") to AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE,
+                    col("ts_without_tz") to AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE,
+                    col("time_with_tz") to AirbyteProtocolType.TIME_WITH_TIMEZONE,
+                    col("time_no_tz") to AirbyteProtocolType.TIME_WITHOUT_TIMEZONE,
+                    col("array") to Array(AirbyteProtocolType.UNKNOWN),
+                    col("json_object") to Struct(linkedMapOf()),
+                ),
+            generationId = 42,
+            minimumGenerationId = 0,
+            syncId = 21,
+        )
+    val generator =
+        SnowflakeSqlGenerator(
+            retentionPeriodDays = 2
+        )
+    val createTableSql = generator.createTable(streamConfig, suffix = "", force = false)
+    val fastUpdateTableSql =
+        generator.updateTable(
+            streamConfig,
+            finalSuffix = "",
+            minRawTimestamp = Optional.empty(),
+            useExpensiveSaferCasting = false,
+        )
+    val slowUpdateTableSql =
+        generator.updateTable(
+            streamConfig,
+            finalSuffix = "",
+            minRawTimestamp = Optional.empty(),
+            useExpensiveSaferCasting = true,
+        )
+
+    PrintWriter(FileOutputStream("/Users/francis.genet/Documents/dev/airbyte/raw_table_experiments/generated_files/snowflake.sql")).use { out ->
+        fun printSql(sql: Sql) {
+            sql.transactions.forEach { txn ->
+                txn.forEach { statement ->
+                    out.println(statement)
+                }
+            }
+        }
+
+        out.println("-- create table --------------------------------")
+        printSql(createTableSql)
+
+        repeat(10) { out.println() }
+        out.println("""-- "fast" T+D query -------------------------------""")
+        printSql(fastUpdateTableSql)
+
+        repeat(10) { out.println() }
+        out.println("""-- "slow" T+D query -------------------------------""")
+        printSql(slowUpdateTableSql)
+    }
+}
+
