@@ -10,7 +10,7 @@ import concurrent.futures
 from datetime import datetime, date, time as dt_time, timedelta
 
 # pip install pytz google-cloud-storage
-import pytz  
+import pytz
 from google.cloud import storage
 
 
@@ -166,7 +166,7 @@ def generate_csv(
         # Write header
         row_buffer.seek(0)
         row_buffer.truncate(0)
-        csv_writer.writerow(headers)
+        # csv_writer.writerow(headers)
         row_text = row_buffer.getvalue()
         row_bytes = row_text.encode("utf-8")
         gcs_file.write(row_bytes)
@@ -194,7 +194,7 @@ def generate_csv(
             row_date_str = random_date().isoformat()
 
             # Timestamps
-            ts_with_tz = random_datetime_tz().isoformat()  
+            ts_with_tz = random_datetime_tz().isoformat()
             ts_no_tz = random_datetime().isoformat()
 
             # Times
