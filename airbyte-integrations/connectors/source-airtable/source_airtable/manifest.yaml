@@ -141,6 +141,7 @@ definitions:
               - path: ["_airtable_table_name"]
                 value: "{{ {'type': ['null', 'string']} }}"
         schema_type_identifier:
+          # https://airtable.com/developers/web/api/field-model
           type: SchemaTypeIdentifier
           key_pointer:
             - name
@@ -152,6 +153,9 @@ definitions:
             - type: TypesMap
               target_type: string
               current_type: multipleAttachments
+            - type: TypesMap
+              target_type: string
+              current_type: aiText
             - type: TypesMap
               target_type: string
               current_type: manualSort
@@ -210,6 +214,10 @@ definitions:
               target_type: date
               current_type: lastModifiedTime
               condition: "{{ raw_schema['options']['result']['type'] == 'date' }}"
+            - type: TypesMap
+              target_type: string
+              current_type: lastModifiedTime
+              condition: "{{ raw_schema['options']['result'] == None }}"
             - type: TypesMap
               target_type:
                 field_type: array
