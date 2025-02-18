@@ -3,9 +3,11 @@
 #
 import os
 from datetime import datetime
+from requests.exceptions import HTTPError
 from unittest.mock import ANY, MagicMock, Mock, PropertyMock, call, patch
 
 import pytest
+from source_microsoft_sharepoint.exceptions import ErrorFetchingMetadata
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 from source_microsoft_sharepoint.stream_reader import (
     FileReadMode,
@@ -242,6 +244,51 @@ def test_get_file(mock_requests_head, mock_requests_get, mock_get_access_token, 
 
     # Check if the file exists at the file_url path
     assert os.path.exists(result["file_url"])
+
+
+@patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.get_access_token")
+@patch("source_microsoft_sharepoint.stream_reader.requests.head")
+def test_get_file_size_error_fetching_metadata_for_missing_header(mock_requests_head, mock_get_access_token):
+    file_uri = f"https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file.txt"
+    mock_file = Mock(download_url=f"https://example.com/file.txt", uri=file_uri)
+    mock_logger = Mock()
+    mock_get_access_token.return_value = "dummy_access_token"
+
+    # Create a mock response for requests.head
+    mock_head_response = Mock()
+    mock_head_response.status_code = 200
+    mock_head_response.headers = {"Other-header": "12345"}
+    mock_requests_head.return_value = mock_head_response
+
+    stream_reader = SourceMicrosoftSharePointStreamReader()
+    stream_reader._config = Mock()  # Assuming _config is required
+    with pytest.raises(ErrorFetchingMetadata, match="Size was expected in metadata response but was missing"):
+        stream_reader.get_file(mock_file, TEST_LOCAL_DIRECTORY, mock_logger)
+
+
+@patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.get_access_token")
+@patch("source_microsoft_sharepoint.stream_reader.requests.head")
+def test_get_file_size_error_fetching_metadata(mock_requests_head, mock_get_access_token):
+    """
+    Test that the get_file method raises an ErrorFetchingMetadata exception when the requests.head call fails.
+    """
+    file_uri = f"https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file.txt"
+    mock_file = Mock(download_url=f"https://example.com/file.txt", uri=file_uri)
+    mock_logger = Mock()
+    mock_get_access_token.return_value = "dummy_access_token"
+
+    # Create a mock response for requests.head
+    mock_head_response = Mock()
+    mock_head_response.status_code = 500
+    mock_head_response.headers = {"Content-Length": "12345"}
+    mock_head_response.raise_for_status.side_effect = HTTPError("500 Server Error")
+    mock_requests_head.return_value = mock_head_response
+
+    stream_reader = SourceMicrosoftSharePointStreamReader()
+    stream_reader._config = Mock()  # Assuming _config is required
+
+    with pytest.raises(ErrorFetchingMetadata, match="An error occurred while retrieving file size: 500 Server Error"):
+        stream_reader.get_file(mock_file, TEST_LOCAL_DIRECTORY, mock_logger)
 
 
 def test_microsoft_sharepoint_client_initialization(requests_mock):
