@@ -1,5 +1,11 @@
 # Box Data Extract
-The Box Connector enables seamless data extraction from Box, allowing users to access file content from their Box cloud storage. This connector helps automate workflows by integrating Box files extracted data with other tools.
+The Box Data Extract Connector enables seamless data extraction from Box, allowing users to access file content from their Box cloud storage.
+
+This connector helps automate workflows by using Box AI to extract data directly from documents stored in Box.
+
+For example, a company managing lease contracts can automatically capture key details and populate their system of record. Likewise, a financial institution can extract critical data from loan application documents—such as bank statements and W-2s—and integrate it into approval workflows.
+
+By prioritizing content intelligence, this connector unlocks new opportunities for automation and AI-driven insights.
 
 <HideInUI>
 
@@ -27,7 +33,7 @@ Choose the which Box folder conatins the files you want to process:
 If you are using Box AI you'll need:
 - `Ask AI Prompt`: If using the Ask AI, what prompt to send the AI about the document
 - `Extract AI Prompt`: If using the Extract AI, what prompt to send the AI about the document
-- `Extract Structured AI Fields`: If using the Extract Structured AI, what prompt to send the AI about the document
+- `Extract Structured AI Fields`: If using the Extract Structured AI, what prompt to send the AI about the document. For more information on the expected format of this prompt check our [developer documentation](https://developer.box.com/guides/box-ai/ai-tutorials/extract-metadata-structured/).
 
 ## Setup guide
 
