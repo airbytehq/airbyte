@@ -28,6 +28,7 @@ data:
   maxSecondsBetweenMessages: 5400
   name: Microsoft SharePoint
   supportLevel: certified
+  supportsFileTransfer: true
   releaseStage: alpha
   releaseDate: 2024-02-02
   documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-sharepoint
