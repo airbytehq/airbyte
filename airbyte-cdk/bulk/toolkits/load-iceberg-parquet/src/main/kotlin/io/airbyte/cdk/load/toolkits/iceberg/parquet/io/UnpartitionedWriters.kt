@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.s3_data_lake.io
+package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
 import org.apache.iceberg.FileFormat
 import org.apache.iceberg.PartitionSpec

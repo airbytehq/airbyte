@@ -144,7 +144,11 @@ class PostgresDestination :
     }
 
     override fun getSqlGenerator(config: JsonNode): JdbcSqlGenerator {
-        return PostgresSqlGenerator(PostgresSQLNameTransformer(), hasDropCascadeMode(config))
+        return PostgresSqlGenerator(
+            PostgresSQLNameTransformer(),
+            hasDropCascadeMode(config),
+            hasUnconstrainedNumber(config),
+        )
     }
     override fun getSqlOperations(config: JsonNode): PostgresSqlOperations {
         return PostgresSqlOperations(hasDropCascadeMode(config))
@@ -157,6 +161,11 @@ class PostgresDestination :
     private fun hasDropCascadeMode(config: JsonNode): Boolean {
         val dropCascadeNode = config[DROP_CASCADE_OPTION]
         return dropCascadeNode != null && dropCascadeNode.asBoolean()
+    }
+
+    private fun hasUnconstrainedNumber(config: JsonNode): Boolean {
+        val unconstrainedNumberNode = config[UNCONSTRAINED_NUMBER_OPTION]
+        return unconstrainedNumberNode != null && unconstrainedNumberNode.asBoolean()
     }
 
     override fun getDestinationHandler(
@@ -201,6 +210,7 @@ class PostgresDestination :
         val DRIVER_CLASS: String = DatabaseDriver.POSTGRESQL.driverClassName
 
         const val DROP_CASCADE_OPTION = "drop_cascade"
+        const val UNCONSTRAINED_NUMBER_OPTION = "unconstrained_number"
 
         @JvmStatic
         fun sshWrappedDestination(): Destination {

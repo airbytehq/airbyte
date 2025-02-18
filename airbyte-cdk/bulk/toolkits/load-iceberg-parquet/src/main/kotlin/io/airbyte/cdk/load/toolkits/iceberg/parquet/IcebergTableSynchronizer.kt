@@ -2,11 +2,11 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.s3_data_lake
+package io.airbyte.cdk.load.toolkits.iceberg.parquet
 
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.integrations.destination.s3_data_lake.S3DataLakeTypesComparator.Companion.PARENT_CHILD_SEPARATOR
-import io.airbyte.integrations.destination.s3_data_lake.S3DataLakeTypesComparator.Companion.splitIntoParentAndLeaf
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTypesComparator.Companion.PARENT_CHILD_SEPARATOR
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTypesComparator.Companion.splitIntoParentAndLeaf
 import jakarta.inject.Singleton
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
@@ -14,7 +14,7 @@ import org.apache.iceberg.UpdateSchema
 import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Type.PrimitiveType
 
-/** Describes how the [S3DataLakeTableSynchronizer] handles column type changes. */
+/** Describes how the [IcebergTableSynchronizer] handles column type changes. */
 enum class ColumnTypeChangeBehavior {
     /**
      * Find the supertype between the old and new types, throwing an error if Iceberg does not
@@ -30,7 +30,7 @@ enum class ColumnTypeChangeBehavior {
     };
 
     /**
-     * If true, [S3DataLakeTableSynchronizer.maybeApplySchemaChanges] will commit the schema update
+     * If true, [IcebergTableSynchronizer.maybeApplySchemaChanges] will commit the schema update
      * itself. If false, the caller is responsible for calling
      * `schemaUpdateResult.pendingUpdate?.commit()`.
      */
@@ -50,9 +50,9 @@ enum class ColumnTypeChangeBehavior {
  * @property superTypeFinder Used to find a common supertype when data types differ.
  */
 @Singleton
-class S3DataLakeTableSynchronizer(
-    private val comparator: S3DataLakeTypesComparator,
-    private val superTypeFinder: S3DataLakeSuperTypeFinder,
+class IcebergTableSynchronizer(
+    private val comparator: IcebergTypesComparator,
+    private val superTypeFinder: IcebergSuperTypeFinder,
 ) {
     /**
      * Compare [table]'s current schema with [incomingSchema] and apply changes as needed:
