@@ -3,10 +3,10 @@
 #
 import os
 from datetime import datetime
-from requests.exceptions import HTTPError
 from unittest.mock import ANY, MagicMock, Mock, PropertyMock, call, patch
 
 import pytest
+from requests.exceptions import HTTPError
 from source_microsoft_sharepoint.exceptions import ErrorFetchingMetadata
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 from source_microsoft_sharepoint.stream_reader import (
