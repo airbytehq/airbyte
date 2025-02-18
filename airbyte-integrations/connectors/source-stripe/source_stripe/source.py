@@ -25,6 +25,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_stripe.streams import (
     CreatedCursorIncrementalStripeStream,
+    CustomerBalanceTransactions,
     Events,
     IncrementalStripeStream,
     ParentIncrementalStripeSubStream,
@@ -35,7 +36,6 @@ from source_stripe.streams import (
     UpdatedCursorIncrementalStripeLazySubStream,
     UpdatedCursorIncrementalStripeStream,
     UpdatedCursorIncrementalStripeSubStream,
-    CustomerBalanceTransactions,
 )
 
 
