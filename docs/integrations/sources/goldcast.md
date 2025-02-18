@@ -96,6 +96,7 @@ This is a child stream of the events stream indicating webinars that belong to t
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.13 | 2025-02-15 | [53762](https://github.com/airbytehq/airbyte/pull/53762) | Update dependencies |
 | 0.2.12 | 2025-02-08 | [53338](https://github.com/airbytehq/airbyte/pull/53338) | Update dependencies |
 | 0.2.11 | 2025-02-01 | [52838](https://github.com/airbytehq/airbyte/pull/52838) | Update dependencies |
 | 0.2.10 | 2025-01-25 | [52325](https://github.com/airbytehq/airbyte/pull/52325) | Update dependencies |
