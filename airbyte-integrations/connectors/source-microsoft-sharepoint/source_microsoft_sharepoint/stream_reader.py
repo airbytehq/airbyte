@@ -296,31 +296,6 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         except Exception as e:
             logger.exception(f"Error opening file {file.uri}: {e}")
 
-    @property
-    def file_permissions_schema(self):
-        return None
-
-    def file_size(self, file: MicrosoftSharePointRemoteFile) -> int:
-        """
-        Retrieves the size of a file in Microsoft SharePoint.
-
-        Args:
-            file (RemoteFile): The file to get the size for.
-
-        Returns:
-            int: The file size in bytes.
-        """
-        try:
-            access_token = self.get_access_token()
-            headers = {"Authorization": f"Bearer {access_token}"}
-            response = requests.head(file.download_url, headers=headers)
-            response.raise_for_status()
-            return int(response.headers["Content-Length"])
-        except KeyError:
-            raise ErrorFetchingMetadata(f"Size was expected in metadata response but was missing")
-        except Exception as e:
-            raise ErrorFetchingMetadata(f"An error occurred while retrieving file size: {str(e)}")
-
     def _get_file_transfer_paths(self, file: RemoteFile, local_directory: str) -> List[str]:
         preserve_directory_structure = self.preserve_directory_structure()
         file_path = file.uri
@@ -339,6 +314,30 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         makedirs(path.dirname(local_file_path), exist_ok=True)
         absolute_file_path = path.abspath(local_file_path)
         return [file_relative_path, local_file_path, absolute_file_path]
+
+    def _get_headers(self) -> Dict[str, str]:
+        access_token = self.get_access_token()
+        return {"Authorization": f"Bearer {access_token}"}
+
+    def file_size(self, file: MicrosoftSharePointRemoteFile) -> int:
+        """
+        Retrieves the size of a file in Microsoft SharePoint.
+
+        Args:
+            file (RemoteFile): The file to get the size for.
+
+        Returns:
+            int: The file size in bytes.
+        """
+        try:
+            headers = self._get_headers()
+            response = requests.head(file.download_url, headers=headers)
+            response.raise_for_status()
+            return int(response.headers["Content-Length"])
+        except KeyError:
+            raise ErrorFetchingMetadata(f"Size was expected in metadata response but was missing")
+        except Exception as e:
+            raise ErrorFetchingMetadata(f"An error occurred while retrieving file size: {str(e)}")
 
     def get_file(self, file: MicrosoftSharePointRemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, str | int]:
         """
@@ -360,9 +359,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         try:
             file_relative_path, local_file_path, absolute_file_path = self._get_file_transfer_paths(file, local_directory)
 
-            # Get the access token
-            access_token = self.get_access_token()
-            headers = {"Authorization": f"Bearer {access_token}"}
+            headers = self._get_headers()
 
             # Download the file
             #  By using stream=True, the file content is streamed in chunks, which allows to process each chunk individually.
@@ -389,9 +386,13 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
     def get_file_acl_permissions(self):
         return None
 
+    def load_identity_groups(self):
+        return None
+
     @property
     def identities_schema(self):
         return None
 
-    def load_identity_groups(self):
+    @property
+    def file_permissions_schema(self):
         return None
