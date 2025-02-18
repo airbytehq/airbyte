@@ -217,15 +217,15 @@ class TestCampaignsStream:
                 "updated_at": "2020-10-21T00:00:00+0000",
             },
             {
-                "attributes": {"archived": False, "name": "Some name 1", "updated_at": "2020-10-20T00:00:00+0000",  "channel": "sms"},
+                "attributes": {"archived": False, "name": "Some name 1", "updated_at": "2020-10-20T00:00:00+0000", "channel": "sms"},
                 "updated_at": "2020-10-20T00:00:00+0000",
             },
             {
-                "attributes": {"archived": True, "name": "Some name 1", "updated_at": "2020-10-18T00:00:00+0000",  "channel": "email"},
+                "attributes": {"archived": True, "name": "Some name 1", "updated_at": "2020-10-18T00:00:00+0000", "channel": "email"},
                 "updated_at": "2020-10-18T00:00:00+0000",
             },
             {
-                "attributes": {"archived": False, "name": "Some name 1", "updated_at": "2020-10-23T00:00:00+0000",  "channel": "email"},
+                "attributes": {"archived": False, "name": "Some name 1", "updated_at": "2020-10-23T00:00:00+0000", "channel": "email"},
                 "updated_at": "2020-10-23T00:00:00+0000",
             },
         ]
