@@ -205,7 +205,8 @@ The connector is restricted by the Pinterest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.0.30 | 2025-02-03 | [53135](https://github.com/airbytehq/airbyte/pull/53135) |Added Account Id filter to allow retrieving data for a specific ad account |
+| 2.1.0 | 2025-02-03 | [53135](https://github.com/airbytehq/airbyte/pull/53135) |Added Account Id filter to allow retrieving data for a specific ad account |
+| 2.0.30 | 2025-02-15 | [53977](https://github.com/airbytehq/airbyte/pull/53977) | Update dependencies |
 | 2.0.29 | 2025-02-01 | [53001](https://github.com/airbytehq/airbyte/pull/53001) | Update dependencies |
 | 2.0.28 | 2025-01-25 | [52502](https://github.com/airbytehq/airbyte/pull/52502) | Update dependencies |
 | 2.0.27 | 2025-01-11 | [51377](https://github.com/airbytehq/airbyte/pull/51377) | Update dependencies |

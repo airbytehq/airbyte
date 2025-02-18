@@ -109,6 +109,7 @@ abstract class BasicPerformanceTest(
     val configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
     val dataValidator: DataValidator? = null,
     val micronautProperties: Map<Property, String> = emptyMap(),
+    namespaceOverride: String? = null,
 ) {
 
     protected val destinationProcessFactory = DestinationProcessFactory.get(emptyList())
@@ -117,6 +118,9 @@ abstract class BasicPerformanceTest(
     private lateinit var testPrettyName: String
 
     val randomizedNamespace = run {
+        if (namespaceOverride != null) {
+            return@run namespaceOverride
+        }
         val randomSuffix = RandomStringUtils.secure().nextAlphabetic(4)
         val randomizedNamespaceDateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
         val timestampString =
@@ -134,18 +138,58 @@ abstract class BasicPerformanceTest(
 
     @Test
     open fun testInsertRecords() {
-        testInsertRecords(null)
+        testInsertRecords(validation = null)
     }
 
-    protected fun testInsertRecords(validation: ValidationFunction?) {
+    protected fun testInsertRecords(
+        recordsToInsert: Long? = null,
+        validation: ValidationFunction?,
+    ) {
         runSync(
             testScenario =
                 SingleStreamInsert(
                     idColumn = idColumn,
                     columns = twoStringColumns,
-                    recordsToInsert = defaultRecordsToInsert,
+                    recordsToInsert = recordsToInsert ?: defaultRecordsToInsert,
                     randomizedNamespace = randomizedNamespace,
                     streamName = testInfo.testMethod.get().name,
+                ),
+            validation = validation,
+        )
+    }
+
+    @Test
+    open fun testRefreshingRecords() {
+        testRefreshingRecords(validation = null)
+    }
+
+    protected fun testRefreshingRecords(
+        recordsToInsert: Long? = null,
+        validation: ValidationFunction?,
+    ) {
+        runSync(
+            testScenario =
+                SingleStreamInsert(
+                    idColumn = idColumn,
+                    columns = twoStringColumns,
+                    recordsToInsert = recordsToInsert ?: defaultRecordsToInsert,
+                    randomizedNamespace = randomizedNamespace,
+                    streamName = testInfo.testMethod.get().name,
+                    generationId = 0,
+                    minGenerationId = 0,
+                ),
+            validation = validation,
+        )
+        runSync(
+            testScenario =
+                SingleStreamInsert(
+                    idColumn = idColumn,
+                    columns = twoStringColumns,
+                    recordsToInsert = recordsToInsert ?: defaultRecordsToInsert,
+                    randomizedNamespace = randomizedNamespace,
+                    streamName = testInfo.testMethod.get().name,
+                    generationId = 1,
+                    minGenerationId = 1,
                 ),
             validation = validation,
         )

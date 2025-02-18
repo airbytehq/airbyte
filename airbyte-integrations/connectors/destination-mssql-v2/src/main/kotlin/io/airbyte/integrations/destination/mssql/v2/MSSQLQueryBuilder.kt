@@ -115,6 +115,10 @@ const val CREATE_INDEX_QUERY = """
         CREATE ? INDEX ? ON [?].[?] (?)
     """
 
+const val DROP_TABLE_QUERY = """
+        DROP TABLE [?].[?];
+    """
+
 const val INSERT_INTO_QUERY =
     """
         SET NOCOUNT ON;
@@ -126,7 +130,7 @@ const val INSERT_INTO_QUERY =
 const val MERGE_INTO_QUERY =
     """
         SET NOCOUNT ON;
-        MERGE INTO [?$SCHEMA_KEY].[?$TABLE_KEY] AS Target
+        MERGE INTO [?$SCHEMA_KEY].[?$TABLE_KEY] WITH (TABLOCK) AS Target
         USING (VALUES (?$TEMPLATE_COLUMNS_KEY)) AS Source (?$COLUMNS_KEY)
         ON ?$UNIQUENESS_CONSTRAINT_KEY
         WHEN MATCHED THEN
@@ -153,12 +157,15 @@ const val ALTER_TABLE_MODIFY =
 
 const val DELETE_WHERE_COL_IS_NOT_NULL =
     """
-        DELETE FROM [?].[?]
+        SET NOCOUNT ON;
+        DELETE FROM [?].[?] WITH (TABLOCK)
         WHERE [?] is not NULL
     """
 
-const val DELETE_WHERE_COL_LESS_THAN = """
-        DELETE FROM [?].[?]
+const val DELETE_WHERE_COL_LESS_THAN =
+    """
+        SET NOCOUNT ON;
+        DELETE FROM [?].[?] WITH (TABLOCK)
         WHERE [?] < ?
     """
 
@@ -309,6 +316,10 @@ class MSSQLQueryBuilder(
         createTableIfNotExistsQuery(finalTableSchema).executeUpdate(connection)
     }
 
+    fun dropTable(connection: Connection) {
+        DROP_TABLE_QUERY.toQuery(outputSchema, tableName).executeUpdate(connection)
+    }
+
     fun getFinalTableInsertColumnHeader(): String =
         getFinalTableInsertColumnHeader(finalTableSchema)
 
@@ -321,7 +332,7 @@ class MSSQLQueryBuilder(
                 outputSchema,
                 tableName,
                 COLUMN_NAME_AB_GENERATION_ID,
-                minGenerationId.toString()
+                minGenerationId.toString(),
             )
             .executeUpdate(connection)
 
