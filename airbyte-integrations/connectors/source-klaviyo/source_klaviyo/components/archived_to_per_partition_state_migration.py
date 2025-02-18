@@ -10,8 +10,6 @@ from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigr
 from airbyte_cdk.sources.types import Config
 
 
-ARCHIVED_SMS = {"archived": "true", "campaign_type": "sms"}
-NOT_ARCHIVED_SMS = {"archived": "false", "campaign_type": "sms"}
 ARCHIVED_EMAIL = {"archived": "true", "campaign_type": "email"}
 NOT_ARCHIVED_EMAIL = {"archived": "false", "campaign_type": "email"}
 
@@ -84,6 +82,7 @@ class ArchivedToPerPartitionStateMigration(StateMigration, ABC):
 class CampaignsStateMigration(ArchivedToPerPartitionStateMigration):
     """
     Campaigns stream has 2 partition field: archived and campaign_type(email, sms).
+    Previous API version didn't return sms in campaigns output so we need to migrate only email partition.
 
     Example input state:
     {
@@ -94,16 +93,8 @@ class CampaignsStateMigration(ArchivedToPerPartitionStateMigration):
       }
     Example output state:
     {
-        "partition":{ "archived":"true","campaign_type":"sms" },
-        "cursor":{ "updated_at":"2021-10-10T00:00:00+00:00" }
-    }
-    {
         "partition":{ "archived":"true","campaign_type":"email" },
         "cursor":{ "updated_at":"2021-10-10T00:00:00+00:00" }
-    }
-    {
-        "partition":{ "archived":"false","campaign_type":"sms" },
-        "cursor":{ "updated_at":"2020-10-10T00:00:00+00:00" }
     }
     {
         "partition":{ "archived":"false","campaign_type":"email" },
@@ -119,8 +110,6 @@ class CampaignsStateMigration(ArchivedToPerPartitionStateMigration):
 
         migrated_stream_state = {
             "states": [
-                {"partition": ARCHIVED_SMS, "cursor": {self._cursor.cursor_field: is_archived_updated_at}},
-                {"partition": NOT_ARCHIVED_SMS, "cursor": {self._cursor.cursor_field: is_not_archived_updated_at}},
                 {"partition": ARCHIVED_EMAIL, "cursor": {self._cursor.cursor_field: is_archived_updated_at}},
                 {"partition": NOT_ARCHIVED_EMAIL, "cursor": {self._cursor.cursor_field: is_not_archived_updated_at}},
             ]

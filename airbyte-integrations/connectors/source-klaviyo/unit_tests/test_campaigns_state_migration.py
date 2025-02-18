@@ -82,8 +82,6 @@ def test_migrate(state, expected_state):
             {"updated_at": "2120-10-10T00:00:00+00:00", "archived": {"updated_at": "2020-10-10T00:00:00+00:00"}},
             {
                 "states": [
-                    {"cursor": {"updated_at": "2020-10-10T00:00:00+00:00"}, "partition": {"archived": "true", "campaign_type": "sms"}},
-                    {"cursor": {"updated_at": "2120-10-10T00:00:00+00:00"}, "partition": {"archived": "false", "campaign_type": "sms"}},
                     {"cursor": {"updated_at": "2020-10-10T00:00:00+00:00"}, "partition": {"archived": "true", "campaign_type": "email"}},
                     {"cursor": {"updated_at": "2120-10-10T00:00:00+00:00"}, "partition": {"archived": "false", "campaign_type": "email"}},
                 ]
@@ -93,8 +91,6 @@ def test_migrate(state, expected_state):
             {"archived": {"updated_at": "2020-10-10T00:00:00+00:00"}},
             {
                 "states": [
-                    {"cursor": {"updated_at": "2020-10-10T00:00:00+00:00"}, "partition": {"archived": "true", "campaign_type": "sms"}},
-                    {"cursor": {"updated_at": "2012-01-01T00:00:00Z"}, "partition": {"archived": "false", "campaign_type": "sms"}},
                     {"cursor": {"updated_at": "2020-10-10T00:00:00+00:00"}, "partition": {"archived": "true", "campaign_type": "email"}},
                     {"cursor": {"updated_at": "2012-01-01T00:00:00Z"}, "partition": {"archived": "false", "campaign_type": "email"}},
                 ]
@@ -106,8 +102,6 @@ def test_migrate(state, expected_state):
             },
             {
                 "states": [
-                    {"cursor": {"updated_at": "2012-01-01T00:00:00Z"}, "partition": {"archived": "true", "campaign_type": "sms"}},
-                    {"cursor": {"updated_at": "2120-10-10T00:00:00+00:00"}, "partition": {"archived": "false", "campaign_type": "sms"}},
                     {"cursor": {"updated_at": "2012-01-01T00:00:00Z"}, "partition": {"archived": "true", "campaign_type": "email"}},
                     {"cursor": {"updated_at": "2120-10-10T00:00:00+00:00"}, "partition": {"archived": "false", "campaign_type": "email"}},
                 ]
