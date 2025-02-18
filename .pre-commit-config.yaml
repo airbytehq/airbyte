@@ -57,4 +57,3 @@ repos:
         language: system
         files: \.(java|kt|gradle)$
         pass_filenames: false
-        stages: [pre-push]
