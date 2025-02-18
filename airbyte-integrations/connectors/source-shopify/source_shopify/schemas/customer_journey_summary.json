@@ -191,6 +191,82 @@
               "type": ["null", "string"]
             }
           }
+        },
+        "moments": {
+          "description": "The events preceding a customer's order, such as shop sessions.",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "description": "A globally-unique ID.",
+                "type": ["null", "integer"]
+              },
+              "landing_page": {
+                "description": "URL of the first page the customer landed on for the session.",
+                "type": ["null", "string"]
+              },
+              "landing_page_html": {
+                "description": "Landing page information with URL linked in HTML. For example, the first page the customer visited was",
+                "type": ["null", "string"]
+              },
+              "occurred_at": {
+                "description": "The date and time when the customer's session occurred.",
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "referral_code": {
+                "description": "Marketing referral code from the link that the customer clicked to visit the store.",
+                "type": ["null", "string"]
+              },
+              "referrer_url": {
+                "description": "Webpage where the customer clicked a link that sent them to the online store.",
+                "type": ["null", "string"]
+              },
+              "source": {
+                "description": "Source from which the customer visited the store, such as a platform (Facebook, Google), email, direct, a website domain, QR code, or unknown.",
+                "type": ["null", "string"]
+              },
+              "source_type": {
+                "description": "Type of marketing tactic.",
+                "type": ["null", "string"]
+              },
+              "source_description": {
+                "description": "Describes the source explicitly for first or last session.",
+                "type": ["null", "string"]
+              },
+              "utm_parameters": {
+                "description": "A set of UTM parameters gathered from the URL parameters of the referrer.",
+                "type": ["null", "object"],
+                "properties": {
+                  "campaign": {
+                    "description": "The name of a marketing campaign.",
+                    "type": ["null", "string"]
+                  },
+                  "content": {
+                    "description": "Identifies specific content in a marketing campaign. Used to differentiate between similar content or links in a marketing campaign to determine which is the most effective.",
+                    "type": ["null", "string"]
+                  },
+                  "medium": {
+                    "description": "The medium of a marketing campaign, such as a banner or email newsletter.",
+                    "type": ["null", "string"]
+                  },
+                  "source": {
+                    "description": "The source of traffic to the merchant's store, such as Google or an email newsletter.",
+                    "type": ["null", "string"]
+                  },
+                  "term": {
+                    "description": "Paid search terms used by a marketing campaign.",
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "admin_graphql_api_id": {
+                "description": "Unique identifier for the customer in the Admin GraphQL API.",
+                "type": ["null", "string"]
+              }
+            }
+          }
         }
       }
     },

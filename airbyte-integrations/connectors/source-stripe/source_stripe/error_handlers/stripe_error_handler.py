@@ -6,10 +6,12 @@ import logging
 from typing import Optional, Union
 
 import requests
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
+
 
 STRIPE_ERROR_CODES = {
     "more_permissions_required": "This is most likely due to insufficient permissions on the credentials in use. "

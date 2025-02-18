@@ -4,6 +4,8 @@
 
 from unittest.mock import MagicMock
 
+from source_klaviyo.components.per_partition_state_migration import PerPartitionToSingleStateMigration
+
 from airbyte_cdk.sources.declarative.models import (
     CustomRetriever,
     DatetimeBasedCursor,
@@ -14,7 +16,7 @@ from airbyte_cdk.sources.declarative.models import (
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
-from source_klaviyo.components.per_partition_state_migration import PerPartitionToSingleStateMigration
+
 
 factory = ModelToComponentFactory()
 
@@ -26,14 +28,8 @@ transformer = ManifestComponentTransformer()
 def test_migrate_a_valid_legacy_state_to_per_partition():
     input_state = {
         "states": [
-            {
-                "partition": {"parent_id": "13506132"},
-                "cursor": {"last_changed": "2023-12-27T08:34:39+00:00"}
-            },
-            {
-                "partition": {"parent_id": "14351124"},
-                "cursor": {"last_changed": "2022-12-27T08:35:39+00:00"}
-            },
+            {"partition": {"parent_id": "13506132"}, "cursor": {"last_changed": "2023-12-27T08:34:39+00:00"}},
+            {"partition": {"parent_id": "14351124"}, "cursor": {"last_changed": "2022-12-27T08:35:39+00:00"}},
         ]
     }
 
@@ -61,14 +57,10 @@ def _migrator():
                 parent_key="{{ parameters['parent_key_id'] }}",
                 partition_field="parent_id",
                 stream=DeclarativeStream(
-                    type="DeclarativeStream",
-                    retriever=CustomRetriever(
-                        type="CustomRetriever",
-                        class_name="a_class_name"
-                    )
-                )
+                    type="DeclarativeStream", retriever=CustomRetriever(type="CustomRetriever", class_name="a_class_name")
+                ),
             )
-        ]
+        ],
     )
     cursor = DatetimeBasedCursor(
         type="DatetimeBasedCursor",

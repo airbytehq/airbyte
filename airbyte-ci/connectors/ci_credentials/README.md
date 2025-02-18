@@ -7,7 +7,7 @@ CLI tooling to read and manage GSM secrets:
 
 ## Requirements
 
-This project requires Python 3.10 and `pipx`.
+This project requires Python 3.11 and `pipx`.
 
 ## Installation
 
@@ -32,7 +32,7 @@ python -m pipx ensurepath
 Once pyenv and pipx is installed then run the following (assuming you're in Airbyte repo root):
 
 ```bash
-pipx install --editable --force --python=python3.10 airbyte-ci/connectors/ci_credentials/
+pipx install --editable --force --python=python3.11 airbyte-ci/connectors/ci_credentials/
 ```
 
 Or install with a link to the default branch of the repo:
@@ -46,7 +46,7 @@ This command installs `ci_credentials` and makes it globally available in your t
 > [!Note]
 >
 > - `--force` is required to ensure updates are applied on subsequent installs.
-> - `--python=python3.10` is required to ensure the correct python version is used.
+> - `--python=python3.11` is required to ensure the correct python version is used.
 
 ## Get GSM access
 

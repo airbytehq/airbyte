@@ -18,13 +18,15 @@ from __future__ import annotations
 
 import warnings
 
-from airbyte_cdk.sql.constants import DEBUG_MODE
-from airbyte_cdk.sql.secrets import SecretString
-from destination_motherduck.processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
 from duckdb_engine import DuckDBEngineWarning
 from overrides import overrides
 from pydantic import Field
 from sqlalchemy import Engine, create_engine
+
+from airbyte_cdk.sql.constants import DEBUG_MODE
+from airbyte_cdk.sql.secrets import SecretString
+from destination_motherduck.processors.duckdb import DuckDBConfig, DuckDBSqlProcessor
+
 
 # Suppress warnings from DuckDB about reflection on indices.
 # https://github.com/Mause/duckdb_engine/issues/905

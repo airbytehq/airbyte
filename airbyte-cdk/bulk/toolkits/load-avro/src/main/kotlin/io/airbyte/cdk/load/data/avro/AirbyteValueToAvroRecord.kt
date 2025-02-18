@@ -36,71 +36,82 @@ import org.apache.avro.generic.GenericRecord
 
 class AirbyteValueToAvroRecord {
     fun convert(airbyteValue: AirbyteValue, airbyteSchema: AirbyteType, schema: Schema): Any? {
-        if (airbyteValue == NullValue) {
-            return null
-        }
+        try {
+            if (airbyteValue == NullValue) {
+                return null
+            }
 
-        if (
-            schema.isUnion &&
-                schema.types.size == 2 &&
-                schema.types.any { it.type == Schema.Type.NULL }
-        ) {
-            val nonNullSchema = schema.types.find { it.type != Schema.Type.NULL }!!
-            return convert(airbyteValue, airbyteSchema, nonNullSchema)
-        }
+            if (
+                schema.isUnion &&
+                    schema.types.size == 2 &&
+                    schema.types.any { it.type == Schema.Type.NULL }
+            ) {
+                val nonNullSchema = schema.types.find { it.type != Schema.Type.NULL }!!
+                return convert(airbyteValue, airbyteSchema, nonNullSchema)
+            }
 
-        when (airbyteSchema) {
-            is ObjectType -> {
-                val record = GenericData.Record(schema)
-                airbyteSchema.properties.forEach { (name, airbyteField) ->
-                    val nameMangled = Transformations.toAvroSafeName(name)
-                    schema.getField(nameMangled)?.let { avroField ->
-                        val value = (airbyteValue as ObjectValue).values[name]
-                        record.put(
-                            nameMangled,
-                            convert(value ?: NullValue, airbyteField.type, avroField.schema())
-                        )
+            when (airbyteSchema) {
+                is ObjectType -> {
+                    val record = GenericData.Record(schema)
+                    airbyteSchema.properties.forEach { (name, airbyteField) ->
+                        val nameMangled = Transformations.toAvroSafeName(name)
+                        schema.getField(nameMangled)?.let { avroField ->
+                            val value = (airbyteValue as ObjectValue).values[name]
+                            record.put(
+                                nameMangled,
+                                convert(value ?: NullValue, airbyteField.type, avroField.schema())
+                            )
+                        }
                     }
+                    return record
                 }
-                return record
-            }
-            is ArrayType -> {
-                val array = GenericData.Array<Any>((airbyteValue as ArrayValue).values.size, schema)
-                airbyteValue.values.forEach { value ->
-                    array.add(convert(value, airbyteSchema.items.type, schema.elementType))
-                }
-                return array
-            }
-            BooleanType -> return (airbyteValue as BooleanValue).value
-            DateType -> return (airbyteValue as IntegerValue).value.toInt()
-            IntegerType -> return (airbyteValue as IntegerValue).value.toLong()
-            NumberType -> return (airbyteValue as NumberValue).value.toDouble()
-            StringType -> return (airbyteValue as StringValue).value
-
-            // Converted to strings upstream
-            is UnknownType,
-            ObjectTypeWithEmptySchema,
-            ObjectTypeWithoutSchema,
-            ArrayTypeWithoutSchema -> return (airbyteValue as StringValue).value
-
-            // Converted to integrals upstream
-            TimeTypeWithTimezone,
-            TimeTypeWithoutTimezone,
-            TimestampTypeWithTimezone,
-            TimestampTypeWithoutTimezone -> return (airbyteValue as IntegerValue).value.toLong()
-            is UnionType -> {
-                for (optionType in airbyteSchema.options) {
-                    try {
-                        val optionSchema = matchingAvroType(optionType, schema)
-                        return convert(airbyteValue, optionType, optionSchema)
-                    } catch (e: Exception) {
-                        continue
+                is ArrayType -> {
+                    val array =
+                        GenericData.Array<Any>((airbyteValue as ArrayValue).values.size, schema)
+                    airbyteValue.values.forEach { value ->
+                        array.add(convert(value, airbyteSchema.items.type, schema.elementType))
                     }
+                    return array
                 }
-                throw IllegalArgumentException(
-                    "No matching Avro type found for $airbyteSchema in $schema (airbyte value: ${airbyteValue.javaClass.simpleName})"
-                )
+                BooleanType -> return (airbyteValue as BooleanValue).value
+                DateType -> return (airbyteValue as IntegerValue).value.toInt()
+                IntegerType -> return (airbyteValue as IntegerValue).value.toLong()
+                NumberType -> return (airbyteValue as NumberValue).value.toDouble()
+                StringType -> return (airbyteValue as StringValue).value
+
+                // Upstream all unknown types other than {"type": "null"} are converted to
+                // Schemaless
+                is UnknownType -> return null
+
+                // Converted to strings upstream
+                ObjectTypeWithEmptySchema,
+                ObjectTypeWithoutSchema,
+                ArrayTypeWithoutSchema -> return (airbyteValue as StringValue).value
+
+                // Converted to integrals upstream
+                TimeTypeWithTimezone,
+                TimeTypeWithoutTimezone,
+                TimestampTypeWithTimezone,
+                TimestampTypeWithoutTimezone -> return (airbyteValue as IntegerValue).value.toLong()
+                is UnionType -> {
+                    for (optionType in airbyteSchema.options) {
+                        try {
+                            val optionSchema = matchingAvroType(optionType, schema)
+                            return convert(airbyteValue, optionType, optionSchema)
+                        } catch (e: Exception) {
+                            continue
+                        }
+                    }
+                    throw IllegalArgumentException(
+                        "No matching Avro type found for $airbyteSchema in $schema (airbyte value: ${airbyteValue.javaClass.simpleName})"
+                    )
+                }
             }
+        } catch (e: Exception) {
+            throw RuntimeException(
+                "Failed to convert $airbyteSchema(${airbyteValue.javaClass.simpleName}) to $schema",
+                e
+            )
         }
     }
 

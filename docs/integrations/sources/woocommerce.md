@@ -122,6 +122,9 @@ maximum number of seconds between API calls.
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
+| 0.5.4 | 2024-12-28 | [50800](https://github.com/airbytehq/airbyte/pull/50800) | Update dependencies |
+| 0.5.3 | 2024-12-21 | [50335](https://github.com/airbytehq/airbyte/pull/50335) | Update dependencies |
+| 0.5.2 | 2024-12-14 | [49382](https://github.com/airbytehq/airbyte/pull/49382) | Update dependencies |
 | 0.5.1 | 2024-12-11 | [47510](https://github.com/airbytehq/airbyte/pull/47510) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.5.0 | 2024-10-16 | [46956](https://github.com/airbytehq/airbyte/pull/46956) | Promoting release candidate 0.5.0-rc.1 to a main version. |
 | 0.5.0-rc.1  | 2024-10-08 | [46575](https://github.com/airbytehq/airbyte/pull/46575) | Migrate to Manifest-only |

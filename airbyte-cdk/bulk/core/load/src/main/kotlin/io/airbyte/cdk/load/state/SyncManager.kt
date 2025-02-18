@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.state
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.write.StreamLoader
@@ -14,14 +15,14 @@ import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CompletableDeferred
 
-sealed interface SyncResult
+sealed interface DestinationResult
 
-data object SyncSuccess : SyncResult
+data object DestinationSuccess : DestinationResult
 
-data class SyncFailure(
-    val syncFailure: Exception,
+data class DestinationFailure(
+    val cause: Exception,
     val streamResults: Map<DestinationStream.Descriptor, StreamResult>
-) : SyncResult
+) : DestinationResult
 
 /** Manages the state of all streams in the destination. */
 interface SyncManager {
@@ -35,18 +36,26 @@ interface SyncManager {
     suspend fun getOrAwaitStreamLoader(stream: DestinationStream.Descriptor): StreamLoader
     suspend fun getStreamLoaderOrNull(stream: DestinationStream.Descriptor): StreamLoader?
 
-    /** Suspend until all streams are complete. Returns false if any stream was failed/killed. */
-    suspend fun awaitAllStreamsCompletedSuccessfully(): Boolean
+    /**
+     * Suspend until all streams are processed successfully. Returns false if processing failed for
+     * any stream.
+     */
+    suspend fun awaitAllStreamsProcessedSuccessfully(): Boolean
 
     suspend fun markInputConsumed()
     suspend fun markCheckpointsProcessed()
-    suspend fun markFailed(causedBy: Exception): SyncFailure
-    suspend fun markSucceeded()
+    suspend fun markDestinationFailed(causedBy: Exception): DestinationFailure
+    suspend fun markDestinationSucceeded()
+
+    /**
+     * Whether we received stream complete messages for all streams in the catalog from upstream.
+     */
+    suspend fun allStreamsComplete(): Boolean
 
     fun isActive(): Boolean
 
-    suspend fun awaitInputProcessingComplete(): Unit
-    suspend fun awaitSyncResult(): SyncResult
+    suspend fun awaitInputProcessingComplete()
+    suspend fun awaitDestinationResult(): DestinationResult
 }
 
 @SuppressFBWarnings(
@@ -56,7 +65,7 @@ interface SyncManager {
 class DefaultSyncManager(
     private val streamManagers: ConcurrentHashMap<DestinationStream.Descriptor, StreamManager>
 ) : SyncManager {
-    private val syncResult = CompletableDeferred<SyncResult>()
+    private val destinationResult = CompletableDeferred<DestinationResult>()
     private val streamLoaders =
         ConcurrentHashMap<DestinationStream.Descriptor, CompletableDeferred<Result<StreamLoader>>>()
     private val inputConsumed = CompletableDeferred<Boolean>()
@@ -87,32 +96,38 @@ class DefaultSyncManager(
         return streamLoaders[stream]?.await()?.getOrNull()
     }
 
-    override suspend fun awaitAllStreamsCompletedSuccessfully(): Boolean {
-        return streamManagers.all { (_, manager) -> manager.awaitStreamResult() is StreamSucceeded }
+    override suspend fun awaitAllStreamsProcessedSuccessfully(): Boolean {
+        return streamManagers.all { (_, manager) ->
+            manager.awaitStreamResult() is StreamProcessingSucceeded
+        }
     }
 
-    override suspend fun markFailed(causedBy: Exception): SyncFailure {
+    override suspend fun markDestinationFailed(causedBy: Exception): DestinationFailure {
         val result =
-            SyncFailure(causedBy, streamManagers.mapValues { it.value.awaitStreamResult() })
-        syncResult.complete(result)
+            DestinationFailure(causedBy, streamManagers.mapValues { it.value.awaitStreamResult() })
+        destinationResult.complete(result)
         return result
     }
 
-    override suspend fun markSucceeded() {
+    override suspend fun markDestinationSucceeded() {
         if (streamManagers.values.any { it.isActive() }) {
             throw IllegalStateException(
                 "Cannot mark sync as succeeded until all streams are complete"
             )
         }
-        syncResult.complete(SyncSuccess)
+        destinationResult.complete(DestinationSuccess)
+    }
+
+    override suspend fun allStreamsComplete(): Boolean {
+        return streamManagers.all { it.value.isComplete() }
     }
 
     override fun isActive(): Boolean {
-        return syncResult.isActive
+        return destinationResult.isActive
     }
 
-    override suspend fun awaitSyncResult(): SyncResult {
-        return syncResult.await()
+    override suspend fun awaitDestinationResult(): DestinationResult {
+        return destinationResult.await()
     }
 
     override suspend fun awaitInputProcessingComplete() {
@@ -127,7 +142,7 @@ class DefaultSyncManager(
                 .map { (stream, _) -> stream }
         if (incompleteStreams.isNotEmpty()) {
             val prettyStreams = incompleteStreams.map { it.toPrettyString() }
-            throw IllegalStateException(
+            throw TransientErrorException(
                 "Input was fully read, but some streams did not receive a terminal stream status message. This likely indicates an error in the source or platform. Streams without a status message: $prettyStreams"
             )
         }

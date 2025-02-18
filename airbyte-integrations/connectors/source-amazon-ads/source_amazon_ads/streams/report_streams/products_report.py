@@ -7,9 +7,11 @@ from http import HTTPStatus
 from typing import Any, List, Mapping
 
 import requests
+
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
 from .report_streams import ReportInfo, ReportStream
+
 
 METRICS_MAP = {
     "campaigns": [

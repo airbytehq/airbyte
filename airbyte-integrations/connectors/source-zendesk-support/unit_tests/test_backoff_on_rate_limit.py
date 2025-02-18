@@ -3,12 +3,13 @@
 #
 
 
-from typing import Dict, Optional
+from typing import Dict
 
 import pytest
 import requests
 from source_zendesk_support.source import SourceZendeskSupport
 from source_zendesk_support.streams import Users
+
 
 _ANY_ATTEMPT_COUNT = 10
 
