@@ -158,11 +158,6 @@ abstract class S3DataLakeWriteTest(
         )
     }
 
-    @Test
-    override fun testDedupChangeCursor() {
-        super.testDedupChangeCursor()
-    }
-
     /**
      * Iceberg disallows null values in identifier columns. In dedup mode, we set the PK columns to
      * be Iceberg identifier columns. Therefore, we should detect null values in PK columns, and
