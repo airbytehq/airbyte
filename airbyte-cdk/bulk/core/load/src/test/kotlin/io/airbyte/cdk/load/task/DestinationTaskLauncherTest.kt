@@ -13,7 +13,6 @@ import io.airbyte.cdk.load.command.MockDestinationConfiguration
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
-import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
@@ -30,6 +29,7 @@ import io.airbyte.cdk.load.task.implementor.FailStreamTask
 import io.airbyte.cdk.load.task.implementor.FailStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailSyncTask
 import io.airbyte.cdk.load.task.implementor.FailSyncTaskFactory
+import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.airbyte.cdk.load.task.implementor.OpenStreamTask
 import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessBatchTaskFactory
@@ -44,10 +44,9 @@ import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushTickTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
-import io.airbyte.cdk.load.task.internal.SizedInputFlow
+import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTask
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
-import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Replaces
@@ -61,7 +60,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.toList
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
@@ -74,32 +72,34 @@ import org.junit.jupiter.api.Test
             "DestinationTaskLauncherTest",
             "MockDestinationConfiguration",
             "MockDestinationCatalog",
-            "MockScopeProvider",
         ]
 )
-class DestinationTaskLauncherTest<T : ScopedTask> {
-    @Inject lateinit var mockScopeProvider: MockScopeProvider
+class DestinationTaskLauncherTest {
+    @Inject lateinit var taskScopeProvider: TaskScopeProvider
     @Inject lateinit var taskLauncher: DestinationTaskLauncher
     @Inject lateinit var syncManager: SyncManager
 
     @Inject lateinit var mockInputConsumerTask: MockInputConsumerTaskFactory
     @Inject lateinit var mockSetupTaskFactory: MockSetupTaskFactory
     @Inject lateinit var mockSpillToDiskTaskFactory: MockSpillToDiskTaskFactory
-    @Inject lateinit var mockOpenStreamTaskFactory: MockOpenStreamTaskFactory
     @Inject lateinit var processRecordsTaskFactory: ProcessRecordsTaskFactory
     @Inject lateinit var processBatchTaskFactory: ProcessBatchTaskFactory
     @Inject lateinit var closeStreamTaskFactory: MockCloseStreamTaskFactory
     @Inject lateinit var teardownTaskFactory: MockTeardownTaskFactory
     @Inject lateinit var flushCheckpointsTaskFactory: MockFlushCheckpointsTaskFactory
-    @Inject lateinit var mockForceFlushTask: MockForceFlushTask
     @Inject lateinit var updateCheckpointsTask: MockUpdateCheckpointsTask
-    @Inject lateinit var inputFlow: MockInputFlow
+    @Inject lateinit var inputFlow: ReservingDeserializingInputFlow
     @Inject lateinit var queueWriter: MockQueueWriter
     @Inject lateinit var messageQueueSupplier: MockMessageQueueSupplier
     @Inject lateinit var flushTickTask: FlushTickTask
     @Inject lateinit var mockFailStreamTaskFactory: MockFailStreamTaskFactory
     @Inject lateinit var mockFailSyncTaskFactory: MockFailSyncTaskFactory
     @Inject lateinit var config: MockDestinationConfiguration
+
+    @Singleton
+    @Primary
+    @Requires(env = ["DestinationTaskLauncherTest"])
+    fun inputFlow(): ReservingDeserializingInputFlow = mockk(relaxed = true)
 
     @Singleton
     @Primary
@@ -115,15 +115,6 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
     @Primary
     @Requires(env = ["DestinationTaskLauncherTest"])
     fun processBatchTaskFactory(): ProcessBatchTaskFactory = mockk(relaxed = true)
-
-    @Singleton
-    @Primary
-    @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockInputFlow : SizedInputFlow<Reserved<DestinationMessage>> {
-        override suspend fun collect(
-            collector: FlowCollector<Pair<Long, Reserved<DestinationMessage>>>
-        ) {}
-    }
 
     @Singleton
     @Primary
@@ -154,14 +145,17 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
 
         override fun make(
             catalog: DestinationCatalog,
-            inputFlow: SizedInputFlow<Reserved<DestinationMessage>>,
+            inputFlow: ReservingDeserializingInputFlow,
             recordQueueSupplier:
                 MessageQueueSupplier<
                     DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
             checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
-            destinationTaskLauncher: DestinationTaskLauncher
+            destinationTaskLauncher: DestinationTaskLauncher,
+            fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
         ): InputConsumerTask {
             return object : InputConsumerTask {
+                override val terminalCondition: TerminalCondition = SelfTerminating
+
                 override suspend fun execute() {
                     hasRun.send(true)
                 }
@@ -175,10 +169,10 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
     class MockSetupTaskFactory : SetupTaskFactory {
         val hasRun: Channel<Unit> = Channel(Channel.UNLIMITED)
 
-        override fun make(
-            taskLauncher: DestinationTaskLauncher,
-        ): SetupTask {
+        override fun make(taskLauncher: DestinationTaskLauncher): SetupTask {
             return object : SetupTask {
+                override val terminalCondition: TerminalCondition = SelfTerminating
+
                 override suspend fun execute() {
                     hasRun.send(Unit)
                 }
@@ -202,6 +196,8 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
             stream: DestinationStream.Descriptor
         ): SpillToDiskTask {
             return object : SpillToDiskTask {
+                override val terminalCondition: TerminalCondition = SelfTerminating
+
                 override suspend fun execute() {
                     if (forceFailure.get()) {
                         throw Exception("Forced failure")
@@ -215,20 +211,13 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
     @Singleton
     @Replaces(DefaultOpenStreamTaskFactory::class)
     @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockOpenStreamTaskFactory(catalog: DestinationCatalog) : OpenStreamTaskFactory {
-        val streamHasRun = mutableMapOf<DestinationStream, Channel<Unit>>()
-
-        init {
-            catalog.streams.forEach { streamHasRun[it] = Channel(Channel.UNLIMITED) }
-        }
-
-        override fun make(
-            taskLauncher: DestinationTaskLauncher,
-            stream: DestinationStream
-        ): OpenStreamTask {
+    class MockOpenStreamTaskFactory : OpenStreamTaskFactory {
+        override fun make(): OpenStreamTask {
             return object : OpenStreamTask {
+                override val terminalCondition: TerminalCondition = SelfTerminating
+
                 override suspend fun execute() {
-                    streamHasRun[stream]?.send(Unit)
+                    // Do nothing
                 }
             }
         }
@@ -245,6 +234,8 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
             stream: DestinationStream.Descriptor,
         ): CloseStreamTask {
             return object : CloseStreamTask {
+                override val terminalCondition: TerminalCondition = SelfTerminating
+
                 override suspend fun execute() {
                     hasRun.send(Unit)
                 }
@@ -260,6 +251,8 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
 
         override fun make(taskLauncher: DestinationTaskLauncher): TeardownTask {
             return object : TeardownTask {
+                override val terminalCondition: TerminalCondition = SelfTerminating
+
                 override suspend fun execute() {
                     hasRun.send(Unit)
                 }
@@ -275,6 +268,8 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
 
         override fun make(): FlushCheckpointsTask {
             return object : FlushCheckpointsTask {
+                override val terminalCondition: TerminalCondition = SelfTerminating
+
                 override suspend fun execute() {
                     hasRun.send(true)
                 }
@@ -285,18 +280,9 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
     @Singleton
     @Primary
     @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockForceFlushTask : TimedForcedCheckpointFlushTask {
-        val didRun = Channel<Boolean>(Channel.UNLIMITED)
-
-        override suspend fun execute() {
-            didRun.send(true)
-        }
-    }
-
-    @Singleton
-    @Primary
-    @Requires(env = ["DestinationTaskLauncherTest"])
     class MockUpdateCheckpointsTask : UpdateCheckpointsTask {
+        override val terminalCondition: TerminalCondition = SelfTerminating
+
         val didRun = Channel<Boolean>(Channel.UNLIMITED)
         override suspend fun execute() {
             didRun.send(true)
@@ -314,6 +300,8 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
             stream: DestinationStream.Descriptor
         ): FailStreamTask {
             return object : FailStreamTask {
+                override val terminalCondition: TerminalCondition = SelfTerminating
+
                 override suspend fun execute() {
                     didRunFor.send(stream)
                 }
@@ -331,6 +319,8 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
             exception: Exception
         ): FailSyncTask {
             return object : FailSyncTask {
+                override val terminalCondition: TerminalCondition = SelfTerminating
+
                 override suspend fun execute() {
                     didRun.send(true)
                 }
@@ -361,22 +351,12 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
 
         coVerify(exactly = config.numProcessBatchWorkers) { processBatchTaskFactory.make(any()) }
 
-        // Verify that we kicked off the timed force flush w/o a specific delay
-        Assertions.assertTrue(mockForceFlushTask.didRun.receive())
-
         Assertions.assertTrue(
             updateCheckpointsTask.didRun.receive(),
             "update checkpoints task was started"
         )
 
         job.cancel()
-    }
-
-    @Test
-    fun testHandleSetupComplete() = runTest {
-        // Verify that open stream ran for each stream
-        taskLauncher.handleSetupComplete()
-        mockOpenStreamTaskFactory.streamHasRun.values.forEach { it.receive() }
     }
 
     @Test
@@ -449,42 +429,6 @@ class DestinationTaskLauncherTest<T : ScopedTask> {
         // This should run teardown unconditionally.
         launch { taskLauncher.handleStreamClosed(MockDestinationCatalogFactory.stream1.descriptor) }
         teardownTaskFactory.hasRun.receive()
-    }
-
-    @Test
-    fun testHandleTeardownComplete() = runTest {
-        // This should close the scope provider.
-        launch {
-            taskLauncher.run()
-            Assertions.assertTrue(mockScopeProvider.didClose)
-        }
-        taskLauncher.handleTeardownComplete()
-    }
-
-    @Test
-    fun testHandleCallbackWithFailure() = runTest {
-        launch {
-            taskLauncher.run()
-            Assertions.assertTrue(mockScopeProvider.didKill)
-        }
-        taskLauncher.handleTeardownComplete(success = false)
-    }
-
-    @Test
-    fun `test exceptions in tasks throw`(catalog: DestinationCatalog) = runTest {
-        mockSpillToDiskTaskFactory.forceFailure.getAndSet(true)
-
-        val job = launch { taskLauncher.run() }
-        taskLauncher.handleTeardownComplete()
-        job.join()
-
-        mockFailStreamTaskFactory.didRunFor.close()
-
-        Assertions.assertEquals(
-            catalog.streams.map { it.descriptor }.toSet(),
-            mockFailStreamTaskFactory.didRunFor.toList().toSet(),
-            "FailStreamTask was run for each stream"
-        )
     }
 
     @Test

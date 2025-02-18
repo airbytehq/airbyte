@@ -1,0 +1,28 @@
+{
+  "object": "list",
+  "url": "/v1/setup_attempts",
+  "has_more": false,
+  "data": [
+    {
+      "id": "setatt_1ErTsH2eZvKYlo2CI7ukcoF7",
+      "object": "setup_attempt",
+      "application": null,
+      "created": 1562004309,
+      "customer": null,
+      "flow_directions": null,
+      "livemode": false,
+      "on_behalf_of": null,
+      "payment_method": "pm_1ErTsG2eZvKYlo2CH0DNen59",
+      "payment_method_details": {
+        "card": {
+          "three_d_secure": null
+        },
+        "type": "card"
+      },
+      "setup_error": null,
+      "setup_intent": "seti_1ErTsG2eZvKYlo2CKaT8MITz",
+      "status": "succeeded",
+      "usage": "off_session"
+    }
+  ]
+}

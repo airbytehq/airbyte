@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "5.8.3"
+version = "5.8.7"
 name = "source-stripe"
 description = "Source implementation for Stripe."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -18,7 +18,7 @@ include = "source_stripe"
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
 pendulum = "==2.1.2"
-airbyte-cdk = "^5"
+airbyte-cdk = "^6"
 
 [tool.poetry.scripts]
 source-stripe = "source_stripe.run:run"
@@ -28,3 +28,11 @@ requests-mock = "^1.11.0"
 freezegun = "==1.2.2"
 pytest-mock = "^3.6.1"
 pytest = "^7"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
