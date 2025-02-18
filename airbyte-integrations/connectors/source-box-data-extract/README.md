@@ -13,7 +13,7 @@ By prioritizing content intelligence over metadata movement, this connector unlo
 
 ### Prerequisites
 
-* Python (`^3.10`)
+* Python (`^3.11`)
 * Poetry (`^1.8`) - installation instructions [here](https://python-poetry.org/docs/#installation)
 
 
