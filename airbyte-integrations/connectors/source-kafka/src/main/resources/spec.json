@@ -120,7 +120,7 @@
       },
       "polling_time": {
         "title": "Polling Time",
-        "description": "Amount of time Kafka connector should try to poll for messages.",
+        "description": "Amount of time in milliseconds Kafka connector should try to poll for messages.",
         "type": "integer",
         "default": 100
       },
