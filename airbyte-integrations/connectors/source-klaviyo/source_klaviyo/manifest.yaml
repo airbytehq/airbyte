@@ -283,6 +283,11 @@ definitions:
           - type: AddedFieldDefinition
             path: ["updated_at"]
             value: "{{ record.get('attributes', {}).get('updated_at') }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["attributes", "channel"]
+            value: "{{ stream_partition['campaign_type'] }}"
 
   campaigns_detailed_stream:
     # Docs: https://developers.klaviyo.com/en/v2024-10-15/reference/get_messages_for_campaign
