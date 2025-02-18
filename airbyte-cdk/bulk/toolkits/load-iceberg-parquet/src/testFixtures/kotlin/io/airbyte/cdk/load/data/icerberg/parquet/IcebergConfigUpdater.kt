@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.toolkits.iceberg.parquet
+package io.airbyte.cdk.load.data.icerberg.parquet
 
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.DefaultNamespaceResult
