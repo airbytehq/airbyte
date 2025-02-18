@@ -91,3 +91,13 @@ Delete a tag from Airbyte and remove it from any connections that use it.
 3. Click **Delete**.
 
 Airbyte deletes the tag and removes it from any connections that use it.
+
+## Limitations
+
+Tags have the following maximums.
+
+- 30 characters per tag name
+
+- 10 tags per connection
+
+- 100 tags per workspace
