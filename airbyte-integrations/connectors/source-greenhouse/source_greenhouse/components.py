@@ -7,13 +7,13 @@ from dataclasses import InitVar, dataclass
 from typing import Any, ClassVar, Iterable, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.incremental import Cursor
+from airbyte_cdk.sources.declarative.incremental import DeclarativeCursor
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
 
 
 @dataclass
-class GreenHouseSlicer(Cursor):
+class GreenHouseSlicer(DeclarativeCursor):
     parameters: InitVar[Mapping[str, Any]]
     cursor_field: str
     request_cursor_field: str
@@ -23,6 +23,9 @@ class GreenHouseSlicer(Cursor):
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self._state = {}
+
+    def select_state(self, state: Mapping[str, Any]) -> Mapping[str, Any]:
+        return self.get_stream_state()
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         yield StreamSlice(partition={}, cursor_slice={self.request_cursor_field: self._state.get(self.cursor_field, self.START_DATETIME)})
