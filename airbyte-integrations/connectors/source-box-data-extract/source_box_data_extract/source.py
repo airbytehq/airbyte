@@ -262,5 +262,3 @@ class StreamAIExtractStructuredFolder(Stream):
             airbyte_item["text_representation"] = item.text_representation
             logger.info(f"Reading file {item.file.id} - {item.file.name}")
             yield airbyte_item
-
-
