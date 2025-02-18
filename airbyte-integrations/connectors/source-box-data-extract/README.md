@@ -11,7 +11,7 @@ By prioritizing content intelligence, this connector unlocks new opportunities f
 
 ## Local development
 
-### Prerequisites
+### Prerequisites xx
 
 * Python (`^3.11`)
 * Poetry (`^1.8`) - installation instructions [here](https://python-poetry.org/docs/#installation)
