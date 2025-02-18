@@ -3,11 +3,11 @@
 This is the repository for the Box Generated source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/box-data-extract).
 
-This connector leverages AI to extract structured data directly from documents stored in Box, going beyond simple metadata transfer.
+This connector uses Box AI to extract data directly from documents stored in Box.
 
 For example, a company managing lease contracts can automatically capture key details and populate their system of record. Likewise, a financial institution can extract critical data from loan application documents—such as bank statements and W-2s—and integrate it into approval workflows.
 
-By prioritizing content intelligence over metadata movement, this connector unlocks new opportunities for automation and AI-driven insights.
+By prioritizing content intelligence, this connector unlocks new opportunities for automation and AI-driven insights.
 
 ## Local development
 
