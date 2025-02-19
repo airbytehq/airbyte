@@ -10,15 +10,21 @@ import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
 import io.airbyte.commons.exceptions.ConfigErrorException
+import io.airbyte.commons.json.Jsons
 import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation
-import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation.Companion.TMP_TABLE_SUFFIX
 import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsAllIgnoreCase
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsIgnoreCase
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.matchingKey
+import io.airbyte.integrations.destination.bigquery.BigQueryDestination
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.integrations.destination.bigquery.migrators.BigQueryDestinationState
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.FileOutputStream
+import java.io.PrintWriter
 import java.math.BigInteger
+import java.nio.file.Files
+import java.nio.file.Path
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
@@ -154,7 +160,7 @@ class BigQueryDestinationHandler(private val bq: BigQuery, private val datasetLo
         }
 
         val statistics = job.getStatistics<JobStatistics.QueryStatistics>()
-        LOGGER.debug(
+        LOGGER.info(
             "Root-level job {} completed in {} ms; processed {} bytes; billed for {} bytes",
             queryId,
             statistics.endTime - statistics.startTime,
@@ -190,7 +196,7 @@ class BigQueryDestinationHandler(private val bq: BigQuery, private val datasetLo
                         if (truncatedQuery != configuration.query) {
                             truncatedQuery += "..."
                         }
-                        LOGGER.debug(
+                        LOGGER.info(
                             "Child sql {} completed in {} ms; processed {} bytes; billed for {} bytes",
                             truncatedQuery,
                             childQueryStats.endTime - childQueryStats.startTime,
@@ -201,7 +207,7 @@ class BigQueryDestinationHandler(private val bq: BigQuery, private val datasetLo
                         // other job types are extract/copy/load
                         // we're probably not using them, but handle just in case?
                         val childJobStats = childJob.getStatistics<JobStatistics>()
-                        LOGGER.debug(
+                        LOGGER.info(
                             "Non-query child job ({}) completed in {} ms",
                             configuration.type,
                             childJobStats.endTime - childJobStats.startTime
@@ -424,4 +430,261 @@ class BigQueryDestinationHandler(private val bq: BigQuery, private val datasetLo
             return stream.primaryKey.map(ColumnId::name).toSet()
         }
     }
+}
+
+private val logger = KotlinLogging.logger {}
+/**
+ * Assumes that the old_raw_table_5mb_part1/part2 + new_input_table_5mb_part1/part2 tables already exist.
+ * Will drop+recreate the old_final_table_5mb / new_final_table_5mb tables as needed.
+ */
+fun main() {
+    val size = "5mb"
+    val runOldRawTablesFast = false
+    val runOldRawTablesSlow = false
+    val runNewTableNaive = true
+    val runNewTableOptimized = true
+
+    val config = Jsons.deserialize(Files.readString(Path.of("/Users/edgao/code/airbyte/airbyte-integrations/connectors/destination-bigquery/secrets/credentials-1s1t-gcs.json")))
+    val bq = BigQueryDestination.getBigQuery(config)
+    val generator =
+        BigQuerySqlGenerator(
+            projectId = "dataline-integration-testing",
+            datasetLocation = "us-east1"
+        )
+    val destHandler = BigQueryDestinationHandler(bq, "us-east1")
+
+    fun resetOldTypingDeduping() {
+        // reset the raw tables (i.e. unset loaded_at)
+        destHandler.execute(Sql.separately(
+            """
+                UPDATE `dataline-integration-testing`.`no_raw_tables_experiment`.`old_raw_table_${size}_part1`
+                SET `_airbyte_loaded_at` = NULL
+                WHERE true
+            """.trimIndent(),
+            """
+                UPDATE `dataline-integration-testing`.`no_raw_tables_experiment`.`old_raw_table_${size}_part2`
+                SET `_airbyte_loaded_at` = NULL
+                WHERE true
+            """.trimIndent(),
+        ))
+        // drop+recreate `old_final_table_${size}`
+        // part=0 here b/c the part number doesn't matter (we don't need the raw tables yet)
+        destHandler.execute(generator.createTable(getStreamConfig(size, 0), suffix = "", force = true))
+    }
+
+    if (runOldRawTablesFast) {
+        resetOldTypingDeduping()
+        logger.info { "Executing old-style fast T+D for $size dataset, part 1 (upsert to empty table)" }
+        destHandler.execute(
+            generator.updateTable(
+                getStreamConfig(size, part = 1),
+                finalSuffix = "",
+                minRawTimestamp = Optional.empty(),
+                useExpensiveSaferCasting = false,
+            )
+        )
+        logger.info { "Executing old-style fast T+D for $size dataset, part 2 (upsert to populated table)" }
+        destHandler.execute(
+            generator.updateTable(
+                getStreamConfig(size, part = 2),
+                finalSuffix = "",
+                minRawTimestamp = Optional.empty(),
+                useExpensiveSaferCasting = false,
+            )
+        )
+    }
+
+    if (runOldRawTablesSlow) {
+        resetOldTypingDeduping()
+        logger.info { "Executing old-style slow T+D for $size dataset, part 1 (upsert to empty table)" }
+        destHandler.execute(
+            generator.updateTable(
+                getStreamConfig(size, part = 1),
+                finalSuffix = "",
+                minRawTimestamp = Optional.empty(),
+                useExpensiveSaferCasting = true,
+            )
+        )
+        logger.info { "Executing old-style slow T+D for $size dataset, part 2 (upsert to populated table)" }
+        destHandler.execute(
+            generator.updateTable(
+                getStreamConfig(size, part = 2),
+                finalSuffix = "",
+                minRawTimestamp = Optional.empty(),
+                useExpensiveSaferCasting = true,
+            )
+        )
+    }
+
+    PrintWriter(FileOutputStream("/Users/edgao/code/airbyte/raw_table_experiments/generated_files/bigquery_newstyle.sql")).use { out ->
+        out.println("-- naive create table --------------------------------")
+        out.printSql(getNewStyleCreateFinalTableQuery(size, optimized = false))
+
+        repeat(10) { out.println() }
+        out.println("""-- "naive" dedup query -------------------------------""")
+        out.println(getNewStyleDedupingQuery(size, 1, optimized = false))
+
+        repeat(10) { out.println() }
+        out.println("-- optimized create table --------------------------------")
+        out.printSql(getNewStyleCreateFinalTableQuery(size, optimized = true))
+
+        repeat(10) { out.println() }
+        out.println("""-- "optimized" dedup query -------------------------------""")
+        out.println(getNewStyleDedupingQuery(size, 1, optimized = true))
+    }
+
+    if (runNewTableNaive) {
+        destHandler.execute(getNewStyleCreateFinalTableQuery(size, optimized = false))
+        logger.info { "Executing new-style naive deduping for $size dataset, part 1 (upsert to empty table)" }
+        destHandler.execute(Sql.of(getNewStyleDedupingQuery(size, 1, optimized = false)))
+        logger.info { "Executing new-style naive deduping for $size dataset, part 2 (upsert to populated table)" }
+        destHandler.execute(Sql.of(getNewStyleDedupingQuery(size, 2, optimized = false)))
+    }
+
+    if (runNewTableOptimized) {
+        destHandler.execute(getNewStyleCreateFinalTableQuery(size, optimized = true))
+        logger.info { "Executing new-style optimized deduping for $size dataset, part 1 (upsert to empty table)" }
+        destHandler.execute(Sql.of(getNewStyleDedupingQuery(size, 1, optimized = true)))
+        logger.info { "Executing new-style optimized deduping for $size dataset, part 2 (upsert to populated table)" }
+        destHandler.execute(Sql.of(getNewStyleDedupingQuery(size, 2, optimized = true)))
+    }
+}
+
+fun getNewStyleCreateFinalTableQuery(size: String, optimized: Boolean): Sql {
+    return Sql.separately(
+        "DROP TABLE `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_${size}`",
+        """
+            CREATE OR REPLACE TABLE `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_5mb` (
+              _airbyte_raw_id STRING NOT NULL,
+              _airbyte_extracted_at TIMESTAMP NOT NULL,
+              _airbyte_meta JSON NOT NULL,
+              _airbyte_generation_id INTEGER,
+              ${ if (optimized) { "_airbyte_partition_key INTEGER," } else { "" } }
+              `primary_key` INT64,
+              `cursor` DATETIME,
+              `string` STRING,
+              `bool` BOOL,
+              `integer` INT64,
+              `float` NUMERIC,
+              `date` DATE,
+              `ts_with_tz` TIMESTAMP,
+              `ts_without_tz` DATETIME,
+              `time_with_tz` STRING,
+              `time_no_tz` TIME,
+              `array` JSON,
+              `json_object` JSON
+            )
+            ${ 
+                if (optimized) {
+                    "PARTITION BY (RANGE_BUCKET(_airbyte_partition_key, GENERATE_ARRAY(0, 10000, 10)))"
+                } else { 
+                    "PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))" 
+                } 
+            }
+            CLUSTER BY `primary_key`, `_airbyte_extracted_at`;
+        """.trimIndent()
+    )
+}
+
+fun getNewStyleDedupingQuery(size: String, part: Int, optimized: Boolean): String {
+    return """
+        MERGE `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_${size}` target_table
+        USING (
+          WITH new_records AS (
+            SELECT *
+            FROM `dataline-integration-testing`.`no_raw_tables_experiment`.`new_input_table_${size}_part${part}`
+          ), numbered_rows AS (
+            SELECT *, row_number() OVER (
+              PARTITION BY `primary_key` ORDER BY `cursor` DESC NULLS LAST, `_airbyte_extracted_at` DESC
+            ) AS row_number
+            FROM new_records
+          )
+          SELECT
+            `primary_key`,
+            `cursor`,
+            `string`,
+            `bool`,
+            `integer`,
+            `float`,
+            `date`,
+            `ts_with_tz`,
+            `ts_without_tz`,
+            `time_with_tz`,
+            `time_no_tz`,
+            `array`,
+            `json_object`,
+            _airbyte_meta,
+            _airbyte_raw_id,
+            _airbyte_extracted_at,
+            _airbyte_generation_id
+            ${if (optimized) {""", mod(`primary_key`, 10000) as _airbyte_partition_key"""} else { "" } }
+          FROM numbered_rows
+          WHERE row_number = 1
+        ) new_record
+        ON (target_table.`primary_key` = new_record.`primary_key` OR (target_table.`primary_key` IS NULL AND new_record.`primary_key` IS NULL))
+        WHEN MATCHED AND (
+          target_table.`cursor` < new_record.`cursor`
+          OR (target_table.`cursor` = new_record.`cursor` AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)
+          OR (target_table.`cursor` IS NULL AND new_record.`cursor` IS NULL AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)
+          OR (target_table.`cursor` IS NULL AND new_record.`cursor` IS NOT NULL)
+        )
+        THEN UPDATE SET
+          `primary_key` = new_record.`primary_key`,
+          `cursor` = new_record.`cursor`,
+          `string` = new_record.`string`,
+          `bool` = new_record.`bool`,
+          `integer` = new_record.`integer`,
+          `float` = new_record.`float`,
+          `date` = new_record.`date`,
+          `ts_with_tz` = new_record.`ts_with_tz`,
+          `ts_without_tz` = new_record.`ts_without_tz`,
+          `time_with_tz` = new_record.`time_with_tz`,
+          `time_no_tz` = new_record.`time_no_tz`,
+          `array` = new_record.`array`,
+          `json_object` = new_record.`json_object`,
+          _airbyte_meta = new_record._airbyte_meta,
+          _airbyte_raw_id = new_record._airbyte_raw_id,
+          _airbyte_extracted_at = new_record._airbyte_extracted_at,
+          _airbyte_generation_id = new_record._airbyte_generation_id
+          ${if (optimized) {""", _airbyte_partition_key = new_record._airbyte_partition_key"""} else { "" } }
+        WHEN NOT MATCHED THEN INSERT (
+          `primary_key`,
+          `cursor`,
+          `string`,
+          `bool`,
+          `integer`,
+          `float`,
+          `date`,
+          `ts_with_tz`,
+          `ts_without_tz`,
+          `time_with_tz`,
+          `time_no_tz`,
+          `array`,
+          `json_object`,
+          _airbyte_meta,
+          _airbyte_raw_id,
+          _airbyte_extracted_at,
+          _airbyte_generation_id
+          ${if (optimized) {""", _airbyte_partition_key"""} else { "" } }
+        ) VALUES (
+          new_record.`primary_key`,
+          new_record.`cursor`,
+          new_record.`string`,
+          new_record.`bool`,
+          new_record.`integer`,
+          new_record.`float`,
+          new_record.`date`,
+          new_record.`ts_with_tz`,
+          new_record.`ts_without_tz`,
+          new_record.`time_with_tz`,
+          new_record.`time_no_tz`,
+          new_record.`array`,
+          new_record.`json_object`,
+          new_record._airbyte_meta,
+          new_record._airbyte_raw_id,
+          new_record._airbyte_extracted_at,
+          new_record._airbyte_generation_id
+          ${if (optimized) {""", new_record._airbyte_partition_key"""} else { "" } }
+        );
+    """.trimIndent()
 }
