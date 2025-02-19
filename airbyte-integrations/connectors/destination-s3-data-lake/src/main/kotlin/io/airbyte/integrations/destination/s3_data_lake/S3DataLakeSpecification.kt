@@ -76,7 +76,7 @@ class S3DataLakeSpecification :
     // Default 2
     @get:JsonProperty(
         "record_queue_depth",
-        defaultValue = "100"
+        defaultValue = "1000"
     )
     val recordQueueDepth: Int? = null
     @get:JsonProperty(

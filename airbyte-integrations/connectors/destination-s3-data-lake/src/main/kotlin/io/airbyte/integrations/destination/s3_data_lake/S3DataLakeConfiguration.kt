@@ -30,10 +30,7 @@ data class S3DataLakeConfiguration(
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
     IcebergCatalogConfigurationProvider,
-    S3BucketConfigurationProvider {
-    override val recordBatchSizeBytes: Long
-        get() = 1500 * 1024 * 1024
-}
+    S3BucketConfigurationProvider
 
 @Singleton
 class S3DataLakeConfigurationFactory :
@@ -51,7 +48,7 @@ class S3DataLakeConfigurationFactory :
             // For the sake of simplicity, just set workers to 1 regardless of
             // sync mode.
             numProcessRecordsWorkers = pojo.numWorkers ?: 2,
-            maxRecordQueueDepth = pojo.recordQueueDepth ?: 100
+            maxRecordQueueDepth = pojo.recordQueueDepth ?: 1000
         )
     }
 }
