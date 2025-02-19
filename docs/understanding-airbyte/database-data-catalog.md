@@ -2,9 +2,7 @@
 
 ## Config Database
 
-## Config Database Schema Documentation
-
-### active_declarative_manifest
+### `active_declarative_manifest`
 
 | Column Name           | Datatype  | Description                                           |
 | --------------------- | --------- | ----------------------------------------------------- |
@@ -20,7 +18,7 @@
 
 ---
 
-### actor
+### `actor`
 
 | Column Name            | Datatype     | Description                                             |
 | ---------------------- | ------------ | ------------------------------------------------------- |
@@ -45,7 +43,7 @@
 
 ---
 
-### actor_catalog
+### `actor_catalog`
 
 | Column Name   | Datatype    | Description                                     |
 | ------------- | ----------- | ----------------------------------------------- |
@@ -62,7 +60,7 @@
 
 ---
 
-### actor_catalog_fetch_event
+### `actor_catalog_fetch_event`
 
 | Column Name        | Datatype     | Description                                              |
 | ------------------ | ------------ | -------------------------------------------------------- |
@@ -74,7 +72,7 @@
 | created_at         | TIMESTAMP    | Timestamp when the record was created.                   |
 | modified_at        | TIMESTAMP    | Timestamp when the record was last modified.             |
 
-#### Indexes and Constraints
+#### `Indexes and Constraints`
 
 - Primary Key: (`id`)
 - Foreign Key: `actor_catalog_id` references `actor_catalog(id)`
@@ -84,7 +82,7 @@
 
 ---
 
-### actor_definition
+### `actor_definition`
 
 | Column Name                     | Datatype     | Description                                              |
 | -------------------------------- | ------------ | -------------------------------------------------------- |
@@ -112,7 +110,7 @@
 
 ---
 
-### actor_definition_breaking_change
+### `actor_definition_breaking_change`
 
 | Column Name                     | Datatype     | Description                                                 |
 | -------------------------------- | ------------ | ----------------------------------------------------------- |
@@ -133,7 +131,7 @@
 
 ---
 
-### actor_definition_config_injection
+### `actor_definition_config_injection`
 
 | Column Name         | Datatype    | Description                                     |
 | ------------------ | ----------- | ----------------------------------------------- |
@@ -150,7 +148,7 @@
 
 ---
 
-### actor_definition_version
+### `actor_definition_version`
 
 | Column Name         | Datatype     | Description                                  |
 | ------------------- | ------------ | -------------------------------------------- |
@@ -171,7 +169,7 @@
 
 ---
 
-### actor_definition_workspace_grant
+### `actor_definition_workspace_grant`
 
 | Column Name          | Datatype | Description                                    |
 | ------------------- | -------- | ---------------------------------------------- |
@@ -185,7 +183,7 @@
 
 ---
 
-### actor_oauth_parameter
+### `actor_oauth_parameter`
 
 | Column Name          | Datatype  | Description                                    |
 | ------------------- | --------- | ---------------------------------------------- |
@@ -201,7 +199,7 @@
 
 ---
 
-## airbyte_configs_migrations
+### `airbyte_configs_migrations`
 
 | Column Name     | Datatype      | Description                                     |
 | --------------- | ------------- | ----------------------------------------------- |
@@ -216,12 +214,12 @@
 | execution_time | INT            | Time taken to execute the migration.            |
 | success       | BOOLEAN         | Indicates whether the migration was successful. |
 
-### Indexes and Constraints
+#### Indexes and Constraints
 - Primary Key: (`installed_rank`)
 
 ---
 
-## application
+### `application`
 
 | Column Name    | Datatype  | Description                                         |
 | -------------- | --------- | --------------------------------------------------- |
@@ -232,13 +230,13 @@
 | client_secret | VARCHAR   | Secret key for authentication.                      |
 | created_at    | TIMESTAMP | Timestamp when the record was created.              |
 
-### Indexes and Constraints
+#### Indexes and Constraints
 - Primary Key: (`id`)
 - Foreign Key: `user_id` references `user(id)`
 
 ---
 
-## auth_refresh_token
+### `auth_refresh_token`
 
 | Column Name  | Datatype  | Description                                     |
 | ------------ | --------- | ----------------------------------------------- |
@@ -248,13 +246,13 @@
 | created_at   | TIMESTAMP | Timestamp when the record was created.          |
 | updated_at   | TIMESTAMP | Timestamp when the record was last modified.    |
 
-### Indexes and Constraints
+#### Indexes and Constraints
 - Primary Key: (`value`)
 - Unique Constraint: (`session_id`, `value`)
 
 ---
 
-## auth_user
+### `auth_user`
 
 | Column Name    | Datatype  | Description                                       |
 | -------------- | --------- | ------------------------------------------------- |
@@ -265,14 +263,14 @@
 | created_at    | TIMESTAMP | Timestamp when the record was created.            |
 | updated_at    | TIMESTAMP | Timestamp when the record was last modified.      |
 
-### Indexes and Constraints
+#### Indexes and Constraints
 - Primary Key: (`id`)
 - Foreign Key: `user_id` references `user(id)`
 - Unique Constraint: (`auth_user_id`, `auth_provider`)
 
 ---
 
-## connection
+### `connection`
 
 | Column Name            | Datatype  | Description                                        |
 | ---------------------- | --------- | -------------------------------------------------- |
@@ -291,7 +289,7 @@
 | created_at            | TIMESTAMP | Timestamp when the record was created.             |
 | updated_at            | TIMESTAMP | Timestamp when the record was last modified.       |
 
-### Indexes and Constraints
+#### Indexes and Constraints
 - Primary Key: (`id`)
 - Foreign Key: `source_id` references `actor(id)`
 - Foreign Key: `destination_id` references `actor(id)`
@@ -300,7 +298,7 @@
 
 ---
 
-## connection_operation
+### `connection_operation`
 
 | Column Name    | Datatype  | Description                                    |
 | -------------- | --------- | ---------------------------------------------- |
@@ -310,7 +308,8 @@
 | created_at    | TIMESTAMP | Timestamp when the record was created.         |
 | updated_at    | TIMESTAMP | Timestamp when the record was last modified.   |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`, `connection_id`, `operation_id`)
 - Foreign Key: `connection_id` references `connection(id)`
 - Foreign Key: `operation_id` references `operation(id)`
@@ -318,7 +317,7 @@
 
 ---
 
-## connection_tag
+### `connection_tag`
 
 | Column Name    | Datatype  | Description                                      |
 | -------------- | --------- | ------------------------------------------------ |
@@ -328,7 +327,8 @@
 | created_at     | TIMESTAMP | Timestamp when the record was created.           |
 | updated_at     | TIMESTAMP | Timestamp when the record was last modified.     |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `tag_id` references `tag(id)`
 - Foreign Key: `connection_id` references `connection(id)`
@@ -336,7 +336,7 @@
 
 ---
 
-## connection_timeline_event
+### `connection_timeline_event`
 
 | Column Name   | Datatype  | Description                                         |
 | ------------- | --------- | --------------------------------------------------- |
@@ -347,7 +347,8 @@
 | summary       | JSONB     | JSON blob containing event details.                 |
 | created_at    | TIMESTAMP | Timestamp when the event occurred.                  |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `connection_id` references `connection(id)`
 - Foreign Key: `user_id` references `user(id)`
@@ -355,7 +356,7 @@
 
 ---
 
-## connector_builder_project
+### `connector_builder_project`
 
 | Column Name                     | Datatype  | Description                                       |
 | -------------------------------- | --------- | ------------------------------------------------- |
@@ -373,7 +374,8 @@
 | contribution_actor_definition_id | UUID      | Foreign key referencing `actor_definition(id)`.   |
 | components_file_content          | TEXT      | Raw content of component files.                   |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `workspace_id` references `workspace(id)`
 - Foreign Key: `actor_definition_id` references `actor_definition(id)`
@@ -383,7 +385,7 @@
 
 ---
 
-## connector_rollout
+### `connector_rollout`
 
 | Column Name                  | Datatype  | Description                                      |
 | ---------------------------- | --------- | ------------------------------------------------ |
@@ -408,7 +410,8 @@
 | workflow_run_id               | VARCHAR   | Workflow run identifier.                         |
 | paused_reason                 | VARCHAR   | Reason for pausing the rollout.                  |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `actor_definition_id` references `actor_definition(id)`
 - Foreign Key: `release_candidate_version_id` references `actor_definition_version(id)`
@@ -419,7 +422,7 @@
 
 ---
 
-## dataplane
+### `dataplane`
 
 | Column Name        | Datatype  | Description                                      |
 | ------------------ | --------- | ------------------------------------------------ |
@@ -432,7 +435,8 @@
 | updated_by        | UUID      | Foreign key referencing `user(id)`.              |
 | tombstone         | BOOLEAN   | Indicates if the record is deleted.              |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `dataplane_group_id` references `dataplane_group(id)`
 - Foreign Key: `updated_by` references `user(id)`
@@ -440,7 +444,7 @@
 
 ---
 
-## dataplane_group
+### `dataplane_group`
 
 | Column Name      | Datatype  | Description                                      |
 | --------------- | --------- | ------------------------------------------------ |
@@ -453,7 +457,8 @@
 | updated_by     | UUID      | Foreign key referencing `user(id)`.              |
 | tombstone      | BOOLEAN   | Indicates if the record is deleted.              |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `organization_id` references `organization(id)`
 - Foreign Key: `updated_by` references `user(id)`
@@ -461,7 +466,7 @@
 
 ---
 
-## declarative_manifest
+### `declarative_manifest`
 
 | Column Name          | Datatype  | Description                                      |
 | -------------------- | --------- | ------------------------------------------------ |
@@ -472,12 +477,13 @@
 | version            | BIGINT    | Version number of the manifest.                 |
 | created_at         | TIMESTAMP | Timestamp when the record was created.           |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`actor_definition_id`, `version`)
 
 ---
 
-## declarative_manifest_image_version
+### `declarative_manifest_image_version`
 
 | Column Name    | Datatype  | Description                          |
 | ------------- | --------- | ------------------------------------ |
@@ -487,12 +493,13 @@
 | updated_at    | TIMESTAMP | Timestamp when the record was last modified. |
 | image_sha     | VARCHAR   | SHA checksum of the image.          |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`major_version`)
 
 ---
 
-## notification_configuration
+### `notification_configuration`
 
 | Column Name         | Datatype  | Description                                      |
 | ------------------- | --------- | ------------------------------------------------ |
@@ -503,13 +510,14 @@
 | created_at         | TIMESTAMP | Timestamp when the record was created.           |
 | updated_at         | TIMESTAMP | Timestamp when the record was last modified.     |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `connection_id` references `connection(id)`
 
 ---
 
-## operation
+### `operation`
 
 | Column Name           | Datatype  | Description                                      |
 | --------------------- | --------- | ------------------------------------------------ |
@@ -524,13 +532,14 @@
 | updated_at            | TIMESTAMP | Timestamp when the record was last modified.     |
 | operator_webhook      | JSONB     | JSON blob defining webhook settings.             |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `workspace_id` references `workspace(id)`
 
 ---
 
-## organization
+### `organization`
 
 | Column Name  | Datatype  | Description                                      |
 | ------------ | --------- | ------------------------------------------------ |
@@ -542,13 +551,14 @@
 | updated_at  | TIMESTAMP | Timestamp when the record was last modified.      |
 | tombstone   | BOOLEAN   | Indicates if the organization is deleted.         |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `user_id` references `user(id)`
 
 ---
 
-## organization_email_domain
+### `organization_email_domain`
 
 | Column Name      | Datatype  | Description                                     |
 | ---------------- | --------- | ----------------------------------------------- |
@@ -557,7 +567,8 @@
 | email_domain   | VARCHAR   | Email domain associated with the organization.  |
 | created_at     | TIMESTAMP | Timestamp when the record was created.          |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `organization_id` references `organization(id)`
 - Unique Constraint: (`organization_id`, `email_domain`)
@@ -565,7 +576,7 @@
 
 ---
 
-## organization_payment_config
+### `organization_payment_config`
 
 | Column Name               | Datatype  | Description                                    |
 | ------------------------- | --------- | ---------------------------------------------- |
@@ -578,7 +589,8 @@
 | updated_at                | TIMESTAMP | Timestamp when the record was last modified. |
 | subscription_status       | ENUM      | Status of the organization's subscription.   |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`organization_id`)
 - Unique Constraint: (`payment_provider_id`)
 - Foreign Key: `organization_id` references `organization(id)`
@@ -587,7 +599,7 @@
 
 ---
 
-## permission
+### `permission`
 
 | Column Name        | Datatype  | Description                                    |
 | ------------------ | --------- | ---------------------------------------------- |
@@ -599,7 +611,8 @@
 | organization_id  | UUID      | Foreign key referencing `organization(id)`.    |
 | permission_type  | ENUM      | Type of permission assigned.                   |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `user_id` references `user(id)`
 - Foreign Key: `workspace_id` references `workspace(id)`
@@ -611,7 +624,7 @@
 
 ---
 
-## schema_management
+### `schema_management`
 
 | Column Name                 | Datatype  | Description                                       |
 | --------------------------- | --------- | ------------------------------------------------- |
@@ -622,14 +635,15 @@
 | auto_propagation_status     | ENUM      | Status of automatic schema propagation.          |
 | backfill_preference         | ENUM      | User preference for backfill operations.         |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `connection_id` references `connection(id)`
 - Index: `connection_idx` on (`connection_id`)
 
 ---
 
-## scoped_configuration
+### `scoped_configuration`
 
 | Column Name      | Datatype  | Description                                    |
 | --------------- | --------- | ---------------------------------------------- |
@@ -648,13 +662,14 @@
 | created_at     | TIMESTAMP | Timestamp when the record was created.        |
 | updated_at     | TIMESTAMP | Timestamp when the record was last modified.  |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Unique Constraint: (`key`, `resource_type`, `resource_id`, `scope_type`, `scope_id`)
 
 ---
 
-## secret_persistence_config
+### `secret_persistence_config`
 
 | Column Name                           | Datatype  | Description                                       |
 | ------------------------------------- | --------- | ------------------------------------------------- |
@@ -666,13 +681,14 @@
 | created_at                            | TIMESTAMP | Timestamp when the record was created.           |
 | updated_at                            | TIMESTAMP | Timestamp when the record was last modified.     |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Unique Constraint: (`scope_id`, `scope_type`)
 
 ---
 
-## sso_config
+### `sso_config`
 
 | Column Name       | Datatype  | Description                                    |
 | ---------------- | --------- | ---------------------------------------------- |
@@ -682,7 +698,8 @@
 | created_at     | TIMESTAMP | Timestamp when the record was created.         |
 | updated_at     | TIMESTAMP | Timestamp when the record was last modified.   |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `organization_id` references `organization(id)`
 - Unique Constraint: (`keycloak_realm`)
@@ -692,7 +709,7 @@
 
 ---
 
-## state
+### `state`
 
 | Column Name    | Datatype  | Description                                       |
 | ------------- | --------- | ------------------------------------------------- |
@@ -705,14 +722,15 @@
 | namespace     | TEXT      | Namespace of the stream.                         |
 | type          | ENUM      | Type of state (`STREAM`, `GLOBAL`, `LEGACY`).    |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`, `connection_id`)
 - Foreign Key: `connection_id` references `connection(id)`
 - Unique Constraint: (`connection_id`, `stream_name`, `namespace`)
 
 ---
 
-## stream_generation
+### `stream_generation`
 
 | Column Name       | Datatype  | Description                                    |
 | ---------------- | --------- | ---------------------------------------------- |
@@ -725,7 +743,8 @@
 | created_at     | TIMESTAMP | Timestamp when the record was created.        |
 | updated_at     | TIMESTAMP | Timestamp when the record was last modified.  |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `connection_id` references `connection(id)`
 - Index: `stream_generation_connection_id_stream_name_generation_id_idx` on (`connection_id`, `stream_name`, `generation_id`)
@@ -733,7 +752,7 @@
 
 ---
 
-## stream_refreshes
+### `stream_refreshes`
 
 | Column Name       | Datatype  | Description                                    |
 | ---------------- | --------- | ---------------------------------------------- |
@@ -744,7 +763,8 @@
 | created_at     | TIMESTAMP | Timestamp when the record was created.        |
 | refresh_type   | ENUM      | Type of refresh operation performed.          |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `connection_id` references `connection(id)`
 - Index: `stream_refreshes_connection_id_idx` on (`connection_id`)
@@ -753,7 +773,7 @@
 
 ---
 
-## stream_reset
+### `stream_reset`
 
 | Column Name       | Datatype  | Description                                    |
 | ---------------- | --------- | ---------------------------------------------- |
@@ -764,14 +784,16 @@
 | created_at     | TIMESTAMP | Timestamp when the record was created.        |
 | updated_at     | TIMESTAMP | Timestamp when the record was last modified.  |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `connection_id` references `connection(id)`
 - Unique Constraint: (`connection_id`, `stream_name`, `stream_namespace`)
 - Index: `connection_id_stream_name_namespace_idx` on (`connection_id`, `stream_name`, `stream_namespace`)
 
 ---
-## tag
+
+### `tag`
 
 | Column Name   | Datatype  | Description                                        |
 | ------------ | --------- | -------------------------------------------------- |
@@ -782,7 +804,8 @@
 | created_at   | TIMESTAMP | Timestamp when the record was created.             |
 | updated_at   | TIMESTAMP | Timestamp when the record was last modified.       |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `workspace_id` references `workspace(id)`
 - Unique Constraint: (`name`, `workspace_id`)
@@ -790,7 +813,7 @@
 
 ---
 
-## user
+### `user`
 
 | Column Name           | Datatype  | Description                                      |
 | --------------------- | --------- | ------------------------------------------------ |
@@ -805,7 +828,8 @@
 | created_at          | TIMESTAMP | Timestamp when the record was created.          |
 | updated_at          | TIMESTAMP | Timestamp when the record was last modified.    |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `default_workspace_id` references `workspace(id)`
 - Unique Constraint: (`email`)
@@ -814,7 +838,7 @@
 
 ---
 
-## user_invitation
+### `user_invitation`
 
 | Column Name       | Datatype  | Description                                         |
 | ---------------- | --------- | --------------------------------------------------- |
@@ -831,7 +855,8 @@
 | accepted_by_user_id | UUID  | Foreign key referencing `user(id)`.                 |
 | expires_at     | TIMESTAMP | Expiration timestamp of the invitation.             |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `inviter_user_id` references `user(id)`
 - Foreign Key: `accepted_by_user_id` references `user(id)`
@@ -845,7 +870,7 @@
 
 ---
 
-## workload
+### `workload`
 
 | Column Name         | Datatype  | Description                                     |
 | ------------------ | --------- | ----------------------------------------------- |
@@ -868,7 +893,8 @@
 | dataplane_group | VARCHAR   | Dataplane group associated with the workload.   |
 | priority        | INT       | Priority level of the workload.                 |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Index: `active_workload_by_mutex_idx` on (`mutex_key`) where (`status` is active)
 - Index: `workload_deadline_idx` on (`deadline`) where (`deadline IS NOT NULL`)
@@ -877,7 +903,7 @@
 
 ---
 
-## workload_label
+### `workload_label`
 
 | Column Name    | Datatype  | Description                                    |
 | -------------- | --------- | ---------------------------------------------- |
@@ -886,7 +912,8 @@
 | key           | VARCHAR   | Label key.                                    |
 | value         | VARCHAR   | Label value.                                  |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `workload_id` references `workload(id)`
 - Unique Constraint: (`workload_id`, `key`)
@@ -894,7 +921,7 @@
 
 ---
 
-## workspace
+### `workspace`
 
 | Column Name               | Datatype  | Description                                   |
 | ------------------------ | --------- | --------------------------------------------- |
@@ -919,13 +946,14 @@
 | notification_settings  | JSONB     | Notification settings for the workspace.     |
 | organization_id        | UUID      | Foreign key referencing `organization(id)`.  |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`id`)
 - Foreign Key: `organization_id` references `organization(id)`
 
 ---
 
-## workspace_service_account
+### `workspace_service_account`
 
 | Column Name            | Datatype  | Description                                      |
 | ---------------------- | --------- | ------------------------------------------------ |
@@ -937,7 +965,8 @@
 | created_at           | TIMESTAMP | Timestamp when the record was created.          |
 | updated_at           | TIMESTAMP | Timestamp when the record was last modified.    |
 
-### Indexes and Constraints
+#### Indexes and Constraints
+
 - Primary Key: (`workspace_id`, `service_account_id`)
 - Foreign Key: `workspace_id` references `workspace(id)`
 
@@ -945,8 +974,9 @@
 
 ## Jobs Database
 
-## `jobs` Table
-| **Column Name**  | **Datatype**  | **Description** |
+### `jobs`
+
+| Column Name  | Datatype  | Description |
 |------------------|--------------|----------------|
 | `id`            | `bigint`      | Primary key, uniquely identifies a job. |
 | `config_type`   | `job_config_type` | Type of job (`sync`, `reset`). |
@@ -959,9 +989,10 @@
 | `metadata`      | `jsonb`       | JSON blob containing metadata for the job. |
 | `is_scheduled`  | `boolean`     | Whether the job was scheduled automatically (default: `true`). |
 
-### Indexes & Constraints
-- **Primary Key:** `id`
-- **Indexes:**
+#### Indexes & Constraints
+
+- Primary Key: `id`
+- Indexes:
     - `jobs_config_type_idx` → (`config_type`)
     - `jobs_scope_idx` → (`scope`)
     - `jobs_status_idx` → (`status`)
@@ -971,8 +1002,9 @@
 
 ---
 
-## `attempts` Table
-| **Column Name**  | **Datatype**  | **Description** |
+### `attempts`
+
+| Column Name  | Datatype  | Description |
 |------------------|--------------|----------------|
 | `id`            | `bigint`      | Primary key, uniquely identifies an attempt. |
 | `job_id`        | `bigint`      | Foreign key to `jobs(id)`, linking the attempt to a job. |
@@ -987,28 +1019,32 @@
 | `processing_task_queue` | `varchar(255)` | Task queue identifier for processing. |
 | `attempt_sync_config` | `jsonb`   | JSON blob for sync configuration. |
 
-### Indexes & Constraints
-- **Primary Key:** `id`
-- **Foreign Key:** `job_id` → `jobs(id)`
-- **Indexes:**
+#### Indexes & Constraints
+
+- Primary Key: `id`
+- Foreign Key: `job_id` → `jobs(id)`
+- Indexes:
     - `attempts_status_idx` → (`status`)
     - `job_attempt_idx` → (`job_id`, `attempt_number`) (Unique)
 
 ---
 
-## `airbyte_metadata` Table
-| **Column Name**  | **Datatype**  | **Description** |
+### `airbyte_metadata`
+
+| Column Name  | Datatype  | Description |
 |------------------|--------------|----------------|
 | `key`           | `varchar(255)` | Primary key, uniquely identifies a metadata key. |
 | `value`         | `varchar(255)` | Value associated with the key. |
 
-### Indexes & Constraints
-- **Primary Key:** `key`
+#### Indexes & Constraints
+
+- Primary Key: `key`
 
 ---
 
-## `airbyte_jobs_migrations` Table
-| **Column Name**  | **Datatype**  | **Description** |
+### `airbyte_jobs_migrations`
+
+| Column Name  | Datatype  | Description |
 |------------------|--------------|----------------|
 | `installed_rank` | `int`        | Primary key, rank of migration execution. |
 | `version`       | `varchar(50)` | Version number of the migration. |
@@ -1021,15 +1057,17 @@
 | `execution_time` | `int`        | Execution time in milliseconds. |
 | `success`      | `boolean`     | Whether the migration succeeded. |
 
-### Indexes & Constraints
-- **Primary Key:** `installed_rank`
-- **Indexes:**
+#### Indexes & Constraints
+
+- Primary Key: `installed_rank`
+- Indexes:
     - `airbyte_jobs_migrations_s_idx` → (`success`)
 
 ---
 
-## `normalization_summaries` Table
-| **Column Name**  | **Datatype**  | **Description** |
+### `normalization_summaries`
+
+| Column Name  | Datatype  | Description |
 |------------------|--------------|----------------|
 | `id`            | `uuid`        | Primary key, uniquely identifies a normalization summary. |
 | `attempt_id`    | `bigint`      | Foreign key to `attempts(id)`. |
@@ -1039,10 +1077,9 @@
 | `created_at`    | `timestamp(6) with time zone` | Timestamp when the summary was created. |
 | `updated_at`    | `timestamp(6) with time zone` | Timestamp when the summary was last updated. |
 
-### Indexes & Constraints
-- **Primary Key:** `id`
-- **Foreign Key:** `attempt_id` → `attempts(id)`
-- **Indexes:**
-    - `normalization_summary_attempt_id_idx` → (`attempt_id`)
+#### Indexes & Constraints
 
----
+- Primary Key: `id`
+- Foreign Key: `attempt_id` → `attempts(id)`
+- Indexes:
+    - `normalization_summary_attempt_id_idx` → (`attempt_id`)
