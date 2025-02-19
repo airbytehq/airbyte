@@ -19,13 +19,16 @@ You'll need the following information to configure the Kafka source:
 - **MessageFormat** - How to deserialize messages; choose either:
   - **JSON**
   - **AVRO** if choosing avro, several other options are available
-    - [Deserialization strategy](https://docs.confluent.io/cloud/current/sr/fundamentals/serdes-develop/index.html#how-the-naming-strategies-work)
+    - Deserialization strategy - To deserialize Avro binary, set the [_subject name strategy_][subject-name-strategy] for choosing the schema from the registry
     - Schema Registry URL - Host/port to connect to the schema registry server
     - Username and password, optional to authenticate to the schema registry server
 - **Protocol** - The Protocol used to communicate with brokers. If using SASL, this includes how to authenticate to the brokers.
-  - **PLAINTEXT** - no authentication or encryption
+  - **PLAINTEXT** - no authentication and no encryption
   - **SASL PLAINTEXT** - no encryption; a `SASL JAAS Config` is needed to authenticate
-  - **SASL SSL** - encrypted; a `SASL JAAS Config` is needed to authenticate; choose a SASL Mechanism appropriate to your brokers; If using SASL Mechanism `OAUTHBEARER`, set the token endpoint URL in optional fields.
+  - **SASL SSL** - encrypted 
+    - **SASL JAAS Config** configures authentication to the brokers
+    - **SASL Mechanism** appropriate to your brokers' auth mechanism
+    - **OAUTHBEARER token endpoint URL** Optional; If using SASL Mechanism `OAUTHBEARER`, set to the token endpoint URL; note this does not apply to schema registry auth
 - **Subscription Method** - You can choose to manually assign a list of partitions, or subscribe to all topics matching specified pattern to get dynamically assigned partitions.
   - **List of topic** - comma separated `topic:partition`s, each partition becomes a stream in the connection
   - **Topic pattern** - a pattern to use, each matching topic becomes a stream in the connection
@@ -85,3 +88,5 @@ AVRO - deserialize Using confluent API. Please refer (https://docs.confluent.io/
 | 0.1.1   | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524)                                             | Update connector fields title/description                            |
 
 </details>
+
+[subject-name-strategy]: https://docs.confluent.io/cloud/current/sr/fundamentals/serdes-develop/index.html#subject-name-strategy
