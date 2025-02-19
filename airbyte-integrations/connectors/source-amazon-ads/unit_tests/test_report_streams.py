@@ -9,6 +9,7 @@ from datetime import timedelta
 from functools import partial
 from unittest import mock
 
+import pendulum
 import pytest
 import requests_mock
 import responses

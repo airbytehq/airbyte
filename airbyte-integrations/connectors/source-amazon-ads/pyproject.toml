@@ -18,6 +18,7 @@ include = "source_amazon_ads"
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
 airbyte-cdk = "^6"
+pendulum = "*"
 
 [tool.poetry.scripts]
 source-amazon-ads = "source_amazon_ads.run:run"
@@ -27,7 +28,6 @@ responses = "^0.25"
 freezegun = "*"
 requests-mock = "*"
 pytest-mock = "*"
-pendulum = "*"
 
 [tool.poe]
 include = [
