@@ -15,8 +15,7 @@ definitions:
           type: HttpRequester
           url_base: https://openexchangerates.org/api/
           path: >-
-            historical/{{ format_datetime( config['start_date'] if not
-            stream_state else stream_state['timestamp'], '%Y-%m-%d' ) }}.json
+            historical/{{ format_datetime(stream_interval['start_date'], '%Y-%m-%d' ) }}.json
           http_method: GET
           request_parameters:
             app_id: "{{ config['app_id'] }}"
@@ -31,9 +30,7 @@ definitions:
         cursor_field: timestamp
         name: open_exchange_rates
         incremental_cursor: timestamp
-        path: >-
-          historical/{{ format_datetime( config['start_date'] if not
-          stream_state else stream_state['timestamp'], '%Y-%m-%d' ) }}.json
+          historical/{{ format_datetime(stream_interval['start_date'], '%Y-%m-%d' ) }}.json
         cursor_datetime_formats:
           - "%s"
         datetime_format: "%s"
@@ -52,8 +49,7 @@ definitions:
           incremental_cursor: timestamp
           name: open_exchange_rates
           path: >-
-            historical/{{ format_datetime( config['start_date'] if not stream_state
-            else stream_state['timestamp'], '%Y-%m-%d' ) }}.json
+            historical/{{ format_datetime(stream_interval['start_date'], '%Y-%m-%d' ) }}.json
           properties:
             base:
               type:
@@ -952,9 +948,7 @@ streams:
       requester:
         type: HttpRequester
         url_base: https://openexchangerates.org/api/
-        path: >-
-          historical/{{ format_datetime( config['start_date'] if not
-          stream_state else stream_state['timestamp'], '%Y-%m-%d' ) }}.json
+          historical/{{ format_datetime(stream_interval['start_date'], '%Y-%m-%d' ) }}.json
         http_method: GET
         request_parameters:
           app_id: "{{ config['app_id'] }}"
@@ -970,8 +964,7 @@ streams:
       name: open_exchange_rates
       incremental_cursor: timestamp
       path: >-
-        historical/{{ format_datetime( config['start_date'] if not
-        stream_state else stream_state['timestamp'], '%Y-%m-%d' ) }}.json
+        historical/{{ format_datetime(stream_interval['start_date'], '%Y-%m-%d' ) }}.json
       cursor_datetime_formats:
         - "%s"
       datetime_format: "%s"
@@ -990,8 +983,7 @@ streams:
         incremental_cursor: timestamp
         name: open_exchange_rates
         path: >-
-          historical/{{ format_datetime( config['start_date'] if not stream_state
-          else stream_state['timestamp'], '%Y-%m-%d' ) }}.json
+          historical/{{ format_datetime(stream_interval['start_date'], '%Y-%m-%d' ) }}.json
         properties:
           base:
             type:
@@ -1924,8 +1916,7 @@ schemas:
     incremental_cursor: timestamp
     name: open_exchange_rates
     path: >-
-      historical/{{ format_datetime( config['start_date'] if not stream_state
-      else stream_state['timestamp'], '%Y-%m-%d' ) }}.json
+      historical/{{ format_datetime(stream_interval['start_date'], '%Y-%m-%d' ) }}.json
     properties:
       base:
         type:
