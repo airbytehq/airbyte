@@ -1,6 +1,5 @@
 {
   "streams": [
-
     {
       "stream": {
         "name": "shipping_rates",
@@ -15,6 +14,5 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     }
-
   ]
 }
