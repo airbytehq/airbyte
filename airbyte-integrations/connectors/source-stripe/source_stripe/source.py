@@ -11,8 +11,7 @@ import pendulum
 
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
-from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
-from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.source import TState
@@ -46,7 +45,7 @@ USE_CACHE = not _CACHE_DISABLED
 STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
 
 
-class SourceStripe(ConcurrentSourceAdapter):
+class SourceStripe(YamlDeclarativeSource):
     message_repository = InMemoryMessageRepository(entrypoint_logger.level)
     _SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION = {
         CreatedCursorIncrementalStripeStream: ("created[gte]", "created[lte]"),
