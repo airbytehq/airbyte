@@ -89,6 +89,7 @@ class StreamGenerationTest(TestCase):
 
         assert type(exception.value.__cause__) == exceptions.JSONDecodeError
         assert exception.value.response.url == _BASE_URL
+        assert type(exception.value) == exceptions.HTTPError
         assert exception.value == http_error
 
     def test_read_stream_with_correct_json_response_error_then_raise_exception(self) -> None:
@@ -107,6 +108,7 @@ class StreamGenerationTest(TestCase):
         assert exception.value.response.json()[0]["errorCode"] == "REQUEST_LIMIT_EXCEEDED"
         assert exception.value.response.url == _BASE_URL
         assert exception.value == http_error
+        assert type(exception.value) == exceptions.HTTPError
 
     def test_read_stream_with_forbidden_and_limit_exceeded_error_code_then_raise_exception(self) -> None:
         mock_response = Mock()
