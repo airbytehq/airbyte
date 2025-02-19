@@ -1,7 +1,8 @@
-version: 4.1.0
+version: 6.0.0
 
 type: DeclarativeSource
 
+#
 check:
   type: CheckStream
   stream_names:
@@ -87,7 +88,6 @@ definitions:
       type: RequestOption
       field_name: "created[lte]"
       inject_into: "request_parameter"
-
 
   # created flow component
   created_stream:

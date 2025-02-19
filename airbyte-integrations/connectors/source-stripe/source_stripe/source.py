@@ -64,6 +64,11 @@ class SourceStripe(YamlDeclarativeSource):
             # things will NOT be executed concurrently
             self._streams_configured_as_full_refresh = set()
 
+    # TODO: Remove this property when the source will be fully migrated
+    @property
+    def is_partially_declarative(self):
+        return True
+
     @staticmethod
     def validate_and_fill_with_defaults(config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         lookback_window_days, slice_range = (
