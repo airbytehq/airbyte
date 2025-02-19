@@ -586,6 +586,10 @@ module.exports = {
     },
     {
       type: "doc",
+      id: "using-airbyte/delivery-methods",
+    },
+    {
+      type: "doc",
       id: "using-airbyte/mappings",
     },
     {
