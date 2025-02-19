@@ -65,7 +65,7 @@ FROM `dataline-integration-testing.no_raw_tables_experiment.input_typed_data` AS
 CREATE OR REPLACE TABLE dataline-integration-testing.no_raw_tables_experiment.new_table_10mb (
   _airbyte_raw_id STRING,
   _airbyte_extracted_at TIMESTAMP,
-  _airbyte_meta STRING,
+  _airbyte_meta JSON,
   _airbyte_generation_id INT64,
   `primary_key` INT64,
   `cursor` DATETIME,
@@ -83,8 +83,109 @@ CREATE OR REPLACE TABLE dataline-integration-testing.no_raw_tables_experiment.ne
 ) AS SELECT
   generate_uuid(),
   ts_with_tz,
-  "{\"changes\":[],\"sync_id\":42}",
+  JSON '{"changes":[],"sync_id":42}',
   42,
   *
 FROM `dataline-integration-testing.no_raw_tables_experiment.input_typed_data` AS t;
+```
+
+### pure deduping query
+
+simulate a full refresh dedup, by upserting the entire dataset into itself.
+
+```sql
+MERGE `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_10mb` target_table
+USING (
+  WITH new_records AS (
+    SELECT *
+    FROM `dataline-integration-testing`.`no_raw_tables_experiment`.`new_table_10mb`
+  ), numbered_rows AS (
+    SELECT *, row_number() OVER (
+      PARTITION BY `primary_key` ORDER BY `cursor` DESC NULLS LAST, `_airbyte_extracted_at` DESC
+    ) AS row_number
+    FROM new_records
+  )
+  SELECT
+    `primary_key`,
+    `cursor`,
+    `string`,
+    `bool`,
+    `integer`,
+    `float`,
+    `date`,
+    `ts_with_tz`,
+    `ts_without_tz`,
+    `time_with_tz`,
+    `time_no_tz`,
+    `array`,
+    `json_object`,
+    _airbyte_meta,
+    _airbyte_raw_id,
+    _airbyte_extracted_at,
+    _airbyte_generation_id
+  FROM numbered_rows
+  WHERE row_number = 1
+) new_record
+ON (target_table.`primary_key` = new_record.`primary_key` OR (target_table.`primary_key` IS NULL AND new_record.`primary_key` IS NULL))
+WHEN MATCHED AND (
+  target_table.`cursor` < new_record.`cursor`
+  OR (target_table.`cursor` = new_record.`cursor` AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)
+  OR (target_table.`cursor` IS NULL AND new_record.`cursor` IS NULL AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)
+  OR (target_table.`cursor` IS NULL AND new_record.`cursor` IS NOT NULL)
+)
+THEN UPDATE SET
+  `primary_key` = new_record.`primary_key`,
+  `cursor` = new_record.`cursor`,
+  `string` = new_record.`string`,
+  `bool` = new_record.`bool`,
+  `integer` = new_record.`integer`,
+  `float` = new_record.`float`,
+  `date` = new_record.`date`,
+  `ts_with_tz` = new_record.`ts_with_tz`,
+  `ts_without_tz` = new_record.`ts_without_tz`,
+  `time_with_tz` = new_record.`time_with_tz`,
+  `time_no_tz` = new_record.`time_no_tz`,
+  `array` = new_record.`array`,
+  `json_object` = new_record.`json_object`,
+  _airbyte_meta = new_record._airbyte_meta,
+  _airbyte_raw_id = new_record._airbyte_raw_id,
+  _airbyte_extracted_at = new_record._airbyte_extracted_at,
+  _airbyte_generation_id = new_record._airbyte_generation_id
+WHEN NOT MATCHED THEN INSERT (
+  `primary_key`,
+  `cursor`,
+  `string`,
+  `bool`,
+  `integer`,
+  `float`,
+  `date`,
+  `ts_with_tz`,
+  `ts_without_tz`,
+  `time_with_tz`,
+  `time_no_tz`,
+  `array`,
+  `json_object`,
+  _airbyte_meta,
+  _airbyte_raw_id,
+  _airbyte_extracted_at,
+  _airbyte_generation_id
+) VALUES (
+  new_record.`primary_key`,
+  new_record.`cursor`,
+  new_record.`string`,
+  new_record.`bool`,
+  new_record.`integer`,
+  new_record.`float`,
+  new_record.`date`,
+  new_record.`ts_with_tz`,
+  new_record.`ts_without_tz`,
+  new_record.`time_with_tz`,
+  new_record.`time_no_tz`,
+  new_record.`array`,
+  new_record.`json_object`,
+  new_record._airbyte_meta,
+  new_record._airbyte_raw_id,
+  new_record._airbyte_extracted_at,
+  new_record._airbyte_generation_id
+);
 ```
