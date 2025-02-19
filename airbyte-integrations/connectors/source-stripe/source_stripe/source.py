@@ -53,15 +53,7 @@ class SourceStripe(ConcurrentSourceAdapter):
     }
 
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
-        if config:
-            concurrency_level = min(config.get("num_workers", _DEFAULT_CONCURRENCY), _MAX_CONCURRENCY)
-        else:
-            concurrency_level = _DEFAULT_CONCURRENCY
-        logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
-        concurrent_source = ConcurrentSource.create(
-            concurrency_level, concurrency_level // 2, logger, self._slice_logger, self.message_repository
-        )
-        super().__init__(concurrent_source)
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
         self._state = state
         if catalog:
             self._streams_configured_as_full_refresh = {
