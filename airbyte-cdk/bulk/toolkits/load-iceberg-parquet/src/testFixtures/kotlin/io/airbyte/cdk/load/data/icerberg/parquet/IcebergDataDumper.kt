@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.s3_data_lake
+package io.airbyte.cdk.load.data.icerberg.parquet
 
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
@@ -10,14 +10,19 @@ import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.time.Instant
 import java.util.LinkedHashMap
 import java.util.UUID
+import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.data.IcebergGenerics
 import org.apache.iceberg.data.Record
 
-object S3DataLakeDataDumper : DestinationDataDumper {
+class IcebergDataDumper(
+    private val tableIdGenerator: TableIdGenerator,
+    private val getCatalog: (ConfigurationSpecification) -> Catalog,
+) : DestinationDataDumper {
 
     private fun toAirbyteValue(record: Record, isRoot: Boolean = false): ObjectValue {
         return ObjectValue(
@@ -75,13 +80,8 @@ object S3DataLakeDataDumper : DestinationDataDumper {
         spec: ConfigurationSpecification,
         stream: DestinationStream
     ): List<OutputRecord> {
-        val config = S3DataLakeTestUtil.getConfig(spec)
-        val catalog =
-            S3DataLakeTestUtil.getCatalog(config, S3DataLakeTestUtil.getAwsAssumeRoleCredentials())
-        val table =
-            catalog.loadTable(
-                TableIdGeneratorFactory(config).create().toTableIdentifier(stream.descriptor)
-            )
+        val catalog = getCatalog(spec)
+        val table = catalog.loadTable(tableIdGenerator.toTableIdentifier(stream.descriptor))
 
         val outputRecords = mutableListOf<OutputRecord>()
         IcebergGenerics.read(table).build().use { records ->
