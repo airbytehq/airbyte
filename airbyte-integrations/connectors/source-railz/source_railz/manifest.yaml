@@ -216,8 +216,6 @@ definitions:
       $ref: "#/definitions/retriever"
       record_selector:
         $ref: "#/definitions/selector"
-        record_filter:
-          condition: "{{ not stream_state.get(stream_slice.connection.businessName, {}).get(stream_slice.connection.serviceName) or record[parameters.cursor_field] >= stream_state[stream_slice.connection.businessName][stream_slice.connection.serviceName][parameters.cursor_field] }}"
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
