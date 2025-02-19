@@ -64,9 +64,9 @@ class SourceStripe(YamlDeclarativeSource):
             # things will NOT be executed concurrently
             self._streams_configured_as_full_refresh = set()
 
-    # TODO: Remove this property when the source will be fully migrated
+    # TODO: Remove this. This property is necessary to safely migrate Stripe during the transition state.
     @property
-    def is_partially_declarative(self):
+    def is_partially_declarative(self) -> bool:
         return True
 
     @staticmethod
