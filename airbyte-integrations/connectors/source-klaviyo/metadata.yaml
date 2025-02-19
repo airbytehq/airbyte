@@ -9,7 +9,7 @@ data:
   connectorBuildOptions:
     baseImage: 
       docker.io/airbyte/source-declarative-manifest:6.33.7@sha256:d30897ff117abcd185b369400fe1f4074b1043e2352cb1c8b03033d56c90742f
-  dockerImageTag: 2.13.0
+  dockerImageTag: 2.14.0
   dockerRepository: airbyte/source-klaviyo
   githubIssueLabel: source-klaviyo
   icon: klaviyo.svg
