@@ -30,6 +30,7 @@ definitions:
         cursor_field: timestamp
         name: open_exchange_rates
         incremental_cursor: timestamp
+        path: >-
           historical/{{ format_datetime(stream_interval['start_date'], '%Y-%m-%d' ) }}.json
         cursor_datetime_formats:
           - "%s"
@@ -948,6 +949,7 @@ streams:
       requester:
         type: HttpRequester
         url_base: https://openexchangerates.org/api/
+        path: >-
           historical/{{ format_datetime(stream_interval['start_date'], '%Y-%m-%d' ) }}.json
         http_method: GET
         request_parameters:
