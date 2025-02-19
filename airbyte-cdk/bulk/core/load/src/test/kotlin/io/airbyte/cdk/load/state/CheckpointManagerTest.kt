@@ -428,9 +428,9 @@ class CheckpointManagerTest {
                      * the index of the message.
                      */
                     val streamManager = syncManager.getStreamManager(it.stream.descriptor)
-                    val recordCount = streamManager.recordCount()
+                    val recordCount = streamManager.readCount()
                     (recordCount until it.index).forEach { _ ->
-                        syncManager.getStreamManager(it.stream.descriptor).countRecordIn()
+                        syncManager.getStreamManager(it.stream.descriptor).incrementReadCount()
                     }
                     checkpointManager.addStreamCheckpoint(
                         it.stream.descriptor,

@@ -25,7 +25,7 @@ data class StreamProcessingFailed(val streamException: Exception) : StreamResult
 
 data object StreamProcessingSucceeded : StreamResult
 
-data class CheckpointId(val id: Long)
+@JvmInline value class CheckpointId(val id: Int)
 
 /** Manages the state of a single stream. */
 interface StreamManager {
@@ -33,8 +33,8 @@ interface StreamManager {
      * Count incoming record and return the record's *index*. If [markEndOfStream] has been called,
      * this should throw an exception.
      */
-    fun countRecordIn(): Long
-    fun recordCount(): Long
+    fun incrementReadCount(): Long
+    fun readCount(): Long
 
     /**
      * Mark the end-of-stream, set the end of stream variant (complete or incomplete) and return the
@@ -103,20 +103,20 @@ interface StreamManager {
     fun getNextCheckpointId(): CheckpointId
 
     /** Update the counts of persisted for a given checkpoint. */
-    fun countPersisted(checkpointId: CheckpointId, count: Long)
+    fun incrementPersistedCount(checkpointId: CheckpointId, count: Long)
 
     /** Update the counts of completed for a given checkpoint. */
-    fun countCompleted(checkpointId: CheckpointId, count: Long)
+    fun incrementCompletedCount(checkpointId: CheckpointId, count: Long)
 
     /**
-     * True if persisted counts for each checkpoint up to and including checkpoint id match the
+     * True if persisted counts for each checkpoint up to and including [checkpointId] match the
      * number of records read for that id.
      */
     fun areRecordsPersistedUntilCheckpoint(checkpointId: CheckpointId): Boolean
 
     /**
-     * True if completed counts for all checkpoints match the number of records read AND all records
-     * have been read.
+     * True if all records in the stream have been marked as completed AND the stream has been
+     * marked as complete.
      */
     fun isBatchProcessingCompleteForCheckpoints(): Boolean
 }
@@ -139,18 +139,19 @@ class DefaultStreamManager(
 
     private val rangesState: ConcurrentHashMap<Batch.State, RangeSet<Long>> = ConcurrentHashMap()
 
-    private val lastCheckpointIndex = AtomicLong(0)
-    private val countsPerCheckpoint: ConcurrentLinkedQueue<Long> = ConcurrentLinkedQueue()
-    private val persistedForCheckpoint: ConcurrentHashMap<CheckpointId, AtomicLong> =
-        ConcurrentHashMap()
-    private val completedForCheckpoint: ConcurrentHashMap<CheckpointId, AtomicLong> =
-        ConcurrentHashMap()
+    data class CheckpointCounts(
+        val recordsRead: Long = 0L,
+        val recordsPersisted: AtomicLong = AtomicLong(0L),
+        val recordsCompleted: AtomicLong = AtomicLong(0L),
+    )
+    private val lastCheckpointRecordIndex = AtomicLong(0L)
+    private val checkpointCounts: ConcurrentLinkedQueue<CheckpointCounts> = ConcurrentLinkedQueue()
 
     init {
         Batch.State.entries.forEach { rangesState[it] = TreeRangeSet.create() }
     }
 
-    override fun countRecordIn(): Long {
+    override fun incrementReadCount(): Long {
         if (markedEndOfStream.get()) {
             throw IllegalStateException("Stream is closed for reading")
         }
@@ -158,7 +159,7 @@ class DefaultStreamManager(
         return recordCount.getAndIncrement()
     }
 
-    override fun recordCount(): Long {
+    override fun readCount(): Long {
         return recordCount.get()
     }
 
@@ -180,10 +181,10 @@ class DefaultStreamManager(
     }
 
     override fun markCheckpoint(): Pair<Long, Long> {
-        val index = recordCount.get()
-        val count = index - lastCheckpointIndex.getAndSet(index)
-        countsPerCheckpoint.add(count)
-        return Pair(index, count)
+        val recordIndex = recordCount.get()
+        val count = recordIndex - lastCheckpointRecordIndex.getAndSet(recordIndex)
+        checkpointCounts.add(CheckpointCounts(count))
+        return Pair(recordIndex, count)
     }
 
     override fun <B : Batch> updateBatchState(batch: BatchEnvelope<B>) {
@@ -332,43 +333,48 @@ class DefaultStreamManager(
     }
 
     override fun getNextCheckpointId(): CheckpointId {
-        return CheckpointId(countsPerCheckpoint.size.toLong())
+        return CheckpointId(checkpointCounts.size)
     }
 
-    override fun countPersisted(checkpointId: CheckpointId, count: Long) {
-        val result =
-            persistedForCheckpoint.getOrPut(checkpointId) { AtomicLong(0L) }.addAndGet(count)
-        val original =
-            countsPerCheckpoint.elementAtOrNull(checkpointId.id.toInt())
-                ?: throw IllegalStateException("No checkpoint found for $checkpointId")
-        if (result > original) {
-            throw IllegalStateException(
-                "Persisted count $result for $checkpointId exceeds read count $original"
-            )
+    override fun incrementPersistedCount(checkpointId: CheckpointId, count: Long) {
+        checkpointCounts.elementAtOrNull(checkpointId.id)?.let {
+            val result = it.recordsPersisted.addAndGet(count)
+            if (result > it.recordsRead) {
+                throw IllegalStateException(
+                    "Persisted count $result for $checkpointId exceeds read count ${it.recordsRead}"
+                )
+            }
         }
+            ?: throw IllegalStateException("No checkpoint found for $checkpointId")
     }
 
-    override fun countCompleted(checkpointId: CheckpointId, count: Long) {
-        val result =
-            completedForCheckpoint.getOrPut(checkpointId) { AtomicLong(0L) }.addAndGet(count)
-        val original =
-            countsPerCheckpoint.elementAtOrNull(checkpointId.id.toInt())
-                ?: throw IllegalStateException("No checkpoint found for $checkpointId")
-        if (result > original) {
-            throw IllegalStateException(
-                "Completed count $result for $checkpointId exceeds read count $original"
-            )
+    override fun incrementCompletedCount(checkpointId: CheckpointId, count: Long) {
+        checkpointCounts.elementAtOrNull(checkpointId.id)?.let {
+            val result = it.recordsCompleted.addAndGet(count)
+            if (result > it.recordsRead) {
+                throw IllegalStateException(
+                    "Completed count $result for $checkpointId exceeds read count ${it.recordsRead}"
+                )
+            }
         }
+            ?: throw IllegalStateException("No checkpoint found for $checkpointId")
     }
 
     override fun areRecordsPersistedUntilCheckpoint(checkpointId: CheckpointId): Boolean {
-        val readCount = countsPerCheckpoint.take(checkpointId.id.toInt() + 1).sum()
-        val persistedCount = persistedForCheckpoint.sumUpTo(checkpointId)
+        val (readCount, persistedCount, completedCount) =
+            checkpointCounts.take(checkpointId.id + 1).fold(Triple(0L, 0L, 0L)) {
+                acc,
+                checkpointCount ->
+                Triple(
+                    acc.first + checkpointCount.recordsRead,
+                    acc.second + checkpointCount.recordsPersisted.get(),
+                    acc.third + checkpointCount.recordsCompleted.get(),
+                )
+            }
         if (persistedCount == readCount) {
             return true
         }
         // Completed implies persisted.
-        val completedCount = completedForCheckpoint.sumUpTo(checkpointId)
         return completedCount == readCount
     }
 
@@ -382,12 +388,8 @@ class DefaultStreamManager(
             return true
         }
 
-        val completedCount = completedForCheckpoint.values.sumOf { it.get() }
+        val completedCount = checkpointCounts.sumOf { it.recordsCompleted.get() }
         return completedCount == readCount
-    }
-
-    private fun Map<CheckpointId, AtomicLong>.sumUpTo(checkpointId: CheckpointId): Long {
-        return filter { it.key.id <= checkpointId.id }.values.sumOf { it.get() }
     }
 }
 
