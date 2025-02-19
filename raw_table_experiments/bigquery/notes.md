@@ -149,11 +149,11 @@ FROM `dataline-integration-testing`.no_raw_tables_experiment.input_typed_data_pa
 simulate a full refresh dedup, by upserting the entire dataset into itself.
 
 ```sql
-MERGE `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_10mb` target_table
+MERGE `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_5mb` target_table
 USING (
   WITH new_records AS (
     SELECT *
-    FROM `dataline-integration-testing`.`no_raw_tables_experiment`.`new_table_10mb`
+    FROM `dataline-integration-testing`.`no_raw_tables_experiment`.`new_input_table_5mb_part1`
   ), numbered_rows AS (
     SELECT *, row_number() OVER (
       PARTITION BY `primary_key` ORDER BY `cursor` DESC NULLS LAST, `_airbyte_extracted_at` DESC
