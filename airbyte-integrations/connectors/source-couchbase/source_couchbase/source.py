@@ -4,11 +4,12 @@ import logging
 from datetime import timedelta
 from typing import Any, List, Mapping, Tuple
 
-from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
 from couchbase.auth import PasswordAuthenticator
 from couchbase.cluster import Cluster
 from couchbase.options import ClusterOptions
+
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
 
 from .streams import DocumentStream
 

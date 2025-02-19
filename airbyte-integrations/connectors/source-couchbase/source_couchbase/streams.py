@@ -3,10 +3,11 @@
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping
 
+from couchbase.cluster import Cluster
+
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, SyncMode, Type
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import CheckpointMixin
-from couchbase.cluster import Cluster
 
 from .queries import get_documents_query
 
