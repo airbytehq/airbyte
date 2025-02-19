@@ -8,6 +8,13 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
 from uuid import uuid4
 
+from couchbase.auth import PasswordAuthenticator
+from couchbase.cluster import Cluster
+from couchbase.exceptions import BucketNotFoundException, CouchbaseException, DocumentExistsException, KeyspaceNotFoundException
+from couchbase.options import ClusterOptions, ClusterTimeoutOptions, UpsertMultiOptions
+from jsonschema import validate
+from jsonschema.exceptions import ValidationError
+
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
@@ -21,12 +28,7 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
-from couchbase.auth import PasswordAuthenticator
-from couchbase.cluster import Cluster
-from couchbase.exceptions import BucketNotFoundException, CouchbaseException, DocumentExistsException, KeyspaceNotFoundException
-from couchbase.options import ClusterOptions, ClusterTimeoutOptions, UpsertMultiOptions
-from jsonschema import validate
-from jsonschema.exceptions import ValidationError
+
 
 logger = logging.getLogger("airbyte")
 
