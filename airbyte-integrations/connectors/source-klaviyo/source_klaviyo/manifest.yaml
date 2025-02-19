@@ -1,4 +1,4 @@
-version: 0.81.6
+version: 6.33.0
 type: DeclarativeSource
 
 definitions:
@@ -34,7 +34,7 @@ definitions:
           error_message: Please provide a valid API key and make sure it has permissions to read specified streams.
     request_headers:
       Accept: "application/json"
-      Revision: "2023-10-15"
+      Revision: "2024-10-15"
 
   # Selector
   selector:
@@ -76,7 +76,7 @@ definitions:
       $ref: "#/definitions/requester"
       request_headers:
         Accept: "application/json"
-        Revision: "2023-02-22"
+        Revision: "2024-10-15"
       request_parameters:
         "additional-fields[profile]": "{{ 'predictive_analytics' if not config['disable_fetching_predictive_analytics'] else '' }}"
 
@@ -103,7 +103,7 @@ definitions:
 
   # Incremental streams
   profiles_stream:
-    # Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles
+    # Docs: https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles
     name: "profiles"
     $ref: "#/definitions/base_stream"
     incremental_sync:
@@ -134,7 +134,7 @@ definitions:
       cursor_field: "updated"
 
   global_exclusions_stream:
-    # Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles
+    # Docs: https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles
     name: "global_exclusions"
     $ref: "#/definitions/profiles_stream"
     schema_loader:
@@ -142,11 +142,34 @@ definitions:
       schema: "#/definitions/global_exclusions_schema"
     retriever:
       $ref: "#/definitions/profiles_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          "additional-fields[profile]": "subscriptions"
       record_selector:
         $ref: "#/definitions/selector"
         record_filter:
           type: RecordFilter
-          condition: "{{ record['attributes']['subscriptions']['email']['marketing']['suppressions'] }}"
+          condition: "{{ record['attributes']['subscriptions']['email']['marketing']['suppression'] }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["updated"]
+            value: "{{ record.get('attributes', {}).get('updated') }}"
+          - type: AddedFieldDefinition
+            path:
+              [
+                "attributes",
+                "subscriptions",
+                "email",
+                "marketing",
+                "suppressions",
+              ]
+            value: "{{ record['attributes']['subscriptions']['email']['marketing']['suppression'] }}"
+      - type: RemoveFields
+        field_pointers:
+          [["attributes", "subscriptions", "email", "marketing", "suppression"]]
 
   events_stream:
     # Docs: https://developers.klaviyo.com/en/reference/get_events
@@ -169,7 +192,7 @@ definitions:
         $ref: "#/definitions/requester"
         request_parameters:
           "fields[metric]": "name,created,updated,integration"
-          "include": "metric"
+          "include": "metric,attributions"
           "filter": "greater-or-equal({{ parameters.cursor_field }},{{ stream_interval.start_time }}),less-or-equal({{ parameters.cursor_field }},{{ stream_interval.end_time }})"
           "sort": "{{ parameters.cursor_field }}"
     schema_loader:
@@ -211,6 +234,120 @@ definitions:
     $parameters:
       path: "templates"
       cursor_field: "updated"
+
+  campaigns_stream:
+    # Docs: https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns
+    name: "campaigns"
+    $ref: "#/definitions/base_stream"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "updated_at"
+      start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%d %H:%M:%S%z"
+      step: P60D
+      cursor_granularity: PT1S
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          "filter": "and(greater-or-equal({{ parameters.cursor_field }},{{ stream_interval.start_time }}),less-or-equal({{ parameters.cursor_field }},{{ stream_interval.end_time }}),equals(messages.channel,'{{ stream_partition['campaign_type'] }}'),equals(archived,{{ stream_partition['archived'] }}))"
+          "sort": "{{ parameters.cursor_field }}"
+      partition_router:
+        - type: ListPartitionRouter
+          values:
+            - sms
+            - email
+          cursor_field: campaign_type
+        - type: ListPartitionRouter
+          values:
+            - "true"
+            - "false"
+          cursor_field: archived
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_klaviyo.components.archived_to_per_partition_state_migration.CampaignsStateMigration
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: "#/definitions/campaigns_schema"
+    $parameters:
+      path: "campaigns"
+      cursor_field: "updated_at"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["updated_at"]
+            value: "{{ record.get('attributes', {}).get('updated_at') }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["attributes", "channel"]
+            value: "{{ stream_partition['campaign_type'] }}"
+
+  campaigns_detailed_stream:
+    # Docs: https://developers.klaviyo.com/en/v2024-10-15/reference/get_messages_for_campaign
+    name: "campaigns_detailed"
+    $ref: "#/definitions/campaigns_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: "#/definitions/campaigns_detailed_schema"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["updated_at"]
+            value: "{{ record.get('attributes', {}).get('updated_at') }}"
+      - type: CustomTransformation
+        class_name: source_klaviyo.components.campaign_details_transformations.CampaignsDetailedTransformation
+
+  flows_stream:
+    # Docs: https://developers.klaviyo.com/en/reference/get_flows
+    name: "flows"
+    $ref: "#/definitions/base_stream"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "updated"
+      start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%d %H:%M:%S%z"
+      step: P30D
+      cursor_granularity: PT1S
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          "filter": "and(greater-or-equal({{ parameters.cursor_field }},{{ stream_interval.start_time }}),less-or-equal({{ parameters.cursor_field }},{{ stream_interval.end_time }}),equals(archived,{{ stream_partition['archived'] }}))"
+          "sort": "{{ parameters.cursor_field }}"
+      partition_router:
+        - type: ListPartitionRouter
+          values:
+            - "true"
+            - "false"
+          cursor_field: archived
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_klaviyo.components.archived_to_per_partition_state_migration.ArchivedToPerPartitionStateMigration
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: "#/definitions/flows_schema"
+    $parameters:
+      path: "flows"
+      cursor_field: "updated"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["updated"]
+            value: "{{ record.get('attributes', {}).get('updated') }}"
 
   # Semi-Incremental streams
   metrics_stream:
@@ -283,7 +420,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          "include": "metric"
+          "include": "metric,attributions"
           "fields[metric]": "name"
           "filter": "greater-than({{ parameters.cursor_field }},{{ stream_interval.start_time }})"
           "sort": "{{ parameters.cursor_field }}"
@@ -362,6 +499,23 @@ definitions:
                     type: string
                   related:
                     type: string
+          flow-triggers:
+            type: ["null", object]
+            properties:
+              data:
+                type: ["null", object]
+                properties:
+                  type:
+                    type: ["null", string]
+                  id:
+                    type: ["null", string]
+              links:
+                type: ["null", object]
+                properties:
+                  self:
+                    type: ["null", string]
+                  related:
+                    type: ["null", string]
 
     subscriptions:
       type: ["null", object]
@@ -377,6 +531,9 @@ definitions:
                 consent:
                   type: string
                 timestamp:
+                  type: ["null", string]
+                  format: date-time
+                consent_timestamp:
                   type: ["null", string]
                   format: date-time
                 last_updated:
@@ -435,6 +592,39 @@ definitions:
                 timestamp:
                   type: ["null", string]
                   format: date-time
+            transactional:
+              type: ["null", object]
+              properties:
+                can_receive_sms_marketing:
+                  type: ["null", boolean]
+                consent:
+                  type: ["null", string]
+                consent_timestamp:
+                  type: ["null", string]
+                  format: date-time
+                method:
+                  type: ["null", string]
+                method_detail:
+                  type: ["null", string]
+                last_updated:
+                  type: ["null", string]
+                  format: date-time
+                timestamp:
+                  type: ["null", string]
+                  format: date-time
+        mobile_push:
+          type: ["null", object]
+          properties:
+            marketing:
+              type: ["null", object]
+              properties:
+                can_receive_sms_marketing:
+                  type: ["null", boolean]
+                consent:
+                  type: ["null", string]
+                consent_timestamp:
+                  type: ["null", string]
+                  format: date-time
 
   profiles_schema:
     $schema: "http://json-schema.org/draft-07/schema#"
@@ -465,6 +655,8 @@ definitions:
           last_name:
             type: ["null", string]
           organization:
+            type: ["null", string]
+          locale:
             type: ["null", string]
           title:
             type: ["null", string]
@@ -593,6 +785,8 @@ definitions:
           last_name:
             type: ["null", string]
           organization:
+            type: ["null", string]
+          locale:
             type: ["null", string]
           title:
             type: ["null", string]
@@ -761,6 +955,26 @@ definitions:
                     type: string
                   related:
                     type: string
+          attributions:
+            type: ["null", object]
+            properties:
+              data:
+                type: ["null", array]
+                items:
+                  type: ["null", object]
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type: ["null", object]
+                additionalProperties: true
+                properties:
+                  self:
+                    type: string
+                  related:
+                    type: string
 
   events_detailed_schema:
     $schema: "http://json-schema.org/draft-07/schema#"
@@ -905,6 +1119,26 @@ definitions:
         properties:
           self:
             type: string
+      relationships:
+        type: ["null", object]
+        properties:
+          flow-triggers:
+            type: ["null", object]
+            properties:
+              data:
+                type: ["null", object]
+                properties:
+                  type:
+                    type: ["null", string]
+                  id:
+                    type: ["null", string]
+              links:
+                type: ["null", object]
+                properties:
+                  self:
+                    type: ["null", string]
+                  related:
+                    type: ["null", string]
 
   lists_schema:
     $schema: "http://json-schema.org/draft-07/schema#"
@@ -934,6 +1168,756 @@ definitions:
           profile_count:
             type: ["null", integer]
 
+  campaigns_schema:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      id:
+        type: string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      attributes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          name:
+            type: string
+          status:
+            type: string
+          archived:
+            type: boolean
+          channel:
+            type: string
+          audiences:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              included:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+              excluded:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+          send_options:
+            type:
+              - "null"
+              - object
+            properties:
+              ignore_unsubscribes:
+                type:
+                  - "null"
+                  - boolean
+              use_smart_sending:
+                type:
+                  - "null"
+                  - boolean
+          message:
+            type: string
+          tracking_options:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              add_tracking_params:
+                type:
+                  - "null"
+                  - boolean
+              is_tracking_opens:
+                type:
+                  - "null"
+                  - boolean
+              is_tracking_clicks:
+                type:
+                  - "null"
+                  - boolean
+              is_add_utm:
+                type:
+                  - "null"
+                  - boolean
+              utm_params:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+          send_strategy:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              method:
+                type: string
+              options_static:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  datetime:
+                    type: string
+                    format: date-time
+                    airbyte_type: timestamp_without_timezone
+                  is_local:
+                    type:
+                      - "null"
+                      - boolean
+                  send_past_recipients_immediately:
+                    type:
+                      - "null"
+                      - boolean
+              options_throttled:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  datetime:
+                    type: string
+                    format: date-time
+                    airbyte_type: timestamp_without_timezone
+                  throttle_percentage:
+                    type: integer
+              options_sto:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  date:
+                    type: string
+                    format: date
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          scheduled_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          send_time:
+            type:
+              - "null"
+              - string
+            format: date-time
+      links:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          self:
+            type: string
+      relationships:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          tags:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  self:
+                    type: string
+                  related:
+                    type: string
+          campaign-messages:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  self:
+                    type: string
+                  related:
+                    type: string
+
+  campaigns_detailed_schema:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      id:
+        type: string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      attributes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          name:
+            type: string
+          status:
+            type: string
+          archived:
+            type: boolean
+          channel:
+            type: string
+          audiences:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              included:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+              excluded:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+          send_options:
+            type:
+              - "null"
+              - object
+            properties:
+              ignore_unsubscribes:
+                type:
+                  - "null"
+                  - boolean
+              use_smart_sending:
+                type:
+                  - "null"
+                  - boolean
+          message:
+            type: string
+          tracking_options:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              add_tracking_params:
+                type:
+                  - "null"
+                  - boolean
+              is_tracking_opens:
+                type:
+                  - "null"
+                  - boolean
+              is_tracking_clicks:
+                type:
+                  - "null"
+                  - boolean
+              is_add_utm:
+                type:
+                  - "null"
+                  - boolean
+              utm_params:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+          send_strategy:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              method:
+                type: string
+              options_static:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  datetime:
+                    type: string
+                    format: date-time
+                    airbyte_type: timestamp_without_timezone
+                  is_local:
+                    type:
+                      - "null"
+                      - boolean
+                  send_past_recipients_immediately:
+                    type:
+                      - "null"
+                      - boolean
+              options_throttled:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  datetime:
+                    type: string
+                    format: date-time
+                    airbyte_type: timestamp_without_timezone
+                  throttle_percentage:
+                    type: integer
+              options_sto:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  date:
+                    type: string
+                    format: date
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          scheduled_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          send_time:
+            type:
+              - "null"
+              - string
+            format: date-time
+      links:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          self:
+            type: string
+      relationships:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          tags:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  self:
+                    type: string
+                  related:
+                    type: string
+          campaign-messages:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  self:
+                    type: string
+                  related:
+                    type: string
+      estimated_recipient_count:
+        type:
+          - "null"
+          - integer
+      campaign_messages:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - string
+            attributes:
+              type:
+                - "null"
+                - object
+              properties:
+                label:
+                  type:
+                    - "null"
+                    - string
+                channel:
+                  type:
+                    - "null"
+                    - string
+                content:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    subject:
+                      type:
+                        - "null"
+                        - string
+                    preview_text:
+                      type:
+                        - "null"
+                        - string
+                    from_email:
+                      type:
+                        - "null"
+                        - string
+                    from_label:
+                      type:
+                        - "null"
+                        - string
+                    reply_to_email:
+                      type:
+                        - "null"
+                        - string
+                    cc_email:
+                      type:
+                        - "null"
+                        - string
+                    bcc_email:
+                      type:
+                        - "null"
+                        - string
+                send_times:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      datetime:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      is_local:
+                        type:
+                          - "null"
+                          - boolean
+                render_options:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    shorten_links:
+                      type:
+                        - "null"
+                        - boolean
+                    add_org_prefix:
+                      type:
+                        - "null"
+                        - boolean
+                    add_info_link:
+                      type:
+                        - "null"
+                        - boolean
+                    add_opt_out_language:
+                      type:
+                        - "null"
+                        - boolean
+                created_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                  airbyte_type: timestamp_without_timezone
+                updated_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                  airbyte_type: timestamp_without_timezone
+            links:
+              type:
+                - "null"
+                - object
+              properties:
+                self:
+                  type:
+                    - "null"
+                    - string
+            relationships:
+              type:
+                - "null"
+                - object
+              properties:
+                campaign:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    data:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        type:
+                          type:
+                            - "null"
+                            - string
+                        id:
+                          type:
+                            - "null"
+                            - string
+                    links:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        self:
+                          type:
+                            - "null"
+                            - string
+                        related:
+                          type:
+                            - "null"
+                            - string
+                template:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    data:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        type:
+                          type:
+                            - "null"
+                            - string
+                        id:
+                          type:
+                            - "null"
+                            - string
+                    links:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        self:
+                          type:
+                            - "null"
+                            - string
+                        related:
+                          type:
+                            - "null"
+                            - string
+
+  flows_schema:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      id:
+        type: string
+      updated:
+        type: string
+        format: date-time
+      attributes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          name:
+            type: string
+          status:
+            type: string
+          archived:
+            type: boolean
+          created:
+            type: string
+            format: date-time
+          updated:
+            type: string
+            format: date-time
+          trigger_type:
+            type: string
+      links:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          self:
+            type: string
+      relationships:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          flow-actions:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  self:
+                    type: string
+                  related:
+                    type: string
+          tags:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  self:
+                    type: string
+                  related:
+                    type: string
+
 streams:
   # Incremental streams
   - "#/definitions/profiles_stream"
@@ -941,6 +1925,9 @@ streams:
   - "#/definitions/events_stream"
   - "#/definitions/events_detailed_stream"
   - "#/definitions/email_templates_stream"
+  - "#/definitions/campaigns_stream"
+  - "#/definitions/campaigns_detailed_stream"
+  - "#/definitions/flows_stream"
 
   # Semi-Incremental streams
   - "#/definitions/metrics_stream"
@@ -992,8 +1979,8 @@ spec:
         examples: [1, 2, 3]
         description: >-
           The number of worker threads to use for the sync.
-          The performance upper boundary is based on the limit of your Chargebee plan.
-          More info about the rate limit plan tiers can be found on Chargebee's API <a href="https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling">docs</a>.
+          The performance upper boundary is based on the limit of your Klaviyo plan.
+          More info about the rate limit plan tiers can be found on Klaviyo's API <a href="https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling">docs</a>.
         order: 3
     required: ["api_key"]
 
@@ -1054,6 +2041,26 @@ api_budget:
   # Each policy here uses a MovingWindowCallRatePolicy with two rates:
   # one for burst (per-second) and one for steady (per-minute).
   policies:
+    # Campaigns and Campaigns Detailed
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10 # burst: 10 calls per second
+          interval: PT1S
+        - limit: 150 # steady: 150 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/campaigns($|/)" # matches '/campaigns'
+    # Flows
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 3 # burst: 3 calls per second
+          interval: PT1S
+        - limit: 60 # steady: 60 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/flows($|/)" # matches '/flows'
     # Profiles (and global_exclusions share the same endpoint)
     - type: MovingWindowCallRatePolicy
       rates:

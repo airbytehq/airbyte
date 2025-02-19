@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "source-chargebee-tests"
-version = "0.9.0"
+version = "0.10.0-rc.1"
 description = "Unit tests for source-chargebee"
 authors = ["Airbyte <contact@airbyte.io>"]
 
