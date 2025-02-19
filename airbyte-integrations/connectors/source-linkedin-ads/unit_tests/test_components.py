@@ -8,19 +8,20 @@ from unittest.mock import MagicMock
 
 import pytest
 from requests import Response, Session
-from requests.models import PreparedRequest
 from requests.exceptions import InvalidURL
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+from requests.models import PreparedRequest
 from source_linkedin_ads.components import (
     AnalyticsDatetimeBasedCursor,
     LinkedInAdsCustomRetriever,
+    LinkedInAdsErrorHandler,
     LinkedInAdsRecordExtractor,
     SafeEncodeHttpRequester,
     SafeHttpClient,
     StreamSlice,
-    LinkedInAdsErrorHandler,
 )
+
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 
 
 logger = logging.getLogger("airbyte")
@@ -138,6 +139,7 @@ def test_linkedin_ads_custom_retriever_read_records(mock_response, mock_retrieve
     assert len(records) == 2
     for record in records:
         assert "data" in record
+
 
 def test_linkedin_ads_error_handler_invalid_url():
     error_handler = LinkedInAdsErrorHandler(config={}, parameters={})
