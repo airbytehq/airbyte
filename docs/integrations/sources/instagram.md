@@ -146,7 +146,8 @@ for more information.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
-| 3.1.7 | 2025-02-12 | [53214](https://github.com/airbytehq/airbyte/pull/53214) | New fields in media and mediainsights |
+| 3.1.8 | 2025-02-12 | [53214](https://github.com/airbytehq/airbyte/pull/53214) | New fields in media and mediainsights |
+| 3.1.7 | 2025-02-15 | [53846](https://github.com/airbytehq/airbyte/pull/53846) | Update dependencies |
 | 3.1.6 | 2025-02-08 | [53291](https://github.com/airbytehq/airbyte/pull/53291) | Update dependencies |
 | 3.1.5 | 2025-02-06 | [53171](https://github.com/airbytehq/airbyte/pull/53171) | Fix missing OAuth fields |
 | 3.1.4 | 2025-02-01 | [52260](https://github.com/airbytehq/airbyte/pull/52260) | Update dependencies |
