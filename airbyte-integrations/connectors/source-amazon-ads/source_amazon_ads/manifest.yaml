@@ -139,6 +139,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - portfolios
+          schema_normalization: Default
         paginator:
           type: DefaultPaginator
           page_token_option:
