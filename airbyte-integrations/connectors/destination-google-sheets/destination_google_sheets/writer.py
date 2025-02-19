@@ -57,6 +57,7 @@ class GoogleSheetsWriter(WriteBufferMixin):
 
         self.check_headers(stream_name)
         values: list = self.records_buffer[stream_name] or []
+        values = [value[:4991] + "TRuNCATED" if len(value) > 5000 else value for value in values]
         if values:
             stream: Worksheet = self.spreadsheet.open_worksheet(stream_name)
             self.logger.info(f"Writing data for stream: {stream_name}")
