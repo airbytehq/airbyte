@@ -4,23 +4,43 @@ products: oss-*
 
 # Configuring Connector Resources
 
-There are four different types of jobs—SYNC, CHECK, DISCOVER and SPEC.
+There are four different types of jobs: SYNC, CHECK, DISCOVER and SPEC. Although it is possible to configure resources for all four jobs, we focus on Sync jobs as it is the most frequently run job.
 
-Although it is possible to configure resources for all four jobs, we focus on Sync jobs as it is the most frequently run job.
+There are three different ways to configure connector resource requirements for a sync. The narrower in scope the requirement, the higher the precedence.
 
-There are three different ways to configure connector resource requirements for a Sync:
+1. Instance-wide: applies to all containers in a sync. Lowest precedence. Overridden by all other configuration. Intended to be a default.
+2. Connector-specific: applies to all containers of that connector type in a sync. Second-highest precedence. Overrides instance-wide configuration.
+3. Connection-specific: applies to all containers of that connection in a sync. Highest precedence. Overrides all other configuration.
 
-1. Instance-wide - applies to all containers in a Sync.
-2. Connector-specific - applies to all containers of that connector type in a Sync.
-3. Connection-specific - applies to all containers of that connection in a Sync.
+## Best practices for allocating resources
 
-In general, **the narrower scope the requirement, the higher the precedence**.
+Follow these best practices to minimize resource issues.
 
-In decreasing order of precedence:
+### Configuration Hierarchy
 
-1. Connection-specific - Highest precedence. Overrides all other configuration. We recommend using this on a case-by-case basis.
-2. Connector-specific - Second-highest precedence. Overrides instance-wide configuration. Mostly for internal Airbyte-use. We recommend staying away from this.
-3. Instance-wide - Lowest precedence. Overridden by all other configuration. Intended to be a default. We recommend setting this as a baseline.
+- Set instance-wide configurations as your baseline
+- Use connector-specific configurations only when necessary
+- Apply connection-specific configurations for exceptional cases
+
+### Monitoring and Optimization
+
+- Check logs to verify resource allocation effectiveness
+- Monitor for out-of-memory situations in the logs
+- Review resource usage patterns to identify opportunities to optimize
+
+### Scaling Up
+
+- Start with default profiles for all connectors
+- Monitor job performance and resource usage
+- Upgrade resource profiles only for connectors that need it
+- Upgrade resource profiles for specific connections as a last resort
+
+### Troubleshooting
+
+- Check logs for resource-related issues
+- Verify resource configurations through the UI or API
+- Review connection status and error messages
+- Address resource bottlenecks before scaling further
 
 ## Configuring Instance-Wide Requirements
 
@@ -32,6 +52,28 @@ Instance-wide requirements are the simplest requirement to configure. All that i
 4. `JOB_MAIN_CONTAINER_MEMORY_LIMIT` - Define the job container's maximum RAM usage. Defaults to none.
 
 ## Configuring Connector-Specific Requirements
+
+You can configure resource allocation through the "Connector resource allocation" dropdown in the Settings tab for each connector. You can also configure this with the API.
+
+The available profiles depend on the connector type. Specific resource requirements and options vary by connector. As a general rule, resource allocations look something like this.
+
+API Connectors:
+
+- Default: 1 CPU, 2 GB
+- Large: 2 CPU, 3 GB
+- Memory Intensive: 2 CPU, 6 GB
+- Maximum: 4 CPU, 8 GB
+
+Database Connectors:
+
+- Default: 2 CPU, 2 GB
+- Large: 3 CPU, 3 GB
+- Memory Intensive: 3 CPU, 6 GB
+- Maximum: 4 CPU, 8 GB
+
+### Advanced Configuration
+
+You can also use SQL to configure connector resources.
 
 1. Connect to the database and run the following query with the image name replaced to find the connector definition id.
 
@@ -62,9 +104,7 @@ update connection set resource_requirements = '{"cpu_limit": "0.5", "cpu_request
 
 Airbyte logs the resource requirements as part of the job logs as containers are created. Both source and destination containers are logged.
 
-If a job is running out-of-memory, simply navigate to the Job in the UI, and look for the log to confirm the right configuration is being detected.
-
-On Kubernetes, the log will look something like this:
+If a job is running out-of-memory, simply navigate to the Job in the UI, and look for the log to confirm the right configuration is being detected. The log will look something like this:
 
 ```
 2024-10-28 23:58:10 platform > Launching replication pod: replication-job-20154943-attempt-0 with containers:
@@ -72,3 +112,5 @@ On Kubernetes, the log will look something like this:
 2024-10-28 23:58:10 platform > [destination] image: airbyte/destination-s3:1.4.0-dev.6b9d2e4595 resources: ResourceRequirements(claims=[], limits={memory=2Gi, cpu=1}, requests={memory=2Gi, cpu=0.5}, additionalProperties={})
 2024-10-28 23:58:10 platform > [orchestrator] image: airbyte/container-orchestrator:build-256f73c6c2-20488-master resources: ResourceRequirements(claims=[], limits={memory=2Gi, cpu=1}, requests={memory=2Gi, cpu=1}, additionalProperties={})
 ```
+
+## 
