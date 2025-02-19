@@ -4,7 +4,10 @@ raw table create logic is here https://github.com/airbytehq/airbyte/blob/ee1c21c
 
 queries to create all the relevant tables:
 ```sql
-CREATE OR REPLACE TABLE dataline-integration-testing.no_raw_tables_experiment.input_typed_data (
+DROP SCHEMA IF EXISTS `dataline-integration-testing`.no_raw_tables_experiment CASCADE;
+CREATE SCHEMA `dataline-integration-testing`.no_raw_tables_experiment OPTIONS (location="us-east1");
+
+CREATE OR REPLACE TABLE `dataline-integration-testing`.no_raw_tables_experiment.input_typed_data_full (
   `primary_key` INT64,
   `cursor` DATETIME,
   `string` STRING,
@@ -20,7 +23,7 @@ CREATE OR REPLACE TABLE dataline-integration-testing.no_raw_tables_experiment.in
   `json_object` JSON
 );
 
-LOAD DATA OVERWRITE dataline-integration-testing.no_raw_tables_experiment.input_typed_data (
+LOAD DATA OVERWRITE `dataline-integration-testing`.no_raw_tables_experiment.input_typed_data_full (
   `primary_key` INT64,
   `cursor` DATETIME,
   `string` STRING,
@@ -41,7 +44,14 @@ FROM FILES (
   skip_leading_rows = 1
 );
 
-CREATE OR REPLACE TABLE dataline-integration-testing.no_raw_tables_experiment.raw_table_10mb (
+CREATE OR REPLACE TABLE `dataline-integration-testing`.no_raw_tables_experiment.input_typed_data_part1
+AS SELECT * FROM `dataline-integration-testing`.no_raw_tables_experiment.input_typed_data_full
+  WHERE `string` >= 'Z';
+CREATE OR REPLACE TABLE `dataline-integration-testing`.no_raw_tables_experiment.input_typed_data_part2
+AS SELECT * FROM `dataline-integration-testing`.no_raw_tables_experiment.input_typed_data_full
+  WHERE `string` <= 'a';
+
+CREATE OR REPLACE TABLE `dataline-integration-testing`.no_raw_tables_experiment.old_raw_table_5mb_part1 (
   _airbyte_raw_id STRING,
   _airbyte_extracted_at TIMESTAMP,
   _airbyte_loaded_at TIMESTAMP,
@@ -60,9 +70,29 @@ AS SELECT
   to_json_string(t),
   "{\"changes\":[],\"sync_id\":42}",
   42
-FROM `dataline-integration-testing.no_raw_tables_experiment.input_typed_data` AS t;
+FROM `dataline-integration-testing`.no_raw_tables_experiment.input_typed_data_part1 AS t;
+CREATE OR REPLACE TABLE `dataline-integration-testing`.no_raw_tables_experiment.old_raw_table_5mb_part2 (
+  _airbyte_raw_id STRING,
+  _airbyte_extracted_at TIMESTAMP,
+  _airbyte_loaded_at TIMESTAMP,
+  _airbyte_data STRING,
+  _airbyte_meta STRING,
+  _airbyte_generation_id INT64
+)
+PARTITION BY
+  RANGE_BUCKET(_airbyte_generation_id, GENERATE_ARRAY(0, 10000, 5))
+CLUSTER BY
+  _airbyte_extracted_at
+AS SELECT
+  generate_uuid(),
+  ts_with_tz,
+  cast(null as timestamp),
+  to_json_string(t),
+  "{\"changes\":[],\"sync_id\":42}",
+  42
+FROM `dataline-integration-testing`.no_raw_tables_experiment.input_typed_data_part2 AS t;
 
-CREATE OR REPLACE TABLE dataline-integration-testing.no_raw_tables_experiment.new_table_10mb (
+CREATE OR REPLACE TABLE `dataline-integration-testing`.no_raw_tables_experiment.new_input_table_5mb_part1 (
   _airbyte_raw_id STRING,
   _airbyte_extracted_at TIMESTAMP,
   _airbyte_meta JSON,
@@ -86,7 +116,32 @@ CREATE OR REPLACE TABLE dataline-integration-testing.no_raw_tables_experiment.ne
   JSON '{"changes":[],"sync_id":42}',
   42,
   *
-FROM `dataline-integration-testing.no_raw_tables_experiment.input_typed_data` AS t;
+FROM `dataline-integration-testing`.no_raw_tables_experiment.input_typed_data_part1 AS t;
+CREATE OR REPLACE TABLE `dataline-integration-testing`.no_raw_tables_experiment.new_input_table_5mb_part2 (
+  _airbyte_raw_id STRING,
+  _airbyte_extracted_at TIMESTAMP,
+  _airbyte_meta JSON,
+  _airbyte_generation_id INT64,
+  `primary_key` INT64,
+  `cursor` DATETIME,
+  `string` STRING,
+  `bool` BOOL,
+  `integer` INT64,
+  `float` NUMERIC,
+  `date` DATE,
+  `ts_with_tz` TIMESTAMP,
+  `ts_without_tz` DATETIME,
+  `time_with_tz` STRING,
+  `time_no_tz` TIME,
+  `array` JSON,
+  `json_object` JSON
+) AS SELECT
+  generate_uuid(),
+  ts_with_tz,
+  JSON '{"changes":[],"sync_id":42}',
+  42,
+  *
+FROM `dataline-integration-testing`.no_raw_tables_experiment.input_typed_data_part2 AS t;
 ```
 
 ### pure deduping query
