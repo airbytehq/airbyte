@@ -34,6 +34,7 @@ You can find more about the API here https://developer.revolut.com/docs/merchant
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.12 | 2025-02-15 | [53981](https://github.com/airbytehq/airbyte/pull/53981) | Update dependencies |
 | 0.0.11 | 2025-02-08 | [53453](https://github.com/airbytehq/airbyte/pull/53453) | Update dependencies |
 | 0.0.10 | 2025-02-01 | [52956](https://github.com/airbytehq/airbyte/pull/52956) | Update dependencies |
 | 0.0.9 | 2025-01-25 | [52474](https://github.com/airbytehq/airbyte/pull/52474) | Update dependencies |
