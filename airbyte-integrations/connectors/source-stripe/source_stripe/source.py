@@ -25,7 +25,6 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_stripe.streams import (
     CreatedCursorIncrementalStripeStream,
-    Events,
     IncrementalStripeStream,
     ParentIncrementalStripeSubStream,
     SetupAttempts,
@@ -50,7 +49,6 @@ STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
 class SourceStripe(ConcurrentSourceAdapter):
     message_repository = InMemoryMessageRepository(entrypoint_logger.level)
     _SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION = {
-        Events: ("created[gte]", "created[lte]"),
         CreatedCursorIncrementalStripeStream: ("created[gte]", "created[lte]"),
     }
 
@@ -291,7 +289,6 @@ class SourceStripe(ConcurrentSourceAdapter):
 
         streams = [
             checkout_sessions,
-            Events(**incremental_args),
             UpdatedCursorIncrementalStripeStream(
                 name="external_account_cards",
                 path=lambda self, *args, **kwargs: f"accounts/{self.account_id}/external_accounts",
@@ -331,10 +328,6 @@ class SourceStripe(ConcurrentSourceAdapter):
                 use_cache=USE_CACHE,
                 **args,
             ),
-            CreatedCursorIncrementalStripeStream(name="shipping_rates", path="shipping_rates", **incremental_args),
-            CreatedCursorIncrementalStripeStream(name="balance_transactions", path="balance_transactions", **incremental_args),
-            CreatedCursorIncrementalStripeStream(name="files", path="files", **incremental_args),
-            CreatedCursorIncrementalStripeStream(name="file_links", path="file_links", **incremental_args),
             IncrementalStripeStream(
                 name="refunds",
                 path="refunds",
