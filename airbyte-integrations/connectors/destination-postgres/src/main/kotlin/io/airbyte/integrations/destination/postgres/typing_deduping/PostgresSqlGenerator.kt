@@ -385,9 +385,9 @@ fun main() {
         StreamConfig(
             StreamId(
                 finalNamespace = "no_raw_tables_experiment",
-                finalName = "old_final_table_10mb",
+                finalName = "old_final_table_5mb",
                 rawNamespace = "no_raw_tables_experiment",
-                rawName = "raw_table_10mb",
+                rawName = "old_raw_table_5mb_part1",
                 originalNamespace = "unused",
                 originalName = "unused",
             ),
