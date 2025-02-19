@@ -1,4 +1,4 @@
-version: 0.72.1
+version: 6.5.0
 
 definitions:
   # COMMON PARTS
@@ -43,10 +43,10 @@ definitions:
       type: RequestOption
       field_name: limit
     pagination_strategy:
-      type: CustomPaginationStrategy
-      class_name: source_zendesk_chat.components.id_offset_pagination.ZendeskChatIdOffsetIncrementPaginationStrategy
-      id_field: id
+      type: CursorPagination
+      cursor_value: "{{ last_record['id'] + 1 }}"
       page_size: 100
+      stop_condition: "{{ not last_record }}"
   paginator_time_offset:
     type: DefaultPaginator
     page_token_option:
@@ -141,10 +141,13 @@ definitions:
       # this is needed to ignore additional params for incremental syncs
       ignore_stream_slicer_parameters_on_paginated_requests: true
     incremental_sync:
-      type: CustomIncrementalSync
-      class_name: source_zendesk_chat.components.id_incremental_cursor.ZendeskChatIdIncrementalCursor
+      type: IncrementingCountCursor
       cursor_field: "id"
-      field_name: "since_id"
+      start_value: 0
+      start_value_option:
+        type: RequestOption
+        field_name: since_id
+        inject_into: "request_parameter"
   base_incremental_time_stream:
     $ref: "#/definitions/base_stream_with_time_offset_pagination"
     retriever:
@@ -316,3 +319,8 @@ check:
   type: CheckStream
   stream_names:
     - routing_settings
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 10
+  max_concurrency: 10
