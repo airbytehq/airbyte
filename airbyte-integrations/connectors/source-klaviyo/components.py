@@ -1,30 +1,29 @@
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
-import dpath
 import logging
-import requests
-
 from abc import ABC
 from dataclasses import dataclass
-from requests.exceptions import InvalidURL
-from typing import Any, Dict, Mapping, Optional, Union, Iterable
+from typing import Any, Dict, Iterable, Mapping, Optional, Union
 
-from airbyte_cdk.sources.streams.call_rate import APIBudget
-from airbyte_cdk.sources.streams.http.http_client import HttpClient
-from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
-from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
-from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+import dpath
+import requests
+from requests.exceptions import InvalidURL
+
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
-from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import WaitTimeFromHeaderBackoffStrategy
-
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
+from airbyte_cdk.sources.streams.call_rate import APIBudget
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
+from airbyte_cdk.sources.streams.http.http_client import HttpClient
+from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 
 ARCHIVED_EMAIL = {"archived": "true", "campaign_type": "email"}

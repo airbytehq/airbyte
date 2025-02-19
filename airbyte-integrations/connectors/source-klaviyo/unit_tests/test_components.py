@@ -1,9 +1,10 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-import pytest
-
 from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 from requests.models import Response
+
 from airbyte_cdk.sources.declarative.models import (
     CustomRetriever,
     DatetimeBasedCursor,
@@ -14,7 +15,6 @@ from airbyte_cdk.sources.declarative.models import (
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
-
 
 
 factory = ModelToComponentFactory()
