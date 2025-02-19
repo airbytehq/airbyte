@@ -137,7 +137,39 @@ definitions:
             type: DpathExtractor
             field_path: []
         paginator:
-          type: NoPagination
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: nextToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("nextToken", {}) }}'
+            stop_condition: '{{ not response.get("nextToken", {}) }}'
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - creationDate
+              value: "{{ format_datetime(record['extendedData']['creationDateTime'], '%s') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - lastUpdatedDate
+              value: "{{ format_datetime(record['extendedData']['lastUpdateDateTime'], '%s') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - servingStatus
+              value: "{{ record['extendedData']['servingStatus'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - statusReasons
+              value: "{{ record['extendedData']['statusReasons'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - extendedData
 
     sponsored_display_campaigns:
       type: DeclarativeStream
