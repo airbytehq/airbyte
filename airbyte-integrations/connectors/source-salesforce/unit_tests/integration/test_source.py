@@ -1,12 +1,12 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import json
-from requests import exceptions
 from unittest import TestCase
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 import pytest
 from config_builder import ConfigBuilder
+from requests import exceptions
 from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
 from source_salesforce import SourceSalesforce
 from source_salesforce.source import AirbyteStopSync
@@ -74,22 +74,22 @@ class StreamGenerationTest(TestCase):
 
         assert exception.value.failure_type == FailureType.system_error
 
-
     def test_read_stream_with_malformed_json_response_error_then_raise_exception(self) -> None:
         mock_response = Mock()
         mock_response.json.side_effect = exceptions.JSONDecodeError("Expecting value", "<html>Error</html>", 0)
         mock_response.url = _BASE_URL
         http_error = exceptions.HTTPError(response=mock_response)
 
-        with patch("airbyte_cdk.sources.concurrent_source.concurrent_source_adapter.ConcurrentSourceAdapter._read_stream") as mock_read_stream:
-          mock_read_stream.side_effect = http_error
-          with pytest.raises(exceptions.HTTPError) as exception:
-              list(self._source._read_stream(Mock(), Mock(), Mock(), Mock(), Mock()))
+        with patch(
+            "airbyte_cdk.sources.concurrent_source.concurrent_source_adapter.ConcurrentSourceAdapter._read_stream"
+        ) as mock_read_stream:
+            mock_read_stream.side_effect = http_error
+            with pytest.raises(exceptions.HTTPError) as exception:
+                list(self._source._read_stream(Mock(), Mock(), Mock(), Mock(), Mock()))
 
         assert type(exception.value.__cause__) == exceptions.JSONDecodeError
         assert exception.value.response.url == _BASE_URL
         assert exception.value == http_error
-
 
     def test_read_stream_with_correct_json_response_error_then_raise_exception(self) -> None:
         mock_response = Mock()
@@ -97,10 +97,12 @@ class StreamGenerationTest(TestCase):
         mock_response.url = _BASE_URL
         http_error = exceptions.HTTPError(response=mock_response)
 
-        with patch("airbyte_cdk.sources.concurrent_source.concurrent_source_adapter.ConcurrentSourceAdapter._read_stream") as mock_read_stream:
-          mock_read_stream.side_effect = http_error
-          with pytest.raises(exceptions.HTTPError) as exception:
-              list(self._source._read_stream(Mock(), Mock(), Mock(), Mock(), Mock()))
+        with patch(
+            "airbyte_cdk.sources.concurrent_source.concurrent_source_adapter.ConcurrentSourceAdapter._read_stream"
+        ) as mock_read_stream:
+            mock_read_stream.side_effect = http_error
+            with pytest.raises(exceptions.HTTPError) as exception:
+                list(self._source._read_stream(Mock(), Mock(), Mock(), Mock(), Mock()))
 
         assert exception.value.response.json()[0]["errorCode"] == "REQUEST_LIMIT_EXCEEDED"
         assert exception.value.response.url == _BASE_URL
@@ -113,9 +115,11 @@ class StreamGenerationTest(TestCase):
         mock_response.status_code = 403
         http_error = exceptions.HTTPError(response=mock_response)
 
-        with patch("airbyte_cdk.sources.concurrent_source.concurrent_source_adapter.ConcurrentSourceAdapter._read_stream") as mock_read_stream:
-          mock_read_stream.side_effect = http_error
-          with pytest.raises(AirbyteStopSync) as exception:
-            list(self._source._read_stream(Mock(), Mock(), Mock(), Mock(), Mock()))
+        with patch(
+            "airbyte_cdk.sources.concurrent_source.concurrent_source_adapter.ConcurrentSourceAdapter._read_stream"
+        ) as mock_read_stream:
+            mock_read_stream.side_effect = http_error
+            with pytest.raises(AirbyteStopSync) as exception:
+                list(self._source._read_stream(Mock(), Mock(), Mock(), Mock(), Mock()))
 
         assert type(exception.value) == AirbyteStopSync
