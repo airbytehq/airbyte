@@ -7,17 +7,15 @@ package io.airbyte.integrations.destination.s3_data_lake
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.IntegrationTest.Companion.isNamespaceOld
 import io.airbyte.cdk.load.test.util.IntegrationTest.Companion.randomizedNamespaceRegex
-import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableCleaner
-import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
-import io.github.oshai.kotlinlogging.KotlinLogging
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.Namespace
 import org.apache.iceberg.catalog.SupportsNamespaces
-
-private val logger = KotlinLogging.logger {}
 
 class S3DataLakeDestinationCleaner(private val catalog: Catalog) : DestinationCleaner {
     override fun cleanup() {
@@ -28,13 +26,7 @@ class S3DataLakeDestinationCleaner(private val catalog: Catalog) : DestinationCl
             }
 
         // we're passing explicit TableIdentifier to clearTable, so just use SimpleTableIdGenerator
-        val tableCleaner =
-            S3DataLakeTableCleaner(
-                S3DataLakeUtil(
-                    SimpleTableIdGenerator(),
-                    S3DataLakeTestUtil.getAwsAssumeRoleCredentials()
-                )
-            )
+        val tableCleaner = IcebergTableCleaner(IcebergUtil(SimpleTableIdGenerator()))
 
         runBlocking(Dispatchers.IO) {
             namespaces.forEach { namespace ->
