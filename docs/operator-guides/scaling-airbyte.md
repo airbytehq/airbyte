@@ -30,10 +30,7 @@ As mentioned above, we are mainly concerned with scaling Sync jobs. Within a Syn
 
 This is because the Source worker reads up to 10,000 records in memory. This can present problems for database sources with tables that have large row sizes. e.g. a table with an average row size of 0.5MBs will require 0.5 \* 10000 / 1000 = 5GBs of RAM. See [this issue](https://github.com/airbytehq/airbyte/issues/3439) for more information.
 
-Our Java connectors currently follow Java's default behaviour with container memory and will only use up to 1/4 of the host's allocated memory. e.g. On a Kubernetes cluster with 8GBs of RAM configured, a Java connector limits itself to 2Gbs of RAM and will see Out-of-Memory exceptions if this goes higher.
-You may want to customize this by setting `JOB_MAIN_CONTAINER_MEMORY_REQUEST` and `JOB_MAIN_CONTAINER_MEMORY_LIMIT` environment variables to custom values.
-
-Note that all Source database connectors are Java connectors. This means that users currently need to over-specify memory resource for Java connectors.
+There are several ways to increase available memory for syncs. See [Configuring connector resources](configuring-connector-resources) for details.
 
 ### Disk Space
 
