@@ -48,7 +48,25 @@ airbyte:
             error: transient
             group: MySQL EOF Exception
             output: Can not read data from MySQL server, will retry.
-            reference-links: -https://docs.oracle.com/javase/8/docs/api/index.html?java/io/EOFException.html
+            reference-links: https://docs.oracle.com/javase/8/docs/api/index.html?java/io/EOFException.html
+
+          - pattern: (?i).*Failed to read remaining ([1-9]\d*) of ([1-9]\d*) bytes from position.*
+            input-example: >-
+              java.io.EOFException: Failed to read remaining 2 of 2 bytes from position 114. Block length: 0. Initial block length: 2.
+            error: transient
+            group: MySQL EOF Exception
+            output: Unable to read data from the MySQL server due to a communication issue, will retry.
+            reference-links: https://docs.oracle.com/javase/8/docs/api/java/io/EOFException.html
+
+          - pattern: (?i).* Error processing row in.*
+            input-example: >-
+              io.debezium.DebeziumException: Error processing row in banking_safe, internal schema size 11, but row size 1 , restart connector with schema recovery mode.
+            error: config
+            group: Debezium Exception
+            output: >-
+              The connector encountered a schema mismatch while processing a row. Please ensure that 'binlog_format' is set to ROW and 
+              'binlog_row_image' is FULL (see our docs https://docs.airbyte.com/integrations/sources/mysql), then restart the connector.
+            reference-links: https://github.com/airbytehq/airbyte/issues/41948
 
           - pattern: (?i).*connection is not available, request timed out after.*
             input-example: >-
@@ -57,7 +75,7 @@ airbyte:
             error: transient
             group: MySQL Hikari Connection Error
             output: Database read failed due to connection timeout, will retry.
-            reference-links: -https://docs.oracle.com/javase/9/docs/api/java/sql/SQLTransientConnectionException.html
+            reference-links: https://docs.oracle.com/javase/9/docs/api/java/sql/SQLTransientConnectionException.html
 
           - pattern: (?i).*is unrecognized or represents more than one time zone.*
             input-example: >-
@@ -69,7 +87,7 @@ airbyte:
             output: >-
               Please configure your database with the correct timezone found in the detailed error message. 
               Please refer to the following documentation: https://dev.mysql.com/doc/refman/8.4/en/time-zone-support.html
-            reference-links: -https://docs.oracle.com/javase/8/docs/api/index.html?java/io/SQLException.html
+            reference-links: https://docs.oracle.com/javase/8/docs/api/index.html?java/io/SQLException.html
 
           - pattern: (?i).*exception occurred in the change event produce.*
             input-example: >-
@@ -78,19 +96,18 @@ airbyte:
             error: config
             group: MySQL Schema Change Error
             output: >-
-              Your connection could not be completed because changes were detected on an unknown table (see detailed error for the table name),
-              please refresh your schema or reset the connection.
-            reference-links: -https://kafka.apache.org/11/javadoc/org/apache/kafka/connect/errors/ConnectException.html
+              An unexpected error occurred. The sync has stopped, please check the logs for more details.
+            reference-links: https://kafka.apache.org/11/javadoc/org/apache/kafka/connect/errors/ConnectException.html
 
           - pattern: |
-              (?i).*vttablet: rpc error: code = Unavailable desc = error reading from server: EOF.*
+              .*vttablet.*?rpc\s+error.*?code\s*=\s*Unavailable.*?desc\s*=\s*error\s+reading\s+from\s+server\s*:\s*EOF.*
             input-example: >-
               java.lang.RuntimeException: java.lang.RuntimeException: java.sql.SQLException: target: ai-solutions.-.primary: 
               vttablet: rpc error: code = Unavailable desc = error reading from server: EOF
             error: transient
             group: MySQL Vitess Connection Error
             output: Database read failed due to connection timeout, will retry.
-            reference-links: -https://docs.oracle.com/javase/8/docs/api/index.html?java/sql/SQLException.html
+            reference-links: https://docs.oracle.com/javase/8/docs/api/index.html?java/sql/SQLException.html
 
       jdbc:
         # The following rules are for the JdbcExceptionClassifier [0] which are applied on a
