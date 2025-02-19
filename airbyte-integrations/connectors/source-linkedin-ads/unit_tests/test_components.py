@@ -10,6 +10,8 @@ import pytest
 from requests import Response, Session
 from requests.models import PreparedRequest
 from requests.exceptions import InvalidURL
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from source_linkedin_ads.components import (
     AnalyticsDatetimeBasedCursor,
     LinkedInAdsCustomRetriever,
@@ -18,8 +20,6 @@ from source_linkedin_ads.components import (
     SafeHttpClient,
     StreamSlice,
     LinkedInAdsErrorHandler,
-    ResponseAction,
-    FailureType,
 )
 
 
