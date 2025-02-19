@@ -579,7 +579,7 @@ class SourceStripe(YamlDeclarativeSource):
         ]
 
         state_manager = ConnectorStateManager(state=self._state)
-        return [
+        return super().streams(config=config) + [
             self._to_concurrent(
                 stream,
                 datetime.fromtimestamp(self._start_date_to_timestamp(config), timezone.utc),
