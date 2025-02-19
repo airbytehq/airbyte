@@ -1623,7 +1623,7 @@ definitions:
       refresh_token: "{{ config['client_refresh_token'] }}"
       token_expiry_date: "{{ config['token_expiry_date'] }}"
       refresh_request_headers:
-          Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | base64encode }}"
+          Authorization: "Basic {{ (config['client_id'] ~ ':' ~ config['client_secret']) | base64encode }}"
       refresh_token_updater:
         refresh_token_name: refresh_token
         refresh_token_config_path:
@@ -1722,7 +1722,7 @@ spec:
         scope: offline_access accounting.transactions.read accounting.reports.read accounting.budgets.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings.read accounting.contacts.read accounting.attachments.read assets.read files.read projects.read openid
         access_token_url: https://identity.xero.com/connect/token
         access_token_headers:
-          Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | base64encode }}"
+          Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
         access_token_params:
           grant_type: authorization_code
           code: "{{ auth_code_value }}"
