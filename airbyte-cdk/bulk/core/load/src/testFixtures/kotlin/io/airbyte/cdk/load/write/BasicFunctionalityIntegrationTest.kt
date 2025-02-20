@@ -1597,7 +1597,6 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
-
     @Test
     open fun testDedupWithStringKey() {
         assumeTrue(supportsDedup)
@@ -1605,21 +1604,21 @@ abstract class BasicFunctionalityIntegrationTest(
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
                 importType =
-                Dedupe(
-                    primaryKey = listOf(listOf("id1"), listOf("id2")),
-                    cursor = listOf("updated_at"),
-                ),
+                    Dedupe(
+                        primaryKey = listOf(listOf("id1"), listOf("id2")),
+                        cursor = listOf("updated_at"),
+                    ),
                 schema =
-                ObjectType(
-                    properties =
-                    linkedMapOf(
-                        "id1" to stringType,
-                        "id2" to intType,
-                        "updated_at" to timestamptzType,
-                        "name" to stringType,
-                        "_ab_cdc_deleted_at" to timestamptzType,
-                    )
-                ),
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "id1" to stringType,
+                                "id2" to intType,
+                                "updated_at" to timestamptzType,
+                                "name" to stringType,
+                                "_ab_cdc_deleted_at" to timestamptzType,
+                            )
+                    ),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = syncId,
@@ -1666,25 +1665,25 @@ abstract class BasicFunctionalityIntegrationTest(
                     extractedAt = 1000,
                     generationId = 42,
                     data =
-                    mapOf(
-                        "id1" to "9cf974de-52cf-4194-9f3d-7efa76ba4d84",
-                        "id2" to 200,
-                        "updated_at" to TimestampWithTimezoneValue("2000-01-01T00:01:00Z"),
-                        "name" to "Alice2",
-                        "_ab_cdc_deleted_at" to null
-                    ),
+                        mapOf(
+                            "id1" to "9cf974de-52cf-4194-9f3d-7efa76ba4d84",
+                            "id2" to 200,
+                            "updated_at" to TimestampWithTimezoneValue("2000-01-01T00:01:00Z"),
+                            "name" to "Alice2",
+                            "_ab_cdc_deleted_at" to null
+                        ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
                 OutputRecord(
                     extractedAt = 1000,
                     generationId = 42,
                     data =
-                    mapOf(
-                        "id1" to "9cf974de-52cf-4194-9f3d-7efa76ba4d84",
-                        "id2" to 201,
-                        "updated_at" to TimestampWithTimezoneValue("2000-01-01T00:02:00Z"),
-                        "name" to "Bob1"
-                    ),
+                        mapOf(
+                            "id1" to "9cf974de-52cf-4194-9f3d-7efa76ba4d84",
+                            "id2" to 201,
+                            "updated_at" to TimestampWithTimezoneValue("2000-01-01T00:02:00Z"),
+                            "name" to "Bob1"
+                        ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
             ),
@@ -1724,13 +1723,13 @@ abstract class BasicFunctionalityIntegrationTest(
                     extractedAt = 2000,
                     generationId = 42,
                     data =
-                    mapOf(
-                        "id1" to "9cf974de-52cf-4194-9f3d-7efa76ba4d84",
-                        "id2" to 200,
-                        "updated_at" to TimestampWithTimezoneValue("2000-01-02T00:00:00Z"),
-                        "name" to "Alice3",
-                        "_ab_cdc_deleted_at" to null
-                    ),
+                        mapOf(
+                            "id1" to "9cf974de-52cf-4194-9f3d-7efa76ba4d84",
+                            "id2" to 200,
+                            "updated_at" to TimestampWithTimezoneValue("2000-01-02T00:00:00Z"),
+                            "name" to "Alice3",
+                            "_ab_cdc_deleted_at" to null
+                        ),
                     airbyteMeta = OutputRecord.Meta(syncId = 43),
                 )
             ),

@@ -23,11 +23,11 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
+import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteTypeToMssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setAsNullValue
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setValue
 import io.airbyte.integrations.destination.mssql.v2.convert.MssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.ResultSetToAirbyteValue.Companion.getAirbyteNamedValue
-import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteTypeToMssqlType
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -250,9 +250,7 @@ class MSSQLQueryBuilder(
     }
 
     private fun getSchema(): List<NamedSqlField> =
-        finalTableSchema.map {
-            NamedSqlField(it.name, toMssqlType.convert(it.type.type))
-        }
+        finalTableSchema.map { NamedSqlField(it.name, toMssqlType.convert(it.type.type)) }
 
     fun updateSchema(connection: Connection) {
         val existingSchema = getExistingSchema(connection)
@@ -485,10 +483,11 @@ class MSSQLQueryBuilder(
         separator: String = DEFAULT_SEPARATOR
     ): String {
         return schema.joinToString(separator = separator) {
-            val mssqlType = toMssqlType.convert(
-                it.type.type,
-                isIndexed = indexedColumns.contains(it.name),
-            )
+            val mssqlType =
+                toMssqlType.convert(
+                    it.type.type,
+                    isIndexed = indexedColumns.contains(it.name),
+                )
             "[${it.name}] ${mssqlType.sqlString} NULL"
         }
     }

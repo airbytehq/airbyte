@@ -50,7 +50,7 @@ class AirbyteTypeToMssqlType {
             is NumberType -> MssqlType.DECIMAL
             is ObjectTypeWithEmptySchema -> MssqlType.TEXT
             is ObjectTypeWithoutSchema -> MssqlType.TEXT
-            is StringType -> if(isIndexed) MssqlType.VARCHAR_INDEX else MssqlType.VARCHAR
+            is StringType -> if (isIndexed) MssqlType.VARCHAR_INDEX else MssqlType.VARCHAR
             is TimeTypeWithTimezone -> MssqlType.DATETIMEOFFSET
             is TimeTypeWithoutTimezone -> MssqlType.TIME
             is TimestampTypeWithTimezone -> MssqlType.DATETIMEOFFSET

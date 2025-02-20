@@ -154,5 +154,4 @@ class AirbyteTypeToMsqlTypeTest {
         val result = converter.convert(unknownType)
         assertEquals(MssqlType.TEXT, result)
     }
-
 }
