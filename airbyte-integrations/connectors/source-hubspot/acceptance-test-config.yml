@@ -40,6 +40,8 @@ acceptance_tests:
             bypass_reason: Unable to populate - covered by integration tests
           - name: companies_web_analytics
             bypass_reason: Unable to populate - covered by integration tests
+          - name: deals_archived
+            bypass_reason: No value in re-create every 90 days
           - name: engagements_calls_web_analytics
             bypass_reason: Unable to populate - covered by integration tests
           - name: engagements_emails_web_analytics
