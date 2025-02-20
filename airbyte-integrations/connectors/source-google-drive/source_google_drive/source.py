@@ -8,12 +8,16 @@ from typing import Any, Mapping, Optional
 from airbyte_cdk import AdvancedAuth, ConfiguredAirbyteCatalog, ConnectorSpecification, OAuthConfigSpecification, TState
 from airbyte_cdk.models import AuthFlowType, OauthConnectorInputSpecification
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
-from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor.file_based_concurrent_cursor import (
+    FileBasedConcurrentCursor,
+)
 from source_google_drive.spec import SourceGoogleDriveSpec
 from source_google_drive.stream_reader import SourceGoogleDriveStreamReader
 
 
 class SourceGoogleDrive(FileBasedSource):
+    _concurrency_level = 1
+
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: Optional[TState]):
         super().__init__(
             stream_reader=SourceGoogleDriveStreamReader(),
@@ -21,7 +25,7 @@ class SourceGoogleDrive(FileBasedSource):
             catalog=catalog,
             config=config,
             state=state,
-            cursor_cls=DefaultFileBasedCursor,
+            cursor_cls=FileBasedConcurrentCursor,
         )
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
