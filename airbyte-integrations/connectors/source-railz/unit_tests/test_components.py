@@ -4,6 +4,7 @@
 from datetime import datetime, timezone
 from unittest.mock import patch
 
+
 def test_get_tokens(components_module):
     url = "https://auth.railz.ai/getAccess"
 
