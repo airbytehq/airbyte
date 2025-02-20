@@ -38,6 +38,8 @@ import io.airbyte.cdk.load.message.StreamRecordEvent
 import io.airbyte.cdk.load.message.Undefined
 import io.airbyte.cdk.load.pipeline.InputPartitioner
 import io.airbyte.cdk.load.pipeline.LoadPipeline
+import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
@@ -83,7 +85,9 @@ class DefaultInputConsumerTask(
         PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>>,
     private val loadPipeline: LoadPipeline? = null,
     private val partitioner: InputPartitioner,
-    private val openStreamQueue: QueueWriter<DestinationStream>
+    private val openStreamQueue: QueueWriter<DestinationStream>,
+    private val inputSequence: DeserializingInputSequence,
+    private val checkpointManager: CheckpointManager<DestinationStream.Descriptor, Reserved<CheckpointMessage>>,
 ) : InputConsumerTask {
     private val log = KotlinLogging.logger {}
 
@@ -142,68 +146,9 @@ class DefaultInputConsumerTask(
         }
     }
 
-    private suspend fun handleRecordForPipeline(
-        reserved: Reserved<DestinationStreamAffinedMessage>,
-    ) {
-        val stream = reserved.value.stream
-        unopenedStreams.remove(stream)?.let {
-            log.info { "Saw first record for stream $stream; initializing" }
-            // Note, since we're not spilling to disk, there is nothing to do with
-            // any records before initialization is complete, so we'll wait here
-            // for it to finish.
-            openStreamQueue.publish(it)
-            syncManager.getOrAwaitStreamLoader(stream)
-            log.info { "Initialization for stream $stream complete" }
-        }
-        val manager = syncManager.getStreamManager(stream)
-        when (val message = reserved.value) {
-            is DestinationRecord -> {
-                val record = message.asRecordMarshaledToAirbyteValue()
-                manager.incrementReadCount()
-                val pipelineMessage =
-                    PipelineMessage(
-                        mapOf(manager.getCurrentCheckpointId() to 1),
-                        StreamKey(stream),
-                        record
-                    )
-                val partition = partitioner.getPartition(record, recordQueueForPipeline.partitions)
-                recordQueueForPipeline.publish(reserved.replace(pipelineMessage), partition)
-            }
-            is DestinationRecordStreamComplete -> {
-                manager.markEndOfStream(true)
-                log.info { "Read COMPLETE for stream $stream" }
-                recordQueueForPipeline.broadcast(reserved.replace(PipelineEndOfStream(stream)))
-                reserved.release()
-            }
-            is DestinationRecordStreamIncomplete -> {
-                manager.markEndOfStream(false)
-                log.info { "Read INCOMPLETE for stream $stream" }
-                recordQueueForPipeline.broadcast(reserved.replace(PipelineEndOfStream(stream)))
-                reserved.release()
-            }
-            is DestinationFile -> {
-                val index = manager.incrementReadCount()
-                // destinationTaskLauncher.handleFile(stream, message, index)
-                fileTransferQueue.publish(FileTransferQueueMessage(stream, message, index))
-            }
-            is DestinationFileStreamComplete -> {
-                reserved.release() // safe because multiple calls conflate
-                manager.markEndOfStream(true)
-                val envelope =
-                    BatchEnvelope(
-                        SimpleBatch(Batch.State.COMPLETE),
-                        streamDescriptor = message.stream,
-                    )
-                destinationTaskLauncher.handleNewBatch(stream, envelope)
-            }
-            is DestinationFileStreamIncomplete ->
-                throw IllegalStateException("File stream $stream failed upstream, cannot continue.")
-        }
-    }
-
     private suspend fun handleCheckpoint(
         reservation: Reserved<CheckpointMessage>,
-        sizeBytes: Long
+        sizeBytes: Long,
     ) {
         when (val checkpoint = reservation.value) {
             /**
@@ -261,6 +206,88 @@ class DefaultInputConsumerTask(
         }
     }
 
+    data class LoadPipelineInputState(
+        val lastCheckpointIds: MutableMap<DestinationStream.Descriptor, CheckpointId> =
+            mutableMapOf(),
+        val recordCounts: MutableMap<DestinationStream.Descriptor, Long> = mutableMapOf(),
+    )
+    private suspend fun handleRecordForPipeline(
+        state: LoadPipelineInputState,
+        message: DestinationStreamAffinedMessage,
+    ): LoadPipelineInputState {
+        val stream = message.stream
+        unopenedStreams.remove(stream)?.let {
+            log.info { "Saw first record for stream $stream; initializing" }
+            // Note, since we're not spilling to disk, there is nothing to do with
+            // any records before initialization is complete, so we'll wait here
+            // for it to finish.
+            openStreamQueue.publish(it)
+            syncManager.getOrAwaitStreamLoader(stream)
+            log.info { "Initialization for stream $stream complete" }
+        }
+        val manager = syncManager.getStreamManager(stream)
+        when (message) {
+            is DestinationRecord -> {
+                val record = message.asRecordMarshaledToAirbyteValue()
+                state.recordCounts.merge(stream, 1L, Long::plus)
+                val checkpointId =
+                    state.lastCheckpointIds.getOrPut(stream) { manager.getCurrentCheckpointId() }
+                val pipelineMessage =
+                    PipelineMessage(mapOf(checkpointId to 1), StreamKey(stream), record)
+                val partition = partitioner.getPartition(record, recordQueueForPipeline.partitions)
+                recordQueueForPipeline.publish(Reserved(null, 0L, pipelineMessage), partition)
+            }
+            is DestinationRecordStreamComplete -> {
+                state.recordCounts[stream]?.let { count ->
+                    println("Incrementing read count for $stream by $count on end-of-stream")
+                    syncManager.getStreamManager(stream).incrementReadCount(count)
+                }
+                manager.markEndOfStream(true)
+                log.info { "Read COMPLETE for stream $stream" }
+                recordQueueForPipeline.broadcast(Reserved(null, 0L, PipelineEndOfStream(stream)))
+            }
+            is DestinationRecordStreamIncomplete -> {
+                state.recordCounts[stream]?.let { count ->
+                    println("Incrementing read count for $stream by $count on end-of-stream")
+                    syncManager.getStreamManager(stream).incrementReadCount(count)
+                }
+                manager.markEndOfStream(false)
+                log.info { "Read INCOMPLETE for stream $stream" }
+                recordQueueForPipeline.broadcast(Reserved(null, 0L, PipelineEndOfStream(stream)))
+            }
+            is DestinationFile -> {
+                val index = manager.incrementReadCount()
+                // destinationTaskLauncher.handleFile(stream, message, index)
+                fileTransferQueue.publish(FileTransferQueueMessage(stream, message, index))
+            }
+            is DestinationFileStreamComplete ->
+                throw NotImplementedError("File streams not yet supported for load pipeline")
+            is DestinationFileStreamIncomplete ->
+                throw IllegalStateException("File stream $stream failed upstream, cannot continue.")
+        }
+        return state
+    }
+
+    private suspend fun handleCheckpointForPipeline(
+        state: LoadPipelineInputState,
+        checkpoint: CheckpointMessage,
+    ): LoadPipelineInputState {
+        val streams =
+            when (checkpoint) {
+                is GlobalCheckpoint -> catalog.streams.map { it.descriptor }
+                is StreamCheckpoint -> listOf(checkpoint.checkpoint.stream)
+            }
+        streams.forEach { stream ->
+            state.recordCounts.remove(stream)?.let { count ->
+                println("Incrementing read count for $stream by $count")
+                syncManager.getStreamManager(stream).incrementReadCount(count)
+            }
+            state.lastCheckpointIds.remove(stream)
+        }
+        handleCheckpoint(Reserved(null, 0L, checkpoint), 0L)
+        return state
+    }
+
     /**
      * Deserialize and route the message to the appropriate channel.
      *
@@ -268,22 +295,23 @@ class DefaultInputConsumerTask(
      */
     override suspend fun execute() {
         log.info { "Starting consuming messages from the input flow" }
+
         try {
             checkpointQueue.use {
-                inputFlow.collect { (sizeBytes, reserved) ->
-                    when (val message = reserved.value) {
-                        /* If the input message represents a record. */
-                        is DestinationStreamAffinedMessage -> {
-                            if (loadPipeline != null) {
-                                handleRecordForPipeline(reserved.replace(message))
-                            } else {
+                if (loadPipeline != null) {
+                    collectForPipeline()
+                } else {
+                    inputFlow.collect { (sizeBytes, reserved) ->
+                        when (val message = reserved.value) {
+                            /* If the input message represents a record. */
+                            is DestinationStreamAffinedMessage -> {
                                 handleRecord(reserved.replace(message), sizeBytes)
                             }
-                        }
-                        is CheckpointMessage ->
-                            handleCheckpoint(reserved.replace(message), sizeBytes)
-                        is Undefined -> {
-                            log.warn { "Unhandled message: $message" }
+                            is CheckpointMessage ->
+                                handleCheckpoint(reserved.replace(message), sizeBytes)
+                            is Undefined -> {
+                                log.warn { "Unhandled message: $message" }
+                            }
                         }
                     }
                 }
@@ -295,6 +323,25 @@ class DefaultInputConsumerTask(
             fileTransferQueue.close()
             recordQueueForPipeline.close()
         }
+    }
+
+    private suspend fun collectForPipeline() {
+        inputSequence.fold(LoadPipelineInputState()) { acc, message ->
+            when (message) {
+                /* If the input message represents a record. */
+                is DestinationStreamAffinedMessage -> {
+                    handleRecordForPipeline(acc, message)
+                }
+                is CheckpointMessage -> {
+                    handleCheckpointForPipeline(acc, message)
+                }
+                is Undefined -> {
+                    log.warn { "Unhandled message: $message" }
+                    acc
+                }
+            }
+        }
+        syncManager.markCheckpointsProcessed()
     }
 }
 
@@ -314,6 +361,8 @@ interface InputConsumerTaskFactory {
         loadPipeline: LoadPipeline?,
         partitioner: InputPartitioner,
         openStreamQueue: QueueWriter<DestinationStream>,
+        inputSequence: DeserializingInputSequence,
+        checkpointManager: CheckpointManager<DestinationStream.Descriptor, Reserved<CheckpointMessage>>,
     ): InputConsumerTask
 }
 
@@ -337,6 +386,8 @@ class DefaultInputConsumerTaskFactory(
         loadPipeline: LoadPipeline?,
         partitioner: InputPartitioner,
         openStreamQueue: QueueWriter<DestinationStream>,
+        inputSequence: DeserializingInputSequence,
+        checkpointManager: CheckpointManager<DestinationStream.Descriptor, Reserved<CheckpointMessage>>
     ): InputConsumerTask {
         return DefaultInputConsumerTask(
             catalog,
@@ -352,6 +403,8 @@ class DefaultInputConsumerTaskFactory(
             loadPipeline,
             partitioner,
             openStreamQueue,
+            inputSequence,
+            checkpointManager
         )
     }
 }

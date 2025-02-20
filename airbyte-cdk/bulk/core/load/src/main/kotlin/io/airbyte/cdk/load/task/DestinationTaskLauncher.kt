@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.ChannelMessageQueue
+import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.DestinationStreamEvent
@@ -23,6 +24,7 @@ import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.pipeline.InputPartitioner
 import io.airbyte.cdk.load.pipeline.LoadPipeline
+import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
@@ -35,6 +37,7 @@ import io.airbyte.cdk.load.task.implementor.ProcessFileTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessRecordsTaskFactory
 import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
+import io.airbyte.cdk.load.task.internal.DeserializingInputSequence
 import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushTickTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
@@ -150,6 +153,8 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     private val loadPipeline: LoadPipeline?,
     private val partitioner: InputPartitioner,
     private val updateBatchTaskFactory: UpdateBatchStateTaskFactory,
+    private val inputSequence: DeserializingInputSequence,
+    private val checkpointManager: CheckpointManager<DestinationStream.Descriptor, Reserved<CheckpointMessage>>
 ) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
 
@@ -211,6 +216,8 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
                 loadPipeline = loadPipeline,
                 partitioner = partitioner,
                 openStreamQueue = openStreamQueue,
+                inputSequence = inputSequence,
+                checkpointManager = checkpointManager
             )
         launch(inputConsumerTask)
 
@@ -263,6 +270,7 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
                     launch(task)
                 }
             }
+
             // Start flush task
             log.info { "Starting timed file aggregate flush task " }
             launch(flushTickTask)

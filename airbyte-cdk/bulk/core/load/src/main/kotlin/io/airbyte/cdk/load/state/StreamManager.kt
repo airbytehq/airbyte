@@ -32,7 +32,7 @@ interface StreamManager {
      * Count incoming record and return the record's *index*. If [markEndOfStream] has been called,
      * this should throw an exception.
      */
-    fun incrementReadCount(): Long
+    fun incrementReadCount(delta: Long = 1): Long
     fun readCount(): Long
 
     /**
@@ -152,12 +152,12 @@ class DefaultStreamManager(
         Batch.State.entries.forEach { rangesState[it] = TreeRangeSet.create() }
     }
 
-    override fun incrementReadCount(): Long {
+    override fun incrementReadCount(delta: Long): Long {
         if (markedEndOfStream.get()) {
             throw IllegalStateException("Stream is closed for reading")
         }
 
-        return recordCount.getAndIncrement()
+        return recordCount.getAndAdd(delta)
     }
 
     override fun readCount(): Long {
