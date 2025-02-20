@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from typing import Any, Mapping, Optional, Union
 
 import requests
+
 from airbyte_cdk.sources.declarative.requesters.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.declarative.types import Config
 

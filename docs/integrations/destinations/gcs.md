@@ -242,8 +242,10 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
-| 0.4.6   | 2024-02-15 | [35285](https://github.com/airbytehq/airbyte/pull/35285)   | Adopt CDK 0.20.8                                                                                                           |
-| 0.4.5   | 2024-02-08 | [34745](https://github.com/airbytehq/airbyte/pull/34745)   | Adopt CDK 0.19.0                                                                                                           |
+| 0.4.8 | 2025-01-10 | [51479](https://github.com/airbytehq/airbyte/pull/51479) | Use a non root base image |
+| 0.4.7 | 2024-12-18 | [49884](https://github.com/airbytehq/airbyte/pull/49884) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 0.4.6 | 2024-02-15 | [35285](https://github.com/airbytehq/airbyte/pull/35285) | Adopt CDK 0.20.8 |
+| 0.4.5 | 2024-02-08 | [34745](https://github.com/airbytehq/airbyte/pull/34745) | Adopt CDK 0.19.0 |
 | 0.4.4   | 2023-07-14 | [#28345](https://github.com/airbytehq/airbyte/pull/28345)  | Increment patch to trigger a rebuild                                                                                       |
 | 0.4.3   | 2023-07-05 | [#27936](https://github.com/airbytehq/airbyte/pull/27936)  | Internal code update                                                                                                       |
 | 0.4.2   | 2023-06-30 | [#27891](https://github.com/airbytehq/airbyte/pull/27891)  | Internal code update                                                                                                       |

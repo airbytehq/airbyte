@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.test.util
 
 import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.message.DestinationRecord.Change
+import io.airbyte.cdk.load.message.Meta.Change
 import java.time.Instant
 import java.util.UUID
 

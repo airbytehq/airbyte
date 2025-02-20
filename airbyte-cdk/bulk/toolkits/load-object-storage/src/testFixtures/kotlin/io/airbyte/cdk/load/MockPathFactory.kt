@@ -17,7 +17,7 @@ open class MockPathFactory : PathFactory {
 
     override val supportsStaging: Boolean
         get() = doSupportStaging
-    override val prefix: String
+    override val finalPrefix: String
         get() = "prefix"
 
     private fun fromStream(stream: DestinationStream): String {
@@ -28,14 +28,14 @@ open class MockPathFactory : PathFactory {
         stream: DestinationStream,
         substituteStreamAndNamespaceOnly: Boolean
     ): String {
-        return "$prefix/staging/${fromStream(stream)}"
+        return "$finalPrefix/staging/${fromStream(stream)}"
     }
 
     override fun getFinalDirectory(
         stream: DestinationStream,
         substituteStreamAndNamespaceOnly: Boolean
     ): String {
-        return "$prefix/${fromStream(stream)}"
+        return "$finalPrefix/${fromStream(stream)}"
     }
 
     override fun getPathToFile(
@@ -59,11 +59,14 @@ open class MockPathFactory : PathFactory {
         }
     }
 
-    override fun getPathMatcher(stream: DestinationStream): PathMatcher {
+    override fun getPathMatcher(
+        stream: DestinationStream,
+        suffixPattern: String? // ignored
+    ): PathMatcher {
         return PathMatcher(
             regex =
                 Regex(
-                    "$prefix/(${stream.descriptor.namespace})/(${stream.descriptor.name})/(.*)-(.*)$"
+                    "$finalPrefix/(${stream.descriptor.namespace})/(${stream.descriptor.name})/(.*)-(.*)$"
                 ),
             variableToIndex = mapOf("part_number" to 4)
         )

@@ -8,15 +8,17 @@ from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
 import freezegun
-from airbyte_cdk.models import AirbyteStreamStatus, SyncMode
-from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from config_builder import ConfigBuilder
-from integration.test_rest_stream import create_http_request as create_standard_http_request
-from integration.test_rest_stream import create_http_response as create_standard_http_response
-from integration.utils import create_base_url, given_authentication, given_stream, read
 from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
 from salesforce_job_response_builder import JobCreateResponseBuilder, JobInfoResponseBuilder
 from source_salesforce.streams import BulkSalesforceStream
+
+from airbyte_cdk.models import AirbyteStreamStatus, SyncMode
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from integration.test_rest_stream import create_http_request as create_standard_http_request
+from integration.test_rest_stream import create_http_response as create_standard_http_response
+from integration.utils import create_base_url, given_authentication, given_stream, read
+
 
 _A_FIELD_NAME = "a_field"
 _ANOTHER_FIELD_NAME = "another_field"
@@ -25,7 +27,9 @@ _CLIENT_ID = "a_client_id"
 _CLIENT_SECRET = "a_client_secret"
 _CURSOR_FIELD = "SystemModstamp"
 _INCREMENTAL_FIELDS = [_A_FIELD_NAME, _CURSOR_FIELD]
-_INCREMENTAL_SCHEMA_BUILDER = SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_CURSOR_FIELD, "datetime")  # re-using same fields as _INCREMENTAL_FIELDS
+_INCREMENTAL_SCHEMA_BUILDER = (
+    SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_CURSOR_FIELD, "datetime")
+)  # re-using same fields as _INCREMENTAL_FIELDS
 _INSTANCE_URL = "https://instance.salesforce.com"
 _JOB_ID = "a-job-id"
 _ANOTHER_JOB_ID = "another-job-id"
@@ -60,17 +64,16 @@ def _calculate_start_time(start_time: datetime) -> datetime:
 
 
 def _build_job_creation_request(query: str) -> HttpRequest:
-    return HttpRequest(f"{_BASE_URL}/jobs/query", body=json.dumps({
-        "operation": "queryAll",
-        "query": query,
-        "contentType": "CSV",
-        "columnDelimiter": "COMMA",
-        "lineEnding": "LF"
-    }))
+    return HttpRequest(
+        f"{_BASE_URL}/jobs/query",
+        body=json.dumps({"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}),
+    )
 
 
 def _make_sliced_job_request(lower_boundary: datetime, upper_boundary: datetime, fields: List[str]) -> HttpRequest:
-    return _build_job_creation_request(f"SELECT {', '.join(fields)} FROM a_stream_name WHERE SystemModstamp >= {lower_boundary.isoformat(timespec='milliseconds')} AND SystemModstamp < {upper_boundary.isoformat(timespec='milliseconds')}")
+    return _build_job_creation_request(
+        f"SELECT {', '.join(fields)} FROM a_stream_name WHERE SystemModstamp >= {lower_boundary.isoformat(timespec='milliseconds')} AND SystemModstamp < {upper_boundary.isoformat(timespec='milliseconds')}"
+    )
 
 
 def _make_full_job_request(fields: List[str]) -> HttpRequest:
@@ -78,7 +81,6 @@ def _make_full_job_request(fields: List[str]) -> HttpRequest:
 
 
 class BulkStreamTest(TestCase):
-
     def setUp(self) -> None:
         self._config = ConfigBuilder().client_id(_CLIENT_ID).client_secret(_CLIENT_SECRET).refresh_token(_REFRESH_TOKEN)
 
@@ -168,7 +170,9 @@ class BulkStreamTest(TestCase):
 
     @freezegun.freeze_time(_NOW.isoformat())
     def test_given_no_data_provided_when_read_then_field_is_none(self) -> None:
-        given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_ANOTHER_FIELD_NAME))
+        given_stream(
+            self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_ANOTHER_FIELD_NAME)
+        )
         self._http_mocker.post(
             _make_full_job_request([_A_FIELD_NAME, _ANOTHER_FIELD_NAME]),
             JobCreateResponseBuilder().with_id(_JOB_ID).build(),
@@ -192,7 +196,9 @@ class BulkStreamTest(TestCase):
 
     @freezegun.freeze_time(_NOW.isoformat())
     def test_given_csv_unix_dialect_provided_when_read_then_parse_csv_properly(self) -> None:
-        given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_ANOTHER_FIELD_NAME))
+        given_stream(
+            self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_ANOTHER_FIELD_NAME)
+        )
         self._http_mocker.post(
             _make_full_job_request([_A_FIELD_NAME, _ANOTHER_FIELD_NAME]),
             JobCreateResponseBuilder().with_id(_JOB_ID).build(),
@@ -220,7 +226,9 @@ class BulkStreamTest(TestCase):
 
     @freezegun.freeze_time(_NOW.isoformat())
     def test_given_specific_encoding_when_read_then_parse_csv_properly(self) -> None:
-        given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_ANOTHER_FIELD_NAME))
+        given_stream(
+            self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_ANOTHER_FIELD_NAME)
+        )
         self._http_mocker.post(
             _make_full_job_request([_A_FIELD_NAME, _ANOTHER_FIELD_NAME]),
             JobCreateResponseBuilder().with_id(_JOB_ID).build(),
@@ -338,7 +346,17 @@ class BulkStreamTest(TestCase):
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
             _make_full_job_request([_A_FIELD_NAME]),
-            HttpResponse(json.dumps([{"errorCode": "API_ERROR", "message": "Implementation restriction... <can't complete the error message as I can't reproduce this issue>"}]), 400),
+            HttpResponse(
+                json.dumps(
+                    [
+                        {
+                            "errorCode": "API_ERROR",
+                            "message": "Implementation restriction... <can't complete the error message as I can't reproduce this issue>",
+                        }
+                    ]
+                ),
+                400,
+            ),
         )
 
         output = read(_STREAM_NAME, SyncMode.full_refresh, self._config)
@@ -526,11 +544,21 @@ class BulkStreamTest(TestCase):
         self._config.start_date(start_date).stream_slice_step("P7D")
 
         given_stream(self._http_mocker, _BASE_URL, _STREAM_WITH_PARENT_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
-        self._create_sliced_job_with_records(start_date, first_upper_boundary, _PARENT_STREAM_NAME, "first_parent_slice_job_id", [{"Id": "parent1", "SystemModstamp": "any"}, {"Id": "parent2", "SystemModstamp": "any"}])
-        self._create_sliced_job_with_records(first_upper_boundary, _NOW, _PARENT_STREAM_NAME, "second_parent_slice_job_id", [{"Id": "parent3", "SystemModstamp": "any"}])
+        self._create_sliced_job_with_records(
+            start_date,
+            first_upper_boundary,
+            _PARENT_STREAM_NAME,
+            "first_parent_slice_job_id",
+            [{"Id": "parent1", "SystemModstamp": "any"}, {"Id": "parent2", "SystemModstamp": "any"}],
+        )
+        self._create_sliced_job_with_records(
+            first_upper_boundary, _NOW, _PARENT_STREAM_NAME, "second_parent_slice_job_id", [{"Id": "parent3", "SystemModstamp": "any"}]
+        )
 
         self._http_mocker.post(
-            self._build_job_creation_request(f"SELECT {', '.join([_A_FIELD_NAME])} FROM {_STREAM_WITH_PARENT_NAME} WHERE ContentDocumentId IN ('parent1', 'parent2', 'parent3')"),
+            self._build_job_creation_request(
+                f"SELECT {', '.join([_A_FIELD_NAME])} FROM {_STREAM_WITH_PARENT_NAME} WHERE ContentDocumentId IN ('parent1', 'parent2', 'parent3')"
+            ),
             JobCreateResponseBuilder().with_id(_JOB_ID).build(),
         )
         self._http_mocker.get(
@@ -547,10 +575,16 @@ class BulkStreamTest(TestCase):
 
         assert len(output.records) == 1
 
-    def _create_sliced_job(self, lower_boundary: datetime, upper_boundary: datetime, stream_name: str, fields: List[str], job_id: str, record_count: int) -> None:
-        self._create_sliced_job_with_records(lower_boundary, upper_boundary, stream_name, job_id, self._generate_random_records(fields, record_count))
+    def _create_sliced_job(
+        self, lower_boundary: datetime, upper_boundary: datetime, stream_name: str, fields: List[str], job_id: str, record_count: int
+    ) -> None:
+        self._create_sliced_job_with_records(
+            lower_boundary, upper_boundary, stream_name, job_id, self._generate_random_records(fields, record_count)
+        )
 
-    def _create_sliced_job_with_records(self, lower_boundary: datetime, upper_boundary: datetime, stream_name: str, job_id: str, records: List[Dict[str, str]]) -> None:
+    def _create_sliced_job_with_records(
+        self, lower_boundary: datetime, upper_boundary: datetime, stream_name: str, job_id: str, records: List[Dict[str, str]]
+    ) -> None:
         self._http_mocker.post(
             self._make_sliced_job_request(lower_boundary, upper_boundary, stream_name, list(records[0].keys())),
             JobCreateResponseBuilder().with_id(job_id).build(),
@@ -581,8 +615,12 @@ class BulkStreamTest(TestCase):
                 writer.writerow(line)
             return csvfile.getvalue()
 
-    def _make_sliced_job_request(self, lower_boundary: datetime, upper_boundary: datetime, stream_name: str, fields: List[str]) -> HttpRequest:
-        return self._build_job_creation_request(f"SELECT {', '.join(fields)} FROM {stream_name} WHERE SystemModstamp >= {lower_boundary.isoformat(timespec='milliseconds')} AND SystemModstamp < {upper_boundary.isoformat(timespec='milliseconds')}")
+    def _make_sliced_job_request(
+        self, lower_boundary: datetime, upper_boundary: datetime, stream_name: str, fields: List[str]
+    ) -> HttpRequest:
+        return self._build_job_creation_request(
+            f"SELECT {', '.join(fields)} FROM {stream_name} WHERE SystemModstamp >= {lower_boundary.isoformat(timespec='milliseconds')} AND SystemModstamp < {upper_boundary.isoformat(timespec='milliseconds')}"
+        )
 
     def _make_full_job_request(self, fields: List[str], stream_name: str = _STREAM_NAME) -> HttpRequest:
         return self._build_job_creation_request(f"SELECT {', '.join(fields)} FROM {stream_name}")
@@ -601,14 +639,13 @@ class BulkStreamTest(TestCase):
         for record in records:
             csv_entry.append(",".join([record[key] for key in keys]))
 
-        entries = '\n'.join(csv_entry)
+        entries = "\n".join(csv_entry)
         return f"{','.join(keys)}\n{entries}"
 
     def _build_job_creation_request(self, query: str) -> HttpRequest:
-        return HttpRequest(f"{_BASE_URL}/jobs/query", body=json.dumps({
-            "operation": "queryAll",
-            "query": query,
-            "contentType": "CSV",
-            "columnDelimiter": "COMMA",
-            "lineEnding": "LF"
-        }))
+        return HttpRequest(
+            f"{_BASE_URL}/jobs/query",
+            body=json.dumps(
+                {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
+            ),
+        )

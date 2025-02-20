@@ -7,6 +7,36 @@ package io.airbyte.cdk.load.data
 import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.util.serializeToString
 
+/**
+ * Intended for Avro and Parquet Conversions and similar use cases.
+ *
+ * The contract is to serialize the values of schemaless and unknown types to a json string.
+ *
+ * Because there is no JsonBlob `AirbyteType`, we leave the types as-is and just serialize them. It
+ * is expected that the serializer will know to expect strings for each type.
+ *
+ * This means there's no need for a type mapper, unless you also want to support some subset of the
+ * Unknown types.
+ *
+ * For example, [FailOnAllUnknownTypesExceptNull] is used to add support for `{ "type": "null" }`
+ */
+class FailOnAllUnknownTypesExceptNull : AirbyteSchemaIdentityMapper {
+    override fun mapUnknown(schema: UnknownType) =
+        if (
+            schema.schema.isObject &&
+                ((schema.schema.get("type").isTextual &&
+                    schema.schema.get("type").textValue() == "null") ||
+                    (schema.schema.get("type").isArray &&
+                        schema.schema.get("type").elements().asSequence().all {
+                            it.isTextual && it.textValue() == "null"
+                        }))
+        ) {
+            schema
+        } else {
+            throw IllegalStateException("Unknown type: $schema")
+        }
+}
+
 class SchemalessValuesToJsonString : AirbyteValueIdentityMapper() {
     override fun mapObjectWithoutSchema(
         value: AirbyteValue,
@@ -26,30 +56,6 @@ class SchemalessValuesToJsonString : AirbyteValueIdentityMapper() {
         context: Context
     ): Pair<AirbyteValue, Context> =
         value.toJson().serializeToString().let(::StringValue) to context
-    override fun mapUnknown(value: UnknownValue, context: Context): Pair<AirbyteValue, Context> =
+    override fun mapUnknown(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
         value.toJson().serializeToString().let(::StringValue) to context
-
-    override fun mapUnion(
-        value: AirbyteValue,
-        schema: UnionType,
-        context: Context
-    ): Pair<AirbyteValue, Context> {
-        if (ObjectTypeWithEmptySchema in schema.options && value is ObjectValue) {
-            return mapObjectWithEmptySchema(value, ObjectTypeWithEmptySchema, context)
-        }
-
-        if (ObjectTypeWithoutSchema in schema.options && value is ObjectValue) {
-            return mapObjectWithoutSchema(value, ObjectTypeWithoutSchema, context)
-        }
-
-        if (ArrayTypeWithoutSchema in schema.options && value is ArrayValue) {
-            return mapArrayWithoutSchema(value, ArrayTypeWithoutSchema, context)
-        }
-
-        if (schema.options.any { it is UnknownType } && value is UnknownValue) {
-            return mapUnknown(value, context)
-        }
-
-        return super.mapUnion(value, schema, context)
-    }
 }

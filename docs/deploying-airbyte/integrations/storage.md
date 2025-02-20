@@ -58,6 +58,8 @@ stringData:
 
 <TabItem value="Azure Blob" label="Azure" default>
 
+Define a Secret with an [Azure storage connection string](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string). The connection string specifies the storage account name and the key or token for authentication.
+
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -66,7 +68,7 @@ metadata:
 type: Opaque
 stringData:
   # Azure Secrets
-  azure-blob-store-connection-string: ## DefaultEndpointsProtocol=https;AccountName=azureintegration;AccountKey=wJalrXUtnFEMI/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY==;EndpointSuffix=core.windows.net
+  azure-blob-store-connection-string: ## DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=wJalrXUtnFEMI/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY==;EndpointSuffix=core.windows.net
 ```
 
 </TabItem>
@@ -120,17 +122,19 @@ global:
 
 <TabItem value="Azure Blob" label="Azure" default>
 
+Ensure you've already created a Kubernetes Secret containing the connection string to be used by the cluster. Steps to configure the secret are in the above [prerequisites](#secrets). In the Helm chart, set the secret name and the key of the connection string. Set the three destination containers within the storage account under the `bucket` map.
+
 ```yaml
 global:
   storage:
     type: "Azure"
     secretName: airbyte-config-secrets # Name of your Kubernetes secret.
-    bucket: ## S3 bucket names that you've created. We recommend storing the following all in one bucket.
-      log: airbyte-bucket
-      state: airbyte-bucket
-      workloadOutput: airbyte-bucket
+    bucket: ## Name Containers that you've created. We recommend storing the following all in one Container.
+      log: airbyte-container
+      state: airbyte-container
+      workloadOutput: airbyte-container
     azure:
-      connectionStringSecretKey: azure-blob-store-connection-string
+      connectionStringSecretKey: azure-blob-store-connection-string # key of your Kubernetes secret
 ```
 </TabItem>
 
