@@ -377,8 +377,8 @@ definitions:
         data_level: '{{ parameters["data_level"] }}'
         dimensions: '{{ parameters["dimensions"] | string }}'
         metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency", "video_play_actions", "video_watched_2s", "video_watched_6s", "average_video_play", "average_video_play_per_user", "video_views_p25", "video_views_p50", "video_views_p75", "video_views_p100", "profile_visits", "likes", "comments", "shares", "follows", "clicks_on_music_disc", "real_time_app_install", "real_time_app_install_cost", "app_install"]) | string }}'
-        start_date: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%d %H:%M:%S') }}"
-        end_date: "{{ format_datetime(stream_interval['end_time'], '%Y-%m-%d', '%Y-%m-%d %H:%M:%S') }}"
+        start_date: "{{ stream_interval['start_time'] }}"
+        end_date: "{{ stream_interval['end_time'] }}"
         filtering: '{{ parameters["filtering"] | string if parameters.get("filtering") and config.get("include_deleted", False)}}'
       authenticator:
         $ref: "#/definitions/authenticator"
@@ -410,7 +410,7 @@ definitions:
       datetime_format: "%Y-%m-%d"
     end_datetime:
       type: MinMaxDatetime
-      datetime: "{{ config.get('end_date', today_utc()) }}"
+      datetime: "{{ config.get('end_date') if config.get('end_date') else format_datetime(now_utc(), '%Y-%m-%d') }}"
       datetime_format: "%Y-%m-%d"
 
   report_hourly_incremental_sync:
@@ -516,6 +516,7 @@ definitions:
         $ref: "#/definitions/single_id_partition_router"
 
   ads_reports_daily_stream:
+
     type: DeclarativeStream
     name: ads_reports_daily
     $parameters:
