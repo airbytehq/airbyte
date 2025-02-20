@@ -609,6 +609,10 @@ module.exports = {
         "cloud/managing-airbyte-cloud/manage-connection-state",
       ],
     },
+    {
+      type: "doc",
+      id: "using-airbyte/tagging",
+    },
     sectionHeader("Managing Airbyte"),
     deployAirbyte,
     {
