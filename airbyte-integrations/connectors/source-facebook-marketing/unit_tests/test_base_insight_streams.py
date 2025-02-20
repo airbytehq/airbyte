@@ -6,11 +6,12 @@ from datetime import datetime
 
 import pendulum
 import pytest
-from airbyte_cdk.models import SyncMode
 from freezegun import freeze_time
 from pendulum import duration
 from source_facebook_marketing.streams import AdsInsights
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
+
+from airbyte_cdk.models import SyncMode
 
 
 @pytest.fixture(name="api")
@@ -99,14 +100,10 @@ class TestBaseInsightsStream:
             end_date=datetime(2011, 1, 1),
             insights_lookback_window=28,
             fields=["account_id", "account_currency"],
-            filter_statuses=["ACTIVE", "ARCHIVED"]
+            filter_statuses=["ACTIVE", "ARCHIVED"],
         )
 
-        assert stream.request_params()["filtering"] == [
-            {'field': 'ad.effective_status',
-             'operator': 'IN',
-             'value': ['ACTIVE', 'ARCHIVED']}
-        ]
+        assert stream.request_params()["filtering"] == [{"field": "ad.effective_status", "operator": "IN", "value": ["ACTIVE", "ARCHIVED"]}]
 
     def test_read_records_all(self, mocker, api, some_config):
         """1. yield all from mock
@@ -217,10 +214,10 @@ class TestBaseInsightsStream:
                 {
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
-                        "slices": {
+                        "slices": [
                             "2010-01-01",
                             "2010-01-02",
-                        },
+                        ],
                     },
                     "time_increment": 1,
                 },
@@ -244,10 +241,10 @@ class TestBaseInsightsStream:
                 },
                 {
                     "unknown_account": {
-                        "slices": {
+                        "slices": [
                             "2010-01-01",
                             "2010-01-02",
-                        }
+                        ]
                     }
                 },
             ),
@@ -256,10 +253,10 @@ class TestBaseInsightsStream:
                 {
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
-                        "slices": {
+                        "slices": [
                             "2010-01-01",
                             "2010-01-02",
-                        },
+                        ],
                     },
                     "time_increment": 1,
                 },
@@ -276,10 +273,10 @@ class TestBaseInsightsStream:
             (
                 {
                     "unknown_account": {
-                        "slices": {
+                        "slices": [
                             "2010-01-01",
                             "2010-01-02",
-                        }
+                        ]
                     }
                 },
                 None,
@@ -298,14 +295,14 @@ class TestBaseInsightsStream:
 
         assert stream.state == {
             "time_increment": 1,
-            "unknown_account": {"slices": set()},
+            "unknown_account": {"slices": []},
         }
 
         stream.state = state
         actual_state = stream.state
 
         result_state = state if not result_state else result_state
-        result_state[some_config["account_ids"][0]]["slices"] = result_state[some_config["account_ids"][0]].get("slices", set())
+        result_state[some_config["account_ids"][0]]["slices"] = result_state[some_config["account_ids"][0]].get("slices", [])
         result_state["time_increment"] = 1
 
         assert actual_state == result_state
@@ -464,7 +461,9 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1, "should be 37 slices because we ignore slices which are within insights_lookback_period"
+        assert (
+            len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1
+        ), "should be 37 slices because we ignore slices which are within insights_lookback_period"
         assert generated_jobs[0].interval.start == cursor_value.date() - stream.insights_lookback_period
         assert generated_jobs[1].interval.start == cursor_value.date() - stream.insights_lookback_period + duration(days=1)
 
@@ -602,61 +601,78 @@ class TestBaseInsightsStream:
     @pytest.mark.parametrize(
         "breakdowns, record, expected_record",
         (
-                (
-                        ["body_asset", ],
-                        {"body_asset": {"id": "871246182", "text": "Some text"}},
-                        {"body_asset": {"id": "871246182", "text": "Some text"}, "body_asset_id": "871246182"}
-                ),
-                (
-                        ["call_to_action_asset",],
-                        {"call_to_action_asset": {"id": "871246182", "name": "Some name"}},
-                        {"call_to_action_asset": {"id": "871246182", "name": "Some name"}, "call_to_action_asset_id": "871246182"}
-                ),
-                (
-                        ["description_asset", ],
-                        {"description_asset": {"id": "871246182", "text": "Some text"}},
-                        {"description_asset": {"id": "871246182", "text": "Some text"}, "description_asset_id": "871246182"}
-                ),
-                (
-                        ["image_asset", ],
-                        {"image_asset": {"id": "871246182", "hash": "hash", "url": "url"}},
-                        {"image_asset": {"id": "871246182", "hash": "hash", "url": "url"}, "image_asset_id": "871246182"}
-                ),
-                (
-                        ["link_url_asset", ],
-                        {"link_url_asset": {"id": "871246182", "website_url": "website_url"}},
-                        {"link_url_asset": {"id": "871246182", "website_url": "website_url"}, "link_url_asset_id": "871246182"}
-                ),
-                (
-                        ["title_asset", ],
-                        {"title_asset": {"id": "871246182", "text": "Some text"}},
-                        {"title_asset": {"id": "871246182", "text": "Some text"}, "title_asset_id": "871246182"}
-                ),
-                (
-                        ["video_asset", ],
-                        {
-                            "video_asset": {
-                                "id": "871246182", "video_id": "video_id", "url": "url",
-                                "thumbnail_url": "thumbnail_url", "video_name": "video_name"
-                            }
-                        },
-                        {
-                            "video_asset": {
-                                "id": "871246182", "video_id": "video_id", "url": "url",
-                                "thumbnail_url": "thumbnail_url", "video_name": "video_name"
-                            },
-                            "video_asset_id": "871246182"
-                        }
-                ),
-                (
-                        ["body_asset", "country"],
-                        {"body_asset": {"id": "871246182", "text": "Some text"}, "country": "country", "dma": "dma"},
-                        {
-                            "body_asset": {"id": "871246182", "text": "Some text"},
-                            "country": "country", "dma": "dma", "body_asset_id": "871246182"
-                        }
-                ),
-        )
+            (
+                [
+                    "body_asset",
+                ],
+                {"body_asset": {"id": "871246182", "text": "Some text"}},
+                {"body_asset": {"id": "871246182", "text": "Some text"}, "body_asset_id": "871246182"},
+            ),
+            (
+                [
+                    "call_to_action_asset",
+                ],
+                {"call_to_action_asset": {"id": "871246182", "name": "Some name"}},
+                {"call_to_action_asset": {"id": "871246182", "name": "Some name"}, "call_to_action_asset_id": "871246182"},
+            ),
+            (
+                [
+                    "description_asset",
+                ],
+                {"description_asset": {"id": "871246182", "text": "Some text"}},
+                {"description_asset": {"id": "871246182", "text": "Some text"}, "description_asset_id": "871246182"},
+            ),
+            (
+                [
+                    "image_asset",
+                ],
+                {"image_asset": {"id": "871246182", "hash": "hash", "url": "url"}},
+                {"image_asset": {"id": "871246182", "hash": "hash", "url": "url"}, "image_asset_id": "871246182"},
+            ),
+            (
+                [
+                    "link_url_asset",
+                ],
+                {"link_url_asset": {"id": "871246182", "website_url": "website_url"}},
+                {"link_url_asset": {"id": "871246182", "website_url": "website_url"}, "link_url_asset_id": "871246182"},
+            ),
+            (
+                [
+                    "title_asset",
+                ],
+                {"title_asset": {"id": "871246182", "text": "Some text"}},
+                {"title_asset": {"id": "871246182", "text": "Some text"}, "title_asset_id": "871246182"},
+            ),
+            (
+                [
+                    "video_asset",
+                ],
+                {
+                    "video_asset": {
+                        "id": "871246182",
+                        "video_id": "video_id",
+                        "url": "url",
+                        "thumbnail_url": "thumbnail_url",
+                        "video_name": "video_name",
+                    }
+                },
+                {
+                    "video_asset": {
+                        "id": "871246182",
+                        "video_id": "video_id",
+                        "url": "url",
+                        "thumbnail_url": "thumbnail_url",
+                        "video_name": "video_name",
+                    },
+                    "video_asset_id": "871246182",
+                },
+            ),
+            (
+                ["body_asset", "country"],
+                {"body_asset": {"id": "871246182", "text": "Some text"}, "country": "country", "dma": "dma"},
+                {"body_asset": {"id": "871246182", "text": "Some text"}, "country": "country", "dma": "dma", "body_asset_id": "871246182"},
+            ),
+        ),
     )
     def test_transform_breakdowns(self, api, some_config, breakdowns, record, expected_record):
         start_date = pendulum.parse("2024-01-01")
@@ -674,36 +690,19 @@ class TestBaseInsightsStream:
     @pytest.mark.parametrize(
         "breakdowns, expect_pks",
         (
-                (
-                    ["body_asset"], ["date_start", "account_id", "ad_id", "body_asset_id"]
-                ),
-                (
-                    ["call_to_action_asset"], ["date_start", "account_id", "ad_id", "call_to_action_asset_id"]
-                ),
-                (
-                    ["description_asset"], ["date_start", "account_id", "ad_id", "description_asset_id"]
-                ),
-                (
-                    ["image_asset"], ["date_start", "account_id", "ad_id", "image_asset_id"]
-                ),
-                (
-                    ["link_url_asset"], ["date_start", "account_id", "ad_id", "link_url_asset_id"]
-                ),
-                (
-                    ["title_asset"], ["date_start", "account_id", "ad_id", "title_asset_id"]
-                ),
-                (
-                    ["video_asset"], ["date_start", "account_id", "ad_id", "video_asset_id"]
-                ),
-                (
-                        ["video_asset", "skan_conversion_id", "place_page_id"],
-                        ["date_start", "account_id", "ad_id", "video_asset_id", "skan_conversion_id", "place_page_id"]
-                ),
-                (
-                        None,
-                        ["date_start", "account_id", "ad_id"]
-                ),
-        )
+            (["body_asset"], ["date_start", "account_id", "ad_id", "body_asset_id"]),
+            (["call_to_action_asset"], ["date_start", "account_id", "ad_id", "call_to_action_asset_id"]),
+            (["description_asset"], ["date_start", "account_id", "ad_id", "description_asset_id"]),
+            (["image_asset"], ["date_start", "account_id", "ad_id", "image_asset_id"]),
+            (["link_url_asset"], ["date_start", "account_id", "ad_id", "link_url_asset_id"]),
+            (["title_asset"], ["date_start", "account_id", "ad_id", "title_asset_id"]),
+            (["video_asset"], ["date_start", "account_id", "ad_id", "video_asset_id"]),
+            (
+                ["video_asset", "skan_conversion_id", "place_page_id"],
+                ["date_start", "account_id", "ad_id", "video_asset_id", "skan_conversion_id", "place_page_id"],
+            ),
+            (None, ["date_start", "account_id", "ad_id"]),
+        ),
     )
     def test_primary_keys(self, api, some_config, breakdowns, expect_pks):
         start_date = pendulum.parse("2024-01-01")
@@ -714,43 +713,38 @@ class TestBaseInsightsStream:
             start_date=start_date,
             end_date=end_date,
             insights_lookback_window=1,
-            breakdowns=breakdowns
+            breakdowns=breakdowns,
         )
         assert stream.primary_key == expect_pks
 
     @pytest.mark.parametrize(
         "breakdowns, expect_pks",
         (
-                (
-                        ["body_asset"], ["date_start", "account_id", "ad_id", "body_asset_id"]
-                ),
-                (
-                        ["call_to_action_asset"], ["date_start", "account_id", "ad_id", "call_to_action_asset_id"]
-                ),
-                (
-                        ["description_asset"], ["date_start", "account_id", "ad_id", "description_asset_id"]
-                ),
-                (
-                        ["image_asset"], ["date_start", "account_id", "ad_id", "image_asset_id"]
-                ),
-                (
-                        ["link_url_asset"], ["date_start", "account_id", "ad_id", "link_url_asset_id"]
-                ),
-                (
-                        ["title_asset"], ["date_start", "account_id", "ad_id", "title_asset_id"]
-                ),
-                (
-                        ["video_asset"], ["date_start", "account_id", "ad_id", "video_asset_id"]
-                ),
-                (
-                        ["video_asset", "skan_conversion_id", "place_page_id"],
-                        ["date_start", "account_id", "ad_id", "video_asset_id", "skan_conversion_id", "place_page_id"]
-                ),
-                (
-                        ["video_asset", "link_url_asset",  "skan_conversion_id", "place_page_id", "gender"],
-                        ["date_start", "account_id", "ad_id", "video_asset_id", "link_url_asset_id", "skan_conversion_id", "place_page_id", "gender"]
-                ),
-        )
+            (["body_asset"], ["date_start", "account_id", "ad_id", "body_asset_id"]),
+            (["call_to_action_asset"], ["date_start", "account_id", "ad_id", "call_to_action_asset_id"]),
+            (["description_asset"], ["date_start", "account_id", "ad_id", "description_asset_id"]),
+            (["image_asset"], ["date_start", "account_id", "ad_id", "image_asset_id"]),
+            (["link_url_asset"], ["date_start", "account_id", "ad_id", "link_url_asset_id"]),
+            (["title_asset"], ["date_start", "account_id", "ad_id", "title_asset_id"]),
+            (["video_asset"], ["date_start", "account_id", "ad_id", "video_asset_id"]),
+            (
+                ["video_asset", "skan_conversion_id", "place_page_id"],
+                ["date_start", "account_id", "ad_id", "video_asset_id", "skan_conversion_id", "place_page_id"],
+            ),
+            (
+                ["video_asset", "link_url_asset", "skan_conversion_id", "place_page_id", "gender"],
+                [
+                    "date_start",
+                    "account_id",
+                    "ad_id",
+                    "video_asset_id",
+                    "link_url_asset_id",
+                    "skan_conversion_id",
+                    "place_page_id",
+                    "gender",
+                ],
+            ),
+        ),
     )
     def test_object_pk_added_to_schema(self, api, some_config, breakdowns, expect_pks):
         start_date = pendulum.parse("2024-01-01")
@@ -761,7 +755,7 @@ class TestBaseInsightsStream:
             start_date=start_date,
             end_date=end_date,
             insights_lookback_window=1,
-            breakdowns=breakdowns
+            breakdowns=breakdowns,
         )
         schema = stream.get_json_schema()
         assert schema

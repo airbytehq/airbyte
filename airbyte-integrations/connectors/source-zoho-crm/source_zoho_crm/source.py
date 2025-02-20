@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -9,6 +9,7 @@ from airbyte_cdk.sources import AbstractSource
 
 from .api import ZohoAPI
 from .streams import ZohoStreamFactory
+
 
 if TYPE_CHECKING:
     # This is a workaround to avoid circular import in the future.

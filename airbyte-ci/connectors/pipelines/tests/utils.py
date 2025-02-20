@@ -22,6 +22,12 @@ class MockContainerClass:
     def with_file(self, *args, **kwargs):
         return self
 
+    def with_directory(self, *args, **kwargs):
+        return self
+
+    def with_env_variable(self, *args, **kwargs):
+        return self
+
 
 def pick_a_random_connector(
     language: ConnectorLanguage = None,

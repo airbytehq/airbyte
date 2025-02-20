@@ -8,10 +8,11 @@ from unittest.mock import DEFAULT, MagicMock, Mock, call
 
 import pendulum
 import pytest
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.utils import AirbyteTracedException
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.streams import CampaignCriterion, ChangeStatus
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 def mock_response_parent():
@@ -82,7 +83,7 @@ def test_change_status_stream(config, customers):
 
 
 def test_change_status_stream_slices(config, additional_customers):
-    """ Change status stream slices should return correct empty slices for the new customers """
+    """Change status stream slices should return correct empty slices for the new customers"""
     google_api = MockGoogleAds(credentials=config["credentials"])
 
     stream = ChangeStatus(api=google_api, customers=additional_customers)
@@ -94,12 +95,19 @@ def test_change_status_stream_slices(config, additional_customers):
 
     result_slices = list(stream.stream_slices(stream_state=stream_state))
     assert len(result_slices) == 2
-    assert result_slices == [{'start_date': '2023-11-01 12:36:04.772447', 'end_date': '2023-11-02 00:00:00.000000', 'customer_id': '123',
-                              'login_customer_id': None}, {'customer_id': '789', 'login_customer_id': None}]
+    assert result_slices == [
+        {
+            "start_date": "2023-11-01 12:36:04.772447",
+            "end_date": "2023-11-02 00:00:00.000000",
+            "customer_id": "123",
+            "login_customer_id": None,
+        },
+        {"customer_id": "789", "login_customer_id": None},
+    ]
 
 
 def test_incremental_events_stream_slices(config, additional_customers):
-    """ Test if the empty slice will be produced for the new customers """
+    """Test if the empty slice will be produced for the new customers"""
     stream_state = {"change_status": {"123": {"change_status.last_change_date_time": "2023-06-12 13:20:01.003295"}}}
 
     google_api = MockGoogleAds(credentials=config["credentials"])
@@ -121,12 +129,21 @@ def test_incremental_events_stream_slices(config, additional_customers):
     stream_slices = list(stream.stream_slices(stream_state=stream_state))
 
     assert len(stream_slices) == 2
-    assert stream_slices == [{'customer_id': '123', 'updated_ids': {'2', '1'}, 'deleted_ids': {'3', '4'},
-                              'record_changed_time_map': {'1': '2023-06-13 12:36:01.772447', '2': '2023-06-13 12:36:02.772447',
-                                                          '3': '2023-06-13 12:36:03.772447', '4': '2023-06-13 12:36:04.772447'},
-                              'login_customer_id': None},
-                             {'customer_id': '789', 'updated_ids': set(), 'deleted_ids': set(), 'record_changed_time_map': {},
-                              'login_customer_id': None}]
+    assert stream_slices == [
+        {
+            "customer_id": "123",
+            "updated_ids": {"2", "1"},
+            "deleted_ids": {"3", "4"},
+            "record_changed_time_map": {
+                "1": "2023-06-13 12:36:01.772447",
+                "2": "2023-06-13 12:36:02.772447",
+                "3": "2023-06-13 12:36:03.772447",
+                "4": "2023-06-13 12:36:04.772447",
+            },
+            "login_customer_id": None,
+        },
+        {"customer_id": "789", "updated_ids": set(), "deleted_ids": set(), "record_changed_time_map": {}, "login_customer_id": None},
+    ]
 
 
 def test_child_incremental_events_read(config, customers):

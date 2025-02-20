@@ -8,7 +8,7 @@ on:
 jobs:
   repo-sync:
     name: "Fire a Repo Dispatch event to airbyte-cloud"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v2

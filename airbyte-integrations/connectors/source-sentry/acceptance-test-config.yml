@@ -32,7 +32,7 @@ acceptance_tests:
         skip_comprehensive_incremental_tests: true
         configured_catalog_path: integration_tests/configured_catalog.json
         future_state:
-          future_state_path: integration_tests/abnormal_state.json
+          bypass_reason: "Concurrent incremental streams emit a state with the most recent record or the lower boundary instead of the incoming abnormal state value"
           missing_streams:
             - name: issues
               bypass_reason: "Project issues are not being returned by the Sentry API."

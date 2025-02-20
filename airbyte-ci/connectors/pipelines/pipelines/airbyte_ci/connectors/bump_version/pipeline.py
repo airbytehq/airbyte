@@ -62,6 +62,7 @@ async def run_connector_version_bump_pipeline(
     semaphore: "Semaphore",
     bump_type: str,
     changelog_entry: str,
+    rc: bool,
     pull_request_number: str | int | None = None,
 ) -> Report:
     """Run a pipeline to upgrade for a single connector.
@@ -77,7 +78,7 @@ async def run_connector_version_bump_pipeline(
         steps_results = []
         async with context:
             connector_directory = await context.get_connector_dir()
-            bump_version = BumpConnectorVersion(context, connector_directory, bump_type)
+            bump_version = BumpConnectorVersion(context, connector_directory, bump_type, rc)
             bump_version_result = await bump_version.run()
             steps_results.append(bump_version_result)
             if not bump_version_result.success:
@@ -89,7 +90,9 @@ async def run_connector_version_bump_pipeline(
             for modified_file in bump_version.modified_files:
                 await updated_connector_directory.file(modified_file).export(str(context.connector.code_directory / modified_file))
                 context.logger.info(f"Exported {modified_file} following the version bump.")
-            documentation_directory = await context.get_repo_dir(include=[str(context.connector.local_connector_documentation_directory)])
+            documentation_directory = await context.get_repo_dir(
+                include=[str(context.connector.local_connector_documentation_directory)]
+            ).directory(str(context.connector.local_connector_documentation_directory))
             add_changelog_entry = AddChangelogEntry(
                 context, documentation_directory, bump_version.new_version, changelog_entry, pull_request_number=pull_request_number
             )
@@ -100,11 +103,7 @@ async def run_connector_version_bump_pipeline(
                 context.report = report
                 return report
 
-            # Files modified by AddChangelogEntry are relative to airbyte repo root
-            for modified_file in add_changelog_entry.modified_files:
-                await add_changelog_entry_result.output.file(str(modified_file)).export(str(modified_file))
-                context.logger.info(f"Exported {modified_file} following the changelog entry addition.")
-
+            await add_changelog_entry.export_modified_files(context.connector.local_connector_documentation_directory)
             report = ConnectorReport(context, steps_results, name=report_name)
             context.report = report
     return report

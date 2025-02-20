@@ -159,6 +159,19 @@ abstract class AbstractJdbcCompatibleSourceOperations<Datatype> :
     }
 
     @Throws(SQLException::class)
+    protected fun putBigInteger(
+        node: ObjectNode,
+        columnName: String?,
+        resultSet: ResultSet,
+        index: Int
+    ) {
+        node.put(
+            columnName,
+            DataTypeUtils.returnNullIfInvalid { resultSet.getBigDecimal(index).toBigInteger() }
+        )
+    }
+
+    @Throws(SQLException::class)
     protected open fun putDouble(
         node: ObjectNode,
         columnName: String?,

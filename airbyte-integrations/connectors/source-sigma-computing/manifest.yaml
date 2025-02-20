@@ -1,0 +1,911 @@
+version: 5.12.0
+
+type: DeclarativeSource
+
+description: >
+  This is the setup for the Sigma Computing source that ingests data from the
+  sigma API. 
+
+
+  Sigma is next-generation analytics and business intelligence that scales
+  billions of records using spreadsheets, SQL, Python, or AI—without
+  compromising speed and security https://www.sigmacomputing.com/
+
+
+  In order to use this source, you must first create an account on Sigma
+  Computing. Go to Account > General Settings and review the Site section for
+  the Cloud provider, this will be used to find the base url of your API.
+  Compare it at https://help.sigmacomputing.com/reference/get-started-sigma-api
+
+
+  Next, head over to Developer Access and click on create. This will generate
+  your Client ID and Client Secret required by the API. You can learn more about
+  the API here https://help.sigmacomputing.com/reference
+
+check:
+  type: CheckStream
+  stream_names:
+    - files
+
+definitions:
+  streams:
+    files:
+      type: DeclarativeStream
+      name: files
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /files
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/files"
+    connections:
+      type: DeclarativeStream
+      name: connections
+      primary_key:
+        - connectionId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /connections
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/connections"
+    datasets:
+      type: DeclarativeStream
+      name: datasets
+      primary_key:
+        - datasetId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /datasets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/datasets"
+    members:
+      type: DeclarativeStream
+      name: members
+      primary_key:
+        - memberId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /members
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/members"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - teamId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /teams
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    templates:
+      type: DeclarativeStream
+      name: templates
+      primary_key:
+        - templateId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /templates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/templates"
+    workspaces:
+      type: DeclarativeStream
+      name: workspaces
+      primary_key:
+        - workspaceId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /workspaces
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workspaces"
+    workbooks:
+      type: DeclarativeStream
+      name: workbooks
+      primary_key:
+        - workbookId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /workbooks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workbooks"
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config[\"base_url\"] }}/v2"
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      access_token_name: access_token
+      refresh_request_body: {}
+      refresh_token_updater:
+        refresh_token_name: refresh_token
+        access_token_config_path:
+          - oauth_access_token
+        token_expiry_date_config_path:
+          - oauth_token_expiry_date
+        refresh_token_config_path:
+          - client_refresh_token
+      token_refresh_endpoint: "{{ config[\"base_url\"] }}/v2/auth/token"
+
+streams:
+  - $ref: "#/definitions/streams/files"
+  - $ref: "#/definitions/streams/connections"
+  - $ref: "#/definitions/streams/datasets"
+  - $ref: "#/definitions/streams/members"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/templates"
+  - $ref: "#/definitions/streams/workspaces"
+  - $ref: "#/definitions/streams/workbooks"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - client_refresh_token
+      - base_url
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      client_refresh_token:
+        type: string
+        order: 2
+        title: Refresh token
+        airbyte_secret: true
+      oauth_access_token:
+        type: string
+        description: >-
+          The current access token. This field might be overridden by the
+          connector based on the token refresh endpoint response.
+        order: 3
+        title: Access token
+        airbyte_secret: true
+      oauth_token_expiry_date:
+        type: string
+        description: >-
+          The date the current access token expires in. This field might be
+          overridden by the connector based on the token refresh endpoint
+          response.
+        order: 4
+        title: Token expiry date
+        format: date-time
+      base_url:
+        type: string
+        description: The base url of your sigma organization
+        order: 5
+        title: Base URL
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    files: true
+    connections: true
+    datasets: true
+    members: true
+    teams: true
+    templates: true
+    workspaces: true
+    workbooks: true
+  testedStreams:
+    files:
+      streamHash: 1d8bd67f61aa7a09da12502adbd85e4424e08fa6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    connections:
+      streamHash: 82a16ebc6d4d67ea0b0e493dbe0d52fe629fa4c6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    datasets:
+      streamHash: d006e2b678deaa9e3f7c85c56dce867047036bdd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    members:
+      streamHash: 78fc1e2e11be3328b8185ac70739bdc7674800d0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teams:
+      streamHash: f7b8788e9bf9a67f498b67caf94ef47a51f06bbf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    templates:
+      streamHash: 4927cf0816f57f5e95170455469eed4100002786
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    workspaces:
+      streamHash: d063c7b5740c9a12cfc0aca87b0cd0ea1e9318bd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    workbooks:
+      hasRecords: true
+      streamHash: 7ce07f245f2f77e2fd0b1b737d909fa51d5eea6a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://help.sigmacomputing.com/reference
+    openapiSpecUrl: https://help.sigmacomputing.com/openapi/65d4ee76379a330060654669
+
+schemas:
+  files:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      parentId:
+        type:
+          - string
+          - "null"
+      parentUrlId:
+        type:
+          - string
+          - "null"
+      path:
+        type:
+          - string
+          - "null"
+      permission:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedBy:
+        type:
+          - string
+          - "null"
+      urlId:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  connections:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      account:
+        type:
+          - string
+          - "null"
+      connectionId:
+        type: string
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      friendlyName:
+        type:
+          - boolean
+          - "null"
+      host:
+        type:
+          - string
+          - "null"
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      isAuditLog:
+        type:
+          - boolean
+          - "null"
+      isSample:
+        type:
+          - boolean
+          - "null"
+      lastActiveAt:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      organizationId:
+        type:
+          - string
+          - "null"
+      poolSizes:
+        type:
+          - object
+          - "null"
+        properties:
+          adhocPoolSize:
+            type:
+              - number
+              - "null"
+          catalogPoolSize:
+            type:
+              - number
+              - "null"
+          isPoolConfigured:
+            type:
+              - boolean
+              - "null"
+          resultPoolSize:
+            type:
+              - number
+              - "null"
+          schedulePoolSize:
+            type:
+              - number
+              - "null"
+      role:
+        type:
+          - string
+          - "null"
+      timeout:
+        type:
+          - object
+          - "null"
+        properties:
+          default:
+            type:
+              - number
+              - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedBy:
+        type:
+          - string
+          - "null"
+      useOauth:
+        type:
+          - boolean
+          - "null"
+      user:
+        type:
+          - string
+          - "null"
+      warehouse:
+        type:
+          - string
+          - "null"
+      writeAccess:
+        type:
+          - boolean
+          - "null"
+      writebacks:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            database:
+              type:
+                - string
+                - "null"
+            schema:
+              type:
+                - string
+                - "null"
+    required:
+      - connectionId
+  datasets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      datasetId:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedBy:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - datasetId
+  members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      homeFolderId:
+        type:
+          - string
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      memberId:
+        type: string
+      memberType:
+        type:
+          - string
+          - "null"
+      organizationId:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedBy:
+        type:
+          - string
+          - "null"
+      userKind:
+        type:
+          - string
+          - "null"
+    required:
+      - memberId
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      teamId:
+        type: string
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedBy:
+        type:
+          - string
+          - "null"
+      visibility:
+        type:
+          - string
+          - "null"
+    required:
+      - teamId
+  templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      latestVersion:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      path:
+        type:
+          - string
+          - "null"
+      templateId:
+        type: string
+      templateUrlId:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedBy:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - templateId
+  workspaces:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedBy:
+        type:
+          - string
+          - "null"
+      workspaceId:
+        type:
+          - string
+          - "null"
+  workbooks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      latestVersion:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      path:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedBy:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      workbookId:
+        type: string
+      workbookUrlId:
+        type:
+          - string
+          - "null"
+    required:
+      - workbookId

@@ -1,0 +1,5122 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://www.zoho.com/desk
+  API Docs: https://desk.zoho.com/DeskAPIDocument#Introduction
+  Auth Docs: https://desk.zoho.com/DeskAPIDocument#OauthTokens
+
+check:
+  type: CheckStream
+  stream_names:
+    - organization
+
+definitions:
+  streams:
+    organization:
+      type: DeclarativeStream
+      name: organization
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organizations/{{ stream_partition.organization_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: organization_id
+              stream:
+                $ref: "#/definitions/streams/all_organizations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization"
+    all_organizations:
+      type: DeclarativeStream
+      name: all_organizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organizations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/all_organizations"
+    accessible_organizations:
+      type: DeclarativeStream
+      name: accessible_organizations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accessibleOrganizations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accessible_organizations"
+    agent:
+      type: DeclarativeStream
+      name: agent
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /agents/{{ stream_partition.agent_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: agent_id
+              stream:
+                $ref: "#/definitions/streams/list_agents"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/agent"
+    list_agents:
+      type: DeclarativeStream
+      name: list_agents
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /agents
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_agents"
+    agent_details_by_id:
+      type: DeclarativeStream
+      name: agent_details_by_id
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /agentsByIds?agentIds={{ stream_partition.agent_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: agent_id
+              stream:
+                $ref: "#/definitions/streams/list_agents"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/agent_details_by_id"
+    profiles:
+      type: DeclarativeStream
+      name: profiles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /profiles
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/profiles"
+    list_roles:
+      type: DeclarativeStream
+      name: list_roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /roles
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_roles"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /teams
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - teams
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    team_members:
+      type: DeclarativeStream
+      name: team_members
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /teams/{{ stream_partition.team_id }}/members
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - members
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: team_id
+              stream:
+                $ref: "#/definitions/streams/teams"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/team_members"
+    list_departments:
+      type: DeclarativeStream
+      name: list_departments
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /departments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_departments"
+    channels:
+      type: DeclarativeStream
+      name: channels
+      primary_key:
+        - code
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /channels
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channels"
+    list_tickets:
+      type: DeclarativeStream
+      name: list_tickets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tickets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_tickets"
+    list_all_threads:
+      type: DeclarativeStream
+      name: list_all_threads
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tickets/{{ stream_partition.ticket_id }}/threads
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: ticket_id
+              stream:
+                $ref: "#/definitions/streams/list_tickets"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_all_threads"
+    get_latest_thread:
+      type: DeclarativeStream
+      name: get_latest_thread
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tickets/{{ stream_partition.ticket_id }}/latestThread
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: ticket_id
+              stream:
+                $ref: "#/definitions/streams/list_tickets"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_latest_thread"
+    list_contacts:
+      type: DeclarativeStream
+      name: list_contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /contacts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_contacts"
+    webhooks:
+      type: DeclarativeStream
+      name: webhooks
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /webhooks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhooks"
+    list_accounts:
+      type: DeclarativeStream
+      name: list_accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_accounts"
+    list_contracts:
+      type: DeclarativeStream
+      name: list_contracts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts/{{ stream_partition.account_id }}/contracts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/list_accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_contracts"
+    list_tasks:
+      type: DeclarativeStream
+      name: list_tasks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tasks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_tasks"
+    list_products:
+      type: DeclarativeStream
+      name: list_products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /products
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_products"
+    list_articles:
+      type: DeclarativeStream
+      name: list_articles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /articles
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_articles"
+    list_events:
+      type: DeclarativeStream
+      name: list_events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /events
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_events"
+    modules:
+      type: DeclarativeStream
+      name: modules
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organizationModules
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/modules"
+    list_users:
+      type: DeclarativeStream
+      name: list_users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_users"
+    ticket_activities:
+      type: DeclarativeStream
+      name: ticket_activities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tickets/{{ stream_partition.ticket_id }}/activities
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: ticket_id
+              stream:
+                $ref: "#/definitions/streams/list_tickets"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ticket_activities"
+    list_attachments:
+      type: DeclarativeStream
+      name: list_attachments
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /products/{{ stream_partition.product_id }}/attachments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: product_id
+              stream:
+                $ref: "#/definitions/streams/list_products"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_attachments"
+    product:
+      type: DeclarativeStream
+      name: product
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /products/{{ stream_partition.product_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: product_id
+              stream:
+                $ref: "#/definitions/streams/list_products"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product"
+    task_attachments:
+      type: DeclarativeStream
+      name: task_attachments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tasks/{{ stream_partition.task_id }}/attachments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: task_id
+              stream:
+                $ref: "#/definitions/streams/list_tasks"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/task_attachments"
+    list_calls:
+      type: DeclarativeStream
+      name: list_calls
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /calls
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_calls"
+    call:
+      type: DeclarativeStream
+      name: call
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /calls/{{ stream_partition.call_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: call_id
+              stream:
+                $ref: "#/definitions/streams/list_calls"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/call"
+    list_call_comments:
+      type: DeclarativeStream
+      name: list_call_comments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /calls/{{ stream_partition.call_id }}/comments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: call_id
+              stream:
+                $ref: "#/definitions/streams/list_calls"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_call_comments"
+    dashboard_created_tickets:
+      type: DeclarativeStream
+      name: dashboard_created_tickets
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /dashboards/createdTickets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          - type: ListPartitionRouter
+            values:
+              - date
+              - channel
+              - agent
+            cursor_field: groupBy
+            request_option:
+              type: RequestOption
+              field_name: groupBy
+              inject_into: request_parameter
+          - type: ListPartitionRouter
+            values:
+              - LAST_7_DAYS
+            cursor_field: duration
+            request_option:
+              type: RequestOption
+              field_name: duration
+              inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/dashboard_created_tickets"
+    list_user_groups:
+      type: DeclarativeStream
+      name: list_user_groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users/{{ stream_partition.user_id }}/groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: user_id
+              stream:
+                $ref: "#/definitions/streams/list_users"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_user_groups"
+    dashboard_onhold_tickets:
+      type: DeclarativeStream
+      name: dashboard_onhold_tickets
+      primary_key:
+        - value
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /dashboards/onholdTickets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - ticketCount
+        partition_router:
+          - type: ListPartitionRouter
+            values:
+              - date
+              - channel
+              - agent
+            cursor_field: groupBy
+            request_option:
+              type: RequestOption
+              field_name: groupBy
+              inject_into: request_parameter
+          - type: ListPartitionRouter
+            values:
+              - LAST_7_DAYS
+            cursor_field: duration
+            request_option:
+              type: RequestOption
+              field_name: duration
+              inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/dashboard_onhold_tickets"
+  base_requester:
+    type: HttpRequester
+    url_base: https://desk.zoho.com/api/v1
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"refresh_token\"] }}"
+      expires_in_name: expires_in
+      access_token_name: access_token
+      refresh_request_body: {}
+      token_refresh_endpoint: "{{ config[\"token_refresh_endpoint\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/organization"
+  - $ref: "#/definitions/streams/all_organizations"
+  - $ref: "#/definitions/streams/accessible_organizations"
+  - $ref: "#/definitions/streams/agent"
+  - $ref: "#/definitions/streams/list_agents"
+  - $ref: "#/definitions/streams/agent_details_by_id"
+  - $ref: "#/definitions/streams/profiles"
+  - $ref: "#/definitions/streams/list_roles"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/team_members"
+  - $ref: "#/definitions/streams/list_departments"
+  - $ref: "#/definitions/streams/channels"
+  - $ref: "#/definitions/streams/list_tickets"
+  - $ref: "#/definitions/streams/list_all_threads"
+  - $ref: "#/definitions/streams/get_latest_thread"
+  - $ref: "#/definitions/streams/list_contacts"
+  - $ref: "#/definitions/streams/webhooks"
+  - $ref: "#/definitions/streams/list_accounts"
+  - $ref: "#/definitions/streams/list_contracts"
+  - $ref: "#/definitions/streams/list_tasks"
+  - $ref: "#/definitions/streams/list_products"
+  - $ref: "#/definitions/streams/list_articles"
+  - $ref: "#/definitions/streams/list_events"
+  - $ref: "#/definitions/streams/modules"
+  - $ref: "#/definitions/streams/list_users"
+  - $ref: "#/definitions/streams/ticket_activities"
+  - $ref: "#/definitions/streams/list_attachments"
+  - $ref: "#/definitions/streams/product"
+  - $ref: "#/definitions/streams/task_attachments"
+  - $ref: "#/definitions/streams/list_calls"
+  - $ref: "#/definitions/streams/call"
+  - $ref: "#/definitions/streams/list_call_comments"
+  - $ref: "#/definitions/streams/dashboard_created_tickets"
+  - $ref: "#/definitions/streams/list_user_groups"
+  - $ref: "#/definitions/streams/dashboard_onhold_tickets"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - token_refresh_endpoint
+      - refresh_token
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      token_refresh_endpoint:
+        type: string
+        name: token_refresh_endpoint
+        order: 2
+        title: Token Refresh Endpoint
+      refresh_token:
+        type: string
+        name: refresh_token
+        order: 3
+        title: OAuth Refresh Token
+        airbyte_secret: true
+      include_custom_domain:
+        type: boolean
+        order: 4
+        title: include Custom Domain
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    organization: true
+    all_organizations: true
+    accessible_organizations: false
+    agent: false
+    list_agents: false
+    agent_details_by_id: true
+    profiles: true
+    list_roles: true
+    teams: true
+    team_members: true
+    list_departments: true
+    channels: true
+    list_tickets: true
+    list_all_threads: true
+    get_latest_thread: true
+    list_contacts: true
+    webhooks: true
+    list_accounts: true
+    list_contracts: true
+    list_tasks: true
+    list_products: true
+    list_articles: true
+    list_events: true
+    modules: true
+    list_users: true
+    ticket_activities: true
+    list_attachments: true
+    product: true
+    task_attachments: false
+    list_calls: true
+    call: true
+    list_call_comments: true
+    dashboard_created_tickets: true
+    list_user_groups: true
+    dashboard_onhold_tickets: true
+  testedStreams:
+    organization:
+      hasRecords: true
+      streamHash: c7474fdc181562625a167a16855f8487649920e7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    all_organizations:
+      hasRecords: true
+      streamHash: 65331d4ff0ce0918979fa07398fc6cd189b6a8aa
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    accessible_organizations:
+      hasRecords: true
+      streamHash: 579a5a75e86b46a236f44e22399f0c2d2e2aaade
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    agent:
+      hasRecords: true
+      streamHash: f29421eb7df4101ddb3cda487aa843ff2df20824
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_agents:
+      hasRecords: true
+      streamHash: 3d7c1c2deaaf9aca63175baade6df1760c8942e0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    agent_details_by_id:
+      hasRecords: true
+      streamHash: 34c952e5f484b818dd88efe3b91906e235716ee1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    profiles:
+      hasRecords: true
+      streamHash: 665eac4c08235e16608481cc1e06207920a1b266
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_roles:
+      hasRecords: true
+      streamHash: ea36b640fed755bea0f3b0a8478da6ad12048b02
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    teams:
+      hasRecords: true
+      streamHash: e50031af9f6d3cdfbd829e737581e72eed8a0293
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    team_members:
+      hasRecords: true
+      streamHash: 08adb08a9a2758a0b8d8878ec393c7b8f351eb53
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_departments:
+      hasRecords: true
+      streamHash: a52794803739fae526a5ea14c52730b27fce67be
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    channels:
+      hasRecords: true
+      streamHash: d9b6a1896c261d4f84327fdd15069fa77a8c1b1d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_tickets:
+      hasRecords: true
+      streamHash: 4d0886f40f123633c969d3344aa27a435bc75e2c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_all_threads:
+      hasRecords: true
+      streamHash: d49ff74630c3f0b00e6748e430acd013ee98815c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    get_latest_thread:
+      hasRecords: true
+      streamHash: 494839a05573d745a5d7f38ccbf2baaaacad70cd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_contacts:
+      hasRecords: true
+      streamHash: 5b5d8224e5f4824af32b711faabf6e1636ff7d79
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    webhooks:
+      hasRecords: true
+      streamHash: fa1d5f9ab3643b61717ea63ba5f7d914c0d903f0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_accounts:
+      hasRecords: true
+      streamHash: f423eacdfb8de296b15b8e72b15488ecd4c02ef6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_contracts:
+      hasRecords: true
+      streamHash: a722a43cb1fc8466921a60eff9c622ab89094f9a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_tasks:
+      hasRecords: true
+      streamHash: d8c270148e1e7c22005a136cdea2de5347b73245
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_products:
+      hasRecords: true
+      streamHash: 38a7ca22f0eec3037f47eb7906ddf0fdd85f98eb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_articles:
+      streamHash: d3b131b9cbd84461e43059802adb9bc32290d2a2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    list_events:
+      hasRecords: true
+      streamHash: 1c50a3f32a4b9fb66c00b7fa3579eb8705e999bd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    modules:
+      hasRecords: true
+      streamHash: 65b4ef477933db9cb4a76bcfdc51d5db8b7ce1cf
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_users:
+      hasRecords: true
+      streamHash: 453457445af4b1492c7d425fe74d80ebd38e7408
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    ticket_activities:
+      hasRecords: true
+      streamHash: 63924fcb8ee340210157fed5f0cb21d3501e1c47
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_attachments:
+      hasRecords: true
+      streamHash: 40fc06423f1035cc78f732dfb830d0b117658f0e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    product:
+      hasRecords: true
+      streamHash: b971c0e0e97fa2ae85acdb2f935f1d05b6314eac
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    task_attachments:
+      hasRecords: true
+      streamHash: a6353a112894b0c954f4c621161a7d0b7252c083
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_calls:
+      hasRecords: true
+      streamHash: c29edb110ef142088a0fdcd7d7574024e67910a2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    call:
+      hasRecords: true
+      streamHash: 2a0b4bd52569c5d0439fef01c208136f32b08e40
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_call_comments:
+      hasRecords: true
+      streamHash: 4ec232254a8f343213e09be088dd7be12025db28
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    dashboard_created_tickets:
+      hasRecords: true
+      streamHash: b09e6d48aca75d2f9ca5926c3c0e4e2522ae2dbd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_user_groups:
+      hasRecords: true
+      streamHash: 581eb05ccdd057ca3e6fb991abc23a0842f22b3c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    dashboard_onhold_tickets:
+      hasRecords: true
+      streamHash: 88da2a446c150b77378a8fbc4d5d5edec6693e34
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://desk.zoho.com/DeskAPIDocument
+
+schemas:
+  organization:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      city:
+        type:
+          - string
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      currencyCode:
+        type:
+          - string
+          - "null"
+      currencyLocale:
+        type:
+          - string
+          - "null"
+      currencySymbol:
+        type:
+          - string
+          - "null"
+      edition:
+        type:
+          - string
+          - "null"
+      employeeCount:
+        type:
+          - number
+          - "null"
+      faviconURL:
+        type:
+          - string
+          - "null"
+      fax:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      isAdminInOrg:
+        type:
+          - boolean
+          - "null"
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      isPayloadEncryptionEnabled:
+        type:
+          - boolean
+          - "null"
+      isSandboxPortal:
+        type:
+          - boolean
+          - "null"
+      logoURL:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      phoneNumber:
+        type:
+          - string
+          - "null"
+      portalName:
+        type:
+          - string
+          - "null"
+      portalURL:
+        type:
+          - string
+          - "null"
+      primaryContact:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      street:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+      zip:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  all_organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      city:
+        type:
+          - string
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      currencyCode:
+        type:
+          - string
+          - "null"
+      currencyLocale:
+        type:
+          - string
+          - "null"
+      currencySymbol:
+        type:
+          - string
+          - "null"
+      edition:
+        type:
+          - string
+          - "null"
+      employeeCount:
+        type:
+          - number
+          - "null"
+      faviconURL:
+        type:
+          - string
+          - "null"
+      fax:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      isAdminInOrg:
+        type:
+          - boolean
+          - "null"
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      isPayloadEncryptionEnabled:
+        type:
+          - boolean
+          - "null"
+      isSandboxPortal:
+        type:
+          - boolean
+          - "null"
+      logoURL:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      phoneNumber:
+        type:
+          - string
+          - "null"
+      portalName:
+        type:
+          - string
+          - "null"
+      portalURL:
+        type:
+          - string
+          - "null"
+      primaryContact:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      street:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+      zip:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  accessible_organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      city:
+        type:
+          - string
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      currencyCode:
+        type:
+          - string
+          - "null"
+      currencyLocale:
+        type:
+          - string
+          - "null"
+      currencySymbol:
+        type:
+          - string
+          - "null"
+      edition:
+        type:
+          - string
+          - "null"
+      employeeCount:
+        type:
+          - number
+          - "null"
+      faviconURL:
+        type:
+          - string
+          - "null"
+      fax:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      isAdminInOrg:
+        type:
+          - boolean
+          - "null"
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      isPayloadEncryptionEnabled:
+        type:
+          - boolean
+          - "null"
+      isSandboxPortal:
+        type:
+          - boolean
+          - "null"
+      logoURL:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      phoneNumber:
+        type:
+          - string
+          - "null"
+      portalName:
+        type:
+          - string
+          - "null"
+      portalURL:
+        type:
+          - string
+          - "null"
+      primaryContact:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      street:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+      zip:
+        type:
+          - string
+          - "null"
+  agent:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      aboutInfo:
+        type:
+          - string
+          - "null"
+      associatedChatDepartmentIds:
+        type:
+          - array
+          - "null"
+      associatedDepartmentIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      cf:
+        type:
+          - object
+          - "null"
+      channelExpert:
+        type:
+          - array
+          - "null"
+      countryCode:
+        type:
+          - string
+          - "null"
+      emailId:
+        type:
+          - string
+          - "null"
+      extn:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      isConfirmed:
+        type:
+          - boolean
+          - "null"
+      langCode:
+        type:
+          - string
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      photoURL:
+        type:
+          - string
+          - "null"
+      profileId:
+        type:
+          - string
+          - "null"
+      roleId:
+        type:
+          - string
+          - "null"
+      rolePermissionType:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      timeZone:
+        type:
+          - string
+          - "null"
+      zuid:
+        type:
+          - string
+          - "null"
+  list_agents:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      aboutInfo:
+        type:
+          - string
+          - "null"
+      associatedChatDepartmentIds:
+        type:
+          - array
+          - "null"
+      associatedDepartmentIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      cf:
+        type:
+          - object
+          - "null"
+      channelExpert:
+        type:
+          - array
+          - "null"
+      countryCode:
+        type:
+          - string
+          - "null"
+      emailId:
+        type:
+          - string
+          - "null"
+      extn:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isConfirmed:
+        type:
+          - boolean
+          - "null"
+      langCode:
+        type:
+          - string
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      photoURL:
+        type:
+          - string
+          - "null"
+      profileId:
+        type:
+          - string
+          - "null"
+      roleId:
+        type:
+          - string
+          - "null"
+      rolePermissionType:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      timeZone:
+        type:
+          - string
+          - "null"
+      zuid:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  agent_details_by_id:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      aboutInfo:
+        type:
+          - string
+          - "null"
+      associatedDepartmentIds:
+        type:
+          - array
+          - "null"
+      channelExpert:
+        type:
+          - array
+          - "null"
+      emailId:
+        type:
+          - string
+          - "null"
+      extn:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isConfirmed:
+        type:
+          - boolean
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      photoURL:
+        type:
+          - string
+          - "null"
+      profileId:
+        type:
+          - string
+          - "null"
+      roleId:
+        type:
+          - string
+          - "null"
+      rolePermissionType:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      zuid:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  profiles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      default:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      isVisible:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      permissions:
+        type:
+          - object
+          - "null"
+        properties:
+          CommunityComment:
+            type:
+              - object
+              - "null"
+            properties:
+              view:
+                type:
+                  - boolean
+                  - "null"
+          CommunityTopic:
+            type:
+              - object
+              - "null"
+            properties:
+              view:
+                type:
+                  - boolean
+                  - "null"
+          accounts:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          agents:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              overview:
+                type:
+                  - boolean
+                  - "null"
+              viewAllFields:
+                type:
+                  - boolean
+                  - "null"
+          calls:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          chat:
+            type:
+              - object
+              - "null"
+            properties:
+              view:
+                type:
+                  - boolean
+                  - "null"
+          comments:
+            type:
+              - object
+              - "null"
+            properties:
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+          community:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              moderate:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          contacts:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          contracts:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          crmInteg:
+            type:
+              - object
+              - "null"
+            properties:
+              crmAccountsActivityCalls:
+                type:
+                  - boolean
+                  - "null"
+              crmAccountsActivityEvents:
+                type:
+                  - boolean
+                  - "null"
+              crmAccountsActivityTasks:
+                type:
+                  - boolean
+                  - "null"
+              crmAccountsInfo:
+                type:
+                  - boolean
+                  - "null"
+              crmAccountsNotes:
+                type:
+                  - boolean
+                  - "null"
+              crmAccountsPotentials:
+                type:
+                  - boolean
+                  - "null"
+              crmContactsActivityCalls:
+                type:
+                  - boolean
+                  - "null"
+              crmContactsActivityEvents:
+                type:
+                  - boolean
+                  - "null"
+              crmContactsActivityTasks:
+                type:
+                  - boolean
+                  - "null"
+              crmContactsInfo:
+                type:
+                  - boolean
+                  - "null"
+              crmContactsNotes:
+                type:
+                  - boolean
+                  - "null"
+              crmContactsPotentials:
+                type:
+                  - boolean
+                  - "null"
+          events:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          financeInteg:
+            type:
+              - object
+              - "null"
+            properties:
+              createContact:
+                type:
+                  - boolean
+                  - "null"
+              createEstimate:
+                type:
+                  - boolean
+                  - "null"
+              createInvoice:
+                type:
+                  - boolean
+                  - "null"
+              createSalesOrder:
+                type:
+                  - boolean
+                  - "null"
+              sendEstimate:
+                type:
+                  - boolean
+                  - "null"
+              sendInvoice:
+                type:
+                  - boolean
+                  - "null"
+              sendSalesOrder:
+                type:
+                  - boolean
+                  - "null"
+              viewEstimate:
+                type:
+                  - boolean
+                  - "null"
+              viewInvoice:
+                type:
+                  - boolean
+                  - "null"
+              viewSalesOrder:
+                type:
+                  - boolean
+                  - "null"
+              viewSubscription:
+                type:
+                  - boolean
+                  - "null"
+          gc:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          im:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          kbCategory:
+            type:
+              - object
+              - "null"
+            properties:
+              admin:
+                type:
+                  - boolean
+                  - "null"
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              editAllArticles:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              manageKB:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          mobileapp:
+            type:
+              - object
+              - "null"
+            properties:
+              deskapp:
+                type:
+                  - boolean
+                  - "null"
+              radar:
+                type:
+                  - boolean
+                  - "null"
+          products:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          reports:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          setup:
+            type:
+              - object
+              - "null"
+            properties:
+              automation:
+                type:
+                  - boolean
+                  - "null"
+              buttons:
+                type:
+                  - boolean
+                  - "null"
+              chat:
+                type:
+                  - boolean
+                  - "null"
+              community:
+                type:
+                  - boolean
+                  - "null"
+              customerHappiness:
+                type:
+                  - boolean
+                  - "null"
+              department:
+                type:
+                  - boolean
+                  - "null"
+              email:
+                type:
+                  - boolean
+                  - "null"
+              exportPortalUsers:
+                type:
+                  - boolean
+                  - "null"
+              exportUsers:
+                type:
+                  - boolean
+                  - "null"
+              featureConfig:
+                type:
+                  - boolean
+                  - "null"
+              gamification:
+                type:
+                  - boolean
+                  - "null"
+              googleAnalytics:
+                type:
+                  - boolean
+                  - "null"
+              im:
+                type:
+                  - boolean
+                  - "null"
+              importHistory:
+                type:
+                  - boolean
+                  - "null"
+              layouts:
+                type:
+                  - boolean
+                  - "null"
+              localization:
+                type:
+                  - boolean
+                  - "null"
+              manageAgents:
+                type:
+                  - boolean
+                  - "null"
+              manageMarketplace:
+                type:
+                  - boolean
+                  - "null"
+              managerDashboard:
+                type:
+                  - boolean
+                  - "null"
+              massReply:
+                type:
+                  - boolean
+                  - "null"
+              permission:
+                type:
+                  - boolean
+                  - "null"
+              pinnedConversations:
+                type:
+                  - boolean
+                  - "null"
+              portal:
+                type:
+                  - boolean
+                  - "null"
+              portalUsers:
+                type:
+                  - boolean
+                  - "null"
+              privacySettings:
+                type:
+                  - boolean
+                  - "null"
+              rebranding:
+                type:
+                  - boolean
+                  - "null"
+              recycleBin:
+                type:
+                  - boolean
+                  - "null"
+              sandbox:
+                type:
+                  - boolean
+                  - "null"
+              securitySettings:
+                type:
+                  - boolean
+                  - "null"
+              shareSnippet:
+                type:
+                  - boolean
+                  - "null"
+              signUpApproval:
+                type:
+                  - boolean
+                  - "null"
+              social:
+                type:
+                  - boolean
+                  - "null"
+              tabsAndFields:
+                type:
+                  - boolean
+                  - "null"
+              teams:
+                type:
+                  - boolean
+                  - "null"
+              telephony:
+                type:
+                  - boolean
+                  - "null"
+              templates:
+                type:
+                  - boolean
+                  - "null"
+              timeTracking:
+                type:
+                  - boolean
+                  - "null"
+              webForm:
+                type:
+                  - boolean
+                  - "null"
+              webhooks:
+                type:
+                  - boolean
+                  - "null"
+          social:
+            type:
+              - object
+              - "null"
+            properties:
+              twitterConversationReply:
+                type:
+                  - boolean
+                  - "null"
+              twitterPostCreate:
+                type:
+                  - boolean
+                  - "null"
+              twitterPostDelete:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          tasks:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          tickets:
+            type:
+              - object
+              - "null"
+            properties:
+              addFollowers:
+                type:
+                  - boolean
+                  - "null"
+              changeOwner:
+                type:
+                  - boolean
+                  - "null"
+              closeTicket:
+                type:
+                  - boolean
+                  - "null"
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              deleteTags:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              editTags:
+                type:
+                  - boolean
+                  - "null"
+              export:
+                type:
+                  - boolean
+                  - "null"
+              handleUnassigned:
+                type:
+                  - boolean
+                  - "null"
+              import:
+                type:
+                  - boolean
+                  - "null"
+              mailReview:
+                type:
+                  - boolean
+                  - "null"
+              mailSend:
+                type:
+                  - boolean
+                  - "null"
+              mergeTickets:
+                type:
+                  - boolean
+                  - "null"
+              revokeBlueprint:
+                type:
+                  - boolean
+                  - "null"
+              unassignedChangeOwner:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          timeEntry:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+          zia:
+            type:
+              - object
+              - "null"
+            properties:
+              create:
+                type:
+                  - boolean
+                  - "null"
+              delete:
+                type:
+                  - boolean
+                  - "null"
+              edit:
+                type:
+                  - boolean
+                  - "null"
+              view:
+                type:
+                  - boolean
+                  - "null"
+    required:
+      - id
+  list_roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      immediateSubRoles:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      isVisible:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      reportsTo:
+        type:
+          - string
+          - "null"
+      shareDataWithPeers:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      agents:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      departmentId:
+        type:
+          - string
+          - "null"
+      derivedAgents:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      roles:
+        type:
+          - array
+          - "null"
+      rolesWithSubordinates:
+        type:
+          - array
+          - "null"
+      subTeams:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+  team_members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      emailId:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      lastName:
+        type:
+          - string
+          - "null"
+      photoURL:
+        type:
+          - string
+          - "null"
+      profileId:
+        type:
+          - string
+          - "null"
+      roleId:
+        type:
+          - string
+          - "null"
+      zuid:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  list_departments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            chatStatus:
+              type:
+                - string
+                - "null"
+            createdTime:
+              type:
+                - string
+                - "null"
+            creatorId:
+              type:
+                - string
+                - "null"
+            hasLogo:
+              type:
+                - boolean
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            isAssignToTeamEnabled:
+              type:
+                - boolean
+                - "null"
+            isDefault:
+              type:
+                - boolean
+                - "null"
+            isEnabled:
+              type:
+                - boolean
+                - "null"
+            isVisibleInCustomerPortal:
+              type:
+                - boolean
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            nameInCustomerPortal:
+              type:
+                - string
+                - "null"
+            sanitizedName:
+              type:
+                - string
+                - "null"
+  channels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      acceptsReplies:
+        type:
+          - boolean
+          - "null"
+      code:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      replyConfig:
+        type:
+          - object
+          - "null"
+        properties:
+          acceptsAttachments:
+            type:
+              - boolean
+              - "null"
+          contentTypes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          includeQuotedMessage:
+            type:
+              - boolean
+              - "null"
+          updateRecords:
+            type:
+              - boolean
+              - "null"
+    required:
+      - code
+  list_tickets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      assigneeId:
+        type:
+          - string
+          - "null"
+      channel:
+        type:
+          - string
+          - "null"
+      commentCount:
+        type:
+          - string
+          - "null"
+      contactId:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      customerResponseTime:
+        type:
+          - string
+          - "null"
+      departmentId:
+        type:
+          - string
+          - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      isSpam:
+        type:
+          - boolean
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      lastThread:
+        type:
+          - object
+          - "null"
+        properties:
+          channel:
+            type:
+              - string
+              - "null"
+          direction:
+            type:
+              - string
+              - "null"
+          isDraft:
+            type:
+              - boolean
+              - "null"
+          isForward:
+            type:
+              - boolean
+              - "null"
+      layoutId:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      productId:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      statusType:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      threadCount:
+        type:
+          - string
+          - "null"
+      ticketNumber:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  list_all_threads:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      actions:
+        type:
+          - array
+          - "null"
+      attachmentCount:
+        type:
+          - string
+          - "null"
+      author:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+      bcc:
+        type:
+          - string
+          - "null"
+      canReply:
+        type:
+          - boolean
+          - "null"
+      cc:
+        type:
+          - string
+          - "null"
+      channel:
+        type:
+          - string
+          - "null"
+      contentType:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      direction:
+        type:
+          - string
+          - "null"
+      fromEmailAddress:
+        type:
+          - string
+          - "null"
+      hasAttach:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      isDescriptionThread:
+        type:
+          - boolean
+          - "null"
+      isForward:
+        type:
+          - boolean
+          - "null"
+      respondedIn:
+        type:
+          - string
+          - "null"
+      responderId:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      to:
+        type:
+          - string
+          - "null"
+      visibility:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  get_latest_thread:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      actions:
+        type:
+          - array
+          - "null"
+      attachmentCount:
+        type:
+          - string
+          - "null"
+      attachments:
+        type:
+          - array
+          - "null"
+      author:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+      bcc:
+        type:
+          - string
+          - "null"
+      canReply:
+        type:
+          - boolean
+          - "null"
+      cc:
+        type:
+          - string
+          - "null"
+      channel:
+        type:
+          - string
+          - "null"
+      content:
+        type:
+          - string
+          - "null"
+      contentType:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      direction:
+        type:
+          - string
+          - "null"
+      fromEmailAddress:
+        type:
+          - string
+          - "null"
+      hasAttach:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      isContentTruncated:
+        type:
+          - boolean
+          - "null"
+      isDescriptionThread:
+        type:
+          - boolean
+          - "null"
+      isForward:
+        type:
+          - boolean
+          - "null"
+      replyTo:
+        type:
+          - string
+          - "null"
+      responderId:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      to:
+        type:
+          - string
+          - "null"
+      visibility:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  list_contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accountCount:
+        type:
+          - string
+          - "null"
+      accountId:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      customerHappiness:
+        type:
+          - object
+          - "null"
+        properties:
+          badPercentage:
+            type:
+              - string
+              - "null"
+          goodPercentage:
+            type:
+              - string
+              - "null"
+          okPercentage:
+            type:
+              - string
+              - "null"
+      email:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isAnonymous:
+        type:
+          - boolean
+          - "null"
+      isEndUser:
+        type:
+          - boolean
+          - "null"
+      isSpam:
+        type:
+          - boolean
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  webhooks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      ignoreSourceId:
+        type:
+          - string
+          - "null"
+      isEnabled:
+        type:
+          - boolean
+          - "null"
+      modifiedTime:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      subscriptions:
+        type:
+          - object
+          - "null"
+        properties: {}
+      url:
+        type:
+          - string
+          - "null"
+  list_accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accountName:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      customerHappiness:
+        type:
+          - object
+          - "null"
+        properties:
+          badPercentage:
+            type:
+              - string
+              - "null"
+          goodPercentage:
+            type:
+              - string
+              - "null"
+          okPercentage:
+            type:
+              - string
+              - "null"
+      email:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      phone:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  list_contracts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accountId:
+        type:
+          - string
+          - "null"
+      associatedSLAId:
+        type:
+          - string
+          - "null"
+      contractName:
+        type:
+          - string
+          - "null"
+      contractStatus:
+        type:
+          - string
+          - "null"
+      departmentId:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      slaName:
+        type:
+          - string
+          - "null"
+      startDate:
+        type:
+          - string
+          - "null"
+      supportPlan:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          supportType:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+  list_tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      activityTime:
+        type:
+          - string
+          - "null"
+      contactId:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      departmentId:
+        type:
+          - string
+          - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isCommented:
+        type:
+          - boolean
+          - "null"
+      isSpam:
+        type:
+          - boolean
+          - "null"
+      isTrashed:
+        type:
+          - boolean
+          - "null"
+      layoutId:
+        type:
+          - string
+          - "null"
+      modifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          emailId:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+      modifiedTime:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      statusType:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      ticketId:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  list_products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      productCode:
+        type:
+          - string
+          - "null"
+      productName:
+        type:
+          - string
+          - "null"
+      unitPrice:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  list_articles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attachmentCount:
+        type:
+          - string
+          - "null"
+      author:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          zuid:
+            type:
+              - string
+              - "null"
+      authorId:
+        type:
+          - string
+          - "null"
+      availableLocaleTranslations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            authorId:
+              type:
+                - string
+                - "null"
+            href:
+              type:
+                - string
+                - "null"
+            isLocked:
+              type:
+                - boolean
+                - "null"
+            isTrashed:
+              type:
+                - boolean
+                - "null"
+            latestPublishedVersion:
+              type:
+                - string
+                - "null"
+            latestVersion:
+              type:
+                - string
+                - "null"
+            latestVersionStatus:
+              type:
+                - string
+                - "null"
+            locale:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            translationId:
+              type:
+                - string
+                - "null"
+            translationState:
+              type:
+                - string
+                - "null"
+      category:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          locale:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      categoryId:
+        type:
+          - string
+          - "null"
+      commentCount:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          zuid:
+            type:
+              - string
+              - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      departmentId:
+        type:
+          - string
+          - "null"
+      dislikeCount:
+        type:
+          - string
+          - "null"
+      feedbackCount:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isLocked:
+        type:
+          - boolean
+          - "null"
+      isTrashed:
+        type:
+          - boolean
+          - "null"
+      latestPublishedVersion:
+        type:
+          - string
+          - "null"
+      latestVersion:
+        type:
+          - string
+          - "null"
+      latestVersionModifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          zuid:
+            type:
+              - string
+              - "null"
+      latestVersionModifierId:
+        type:
+          - string
+          - "null"
+      latestVersionStatus:
+        type:
+          - string
+          - "null"
+      likeCount:
+        type:
+          - string
+          - "null"
+      locale:
+        type:
+          - string
+          - "null"
+      modifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          zuid:
+            type:
+              - string
+              - "null"
+      modifiedTime:
+        type:
+          - string
+          - "null"
+      modifierId:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          zuid:
+            type:
+              - string
+              - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      permalink:
+        type:
+          - string
+          - "null"
+      permission:
+        type:
+          - string
+          - "null"
+      portalUrl:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - string
+          - "null"
+      rootCategoryId:
+        type:
+          - string
+          - "null"
+      sourceLocale:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      summary:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      translationId:
+        type:
+          - string
+          - "null"
+      translationState:
+        type:
+          - string
+          - "null"
+      usageCount:
+        type:
+          - string
+          - "null"
+      viewCount:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  list_events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      activityTime:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      contactId:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      departmentId:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isCommented:
+        type:
+          - boolean
+          - "null"
+      isSpam:
+        type:
+          - boolean
+          - "null"
+      isTrashed:
+        type:
+          - boolean
+          - "null"
+      layoutId:
+        type:
+          - string
+          - "null"
+      modifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          emailId:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+      modifiedTime:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - string
+          - "null"
+      startTime:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      statusType:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  modules:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      apiName:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      displayLabel:
+        type:
+          - string
+          - "null"
+      hasRecycleBin:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      isCustomModule:
+        type:
+          - boolean
+          - "null"
+      isDeptSpecific:
+        type:
+          - boolean
+          - "null"
+      modifiedTime:
+        type:
+          - string
+          - "null"
+      nameField:
+        type:
+          - string
+          - "null"
+      pluralLabel:
+        type:
+          - string
+          - "null"
+      singularLabel:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  list_users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      emailAddress:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      lastAccessedTime:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      userType:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  ticket_activities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      activityTime:
+        type:
+          - string
+          - "null"
+      activityType:
+        type:
+          - string
+          - "null"
+      completedTime:
+        type:
+          - string
+          - "null"
+      contactId:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      departmentId:
+        type:
+          - string
+          - "null"
+      direction:
+        type:
+          - string
+          - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isCommented:
+        type:
+          - boolean
+          - "null"
+      isSpam:
+        type:
+          - boolean
+          - "null"
+      isTrashed:
+        type:
+          - boolean
+          - "null"
+      layoutId:
+        type:
+          - string
+          - "null"
+      modifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          emailId:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+      modifiedTime:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - string
+          - "null"
+      startTime:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      statusType:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      ticketId:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  list_attachments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            createdTime:
+              type:
+                - string
+                - "null"
+            creatorId:
+              type:
+                - string
+                - "null"
+            href:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            size:
+              type:
+                - string
+                - "null"
+  product:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      cf:
+        type:
+          - object
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - object
+          - "null"
+      departmentIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type: string
+      isDeleted:
+        type:
+          - boolean
+          - "null"
+      layoutDetails:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          layoutName:
+            type:
+              - string
+              - "null"
+      layoutId:
+        type:
+          - string
+          - "null"
+      modifiedBy:
+        type:
+          - string
+          - "null"
+      modifiedTime:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      productCategory:
+        type:
+          - string
+          - "null"
+      productCode:
+        type:
+          - string
+          - "null"
+      productName:
+        type:
+          - string
+          - "null"
+      unitPrice:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  task_attachments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdTime:
+        type:
+          - string
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      size:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  list_calls:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      activityTime:
+        type:
+          - string
+          - "null"
+      completedTime:
+        type:
+          - string
+          - "null"
+      contactId:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      departmentId:
+        type:
+          - string
+          - "null"
+      direction:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isCommented:
+        type:
+          - boolean
+          - "null"
+      isSpam:
+        type:
+          - boolean
+          - "null"
+      isTrashed:
+        type:
+          - boolean
+          - "null"
+      layoutId:
+        type:
+          - string
+          - "null"
+      modifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          emailId:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+      modifiedTime:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - string
+          - "null"
+      startTime:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      statusType:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      ticketId:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  call:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      activityTime:
+        type:
+          - string
+          - "null"
+      cf:
+        type:
+          - object
+          - "null"
+      completedTime:
+        type:
+          - string
+          - "null"
+      contactId:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - object
+          - "null"
+      departmentId:
+        type:
+          - string
+          - "null"
+      direction:
+        type:
+          - string
+          - "null"
+      duration:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      isSpam:
+        type:
+          - boolean
+          - "null"
+      isTrashed:
+        type:
+          - boolean
+          - "null"
+      layoutId:
+        type:
+          - string
+          - "null"
+      modifiedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          emailId:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+      modifiedTime:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - string
+          - "null"
+      startTime:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      statusType:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      ticketId:
+        type:
+          - string
+          - "null"
+      webUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  list_call_comments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attachments:
+        type:
+          - array
+          - "null"
+      commentedTime:
+        type:
+          - string
+          - "null"
+      commenter:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          firstName:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastName:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          photoURL:
+            type:
+              - string
+              - "null"
+          roleName:
+            type:
+              - string
+              - "null"
+      commenterId:
+        type:
+          - string
+          - "null"
+      content:
+        type:
+          - string
+          - "null"
+      contentType:
+        type:
+          - string
+          - "null"
+      encodedContent:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      modifiedTime:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  dashboard_created_tickets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      avg:
+        type:
+          - string
+          - "null"
+      groupedBy:
+        type:
+          - string
+          - "null"
+      ticketCount:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            count:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      totalTicketCount:
+        type:
+          - string
+          - "null"
+  list_user_groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      addedTime:
+        type:
+          - string
+          - "null"
+      helpCenterId:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      logoUrl:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  dashboard_onhold_tickets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      count:
+        type:
+          - string
+          - "null"
+      value:
+        type: string
+    required:
+      - value

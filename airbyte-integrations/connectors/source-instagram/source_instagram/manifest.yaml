@@ -123,12 +123,12 @@ definitions:
               }}{% elif stream_partition.media_insights_info.media_type ==
               "VIDEO" and
               stream_partition.media_insights_info.media_product_type == "FEED"
-              %}{{  'impressions,reach,saved,video_views'}}{% elif
+              %}{{  'impressions,reach,saved'}}{% elif
               stream_partition.media_insights_info.media_type == "VIDEO" %}{{
-              'impressions,reach,saved,video_views,likes,comments,shares,follows,profile_visits'
+              'impressions,reach,saved,likes,comments,shares,follows,profile_visits'
               }}{%elif stream_partition.media_insights_info.media_type ==
-              "CAROUSEL_ALBUM"%}{{ 'impressions,reach,saved,video_views,shares,follows,profile_visits' }}{% else %}{{
-              'impressions,reach,saved,video_views,likes,comments,shares,follows,profile_visits' }}{%
+              "CAROUSEL_ALBUM"%}{{ 'impressions,reach,saved,shares,follows,profile_visits' }}{% else %}{{
+              'impressions,reach,saved,likes,comments,shares,follows,profile_visits' }}{%
               endif %}
           error_handler:
             type: CompositeErrorHandler
@@ -573,7 +573,7 @@ definitions:
           $ref: "#/schemas/Api"
   base_requester:
     type: HttpRequester
-    url_base: https://graph.facebook.com/v19.0
+    url_base: https://graph.facebook.com/v21.0
     authenticator:
       type: BearerAuthenticator
       api_token: '{{ config["access_token"] }}'
@@ -821,11 +821,6 @@ schemas:
           - integer
       saved:
         description: The number of times users have saved the media.
-        type:
-          - "null"
-          - integer
-      video_views:
-        description: The total number of views on video media.
         type:
           - "null"
           - integer

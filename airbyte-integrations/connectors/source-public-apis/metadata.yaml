@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: a4617b39-3c14-44cd-a2eb-6e720f269235
-  dockerImageTag: 0.2.20
+  dockerImageTag: 0.2.30
   dockerRepository: airbyte/source-public-apis
   documentationUrl: https://docs.airbyte.com/integrations/sources/public-apis
   githubIssueLabel: source-public-apis
@@ -42,5 +42,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
 metadataSpecVersion: "1.0"

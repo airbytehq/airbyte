@@ -21,23 +21,29 @@ interface AWSAccessKeySpecification {
         "The access key ID to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>."
     )
     @get:JsonProperty("access_key_id")
-    @get:JsonSchemaInject(json = """{"examples":["A012345678910EXAMPLE"]}""")
-    val accessKeyId: String
+    @get:JsonSchemaInject(
+        json =
+            """{"examples":["A012345678910EXAMPLE"],"airbyte_secret": true,"always_show": true}"""
+    )
+    val accessKeyId: String?
 
     @get:JsonSchemaTitle("S3 Access Key")
     @get:JsonPropertyDescription(
         "The corresponding secret to the access key ID. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>"
     )
     @get:JsonProperty("secret_access_key")
-    @get:JsonSchemaInject(json = """{"examples":["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"]}""")
-    val secretAccessKey: String
+    @get:JsonSchemaInject(
+        json =
+            """{"examples":["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],"airbyte_secret": true,"always_show": true}"""
+    )
+    val secretAccessKey: String?
 
     fun toAWSAccessKeyConfiguration(): AWSAccessKeyConfiguration {
         return AWSAccessKeyConfiguration(accessKeyId, secretAccessKey)
     }
 }
 
-data class AWSAccessKeyConfiguration(val accessKeyId: String, val secretAccessKey: String)
+data class AWSAccessKeyConfiguration(val accessKeyId: String?, val secretAccessKey: String?)
 
 interface AWSAccessKeyConfigurationProvider {
     val awsAccessKeyConfiguration: AWSAccessKeyConfiguration
