@@ -119,8 +119,8 @@ class InputConsumerTaskTest {
                 }
             )
         }
-        assert(syncManager.getStreamManager(stream1.descriptor).recordCount() == 1L)
-        assert(syncManager.getStreamManager(stream2.descriptor).recordCount() == 2L)
+        assert(syncManager.getStreamManager(stream1.descriptor).readCount() == 1L)
+        assert(syncManager.getStreamManager(stream2.descriptor).readCount() == 2L)
     }
 
     @Test
@@ -164,9 +164,9 @@ class InputConsumerTaskTest {
             memoryManager.release(3L)
         }
 
-        assert(syncManager.getStreamManager(stream1.descriptor).recordCount() == 1L)
+        assert(syncManager.getStreamManager(stream1.descriptor).readCount() == 1L)
         assert(syncManager.getStreamManager(stream1.descriptor).endOfStreamRead())
-        assert(syncManager.getStreamManager(stream2.descriptor).recordCount() == 0L)
+        assert(syncManager.getStreamManager(stream2.descriptor).readCount() == 0L)
         assert(syncManager.getStreamManager(stream2.descriptor).endOfStreamRead())
     }
 
