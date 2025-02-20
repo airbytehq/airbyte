@@ -1044,19 +1044,18 @@ definitions:
           endDate: "{{ format_datetime(stream_slice.end_time, '%Y-%m-%d') }}"
           orderBy: "{{ parameters.cursor_field }}"
     incremental_sync:
-      - type: DatetimeBasedCursor
-        start_datetime:
-          datetime: "{{ config['start_date'] }}"
-          datetime_format: "%Y-%m-%d"
-        end_datetime:
-          datetime: "{{ today_utc() }}"
-          datetime_format: "%Y-%m-%d"
-        step: "P1M"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-        cursor_granularity: "P1D"
+      type: DatetimeBasedCursor
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: "P1M"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_granularity: "P1D"
 
   accounting_transactions_stream:
-    $ref: "#/definitions/base_incremental_service_stream"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1169,6 +1168,7 @@ definitions:
             type:
             - number
             - string
+    $ref: "#/definitions/base_incremental_service_stream"
     $parameters:
       name: "accounting_transactions"
       path: "/accountingTransactions"
