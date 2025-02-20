@@ -17,7 +17,9 @@ include = "source_zendesk_chat"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "^6"
+#airbyte-cdk = "^6"
+airbyte-cdk = { git = "git@github.com:airbytehq/airbyte-python-cdk.git", branch = "brian/poc_incrementing_count_cursor" }
+
 pendulum = "==2.1.2"
 
 [tool.poetry.scripts]
