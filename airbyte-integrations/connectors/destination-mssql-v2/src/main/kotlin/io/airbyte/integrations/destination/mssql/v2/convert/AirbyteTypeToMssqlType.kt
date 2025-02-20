@@ -36,23 +36,9 @@ enum class MssqlType(val sqlType: Int, val sqlStringOverride: String? = null) {
     DATETIME(Types.TIMESTAMP);
 
     val sqlString: String = sqlStringOverride ?: name
-
-    companion object {
-        val fromSqlType: Map<Int, MssqlType> =
-            entries
-                .associateByTo(mutableMapOf()) { it.sqlType }
-                // Manually adding an extra mapping because we since represent both
-                // sqlTypes TIMESTAMP_WITH_TIMEZONE and TIME_WITH_TIMEZONE as DATETIMEOFFSET
-                // the auto generated reverse map is missing the nuance.
-                .apply { this[Types.TIME_WITH_TIMEZONE] = DATETIMEOFFSET }
-                .toMap()
-    }
 }
 
-class SqlTypeToMssqlType {
-    fun convert(type: Int): MssqlType =
-        MssqlType.fromSqlType.get(type) ?: throw IllegalArgumentException("type $type not found")
-
+class AirbyteTypeToMssqlType {
     fun convert(airbyteSchema: AirbyteType, isIndexed: Boolean = false): MssqlType {
         return when (airbyteSchema) {
             is ObjectType -> MssqlType.TEXT

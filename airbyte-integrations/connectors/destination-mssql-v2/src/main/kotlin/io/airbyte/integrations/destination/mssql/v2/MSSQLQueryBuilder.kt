@@ -27,7 +27,7 @@ import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatem
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setValue
 import io.airbyte.integrations.destination.mssql.v2.convert.MssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.ResultSetToAirbyteValue.Companion.getAirbyteNamedValue
-import io.airbyte.integrations.destination.mssql.v2.convert.SqlTypeToMssqlType
+import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteTypeToMssqlType
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -231,7 +231,7 @@ class MSSQLQueryBuilder(
         }
     private val indexedColumns: Set<String> = uniquenessKey.toSet()
 
-    private val toMssqlType = SqlTypeToMssqlType()
+    private val toMssqlType = AirbyteTypeToMssqlType()
 
     val finalTableSchema: List<NamedField> =
         airbyteFinalTableFields + extractFinalTableSchema(stream.schema)
