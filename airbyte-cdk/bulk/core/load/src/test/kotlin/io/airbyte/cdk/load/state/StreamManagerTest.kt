@@ -530,6 +530,7 @@ class StreamManagerTest {
         val manager = DefaultStreamManager(stream1)
 
         val checkpointId1 = manager.getNextCheckpointId()
+
         repeat(10) { manager.incrementReadCount() }
         manager.markCheckpoint()
 
@@ -545,6 +546,7 @@ class StreamManagerTest {
         Assertions.assertFalse(manager.areRecordsPersistedUntilCheckpoint(checkpointId2))
 
         manager.incrementPersistedCount(checkpointId1, 10)
+
         Assertions.assertTrue(manager.areRecordsPersistedUntilCheckpoint(checkpointId1))
         Assertions.assertTrue(manager.areRecordsPersistedUntilCheckpoint(checkpointId2))
     }
@@ -554,6 +556,7 @@ class StreamManagerTest {
         val manager = DefaultStreamManager(stream1)
 
         val checkpointId1 = manager.getNextCheckpointId()
+
         repeat(10) { manager.incrementReadCount() }
         manager.markCheckpoint()
 
@@ -587,6 +590,7 @@ class StreamManagerTest {
         cases.forEach { steps ->
             val manager = DefaultStreamManager(stream1)
             val checkpointId1 = manager.getNextCheckpointId()
+
             repeat(10) { manager.incrementReadCount() }
             manager.markCheckpoint()
 

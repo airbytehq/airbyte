@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.util.use
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -28,7 +29,7 @@ import kotlinx.coroutines.sync.withLock
  * requests to flush all data-sufficient checkpoints.
  */
 interface CheckpointManager<K, T> {
-    suspend fun addStreamCheckpoint(key: K, index: Long, checkpointMessage: T)
+    suspend fun addStreamCheckpoint(key: K, indexOrId: Long, checkpointMessage: T)
     suspend fun addGlobalCheckpoint(keyIndexes: List<Pair<K, Long>>, checkpointMessage: T)
     suspend fun flushReadyCheckpointMessages()
     suspend fun getLastSuccessfulFlushTimeMs(): Long
@@ -59,6 +60,14 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
     abstract val outputConsumer: suspend (T) -> Unit
     abstract val timeProvider: TimeProvider
 
+    /**
+     * Whether or not we are using the new style checkpoint-by-id or the old style
+     * checkpoint-by-range.
+     *
+     * TODO: Remove this once everything is using the new interface.
+     */
+    abstract val checkpointById: Boolean
+
     data class GlobalCheckpoint<T>(
         val streamIndexes: List<Pair<DestinationStream.Descriptor, Long>>,
         val checkpointMessage: T
@@ -74,7 +83,7 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
 
     override suspend fun addStreamCheckpoint(
         key: DestinationStream.Descriptor,
-        index: Long,
+        indexOrId: Long,
         checkpointMessage: T
     ) {
         flushLock.withLock {
@@ -89,15 +98,15 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
             if (indexedMessages.isNotEmpty()) {
                 // Make sure the messages are coming in order
                 val (latestIndex, _) = indexedMessages.last()!!
-                if (latestIndex > index) {
+                if (latestIndex > indexOrId) {
                     throw IllegalStateException(
-                        "Checkpoint message received out of order ($latestIndex before $index)"
+                        "Checkpoint message received out of order ($latestIndex before $indexOrId)"
                     )
                 }
             }
-            indexedMessages.add(index to checkpointMessage)
+            indexedMessages.add(indexOrId to checkpointMessage)
 
-            log.info { "Added checkpoint for stream: $key at index: $index" }
+            log.info { "Added checkpoint for stream: $key at index: $indexOrId" }
         }
     }
 
@@ -155,7 +164,13 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
             val head = globalCheckpoints.peek()
             val allStreamsPersisted =
                 head.streamIndexes.all { (stream, index) ->
-                    syncManager.getStreamManager(stream).areRecordsPersistedUntil(index)
+                    if (!checkpointById) {
+                        syncManager.getStreamManager(stream).areRecordsPersistedUntil(index)
+                    } else {
+                        syncManager
+                            .getStreamManager(stream)
+                            .areRecordsPersistedUntilCheckpoint(CheckpointId(index.toInt()))
+                    }
                 }
             if (allStreamsPersisted) {
                 log.info { "Flushing global checkpoint with stream indexes: ${head.streamIndexes}" }
@@ -183,7 +198,13 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
             }
             while (true) {
                 val (nextIndex, nextMessage) = streamCheckpoints.peek() ?: break
-                if (manager.areRecordsPersistedUntil(nextIndex)) {
+                val persisted =
+                    if (checkpointById) {
+                        manager.areRecordsPersistedUntilCheckpoint(CheckpointId(nextIndex.toInt()))
+                    } else {
+                        manager.areRecordsPersistedUntil(nextIndex)
+                    }
+                if (persisted) {
 
                     log.info {
                         "Flushing checkpoint for stream: ${stream.descriptor} at index: $nextIndex"
@@ -268,7 +289,9 @@ class DefaultCheckpointManager(
     override val catalog: DestinationCatalog,
     override val syncManager: SyncManager,
     override val outputConsumer: suspend (Reserved<CheckpointMessage>) -> Unit,
-    override val timeProvider: TimeProvider
+    override val timeProvider: TimeProvider,
+    @Value("\${airbyte.destination.core.checkpoint-by-id:false}")
+    override val checkpointById: Boolean = false
 ) : StreamsCheckpointManager<Reserved<CheckpointMessage>>() {
     init {
         lastFlushTimeMs.set(timeProvider.currentTimeMillis())
