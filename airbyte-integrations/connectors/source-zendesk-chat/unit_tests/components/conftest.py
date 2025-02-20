@@ -11,7 +11,7 @@ import pytest
 def config() -> Mapping[str, Any]:
     return {
         "start_date": "2020-10-01T00:00:00Z",
-        "subdomain": "",
+        "subdomain": "airbyte",
         "credentials": {"credentials": "access_token", "access_token": "__access_token__"},
     }
 
