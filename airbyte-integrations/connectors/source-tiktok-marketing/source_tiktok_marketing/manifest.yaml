@@ -429,7 +429,7 @@ definitions:
       datetime_format: "%Y-%m-%d %H:%M:%S"
     end_datetime:
       type: MinMaxDatetime
-      datetime: "{{ format_datetime((str_to_datetime(config.get('end_date')) if config.get('end_date') else now_utc() + duration('P1D')), '%Y-%m-%d %H:%M:%S') }}"
+      datetime: "{{ format_datetime((str_to_datetime(config.get('end_date')) if config.get('end_date') else now_utc()) + duration('PT23H'), '%Y-%m-%d %H:%M:%S') }}"
       datetime_format: "%Y-%m-%d %H:%M:%S"
 
   base_report_daily:
@@ -516,7 +516,6 @@ definitions:
         $ref: "#/definitions/single_id_partition_router"
 
   ads_reports_daily_stream:
-
     type: DeclarativeStream
     name: ads_reports_daily
     $parameters:
@@ -4320,7 +4319,7 @@ spec:
 # If time allows it, we can definitely try to scope this number a bit better empirically.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 3
+  default_concurrency: 1
   max_concurrency: 20
 
 metadata:
