@@ -17,7 +17,7 @@ data:
             type: GSM
   connectorType: source
   definitionId: 50401137-8871-4c5a-abb7-1f5fda35545a
-  dockerImageTag: 0.3.8
+  dockerImageTag: 0.3.9
   dockerRepository: airbyte/source-dynamodb
   documentationUrl: https://docs.airbyte.com/integrations/sources/dynamodb
   githubIssueLabel: source-dynamodb

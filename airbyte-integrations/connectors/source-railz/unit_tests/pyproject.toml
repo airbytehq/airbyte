@@ -23,3 +23,11 @@ freezegun = "^1.5.1"
 filterwarnings = [
     "ignore:This class is experimental*"
 ]
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
