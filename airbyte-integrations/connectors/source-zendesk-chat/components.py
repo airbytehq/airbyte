@@ -32,10 +32,10 @@ class ZendeskChatTimestampCursor(DatetimeBasedCursor):
         use_microseconds: bool - whether or not to add dummy `000000` (six zeros) to provide the microseconds unit timestamps
     """
 
-    use_microseconds: Union[InterpolatedString, str] = True
+    use_microseconds: bool = True
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        self._use_microseconds = InterpolatedString.create(self.use_microseconds, parameters=parameters)
+        self._use_microseconds = self.use_microseconds
         self._start_date = self.config.get("start_date")
         super().__post_init__(parameters=parameters)
 
@@ -57,115 +57,13 @@ class ZendeskChatTimestampCursor(DatetimeBasedCursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         params = {}
-        if self._use_microseconds.eval(self.config):
+        if self._use_microseconds:
             params = self.add_microseconds(params, stream_slice)
         else:
             params[self.start_time_option.field_name.eval(config=self.config)] = stream_slice.get(
                 self._partition_field_start.eval(self.config)
             )
         return params
-
-
-@dataclass
-class ZendeskChatTimeOffsetIncrementPaginationStrategy(OffsetIncrement):
-    """
-    Time Offset Pagination docs:
-        https://developer.zendesk.com/api-reference/live-chat/chat-api/agents/#pagination
-
-    Attributes:
-        page_size (InterpolatedString): the number of records to request,
-        time_field_name (InterpolatedString): the name of the <key> to track and increment from, {<key>: 1234}
-    """
-
-    time_field_name: Union[InterpolatedString, str] = None
-
-    def __post_init__(self, parameters: Mapping[str, Any], **kwargs) -> None:
-        if not self.time_field_name:
-            raise ValueError("The `time_field_name` property is missing, with no-default value.")
-        else:
-            self._time_field_name = InterpolatedString.create(self.time_field_name, parameters=parameters).eval(self.config)
-        super().__post_init__(parameters=parameters, **kwargs)
-
-    def should_stop_pagination(self, decoded_response: Mapping[str, Any], last_records: List[Mapping[str, Any]]) -> bool:
-        """
-        Stop paginating when there are fewer records than the page size or the current page has no records
-        """
-        last_records_len = len(last_records)
-        no_records = last_records_len == 0
-        current_page_len = self._page_size.eval(self.config, response=decoded_response)
-        return (self._page_size and last_records_len < current_page_len) or no_records
-
-    def get_next_page_token_offset(self, decoded_response: Mapping[str, Any]) -> int:
-        """
-        The `records` are returned in `ASC` order.
-        Described in: https://developer.zendesk.com/api-reference/live-chat/chat-api/incremental_export/#incremental-agent-timeline-export
-
-        Arguments:
-            decoded_response: Mapping[str, Any] -- The object with RECORDS decoded from the RESPONSE.
-
-        Returns:
-            The offset value as the `next_page_token`
-        """
-        self._offset = list(decoded_response)[0][self._time_field_name]
-        return self._offset
-
-    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
-        decoded_response = self.decoder.decode(response)
-        if self.should_stop_pagination(decoded_response, last_records):
-            return None
-        else:
-            return self.get_next_page_token_offset(decoded_response)
-
-
-@dataclass
-class ZendeskChatIdOffsetIncrementPaginationStrategy(OffsetIncrement):
-    """
-    Id Offset Pagination docs:
-        https://developer.zendesk.com/api-reference/live-chat/chat-api/agents/#pagination
-
-    Attributes:
-        page_size (InterpolatedString): the number of records to request,
-        id_field (InterpolatedString): the name of the <key> to track and increment from, {<key>: 1234}
-    """
-
-    id_field: Union[InterpolatedString, str] = None
-
-    def __post_init__(self, parameters: Mapping[str, Any], **kwargs) -> None:
-        if not self.id_field:
-            raise ValueError("The `id_field` property is missing, with no-default value.")
-        else:
-            self._id_field = InterpolatedString.create(self.id_field, parameters=parameters).eval(self.config)
-        super().__post_init__(parameters=parameters, **kwargs)
-
-    def should_stop_pagination(self, decoded_response: Mapping[str, Any], last_records: List[Mapping[str, Any]]) -> bool:
-        """
-        Stop paginating when there are fewer records than the page size or the current page has no records
-        """
-        last_records_len = len(last_records)
-        no_records = last_records_len == 0
-        current_page_len = self._page_size.eval(self.config, response=decoded_response)
-        return (self._page_size and last_records_len < current_page_len) or no_records
-
-    def get_next_page_token_offset(self, last_records: List[Mapping[str, Any]]) -> int:
-        """
-        The `IDs` are returned in `ASC` order, we add `+1` to the ID integer value to avoid the record duplicates,
-        Described in: https://developer.zendesk.com/api-reference/live-chat/chat-api/agents/#pagination
-
-        Arguments:
-            last_records: List[Records] -- decoded from the RESPONSE.
-
-        Returns:
-            The offset value as the `next_page_token`
-        """
-        self._offset = last_records[-1][self._id_field]
-        return self._offset + 1
-
-    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
-        decoded_response = self.decoder.decode(response)
-        if self.should_stop_pagination(decoded_response, last_records):
-            return None
-        else:
-            return self.get_next_page_token_offset(last_records)
 
 
 @dataclass
@@ -254,7 +152,7 @@ class ZendeskChatIdIncrementalCursor(DeclarativeCursor):
         highest_observed_value = cursor_values.get("highest_observed_record_value") if cursor_values else 0
         return max(state_value, highest_observed_value)
 
-    def close_slice(self, stream_slice: StreamSlice) -> None:
+    def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
         cursor_values: dict = self.collect_cursor_values()
         self._cursor = self.process_state(cursor_values) if cursor_values else 0
 

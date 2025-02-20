@@ -78,11 +78,10 @@ definitions:
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
-            type: CustomPaginationStrategy
-            class_name: >-
-              source_declarative_manifest.components.ZendeskChatIdOffsetIncrementPaginationStrategy
-            id_field: id
+            type: CursorPagination
             page_size: 100
+            cursor_value: "{{ last_record['id'] + 1  }}"
+            stop_condition: "{{ not headers.get('x-next-page', {}) }}"
       name: agents
       primary_key:
         - id
@@ -127,19 +126,16 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start_time
+            type: RequestPath
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
-            type: CustomPaginationStrategy
-            class_name: >-
-              source_declarative_manifest.components.ZendeskChatTimeOffsetIncrementPaginationStrategy
-            time_field_name: end_time
+            type: CursorPagination
             page_size: 1000
+            cursor_value: "{{ response.get('next_page', {}) }}"
+            stop_condition: "{{ response.get('count', {}) < 1000 }}"
       name: agent_timeline
       primary_key:
         - id
@@ -215,11 +211,11 @@ definitions:
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
-            type: CustomPaginationStrategy
-            class_name: >-
-              source_declarative_manifest.components.ZendeskChatIdOffsetIncrementPaginationStrategy
-            id_field: id
+            type: CursorPagination
             page_size: 100
+            cursor_value: '{{ headers.get("x-next-page", {}).split("since_id=")[-1] }}'
+            stop_condition: >-
+              {{ ((response.get("visitor", {}) | length) + (response.get("ip_address", {}) | length)) < 100 }}
       name: bans
       primary_key:
         - id
@@ -264,19 +260,16 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start_time
+            type: RequestPath
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
-            type: CustomPaginationStrategy
-            class_name: >-
-              source_declarative_manifest.components.ZendeskChatTimeOffsetIncrementPaginationStrategy
-            time_field_name: end_time
+            type: CursorPagination
             page_size: 1000
+            cursor_value: "{{ response.get('next_page', {}) }}"
+            stop_condition: "{{ response.get('count', {}) < 1000 }}"
       name: chats
       primary_key:
         - id

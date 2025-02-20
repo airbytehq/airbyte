@@ -164,55 +164,6 @@ def test_bans_stream_record_extractor(
     assert ZendeskChatBansRecordExtractor().extract_records(test_response) == bans_stream_record_extractor_expected_output
 
 
-def _get_id_paginator(components_module, config, id_field):
-    ZendeskChatIdOffsetIncrementPaginationStrategy = components_module.ZendeskChatIdOffsetIncrementPaginationStrategy
-    return ZendeskChatIdOffsetIncrementPaginationStrategy(
-        config=config,
-        page_size=1,
-        id_field=id_field,
-        parameters={},
-    )
-
-
-@pytest.mark.parametrize(
-    "id_field, last_records, expected",
-    [("id", [{"id": 1}], 2), ("id", [], None)],
-)
-def test_id_offset_increment_pagination_next_page_token(components_module, requests_mock, config, id_field, last_records, expected) -> None:
-    paginator = _get_id_paginator(components_module, config, id_field)
-    test_url = f"https://{config['subdomain']}.zendesk.com/api/v2/chat/agents"
-    requests_mock.get(test_url, json=last_records)
-    test_response = requests.get(test_url)
-    assert paginator.next_page_token(test_response, last_records) == expected
-
-
-def _get_time_paginator(components_module, config, time_field_name):
-    ZendeskChatTimeOffsetIncrementPaginationStrategy = components_module.ZendeskChatTimeOffsetIncrementPaginationStrategy
-    return ZendeskChatTimeOffsetIncrementPaginationStrategy(
-        config=config,
-        page_size=1,
-        time_field_name=time_field_name,
-        parameters={},
-    )
-
-
-@pytest.mark.parametrize(
-    "time_field_name, response, last_records, expected",
-    [
-        ("end_time", {"chats": [{"update_timestamp": 1}], "end_time": 2}, [{"update_timestamp": 1}], 2),
-        ("end_time", {"chats": [], "end_time": 3}, [], None),
-    ],
-)
-def test_time_offset_increment_pagination_next_page_token(
-    components_module, requests_mock, config, time_field_name, response, last_records, expected
-) -> None:
-    paginator = _get_time_paginator(components_module, config, time_field_name)
-    test_url = f"https://{config['subdomain']}.zendesk.com/api/v2/chat/chats"
-    requests_mock.get(test_url, json=response)
-    test_response = requests.get(test_url)
-    assert paginator.next_page_token(test_response, last_records) == expected
-
-
 def _get_timestamp_cursor(components_module, config, cursor_field, use_microseconds):
     ZendeskChatTimestampCursor = components_module.ZendeskChatTimestampCursor
     cursor = ZendeskChatTimestampCursor(
@@ -221,7 +172,7 @@ def _get_timestamp_cursor(components_module, config, cursor_field, use_microseco
         datetime_format="%s",
         config=config,
         parameters={},
-        use_microseconds=f"{{{ {use_microseconds} }}}",
+        use_microseconds=use_microseconds,
     )
     # patching missing parts
     cursor.start_time_option = RequestOption(
