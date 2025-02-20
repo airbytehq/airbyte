@@ -20,6 +20,11 @@ interface SourceConfiguration : Configuration, SshTunnelConfiguration {
     val maxConcurrency: Int
     val resourceAcquisitionHeartbeat: Duration
 
+    /** Whether it's a CDC configuration. Default to global state */
+    fun isCdc(): Boolean {
+        return global
+    }
+
     /**
      * Micronaut factory which glues [ConfigurationSpecificationSupplier] and
      * [SourceConfigurationFactory] together to produce a [SourceConfiguration] singleton.

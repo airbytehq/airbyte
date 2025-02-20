@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.destination.s3_data_lake
 
+import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergSuperTypeFinder
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTypesComparator
 import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Type.TypeID.DOUBLE
 import org.apache.iceberg.types.Type.TypeID.LONG
@@ -14,10 +17,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 
-/** Comprehensive test suite for [S3DataLakeSuperTypeFinder]. */
+/** Comprehensive test suite for [IcebergSuperTypeFinder]. */
 class S3DataLakeSuperTypeFinderTest {
 
-    private val superTypeFinder = S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator())
+    private val superTypeFinder = IcebergSuperTypeFinder(IcebergTypesComparator())
 
     @Test
     fun testIdenticalPrimitiveTypes() {
@@ -44,8 +47,8 @@ class S3DataLakeSuperTypeFinderTest {
         assertThatThrownBy {
                 superTypeFinder.findSuperType(tsWithZone, tsWithoutZone, "column_name")
             }
-            .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessageContaining("Conversion for column \"column_name\" between")
+            .isInstanceOf(ConfigErrorException::class.java)
+            .hasMessageContaining("Schema evolution for column \"column_name\" between")
     }
 
     @Test
@@ -74,9 +77,9 @@ class S3DataLakeSuperTypeFinderTest {
 
         // By default, TypeUtil.isPromotionAllowed(int, double) returns false
         assertThatThrownBy { superTypeFinder.findSuperType(intType, doubleType, "column_name") }
-            .isInstanceOf(IllegalArgumentException::class.java)
+            .isInstanceOf(ConfigErrorException::class.java)
             .hasMessageContaining(
-                "Conversion for column \"column_name\" between int and double is not allowed."
+                "Schema evolution for column \"column_name\" between int and double is not allowed."
             )
     }
 
@@ -90,9 +93,9 @@ class S3DataLakeSuperTypeFinderTest {
 
         // Attempting to combine int (primitive) with struct (non-primitive) => error
         assertThatThrownBy { superTypeFinder.findSuperType(intType, structType, "column_name") }
-            .isInstanceOf(IllegalArgumentException::class.java)
+            .isInstanceOf(ConfigErrorException::class.java)
             .hasMessageContaining(
-                "Conversion for column \"column_name\" between int and struct<1: field: optional string> is not allowed."
+                "Schema evolution for column \"column_name\" between int and struct<1: field: optional string> is not allowed."
             )
     }
 
@@ -105,9 +108,9 @@ class S3DataLakeSuperTypeFinderTest {
         val intType = Types.IntegerType.get()
 
         assertThatThrownBy { superTypeFinder.findSuperType(structType, intType, "column_name") }
-            .isInstanceOf(IllegalArgumentException::class.java)
+            .isInstanceOf(ConfigErrorException::class.java)
             .hasMessageContaining(
-                "Conversion for column \"column_name\" between struct<1: field: optional string> and int is not allowed."
+                "Schema evolution for column \"column_name\" between struct<1: field: optional string> and int is not allowed."
             )
     }
 
@@ -118,9 +121,9 @@ class S3DataLakeSuperTypeFinderTest {
 
         // Fails in validateTypeIds => BINARY is not supported
         assertThatThrownBy { superTypeFinder.findSuperType(binaryType, intType, "column_name") }
-            .isInstanceOf(IllegalArgumentException::class.java)
+            .isInstanceOf(ConfigErrorException::class.java)
             .hasMessageContaining(
-                "Conversion for column \"column_name\" between binary and int is not allowed."
+                "Schema evolution for column \"column_name\" between binary and int is not allowed."
             )
     }
 
@@ -131,9 +134,9 @@ class S3DataLakeSuperTypeFinderTest {
 
         // Fails in validateTypeIds => DECIMAL is not supported
         assertThatThrownBy { superTypeFinder.findSuperType(decimalType, intType, "column_name") }
-            .isInstanceOf(IllegalArgumentException::class.java)
+            .isInstanceOf(ConfigErrorException::class.java)
             .hasMessageContaining(
-                "Conversion for column \"column_name\" between decimal(10, 2) and int is not allowed."
+                "Schema evolution for column \"column_name\" between decimal(10, 2) and int is not allowed."
             )
     }
 
@@ -144,9 +147,9 @@ class S3DataLakeSuperTypeFinderTest {
 
         // Fails in validateTypeIds => FIXED is not supported
         assertThatThrownBy { superTypeFinder.findSuperType(fixedType, intType, "column_name") }
-            .isInstanceOf(IllegalArgumentException::class.java)
+            .isInstanceOf(ConfigErrorException::class.java)
             .hasMessageContaining(
-                "Conversion for column \"column_name\" between fixed[16] and int is not allowed."
+                "Schema evolution for column \"column_name\" between fixed[16] and int is not allowed."
             )
     }
 
@@ -157,9 +160,9 @@ class S3DataLakeSuperTypeFinderTest {
 
         // Fails in validateTypeIds => UUID is not supported
         assertThatThrownBy { superTypeFinder.findSuperType(uuidType, intType, "column_name") }
-            .isInstanceOf(IllegalArgumentException::class.java)
+            .isInstanceOf(ConfigErrorException::class.java)
             .hasMessageContaining(
-                "Conversion for column \"column_name\" between uuid and int is not allowed."
+                "Schema evolution for column \"column_name\" between uuid and int is not allowed."
             )
     }
 
@@ -181,7 +184,7 @@ class S3DataLakeSuperTypeFinderTest {
         assertThatThrownBy {
                 superTypeFinder.findSuperType(nanoTimestamp, normalTimestamp, "column_name")
             }
-            .isInstanceOf(IllegalArgumentException::class.java)
+            .isInstanceOf(ConfigErrorException::class.java)
     }
 
     @Test
@@ -192,9 +195,9 @@ class S3DataLakeSuperTypeFinderTest {
 
         // By default, TypeUtil.isPromotionAllowed(int, float) is false
         assertThatThrownBy { superTypeFinder.findSuperType(intType, floatType, "column_name") }
-            .isInstanceOf(IllegalArgumentException::class.java)
+            .isInstanceOf(ConfigErrorException::class.java)
             .hasMessageContaining(
-                "Conversion for column \"column_name\" between int and float is not allowed."
+                "Schema evolution for column \"column_name\" between int and float is not allowed."
             )
     }
 }
