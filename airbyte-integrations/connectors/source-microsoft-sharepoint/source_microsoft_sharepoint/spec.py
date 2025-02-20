@@ -8,7 +8,7 @@ from typing import Any, Dict, Literal, Optional, Union
 import dpath.util
 from pydantic.v1 import BaseModel, Field
 
-from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
 
 
 class OAuthCredentials(BaseModel):
@@ -85,6 +85,16 @@ class SourceMicrosoftSharePointSpec(AbstractFileBasedSpec, BaseModel):
         discriminator="auth_type",
         type="object",
         order=0,
+    )
+
+    delivery_method: DeliverRecords | DeliverRawFiles = Field(
+        title="Delivery Method",
+        discriminator="delivery_type",
+        type="object",
+        order=1,
+        display_type="radio",
+        group="advanced",
+        default="use_records_transfer",
     )
 
     search_scope: str = Field(

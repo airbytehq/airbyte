@@ -1,18 +1,15 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
-
-import time
-from socket import socket
+import logging
 from typing import Any, Dict, List, Mapping
 
-import docker
 import pytest
 from destination_sftp_json import DestinationSftpJson
 from destination_sftp_json.client import SftpClient
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -27,33 +24,8 @@ from airbyte_cdk.models import (
 )
 
 
-@pytest.fixture(scope="module")
-def docker_client():
-    return docker.from_env()
-
-
-@pytest.fixture(name="config", scope="module")
-def config_fixture(docker_client):
-    with socket() as s:
-        s.bind(("", 0))
-        available_port = s.getsockname()[1]
-
-    config = {"host": "0.0.0.0", "port": available_port, "username": "foo", "password": "pass", "destination_path": "upload"}
-    container = docker_client.containers.run(
-        "atmoz/sftp",
-        f"{config['username']}:{config['password']}:::{config['destination_path']}",
-        name="mysftp",
-        ports={22: config["port"]},
-        detach=True,
-    )
-    time.sleep(20)
-    yield config
-    container.kill()
-    container.remove()
-
-
-@pytest.fixture(name="configured_catalog")
-def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
+@pytest.fixture
+def configured_catalog() -> ConfiguredAirbyteCatalog:
     stream_schema = {
         "type": "object",
         "properties": {"string_col": {"type": "str"}, "int_col": {"type": "integer"}},
@@ -74,8 +46,12 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
     return ConfiguredAirbyteCatalog(streams=[append_stream, overwrite_stream])
 
 
-@pytest.fixture(name="client")
-def client_fixture(config, configured_catalog) -> SftpClient:
+@pytest.fixture
+def client(config, configured_catalog) -> SftpClient:
+    """
+    Provides an SftpClient instance with the provided configuration.
+    Client is used to read data that we're writing to the destination (SFTP Server) so we can check that, well, connector worked.
+    """
     with SftpClient(**config) as client:
         yield client
         for stream in configured_catalog.streams:
@@ -83,20 +59,27 @@ def client_fixture(config, configured_catalog) -> SftpClient:
 
 
 def test_check_valid_config(config: Mapping):
-    outcome = DestinationSftpJson().check(AirbyteLogger(), config)
+    outcome = DestinationSftpJson().check(logging.getLogger("airbyte-destination"), config)
     assert outcome.status == Status.SUCCEEDED
 
 
 def test_check_invalid_config(config):
-    outcome = DestinationSftpJson().check(AirbyteLogger(), {**config, "destination_path": "/doesnotexist"})
+    outcome = DestinationSftpJson().check(logging.getLogger("airbyte-destination"), {**config, "destination_path": "/doesnotexist"})
     assert outcome.status == Status.FAILED
 
 
+#
+# Helpers
+#
+
+
 def _state(data: Dict[str, Any]) -> AirbyteStateMessage:
+    """Wraps state data in AirbyteStateMessage"""
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=data))
 
 
 def _record(stream: str, str_value: str, int_value: int) -> AirbyteRecordMessage:
+    """Wraps record data in AirbyteRecordMessage"""
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(
@@ -108,6 +91,7 @@ def _record(stream: str, str_value: str, int_value: int) -> AirbyteRecordMessage
 
 
 def _sort(messages: List[AirbyteRecordMessage]) -> List[AirbyteRecordMessage]:
+    """Sorts messages by stream name"""
     return sorted(messages, key=lambda x: x.record.stream)
 
 
