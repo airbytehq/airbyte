@@ -19,8 +19,13 @@ This page contains the setup guide and reference information for the Apple Searc
 4. Enter a name for your source.
 5. For **Org Id**, enter the Id of your organization (found in the Apple Search Ads UI).
 6. Enter the **Client ID** and the **Client Secret** from [Step 1](#step-1-set-up-apple-search-ads).
-7. For **Start Date** and **End Date**, enter the date in YYYY-MM-DD format. For DAILY reports, the Start Date can't be earlier than 90 days from today. If the End Date field is left blank, Airbyte will replicate data to today.
-8. Click **Set up source**.
+7. For **Start Date** and **End Date**, enter the date in YYYY-MM-DD format. For DAILY reports, the Start Date can't be
+   earlier than 90 days from today. If the End Date field is left blank, Airbyte will replicate data to today.
+8. When syncing large amounts of data over vast durations, you can customize **Exponential Backoff Factor** in order to
+   reduce the chance of synchronization failures in case of Apple's rate limit kicking in. 
+9. You can also decrease the **Lookback Window** in order to sync smaller amounts of data on each incremental sync, 
+   at the cost of missing late data attributions.
+10. Click **Set up source**.
 
 ## Supported sync modes
 
