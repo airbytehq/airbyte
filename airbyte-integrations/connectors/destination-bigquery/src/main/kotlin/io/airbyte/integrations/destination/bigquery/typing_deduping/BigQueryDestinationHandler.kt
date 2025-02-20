@@ -438,9 +438,9 @@ private val logger = KotlinLogging.logger {}
  * Will drop+recreate the old_final_table_5mb / new_final_table_5mb tables as needed.
  */
 fun main() {
-    val size = "5mb"
-    val runOldRawTablesFast = false
-    val runOldRawTablesSlow = false
+    val size = "50gb"
+    val runOldRawTablesFast = true
+    val runOldRawTablesSlow = true
     val runNewTableNaive = true
     val runNewTableOptimized = true
 
@@ -552,9 +552,9 @@ fun main() {
 
 fun getNewStyleCreateFinalTableQuery(size: String, optimized: Boolean): Sql {
     return Sql.separately(
-        "DROP TABLE `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_${size}`",
+        "DROP TABLE IF EXISTS `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_${size}`",
         """
-            CREATE OR REPLACE TABLE `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_5mb` (
+            CREATE OR REPLACE TABLE `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_${size}` (
               _airbyte_raw_id STRING NOT NULL,
               _airbyte_extracted_at TIMESTAMP NOT NULL,
               _airbyte_meta JSON NOT NULL,

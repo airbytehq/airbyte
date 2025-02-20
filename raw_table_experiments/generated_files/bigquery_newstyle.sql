@@ -1,6 +1,6 @@
 -- naive create table --------------------------------
-DROP TABLE `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_5mb`;
-CREATE OR REPLACE TABLE `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_5mb` (
+DROP TABLE IF EXISTS `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_50gb`;
+CREATE OR REPLACE TABLE `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_50gb` (
   _airbyte_raw_id STRING NOT NULL,
   _airbyte_extracted_at TIMESTAMP NOT NULL,
   _airbyte_meta JSON NOT NULL,
@@ -33,11 +33,11 @@ CLUSTER BY `primary_key`, `_airbyte_extracted_at`;
 
 
 -- "naive" dedup query -------------------------------
-MERGE `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_5mb` target_table
+MERGE `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_50gb` target_table
 USING (
   WITH new_records AS (
     SELECT *
-    FROM `dataline-integration-testing`.`no_raw_tables_experiment`.`new_input_table_5mb_part1`
+    FROM `dataline-integration-testing`.`no_raw_tables_experiment`.`new_input_table_50gb_part1`
   ), numbered_rows AS (
     SELECT *, row_number() OVER (
       PARTITION BY `primary_key` ORDER BY `cursor` DESC NULLS LAST, `_airbyte_extracted_at` DESC
@@ -142,8 +142,8 @@ WHEN NOT MATCHED THEN INSERT (
 
 
 -- optimized create table --------------------------------
-DROP TABLE `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_5mb`;
-CREATE OR REPLACE TABLE `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_5mb` (
+DROP TABLE IF EXISTS `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_50gb`;
+CREATE OR REPLACE TABLE `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_50gb` (
   _airbyte_raw_id STRING NOT NULL,
   _airbyte_extracted_at TIMESTAMP NOT NULL,
   _airbyte_meta JSON NOT NULL,
@@ -176,11 +176,11 @@ CLUSTER BY `primary_key`, `_airbyte_extracted_at`;
 
 
 -- "optimized" dedup query -------------------------------
-MERGE `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_5mb` target_table
+MERGE `dataline-integration-testing`.`no_raw_tables_experiment`.`new_final_table_50gb` target_table
 USING (
   WITH new_records AS (
     SELECT *
-    FROM `dataline-integration-testing`.`no_raw_tables_experiment`.`new_input_table_5mb_part1`
+    FROM `dataline-integration-testing`.`no_raw_tables_experiment`.`new_input_table_50gb_part1`
   ), numbered_rows AS (
     SELECT *, row_number() OVER (
       PARTITION BY `primary_key` ORDER BY `cursor` DESC NULLS LAST, `_airbyte_extracted_at` DESC
