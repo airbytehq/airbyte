@@ -60,6 +60,7 @@ However, at this moment and as indicated in the stream names, the connector only
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 0.3.3 | 2025-02-15 | [53920](https://github.com/airbytehq/airbyte/pull/53920) | Update dependencies |
 | 0.3.2 | 2025-02-14 | [53685](https://github.com/airbytehq/airbyte/pull/53685) | Fix granularity to daily |
 | 0.3.1 | 2025-02-08 | [53422](https://github.com/airbytehq/airbyte/pull/53422) | Update dependencies |
 | 0.3.0 | 2025-02-03 | [53136](https://github.com/airbytehq/airbyte/pull/53136) | Update API version to V5 |

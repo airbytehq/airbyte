@@ -219,6 +219,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------|
+| 2.6.5-rc.1 | 2025-02-18 | [53229](https://github.com/airbytehq/airbyte/pull/53229) | Upgrade to API v62.0 |
 | 2.6.4 | 2025-01-11 | [48635](https://github.com/airbytehq/airbyte/pull/48635) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 2.6.3 | 2024-11-05 | [46835](https://github.com/airbytehq/airbyte/pull/46835) | Update dependencies |
 | 2.6.2 | 2024-10-10 | [](https://github.com/airbytehq/airbyte/pull/) | Bump minimum CDK to 5.10.2 |
