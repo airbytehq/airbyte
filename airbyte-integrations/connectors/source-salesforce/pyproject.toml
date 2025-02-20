@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "2.6.4"
+version = "2.6.5-rc.1"
 name = "source-salesforce"
 description = "Source implementation for Salesforce."
 authors = [ "Airbyte <contact@airbyte.io>",]

@@ -504,13 +504,13 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "firebolt-sdk"
-version = "1.9.1"
+version = "1.10.0"
 description = "Python SDK for Firebolt"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "firebolt_sdk-1.9.1-py3-none-any.whl", hash = "sha256:54ed24b7b73f09af8885fa8dc4dc5784a632bd29068581fa68c1d6dff4eb0641"},
-    {file = "firebolt_sdk-1.9.1.tar.gz", hash = "sha256:df482c9f9fa5a5f9d416d4ab691f79a5c27b1a182c1e352c31e363ee6c8c4796"},
+    {file = "firebolt_sdk-1.10.0-py3-none-any.whl", hash = "sha256:19b18c669cbbb4cf3b6ff401460d2cd1c16c91d2a10004de36c9549f4260a896"},
+    {file = "firebolt_sdk-1.10.0.tar.gz", hash = "sha256:12d074b5d049c8067a3e6b41848081094431aafb2aade64d9b8dea1faff3cf30"},
 ]
 
 [package.dependencies]
@@ -1455,13 +1455,13 @@ files = [
 
 [[package]]
 name = "trio"
-version = "0.28.0"
+version = "0.29.0"
 description = "A friendly Python library for async concurrency and I/O"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "trio-0.28.0-py3-none-any.whl", hash = "sha256:56d58977acc1635735a96581ec70513cc781b8b6decd299c487d3be2a721cd94"},
-    {file = "trio-0.28.0.tar.gz", hash = "sha256:4e547896fe9e8a5658e54e4c7c5fa1db748cbbbaa7c965e7d40505b928c73c05"},
+    {file = "trio-0.29.0-py3-none-any.whl", hash = "sha256:d8c463f1a9cc776ff63e331aba44c125f423a5a13c684307e828d930e625ba66"},
+    {file = "trio-0.29.0.tar.gz", hash = "sha256:ea0d3967159fc130acb6939a0be0e558e364fee26b5deeecc893a6b08c361bdf"},
 ]
 
 [package.dependencies]
