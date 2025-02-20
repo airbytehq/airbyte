@@ -150,28 +150,4 @@ class AirbyteTypeToSqlTypeTest {
         assertEquals(Types.LONGVARCHAR, result)
     }
 
-    @Test
-    fun testToSqlTable() {
-        val primaryKey = "id"
-        val nullableColumn = "email"
-        val objectType =
-            ObjectType(
-                linkedMapOf(
-                    primaryKey to FieldType(IntegerType, false),
-                    "age" to FieldType(IntegerType, false),
-                    nullableColumn to FieldType(StringType, true),
-                ),
-            )
-        val primaryKeys = listOf(listOf(primaryKey))
-        val table = objectType.toSqlTable(primaryKeys = primaryKeys)
-
-        assertEquals(objectType.properties.size, table.columns.size)
-        objectType.properties.forEach { (name, type) ->
-            val column = table.columns.find { it.name == name }
-            assertNotNull(column)
-            assertEquals(converter.convert(type.type), column?.type)
-            assertEquals(primaryKey == name, column?.isPrimaryKey)
-            assertEquals(nullableColumn == name, column?.isNullable)
-        }
-    }
 }

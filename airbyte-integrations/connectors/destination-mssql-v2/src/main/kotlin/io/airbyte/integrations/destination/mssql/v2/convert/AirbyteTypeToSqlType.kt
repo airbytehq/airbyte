@@ -57,28 +57,3 @@ class AirbyteTypeToSqlType {
     }
 }
 
-/**
- * Extension function that converts an [ObjectType] into a [SqlTable] that can be used to define a
- * SQL table.
- *
- * @param primaryKeys The list of configured primary key properties that should be treated as
- * primary keys in the generated [SqlTable]
- * @return The [SqlTable] that represents the table to be mapped to the stream represented by the
- * [ObjectType].
- */
-fun ObjectType.toSqlTable(primaryKeys: List<List<String>>): SqlTable {
-    val identifierFieldNames = primaryKeys.flatten().toSet()
-    val sqlTypeConverter = AirbyteTypeToSqlType()
-    val columns =
-        this.properties.entries.map { (name, field) ->
-            val isPrimaryKey = identifierFieldNames.contains(name)
-            val isNullable = !isPrimaryKey && field.nullable
-            SqlColumn(
-                name = name,
-                type = sqlTypeConverter.convert(field.type),
-                isPrimaryKey = isPrimaryKey,
-                isNullable = isNullable
-            )
-        }
-    return SqlTable(columns = columns)
-}
