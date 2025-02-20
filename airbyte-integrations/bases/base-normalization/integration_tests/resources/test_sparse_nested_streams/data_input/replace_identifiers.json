@@ -1,0 +1,54 @@
+{
+  "bigquery": [
+    {
+      "sparse_nested_stream__y_obj_nest1_obj_nest2": "sparse_nested_stream_empty_obj_nest1_obj_nest2"
+    },
+    {
+      "sparse_nested_stream__y_arr_nest1_arr_nest2": "sparse_nested_stream_empty_arr_nest1_arr_nest2"
+    }
+  ],
+  "oracle": [],
+  "postgres": [],
+  "snowflake": [
+    {
+      "sparse_nested_stream__y_obj_nest1_obj_nest2": "SPARSE_NESTED_STREAM_EMPTY_OBJ_NEST1_OBJ_NEST2"
+    },
+    {
+      "sparse_nested_stream__y_arr_nest1_arr_nest2": "SPARSE_NESTED_STREAM_EMPTY_ARR_NEST1_ARR_NEST2"
+    },
+    {
+      "SYNC1_ROW_COUNTS": "sync1_row_counts"
+    },
+    {
+      "SYNC2_ROW_COUNTS": "sync2_row_counts"
+    },
+    {
+      "SYNC3_ROW_COUNTS": "sync3_row_counts"
+    }
+  ],
+  "redshift": [
+    {
+      "sparse_nested_stream__y_obj_nest1_obj_nest2": "sparse_nested_stream_empty_obj_nest1_obj_nest2"
+    },
+    {
+      "sparse_nested_stream__y_arr_nest1_arr_nest2": "sparse_nested_stream_empty_arr_nest1_arr_nest2"
+    }
+  ],
+  "mysql": [],
+  "mssql": [
+    {
+      "sparse_nested_stream__y_obj_nest1_obj_nest2": "sparse_nested_stream___y_obj_nest1_obj_nest2"
+    },
+    {
+      "sparse_nested_stream__y_arr_nest1_arr_nest2": "sparse_nested_stream___y_arr_nest1_arr_nest2"
+    }
+  ],
+  "tidb": [
+    {
+      "sparse_nested_stream__y_obj_nest1_obj_nest2": "sparse_nested_stream___y_obj_nest1_obj_nest2"
+    },
+    {
+      "sparse_nested_stream__y_arr_nest1_arr_nest2": "sparse_nested_stream___y_arr_nest1_arr_nest2"
+    }
+  ]
+}

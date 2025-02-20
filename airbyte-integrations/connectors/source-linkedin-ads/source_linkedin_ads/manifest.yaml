@@ -2686,6 +2686,15 @@ schemas:
           type:
             - "null"
             - object
+          properties:
+            name:
+              type:
+                - "null"
+                - string
+            value:
+              type:
+                - "null"
+                - string
       reviewInfo:
         description: |
           Latest information about the content review of the Lead Form.
@@ -2755,6 +2764,16 @@ schemas:
         type:
           - "null"
           - object
+        properties:
+          sponsoredLeadMetadata:
+            type:
+              - "null"
+              - object
+            properties:
+              campaign:
+                type:
+                  - "null"
+                  - string
       leadMetadataInfo:
         description: Record containing a subset of fields resolved on demand from the lead metadata references (e.g. campaign name , campaign type). If there is no value, an empty object is returned.
         type:
@@ -2765,6 +2784,11 @@ schemas:
         type:
           - "null"
           - object
+        properties:
+          associatedCreative:
+            type:
+              - "null"
+              - string
       associatedEntityInfo:
         description: Record containing useful fields (creative status, ugc reference etc.) resolved on demand from the associated entity object. If there is no value, an empty object is returned.
         type:
@@ -2785,6 +2809,51 @@ schemas:
         type:
           - "null"
           - object
+        properties:
+          answers:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                questionId:
+                  type:
+                    - "null"
+                    - integer
+                answerDetails:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    textQuestionAnswer:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        answer:
+                          type:
+                            - "null"
+                            - string
+                    multipleChoiceAnswer:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        options:
+                          type:
+                            - "null"
+                            - array
+                          items:
+                            type:
+                              - "null"
+                              - integer
+          consentResponses:
+            type:
+              - "null"
+              - array
       testLead:
         description: Whether this is a test lead created for testing purposes.
         type:

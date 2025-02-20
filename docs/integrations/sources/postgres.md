@@ -1,9 +1,10 @@
 # Postgres
+
 <HideInUI>
 
 Airbyte's certified Postgres connector offers the following features:
 
-- Replicate data from tables, views and materilized views. Other data objects won't be replicated to the destination like indexes, permissions.
+- Replicate data from tables, views and materialized views. Other data objects won't be replicated to the destination like indexes, permissions.
 - Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) and replication using the [xmin system column](#xmin).
 - All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
 - Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
@@ -27,7 +28,8 @@ Here is an outline of the minimum required steps to configure a Postgres connect
 Once this is complete, you will be able to select Postgres as a source for replicating data.
 
 <FieldAnchor field="username, password">
-#### Step 1: Create a dedicated read-only Postgres user
+
+### Step 1: Create a dedicated read-only Postgres user
 
 These steps create a dedicated read-only user for replicating data. Alternatively, you can use an existing Postgres user in your database.
 
@@ -46,7 +48,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <user
 ```
 </FieldAnchor>
 
-#### Step 2: Create a new Postgres source in Airbyte UI
+### Step 2: Create a new Postgres source in Airbyte UI
 
 From your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account, select `Sources` from the left navigation bar, search for `Postgres`, then create a new Postgres source.
 
@@ -64,7 +66,7 @@ To fill out the required information:
 
 <!-- env:cloud -->
 
-#### Step 3: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs.
+### Step 3: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs.
 
 If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
 our [Airbyte Security docs](../../operating-airbyte/security#network-security-1).
@@ -73,9 +75,7 @@ Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting t
 
 <!-- /env:cloud -->
 
-## Advanced Configuration
-
-### Setup using CDC
+## Advanced Configuration using CDC
 
 Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin:
 
@@ -96,13 +96,13 @@ These are the additional steps required (after following the [quick start](#quic
 4. Create publication and replication identities for each Postgres table
 5. Enable CDC replication in the Airbyte UI
 
-#### Step 1: Prepopulate your Postgres source configuration
+### Step 1: Prepopulate your Postgres source configuration
 
 We recommend following the steps in the [quick start](#quick-start) section to confirm that Airbyte can connect to your Postgres database prior to configuring CDC settings.
 
 For CDC, you must connect to primary/master databases. Pointing the connector configuration to replica database hosts for CDC will lead to failures.
 
-#### Step 2: Provide additional permissions to read-only user
+### Step 2: Provide additional permissions to read-only user
 
 To configure CDC for the Postgres source connector, grant `REPLICATION` permissions to the user created in [step 1 of the quick start](#step-1-create-a-dedicated-read-only-postgres-user):
 
@@ -110,31 +110,41 @@ To configure CDC for the Postgres source connector, grant `REPLICATION` permissi
 ALTER USER <user_name> REPLICATION;
 ```
 
-#### Step 3: Enable logical replication on your Postgres database
+### Step 3: Enable logical replication on your Postgres database
 
-To enable logical replication on bare metal, VMs (EC2/GCE/etc), or Docker, configure the following parameters in the <a href="https://www.postgresql.org/docs/current/config-setting.html">postgresql.conf file</a> for your Postgres database:
+To enable logical replication, follow these steps based on your deployment environment.
+
+#### Bare Metal, VMs, and Docker
+
+To enable logical replication on bare metal, VMs (EC2/GCE/etc), or Docker, configure the following parameters in the [postgresql.conf file](https://www.postgresql.org/docs/current/config-setting.html) for your Postgres database.
 
 | Parameter             | Description                                                                    | Set value to                                                                                                                         |
 | --------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| wal_level             | Type of coding used within the Postgres write-ahead log                        | `logical `                                                                                                                           |
+| wal_level             | Type of coding used within the Postgres write-ahead log                        | `logical`                                                                                                                           |
 | max_wal_senders       | The maximum number of processes used for handling WAL changes                  | `min: 1`                                                                                                                             |
 | max_replication_slots | The maximum number of replication slots that are allowed to stream WAL changes | `1` (if Airbyte is the only service reading subscribing to WAL changes. More than 1 if other services are also reading from the WAL) |
 
-To enable logical replication on AWS Postgres RDS or Aurora:
+#### AWS Postgres RDS or Aurora
 
-- Go to the Configuration tab for your DB cluster.
-- Find your cluster parameter group. Either edit the parameters for this group or create a copy of this parameter group to edit. If you create a copy, change your cluster's parameter group before restarting.
-- Within the parameter group page, search for `rds.logical_replication`. Select this row and click Edit parameters. Set this value to 1.
-- Wait for a maintenance window to automatically restart the instance or restart it manually.
+1. Go to the Configuration tab for your DB cluster.
+2. Find your cluster parameter group. Either edit the parameters for this group or create a copy of this parameter group to edit. If you create a  copy, change your cluster's parameter group before restarting.
+3. Within the parameter group page, search for `rds.logical_replication`. Select this row and click Edit parameters. Set this value to `1`.
+4. Wait for a maintenance window to automatically restart the instance or restart it manually.
 
-To enable logical replication on Azure Database for Postgres, change the replication mode of your Postgres DB on Azure to `logical` using the replication menu of your PostgreSQL instance in the Azure Portal. Alternatively, use the Azure CLI to run the following command:
+:::note 
+AWS Aurora implements a [CDC caching layer](https://aws.amazon.com/blogs/database/achieve-up-to-17x-lower-replication-lag-with-the-new-write-through-cache-for-aurora-postgresql/) that is incompatible with Airbyte's CDC implementation. To use Airbyte with AWS Aurora, disable the CDC caching layer. Disable CDC caching by setting the [`rds.logical_wal_cache`](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Replication.Logical.html) parameter to `0` in the AWS Aurora parameter group.
+:::
+
+#### Azure Database for Postgres
+
+Change the replication mode of your Postgres DB on Azure to `logical` using the replication menu of your PostgreSQL instance in the Azure Portal. Alternatively, use the Azure CLI to run the following command:
 
 ```
 az postgres server configuration set --resource-group group --server-name server --name azure.replication_support --value logical
 az postgres server restart --resource-group group --name server
 ```
+### Step 4: Create a replication slot on your Postgres database
 
-#### Step 4: Create a replication slot on your Postgres database
 <FieldAnchor field="replication_method.replication_slot">
 Airbyte requires a replication slot configured only for its use. Only one source should be configured that uses this replication slot.
 
@@ -147,7 +157,8 @@ SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
 The output of this command will include the name of the replication slot to fill into the Airbyte source setup page.
 </FieldAnchor>
 
-#### Step 5: Create publication and replication identities for each Postgres table
+### Step 5: Create publication and replication identities for each Postgres table
+
 <FieldAnchor field="replication_method.publication">
 For each table you want to replicate with CDC, follow the steps below:
 
@@ -173,7 +184,7 @@ The publication name is customizable. Refer to the [Postgres docs](https://www.p
 The Airbyte UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not be replicated even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
 :::
 
-#### Step 6: Enable CDC replication in Airbyte UI
+### Step 6: Enable CDC replication in Airbyte UI
 
 In your Postgres source, change the update method to `Read Changes using Change Data Capture (CDC)`, and enter the replication slot and publication you just created.
 
@@ -182,7 +193,8 @@ In your Postgres source, change the update method to `Read Changes using Change 
 The Postgres source currently offers 3 methods of replicating updates to your destination: CDC, xmin and standard (with a user defined cursor). Both CDC and xmin are the **most reliable methods** of updating your data.
 
 <FieldAnchor field="replication_method[CDC]">
-#### CDC
+
+### CDC
 
 Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/). We recommend configuring your Postgres source with CDC when:
 
@@ -194,7 +206,8 @@ If your goal is to maintain a snapshot of your table in the destination but the 
 </FieldAnchor>
 
 <FieldAnchor field="replication_method[Xmin]">
-#### Xmin
+
+### Xmin
 
 Xmin replication is the new cursor-less replication method for Postgres. Cursorless syncs enable syncing new or updated rows without explicitly choosing a cursor field. The xmin system column which (available in all Postgres databases) is used to track inserts and updates to your source data.
 
@@ -209,6 +222,7 @@ This is a good solution if:
 ## Connecting with SSL or SSH Tunneling
 
 ### SSL Modes
+
 <FieldAnchor field="ssl_mode">
 Airbyte Cloud uses SSL by default. You are not permitted to `disable` SSL while using Airbyte Cloud. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.
 
@@ -261,6 +275,7 @@ ssh-keygen -t rsa -m PEM -f myuser_rsa
 The command produces the private key in PEM format and the public key remains in the standard format used by the `authorized_keys` file on your bastion server. Add the public key to your bastion host to the user you want to use with Airbyte. The private key is provided via copy-and-paste to the Airbyte connector configuration screen to allow it to log into the bastion server.
 
 <HideInUI>
+
 ## Limitations & Troubleshooting
 
 To see connector limitations, or troubleshoot your Postgres connector, see more [in our Postgres troubleshooting guide](/integrations/sources/postgres/postgres-troubleshooting).
@@ -328,7 +343,8 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                    |
-| ------- | ---------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|---------| ---------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.6.29  | 2025-02-13 | [53649](https://github.com/airbytehq/airbyte/pull/53649) | Fix issue that column default value did not get converted |
 | 3.6.28  | 2024-12-23 | [50870](https://github.com/airbytehq/airbyte/pull/50870)   | Use airbyte/java-connector-base:2.0.0                                                                                                                                      |
 | 3.6.27  | 2024-12-23 | [50410](https://github.com/airbytehq/airbyte/pull/50410)   | Use a non root base image.                                                                                                                                                 |
 | 3.6.26  | 2024-12-20 | [48495](https://github.com/airbytehq/airbyte/pull/48495)   | Increase MAX_FIRST_RECORD_WAIT_TIME and use Debezium 3.0.1                                                                                                                 |
