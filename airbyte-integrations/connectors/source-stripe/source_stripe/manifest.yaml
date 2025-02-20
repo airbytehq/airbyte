@@ -64,7 +64,6 @@ definitions:
 
   base_incremental_sync:
     type: DatetimeBasedCursor
-    is_client_side_incremental: true
     cursor_datetime_formats:
       - "%s"
     datetime_format: "%s"
