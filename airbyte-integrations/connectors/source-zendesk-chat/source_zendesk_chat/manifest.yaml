@@ -58,10 +58,10 @@ definitions:
       type: RequestOption
       field_name: limit
     pagination_strategy:
-      type: CustomPaginationStrategy
-      class_name: source_zendesk_chat.components.time_offset_pagination.ZendeskChatTimeOffsetIncrementPaginationStrategy
-      time_field_name: end_time
+      type: CursorPagination
       page_size: 1000
+      cursor_value: '{{ response.get("end_time", {}) }}'
+      stop_condition: "{{ last_page_size < 1_000 }}"
 
   # REQUESTERS
   requester:
