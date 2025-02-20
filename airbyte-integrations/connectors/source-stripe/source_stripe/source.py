@@ -46,7 +46,6 @@ STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
 
 
 class SourceStripe(YamlDeclarativeSource):
-    message_repository = InMemoryMessageRepository(entrypoint_logger.level)
     _SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION = {
         CreatedCursorIncrementalStripeStream: ("created[gte]", "created[lte]"),
     }

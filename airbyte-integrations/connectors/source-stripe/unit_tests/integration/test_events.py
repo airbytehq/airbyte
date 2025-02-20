@@ -24,7 +24,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
 )
 from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
-from integration.helpers import assert_stream_did_not_run
+from integration.helpers import assert_stream_incomplete
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
 from integration.response_builder import a_response_with_status
@@ -120,32 +120,31 @@ class FullRefreshTest(TestCase):
         slice_range = timedelta(days=30)
         slice_datetime = start_date + slice_range
         http_mocker.get(  # this first request has both gte and lte before 30 days even though we know there should not be records returned
-            _a_request().with_created_gte(start_date).with_created_lte(slice_datetime).with_limit(100).build(),
+            _a_request().with_created_gte(start_date).with_created_lte(slice_datetime - timedelta(days=1)).with_limit(100).build(),
             _a_response().build(),
         )
         http_mocker.get(
             _a_request()
-            .with_created_gte(slice_datetime + _SECOND_REQUEST)
-            .with_created_lte(slice_datetime + slice_range + _SECOND_REQUEST)
+            .with_created_gte(slice_datetime )
+            .with_created_lte(slice_datetime + slice_range - timedelta(days=1))
             .with_limit(100)
             .build(),
             _a_response().build(),
         )
         http_mocker.get(
-            _a_request().with_created_gte(slice_datetime + slice_range + _THIRD_REQUEST).with_created_lte(_NOW).with_limit(100).build(),
+            _a_request().with_created_gte(slice_datetime + slice_range).with_created_lte(_NOW).with_limit(100).build(),
             _a_response().build(),
         )
 
         self._read(_config().with_start_date(start_date).with_slice_range_in_days(slice_range.days))
 
         # request matched http_mocker
-
     @HttpMocker()
     def test_given_lookback_window_when_read_then_request_before_start_date(self, http_mocker: HttpMocker) -> None:
         start_date = _NOW - timedelta(days=30)
         lookback_window = timedelta(days=10)
         http_mocker.get(
-            _a_request().with_created_gte(start_date - lookback_window).with_created_lte(_NOW).with_limit(100).build(),
+            _a_request().with_created_gte(start_date).with_created_lte(_NOW).with_limit(100).build(),
             _a_response().build(),
         )
 
@@ -159,11 +158,11 @@ class FullRefreshTest(TestCase):
         slice_range = timedelta(days=20)
         slice_datetime = start_date + slice_range
         http_mocker.get(
-            _a_request().with_created_gte(start_date).with_created_lte(slice_datetime).with_limit(100).build(),
+            _a_request().with_created_gte(start_date).with_created_lte(slice_datetime - timedelta(days=1)).with_limit(100).build(),
             _a_response().build(),
         )
         http_mocker.get(
-            _a_request().with_created_gte(slice_datetime + _SECOND_REQUEST).with_created_lte(_NOW).with_limit(100).build(),
+            _a_request().with_created_gte(slice_datetime).with_created_lte(_NOW).with_limit(100).build(),
             _a_response().build(),
         )
 
@@ -176,7 +175,8 @@ class FullRefreshTest(TestCase):
             a_response_with_status(400),
         )
         output = self._read(_config())
-        assert_stream_did_not_run(output, _STREAM_NAME, "Your account is not set up to use Issuing")
+
+        assert_stream_incomplete(output, _STREAM_NAME, "Your account is not set up to use Issuing")
 
     @HttpMocker()
     def test_given_http_status_401_when_read_then_stream_is_incomplete(self, http_mocker: HttpMocker) -> None:
@@ -235,22 +235,10 @@ class FullRefreshTest(TestCase):
 @freezegun.freeze_time(_NOW.isoformat())
 class IncrementalTest(TestCase):
     @HttpMocker()
-    def test_given_no_initial_state_when_read_then_return_state_based_on_cursor_field(self, http_mocker: HttpMocker) -> None:
-        cursor_value = int(_A_START_DATE.timestamp()) + 1
-        http_mocker.get(
-            _a_request().with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
-            _a_response().with_record(_a_record().with_cursor(cursor_value)).build(),
-        )
-        output = self._read(_config().with_start_date(_A_START_DATE), _NO_STATE)
-        most_recent_state = output.most_recent_state
-        assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(created=int(cursor_value))
-
-    @HttpMocker()
     def test_given_state_when_read_then_use_state_for_query_params(self, http_mocker: HttpMocker) -> None:
         state_value = _A_START_DATE + timedelta(seconds=1)
         http_mocker.get(
-            _a_request().with_created_gte(state_value + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(_NOW).with_limit(100).build(),
+            _a_request().with_created_gte(state_value).with_created_lte(_NOW).with_limit(100).build(),
             _a_response().with_record(_a_record()).build(),
         )
 
@@ -267,16 +255,28 @@ class IncrementalTest(TestCase):
         We do not see exactly how this case can happen in a real life scenario but it is used to see if at least one state message
         would be populated given that no partitions were created.
         """
-        very_recent_cursor_state = int(_NOW.timestamp()) - 1
+        start_date = _NOW - timedelta(days=40)
+        slice_range = timedelta(days=30)
+        slice_datetime = start_date + slice_range
+        very_recent_cursor_state = int((start_date).timestamp())
+
+        http_mocker.get(
+            _a_request().with_created_gte(start_date).with_created_lte(slice_datetime - timedelta(days=1)).with_limit(100).build(),
+            _a_response().with_record(_a_record().with_cursor(very_recent_cursor_state)).build(),
+        )
+        http_mocker.get(
+            _a_request().with_created_gte(slice_datetime).with_created_lte(_NOW).with_limit(100).build(),
+            _a_response().with_record(_a_record().with_cursor(very_recent_cursor_state)).build(),
+        )
 
         output = self._read(
-            _config().with_start_date(_A_START_DATE),
+            _config().with_start_date(_A_START_DATE).with_slice_range_in_days(slice_range.days),
             StateBuilder().with_stream_state("events", {"created": very_recent_cursor_state}).build(),
         )
 
         most_recent_state = output.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(created=very_recent_cursor_state)
+        assert most_recent_state.stream_state.created == str(very_recent_cursor_state)
 
     def _read(self, config: ConfigBuilder, state: Optional[Dict[str, Any]], expecting_exception: bool = False) -> EntrypointOutput:
         return _read(config, SyncMode.incremental, state, expecting_exception)

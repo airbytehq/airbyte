@@ -34,9 +34,11 @@ _STREAM_NAME = "persons"
 _ACCOUNT_ID = "acct_1G9HZLIEn49ers"
 _CLIENT_SECRET = "ConfigBuilder default client secret"
 _NOW = datetime.now(timezone.utc)
+_START_DATE = "2020-05-01T00:00:00Z"
 _CONFIG = {
     "client_secret": _CLIENT_SECRET,
     "account_id": _ACCOUNT_ID,
+    "start_date": _START_DATE
 }
 _NO_STATE = StateBuilder().build()
 _AVOIDING_INCLUSIVE_BOUNDARIES = timedelta(seconds=1)
@@ -283,7 +285,7 @@ class PersonsTest(TestCase):
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
         most_recent_state = actual_messages.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(updated=int(state_datetime.timestamp()))
+        assert most_recent_state.stream_state.updated == int(state_datetime.timestamp())
         assert len(actual_messages.records) == 1
 
     @HttpMocker()
@@ -319,8 +321,8 @@ class PersonsTest(TestCase):
 
     @HttpMocker()
     def test_incremental_with_newer_start_date(self, http_mocker):
-        start_datetime = _NOW - timedelta(days=7)
-        state_datetime = _NOW - timedelta(days=15)
+        start_datetime = _NOW - timedelta(days=2)
+        state_datetime = _NOW - timedelta(days=5)
         config = _create_config().with_start_date(start_datetime).build()
 
         http_mocker.get(
@@ -345,7 +347,7 @@ class PersonsTest(TestCase):
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
         most_recent_state = actual_messages.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(updated=int(state_datetime.timestamp()))
+        assert most_recent_state.stream_state.updated == int(state_datetime.timestamp())
         assert len(actual_messages.records) == 1
 
     @HttpMocker()
@@ -420,7 +422,7 @@ class PersonsTest(TestCase):
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
         most_recent_state = actual_messages.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name="persons")
-        assert most_recent_state.stream_state == AirbyteStateBlob(updated=int(state_datetime.timestamp()))
+        assert most_recent_state.stream_state.updated == int(state_datetime.timestamp())
         assert len(actual_messages.records) == 1
 
     @HttpMocker()

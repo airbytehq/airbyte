@@ -1,4 +1,4 @@
-version: 6.0.0
+version: 6.33.0
 
 type: DeclarativeSource
 
@@ -68,9 +68,9 @@ definitions:
     cursor_datetime_formats:
       - "%s"
     datetime_format: "%s"
-    step: P365D
+    step: P{{ config.get('slice_range', 365) }}D
     cursor_granularity: P1D
-    lookback_window: P{{ config.get('lookback_window', 0) }}D
+    lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     start_datetime:
       type: MinMaxDatetime
       datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
@@ -211,3 +211,22 @@ spec:
           The number of API calls per second that you allow connector to make. This value can not be bigger than real
           API call rate limit (https://stripe.com/docs/rate-limits). If not specified the default maximum is 25 and 100
           calls per second for test and production tokens respectively.
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 20
+          interval: PT1S
+      matchers:
+        - method: GET
+          url_path_pattern: "^/v1/files($|/)" # matches '/files'
+        - method: GET
+          url_path_pattern: "^/v1/file_links($|/)" # matches '/file_links'
+
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 25
+          interval: PT1S
+      matchers: []
