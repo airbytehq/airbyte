@@ -17,7 +17,7 @@ include = "source_klaviyo"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte_cdk = "^6"
+airbyte_cdk = "^6"  # TODO: Bump the CDK version after this merged: https://github.com/airbytehq/airbyte-python-cdk/pull/360
 pendulum = "<3.0.0"
 
 [tool.poetry.scripts]
