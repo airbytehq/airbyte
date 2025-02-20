@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.s3_data_lake
+package io.airbyte.cdk.load.data.icerberg.parquet
 
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
@@ -19,7 +19,7 @@ import java.time.ZoneOffset
  * Iceberg doesn't have a TimeWithTimezone type. So map expectedRecords' TimeWithTimezone to
  * TimeWithoutTimezone.
  */
-object S3DataLakeExpectedRecordMapper : ExpectedRecordMapper {
+object IcebergExpectedRecordMapper : ExpectedRecordMapper {
     override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord {
         val mappedData = mapTemporalTypesToUtc(expectedRecord.data)
         return expectedRecord.copy(data = mappedData as ObjectValue)
