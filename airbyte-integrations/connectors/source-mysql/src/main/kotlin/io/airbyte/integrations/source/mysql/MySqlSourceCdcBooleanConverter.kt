@@ -9,27 +9,27 @@ import io.airbyte.cdk.read.cdc.NoConversion
 import io.airbyte.cdk.read.cdc.NullFallThrough
 import io.airbyte.cdk.read.cdc.PartialConverter
 import io.airbyte.cdk.read.cdc.RelationalColumnCustomConverter
+import io.debezium.spi.converter.RelationalColumn
 import org.apache.kafka.connect.data.SchemaBuilder
 
 class MySqlSourceCdcBooleanConverter : RelationalColumnCustomConverter {
 
     override val debeziumPropertiesKey: String = "boolean"
-    override val handlers: List<RelationalColumnCustomConverter.Handler> = listOf(tinyint1Handler)
+    override val handlers: List<RelationalColumnCustomConverter.Handler> = listOf(TinyInt1Handler)
 
-    companion object {
-        val tinyint1Handler =
-            RelationalColumnCustomConverter.Handler(
-                predicate = {
-                    it.typeName().equals("TINYINT", ignoreCase = true) &&
-                        it.length().isPresent &&
-                        it.length().asInt == 1
-                },
-                outputSchema = SchemaBuilder.bool(),
-                partialConverters =
-                    listOf(
-                        NullFallThrough,
-                        PartialConverter { if (it is Number) Converted(it != 0) else NoConversion }
-                    )
+    data object TinyInt1Handler : RelationalColumnCustomConverter.Handler {
+
+        override fun matches(column: RelationalColumn): Boolean =
+            column.typeName().equals("TINYINT", ignoreCase = true) &&
+                column.length().isPresent &&
+                column.length().asInt == 1
+
+        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.bool()
+
+        override val partialConverters: List<PartialConverter> =
+            listOf(
+                NullFallThrough,
+                PartialConverter { if (it is Number) Converted(it != 0) else NoConversion }
             )
     }
 }
