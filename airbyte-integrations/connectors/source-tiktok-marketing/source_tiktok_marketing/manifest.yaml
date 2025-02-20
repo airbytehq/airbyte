@@ -378,13 +378,13 @@ definitions:
         dimensions: '{{ parameters["dimensions"] | string }}'
         metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency", "video_play_actions", "video_watched_2s", "video_watched_6s", "average_video_play", "average_video_play_per_user", "video_views_p25", "video_views_p50", "video_views_p75", "video_views_p100", "profile_visits", "likes", "comments", "shares", "follows", "clicks_on_music_disc", "real_time_app_install", "real_time_app_install_cost", "app_install"]) | string }}'
         start_date: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%d %H:%M:%S') }}"
-        end_date: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%d %H:%M:%S') }}"
+        end_date: "{{ format_datetime(stream_interval['end_time'], '%Y-%m-%d', '%Y-%m-%d %H:%M:%S') }}"
         filtering: '{{ parameters["filtering"] | string if parameters.get("filtering") and config.get("include_deleted", False)}}'
       authenticator:
         $ref: "#/definitions/authenticator"
       request_body_json: {}
     record_selector:
-        $ref: "#/definitions/record_selector"
+      $ref: "#/definitions/record_selector"
     paginator:
       $ref: "#/definitions/paginator_page_increment"
       pagination_strategy:
@@ -429,7 +429,7 @@ definitions:
       datetime_format: "%Y-%m-%d %H:%M:%S"
     end_datetime:
       type: MinMaxDatetime
-      datetime: "{{ format_datetime(config.get('end_date', today_utc()), '%Y-%m-%d %H:%M:%S', '%Y-%m-%d') }}"
+      datetime: "{{ format_datetime((str_to_datetime(config.get('end_date')) if config.get('end_date') else now_utc() + duration('P1D')), '%Y-%m-%d %H:%M:%S') }}"
       datetime_format: "%Y-%m-%d %H:%M:%S"
 
   base_report_daily:
@@ -444,13 +444,40 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/report_daily_incremental_sync"
 
+  base_report_hourly_retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/requester"
+      request_parameters:
+        service_type: "AUCTION"
+        report_type: "BASIC"
+        data_level: '{{ parameters["data_level"] }}'
+        dimensions: '{{ parameters["dimensions"] | string }}'
+        metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency", "video_play_actions", "video_watched_2s", "video_watched_6s", "average_video_play", "average_video_play_per_user", "video_views_p25", "video_views_p50", "video_views_p75", "video_views_p100", "profile_visits", "likes", "comments", "shares", "follows", "clicks_on_music_disc", "real_time_app_install", "real_time_app_install_cost", "app_install"]) | string }}'
+        start_date: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%d %H:%M:%S') }}"
+        end_date: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%d %H:%M:%S') }}"
+        filtering: '{{ parameters["filtering"] | string if parameters.get("filtering") and config.get("include_deleted", False)}}'
+      authenticator:
+        $ref: "#/definitions/authenticator"
+      request_body_json: {}
+    record_selector:
+      $ref: "#/definitions/record_selector_for_hourly_reports_streams"
+    paginator:
+      $ref: "#/definitions/paginator_page_increment"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 1000
+        start_from_page: 1
+    partition_router:
+      $ref: "#/definitions/single_id_partition_router"
+
   base_report_hourly:
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/schemas/base_report"
     retriever:
-      $ref: "#/definitions/base_report_retriever"
+      $ref: "#/definitions/base_report_hourly_retriever"
       record_selector:
         $ref: "#/definitions/record_selector_for_hourly_reports_streams"
     incremental_sync:
@@ -687,7 +714,7 @@ definitions:
         $ref: "#/definitions/authenticator"
       request_body_json: {}
     record_selector:
-        $ref: "#/definitions/record_selector"
+      $ref: "#/definitions/record_selector"
     paginator:
       $ref: "#/definitions/paginator_page_increment"
       pagination_strategy:
