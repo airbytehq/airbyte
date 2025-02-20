@@ -211,7 +211,7 @@ definitions:
               "ASCENDING" } ] }
             timeZone: UTC
             startTime: "{{ stream_slice.start_time }}"
-            granularity: "{{ parameters.granularity }}"
+            granularity: DAILY
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -292,7 +292,7 @@ definitions:
               "ASCENDING" } ] }
             timeZone: UTC
             startTime: "{{ stream_slice.start_time }}"
-            granularity: "{{ parameters.granularity }}"
+            granularity: DAILY
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -381,7 +381,7 @@ definitions:
               "ASCENDING" } ] }
             timeZone: UTC
             startTime: "{{ stream_slice.start_time }}"
-            granularity: "{{ parameters.granularity }}"
+            granularity: DAILY
           error_handler:
             type: DefaultErrorHandler
             response_filters:

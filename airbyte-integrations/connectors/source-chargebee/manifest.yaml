@@ -558,12 +558,6 @@ definitions:
               - list
               - "*"
               - gift
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= ( stream_state.get('prior_state',
-              {}).get('updated_at', 0) if stream_state else
-              stream_slice.get('prior_state', {}).get('updated_at', 0) ) }}
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -580,9 +574,16 @@ definitions:
             cursor_value: "{{ response.get('next_offset')|tojson() }}"
             stop_condition: "{{ not response.next_offset }}"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
+        type: DatetimeBasedCursor
         cursor_field: updated_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ format_datetime(config[''start_date''], ''%s'') }}'
+          datetime_format: '%s'
+        datetime_format: '%s'
+        cursor_datetime_formats:
+          - '%s'
+        is_client_side_incremental: true
       transformations:
         - type: CustomTransformation
           class_name: source_declarative_manifest.components.CustomFieldTransformation
@@ -1439,12 +1440,6 @@ definitions:
               - list
               - "*"
               - unbilled_charge
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= ( stream_state.get('prior_state',
-              {}).get('updated_at', 0) if stream_state else
-              stream_slice.get('prior_state', {}).get('updated_at', 0) ) }}
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -1461,9 +1456,16 @@ definitions:
             cursor_value: "{{ response.get('next_offset')|tojson() }}"
             stop_condition: "{{ not response.next_offset }}"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
+        type: DatetimeBasedCursor
         cursor_field: updated_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ format_datetime(config[''start_date''], ''%s'') }}'
+          datetime_format: '%s'
+        datetime_format: '%s'
+        cursor_datetime_formats:
+          - '%s'
+        is_client_side_incremental: true
       transformations:
         - type: CustomTransformation
           class_name: source_declarative_manifest.components.CustomFieldTransformation
@@ -1720,12 +1722,6 @@ definitions:
               - list
               - "*"
               - site_migration_detail
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['migrated_at'] >= ( stream_state.get('prior_state',
-              {}).get('migrated_at', 0) if stream_state else
-              stream_slice.get('prior_state', {}).get('migrated_at', 0) ) }}
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -1742,9 +1738,16 @@ definitions:
             cursor_value: "{{ response.get('next_offset')|tojson() }}"
             stop_condition: "{{ not response.next_offset }}"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
+        type: DatetimeBasedCursor
         cursor_field: migrated_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ format_datetime(config[''start_date''], ''%s'') }}'
+          datetime_format: '%s'
+        datetime_format: '%s'
+        cursor_datetime_formats:
+          - '%s'
+        is_client_side_incremental: true
       transformations:
         - type: CustomTransformation
           class_name: source_declarative_manifest.components.CustomFieldTransformation
