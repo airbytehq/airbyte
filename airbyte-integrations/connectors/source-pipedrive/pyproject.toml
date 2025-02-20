@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "2.2.23"
+version = "2.3.7"
 name = "source-pipedrive"
 description = "Source implementation for Pipedrive."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,8 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_pipedrive"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+python = "^3.10,<3.12"
+airbyte-cdk = "^6"
 
 [tool.poetry.scripts]
 source-pipedrive = "source_pipedrive.run:run"
@@ -25,3 +25,11 @@ source-pipedrive = "source_pipedrive.run:run"
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.2"
 pytest-mock = "^3.6.1"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

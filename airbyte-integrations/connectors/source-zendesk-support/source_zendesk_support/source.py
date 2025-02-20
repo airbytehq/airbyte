@@ -2,15 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 import base64
 import logging
 from datetime import datetime
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
-from airbyte_cdk.models import SyncMode
+
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from source_zendesk_support.streams import DATETIME_FORMAT, ZendeskConfigException
@@ -26,8 +27,10 @@ from .streams import (
     PostVotes,
     TicketMetrics,
     Tickets,
+    UserIdentities,
     UserSettingsStream,
 )
+
 
 logger = logging.getLogger("airbyte")
 
@@ -43,8 +46,8 @@ class BasicApiTokenAuthenticator(TokenAuthenticator):
 
 
 class SourceZendeskSupport(YamlDeclarativeSource):
-    def __init__(self):
-        super().__init__(**{"path_to_yaml": "manifest.yaml"})
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
     @classmethod
     def get_default_start_date(cls) -> str:
@@ -63,11 +66,6 @@ class SourceZendeskSupport(YamlDeclarativeSource):
 
     @classmethod
     def get_authenticator(cls, config: Mapping[str, Any]) -> [TokenAuthenticator, BasicApiTokenAuthenticator]:
-        # old authentication flow support
-        auth_old = config.get("auth_method")
-        if auth_old:
-            if auth_old.get("auth_method") == "api_token":
-                return BasicApiTokenAuthenticator(config["auth_method"]["email"], config["auth_method"]["api_token"])
         # new authentication flow
         auth = config.get("credentials")
         if auth:
@@ -88,16 +86,16 @@ class SourceZendeskSupport(YamlDeclarativeSource):
         """
         auth = self.get_authenticator(config)
         try:
-            datetime.strptime(config["start_date"], DATETIME_FORMAT)
-            settings = UserSettingsStream(config["subdomain"], authenticator=auth, start_date=None).get_settings()
+            start_date = datetime.strptime(config["start_date"], DATETIME_FORMAT) if config["start_date"] else None
+            settings = UserSettingsStream(config["subdomain"], authenticator=auth, start_date=start_date).get_settings()
         except Exception as e:
             return False, e
         active_features = [k for k, v in settings.get("active_features", {}).items() if v]
         if "organization_access_enabled" not in active_features:
             return (
                 False,
-                "Please verify that the account linked to the API key has admin permissions and try again."
-                "For more information visit https://support.zendesk.com/hc/en-us/articles/4408832171034-About-team-member-product-roles-and-access.",
+                "Please verify that the account linked to the API key has organization_access_enabled and try again."
+                "For more information visit https://support.zendesk.com/hc/en-us/articles/4408821417114-About-the-Organizations-page#topic_n2f_23d_nqb.",
             )
         return True, None
 
@@ -110,19 +108,6 @@ class SourceZendeskSupport(YamlDeclarativeSource):
             "subdomain": config["subdomain"],
             "start_date": config.get("start_date", cls.get_default_start_date()),
             "authenticator": cls.get_authenticator(config),
-            "ignore_pagination": config.get("ignore_pagination", False),
-        }
-
-    @classmethod
-    def convert_config_to_declarative_stream_args(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Convert input configs to parameters of the future streams
-        This function is used by unit tests too
-        """
-        return {
-            "subdomain": config["subdomain"],
-            "start_date": config.get("start_date", cls.get_default_start_date()),
-            "auth_type": config.get("auth_type"),
-            "credentials": config.get("credentials"),
             "ignore_pagination": config.get("ignore_pagination", False),
         }
 
@@ -145,6 +130,7 @@ class SourceZendeskSupport(YamlDeclarativeSource):
             PostVotes(**args),
             tickets,
             TicketMetrics(**args),
+            UserIdentities(**args),
         ]
         return streams
 
@@ -172,8 +158,7 @@ class SourceZendeskSupport(YamlDeclarativeSource):
         return all_streams
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        args = self.convert_config_to_declarative_stream_args(config)
-        declarative_streams = super().streams(args)
+        declarative_streams = super().streams(config)
 
         nested_streams = self.get_nested_streams(config)
         declarative_streams.extend(nested_streams)

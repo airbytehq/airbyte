@@ -1,0 +1,6 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="330" height="250" viewBox="-59.576 -0.092 113.031 96.677" xmlns:bx="https://boxy-svg.com">
+  <defs></defs>
+  <ellipse style="fill: rgba(216, 216, 216, 0); stroke-width: 10px; stroke: rgb(255, 0, 0);" cx="-4.323" cy="47.255" rx="40.944" ry="39.07"></ellipse>
+  <path d="M -6.106 27.852 L 14.895 56.056 L -25.492 56.056 L -6.106 27.852 Z" bx:shape="triangle -25.492 27.852 40.387 28.204 0.48 0 1@75160f59" style="fill: rgb(255, 0, 0); stroke: rgb(255, 0, 0);"></path>
+  <rect x="-58.447" y="-0.457" width="111.753" height="97.042" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0); opacity: 0;"></rect>
+</svg>

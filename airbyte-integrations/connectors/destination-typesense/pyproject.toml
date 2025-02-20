@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.28"
+version = "0.1.40"
 name = "destination-typesense"
 description = "Destination Implementation for Typesense."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,8 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "destination_typesense"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "==0.74.0"
+python = ">=3.10,<3.12"
+airbyte-cdk = "^6"
 typesense = "^0.14.0"
 
 
@@ -30,3 +30,11 @@ typesense = "^0.14.0"
 pytest-mock = "^3.6.1"
 pytest = "^8.3.2"
 
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

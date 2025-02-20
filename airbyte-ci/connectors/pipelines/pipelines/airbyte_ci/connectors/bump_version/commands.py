@@ -6,6 +6,7 @@ from typing import Optional
 
 import asyncclick as click
 import semver
+
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import run_connector_version_bump_pipeline
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
@@ -35,14 +36,19 @@ class BumpType(click.ParamType):
 @click.argument("bump-type", type=BumpType())
 @click.argument("changelog-entry", type=str)
 @click.option("--pr-number", type=int, help="Pull request number.")
+@click.option("--rc", is_flag=True, help="Bumps version number and appends a release candidate suffix.")
 @click.pass_context
 async def bump_version(
     ctx: click.Context,
     bump_type: str,
     changelog_entry: str,
     pr_number: int | None,
+    rc: bool,
 ) -> bool:
     """Bump a connector version: update metadata.yaml and changelog."""
+
+    if rc and bump_type == "rc":
+        raise click.BadParameter("The `--rc` flag cannot be used when the specified `bump-type` is `rc`.")
 
     connectors_contexts = [
         ConnectorContext(
@@ -80,6 +86,7 @@ async def bump_version(
         ctx.obj["execute_timeout"],
         bump_type,
         changelog_entry,
+        rc,
         pr_number,
     )
 

@@ -6,11 +6,11 @@ data:
     hosts:
       - api.typeform.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: e7eff203-90bf-43e5-a240-19ea3056c474
-  dockerImageTag: 1.3.17
+  dockerImageTag: 1.3.27
   dockerRepository: airbyte/source-typeform
   documentationUrl: https://docs.airbyte.com/integrations/sources/typeform
   githubIssueLabel: source-typeform

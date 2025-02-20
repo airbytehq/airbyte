@@ -12,8 +12,9 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfig
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
 import io.airbyte.cdk.load.data.avro.toAirbyteValue
-import io.airbyte.cdk.load.data.avro.toAvroSchema
-import io.airbyte.cdk.load.data.toAirbyteValue
+import io.airbyte.cdk.load.data.csv.toAirbyteValue
+import io.airbyte.cdk.load.data.json.toAirbyteValue
+import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.file.GZIPProcessor
 import io.airbyte.cdk.load.file.NoopProcessor
 import io.airbyte.cdk.load.file.avro.toAvroReader
@@ -21,12 +22,16 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.parquet.toParquetReader
+import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState.Companion.OPTIONAL_ORDINAL_SUFFIX_PATTERN
 import io.airbyte.cdk.load.test.util.OutputRecord
+import io.airbyte.cdk.load.test.util.maybeUnflatten
 import io.airbyte.cdk.load.test.util.toOutputRecord
 import io.airbyte.cdk.load.util.deserializeToNode
+import java.io.BufferedReader
 import java.io.InputStream
 import java.util.zip.GZIPInputStream
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
@@ -42,11 +47,17 @@ class ObjectStorageDataDumper(
     private val compressionConfig: ObjectStorageCompressionConfiguration<*>? = null
 ) {
     fun dump(): List<OutputRecord> {
-        val prefix = pathFactory.getFinalDirectory(stream).toString()
+        // Note: this is implicitly a test of the `streamConstant` final directory
+        // and the path matcher, so a failure here might imply a bug in the metadata-based
+        // destination state loader, which lists by `prefix` and filters against the matcher.
+        val prefix = pathFactory.getLongestStreamConstantPrefix(stream, isStaging = false)
+        val matcher =
+            pathFactory.getPathMatcher(stream, suffixPattern = OPTIONAL_ORDINAL_SUFFIX_PATTERN)
         return runBlocking {
             withContext(Dispatchers.IO) {
                 client
                     .list(prefix)
+                    .filter { matcher.match(it.key) != null }
                     .map { listedObject: RemoteObject<*> ->
                         client.get(listedObject.key) { objectData: InputStream ->
                             val decompressed =
@@ -65,9 +76,33 @@ class ObjectStorageDataDumper(
         }
     }
 
+    fun dumpFile(): List<String> {
+        val prefix = pathFactory.getFinalDirectory(stream).toString()
+        return runBlocking {
+            withContext(Dispatchers.IO) {
+                client
+                    .list(prefix)
+                    .map { listedObject: RemoteObject<*> ->
+                        client.get(listedObject.key) { objectData: InputStream ->
+                            val decompressed =
+                                when (compressionConfig?.compressor) {
+                                    is GZIPProcessor -> GZIPInputStream(objectData)
+                                    is NoopProcessor,
+                                    null -> objectData
+                                    else -> error("Unsupported compressor")
+                                }
+                            BufferedReader(decompressed.reader()).readText()
+                        }
+                    }
+                    .toList()
+            }
+        }
+    }
+
     @Suppress("DEPRECATION")
-    private fun readLines(inputStream: InputStream): List<OutputRecord> =
-        when (formatConfig) {
+    private fun readLines(inputStream: InputStream): List<OutputRecord> {
+        val wasFlattened = formatConfig.rootLevelFlattening
+        return when (formatConfig) {
             is JsonFormatConfiguration -> {
                 inputStream
                     .bufferedReader()
@@ -75,7 +110,8 @@ class ObjectStorageDataDumper(
                     .map { line ->
                         line
                             .deserializeToNode()
-                            .toAirbyteValue(stream.schemaWithMeta)
+                            .toAirbyteValue()
+                            .maybeUnflatten(wasFlattened)
                             .toOutputRecord()
                     }
                     .toList()
@@ -83,29 +119,29 @@ class ObjectStorageDataDumper(
             is CSVFormatConfiguration -> {
                 CSVParser(inputStream.bufferedReader(), CSVFormat.DEFAULT.withHeader()).use {
                     it.records.map { record ->
-                        record.toAirbyteValue(stream.schemaWithMeta).toOutputRecord()
+                        record
+                            .toAirbyteValue(stream.schema.withAirbyteMeta(wasFlattened))
+                            .maybeUnflatten(wasFlattened)
+                            .toOutputRecord()
                     }
                 }
             }
             is AvroFormatConfiguration -> {
-                inputStream
-                    .toAvroReader(stream.schemaWithMeta.toAvroSchema(stream.descriptor))
-                    .use { reader ->
-                        reader
-                            .recordSequence()
-                            .map { it.toAirbyteValue(stream.schemaWithMeta).toOutputRecord() }
-                            .toList()
-                    }
+                inputStream.toAvroReader(stream.descriptor).use { reader ->
+                    reader
+                        .recordSequence()
+                        .map { it.toAirbyteValue().maybeUnflatten(wasFlattened).toOutputRecord() }
+                        .toList()
+                }
             }
             is ParquetFormatConfiguration -> {
-                inputStream
-                    .toParquetReader(stream.schemaWithMeta.toAvroSchema(stream.descriptor))
-                    .use { reader ->
-                        reader
-                            .recordSequence()
-                            .map { it.toAirbyteValue(stream.schemaWithMeta).toOutputRecord() }
-                            .toList()
-                    }
+                inputStream.toParquetReader(stream.descriptor).use { reader ->
+                    reader
+                        .recordSequence()
+                        .map { it.toAirbyteValue().maybeUnflatten(wasFlattened).toOutputRecord() }
+                        .toList()
+                }
             }
         }
+    }
 }

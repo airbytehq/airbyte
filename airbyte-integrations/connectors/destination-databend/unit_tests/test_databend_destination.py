@@ -6,6 +6,9 @@ from datetime import datetime
 from typing import Dict
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
+from destination_databend.destination import DatabendClient, DestinationDatabend
+from pytest import fixture
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -16,8 +19,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_databend.destination import DatabendClient, DestinationDatabend
-from pytest import fixture
 
 
 @fixture
@@ -34,6 +35,7 @@ def config() -> Dict[str, str]:
         "host": "localhost",
         "port": 8081,
         "table": "default",
+        "ssl": False,
     }
     return args
 

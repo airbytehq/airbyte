@@ -179,6 +179,14 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 systemProperties = project.test.systemProperties
                 maxParallelForks = project.test.maxParallelForks
                 maxHeapSize = project.test.maxHeapSize
+
+                testLogging() {
+                    events 'skipped', 'started', 'passed', 'failed'
+                    exceptionFormat 'full'
+                }
+
+                // Always re-run integration tests no matter what.
+                outputs.upToDateWhen { false }
             }
 
             // For historical reasons (i.e. airbyte-ci), this task is called integrationTestJava.
@@ -197,9 +205,22 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 environment "AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER", "docker"
 
                 jvmArgs = project.test.jvmArgs
-                systemProperties = project.test.systemProperties
+                systemProperties = project.test.systemProperties + [
+                        'junit.jupiter.execution.parallel.enabled': 'true',
+                        'junit.jupiter.execution.parallel.config.strategy': 'fixed',
+                        'junit.jupiter.execution.parallel.config.fixed.parallelism': Math.max((Runtime.runtime.availableProcessors() / 2).toInteger(), 1).toString()
+                ]
                 maxParallelForks = project.test.maxParallelForks
                 maxHeapSize = project.test.maxHeapSize
+
+                testLogging() {
+                    events 'skipped', 'started', 'passed', 'failed'
+                    exceptionFormat 'full'
+                    showStandardStreams = true
+                }
+
+                // Always re-run integration tests no matter what.
+                outputs.upToDateWhen { false }
             }
 
             project.dependencies {
@@ -223,6 +244,15 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
 
         project.tasks.named('check').configure {
             dependsOn project.tasks.matching { it.name ==~ /(compile|spotbugs)[a-zA-Z]*Java/ }
+        }
+
+        boolean withSlowTests = System.getProperty('skipSlowTests', 'false') == 'false'
+        project.tasks.matching {
+                it.name == 'test' ||
+                it.name == 'integrationTestNonDocker' ||
+                it.name == 'integrationTestJava'
+            }.configureEach {
+            onlyIf { withSlowTests }
         }
 
         project.configurations {

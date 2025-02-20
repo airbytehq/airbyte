@@ -139,6 +139,8 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 - [Campaigns](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaigns?tabs=http&view=li-lms-2023-05#search-for-campaigns)
 - [Creatives](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives?tabs=http%2Chttp-update-a-creative&view=li-lms-2023-05#search-for-creatives)
 - [Conversions](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversion-tracking?view=li-lms-2023-05&tabs=curl#find-conversions-by-ad-account)
+- [Lead forms](https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync?view=li-lms-2024-06&tabs=http#lead-forms-1)
+- [Lead form responses](https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync?view=li-lms-2024-06&tabs=http#get-lead-form-responses)
 - [Ad Analytics by Campaign](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Creative](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Impression Device](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
@@ -184,6 +186,15 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 | `boolean`        | `boolean`    | True/False                  |
 | `string`         | `string`     |                             |
 
+## Limits & considerations regarding  `Lead forms` and `Lead form responses` streams
+1. LinkedIn API requires special query params characters (eg: `(`, `:` or `)`), and low-code automatically escapes them using `query params`.  
+As auto-escaping disabling does not look not manageable via low-code, the workaround was to hard-code them in the request `path` directly.  
+2. `Incremental Sync` is not manageable via low-code due to LinkedIn API way to handle timerange via query param:
+```
+submittedAtTimeRange=(start:1711407600000,end:1711494000000)
+```  
+No workaround has been identified to manage this issue as of 2025, February.
+
 ## Changelog
 
 <details>
@@ -191,6 +202,16 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 5.2.1 | 2025-02-10 | [53611](https://github.com/airbytehq/airbyte/pull/53611) | Add schema precisions for `Lead forms` and `Lead form responses` streams |
+| 5.2.0 | 2025-02-04 | [52047](https://github.com/airbytehq/airbyte/pull/52047) | Add `Lead forms` and `Lead form responses` new streams - See Limits & considerations |
+| 5.1.6 | 2025-02-02 | [49458](https://github.com/airbytehq/airbyte/pull/49458) | Update Linkedin Ads API version to 202410 for creatives stream            |
+| 5.1.5 | 2025-02-01 | [52791](https://github.com/airbytehq/airbyte/pull/52791) | Update dependencies |
+| 5.1.4 | 2025-01-30 | [52604](https://github.com/airbytehq/airbyte/pull/52604) | Fix state error |
+| 5.1.3 | 2025-01-22 | [52604](https://github.com/airbytehq/airbyte/pull/52604) | Update CDK to production ^6 |
+| 5.1.2 | 2025-01-25 | [52253](https://github.com/airbytehq/airbyte/pull/52253) | Update dependencies |
+| 5.1.1 | 2025-01-15 | [47092](https://github.com/airbytehq/airbyte/pull/47092) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 5.1.0 | 2025-01-14 | [48863](https://github.com/airbytehq/airbyte/pull/48863) | Custom streams moved to manifest implementation & URL Error Handling |
+| 5.0.0 | 2024-11-26 | [48451](https://github.com/airbytehq/airbyte/pull/48451) | Update primary keys for streams ad_campaign_analytics, Custom Ad Analytics Reports and account_users |
 | 4.1.4 | 2024-10-12 | [46862](https://github.com/airbytehq/airbyte/pull/46862) | Update dependencies |
 | 4.1.3 | 2024-10-05 | [46433](https://github.com/airbytehq/airbyte/pull/46433) | Update dependencies |
 | 4.1.2 | 2024-09-28 | [46171](https://github.com/airbytehq/airbyte/pull/46171) | Update dependencies |

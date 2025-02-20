@@ -4,10 +4,11 @@ import re
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk import AirbyteTracedException
-from airbyte_cdk.sources.file_based.availability_strategy import DefaultFileBasedAvailabilityStrategy
 from common import catalog_path, config_path
 from source_gcs import Config, Cursor, SourceGCS, SourceGCSStreamReader
+
+from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.sources.file_based.availability_strategy import DefaultFileBasedAvailabilityStrategy
 
 
 def _source_gcs(catalog, config):
