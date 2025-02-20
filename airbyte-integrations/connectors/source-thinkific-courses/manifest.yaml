@@ -1,0 +1,303 @@
+version: 6.13.0
+
+type: DeclarativeSource
+
+description: Getting Course information from thinkific
+
+check:
+  type: CheckStream
+  stream_names:
+    - Courses
+
+definitions:
+  streams:
+    Courses:
+      type: DeclarativeStream
+      name: Courses
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 25
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: courses
+          http_method: GET
+          request_headers:
+            X-Auth-Subdomain: "{{config['X-Auth-Subdomain']}}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Courses"
+    Chapters:
+      type: DeclarativeStream
+      name: Chapters
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: courses/{{ stream_partition['course_id'] }}/chapters
+          http_method: GET
+          request_headers:
+            X-Auth-Subdomain: "{{config['X-Auth-Subdomain']}}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/Courses"
+              parent_key: id
+              partition_field: course_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Chapters"
+    Contents:
+      type: DeclarativeStream
+      name: Contents
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /chapters/{{ stream_partition['chapter_id'] }}/contents
+          http_method: GET
+          request_headers:
+            X-Auth-Subdomain: "{{config['X-Auth-Subdomain']}}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/Chapters"
+              parent_key: id
+              partition_field: chapter_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Contents"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.thinkific.com/api/public/v1/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-Auth-API-Key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/Courses"
+  - $ref: "#/definitions/streams/Chapters"
+  - $ref: "#/definitions/streams/Contents"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - X-Auth-Subdomain
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      X-Auth-Subdomain:
+        type: string
+        order: 1
+        title: subdomain
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    Courses:
+      hasRecords: true
+      streamHash: 376f3c7512589cf936eb7b69b6e04dfc498dc871
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Chapters:
+      hasRecords: true
+      streamHash: 3b596d054e694bc2a080a2503e7772a632efddf7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Contents:
+      hasRecords: true
+      streamHash: f2d34b17faff769019a225b22515d51a6d3a3d8c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  yamlComponents:
+    global:
+      - authenticator
+  autoImportSchema:
+    Courses: true
+    Chapters: true
+    Contents: true
+
+schemas:
+  Courses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+      keywords:
+        type:
+          - string
+          - "null"
+      product_id:
+        type:
+          - number
+          - "null"
+      chapter_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      instructor_id:
+        type:
+          - number
+          - "null"
+      reviews_enabled:
+        type:
+          - boolean
+          - "null"
+      banner_image_url:
+        type:
+          - string
+          - "null"
+      contact_information:
+        type:
+          - string
+          - "null"
+      course_card_image_url:
+        type:
+          - string
+          - "null"
+      administrator_user_ids:
+        type:
+          - array
+          - "null"
+    additionalProperties: true
+  Chapters:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      content_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      duration_in_seconds:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  Contents:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - number
+          - "null"
+      free:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      take_url:
+        type:
+          - string
+          - "null"
+      chapter_id:
+        type:
+          - number
+          - "null"
+      contentable_type:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
