@@ -3,15 +3,14 @@
 #
 from datetime import datetime, timezone
 from unittest.mock import patch
-import requests_mock
 
-def test_get_tokens(components_module):
+def test_get_tokens(components_module, requests_mock_fixture):
     url = "https://auth.railz.ai/getAccess"
     responses = [
         {"access_token": "access_token1"},
         {"access_token": "access_token2"},
     ]
-    requests_mock.get(url, json=lambda request, context: responses.pop(0))
+    requests_mock_fixture.get(url, json=lambda request, context: responses.pop(0))
 
     timestamps = [
         datetime(2023, 1, 1, 12, 0, 0, tzinfo=timezone.utc).timestamp(),
