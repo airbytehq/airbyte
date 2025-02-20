@@ -10,18 +10,21 @@ from functools import lru_cache
 from io import IOBase
 from os import makedirs, path
 from os.path import getsize
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple, Any
 
 import requests
 import smart_open
 from msal import ConfidentialClientApplication
 from office365.graph_client import GraphClient
+from office365.onedrive.driveitems.driveItem import DriveItem
 
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from source_microsoft_sharepoint.spec import RemoteIdentity, RemoteIdentityType, RemotePermissions, SourceMicrosoftSharePointSpec
 
 from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
 from .utils import FolderNotFoundException, MicrosoftSharePointRemoteFile, execute_query_with_retry, filter_http_urls
@@ -114,7 +117,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         assert isinstance(value, SourceMicrosoftSharePointSpec)
         self._config = value
 
-    def _get_shared_drive_object(self, drive_id: str, object_id: str, path: str) -> List[Tuple[str, str, datetime]]:
+    def _get_shared_drive_object(self, drive_id: str, object_id: str, path: str) -> Iterable[Tuple[str, str, datetime, str, str, bool]]:
         """
         Retrieves a list of all nested files under the specified object.
 
@@ -133,7 +136,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         headers = {"Authorization": f"Bearer {access_token}"}
         base_url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}"
 
-        def get_files(url: str, path: str) -> List[Tuple[str, str, datetime]]:
+        def get_files(url: str, path: str) -> Iterable[Tuple[str, str, datetime, str, str, bool]]:
             response = requests.get(url, headers=headers)
             if response.status_code != 200:
                 error_info = response.json().get("error", {}).get("message", "No additional error information provided.")
@@ -144,7 +147,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                 new_path = path + "/" + child["name"]
                 if child.get("file"):  # Object is a file
                     last_modified = datetime.strptime(child["lastModifiedDateTime"], "%Y-%m-%dT%H:%M:%SZ")
-                    yield (new_path, child["@microsoft.graph.downloadUrl"], last_modified)
+                    yield (new_path, child["@microsoft.graph.downloadUrl"], last_modified, child.get("id"), drive_id, True)
                 else:  # Object is a folder, retrieve children
                     child_url = f"{base_url}/items/{child['id']}/children"  # Use item endpoint for nested objects
                     yield from get_files(child_url, new_path)
@@ -165,20 +168,38 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         if item_data.get("file"):  # Initial object is a file
             new_path = path + "/" + item_data["name"]
             last_modified = datetime.strptime(item_data["lastModifiedDateTime"], "%Y-%m-%dT%H:%M:%SZ")
-            yield (new_path, item_data["@microsoft.graph.downloadUrl"], last_modified)
+            yield (new_path, item_data["@microsoft.graph.downloadUrl"], last_modified, item_data.get("id"), drive_id, True)
         else:
             # Initial object is a folder, start file retrieval
             yield from get_files(f"{item_url}/children", path)
 
-    def _list_directories_and_files(self, root_folder, path):
-        """Enumerates folders and files starting from a root folder."""
+    def _list_directories_and_files(
+        self, root_folder: DriveItem, path: str, drive_id: str
+    ) -> Iterable[Tuple[str, str, str, str, str, bool]]:
+        """Enumerates folders and files starting from a root folder.""" """
+        Enumerates folders and files starting from a root folder.
+    
+        Args:
+            root_folder (DriveItem): The root folder to start the enumeration from.
+            path (str): The current path in the directory structure.
+    
+        Yields:
+            Tuple[str, str, str, str]: A tuple containing the file path, download URL, last modified date, and file ID.
+        """
         drive_items = execute_query_with_retry(root_folder.children.get())
         for item in drive_items:
             item_path = path + "/" + item.name if path else item.name
             if item.is_file:
-                yield (item_path, item.properties["@microsoft.graph.downloadUrl"], item.properties["lastModifiedDateTime"])
+                yield (
+                    item_path,
+                    item.properties["@microsoft.graph.downloadUrl"],
+                    item.properties["lastModifiedDateTime"],
+                    item.id,
+                    drive_id,
+                    False,
+                )
             else:
-                yield from self._list_directories_and_files(item, item_path)
+                yield from self._list_directories_and_files(item, item_path, drive_id)
         yield from []
 
     def _get_files_by_drive_name(self, drives, folder_path):
@@ -200,7 +221,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                         continue
                     folder_path_url = drive.web_url + "/" + folder_path
 
-                yield from self._list_directories_and_files(folder, folder_path_url)
+                yield from self._list_directories_and_files(folder, folder_path_url, drive_id=drive.id)
 
     @property
     @lru_cache(maxsize=None)
@@ -264,8 +285,11 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                         uri=path,
                         download_url=download_url,
                         last_modified=last_modified,
+                        id=file_id,
+                        drive_id=drive_id,
+                        from_shared_drive=from_shared_drive,
                     )
-                    for path, download_url, last_modified in files
+                    for path, download_url, last_modified, file_id, drive_id, from_shared_drive in files
                 ],
                 globs,
             ),
@@ -383,16 +407,94 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                 f"There was an error while trying to download the file {file.uri}: {str(e)}", failure_type=FailureType.config_error
             )
 
-    def get_file_acl_permissions(self):
-        return None
-
     def load_identity_groups(self):
         return None
 
-    @property
-    def identities_schema(self):
-        return None
+    def get_file_permissions(self, file: MicrosoftSharePointRemoteFile, logger: logging.Logger) -> Tuple[List[RemoteIdentity], bool]:
+        """
+        Retrieves the permissions of a file in Microsoft SharePoint and checks for public access.
+
+        Args:
+            file (MicrosoftSharePointRemoteFile): The file to get permissions for.
+            logger (logging.Logger): Logger for debugging and information.
+
+        Returns:
+            Tuple(List[RemoteFileIdentity], boolean): A list of RemoteFileIdentity objects containing permission details.
+        """
+        try:
+            headers = self._get_headers()
+            url = f"https://graph.microsoft.com/v1.0/drives/{file.drive_id}/items/{file.id}/permissions"
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            permissions = response.json().get("value", [])
+            is_public = False
+
+            remote_identities = []
+
+            for p in permissions:
+                identities = self._to_remote_file_identities(p)
+                # todo: I am not sure if this is correct, need to revisit docs for sharing links:
+                # https://learn.microsoft.com/en-us/graph/api/resources/permission?view=graph-rest-1.0#sharing-links
+                if (
+                    p.get("link")
+                    and p["link"].get("scope") == "anonymous"
+                    and not p.get("grantedToIdentitiesV2")
+                    and not p.get("grantedToIdentities")
+                ):
+                    is_public = True
+                if identities is not None:
+                    remote_identities.extend(identities)
+            return remote_identities, is_public
+        except Exception as e:
+            raise ErrorFetchingMetadata(f"An error occurred while retrieving file permissions: {str(e)}")
+
+    def _to_remote_file_identities(self, permissions: dict[str, Any]) -> Iterable[RemoteIdentity] | None:
+        """
+        Converts a permission object to a list of RemoteIdentity objects.
+
+        From documentation:
+        grantedToIdentitiesV2: For link type permissions, the details of the users to whom permission was granted. Read-only.
+        grantedToV2: For user type permissions, the details of the users and applications for this permission. Read-only.
+        ref: https://learn.microsoft.com/en-us/graph/api/resources/permission?view=graph-rest-1.0
+        """
+        identities = []
+
+        def unroll_permission_identity(permission_identity_item: dict[str, Any]):
+            for identity_type in permission_identity_item:
+                user_info = permission_identity_item[identity_type]
+                remote_identity_type = RemoteIdentityType(identity_type)
+                identities.append(
+                    RemoteIdentity(
+                        modified_at=datetime.now(),
+                        remote_id=user_info.get("id"),
+                        name=user_info.get("displayName"),
+                        email_address=user_info.get("email"),
+                        login_name=user_info.get("loginName"),
+                        type=remote_identity_type,
+                        description=None,
+                    )
+                )
+
+        permission_identities_collection = permissions.get("grantedToIdentitiesV2", [])
+        for permission_identity in permission_identities_collection:
+            unroll_permission_identity(permission_identity)
+        permission_identity = permissions.get("grantedToV2", {})
+        unroll_permission_identity(permission_identity)
+        return identities
+
+    def get_file_acl_permissions(self, file: MicrosoftSharePointRemoteFile, logger: logging.Logger) -> Dict[str, Any]:
+        remote_identities, is_public = self.get_file_permissions(file, logger=logger)
+        return RemotePermissions(
+            id=file.id,
+            file_path=file.uri,
+            allowed_identity_remote_ids=[{"identity_type": p.type, "id": p.remote_id} for p in remote_identities],
+            publicly_accessible=is_public,
+        ).dict(exclude_none=True)
 
     @property
-    def file_permissions_schema(self):
-        return None
+    def file_permissions_schema(self) -> Dict[str, Any]:
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("file_permissions")
+
+    @property
+    def identities_schema(self) -> Dict[str, Any]:
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("identities")

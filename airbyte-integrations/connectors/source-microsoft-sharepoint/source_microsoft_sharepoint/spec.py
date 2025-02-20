@@ -4,11 +4,47 @@
 
 
 from typing import Any, Dict, Literal, Optional, Union
-
+from datetime import datetime
+from enum import Enum
 import dpath.util
 from pydantic.v1 import BaseModel, Field
 
-from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import (
+    AbstractFileBasedSpec,
+    DeliverRawFiles,
+    DeliverRecords,
+    DeliverPermissions,
+)
+
+
+class RemoteIdentityType(Enum):
+    # ref: https://learn.microsoft.com/en-us/graph/api/resources/sharepointidentityset?view=graph-rest-1.0
+    APPLICATION = "application"
+    DEVICE = "device"
+    GROUP = "group"
+    USER = "user"
+    SITE_GROUP = "siteGroup"
+    SITE_USER = "siteUser"
+
+
+class RemoteIdentity(BaseModel):
+    remote_id: str
+    parent_id: str | None = None
+    name: str | None = None
+    description: str | None = None
+    email_address: str | None = None
+    login_name: str | None = None
+    member_email_addresses: list[str] | None = None
+    type: RemoteIdentityType
+    modified_at: datetime
+
+
+class RemotePermissions(BaseModel):
+    id: str
+    file_path: str
+    allowed_identity_remote_ids: list[Dict] | None = None
+    denied_identity_remote_ids: list[str] | None = None
+    publicly_accessible: bool = False
 
 
 class OAuthCredentials(BaseModel):
@@ -87,7 +123,7 @@ class SourceMicrosoftSharePointSpec(AbstractFileBasedSpec, BaseModel):
         order=0,
     )
 
-    delivery_method: DeliverRecords | DeliverRawFiles = Field(
+    delivery_method: DeliverRecords | DeliverRawFiles | DeliverPermissions = Field(
         title="Delivery Method",
         discriminator="delivery_type",
         type="object",
