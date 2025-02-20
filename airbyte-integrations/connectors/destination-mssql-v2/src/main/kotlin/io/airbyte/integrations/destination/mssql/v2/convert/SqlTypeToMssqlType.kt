@@ -30,6 +30,7 @@ enum class MssqlType(val sqlType: Int, val sqlStringOverride: String? = null) {
     BIGINT(Types.BIGINT),
     DECIMAL(Types.DECIMAL, sqlStringOverride = "DECIMAL(18, 8)"),
     VARCHAR(Types.VARCHAR, sqlStringOverride = "VARCHAR(MAX)"),
+    VARCHAR_INDEX(Types.VARCHAR, sqlStringOverride = "VARCHAR(200)"),
     DATETIMEOFFSET(Types.TIMESTAMP_WITH_TIMEZONE),
     TIME(Types.TIME),
     DATETIME(Types.TIMESTAMP);
@@ -52,7 +53,7 @@ class SqlTypeToMssqlType {
     fun convert(type: Int): MssqlType =
         MssqlType.fromSqlType.get(type) ?: throw IllegalArgumentException("type $type not found")
 
-    fun convert(airbyteSchema: AirbyteType): MssqlType {
+    fun convert(airbyteSchema: AirbyteType, isIndexed: Boolean = false): MssqlType {
         return when (airbyteSchema) {
             is ObjectType -> MssqlType.TEXT
             is ArrayType -> MssqlType.TEXT
@@ -63,7 +64,7 @@ class SqlTypeToMssqlType {
             is NumberType -> MssqlType.DECIMAL
             is ObjectTypeWithEmptySchema -> MssqlType.TEXT
             is ObjectTypeWithoutSchema -> MssqlType.TEXT
-            is StringType -> MssqlType.VARCHAR
+            is StringType -> if(isIndexed) MssqlType.VARCHAR_INDEX else MssqlType.VARCHAR
             is TimeTypeWithTimezone -> MssqlType.DATETIMEOFFSET
             is TimeTypeWithoutTimezone -> MssqlType.TIME
             is TimestampTypeWithTimezone -> MssqlType.DATETIMEOFFSET

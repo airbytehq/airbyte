@@ -229,6 +229,7 @@ class MSSQLQueryBuilder(
             Append -> emptyList()
             Overwrite -> emptyList()
         }
+    private val indexedColumns: Set<String> = uniquenessKey.toSet()
 
     private val toMssqlType = SqlTypeToMssqlType()
 
@@ -484,7 +485,11 @@ class MSSQLQueryBuilder(
         separator: String = DEFAULT_SEPARATOR
     ): String {
         return schema.joinToString(separator = separator) {
-            "[${it.name}] ${toMssqlType.convert(it.type.type).sqlString} NULL"
+            val mssqlType = toMssqlType.convert(
+                it.type.type,
+                isIndexed = indexedColumns.contains(it.name),
+            )
+            "[${it.name}] ${mssqlType.sqlString} NULL"
         }
     }
 }
