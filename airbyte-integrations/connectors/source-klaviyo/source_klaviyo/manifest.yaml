@@ -18,8 +18,7 @@ definitions:
     authenticator: "#/definitions/authenticator"
     http_method: GET
     error_handler:
-      type: CustomErrorHandler
-      class_name: source_klaviyo.components.klaviyo_error_handler.KlaviyoErrorHandler
+      type: DefaultErrorHandler
       backoff_strategies:
         - type: WaitTimeFromHeader
           header: "Retry-After"
