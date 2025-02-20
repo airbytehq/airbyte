@@ -10,7 +10,7 @@ from functools import lru_cache
 from io import IOBase
 from os import makedirs, path
 from os.path import getsize
-from typing import Dict, Iterable, List, Optional, Tuple, Any
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import requests
 import smart_open
