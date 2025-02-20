@@ -145,40 +145,80 @@ class CSVGenerator:
 
     def _compose_chunks(self, final_blob_name: str, chunk_blobs: List[Blob]) -> None:
         """
-        Compose chunks into final blob with multi-level composition to handle >32 chunks.
-        GCS has a limit of 32 blobs per compose operation, so we need to do it in stages.
+        Compose chunks into final blob with multi-level composition.
+        Handles >32 blobs by composing in a tree structure: chunks -> intermediate -> final.
         """
-        final_blob = self.bucket.blob(final_blob_name)
+        if not chunk_blobs:
+            raise ValueError("No chunks to compose")
+
         logger.info(f"Starting composition of {len(chunk_blobs)} chunks into {final_blob_name}")
-        
+
+        def compose_group(blobs: List[Blob], level_prefix: str) -> Blob:
+            """Compose a group of up to 32 blobs into a single blob."""
+            if len(blobs) == 0:
+                raise ValueError("Empty blob group")
+            if len(blobs) == 1:
+                return blobs[0]
+            if len(blobs) > 32:
+                raise ValueError(f"Too many blobs for single compose: {len(blobs)}")
+
+            composed_name = f"{final_blob_name}.{level_prefix}"
+            composed_blob = self.bucket.blob(composed_name)
+            composed_blob.compose(blobs)
+            
+            # Clean up source blobs after successful composition
+            for blob in blobs:
+                try:
+                    blob.delete()
+                except Exception as e:
+                    logger.warning(f"Failed to delete source blob {blob.name}: {e}")
+            
+            return composed_blob
+
+        # If 32 or fewer chunks, compose directly
         if len(chunk_blobs) <= 32:
-            # Simple case - direct composition
+            final_blob = self.bucket.blob(final_blob_name)
             final_blob.compose(chunk_blobs)
-        else:
-            # Multi-level composition for >32 chunks
-            intermediate_blobs = []
-            for i in range(0, len(chunk_blobs), 32):
-                chunk_group = chunk_blobs[i:i + 32]
-                intermediate_name = f"{final_blob_name}.intermediate_{i//32}"
-                intermediate_blob = self.bucket.blob(intermediate_name)
-                
-                logger.info(f"Creating intermediate blob {intermediate_name} from {len(chunk_group)} chunks")
-                intermediate_blob.compose(chunk_group)
-                intermediate_blobs.append(intermediate_blob)
-            
-            # Final composition of intermediate blobs
-            logger.info(f"Performing final composition with {len(intermediate_blobs)} intermediate blobs")
-            final_blob.compose(intermediate_blobs)
-            
-            # Cleanup intermediate blobs
-            for blob in intermediate_blobs:
+            for blob in chunk_blobs:
                 blob.delete()
-                
-        # Cleanup original chunk blobs
-        for blob in chunk_blobs:
-            blob.delete()
+            return
+
+        # Otherwise, do hierarchical composition
+        current_level_blobs = chunk_blobs
+        level = 0
+
+        while len(current_level_blobs) > 32:
+            next_level_blobs = []
+            
+            # Process groups of up to 32 blobs
+            for i in range(0, len(current_level_blobs), 32):
+                group = current_level_blobs[i:i + 32]
+                composed_blob = compose_group(
+                    group, 
+                    f"level_{level}_{i//32:03d}"
+                )
+                next_level_blobs.append(composed_blob)
+            
+            logger.info(
+                f"Composed level {level}: {len(current_level_blobs)} blobs -> "
+                f"{len(next_level_blobs)} intermediate blobs"
+            )
+            
+            current_level_blobs = next_level_blobs
+            level += 1
+
+        # Final composition
+        final_blob = self.bucket.blob(final_blob_name)
+        final_blob.compose(current_level_blobs)
         
-        logger.info("Cleaned up all temporary and intermediate blobs")
+        # Clean up any remaining intermediate blobs
+        for blob in current_level_blobs:
+            try:
+                blob.delete()
+            except Exception as e:
+                logger.warning(f"Failed to delete intermediate blob {blob.name}: {e}")
+
+        logger.info(f"Successfully completed {level+1}-level composition into {final_blob_name}")
 
     def generate_csv(self, file_index: Optional[int] = None) -> str:
         """Generate and upload CSV file to GCS."""
