@@ -625,6 +625,11 @@ definitions:
             type:
               - "null"
               - string
+          ownerTeam:
+            description: Owner team of the incident.
+            type:
+              - "null"
+              - string
           responders:
             description: List of responders assigned to deal with the incident.
             type:
@@ -675,6 +680,45 @@ definitions:
               - object
             properties: {}
             additionalProperties: true
+          extraProperties:
+            description:
+              Map of key-value pairs of custom properties of the incident.
+            type:
+              - "null"
+              - object
+            properties: {}
+            additionalProperties: true
+          links:
+            description: Links related to the incident data.
+            type:
+              - "null"
+              - object
+            properties:
+              web:
+                description: Web link related to the incident.
+                type:
+                  - "null"
+                  - string
+              api:
+                description: API link related to the incident.
+                type:
+                  - "null"
+                  - string
+          impactStartDate:
+            description: The timestamp when the impact started for the incident.
+            type:
+              - "null"
+              - string
+            format: date-time
+          actions:
+            description: List of actions related to the incident.
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties: {}
+              additionalProperties: true
           notifyStakeholders:
             description:
               Flag indicating whether stakeholders should be notified about
@@ -2726,6 +2770,11 @@ streams:
             type:
               - "null"
               - string
+          ownerTeam:
+            description: Owner team of the incident.
+            type:
+              - "null"
+              - string
           responders:
             description: List of responders assigned to deal with the incident.
             type:
@@ -2774,6 +2823,45 @@ streams:
               - object
             properties: {}
             additionalProperties: true
+          extraProperties:
+            description:
+              Map of key-value pairs of custom properties of the incident.
+            type:
+              - "null"
+              - object
+            properties: {}
+            additionalProperties: true
+          links:
+            description: Links related to the incident data.
+            type:
+              - "null"
+              - object
+            properties:
+              web:
+                description: Web link related to the incident.
+                type:
+                  - "null"
+                  - string
+              api:
+                description: API link related to the incident.
+                type:
+                  - "null"
+                  - string
+          impactStartDate:
+            description: The timestamp when the impact started for the incident.
+            type:
+              - "null"
+              - string
+            format: date-time
+          actions:
+            description: List of actions related to the incident.
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties: {}
+              additionalProperties: true
           notifyStakeholders:
             description:
               Flag indicating whether stakeholders should be notified about

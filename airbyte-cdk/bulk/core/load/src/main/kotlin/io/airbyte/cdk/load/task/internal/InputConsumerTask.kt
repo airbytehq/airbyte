@@ -83,7 +83,7 @@ class DefaultInputConsumerTask(
             is DestinationRecord -> {
                 val wrapped =
                     StreamRecordEvent(
-                        index = manager.countRecordIn(),
+                        index = manager.incrementReadCount(),
                         sizeBytes = sizeBytes,
                         payload = message.asRecordSerialized()
                     )
@@ -104,7 +104,7 @@ class DefaultInputConsumerTask(
                 recordQueue.close()
             }
             is DestinationFile -> {
-                val index = manager.countRecordIn()
+                val index = manager.incrementReadCount()
                 // destinationTaskLauncher.handleFile(stream, message, index)
                 fileTransferQueue.publish(FileTransferQueueMessage(stream, message, index))
             }

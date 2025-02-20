@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const {
   parseMarkdownContentTitle,
-  parseFrontMatter,
+  parseMarkdownFile,
 } = require("@docusaurus/utils");
 
 const connectorsDocsRoot = "../docs/integrations";
@@ -26,17 +26,23 @@ function getFilenamesInDir(prefix, dir, excludes) {
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
     .map((filename) => {
       // Get the first header of the markdown document
-      const { contentTitle } = parseMarkdownContentTitle(
-        parseFrontMatter(fs.readFileSync(path.join(dir, `${filename}.md`)))
-          .content
-      );
-      if (!contentTitle) {
-        throw new Error(
-          `Could not parse title from ${path.join(
-            prefix,
-            filename
-          )}. Make sure there's no content above the first heading!`
-        );
+      try {
+        const filePath = path.join(dir, `${filename}.md`);
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+        const firstLine = fileContent.split('\n').find(line => line.trim().startsWith('# '));
+        const contentTitle = firstLine ? firstLine.replace(/^#\s*/, '').trim() : filename;
+        return {
+          type: 'doc',
+          id: prefix + filename,
+          label: contentTitle || filename
+        };
+      } catch (error) {
+        console.warn(`Warning: Using filename as title for ${path.join(prefix, filename)}`);
+        return {
+          type: 'doc',
+          id: prefix + filename,
+          label: filename
+        };
       }
 
       // If there is a migration doc for this connector nest this under the original doc as "Migration Guide"
@@ -219,7 +225,6 @@ const buildAConnector = {
       label: "No-Code Connector Builder",
       items: [
         "connector-development/connector-builder-ui/overview",
-        "connector-development/connector-builder-ui/connector-builder-compatibility",
         "connector-development/connector-builder-ui/tutorial",
         "connector-development/connector-builder-ui/ai-assist",
         {
@@ -286,7 +291,20 @@ const buildAConnector = {
             "connector-development/config-based/understanding-the-yaml-file/reference",
           ],
         },
-        "connector-development/config-based/advanced-topics",
+        {
+          type: "category",
+          label: "Advanced Topics",
+          items: [
+            "connector-development/config-based/advanced-topics/component-schema-reference",
+            "connector-development/config-based/advanced-topics/custom-components",
+            "connector-development/config-based/advanced-topics/oauth",
+            "connector-development/config-based/advanced-topics/how-framework-works",
+            "connector-development/config-based/advanced-topics/object-instantiation",
+            "connector-development/config-based/advanced-topics/parameters",
+            "connector-development/config-based/advanced-topics/references",
+            "connector-development/config-based/advanced-topics/string-interpolation",
+          ]
+        },
       ],
     },
 
@@ -370,7 +388,11 @@ const connectorCatalog = {
         sourceMysql,
         sourceMssql,
         ...getSourceConnectors(),
-      ].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
+      ].sort((itemA, itemB) => {
+        const labelA = itemA?.label || '';
+        const labelB = itemB?.label || '';
+        return labelA.localeCompare(labelB);
+      }),
     },
     {
       type: "category",
@@ -383,7 +405,11 @@ const connectorCatalog = {
         destinationS3,
         destinationPostgres,
         ...getDestinationConnectors(),
-      ].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
+      ].sort((itemA, itemB) => {
+        const labelA = itemA?.label || '';
+        const labelB = itemB?.label || '';
+        return labelA.localeCompare(labelB);
+      }),
     },
     {
       type: "doc",
@@ -559,6 +585,10 @@ module.exports = {
     },
     {
       type: "doc",
+      id: "using-airbyte/delivery-methods",
+    },
+    {
+      type: "doc",
       id: "using-airbyte/mappings",
     },
     {
@@ -577,6 +607,10 @@ module.exports = {
         "operator-guides/browsing-output-logs",
         "cloud/managing-airbyte-cloud/manage-connection-state",
       ],
+    },
+    {
+      type: "doc",
+      id: "using-airbyte/tagging",
     },
     sectionHeader("Managing Airbyte"),
     deployAirbyte,
@@ -599,9 +633,11 @@ module.exports = {
             type: "doc",
             id: "integrations/enterprise-connectors/README",
           },
-          items: [...getEnterpriseConnectors()].sort((itemA, itemB) =>
-            itemA.label.localeCompare(itemB.label)
-          ),
+          items: [...getEnterpriseConnectors()].sort((itemA, itemB) => {
+            const labelA = itemA?.label || '';
+            const labelB = itemB?.label || '';
+            return labelA.localeCompare(labelB);
+          }),
         },
       ],
     },
@@ -653,9 +689,9 @@ module.exports = {
             id: "access-management/rbac",
           },
           items: [
-            { 
-              type: "doc", 
-              id: "access-management/role-mapping" 
+            {
+              type: "doc",
+              id: "access-management/role-mapping"
             },
           ],
         },

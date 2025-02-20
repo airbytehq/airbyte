@@ -143,7 +143,7 @@ enum class UnionBehavior {
 
 abstract class BasicFunctionalityIntegrationTest(
     /** The config to pass into the connector, as a serialized JSON blob */
-    val configContents: String,
+    configContents: String,
     val configSpecClass: Class<out ConfigurationSpecification>,
     dataDumper: DestinationDataDumper,
     destinationCleaner: DestinationCleaner,
@@ -455,9 +455,13 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testNamespaces() {
         assumeTrue(verifyDataWriting)
-        fun makeStream(namespace: String) =
+        fun makeStream(namespace: String?) =
             DestinationStream(
-                DestinationStream.Descriptor(namespace, "test_stream"),
+                // We need to randomize the stream name for destinations which support
+                // namespace=null natively.
+                // Otherwise, multiple test runs would write to `<null>.test_stream`.
+                // Now, they instead write to `<null>.test_stream_test20250123abcd`.
+                DestinationStream.Descriptor(namespace, "test_stream_$randomizedNamespace"),
                 Append,
                 ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
@@ -466,12 +470,16 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         val stream1 = makeStream(randomizedNamespace + "_1")
         val stream2 = makeStream(randomizedNamespace + "_2")
+        val streamWithDefaultNamespace = makeStream(null)
+        val (configWithRandomizedDefaultNamespace, actualDefaultNamespace) =
+            configUpdater.setDefaultNamespace(updatedConfig, randomizedNamespace + "_default")
         runSync(
-            updatedConfig,
+            configWithRandomizedDefaultNamespace,
             DestinationCatalog(
                 listOf(
                     stream1,
                     stream2,
+                    streamWithDefaultNamespace,
                 )
             ),
             listOf(
@@ -485,6 +493,12 @@ abstract class BasicFunctionalityIntegrationTest(
                     namespace = stream2.descriptor.namespace,
                     name = stream2.descriptor.name,
                     data = """{"id": 5678}""",
+                    emittedAtMs = 1234,
+                ),
+                InputRecord(
+                    namespace = streamWithDefaultNamespace.descriptor.namespace,
+                    name = streamWithDefaultNamespace.descriptor.name,
+                    data = """{"id": 91011}""",
                     emittedAtMs = 1234,
                 ),
             )
@@ -521,6 +535,27 @@ abstract class BasicFunctionalityIntegrationTest(
                     listOf(listOf("id")),
                     cursor = null
                 )
+            },
+            {
+                dumpAndDiffRecords(
+                    parsedConfig,
+                    listOf(
+                        OutputRecord(
+                            extractedAt = 1234,
+                            generationId = 0,
+                            data = mapOf("id" to 91011),
+                            airbyteMeta = OutputRecord.Meta(syncId = 42)
+                        )
+                    ),
+                    streamWithDefaultNamespace.copy(
+                        descriptor =
+                            streamWithDefaultNamespace.descriptor.copy(
+                                namespace = actualDefaultNamespace
+                            )
+                    ),
+                    listOf(listOf("id")),
+                    cursor = null
+                )
             }
         )
     }
@@ -531,9 +566,10 @@ abstract class BasicFunctionalityIntegrationTest(
         fun makeStream(
             name: String,
             schema: LinkedHashMap<String, FieldType> = linkedMapOf("id" to intType),
+            namespaceSuffix: String = "",
         ) =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, name),
+                DestinationStream.Descriptor(randomizedNamespace + namespaceSuffix, name),
                 Append,
                 ObjectType(schema),
                 generationId = 0,
@@ -575,6 +611,11 @@ abstract class BasicFunctionalityIntegrationTest(
                         "groups",
                         linkedMapOf("id" to intType, "authorization" to stringType)
                     ),
+                    makeStream(
+                        "streamWithSpecialCharactersInNamespace",
+                        namespaceSuffix = "_spøcial"
+                    ),
+                    makeStream("streamWithOperatorInNamespace", namespaceSuffix = "_operator-1"),
                 )
             )
         // For each stream, generate a record containing every field in the schema.
@@ -1300,6 +1341,120 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    /**
+     * Some destinations have better support for schema evolution in single-generation truncate
+     * syncs. For example, if a destination imposes limitations on column type changes, we can
+     * actually ignore those limits in a truncate sync (because we're dropping all older data
+     * anyway).
+     */
+    @Test
+    open fun testOverwriteSchemaEvolution() {
+        assumeTrue(verifyDataWriting)
+        fun makeStream(
+            syncId: Long,
+            schema: LinkedHashMap<String, FieldType>,
+            generationId: Long,
+            minimumGenerationId: Long,
+        ) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(schema),
+                generationId = generationId,
+                minimumGenerationId = minimumGenerationId,
+                syncId,
+            )
+        runSync(
+            updatedConfig,
+            makeStream(
+                syncId = 42,
+                linkedMapOf("id" to intType, "to_drop" to stringType, "to_change" to intType),
+                generationId = 1,
+                minimumGenerationId = 0,
+            ),
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "to_drop": "val1", "to_change": 42}""",
+                    emittedAtMs = 1234L,
+                )
+            )
+        )
+        val changedStream =
+            makeStream(
+                syncId = 43,
+                linkedMapOf("id" to intType, "to_change" to stringType, "to_add" to stringType),
+                generationId = 2,
+                minimumGenerationId = 2,
+            )
+        runSync(
+            updatedConfig,
+            changedStream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "to_change": "val2", "to_add": "val3"}""",
+                    emittedAtMs = 1234L,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 2,
+                    data = mapOf("id" to 42, "to_change" to "val2", "to_add" to "val3"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                )
+            ),
+            changedStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            reason = "Records were incorrect when trying to change the schema."
+        )
+
+        // Run a third sync, to verify that the schema is stable after evolution
+        // (this is relevant for e.g. iceberg, where every column has an ID,
+        // and we need to be able to match the new columns to their ID)
+        val finalStream = changedStream.copy(minimumGenerationId = 0, syncId = 44)
+        runSync(
+            updatedConfig,
+            finalStream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "to_change": "val4", "to_add": "val5"}""",
+                    emittedAtMs = 5678L,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 2,
+                    data = mapOf("id" to 42, "to_change" to "val2", "to_add" to "val3"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                ),
+                OutputRecord(
+                    extractedAt = 5678,
+                    generationId = 2,
+                    data = mapOf("id" to 42, "to_change" to "val4", "to_add" to "val5"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 44),
+                ),
+            ),
+            finalStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            reason = "Records were incorrect after running a second sync with the updated schema."
+        )
+    }
+
     @Test
     open fun testDedup() {
         assumeTrue(supportsDedup)
@@ -1605,9 +1760,9 @@ abstract class BasicFunctionalityIntegrationTest(
                           "number": 42.1,
                           "integer": 42,
                           "boolean": true,
-                          "timestamp_with_timezone": "2023-01-23T12:34:56Z",
+                          "timestamp_with_timezone": "2023-01-23T11:34:56-01:00",
                           "timestamp_without_timezone": "2023-01-23T12:34:56",
-                          "time_with_timezone": "12:34:56Z",
+                          "time_with_timezone": "11:34:56-01:00",
                           "time_without_timezone": "12:34:56",
                           "date": "2023-01-23"
                         }
@@ -1779,10 +1934,10 @@ abstract class BasicFunctionalityIntegrationTest(
                             "integer" to 42,
                             "boolean" to true,
                             "timestamp_with_timezone" to
-                                OffsetDateTime.parse("2023-01-23T12:34:56Z"),
+                                OffsetDateTime.parse("2023-01-23T11:34:56-01:00"),
                             "timestamp_without_timezone" to
                                 LocalDateTime.parse("2023-01-23T12:34:56"),
-                            "time_with_timezone" to OffsetTime.parse("12:34:56Z"),
+                            "time_with_timezone" to OffsetTime.parse("11:34:56-01:00"),
                             "time_without_timezone" to LocalTime.parse("12:34:56"),
                             "date" to LocalDate.parse("2023-01-23"),
                         ),
