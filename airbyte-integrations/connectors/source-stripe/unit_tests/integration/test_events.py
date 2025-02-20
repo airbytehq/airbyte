@@ -125,7 +125,7 @@ class FullRefreshTest(TestCase):
         )
         http_mocker.get(
             _a_request()
-            .with_created_gte(slice_datetime )
+            .with_created_gte(slice_datetime)
             .with_created_lte(slice_datetime + slice_range - timedelta(days=1))
             .with_limit(100)
             .build(),
@@ -139,6 +139,7 @@ class FullRefreshTest(TestCase):
         self._read(_config().with_start_date(start_date).with_slice_range_in_days(slice_range.days))
 
         # request matched http_mocker
+
     @HttpMocker()
     def test_given_lookback_window_when_read_then_request_before_start_date(self, http_mocker: HttpMocker) -> None:
         start_date = _NOW - timedelta(days=30)

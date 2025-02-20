@@ -7,8 +7,9 @@ from urllib.parse import urlencode
 import freezegun
 import pendulum
 import pytest
-from airbyte_cdk.sources.types import Record
 from source_stripe.streams import SetupAttempts, StripeStream, UpdatedCursorIncrementalStripeSubStream
+
+from airbyte_cdk.sources.types import Record
 
 
 def read_from_stream(stream, sync_mode, state):
@@ -115,7 +116,7 @@ bank_accounts_incremental_test_case = (
 )
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
 def test_lazy_substream_data_cursor_value_is_populated(
-        requests_mock, stream_by_name, config, requests_mock_map, stream_cls, expected_records, sync_mode, state
+    requests_mock, stream_by_name, config, requests_mock_map, stream_cls, expected_records, sync_mode, state
 ):
     config["start_date"] = str(pendulum.today().subtract(days=3))
     stream = stream_by_name(stream_cls, config)
@@ -131,7 +132,7 @@ def test_lazy_substream_data_cursor_value_is_populated(
 @pytest.mark.parametrize("requests_mock_map, stream_cls, expected_records, sync_mode, state", (bank_accounts_full_refresh_test_case,))
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
 def test_lazy_substream_data_is_expanded(
-        requests_mock, stream_by_name, config, requests_mock_map, stream_cls, expected_records, sync_mode, state
+    requests_mock, stream_by_name, config, requests_mock_map, stream_cls, expected_records, sync_mode, state
 ):
     config["start_date"] = str(pendulum.today().subtract(days=3))
     stream = stream_by_name("bank_accounts", config)
@@ -151,7 +152,7 @@ def test_lazy_substream_data_is_expanded(
 )
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
 def test_lazy_substream_data_is_filtered(
-        requests_mock, stream_by_name, config, requests_mock_map, stream_cls, expected_records, sync_mode, state, expected_object
+    requests_mock, stream_by_name, config, requests_mock_map, stream_cls, expected_records, sync_mode, state, expected_object
 ):
     config["start_date"] = str(pendulum.today().subtract(days=3))
     stream = stream_by_name(stream_cls, config)
@@ -248,23 +249,27 @@ refunds_api_objects = [
                     },
                 ],
             },
-            [Record(data={
-                "id": "txn_1KVQhfEcXtiJtvvhF7ox3YEm",
-                "object": "balance_transaction",
-                "amount": 435,
-                "created": 1653299388,
-                "status": "available",
-            },
-                stream_name="balance_transactions"),
-
-                Record(data={
-                    "id": "txn_tiJtvvhF7ox3YEmKvVQhfEcX",
-                    "object": "balance_transaction",
-                    "amount": -9164,
-                    "created": 1679568588,
-                    "status": "available",
-                },
-                    stream_name="balance_transactions"),
+            [
+                Record(
+                    data={
+                        "id": "txn_1KVQhfEcXtiJtvvhF7ox3YEm",
+                        "object": "balance_transaction",
+                        "amount": 435,
+                        "created": 1653299388,
+                        "status": "available",
+                    },
+                    stream_name="balance_transactions",
+                ),
+                Record(
+                    data={
+                        "id": "txn_tiJtvvhF7ox3YEmKvVQhfEcX",
+                        "object": "balance_transaction",
+                        "amount": -9164,
+                        "created": 1679568588,
+                        "status": "available",
+                    },
+                    stream_name="balance_transactions",
+                ),
             ],
             [{"start_time": "1632409215", "end_time": "1663858815"}, {"start_time": "1663945215", "end_time": "1692802815"}],
             "balance_transactions",
@@ -283,14 +288,16 @@ refunds_api_objects = [
                 ],
             },
             [
-                Record(data={
-                    "id": "txn_tiJtvvhF7ox3YEmKvVQhfEcX",
-                    "object": "balance_transaction",
-                    "amount": -9164,
-                    "created": 1679568588,
-                    "status": "available",
-                },
-                    stream_name="balance_transactions"),
+                Record(
+                    data={
+                        "id": "txn_tiJtvvhF7ox3YEmKvVQhfEcX",
+                        "object": "balance_transaction",
+                        "amount": -9164,
+                        "created": 1679568588,
+                        "status": "available",
+                    },
+                    stream_name="balance_transactions",
+                ),
             ],
             [{"start_time": "1665308988", "end_time": "1692802815"}],
             "balance_transactions",
@@ -387,7 +394,7 @@ refunds_api_objects = [
 )
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
 def test_created_cursor_incremental_stream(
-        requests_mock, requests_mock_map, stream_by_name, expected_records, expected_slices, stream_name, sync_mode, state, config
+    requests_mock, requests_mock_map, stream_by_name, expected_records, expected_slices, stream_name, sync_mode, state, config
 ):
     config["start_date"] = str(pendulum.now().subtract(months=23))
     stream = stream_by_name(stream_name, {"lookback_window_days": 14, **config})
