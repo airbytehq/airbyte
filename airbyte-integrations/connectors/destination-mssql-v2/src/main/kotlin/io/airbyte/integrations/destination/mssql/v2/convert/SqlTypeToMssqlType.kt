@@ -4,6 +4,23 @@
 
 package io.airbyte.integrations.destination.mssql.v2.convert
 
+import io.airbyte.cdk.load.data.AirbyteType
+import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
+import io.airbyte.cdk.load.data.BooleanType
+import io.airbyte.cdk.load.data.DateType
+import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
+import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.TimeTypeWithTimezone
+import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
+import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
 import java.sql.Types
 
 enum class MssqlType(val sqlType: Int, val sqlStringOverride: String? = null) {
@@ -34,4 +51,25 @@ enum class MssqlType(val sqlType: Int, val sqlStringOverride: String? = null) {
 class SqlTypeToMssqlType {
     fun convert(type: Int): MssqlType =
         MssqlType.fromSqlType.get(type) ?: throw IllegalArgumentException("type $type not found")
+
+    fun convert(airbyteSchema: AirbyteType): MssqlType {
+        return when (airbyteSchema) {
+            is ObjectType -> MssqlType.TEXT
+            is ArrayType -> MssqlType.TEXT
+            is ArrayTypeWithoutSchema -> MssqlType.TEXT
+            is BooleanType -> MssqlType.BIT
+            is DateType -> MssqlType.DATE
+            is IntegerType -> MssqlType.BIGINT
+            is NumberType -> MssqlType.DECIMAL
+            is ObjectTypeWithEmptySchema -> MssqlType.TEXT
+            is ObjectTypeWithoutSchema -> MssqlType.TEXT
+            is StringType -> MssqlType.VARCHAR
+            is TimeTypeWithTimezone -> MssqlType.DATETIMEOFFSET
+            is TimeTypeWithoutTimezone -> MssqlType.TIME
+            is TimestampTypeWithTimezone -> MssqlType.DATETIMEOFFSET
+            is TimestampTypeWithoutTimezone -> MssqlType.DATETIME
+            is UnionType -> MssqlType.TEXT
+            is UnknownType -> MssqlType.TEXT
+        }
+    }
 }

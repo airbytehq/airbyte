@@ -23,7 +23,6 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
-import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteTypeToSqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setAsNullValue
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setValue
 import io.airbyte.integrations.destination.mssql.v2.convert.MssqlType
@@ -231,7 +230,6 @@ class MSSQLQueryBuilder(
             Overwrite -> emptyList()
         }
 
-    private val toSqlType = AirbyteTypeToSqlType()
     private val toMssqlType = SqlTypeToMssqlType()
 
     val finalTableSchema: List<NamedField> =
@@ -252,7 +250,7 @@ class MSSQLQueryBuilder(
 
     private fun getSchema(): List<NamedSqlField> =
         finalTableSchema.map {
-            NamedSqlField(it.name, toMssqlType.convert(toSqlType.convert(it.type.type)))
+            NamedSqlField(it.name, toMssqlType.convert(it.type.type))
         }
 
     fun updateSchema(connection: Connection) {
@@ -486,7 +484,7 @@ class MSSQLQueryBuilder(
         separator: String = DEFAULT_SEPARATOR
     ): String {
         return schema.joinToString(separator = separator) {
-            "[${it.name}] ${toMssqlType.convert(toSqlType.convert(it.type.type)).sqlString} NULL"
+            "[${it.name}] ${toMssqlType.convert(it.type.type).sqlString} NULL"
         }
     }
 }
