@@ -1766,6 +1766,7 @@ streams:
               - okta.customizations.read
               - okta.customizations.manage
               - okta.workflows.invoke
+              - okta.users.apitokens.read
             type: string
             description: Type of permissions
           conditions:
