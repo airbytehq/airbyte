@@ -17,10 +17,8 @@ repository = "https://github.com/airbytehq/airbyte"
 python = "^3.10,<3.13"
 airbyte-cdk = "6.31.1"
 pytest = "^8"
-
-[tool.poetry.group.dev.dependencies]
-pytest-mock = "^3.6.1"
 requests-mock = "^1.9.3"
+pytest-mock = "^3.6.1"
 
 [tool.pytest.ini_options]
 filterwarnings = [
