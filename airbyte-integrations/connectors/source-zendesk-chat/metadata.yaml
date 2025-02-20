@@ -38,6 +38,7 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: unitTests
     - suite: liveTests
       testConnections:
         - name: zendesk-chat_config_oauth_dev_null
