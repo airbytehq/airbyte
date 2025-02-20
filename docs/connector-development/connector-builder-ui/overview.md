@@ -6,9 +6,8 @@ Connector Builder offers the most straightforward method for building, contribut
 
 ## When should I use Connector Builder?
 
-First, check if the API you want to use has an available connector in the [catalog](../../integrations). If you find it there, you can use it as is. If you need to update an existing connector, see the guide for updates.
-
-You can build a connector with the Connector Builder if you want to connect to an HTTP API that returns a collection of records as JSON and has fixed endpoints. For more detailed information on requirements, refer to the [compatibility guide](./connector-builder-compatibility.md).
+First, check if the API you want to use has an available connector in the [catalog](../../integrations). If you find it there, you can use it as is.
+If the connector you're looking for doesn't already exist and you'd like to try creating your own implementation, the Connector Builder should be your first destination.
 
 ## Getting started
 
