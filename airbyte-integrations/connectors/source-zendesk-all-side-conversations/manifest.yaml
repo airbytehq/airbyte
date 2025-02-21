@@ -1,0 +1,376 @@
+version: 6.13.0
+
+type: DeclarativeSource
+
+description: "This connector is used to "
+
+check:
+  type: CheckStream
+  stream_names:
+    - side_conversation_events
+
+definitions:
+  streams:
+    all_side_conversations:
+      type: DeclarativeStream
+      name: all_side_conversations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/tickets/{{ stream_partition.ticket_id}}/side_conversations
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 4
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: "No side conversation found "
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - side_conversations
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/side_conversation_events"
+              parent_key: ticket_id
+              partition_field: ticket_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/all_side_conversations"
+    side_conversation_events:
+      type: DeclarativeStream
+      name: side_conversation_events
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 5
+            cursor_value: "{{ response.get(\"next_page\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api/v2/tickets/side_conversations/events?start_time=1326949200
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: Wrong events found for side_conversation
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 30
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - events
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record['type'] == 'create'}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/side_conversation_events"
+  base_requester:
+    type: HttpRequester
+    url_base: https://multimediallc.zendesk.com
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"username\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/side_conversation_events"
+  - $ref: "#/definitions/streams/all_side_conversations"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+    properties:
+      password:
+        type: string
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+      username:
+        type: string
+        order: 0
+        title: Username
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    all_side_conversations:
+      hasRecords: true
+      streamHash: 4b73c2d92b455a89f4b23a7466bdd1a2662650f1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    side_conversation_events:
+      hasRecords: true
+      streamHash: e1a33a90b94a4297488ca25f28077065de012e20
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    all_side_conversations: true
+    side_conversation_events: true
+
+schemas:
+  all_side_conversations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      ticket_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      external_ids:
+        type:
+          - object
+          - "null"
+      participants:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            email:
+              type:
+                - string
+                - "null"
+            user_id:
+              type:
+                - number
+                - "null"
+      preview_text:
+        type:
+          - string
+          - "null"
+      message_added_at:
+        type:
+          - string
+          - "null"
+      state_updated_at:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  side_conversation_events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      via:
+        type:
+          - string
+          - "null"
+      actor:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - number
+              - "null"
+      message:
+        type:
+          - object
+          - "null"
+        properties:
+          to:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                email:
+                  type:
+                    - string
+                    - "null"
+                user_id:
+                  type:
+                    - number
+                    - "null"
+          body:
+            type:
+              - string
+              - "null"
+          from:
+            type:
+              - object
+              - "null"
+            properties:
+              name:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              user_id:
+                type:
+                  - number
+                  - "null"
+          subject:
+            type:
+              - string
+              - "null"
+          html_body:
+            type:
+              - string
+              - "null"
+          attachments:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                size:
+                  type:
+                    - number
+                    - "null"
+                width:
+                  type:
+                    - number
+                    - "null"
+                height:
+                  type:
+                    - number
+                    - "null"
+                inline:
+                  type:
+                    - boolean
+                    - "null"
+                file_name:
+                  type:
+                    - string
+                    - "null"
+                content_url:
+                  type:
+                    - string
+                    - "null"
+                content_type:
+                  type:
+                    - string
+                    - "null"
+          external_ids:
+            type:
+              - object
+              - "null"
+          preview_text:
+            type:
+              - string
+              - "null"
+      updates:
+        type:
+          - object
+          - "null"
+      ticket_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      side_conversation_id:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
