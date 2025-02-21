@@ -22,8 +22,6 @@ import io.airbyte.cdk.integrations.util.ApmTraceUtils.addExceptionToTrace
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.exceptions.ConnectionErrorException
-import io.airbyte.commons.features.EnvVariableFeatureFlags
-import io.airbyte.commons.features.FeatureFlags
 import io.airbyte.commons.functional.CheckedConsumer
 import io.airbyte.commons.lang.Exceptions
 import io.airbyte.commons.stream.AirbyteStreamUtils
@@ -49,8 +47,6 @@ private val LOGGER = KotlinLogging.logger {}
 abstract class AbstractDbSource<DataType, Database : AbstractDatabase?>
 protected constructor(driverClassName: String) :
     JdbcConnector(driverClassName), Source, AutoCloseable {
-    // TODO: Remove when the flag is not use anymore
-    var featureFlags: FeatureFlags = EnvVariableFeatureFlags()
 
     @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
     @Throws(Exception::class)
@@ -135,7 +131,7 @@ protected constructor(driverClassName: String) :
         logPreSyncDebugData(database, catalog)
 
         val fullyQualifiedTableNameToInfo =
-            discoverWithoutSystemTables(database).associateBy {
+            discoverWithoutSystemTables(database, catalog).associateBy {
                 String.format("%s.%s", it.nameSpace, it.name)
             }
 
@@ -291,6 +287,22 @@ protected constructor(driverClassName: String) :
         configuredAirbyteStream: ConfiguredAirbyteStream?
     ) {
         /* no-op */
+    }
+
+    @Throws(Exception::class)
+    protected fun discoverWithoutSystemTables(
+        database: Database,
+        catalog: ConfiguredAirbyteCatalog,
+    ): List<TableInfo<CommonField<DataType>>> {
+        var result = mutableListOf<TableInfo<CommonField<DataType>>>()
+        catalog.streams.forEach { airbyteStream: ConfiguredAirbyteStream ->
+            val stream = airbyteStream.stream
+            discoverTable(database, stream.namespace, stream.name)?.let {
+                LOGGER.info { "Discovered table: ${it.nameSpace}.${it.name}: $it" }
+                result.add(it)
+            }
+        }
+        return result
     }
 
     @Throws(Exception::class)
@@ -726,6 +738,23 @@ protected constructor(driverClassName: String) :
         database: Database,
         tableInfos: List<TableInfo<CommonField<DataType>>>
     ): Map<String, MutableList<String>>
+
+    /**
+     * Discovers a table in the source database.
+     *
+     * @param database
+     * - source database
+     * @param schema
+     * - source schema
+     * @param tableName
+     * - source table name
+     * @return table information
+     */
+    protected abstract fun discoverTable(
+        database: Database,
+        schema: String,
+        tableName: String
+    ): TableInfo<CommonField<DataType>>?
 
     protected abstract val quoteString: String?
 

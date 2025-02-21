@@ -144,4 +144,8 @@ open class JsonRecordIdentityMapper : JsonRecordMapper<JsonNode?>() {
         val match = AirbyteJsonSchemaType.getMatchingValueForType(record, options)
         return mapRecordWithSchema(record, match)
     }
+
+    override fun mapUnknown(record: JsonNode?, schema: ObjectNode): JsonNode? {
+        return record?.deepCopy()
+    }
 }

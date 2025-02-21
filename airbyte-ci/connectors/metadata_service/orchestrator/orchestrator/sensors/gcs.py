@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import time
+
 from dagster import (
     DefaultSensorStatus,
     RunRequest,
@@ -21,6 +23,7 @@ def new_gcs_blobs_sensor(
     job,
     interval,
     resources_def,
+    allow_duplicate_runs=False,
 ) -> SensorDefinition:
     """
     This sensor is responsible for polling a list of gcs blobs and triggering a job when the list changes.
@@ -42,7 +45,6 @@ def new_gcs_blobs_sensor(
             context.log.info(f"Old etag cursor: {context.cursor}")
 
             gcs_blobs_resource = getattr(resources, gcs_blobs_resource_key)
-
             new_etags_cursor = string_array_to_hash([blob.etag for blob in gcs_blobs_resource])
             context.log.info(f"New etag cursor: {new_etags_cursor}")
 
@@ -54,6 +56,11 @@ def new_gcs_blobs_sensor(
             context.update_cursor(new_etags_cursor)
             context.log.info(f"New {gcs_blobs_resource_key} in GCS bucket")
             run_key = f"{sensor_name}:{new_etags_cursor}"
+            # Dagster skips runs with the same run_key
+            # It means that if the GCS blob list changed back to a state which was already processed, the run will be skipped
+            # This is not desirable in cases we want to reprocess the same data again after a blob deletion
+            if allow_duplicate_runs:
+                run_key += f":{int(time.time())}"
             return RunRequest(run_key=run_key)
 
     return new_gcs_blobs_sensor_definition

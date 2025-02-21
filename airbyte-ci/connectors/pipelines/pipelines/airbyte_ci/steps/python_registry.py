@@ -11,6 +11,7 @@ from typing import Dict, Optional
 import tomli
 import tomli_w
 from dagger import Container, Directory
+
 from pipelines.consts import PYPROJECT_TOML_FILE_PATH, SETUP_PY_FILE_PATH
 from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.utils import sh_dash_c
@@ -119,7 +120,7 @@ class PublishToPythonRegistry(Step):
             # Make sure these steps are always executed and not cached as they are triggering a side-effect (calling the registry)
             # Env var setting needs to be in this block as well to make sure a change of the env var will be propagated correctly
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
-            .with_exec(["poetry", "config", "repositories.mypypi", self.context.registry])
+            .with_exec(["poetry", "config", "repositories.mypypi", self.context.registry], use_entrypoint=True)
             .with_exec(sh_dash_c(["poetry config pypi-token.mypypi $PYTHON_REGISTRY_TOKEN"]))
             # Default timeout is set to 15 seconds
             # We sometime face 443 HTTP read timeout responses from PyPi
@@ -155,17 +156,16 @@ class PublishToPythonRegistry(Step):
             .with_exec(sh_dash_c(["apt-get update", "apt-get install -y twine"]))
             .with_directory("package", package_dir_to_publish)
             .with_workdir("package")
-            # clear out setup.py metadata so setup.cfg is used
-            .with_exec(["sed", "-i", "/name=/d; /author=/d; /author_email=/d; /version=/d", SETUP_PY_FILE_PATH])
+            .with_exec(["sed", "-i", "/name=/d; /author=/d; /author_email=/d; /version=/d", SETUP_PY_FILE_PATH], use_entrypoint=True)
             .with_new_file("setup.cfg", contents=setup_cfg)
-            .with_exec(["pip", "install", "--upgrade", "setuptools", "wheel"])
-            .with_exec(["python", SETUP_PY_FILE_PATH, "sdist", "bdist_wheel"])
+            .with_exec(["pip", "install", "--upgrade", "setuptools", "wheel"], use_entrypoint=True)
+            .with_exec(["python", SETUP_PY_FILE_PATH, "sdist", "bdist_wheel"], use_entrypoint=True)
             # Make sure these steps are always executed and not cached as they are triggering a side-effect (calling the registry)
             # Env var setting needs to be in this block as well to make sure a change of the env var will be propagated correctly
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
             .with_secret_variable("TWINE_USERNAME", self.context.dagger_client.set_secret("pypi_username", "__token__"))
             .with_secret_variable("TWINE_PASSWORD", self.context.python_registry_token.as_dagger_secret(self.dagger_client))
-            .with_exec(["twine", "upload", "--verbose", "--repository-url", self.context.registry, "dist/*"])
+            .with_exec(["twine", "upload", "--verbose", "--repository-url", self.context.registry, "dist/*"], use_entrypoint=True)
         )
 
         return await self.get_step_result(twine_upload)

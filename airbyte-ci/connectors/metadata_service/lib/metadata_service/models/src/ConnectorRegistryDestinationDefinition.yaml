@@ -69,10 +69,13 @@ properties:
   allowedHosts:
     "$ref": AllowedHosts.yaml
   releases:
-    "$ref": ConnectorReleases.yaml
+    "$ref": ConnectorRegistryReleases.yaml
   ab_internal:
     "$ref": AirbyteInternal.yaml
   supportsRefreshes:
+    type: boolean
+    default: false
+  supportsFileTransfer:
     type: boolean
     default: false
   generated:

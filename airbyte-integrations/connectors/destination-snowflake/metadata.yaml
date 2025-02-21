@@ -5,13 +5,15 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
-  dockerImageTag: 3.11.10
+  dockerImageTag: 3.15.4
   dockerRepository: airbyte/destination-snowflake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   githubIssueLabel: destination-snowflake
   icon: snowflake.svg
   license: ELv2
   name: Snowflake
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   registryOverrides:
     cloud:
       enabled: true
@@ -41,36 +43,6 @@ data:
     - suite: unitTests
     - suite: integrationTests
       testSecrets:
-        - name: SECRET_DESTINATION-SNOWFLAKE_COPY_AZURE_BLOB__CREDS
-          fileName: copy_azure_blob_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-SNOWFLAKE_COPY_GCS__CREDS
-          fileName: copy_gcs_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-SNOWFLAKE_COPY_S3_ENCRYPTED__CREDS
-          fileName: copy_s3_encrypted_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-SNOWFLAKE_COPY_S3__CREDS
-          fileName: copy_s3_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-SNOWFLAKE_INSERT__CREDS
-          fileName: insert_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-SNOWFLAKE_INSUFFICIENT_GCS_ROLE__CREDS
-          fileName: copy_insufficient_gcs_roles_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION-SNOWFLAKE_INTERNAL_STAGING_CONFIG_DISABLETD
           fileName: 1s1t_disabletd_internal_staging_config.json
           secretStore:
@@ -78,21 +50,6 @@ data:
             alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION-SNOWFLAKE_INTERNAL_STAGING_CONFIG_RAW_SCHEMA_OVERRIDE_DISABLETD
           fileName: 1s1t_disabletd_internal_staging_config_raw_schema_override.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-SNOWFLAKE_IP_NOT_IN_WHITELIST_CREDS
-          fileName: insert_ip_not_in_whitelist_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-SNOWFLAKE_S3_WRONG_LOCATION__CREDS
-          fileName: copy_s3_wrong_location_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-SNOWFLAKE_WITHOUT_INTERNAL_STAGING__CREDS
-          fileName: copy_insufficient_staging_roles_config.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
@@ -111,38 +68,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION_SNOWFLAKE_INTERNAL_STAGING_CREDS
-          fileName: internal_staging_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION_SNOWFLAKE_KEY_PAIR_ENCRYPTED__CREDS
-          fileName: config_key_pair_encrypted.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION_SNOWFLAKE_KEY_PAIR__CREDS
-          fileName: config_key_pair.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION_SNOWFLAKE_NO_ACTIVE_WAREHOUSE_CREDS
-          fileName: internal_staging_config_no_active_warehouse.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION_SNOWFLAKE_NO_CREATE_SCHEMA_PRIVILEGE
-          fileName: no_create_schema_privilege.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION_SNOWFLAKE_QUOTED_IDENTIFIERS_IGNORE_CASE_CREDS
           fileName: 1s1t_case_insensitive.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION_SNOWFLAKE_TESTUSER_WITHOUT_TEXT_SCHEMA_PERMISSION_CREDS
-          fileName: config_no_text_schema_permission.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store

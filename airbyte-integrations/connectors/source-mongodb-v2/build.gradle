@@ -3,7 +3,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.44.4'
+    cdkVersionRequired = '0.45.1'
     features = ['db-sources', 'datastore-mongo']
     useLocalCdk = false
 }

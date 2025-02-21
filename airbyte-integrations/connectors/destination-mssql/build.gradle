@@ -33,5 +33,5 @@ dependencies {
     implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation libs.testcontainers.mssqlserver
+    testImplementation 'org.testcontainers:mssqlserver:1.19.0'
 }

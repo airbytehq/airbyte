@@ -122,6 +122,19 @@ maximum number of seconds between API calls.
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
+| 0.5.4 | 2024-12-28 | [50800](https://github.com/airbytehq/airbyte/pull/50800) | Update dependencies |
+| 0.5.3 | 2024-12-21 | [50335](https://github.com/airbytehq/airbyte/pull/50335) | Update dependencies |
+| 0.5.2 | 2024-12-14 | [49382](https://github.com/airbytehq/airbyte/pull/49382) | Update dependencies |
+| 0.5.1 | 2024-12-11 | [47510](https://github.com/airbytehq/airbyte/pull/47510) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.5.0 | 2024-10-16 | [46956](https://github.com/airbytehq/airbyte/pull/46956) | Promoting release candidate 0.5.0-rc.1 to a main version. |
+| 0.5.0-rc.1  | 2024-10-08 | [46575](https://github.com/airbytehq/airbyte/pull/46575) | Migrate to Manifest-only |
+| 0.4.12 | 2024-10-12 | [46806](https://github.com/airbytehq/airbyte/pull/46806) | Update dependencies |
+| 0.4.11 | 2024-10-05 | [46423](https://github.com/airbytehq/airbyte/pull/46423) | Update dependencies |
+| 0.4.10 | 2024-09-28 | [46193](https://github.com/airbytehq/airbyte/pull/46193) | Update dependencies |
+| 0.4.9 | 2024-09-21 | [45776](https://github.com/airbytehq/airbyte/pull/45776) | Update dependencies |
+| 0.4.8 | 2024-09-14 | [45534](https://github.com/airbytehq/airbyte/pull/45534) | Update dependencies |
+| 0.4.7 | 2024-09-07 | [45230](https://github.com/airbytehq/airbyte/pull/45230) | Update dependencies |
+| 0.4.6 | 2024-08-31 | [44957](https://github.com/airbytehq/airbyte/pull/44957) | Update dependencies |
 | 0.4.5 | 2024-08-24 | [44627](https://github.com/airbytehq/airbyte/pull/44627) | Update dependencies |
 | 0.4.4 | 2024-08-19 | [44388](https://github.com/airbytehq/airbyte/pull/44388) | Update the CDK version to support RFR for Low-Code substreams |
 | 0.4.3 | 2024-08-17 | [44228](https://github.com/airbytehq/airbyte/pull/44228) | Update dependencies |

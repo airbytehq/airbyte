@@ -3,7 +3,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.44.4'
+    cdkVersionRequired = '0.48.7'
     features = ['db-sources']
     useLocalCdk = false
 }
@@ -24,9 +24,9 @@ application {
 }
 
 dependencies {
-    implementation 'com.microsoft.sqlserver:mssql-jdbc:12.6.1.jre11'
-    implementation 'io.debezium:debezium-embedded:2.6.1.Final'
-    implementation 'io.debezium:debezium-connector-sqlserver:2.6.2.Final'
+    implementation 'com.microsoft.sqlserver:mssql-jdbc:12.8.1.jre11'
+    implementation 'io.debezium:debezium-embedded:3.0.7.Final'
+    implementation 'io.debezium:debezium-connector-sqlserver:3.0.7.Final'
     implementation 'org.codehaus.plexus:plexus-utils:3.4.2'
 
     testFixturesImplementation 'org.testcontainers:mssqlserver:1.19.0'
@@ -34,4 +34,8 @@ dependencies {
     testImplementation 'org.awaitility:awaitility:4.2.0'
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
     testImplementation 'org.testcontainers:mssqlserver:1.19.0'
+}
+
+compileKotlin {
+
 }

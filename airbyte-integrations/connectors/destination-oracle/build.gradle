@@ -32,5 +32,5 @@ dependencies {
     implementation "com.oracle.database.jdbc:ojdbc8-production:19.7.0.0"
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation libs.testcontainers.oracle.xe
+    testImplementation 'org.testcontainers:oracle-xe:1.19.0'
 }

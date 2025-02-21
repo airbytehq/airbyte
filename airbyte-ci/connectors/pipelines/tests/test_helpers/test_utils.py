@@ -8,6 +8,7 @@ from unittest import mock
 import dagger
 import pytest
 from connector_ops.utils import Connector, ConnectorLanguage
+
 from pipelines import consts
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.helpers import utils
@@ -183,8 +184,7 @@ async def test_check_path_in_workdir(dagger_client):
         .with_workdir(str(connector.code_directory))
     )
     assert await utils.check_path_in_workdir(container, "metadata.yaml")
-    assert await utils.check_path_in_workdir(container, "pyproject.toml")
-    assert await utils.check_path_in_workdir(container, "poetry.lock")
+    assert await utils.check_path_in_workdir(container, "manifest.yaml")
     assert await utils.check_path_in_workdir(container, "not_existing_file") is False
 
 
@@ -226,7 +226,6 @@ async def test_export_container_to_tarball(mocker, dagger_client, tmp_path, tar_
 
 @pytest.mark.anyio
 async def test_export_container_to_tarball_failure(mocker, tmp_path):
-
     context = mocker.Mock(
         connector=mocker.Mock(technical_name="my_connector"),
         host_image_export_dir_path=tmp_path,

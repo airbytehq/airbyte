@@ -6,16 +6,17 @@
 import logging
 from datetime import datetime
 
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
+from source_gcs.helpers import GCSRemoteFile
 
 
 class Cursor(DefaultFileBasedCursor):
     @staticmethod
-    def get_file_uri(file: RemoteFile) -> str:
-        return file.uri.split("?")[0]
+    def get_file_uri(file: GCSRemoteFile) -> str:
+        file_uri = file.displayed_uri if file.displayed_uri else file.uri
+        return file_uri.split("?")[0]
 
-    def add_file(self, file: RemoteFile) -> None:
+    def add_file(self, file: GCSRemoteFile) -> None:
         uri = self.get_file_uri(file)
         self._file_to_datetime_history[uri] = file.last_modified.strftime(self.DATE_TIME_FORMAT)
         if len(self._file_to_datetime_history) > self.DEFAULT_MAX_HISTORY_SIZE:
@@ -28,7 +29,7 @@ class Cursor(DefaultFileBasedCursor):
                     "The history is full but there is no files in the history. This should never happen and might be indicative of a bug in the CDK."
                 )
 
-    def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
+    def _should_sync_file(self, file: GCSRemoteFile, logger: logging.Logger) -> bool:
         uri = self.get_file_uri(file)
         if uri in self._file_to_datetime_history:
             # If the file's uri is in the history, we should sync the file if it has been modified since it was synced

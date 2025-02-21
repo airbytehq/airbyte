@@ -19,6 +19,15 @@ class MockContainerClass:
     async def with_exec(self, *args, **kwargs):
         return self
 
+    def with_file(self, *args, **kwargs):
+        return self
+
+    def with_directory(self, *args, **kwargs):
+        return self
+
+    def with_env_variable(self, *args, **kwargs):
+        return self
+
 
 def pick_a_random_connector(
     language: ConnectorLanguage = None,
@@ -55,4 +64,5 @@ def mock_container():
     container_mock = AsyncMock(MockContainerClass)
     container_mock.with_label.return_value = container_mock
     container_mock.with_exec.return_value = container_mock
+    container_mock.with_file.return_value = container_mock
     return container_mock

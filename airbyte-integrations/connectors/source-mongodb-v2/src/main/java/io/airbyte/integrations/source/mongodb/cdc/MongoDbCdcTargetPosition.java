@@ -51,12 +51,12 @@ public class MongoDbCdcTargetPosition implements CdcTargetPosition<BsonTimestamp
   public boolean reachedTargetPosition(final ChangeEventWithMetadata changeEventWithMetadata) {
     if (changeEventWithMetadata.isSnapshotEvent()) {
       return false;
-    } else if (SnapshotMetadata.LAST == changeEventWithMetadata.snapshotMetadata()) {
+    } else if (SnapshotMetadata.LAST == changeEventWithMetadata.getSnapshotMetadata()) {
       LOGGER.info("Signalling close because Snapshot is complete");
       return true;
     } else {
       final BsonTimestamp eventResumeTokenTimestamp =
-          MongoDbResumeTokenHelper.extractTimestampFromEvent(changeEventWithMetadata.eventValueAsJson());
+          MongoDbResumeTokenHelper.extractTimestampFromEvent(changeEventWithMetadata.getEventValueAsJson());
       final boolean isEventResumeTokenAfter = resumeTokenTimestamp.compareTo(eventResumeTokenTimestamp) <= 0;
       if (isEventResumeTokenAfter) {
         LOGGER.info("Signalling close because record's event timestamp {} is after target event timestamp {}.",
@@ -84,7 +84,7 @@ public class MongoDbCdcTargetPosition implements CdcTargetPosition<BsonTimestamp
       return false;
     }
 
-    return MongoDbResumeTokenHelper.extractTimestampFromEvent(event.eventValueAsJson()).getValue() >= ResumeTokens
+    return MongoDbResumeTokenHelper.extractTimestampFromEvent(event.getEventValueAsJson()).getValue() >= ResumeTokens
         .getTimestamp(ResumeTokens.fromData(getResumeToken(offset))).getValue();
   }
 

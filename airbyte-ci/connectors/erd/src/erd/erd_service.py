@@ -7,11 +7,16 @@ from typing import Any
 
 import dpath
 import google.generativeai as genai  # type: ignore  # missing library stubs or py.typed marker
-from airbyte_protocol.models import AirbyteCatalog  # type: ignore  # missing library stubs or py.typed marker
+from airbyte_protocol.models import (  # type: ignore  # missing library stubs or py.typed marker
+    AirbyteCatalog,  # type: ignore  # missing library stubs or py.typed marker
+)
+from markdown_it import MarkdownIt
+from pydbml.renderer.dbml.default import (  # type: ignore  # missing library stubs or py.typed marker
+    DefaultDBMLRenderer,  # type: ignore  # missing library stubs or py.typed marker
+)
+
 from erd.dbml_assembler import DbmlAssembler, Source
 from erd.relationships import Relationships, RelationshipsMerger
-from markdown_it import MarkdownIt
-from pydbml.renderer.dbml.default import DefaultDBMLRenderer  # type: ignore  # missing library stubs or py.typed marker
 
 
 class ErdService:
@@ -21,12 +26,18 @@ class ErdService:
         self._model = genai.GenerativeModel("gemini-1.5-flash")
 
         if not self._discovered_catalog_path.exists():
-            raise ValueError(f"Could not find discovered catalog at path {self._discovered_catalog_path}")
+            raise ValueError(
+                f"Could not find discovered catalog at path {self._discovered_catalog_path}"
+            )
 
     def generate_estimated_relationships(self) -> None:
         normalized_catalog = self._normalize_schema_catalog(self._get_catalog())
-        estimated_relationships = self._get_relations_from_gemini(source_name=self._source_path.name, catalog=normalized_catalog)
-        with open(self._estimated_relationships_file, "w") as estimated_relationship_file:
+        estimated_relationships = self._get_relations_from_gemini(
+            source_name=self._source_path.name, catalog=normalized_catalog
+        )
+        with open(
+            self._estimated_relationships_file, "w"
+        ) as estimated_relationship_file:
             json.dump(estimated_relationships, estimated_relationship_file, indent=4)
 
     def write_dbml_file(self) -> None:
@@ -34,7 +45,8 @@ class ErdService:
             Source(self._source_path, self._source_technical_name),
             self._get_catalog(),
             RelationshipsMerger().merge(
-                self._get_relationships(self._estimated_relationships_file), self._get_relationships(self._confirmed_relationships_file)
+                self._get_relationships(self._estimated_relationships_file),
+                self._get_relationships(self._confirmed_relationships_file),
             ),
         )
 
@@ -53,13 +65,19 @@ class ErdService:
             to_rem = dpath.search(
                 stream["json_schema"]["properties"],
                 ["**"],
-                afilter=lambda x: isinstance(x, dict) and ("array" in str(x.get("type", "")) or "object" in str(x.get("type", ""))),
+                afilter=lambda x: isinstance(x, dict)
+                and (
+                    "array" in str(x.get("type", ""))
+                    or "object" in str(x.get("type", ""))
+                ),
             )
             for key in to_rem:
                 stream["json_schema"]["properties"].pop(key)
         return streams  # type: ignore  # as this comes from an AirbyteCatalog dump, the format should be fine
 
-    def _get_relations_from_gemini(self, source_name: str, catalog: dict[str, Any]) -> Relationships:
+    def _get_relations_from_gemini(
+        self, source_name: str, catalog: dict[str, Any]
+    ) -> Relationships:
         """
 
         :param source_name:
@@ -74,9 +92,7 @@ You are working on the {source_name} API service.
 The current JSON Schema format is as follows:
 {current_schema}, where "streams" has a list of streams, which represents database tables, and list of properties in each, which in turn, represent DB columns. Streams presented in list are the only available ones.
 Generate and add a `foreign_key` with reference for each field in top level of properties that is helpful in understanding what the data represents and how are streams related to each other. Pay attention to fields ends with '_id'.
-        """.format(
-            source_name=source_name, current_schema=catalog
-        )
+        """.format(source_name=source_name, current_schema=catalog)
         task = """
 Please provide answer in the following format:
 {streams: [{"name": "<stream_name>", "relations": {"<foreign_key>": "<ref_table.column_name>"} }]}

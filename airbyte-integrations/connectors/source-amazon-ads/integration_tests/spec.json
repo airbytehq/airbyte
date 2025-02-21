@@ -1,11 +1,11 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/amazon-ads",
   "connectionSpecification": {
-    "title": "Amazon Ads Spec",
+    "title": "Source Amazon Ads",
     "type": "object",
     "properties": {
       "auth_type": {
         "title": "Auth Type",
+        "default": "oauth2.0",
         "const": "oauth2.0",
         "order": 0,
         "type": "string"
@@ -34,18 +34,18 @@
       "region": {
         "title": "Region",
         "description": "Region to pull data from (EU/NA/FE). See <a href=\"https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints\">docs</a> for more details.",
-        "enum": ["NA", "EU", "FE"],
-        "type": "string",
         "default": "NA",
-        "order": 4
+        "enum": ["NA", "EU", "FE"],
+        "order": 4,
+        "type": "string"
       },
       "start_date": {
         "title": "Start Date",
         "description": "The Start date for collecting reports, should not be more than 60 days in the past. In YYYY-MM-DD format",
         "examples": ["2022-10-10", "2022-10-22"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "order": 5,
         "type": "string",
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "format": "date"
       },
       "profiles": {
@@ -66,49 +66,20 @@
           "type": "string"
         }
       },
-      "state_filter": {
-        "title": "State Filter",
-        "description": "Reflects the state of the Display, Product, and Brand Campaign streams as enabled, paused, or archived. If you do not populate this field, it will be ignored completely.",
-        "items": {
-          "type": "string",
-          "enum": ["enabled", "paused", "archived"]
-        },
-        "type": "array",
-        "uniqueItems": true,
-        "order": 8
-      },
       "look_back_window": {
         "title": "Look Back Window",
         "description": "The amount of days to go back in time to get the updated data from Amazon Ads",
         "default": 3,
         "examples": [3, 10],
-        "order": 9,
+        "order": 8,
         "type": "integer"
-      },
-      "report_record_types": {
-        "title": "Report Record Types",
-        "description": "Optional configuration which accepts an array of string of record types. Leave blank for default behaviour to pull all report types. Use this config option only if you want to pull specific report type(s). See <a href=\"https://advertising.amazon.com/API/docs/en-us/reporting/v2/report-types\">docs</a> for more details",
-        "items": {
-          "type": "string",
-          "enum": [
-            "adGroups",
-            "asins",
-            "asins_keywords",
-            "asins_targets",
-            "campaigns",
-            "keywords",
-            "productAds",
-            "targets"
-          ]
-        },
-        "type": "array",
-        "uniqueItems": true,
-        "order": 10
       }
     },
-    "required": ["client_id", "client_secret", "refresh_token"],
-    "additionalProperties": true
+    "required": ["client_id", "client_secret", "refresh_token"]
   },
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/amazon-ads",
+  "supportsNormalization": false,
+  "supportsDBT": false,
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
     "predicate_key": ["auth_type"],

@@ -80,4 +80,16 @@ class RegexExceptionClassifierTest {
             classifier.classify(RuntimeException("barbaz")),
         )
     }
+
+    @Test
+    fun testRecursiveRuleOrdering() {
+        Assertions.assertEquals(
+            ConfigError("grouped: has foo\nhttps://www.youtube.com/watch?v=xvFZjo5PgG0"),
+            classifier.classify(RuntimeException("quux", RuntimeException("foobarbaz"))),
+        )
+        Assertions.assertEquals(
+            TransientError("barbaz"),
+            classifier.classify(RuntimeException("quux", RuntimeException("barbaz"))),
+        )
+    }
 }

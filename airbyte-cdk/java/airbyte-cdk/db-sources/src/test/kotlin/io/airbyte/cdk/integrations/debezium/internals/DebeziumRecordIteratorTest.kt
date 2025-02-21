@@ -80,7 +80,7 @@ class DebeziumRecordIteratorTest {
         "c, true",
         "u, true",
         "d, true",
-        "r, true",
+        "r, false",
         "t, true",
         "m, false",
         "badVal, false",

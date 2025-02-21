@@ -3,18 +3,24 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
-import io.airbyte.cdk.TestClockFactory
+import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.ClockFactory
+import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.discover.MetaField
+import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
-import io.airbyte.protocol.models.v0.SyncMode
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.lang.RuntimeException
 import java.time.Duration
+import java.time.OffsetDateTime
 import kotlin.random.Random
 import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.Dispatchers
@@ -109,14 +115,17 @@ class RootReaderIntegrationTest {
     fun testAllStreamsNonGlobal() {
         val stateManager =
             StateManager(initialStreamStates = testCases.associate { it.stream to null })
-        val testOutputConsumer = BufferingOutputConsumer(TestClockFactory().fixed())
+        val testOutputConsumer = BufferingOutputConsumer(ClockFactory().fixed())
         val rootReader =
             RootReader(
                 stateManager,
                 slowHeartbeat,
                 excessiveTimeout,
                 testOutputConsumer,
-                TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray()),
+                NoOpMetaFieldDecorator,
+                listOf(
+                    TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray())
+                ),
             )
         Assertions.assertThrows(RuntimeException::class.java) {
             runBlocking(Dispatchers.Default) { rootReader.read() }
@@ -152,14 +161,17 @@ class RootReaderIntegrationTest {
                 initialGlobalState = null,
                 initialStreamStates = testCases.associate { it.stream to null },
             )
-        val testOutputConsumer = BufferingOutputConsumer(TestClockFactory().fixed())
+        val testOutputConsumer = BufferingOutputConsumer(ClockFactory().fixed())
         val rootReader =
             RootReader(
                 stateManager,
                 slowHeartbeat,
                 excessiveTimeout,
                 testOutputConsumer,
-                TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray()),
+                NoOpMetaFieldDecorator,
+                listOf(
+                    TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray())
+                ),
             )
         Assertions.assertThrows(RuntimeException::class.java) {
             runBlocking(Dispatchers.Default) { rootReader.read() }
@@ -189,6 +201,52 @@ class RootReaderIntegrationTest {
         Assertions.assertFalse(globalStateMessages.isEmpty())
     }
 
+    @Test
+    fun testAllStreamsGlobalConfigError() {
+        val stateManager =
+            StateManager(
+                global = Global(testCases.map { it.stream }),
+                initialGlobalState = null,
+                initialStreamStates = testCases.associate { it.stream to null },
+            )
+        val testOutputConsumer = BufferingOutputConsumer(ClockFactory().fixed())
+        val rootReader =
+            RootReader(
+                stateManager,
+                slowHeartbeat,
+                excessiveTimeout,
+                testOutputConsumer,
+                NoOpMetaFieldDecorator,
+                listOf(
+                    ConfigErrorThrowingGlobalPartitionsCreatorFactory(
+                        Semaphore(CONSTRAINED),
+                        *testCases.toTypedArray()
+                    )
+                ),
+            )
+        Assertions.assertThrows(ConfigErrorException::class.java) {
+            runBlocking(Dispatchers.Default) { rootReader.read() }
+        }
+        val log = KotlinLogging.logger {}
+        for (msg in testOutputConsumer.messages()) {
+            log.info { Jsons.writeValueAsString(msg) }
+        }
+        for (testCase in testCases) {
+            log.info { "checking stream feed for ${testCase.name}" }
+            val streamStateMessages: List<AirbyteStateMessage> =
+                testOutputConsumer.states().filter {
+                    it.stream?.streamDescriptor?.name == testCase.name
+                }
+            Assertions.assertTrue(streamStateMessages.isEmpty())
+        }
+        log.info { "checking global feed" }
+        val globalStateMessages: List<AirbyteStateMessage> =
+            testOutputConsumer.states().filter {
+                it.type == AirbyteStateMessage.AirbyteStateType.GLOBAL
+            }
+        Assertions.assertTrue(globalStateMessages.isEmpty())
+    }
+
     companion object {
         const val CONSTRAINED = 2
     }
@@ -207,30 +265,30 @@ data class TestCase(
 
     val stream: Stream =
         Stream(
-            name = name,
-            namespace = "test",
-            fields = listOf(),
-            configuredSyncMode = SyncMode.FULL_REFRESH,
+            id = StreamIdentifier.from(StreamDescriptor().withName(name).withNamespace("test")),
+            schema = emptySet(),
+            configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
             configuredPrimaryKey = null,
             configuredCursor = null,
         )
 
     fun run() {
-        val testOutputConsumer = BufferingOutputConsumer(TestClockFactory().fixed())
+        val testOutputConsumer = BufferingOutputConsumer(ClockFactory().fixed())
         val rootReader =
             RootReader(
                 StateManager(initialStreamStates = mapOf(stream to null)),
                 slowHeartbeat,
                 excessiveTimeout,
                 testOutputConsumer,
-                TestPartitionsCreatorFactory(Semaphore(resource), this),
+                NoOpMetaFieldDecorator,
+                listOf(TestPartitionsCreatorFactory(Semaphore(resource), this)),
             )
         try {
             runBlocking(Dispatchers.Default) { rootReader.read() }
             log.info { "read completed for $name" }
-            Assertions.assertTrue(isSuccessful, name)
+            Assertions.assertTrue(isSuccessful, "Expected case $name to succeed, but it failed.")
         } catch (e: Exception) {
-            Assertions.assertFalse(isSuccessful, name)
+            Assertions.assertFalse(isSuccessful, "Expected case $name to fail, but it succeeded.")
             log.info(e) { "read failed for $name" }
         }
         for (msg in testOutputConsumer.messages()) {
@@ -269,6 +327,7 @@ data class TestCase(
     fun verifyTraces(traceMessages: List<AirbyteTraceMessage>) {
         var hasStarted = false
         var hasCompleted = false
+        var hasIncompleted = false
         for (trace in traceMessages) {
             when (trace.type) {
                 AirbyteTraceMessage.Type.STREAM_STATUS -> {
@@ -276,11 +335,32 @@ data class TestCase(
                     when (trace.streamStatus.status) {
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED -> {
                             hasStarted = true
-                            Assertions.assertFalse(hasCompleted)
+                            Assertions.assertFalse(
+                                hasCompleted,
+                                "Case $name cannot emit a STARTED trace " +
+                                    "message because it already emitted a COMPLETE."
+                            )
+                            Assertions.assertFalse(
+                                hasIncompleted,
+                                "Case $name cannot emit a STARTED trace " +
+                                    "message because it already emitted an INCOMPLETE."
+                            )
                         }
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE -> {
                             hasCompleted = true
-                            Assertions.assertTrue(hasStarted)
+                            Assertions.assertTrue(
+                                hasStarted,
+                                "Case $name cannot emit a COMPLETE trace " +
+                                    "message because it hasn't emitted a STARTED yet."
+                            )
+                        }
+                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE -> {
+                            hasIncompleted = true
+                            Assertions.assertTrue(
+                                hasStarted,
+                                "Case $name cannot emit an INCOMPLETE trace " +
+                                    "message because it hasn't emitted a STARTED yet."
+                            )
                         }
                         else ->
                             Assertions.fail(
@@ -295,8 +375,31 @@ data class TestCase(
                     )
             }
         }
-        Assertions.assertTrue(hasStarted)
-        Assertions.assertEquals(isSuccessful, hasCompleted)
+        Assertions.assertTrue(
+            hasStarted,
+            "Case $name should have emitted a STARTED trace message, but hasn't."
+        )
+        if (isSuccessful) {
+            if (!hasCompleted) {
+                Assertions.assertTrue(
+                    hasCompleted,
+                    "Case $name should have emitted a COMPLETE trace message, but hasn't."
+                )
+            }
+            Assertions.assertFalse(
+                hasIncompleted,
+                "Case $name should not have emitted an INCOMPLETE trace message, but did anyway."
+            )
+        } else {
+            Assertions.assertFalse(
+                hasCompleted,
+                "Case $name should not have emitted a COMPLETE trace message, but did anyway."
+            )
+            Assertions.assertTrue(
+                hasIncompleted,
+                "Case $name should have emitted an INCOMPLETE trace message, but hasn't."
+            )
+        }
     }
 
     fun verifyStates(stateMessages: List<AirbyteStateMessage>) {
@@ -325,18 +428,18 @@ data class TestCase(
             if (expected == null) {
                 Assertions.assertNull(
                     actual,
-                    "expected nothing in round $partitionsCreatorID, got $actual",
+                    "Case $name should not have emitted any state checkpoint in round $partitionsCreatorID, but did anyway: $actual",
                 )
                 break
             }
             Assertions.assertNotNull(
                 actual,
-                "expected $expected in round $partitionsCreatorID, got nothing",
+                "Case $name didn't emit any state checkpoint in round $partitionsCreatorID, but should have emitted: $expected"
             )
             for (actualState in actual!!) {
                 Assertions.assertTrue(
-                    actualState in expected,
-                    "$actualState should be in $expected",
+                    actualState.toString() in expected.map { it.toString() },
+                    "Case $name emitted more state checkpoints than were expected: actual $actualState vs expected $expected",
                 )
             }
         }
@@ -522,39 +625,21 @@ class TestPartitionReader(
         )
 }
 
-class TestPartitionsCreatorFactory(
+open class TestPartitionsCreatorFactory(
     val resource: Semaphore,
     vararg val testCases: TestCase,
 ) : PartitionsCreatorFactory {
     private val log = KotlinLogging.logger {}
 
-    override fun make(
-        stateQuerier: StateQuerier,
-        feed: Feed,
-    ): PartitionsCreator {
-        if (feed is Global) {
-            // For a global feed, return a bogus PartitionsCreator which backs off forever.
-            // This tests that the corresponding coroutine gets canceled properly.
-            return object : PartitionsCreator {
-                override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus {
-                    log.info { "failed to acquire resources for global feed, as always" }
-                    return PartitionsCreator.TryAcquireResourcesStatus.RETRY_LATER
-                }
-
-                override suspend fun run(): List<PartitionReader> {
-                    TODO("unreachable code")
-                }
-
-                override fun releaseResources() {
-                    TODO("unreachable code")
-                }
-            }
+    override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator {
+        if (feedBootstrap !is StreamFeedBootstrap) {
+            return makeGlobalPartitionsCreator()
         }
         // For a stream feed, pick the CreatorCase in the corresponding TestCase
         // which is the successor of the one whose corresponding state is in the StateQuerier.
-        val testCase: TestCase = testCases.find { it.name == (feed as Stream).name }!!
+        val testCase: TestCase = testCases.find { it.name == feedBootstrap.feed.name }!!
         val checkpointedPartitionCreatorID: Long =
-            when (val opaqueStateValue: OpaqueStateValue? = stateQuerier.current(feed)) {
+            when (val opaqueStateValue: OpaqueStateValue? = feedBootstrap.currentState) {
                 null -> 0L
                 is ArrayNode -> opaqueStateValue.get(0).asLong()
                 else -> TODO("unreachable code")
@@ -568,6 +653,54 @@ class TestPartitionsCreatorFactory(
             resource,
         )
     }
+
+    protected open fun makeGlobalPartitionsCreator(): PartitionsCreator {
+        return object : PartitionsCreator {
+            override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus {
+                return PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN
+            }
+
+            override suspend fun run(): List<PartitionReader> {
+                // Do nothing.
+                return emptyList()
+            }
+
+            override fun releaseResources() {}
+        }
+    }
+}
+
+class ConfigErrorThrowingGlobalPartitionsCreatorFactory(
+    resource: Semaphore,
+    vararg testCases: TestCase,
+) : TestPartitionsCreatorFactory(resource, *testCases) {
+    override fun makeGlobalPartitionsCreator(): PartitionsCreator {
+        return object : PartitionsCreator {
+            override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus {
+                return PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN
+            }
+
+            override suspend fun run(): List<PartitionReader> {
+                throw ConfigErrorException("some config error")
+            }
+
+            override fun releaseResources() {}
+        }
+    }
+}
+
+data object NoOpMetaFieldDecorator : MetaFieldDecorator {
+
+    override val globalCursor: MetaField? = null
+
+    override val globalMetaFields: Set<MetaField> = emptySet()
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: ObjectNode
+    ) {}
 }
 
 /** Tests should succeed and not timeout. */

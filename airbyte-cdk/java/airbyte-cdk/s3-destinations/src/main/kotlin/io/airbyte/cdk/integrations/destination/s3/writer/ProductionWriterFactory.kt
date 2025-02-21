@@ -36,7 +36,9 @@ class ProductionWriterFactory : S3WriterFactory {
             val avroSchema =
                 schemaConverter.getAvroSchema(stream.jsonSchema, stream.name, stream.namespace)
 
-            LOGGER.info { "Avro schema for stream ${stream.name}: ${avroSchema.toString(false)}" }
+            LOGGER.info {
+                "Avro schema for stream ${stream.name}: ${@Suppress("DEPRECATION")avroSchema.toString(false)}"
+            }
 
             return if (format == FileUploadFormat.AVRO) {
                 S3AvroWriter(

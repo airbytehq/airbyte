@@ -4,6 +4,7 @@ products: oss-enterprise
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import ContainerProviders from '@site/static/_docker_image_registries.md';
 
 # Implementation Guide
 
@@ -101,7 +102,7 @@ stringData:
   license-key: ## e.g. xxxxx.yyyyy.zzzzz
 
   # Database Secrets
-  database-host: ## e.g. database.internla
+  database-host: ## e.g. database.internal
   database-port: ## e.g. 5432
   database-name: ## e.g. airbyte
   database-user: ## e.g. airbyte
@@ -119,9 +120,16 @@ stringData:
   s3-access-key-id: ## e.g. AKIAIOSFODNN7EXAMPLE
   s3-secret-access-key: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 
+  # Azure Blob Storage Secrets
+  azure-blob-store-connection-string: ## DefaultEndpointsProtocol=https;AccountName=azureintegration;AccountKey=wJalrXUtnFEMI/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY==;EndpointSuffix=core.windows.net
+
   # AWS Secret Manager
   aws-secret-manager-access-key-id: ## e.g. AKIAIOSFODNN7EXAMPLE
   aws-secret-manager-secret-access-key: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+  # Azure Secret Manager
+  azure-key-vault-client-id: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
+  azure-key-vault-client-secret: ## KWP6egqixiQeQoKqFZuZq2weRbYoVxMH
 
 ```
 
@@ -162,7 +170,7 @@ stringData:
   license-key: ## e.g. xxxxx.yyyyy.zzzzz
 
   # Database Secrets
-  database-host: ## e.g. database.internla
+  database-host: ## e.g. database.internal
   database-port: ## e.g. 5432
   database-name: ## e.g. airbyte
   database-user: ## e.g. airbyte
@@ -233,8 +241,8 @@ auth:
     secretName: airbyte-config-secrets ## Name of your Kubernetes secret.
     oidc:
       domain: ## e.g. company.example
-      app-name: ## e.g. airbyte
-      display-name: ## e.g. Company SSO - optional, falls back to app-name if not provided
+      appName: ## e.g. airbyte
+      display-name: ## e.g. Company SSO - optional, falls back to appName if not provided
       clientIdSecretKey: client-id
       clientSecretSecretKey: client-secret
 ```
@@ -265,8 +273,8 @@ global:
       secretName: airbyte-config-secrets ## Name of your Kubernetes secret.
       oidc:
         domain: ## e.g. company.example
-        app-name: ## e.g. airbyte
-        display-name: ## e.g. Company SSO - optional, falls back to app-name if not provided
+        appName: ## e.g. airbyte
+        display-name: ## e.g. Company SSO - optional, falls back to appName if not provided
         clientIdSecretKey: client-id
         clientSecretSecretKey: client-secret
 ```
@@ -369,6 +377,23 @@ global:
 ```
 
 </TabItem>
+
+<TabItem value="Azure Blob" label="Azure" default>
+
+```yaml
+global:
+  storage:
+    type: "Azure"
+    storageSecretName: airbyte-config-secrets # Name of your Kubernetes secret.
+    bucket: ## S3 bucket names that you've created. We recommend storing the following all in one bucket.
+      log: airbyte-bucket
+      state: airbyte-bucket
+      workloadOutput: airbyte-bucket
+    azure:
+      connectionStringSecretKey: azure-blob-store-connection-string
+```
+</TabItem>
+
 </Tabs>
 </details>
 
@@ -419,6 +444,25 @@ secretsManager:
 ```
 
 </TabItem>
+
+<TabItem label="Azure Key Vault" value="Azure">
+
+```yaml
+global:
+  secretsManager:
+    type: azureKeyVault
+    azureKeyVault:
+      vaultUrl: ## https://my-vault.vault.azure.net/
+      tenantId: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
+      tags: ## Optional - You may add tags to new secrets created by Airbyte.
+        - key: ## e.g. team
+          value: ## e.g. deployments
+        - key: business-unit
+          value: engineering
+```
+
+</TabItem>
+
 </Tabs>
 
 </details>
@@ -561,6 +605,141 @@ helm upgrade \
 airbyte/airbyte
 ```
 
+### Configure a custom image registry
+
+You can optionally configure Airbyte to pull Docker images from a custom image registry rather than [Airbyte's public Docker repository](https://hub.docker.com/u/airbyte). In this case, Airbyte pulls both platform images (e.g. `server`, `webapp`, `workload-launcher`, etc.) and connector images (e.g. Postgres Source, S3 Destination, etc.) from the configured registry.
+
+Implementing Airbyte this way has several advantages.
+
+- **Security**: Private custom image registries keep images in your network, reducing the risk of external threats.
+- **Access control**: You have more control over who can access and modify images.
+- **Compliance**: By keeping images in a controlled environment, it's easier to prove compliance with regulatory requirements for data storage and handling.
+
+[Custom Docker connectors](../operator-guides/using-custom-connectors/) in your workspace that specify an image using a fully qualified domain name (for example, `example.com/airbyte/your-custom-source`) ignore your configured custom image registry and pull images from the domain specified by that connector.
+
+<details>
+<summary>Before you start</summary>
+
+1. Set up your custom image registry. The examples in this article use GitHub, but you have many options. Here are some popular ones:
+
+    <ContainerProviders/>
+
+2. Install `abctl`. Although abctl is typically only used to manage local installations of Airbyte, it has some helpful commands for this process.
+
+    <Tabs>
+      <TabItem value="abctl-brew" label="Homebrew" default>
+        ```bash
+        brew tap airbytehq/tap
+        brew install abctl
+        ```
+      </TabItem>
+      <TabItem value="abctl-go" label="Go">
+        ```bash
+        go install github.com/airbytehq/abctl@latest
+        ```
+      </TabItem>
+      <TabItem value="abctl-gh" label="GitHub">
+        See [GitHub releases](https://github.com/airbytehq/abctl/releases/latest).
+      </TabItem>
+    </Tabs>
+
+</details>
+
+<details>
+<summary>Get a list of all Airbyte images</summary>
+
+To get a list of Airbyte images for the latest version, use abctl.
+
+```bash
+abctl images manifest
+```
+
+You should see something like this:
+
+```bash
+airbyte/bootloader:1.3.1
+airbyte/connector-builder-server:1.3.1
+airbyte/connector-sidecar:1.3.1
+airbyte/container-orchestrator:1.3.1
+airbyte/cron:1.3.1
+airbyte/db:1.3.1
+airbyte/mc:latest
+airbyte/server:1.3.1
+airbyte/webapp:1.3.1
+airbyte/worker:1.3.1
+airbyte/workload-api-server:1.3.1
+airbyte/workload-init-container:1.3.1
+airbyte/workload-launcher:1.3.1
+bitnami/kubectl:1.28.9
+busybox:1.35
+busybox:latest
+curlimages/curl:8.1.1
+minio/minio:RELEASE.2023-11-20T22-40-07Z
+temporalio/auto-setup:1.23.0
+```
+
+</details>
+
+<details>
+<summary>Step 1: Customize Airbyte to use your image registry</summary>
+
+To pull all platform and connector images from a custom image registry, add the following customization to Airbyte's `values.yaml` file, replacing the `registry` value with your own registry location.
+
+```yaml title="values.yaml"
+global:
+  image:
+    registry: ghcr.io/NAMESPACE
+```
+
+If your registry requires authentication, you can create a Kubernetes secret and reference it in the Airbyte config:
+
+1. Create a Kubernetes secret. In this example, you create a secret called `regcred` from a config file. That file contains authentication information for a private custom image registry. [Learn more about Kubernetes secrets](https://kubernetes.io/docs/tasks/configmap-secret/).
+
+    ```bash
+    kubectl create secret generic regcred \
+    --from-file=.dockerconfigjson=<path/to/.docker/config.json> \
+    --type=kubernetes.io/dockerconfigjson
+    ```
+
+2. Add the secret you created to your `values.yaml` file. In this example, you use your `regcred` secret to authenticate.
+
+    ```yaml title="values.yaml"
+    global:
+      image:
+        registry: ghcr.io/NAMESPACE
+      // highlight-start
+      imagePullSecrets:
+        - name: regcred
+      // highlight-end
+    ```
+
+</details>
+
+<details>
+<summary>Step 2: Tag and push Airbyte images</summary>
+
+Tag and push Airbyte's images to your custom image registry. 
+
+In this example, you tag all platform images and push them all to GitHub.
+
+```bash
+abctl images manifest | xargs -L1 -I{} docker tag {} ghcr.io/NAMESPACE/{} && docker push ghcr.io/NAMESPACE/{}
+```
+
+You can also pull Airbyte's connector images from Docker, tag them, and push them to your custom image registry. You must do this prior to adding a source or destination.
+
+In this example, you pull a connector from Docker, tag it, and push it to GitHub.
+
+```bash
+docker pull airbyte/destination-google-sheets:latest
+docker tag airbyte/desination-google-sheets:latest ghcr.io/NAMESPACE/desination-google-sheets:latest
+docker push ghcr.io/NAMESPACE/destination-google-sheets:latest    
+```
+
+Now, when you install Airbyte, images will come from the custom image registry you configured.
+
+</details>
+
 ### Customizing your Service Account
 
 You may choose to use your own service account instead of the Airbyte default, `airbyte-sa`. This may allow for better audit trails and resource management specific to your organizational policies and requirements.
@@ -571,7 +750,6 @@ To do this, add the following to your `values.yaml`:
 serviceAccount:
   name:
 ```
-
 
 ## AWS Policies Appendix
 

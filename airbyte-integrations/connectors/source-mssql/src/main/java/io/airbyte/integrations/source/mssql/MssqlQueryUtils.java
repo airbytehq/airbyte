@@ -14,7 +14,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CursorBasedStatus;
 import io.airbyte.cdk.integrations.source.relationaldb.models.InternalModels.StateType;
@@ -79,7 +78,7 @@ public class MssqlQueryUtils {
         final String query = INDEX_QUERY.formatted(fullTableName);
         LOGGER.debug("Index lookup query: {}", query);
         final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(query).executeQuery(),
-            resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+            resultSet -> new MssqlSourceOperations().rowToJson(resultSet));
         if (jsonNodes != null) {
           jsonNodes.stream().map(node -> Jsons.convertValue(node, Index.class))
               .forEach(i -> LOGGER.info("Index {}", i));
@@ -106,7 +105,7 @@ public class MssqlQueryUtils {
     LOGGER.info("Querying for max oc value: {}", maxOcQuery);
     try {
       final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(maxOcQuery).executeQuery(),
-          resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+          resultSet -> new MssqlSourceOperations().rowToJson(resultSet));
       Preconditions.checkState(jsonNodes.size() == 1);
       if (jsonNodes.get(0).get(MAX_OC_COL) == null) {
         LOGGER.info("Max PK is null for table {} - this could indicate an empty table", fullTableName);
@@ -213,7 +212,7 @@ public class MssqlQueryUtils {
         final List<JsonNode> jsonNodes;
         try {
           jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
-              resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+              resultSet -> new MssqlSourceOperations().rowToJson(resultSet));
         } catch (SQLException e) {
           throw new RuntimeException("Failed to read max cursor value from %s.%s".formatted(namespace, name), e);
         }
@@ -241,7 +240,7 @@ public class MssqlQueryUtils {
         String.format(TABLE_ESTIMATE_QUERY, namespace, name);
     LOGGER.info("Querying for table estimate size: {}", tableEstimateQuery);
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(tableEstimateQuery),
-        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+        resultSet -> new MssqlSourceOperations().rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);
     LOGGER.debug("Estimate: {}", jsonNodes);
     return jsonNodes;

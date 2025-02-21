@@ -1,0 +1,291 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: >-
+  Website: https://tasksboard.com/app
+
+  API Docs: https://developers.google.com/tasks/reference/rest
+
+  Auth Docs:
+  https://support.google.com/googleapi/answer/6158849?hl=en&ref_topic=7013279
+
+check:
+  type: CheckStream
+  stream_names:
+    - tasks
+
+definitions:
+  streams:
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: pageToken
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken') }}"
+            stop_condition: "{{ not response.get('nextPageToken') }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users/@me/lists
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+          request_parameters:
+            maxResults: "{{ config['records_limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+    lists_tasks:
+      type: DeclarativeStream
+      name: lists_tasks
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: pageToken
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken') }}"
+            stop_condition: "{{ not response.get('nextPageToken') }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: lists/{{ stream_partition.tasklist_id }}/tasks
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+          request_parameters:
+            maxResults: "{{ config['records_limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/tasks"
+              parent_key: id
+              partition_field: tasklist_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lists_tasks"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+  base_requester:
+    type: HttpRequester
+    url_base: https://tasks.googleapis.com/tasks/v1/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_key"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/lists_tasks"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 1
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 2
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      records_limit:
+        type: string
+        description: The maximum number of records to be returned per request
+        order: 0
+        title: Records Limit
+        default: "50"
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://developers.google.com/tasks/reference/rest
+  testedStreams:
+    tasks:
+      hasRecords: true
+      streamHash: 06d4c0949ab53aa3ea7e089781332fea60caf2f1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    lists_tasks:
+      hasRecords: true
+      streamHash: 6d6137d9a88020f99badd5a98968cb1a12e07cdd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    tasks: true
+    lists_tasks: true
+
+schemas:
+  tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated
+    properties:
+      id:
+        type: string
+      etag:
+        type:
+          - string
+          - "null"
+      kind:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updated:
+        type: string
+      selfLink:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  lists_tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+      - updated
+    properties:
+      id:
+        type: string
+      due:
+        type:
+          - string
+          - "null"
+      etag:
+        type:
+          - string
+          - "null"
+      kind:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - array
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updated:
+        type: string
+      position:
+        type:
+          - string
+          - "null"
+      selfLink:
+        type:
+          - string
+          - "null"
+      completed:
+        type:
+          - string
+          - "null"
+      webViewLink:
+        type:
+          - string
+          - "null"
+    additionalProperties: true

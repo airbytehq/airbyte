@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "actions": {
+      "type": ["array", "null"],
+      "description": "An array of actions describing what the ticket trigger will do",
+      "items": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": ["string", "null"]
+          },
+          "value": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "active": {
+      "description": "Whether the ticket trigger is active",
+      "type": "boolean"
+    },
+    "category_id": {
+      "description": "The ID of the category the ticket trigger belongs to",
+      "type": ["string", "null"]
+    },
+    "conditions": {
+      "description": "An object that describes the circumstances under which the trigger performs its actions",
+      "type": "object",
+      "properties": {
+        "all": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": ["string", "null"]
+              },
+              "operator": {
+                "type": ["string", "null"]
+              },
+              "value": {
+                "type": ["string", "null"]
+              }
+            }
+          }
+        },
+        "any": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": ["string", "null"]
+              },
+              "operator": {
+                "type": ["string", "null"]
+              },
+              "value": {
+                "type": ["string", "null"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "created_at": {
+      "description": "The time the ticket trigger was created",
+      "type": ["string", "null"]
+    },
+    "default": {
+      "description": "If true, the ticket trigger is a standard trigger",
+      "type": "boolean"
+    },
+    "description": {
+      "description": "The description of the ticket trigger",
+      "type": ["string", "null"]
+    },
+    "id": {
+      "description": "Automatically assigned when created",
+      "type": "integer"
+    },
+    "position": {
+      "description": "Position of the ticket trigger, determines the order they will execute in",
+      "type": "integer"
+    },
+    "raw_title": {
+      "description": "The raw format of the title of the ticket trigger",
+      "type": ["string", "null"]
+    },
+    "title": {
+      "description": "The title of the ticket trigger",
+      "type": ["string", "null"]
+    },
+    "updated_at": {
+      "description": "The time of the last update of the ticket trigger",
+      "type": ["string", "null"]
+    },
+    "url": {
+      "description": "The url of the ticket trigger",
+      "type": ["string", "null"]
+    }
+  }
+}

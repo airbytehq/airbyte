@@ -4,55 +4,26 @@ products: oss-*
 
 # Configuring Airbyte
 
-This section covers how to configure Airbyte, and the various configuration Airbyte accepts.
+This section covers the various configuration options Airbyte accepts. [Airbyte runs on Kubernetes](../deploying-airbyte/deploying-airbyte.md). To configure the Airbyte Kubernetes deployment, modify the `values.yaml` file. If you want to manage your own Kube manifests, refer to the `Helm Chart`.
 
-Configuration is currently via environment variables. See the below section on how to modify these variables.
+The following configuration options are possible, organized by service. Internal-only variables are omitted for clarity. See `Configs.java` for a full list of variables.
 
-## Docker Deployments
+:::warning
+Be careful using variables marked as `alpha`. They aren't meant for public consumption.
+:::
 
-The recommended way to run an Airbyte Docker deployment is via the Airbyte repo's `docker-compose.yaml` and `.env` file.
-
-To configure the default Airbyte Docker deployment, modify the bundled `.env` file. The `docker-compose.yaml` file injects appropriate variables into
-the containers.
-
-If you want to manage your own docker files, please refer to Airbyte's docker file to ensure applications get the correct variables.
-
-## Kubernetes Deployments
-
-The recommended way to run an [Airbyte Kubernetes deployment](../deploying-airbyte/on-kubernetes-via-helm.md) is via the `Helm Charts`.
-
-To configure the Airbyte Kubernetes deployment you need to modify the `values.yaml` file, more [info here](../deploying-airbyte/on-kubernetes-via-helm.md#custom-deployment).
-Each application will consume the appropriate values from that file.
-
-If you want to manage your own Kube manifests, please refer to the `Helm Chart`.
-
-## Reference
-
-The following are the possible configuration options organised by deployment type and services.
-
-Internal-only variables have been omitted for clarity. See `Configs.java` for a full list.
-
-Be careful using variables marked as `alpha` as they aren't meant for public consumption.
-
-### Shared
-
-The following variables are relevant to both Docker and Kubernetes.
-
-#### Core
+## Core
 
 1. `AIRBYTE_VERSION` - Defines the Airbyte deployment version.
 2. `SPEC_CACHE_BUCKET` - Defines the bucket for caching specs. This immensely speeds up spec operations. This is updated when new versions are published.
-3. `WORKER_ENVIRONMENT` - Defines if the deployment is Docker or Kubernetes. Airbyte behaves accordingly.
-4. `CONFIG_ROOT` - Defines the configs directory. Applies only to Docker, and is present in Kubernetes for backward compatibility.
-5. `WORKSPACE_ROOT` - Defines the Airbyte workspace directory. Applies only to Docker, and is present in Kubernetes for backward compatibility.
 
-#### Secrets
+## Secrets
 
 1. `SECRET_PERSISTENCE` - Defines the Secret Persistence type. Defaults to NONE. Set to GOOGLE_SECRET_MANAGER to use Google Secret Manager. Set to AWS_SECRET_MANAGER to use AWS Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Set to VAULT to use Hashicorp Vault, currently only the token based authentication is supported. Alpha support. Undefined behavior will result if this is turned on and then off.
 2. `SECRET_STORE_GCP_PROJECT_ID` - Defines the GCP Project to store secrets in. Alpha support.
 3. `SECRET_STORE_GCP_CREDENTIALS` - Defines the JSON credentials used to read/write Airbyte Configuration to Google Secret Manager. These credentials must have Secret Manager Read/Write access. Alpha support.
 4. `VAULT_ADDRESS` - Defines the vault address to read/write Airbyte Configuration to Hashicorp Vault. Alpha Support.
-5. `VAULT_PREFIX` - Defines the vault path prefix. Empty by default. Alpha Support.
+5. `VAULT_PREFIX` - Defines the vault path prefix. Should follow the format `<engine>/<directory>/`, for example `kv/airbyte/` or `secret/airbyte/`. Empty by default. Alpha Support.
 6. `VAULT_AUTH_TOKEN` - The token used for vault authentication. Alpha Support.
 7. `VAULT_AUTH_METHOD` - How vault will preform authentication. Currently, only supports Token auth. Defaults to token. Alpha Support.
 8. `AWS_ACCESS_KEY` - Defines the aws_access_key_id from the AWS credentials to use for AWS Secret Manager.
@@ -60,7 +31,7 @@ The following variables are relevant to both Docker and Kubernetes.
 10. `AWS_KMS_KEY_ARN` - Optional param that defines the KMS Encryption key used for the AWS Secret Manager.
 11. `AWS_SECRET_MANAGER_SECRET_TAGS` - Defines the tags that will be included to all writes to the AWS Secret Manager. The format should be "key1=value1,key2=value2".
 
-#### Database
+## Database
 
 1. `DATABASE_USER` - Defines the Jobs Database user.
 2. `DATABASE_PASSWORD` - Defines the Jobs Database password.
@@ -72,13 +43,13 @@ The following variables are relevant to both Docker and Kubernetes.
 8. `CONFIG_DATABASE_INITIALIZATION_TIMEOUT_MS` - Defines the total time to wait for the Configs Database to be initialized. This includes migrations.
 9. `RUN_DATABASE_MIGRATION_ON_STARTUP` - Defines if the Bootloader should run migrations on start up.
 
-#### Airbyte Services
+## Airbyte Services
 
 1. `TEMPORAL_HOST` - Defines the url where Temporal is hosted at. Please include the port. Airbyte services use this information.
 2. `INTERNAL_API_HOST` - Defines the url where the Airbyte Server is hosted at. Please include the port. Airbyte services use this information.
 3. `WEBAPP_URL` - Defines the url the Airbyte Webapp is hosted at. Please include the port. Airbyte services use this information. You can set this variable to your custom domain name to change the Airbyte instance URL provided in notifications.
 
-#### Jobs
+## Jobs
 
 1. `SYNC_JOB_MAX_ATTEMPTS` - Defines the number of attempts a sync will attempt before failing. _Legacy - this is superseded by the values below_
 2. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_SUCCESSIVE` - Defines the max number of successive attempts in which no data was synchronized before failing the job.
@@ -89,73 +60,22 @@ The following variables are relevant to both Docker and Kubernetes.
 7. `SYNC_JOB_RETRIES_PARTIAL_FAILURES_MAX_SUCCESSIVE` - Defines the max number of attempts in which some data was synchronized before failing the job.
 8. `SYNC_JOB_RETRIES_PARTIAL_FAILURES_MAX_TOTAL` - Defines the max number of attempts in which some data was synchronized before failing the job.
 9. `SYNC_JOB_MAX_TIMEOUT_DAYS` - Defines the number of days a sync job will execute for before timing out.
-10. `JOB_MAIN_CONTAINER_CPU_REQUEST` - Defines the job container's minimum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
-11. `JOB_MAIN_CONTAINER_CPU_LIMIT` - Defines the job container's maximum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
-12. `JOB_MAIN_CONTAINER_MEMORY_REQUEST` - Defines the job container's minimum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
-13. `JOB_MAIN_CONTAINER_MEMORY_LIMIT` - Defines the job container's maximum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
+10. `JOB_MAIN_CONTAINER_CPU_REQUEST` - Defines the job container's minimum CPU usage. Defaults to none.
+11. `JOB_MAIN_CONTAINER_CPU_LIMIT` - Defines the job container's maximum CPU usage. Defaults to none.
+12. `JOB_MAIN_CONTAINER_MEMORY_REQUEST` - Defines the job container's minimum RAM usage. Defaults to none.
+13. `JOB_MAIN_CONTAINER_MEMORY_LIMIT` - Defines the job container's maximum RAM usage. Defaults to none.
+14. `JOB_KUBE_TOLERATIONS` - Defines one or more Job pod tolerations. Tolerations are separated by ';'. Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and separated by `,`.
+15. `JOB_KUBE_NODE_SELECTORS` - Defines one or more Job pod node selectors. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`. It is the pod node selectors of the sync job and the default pod node selectors fallback for others jobs.
+16. `JOB_KUBE_ANNOTATIONS` - Defines one or more Job pod annotations. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`. It is the pod annotations of the sync job and the default pod annotations fallback for others jobs.
+17. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY` - Defines the Job pod connector image pull policy.
+18. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET` - Defines the Job pod connector image pull secret. Useful when hosting private images.
+19. `JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY` - Defines the image pull policy on the sidecar containers in the Job pod. Useful when there are cluster policies enforcing to always pull.
+20. `JOB_KUBE_SOCAT_IMAGE` - Defines the Job pod socat image.
+21. `JOB_KUBE_BUSYBOX_IMAGE` - Defines the Job pod busybox image.
+22. `JOB_KUBE_CURL_IMAGE` - Defines the Job pod curl image pull.
+23. `JOB_KUBE_NAMESPACE` - Defines the Kubernetes namespace Job pods are created in.
 
-#### Connections
-
-1. `MAX_FIELDS_PER_CONNECTION` - Defines the maximum number of fields able to be selected for a single connection.
-2. `MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE` - Defines the number of consecuative days of only failed jobs before the connection is disabled.
-3. `MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE` - Defines the number of consecuative failed jobs before the connection is disabled.
-
-#### Logging
-
-1. `LOG_LEVEL` - Defines log levels. Defaults to INFO. This value is expected to be one of the various Log4J log levels.
-
-#### Monitoring
-
-1. `PUBLISH_METRICS` - Defines whether to publish metrics collected by the Metrics Reporter. Defaults to false.
-2. `METRIC_CLIENT` - Defines which metrics client to use. Only relevant if `PUBLISH_METRICS` is set to true. Accepts either `datadog` or `otel`. Default to none.
-3. `DD_AGENT_HOST` - Defines the ip the Datadog metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `datadog`. Defaults to none.
-4. `DD_AGENT_PORT` - Defines the port the Datadog metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `datadog`. Defaults to none.
-5. `OTEL_COLLECTOR_ENDPOIN` - Defines the ip:port the OTEL metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `otel`. Defaults to none.
-
-#### Worker
-
-1. `MAX_CHECK_WORKERS` - Defines the maximum number of Non-Sync workers each Airbyte Worker container can support. Defaults to 5.
-2. `MAX_SYNC_WORKERS` - Defines the maximum number of Sync workers each Airbyte Worker container can support. Defaults to 10.
-
-#### Launcher
-
-1. `WORKLOAD_LAUNCHER_PARALLELISM` - Defines the number of jobs that can be started at once. Defaults to 10.
-
-#### Data Retention
-
-1. `TEMPORAL_HISTORY_RETENTION_IN_DAYS` - Defines the retention period of the job history in Temporal, defaults to 30 days. When running in docker,
-   this same value is applied to the log retention.
-
-### Docker-Only
-
-1. `WORKSPACE_DOCKER_MOUNT` - Defines the name of the Airbyte docker volume.
-2. `DOCKER_NETWORK` - Defines the docker network the new Scheduler launches jobs on.
-3. `LOCAL_DOCKER_MOUNT` - Defines the name of the docker mount that is used for local file handling. On Docker, this allows connector pods to interact with a volume for "local file" operations.
-
-#### Access
-
-Set to empty values, e.g. "" to disable basic auth. **Be sure to change these values**.
-
-1. `BASIC_AUTH_USERNAME=airbyte`
-2. `BASIC_AUTH_PASSWORD=password`
-3. `BASIC_AUTH_PROXY_TIMEOUT=600` - Defines the proxy timeout time for requests to Airbyte Server. Main use should be for dynamic discover when creating a connection (S3, JDBC, etc) that takes a long time.
-
-### Kubernetes-Only
-
-#### Jobs
-
-1. `JOB_KUBE_TOLERATIONS` - Defines one or more Job pod tolerations. Tolerations are separated by ';'. Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and separated by `,`.
-2. `JOB_KUBE_NODE_SELECTORS` - Defines one or more Job pod node selectors. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`. It is the pod node selectors of the sync job and the default pod node selectors fallback for others jobs.
-3. `JOB_KUBE_ANNOTATIONS` - Defines one or more Job pod annotations. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`. It is the pod annotations of the sync job and the default pod annotations fallback for others jobs.
-4. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY` - Defines the Job pod connector image pull policy.
-5. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET` - Defines the Job pod connector image pull secret. Useful when hosting private images.
-6. `JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY` - Defines the image pull policy on the sidecar containers in the Job pod. Useful when there are cluster policies enforcing to always pull.
-7. `JOB_KUBE_SOCAT_IMAGE` - Defines the Job pod socat image.
-8. `JOB_KUBE_BUSYBOX_IMAGE` - Defines the Job pod busybox image.
-9. `JOB_KUBE_CURL_IMAGE` - Defines the Job pod curl image pull.
-10. `JOB_KUBE_NAMESPACE` - Defines the Kubernetes namespace Job pods are created in.
-
-#### Jobs specific
+## Jobs-specific
 
 A job specific variable overwrites the default sync job variable defined above.
 
@@ -166,20 +86,44 @@ A job specific variable overwrites the default sync job variable defined above.
 5. `CHECK_JOB_KUBE_ANNOTATIONS` - Defines one or more pod annotations for the check job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
 6. `DISCOVER_JOB_KUBE_ANNOTATIONS` - Defines one or more pod annotations for the discover job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
 
-#### Worker
+## Connections
 
-1. `TEMPORAL_WORKER_PORTS` - Defines the local ports the Airbyte Worker pod uses to connect to the various Job pods. Port 9001 - 9040 are exposed by default in the Helm Chart.
+1. `MAX_FIELDS_PER_CONNECTION` - Defines the maximum number of fields able to be selected for a single connection.
+2. `MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE` - Defines the number of consecutive days of only failed jobs before the connection is disabled.
+3. `MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE` - Defines the number of consecutive failed jobs before the connection is disabled.
 
-#### Logging
+## Logging
 
-Note that Airbyte does not support logging to separate Cloud Storage providers.
+See [State and Logging Storage](../deploying-airbyte/integrations/storage.md) for more information on configuring logging.
 
-Please see [here](https://docs.airbyte.com/deploying-airbyte/on-kubernetes-via-helm#configure-logs) for more information on configuring Kubernetes logging.
+1. `LOG_LEVEL` - Defines log levels. Defaults to INFO. This value is expected to be one of the various Log4J log levels.
+2. `GCS_LOG_BUCKET` - Defines the GCS bucket to store logs.
+3. `S3_BUCKET` - Defines the S3 bucket to store logs.
+4. `S3_REGION` - Defines the S3 region the S3 log bucket is in.
+5. `S3_AWS_KEY` - Defines the key used to access the S3 log bucket.
+6. `S3_AWS_SECRET` - Defines the secret used to access the S3 log bucket.
+7. `S3_MINIO_ENDPOINT` - Defines the url Minio is hosted at so Airbyte can use Minio to store logs.
+8. `S3_PATH_STYLE_ACCESS` - Set to `true` if using Minio to store logs. Empty otherwise.
 
-1. `GCS_LOG_BUCKET` - Defines the GCS bucket to store logs.
-2. `S3_BUCKET` - Defines the S3 bucket to store logs.
-3. `S3_RREGION` - Defines the S3 region the S3 log bucket is in.
-4. `S3_AWS_KEY` - Defines the key used to access the S3 log bucket.
-5. `S3_AWS_SECRET` - Defines the secret used to access the S3 log bucket.
-6. `S3_MINIO_ENDPOINT` - Defines the url Minio is hosted at so Airbyte can use Minio to store logs.
-7. `S3_PATH_STYLE_ACCESS` - Set to `true` if using Minio to store logs. Empty otherwise.
+## Monitoring
+
+1. `PUBLISH_METRICS` - Defines whether to publish metrics collected by the Metrics Reporter. Defaults to false.
+2. `METRIC_CLIENT` - Defines which metrics client to use. Only relevant if `PUBLISH_METRICS` is set to true. Accepts either `datadog` or `otel`. Default to none.
+3. `DD_AGENT_HOST` - Defines the ip the Datadog metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `datadog`. Defaults to none.
+4. `DD_AGENT_PORT` - Defines the port the Datadog metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `datadog`. Defaults to none.
+5. `OTEL_COLLECTOR_ENDPOINT` - Defines the ip:port the OTEL metric client sends metrics to. Only relevant if `METRIC_CLIENT` is set to `otel`. Defaults to none.
+
+## Worker
+
+1. `MAX_CHECK_WORKERS` - Defines the maximum number of Non-Sync workers each Airbyte Worker container can support. Defaults to 5.
+2. `MAX_SYNC_WORKERS` - Defines the maximum number of Sync workers each Airbyte Worker container can support. Defaults to 10.
+3. `TEMPORAL_WORKER_PORTS` - Defines the local ports the Airbyte Worker pod uses to connect to the various Job pods. Port 9001 - 9040 are exposed by default in the Helm Chart.
+4. `DISCOVER_REFRESH_WINDOW_MINUTES` - The minimum number of minutes Airbyte will wait to refresh a schema. By setting a larger number, you delay automatic schema refreshes and improve sync performance. The default in self-managed instances is 1440 (once per day), and in Cloud it's 15 (every 15 minutes). The lowest interval you can set is 1 (once per minute). Set this to 0 to disable automatic schema refreshes.
+
+## Launcher
+
+1. `WORKLOAD_LAUNCHER_PARALLELISM` - Defines the number of jobs that can be started at once. Defaults to 10.
+
+## Data Retention
+
+1. `TEMPORAL_HISTORY_RETENTION_IN_DAYS` - Defines the retention period of the job history in Temporal. Defaults to 30 days.

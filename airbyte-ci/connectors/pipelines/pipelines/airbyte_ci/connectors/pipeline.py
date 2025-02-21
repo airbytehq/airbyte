@@ -3,6 +3,7 @@
 #
 
 """This module groups the functions to run full pipelines for connector testing."""
+
 from __future__ import annotations
 
 import sys
@@ -13,6 +14,7 @@ import anyio
 import dagger
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from dagger import Config
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
 from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
@@ -108,7 +110,7 @@ async def run_connectors_pipelines(
 
         async with anyio.create_task_group() as tg_connectors:
             for context in contexts:
-                context.dagger_client = dagger_client.pipeline(f"{pipeline_name} - {context.connector.technical_name}")
+                context.dagger_client = dagger_client
                 context.dockerd_service = dockerd_service
                 tg_connectors.start_soon(
                     connector_pipeline,

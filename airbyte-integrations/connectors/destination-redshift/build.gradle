@@ -4,7 +4,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.44.14'
+    cdkVersionRequired = '0.46.0'
     features = ['db-destinations', 's3-destinations', 'typing-deduping']
     useLocalCdk = false
 }
@@ -35,13 +35,13 @@ dependencies {
     implementation 'com.amazonaws:aws-java-sdk-s3:1.11.978'
     // TODO: Verify no aws sdk code is pulled by this dependency causing classpath conflicts
     // https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-jdbc10-driver-differences.html
-    implementation 'com.amazon.redshift:redshift-jdbc42:2.1.0.26'
-    implementation 'org.apache.commons:commons-csv:1.4'
-    implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
+    implementation 'com.amazon.redshift:redshift-jdbc42:2.1.0.30'
+    implementation 'org.apache.commons:commons-csv:1.11.0'
+    implementation 'com.github.alexmojaki:s3-stream-upload:2.2.4'
 
-    testImplementation 'org.apache.commons:commons-text:1.10.0'
-    testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
-    testImplementation "org.mockito:mockito-inline:4.1.0"
+    testImplementation 'org.apache.commons:commons-text:1.12.0'
+    testImplementation 'org.apache.commons:commons-lang3:3.17.0'
+    testImplementation 'org.apache.commons:commons-dbcp2:2.12.0'
+    testImplementation "org.mockito:mockito-inline:5.2.0"
 
 }

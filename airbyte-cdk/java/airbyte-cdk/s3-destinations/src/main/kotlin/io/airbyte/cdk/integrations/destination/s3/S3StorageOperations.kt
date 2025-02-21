@@ -22,8 +22,7 @@ import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFact
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.IOException
-import java.io.OutputStream
+import java.io.*
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -45,6 +44,7 @@ open class S3StorageOperations(
     private val s3FilenameTemplateManager: S3FilenameTemplateManager = S3FilenameTemplateManager()
 
     private val partCounts: ConcurrentMap<String, AtomicInteger> = ConcurrentHashMap()
+    private val objectNameByPrefix: ConcurrentMap<String, Set<String>> = ConcurrentHashMap()
 
     override fun getBucketObjectPath(
         namespace: String?,
@@ -167,30 +167,58 @@ open class S3StorageOperations(
      * @return the uploaded filename, which is different from the serialized buffer filename
      * </extension></partId>
      */
+    @VisibleForTesting
+    fun getFileName(
+        objectPath: String,
+        recordsData: SerializableBuffer,
+    ): String {
+        var fullObjectKey: String
+        do {
+            val partId: String = getPartId(objectPath)
+            val fileExtension: String = getExtension(recordsData.filename)
+            fullObjectKey =
+                if (!s3Config.fileNamePattern.isNullOrBlank()) {
+                    s3FilenameTemplateManager.applyPatternToFilename(
+                        S3FilenameTemplateParameterObject.builder()
+                            .partId(partId)
+                            .recordsData(recordsData)
+                            .objectPath(objectPath)
+                            .fileExtension(fileExtension)
+                            .fileNamePattern(s3Config.fileNamePattern)
+                            .build(),
+                    )
+                } else {
+                    objectPath + partId + fileExtension
+                }
+        } while (objectNameByPrefix.getValue(objectPath).contains(fullObjectKey))
+        return fullObjectKey
+    }
+
     @Throws(IOException::class)
     private fun loadDataIntoBucket(
         objectPath: String,
         recordsData: SerializableBuffer,
         generationId: Long
     ): String {
+        val fullObjectKey: String = getFileName(objectPath, recordsData)
+        return loadDataIntoBucket(
+            fullObjectKey,
+            recordsData.filename,
+            recordsData.inputStream!!,
+            generationId
+        )
+    }
+
+    @Throws(IOException::class)
+    public fun loadDataIntoBucket(
+        fullObjectKey: String,
+        fileName: String,
+        fileContent: InputStream,
+        generationId: Long
+    ): String {
         val partSize: Long = DEFAULT_PART_SIZE.toLong()
         val bucket: String? = s3Config.bucketName
-        val partId: String = getPartId(objectPath)
-        val fileExtension: String = getExtension(recordsData.filename)
-        val fullObjectKey: String =
-            if (!s3Config.fileNamePattern.isNullOrBlank()) {
-                s3FilenameTemplateManager.applyPatternToFilename(
-                    S3FilenameTemplateParameterObject.builder()
-                        .partId(partId)
-                        .recordsData(recordsData)
-                        .objectPath(objectPath)
-                        .fileExtension(fileExtension)
-                        .fileNamePattern(s3Config.fileNamePattern)
-                        .build(),
-                )
-            } else {
-                objectPath + partId + fileExtension
-            }
+
         val metadata: MutableMap<String, String> = HashMap()
         for (blobDecorator: BlobDecorator in blobDecorators) {
             blobDecorator.updateMetadata(metadata, getMetadataMapping())
@@ -220,13 +248,13 @@ open class S3StorageOperations(
 
         try {
             rawOutputStream.use { outputStream ->
-                recordsData.inputStream!!.use { dataStream ->
+                fileContent.use { dataStream ->
                     dataStream.transferTo(outputStream)
                     succeeded = true
                 }
             }
         } catch (e: Exception) {
-            logger.error(e) { "Failed to load data into storage $objectPath" }
+            logger.error(e) { "Failed to load data into storage $fullObjectKey" }
             throw RuntimeException(e)
         } finally {
             if (!succeeded) {
@@ -241,7 +269,7 @@ open class S3StorageOperations(
         }
         val newFilename: String = getFilename(fullObjectKey)
         logger.info {
-            "Uploaded buffer file to storage: ${recordsData.filename} -> $fullObjectKey (filename: $newFilename)"
+            "Uploaded buffer file to storage: $fileName -> $fullObjectKey (filename: $newFilename)"
         }
         return newFilename
     }
@@ -263,31 +291,14 @@ open class S3StorageOperations(
             ) {
                 AtomicInteger(0)
             }
-
-        if (partCount.get() == 0) {
-            var objects: ObjectListing?
-            var objectCount = 0
-
-            val bucket: String? = s3Config.bucketName
-            objects = s3Client.listObjects(bucket, objectPath)
-
-            if (objects != null) {
-                objectCount += objects.objectSummaries.size
-                while (objects != null && objects.nextMarker != null) {
-                    objects =
-                        s3Client.listObjects(
-                            ListObjectsRequest()
-                                .withBucketName(bucket)
-                                .withPrefix(objectPath)
-                                .withMarker(objects.nextMarker),
-                        )
-                    if (objects != null) {
-                        objectCount += objects.objectSummaries.size
-                    }
-                }
+        objectNameByPrefix.computeIfAbsent(
+            objectPath,
+        ) {
+            var objectList: Set<String> = setOf()
+            forObjectsByPage(objectPath) { objectSummaries ->
+                objectList = objectList + objectSummaries.map { it.key }
             }
-
-            partCount.set(objectCount)
+            objectList
         }
 
         return partCount.getAndIncrement().toString()
@@ -616,7 +627,7 @@ open class S3StorageOperations(
         private const val FORMAT_VARIABLE_EPOCH: String = "\${EPOCH}"
         private const val FORMAT_VARIABLE_UUID: String = "\${UUID}"
         private const val GZ_FILE_EXTENSION: String = "gz"
-        private const val GENERATION_ID_USER_META_KEY = "ab-generation-id"
+        const val GENERATION_ID_USER_META_KEY = "ab-generation-id"
         @VisibleForTesting
         @JvmStatic
         fun getFilename(fullPath: String): String {

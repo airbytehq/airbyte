@@ -1,0 +1,3035 @@
+version: 5.7.3
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://app.mixmax.com/
+  API Docs: https://developer.mixmax.com/reference/getting-started-with-the-api
+  Auth Keys: https://app.mixmax.com/dashboard/settings/personal/integrations
+
+check:
+  type: CheckStream
+  stream_names:
+    - appointmentlinks
+
+definitions:
+  streams:
+    appointmentlinks:
+      type: DeclarativeStream
+      name: appointmentlinks
+      primary_key:
+        - userId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: appointmentlinks/me
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/appointmentlinks"
+    codesnippets:
+      type: DeclarativeStream
+      name: codesnippets
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: codesnippets
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/codesnippets"
+    insightsreports:
+      type: DeclarativeStream
+      name: insightsreports
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: insightsreports
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/insightsreports"
+    integrations_commands:
+      type: DeclarativeStream
+      name: integrations_commands
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: integrations/commands
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/integrations_commands"
+    integrations_enhancements:
+      type: DeclarativeStream
+      name: integrations_enhancements
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: integrations/enhancements
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/integrations_enhancements"
+    integrations_linkresolvers:
+      type: DeclarativeStream
+      name: integrations_linkresolvers
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: integrations/linkresolvers
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/integrations_linkresolvers"
+    integrations_sidebars:
+      type: DeclarativeStream
+      name: integrations_sidebars
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: integrations/sidebars
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/integrations_sidebars"
+    livefeed:
+      type: DeclarativeStream
+      name: livefeed
+      primary_key:
+        - uid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: livefeed
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - stats
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uid
+              value: "{{ now_utc() }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/livefeed"
+    meetingtypes:
+      type: DeclarativeStream
+      name: meetingtypes
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: meetingtypes
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/meetingtypes"
+    messages:
+      type: DeclarativeStream
+      name: messages
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: messages
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/messages"
+    rules:
+      type: DeclarativeStream
+      name: rules
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: rules
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/rules"
+    rules_actions:
+      type: DeclarativeStream
+      name: rules_actions
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: rules/{{ stream_partition.rulesid }}/actions
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: _id
+              partition_field: rulesid
+              stream:
+                $ref: "#/definitions/streams/rules"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/rules_actions"
+    sequences:
+      type: DeclarativeStream
+      name: sequences
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: sequences
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%ms"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sequences"
+    sequences_recipients:
+      type: DeclarativeStream
+      name: sequences_recipients
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: sequences/{{ stream_partition.sequencesid }}/recipients/
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: _id
+              partition_field: sequencesid
+              stream:
+                $ref: "#/definitions/streams/sequences"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%ms"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sequences_recipients"
+    sequencefolders:
+      type: DeclarativeStream
+      name: sequencefolders
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: sequencefolders
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sequencefolders"
+    snippettags:
+      type: DeclarativeStream
+      name: snippettags
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: snippettags
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%ms"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/snippettags"
+    snippettags_snippets:
+      type: DeclarativeStream
+      name: snippettags_snippets
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: snippettags/{{ stream_partition.snippettagid }}/snippets
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: _id
+              partition_field: snippettagid
+              stream:
+                $ref: "#/definitions/streams/snippettags"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%ms"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/snippettags_snippets"
+    userpreferences_me:
+      type: DeclarativeStream
+      name: userpreferences_me
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: userpreferences/me
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/userpreferences_me"
+    users_me:
+      type: DeclarativeStream
+      name: users_me
+      primary_key:
+        - _id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users/me
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ response.get("hasNext", {}) == False }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users_me"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.mixmax.com/v1/
+    authenticator:
+      type: ApiKeyAuthenticator
+      inject_into:
+        type: RequestOption
+        inject_into: header
+        field_name: X-API-Token
+      api_token: '{{ config["api_key"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/appointmentlinks"
+  - $ref: "#/definitions/streams/codesnippets"
+  - $ref: "#/definitions/streams/insightsreports"
+  - $ref: "#/definitions/streams/integrations_commands"
+  - $ref: "#/definitions/streams/integrations_enhancements"
+  - $ref: "#/definitions/streams/integrations_linkresolvers"
+  - $ref: "#/definitions/streams/integrations_sidebars"
+  - $ref: "#/definitions/streams/livefeed"
+  - $ref: "#/definitions/streams/meetingtypes"
+  - $ref: "#/definitions/streams/messages"
+  - $ref: "#/definitions/streams/rules"
+  - $ref: "#/definitions/streams/rules_actions"
+  - $ref: "#/definitions/streams/sequences"
+  - $ref: "#/definitions/streams/sequences_recipients"
+  - $ref: "#/definitions/streams/sequencefolders"
+  - $ref: "#/definitions/streams/snippettags"
+  - $ref: "#/definitions/streams/snippettags_snippets"
+  - $ref: "#/definitions/streams/userpreferences_me"
+  - $ref: "#/definitions/streams/users_me"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    appointmentlinks: true
+    codesnippets: true
+    insightsreports: true
+    integrations_commands: true
+    integrations_enhancements: true
+    integrations_linkresolvers: true
+    integrations_sidebars: true
+    livefeed: true
+    meetingtypes: true
+    messages: true
+    rules: true
+    rules_actions: true
+    sequences: true
+    sequences_recipients: true
+    sequencefolders: true
+    snippettags: true
+    snippettags_snippets: true
+    userpreferences_me: true
+    users_me: true
+  testedStreams:
+    appointmentlinks:
+      streamHash: a4f4e0f2f095d51ad2d0fb50e6424bed59dbf2ae
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    codesnippets:
+      streamHash: 8bb8b1148d38417c71e62ab2861325af0d74f181
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    insightsreports:
+      streamHash: 16b8f388e71f621fe7516a1daf1266525270c4f6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    integrations_commands:
+      streamHash: 5918b49f6bccd1b6b020bb4ac131b28af51bbf43
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    integrations_enhancements:
+      streamHash: 14ff67bd24d01eff234c07684f9500482370b34e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    integrations_linkresolvers:
+      streamHash: 7798f8a4c16e7506b2cf18a31d1d9e84b6325f20
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    integrations_sidebars:
+      streamHash: 889dcaf0987a5977ef102646d90411938b86dabd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    livefeed:
+      streamHash: 7fe519edb25f385ab837c1f89d2d5936768421f4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    meetingtypes:
+      streamHash: 8a221ac0ca7b74990ab1772452493e1a6ce7a49b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    messages:
+      streamHash: 61ce00eee1f4b5a7c611b3555d857de8306af8d1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    rules:
+      streamHash: 59011ebc375e1d6e3d69fd8b62ffefd19aa97606
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    rules_actions:
+      streamHash: 0f51962a59bb62345e358c43c74e047679a8cde3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    sequences:
+      streamHash: e75c1eb444a9e62c7a0fb439ef295020fba27c6c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    sequences_recipients:
+      streamHash: 31ab7dec133c9f7a77c34971fde7f31996fcdb2d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    sequencefolders:
+      streamHash: feed52f3ad874580630531a52e4ca265730098ce
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    snippettags:
+      streamHash: 88d305a8b485baf7001bfc13a85cd37565543f41
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    snippettags_snippets:
+      streamHash: 9946c6055b487131a23b3e92466cbcca1c7aa203
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    userpreferences_me:
+      streamHash: 96179649ab97674648b82b0e8d2dd5e69d3849ec
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users_me:
+      streamHash: c218bf8971ab8bbc4030d0690883b063779a06ba
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  appointmentlinks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type:
+          - string
+          - "null"
+      userId:
+        type: string
+    required:
+      - userId
+  codesnippets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type: string
+      background:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type: string
+      html:
+        type:
+          - string
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      theme:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+    required:
+      - _id
+      - createdAt
+  insightsreports:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      _id:
+        type: string
+      createdAt:
+        type: string
+      query:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+    required:
+      - _id
+      - createdAt
+  integrations_commands:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type: string
+      commandParameterHintsUrl:
+        type:
+          - string
+          - "null"
+      commandResolverUrl:
+        type:
+          - string
+          - "null"
+      commands:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      parameterPlaceholder:
+        type:
+          - string
+          - "null"
+    required:
+      - _id
+  integrations_enhancements:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type: string
+      activateUrl:
+        type:
+          - string
+          - "null"
+      category:
+        anyOf:
+          - type: string
+          - type: array
+            items:
+              type: string
+      commands:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      editorHeight:
+        type:
+          - number
+          - "null"
+      editorUrl:
+        type:
+          - string
+          - "null"
+      editorWidth:
+        type:
+          - number
+          - "null"
+      icon:
+        type:
+          - string
+          - "null"
+      iconTooltip:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      isEditable:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      resolverUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - _id
+  integrations_linkresolvers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _id:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type:
+          - string
+          - "null"
+      order:
+        type:
+          - number
+          - "null"
+      regex:
+        type:
+          - string
+          - "null"
+      resolverUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - _id
+      - createdAt
+  integrations_sidebars:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type: string
+      iconColor:
+        type:
+          - string
+          - "null"
+      iconImage:
+        type:
+          - string
+          - "null"
+      iconName:
+        type:
+          - string
+          - "null"
+      mixmaxId:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - _id
+  livefeed:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accepted:
+        type:
+          - number
+          - "null"
+      bounced:
+        type:
+          - number
+          - "null"
+      clicked:
+        type:
+          - number
+          - "null"
+      declined:
+        type:
+          - number
+          - "null"
+      delivered:
+        type:
+          - number
+          - "null"
+      downloaded:
+        type:
+          - number
+          - "null"
+      opened:
+        type:
+          - number
+          - "null"
+      percentages:
+        type:
+          - object
+          - "null"
+        properties:
+          accepted:
+            type:
+              - number
+              - "null"
+          bounced:
+            type:
+              - number
+              - "null"
+          clicked:
+            type:
+              - number
+              - "null"
+          declined:
+            type:
+              - number
+              - "null"
+          delivered:
+            type:
+              - number
+              - "null"
+          downloaded:
+            type:
+              - number
+              - "null"
+          opened:
+            type:
+              - number
+              - "null"
+          replied:
+            type:
+              - number
+              - "null"
+          tasksCompleted:
+            type:
+              - number
+              - "null"
+          tentative:
+            type:
+              - number
+              - "null"
+          unsubscribed:
+            type:
+              - number
+              - "null"
+      recipients:
+        type:
+          - number
+          - "null"
+      replied:
+        type:
+          - number
+          - "null"
+      sent:
+        type:
+          - number
+          - "null"
+      tentative:
+        type:
+          - number
+          - "null"
+      uid:
+        type: string
+    required:
+      - uid
+  meetingtypes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      _id:
+        type: string
+      anyRoomInBuilding:
+        type:
+          - array
+          - "null"
+      buffer:
+        type:
+          - number
+          - "null"
+      calendarIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      createdAt:
+        type: string
+      customFields:
+        type:
+          - array
+          - "null"
+      day0:
+        type:
+          - object
+          - "null"
+        properties:
+          enabled:
+            type:
+              - boolean
+              - "null"
+          timeslots:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                endTime:
+                  type:
+                    - string
+                    - "null"
+                startTime:
+                  type:
+                    - string
+                    - "null"
+      day1:
+        type:
+          - object
+          - "null"
+        properties:
+          enabled:
+            type:
+              - boolean
+              - "null"
+          timeslots:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                endTime:
+                  type:
+                    - string
+                    - "null"
+                startTime:
+                  type:
+                    - string
+                    - "null"
+      day2:
+        type:
+          - object
+          - "null"
+        properties:
+          enabled:
+            type:
+              - boolean
+              - "null"
+          timeslots:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                endTime:
+                  type:
+                    - string
+                    - "null"
+                startTime:
+                  type:
+                    - string
+                    - "null"
+      day3:
+        type:
+          - object
+          - "null"
+        properties:
+          enabled:
+            type:
+              - boolean
+              - "null"
+          timeslots:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                endTime:
+                  type:
+                    - string
+                    - "null"
+                startTime:
+                  type:
+                    - string
+                    - "null"
+      day4:
+        type:
+          - object
+          - "null"
+        properties:
+          enabled:
+            type:
+              - boolean
+              - "null"
+          timeslots:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                endTime:
+                  type:
+                    - string
+                    - "null"
+                startTime:
+                  type:
+                    - string
+                    - "null"
+      day5:
+        type:
+          - object
+          - "null"
+        properties:
+          enabled:
+            type:
+              - boolean
+              - "null"
+          timeslots:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                endTime:
+                  type:
+                    - string
+                    - "null"
+                startTime:
+                  type:
+                    - string
+                    - "null"
+      day6:
+        type:
+          - object
+          - "null"
+        properties:
+          enabled:
+            type:
+              - boolean
+              - "null"
+          timeslots:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                endTime:
+                  type:
+                    - string
+                    - "null"
+                startTime:
+                  type:
+                    - string
+                    - "null"
+      daysFromNow:
+        type:
+          - object
+          - "null"
+        properties:
+          end:
+            type:
+              - number
+              - "null"
+          start:
+            type:
+              - number
+              - "null"
+          unit:
+            type:
+              - string
+              - "null"
+      defaultGuests:
+        type:
+          - array
+          - "null"
+      defaults:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          location:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+      durationMin:
+        type:
+          - number
+          - "null"
+      guestsCanModifyInvites:
+        type:
+          - boolean
+          - "null"
+      includeMessagePermaLink:
+        type:
+          - boolean
+          - "null"
+      integrations:
+        type:
+          - object
+          - "null"
+        properties:
+          hangoutsMeet:
+            type:
+              - boolean
+              - "null"
+          zoom:
+            type:
+              - boolean
+              - "null"
+      link:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      preventDoubleBooking:
+        type:
+          - array
+          - "null"
+      reducedInterval:
+        type:
+          - boolean
+          - "null"
+      roomsAndResources:
+        type:
+          - array
+          - "null"
+      roundRobinQueue:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      ruleIds:
+        type:
+          - array
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+    required:
+      - _id
+      - createdAt
+  messages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type: string
+      attachments:
+        type:
+          - array
+          - "null"
+      bcc:
+        type:
+          - array
+          - "null"
+      body:
+        type:
+          - string
+          - "null"
+      cc:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            email:
+              type:
+                - string
+                - "null"
+      created:
+        type:
+          - number
+          - "null"
+      crmsConnected:
+        type:
+          - array
+          - "null"
+      fileTrackingEnabled:
+        type:
+          - boolean
+          - "null"
+      from:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      linkTrackingEnabled:
+        type:
+          - boolean
+          - "null"
+      notificationsEnabled:
+        type:
+          - boolean
+          - "null"
+      sent:
+        type:
+          - number
+          - "null"
+      sequence:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          recipientId:
+            type:
+              - string
+              - "null"
+          stageId:
+            type:
+              - string
+              - "null"
+      showContentTeamFeed:
+        type:
+          - boolean
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      syncToOrg:
+        type:
+          - boolean
+          - "null"
+      to:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            email:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      trackingEnabled:
+        type:
+          - boolean
+          - "null"
+      updatedAt:
+        type: number
+      userId:
+        type:
+          - string
+          - "null"
+    required:
+      - _id
+      - updatedAt
+  rules:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type: string
+      createdAt:
+        type: string
+      isPaused:
+        type:
+          - boolean
+          - "null"
+      modifiedAt:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      trigger:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          eventName:
+            type:
+              - string
+              - "null"
+      userId:
+        type:
+          - string
+          - "null"
+    required:
+      - _id
+      - createdAt
+  rules_actions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      _id:
+        type: string
+      createdAt:
+        type: string
+      isPaused:
+        type:
+          - boolean
+          - "null"
+      modifiedAt:
+        type:
+          - string
+          - "null"
+      ruleId:
+        type:
+          - string
+          - "null"
+    required:
+      - _id
+      - createdAt
+  sequences:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type: string
+      createdAt:
+        type: string
+      fileTrackingEnabled:
+        type:
+          - boolean
+          - "null"
+      linkTrackingEnabled:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      notificationsEnabled:
+        type:
+          - boolean
+          - "null"
+      stages:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      syncToOrg:
+        type:
+          - boolean
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+      variables:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - _id
+      - createdAt
+  sequences_recipients:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type: string
+      analytics:
+        type:
+          - object
+          - "null"
+        properties:
+          events:
+            type:
+              - object
+              - "null"
+            properties:
+              clicks:
+                type:
+                  - number
+                  - "null"
+              downloads:
+                type:
+                  - number
+                  - "null"
+              opens:
+                type:
+                  - number
+                  - "null"
+      completedReason:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type: number
+      lastStageSentOrdinal:
+        type:
+          - number
+          - "null"
+      rstFailed:
+        type:
+          - number
+          - "null"
+      sequence:
+        type:
+          - object
+          - "null"
+        properties:
+          _id:
+            type:
+              - string
+              - "null"
+      sequenceId:
+        type:
+          - string
+          - "null"
+      stages:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            accepted:
+              type:
+                - number
+                - "null"
+            bounced:
+              type:
+                - number
+                - "null"
+            clicks:
+              type:
+                - number
+                - "null"
+            declined:
+              type:
+                - number
+                - "null"
+            downloads:
+              type:
+                - number
+                - "null"
+            failedError:
+              type:
+                - string
+                - "null"
+            from:
+              type:
+                - object
+                - "null"
+              properties:
+                email:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+            hasFiles:
+              type:
+                - number
+                - "null"
+            hasLinks:
+              type:
+                - number
+                - "null"
+            hasOpens:
+              type:
+                - number
+                - "null"
+            messageId:
+              type:
+                - string
+                - "null"
+            opens:
+              type:
+                - number
+                - "null"
+            ordinal:
+              type:
+                - number
+                - "null"
+            processedAt:
+              type:
+                - number
+                - "null"
+            replied:
+              type:
+                - number
+                - "null"
+            scheduleBetween:
+              type:
+                - object
+                - "null"
+              properties:
+                end:
+                  type:
+                    - number
+                    - "null"
+                start:
+                  type:
+                    - number
+                    - "null"
+                timezone:
+                  type:
+                    - string
+                    - "null"
+            scheduledAt:
+              type:
+                - number
+                - "null"
+            senderReplied:
+              type:
+                - number
+                - "null"
+            sentAt:
+              type:
+                - number
+                - "null"
+            stageId:
+              type:
+                - string
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+            tentative:
+              type:
+                - number
+                - "null"
+      state:
+        type:
+          - string
+          - "null"
+      to:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+      userId:
+        type:
+          - string
+          - "null"
+    required:
+      - _id
+      - createdAt
+  sequencefolders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type: string
+      createdAt:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      savedAt:
+        type:
+          - string
+          - "null"
+      sequenceIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      shared:
+        type:
+          - object
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+    required:
+      - _id
+      - createdAt
+  snippettags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type: string
+      createdAt:
+        type: number
+      isInline:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      savedAt:
+        type:
+          - number
+          - "null"
+      shared:
+        type:
+          - object
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+    required:
+      - _id
+      - createdAt
+  snippettags_snippets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type: string
+      createdAt:
+        type: number
+      isInline:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      savedAt:
+        type:
+          - number
+          - "null"
+      savedBy:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+    required:
+      - _id
+      - createdAt
+  userpreferences_me:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type: string
+      appHotkeyMac:
+        type:
+          - string
+          - "null"
+      appHotkeyWin:
+        type:
+          - string
+          - "null"
+      archiveOnCmdEnter:
+        type:
+          - boolean
+          - "null"
+      archiveOnReminder:
+        type:
+          - boolean
+          - "null"
+      autoLinkConversionEnabled:
+        type:
+          - boolean
+          - "null"
+      calendarAppointmentSlots:
+        type:
+          - object
+          - "null"
+        properties:
+          limitMaxBookedSlots:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              perDay:
+                type:
+                  - number
+                  - "null"
+          linkEnabled:
+            type:
+              - boolean
+              - "null"
+      calendarDragChunkingEnabled:
+        type:
+          - boolean
+          - "null"
+      calendarHourFormatAMPM:
+        type:
+          - boolean
+          - "null"
+      defaultCalendarType:
+        type:
+          - string
+          - "null"
+      defaultDashboardNavDrawerWidth:
+        type:
+          - string
+          - "null"
+      defaultFileTrackingEnabled:
+        type:
+          - boolean
+          - "null"
+      defaultFollowup:
+        type:
+          - object
+          - "null"
+        properties:
+          autoRemind:
+            type:
+              - boolean
+              - "null"
+          trigger:
+            type:
+              - string
+              - "null"
+          unparsedDate:
+            type:
+              - string
+              - "null"
+      defaultFontSize:
+        type:
+          - string
+          - "null"
+      defaultImportantReminders:
+        type:
+          - boolean
+          - "null"
+      defaultLinkTrackingEnabled:
+        type:
+          - boolean
+          - "null"
+      defaultMeetingLength:
+        type:
+          - number
+          - "null"
+      defaultMeetingType:
+        type:
+          - string
+          - "null"
+      defaultNakedLinkTrackingEnabled:
+        type:
+          - boolean
+          - "null"
+      defaultNarrowWidthEnabled:
+        type:
+          - boolean
+          - "null"
+      defaultNotificationsEnabled:
+        type:
+          - boolean
+          - "null"
+      defaultSlackNotificationsEnabled:
+        type:
+          - boolean
+          - "null"
+      defaultSmartRemindersEnabled:
+        type:
+          - boolean
+          - "null"
+      defaultTrackingEnabled:
+        type:
+          - boolean
+          - "null"
+      disableEUTracking:
+        type:
+          - boolean
+          - "null"
+      emojiEnabled:
+        type:
+          - boolean
+          - "null"
+      enableTrackingIndicatorsInGmail:
+        type:
+          - boolean
+          - "null"
+      followupPresets:
+        type:
+          - object
+          - "null"
+        properties:
+          reminder:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          sendLater:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      hideVisibleCalendarsSidebar:
+        type:
+          - boolean
+          - "null"
+      includeMessagePermaLink:
+        type:
+          - boolean
+          - "null"
+      inlinePDFPreviewEnabled:
+        type:
+          - boolean
+          - "null"
+      newsletterOptIn:
+        type:
+          - boolean
+          - "null"
+      preventDoubleBookings:
+        type:
+          - boolean
+          - "null"
+      sendFromAccounts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            email:
+              type:
+                - string
+                - "null"
+            isAlias:
+              type:
+                - boolean
+                - "null"
+            isGmailDefault:
+              type:
+                - boolean
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      sidebarEnabled:
+        type:
+          - boolean
+          - "null"
+      signatures:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            email:
+              type:
+                - string
+                - "null"
+            source:
+              type:
+                - string
+                - "null"
+      slashCommandMenuEnabled:
+        type:
+          - boolean
+          - "null"
+      slashMeeting:
+        type:
+          - object
+          - "null"
+        properties:
+          slots:
+            type:
+              - number
+              - "null"
+      templateShortcutMenuEnabled:
+        type:
+          - boolean
+          - "null"
+      undoDelay:
+        type:
+          - number
+          - "null"
+      undoSendEnabled:
+        type:
+          - boolean
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+      weekStartDay:
+        type:
+          - number
+          - "null"
+      workHours:
+        type:
+          - object
+          - "null"
+        properties:
+          day0:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              timeslots:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    endTime:
+                      type:
+                        - string
+                        - "null"
+                    startTime:
+                      type:
+                        - string
+                        - "null"
+          day1:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              timeslots:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    endTime:
+                      type:
+                        - string
+                        - "null"
+                    startTime:
+                      type:
+                        - string
+                        - "null"
+          day2:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              timeslots:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    endTime:
+                      type:
+                        - string
+                        - "null"
+                    startTime:
+                      type:
+                        - string
+                        - "null"
+          day3:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              timeslots:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    endTime:
+                      type:
+                        - string
+                        - "null"
+                    startTime:
+                      type:
+                        - string
+                        - "null"
+          day4:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              timeslots:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    endTime:
+                      type:
+                        - string
+                        - "null"
+                    startTime:
+                      type:
+                        - string
+                        - "null"
+          day5:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              timeslots:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    endTime:
+                      type:
+                        - string
+                        - "null"
+                    startTime:
+                      type:
+                        - string
+                        - "null"
+          day6:
+            type:
+              - object
+              - "null"
+            properties:
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              timeslots:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    endTime:
+                      type:
+                        - string
+                        - "null"
+                    startTime:
+                      type:
+                        - string
+                        - "null"
+    required:
+      - _id
+  users_me:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type: string
+    required:
+      - _id

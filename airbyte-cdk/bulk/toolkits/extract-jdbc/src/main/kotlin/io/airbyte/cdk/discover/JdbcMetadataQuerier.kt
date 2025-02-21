@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.discover
 
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
@@ -13,7 +14,7 @@ import io.airbyte.cdk.read.SelectColumns
 import io.airbyte.cdk.read.SelectQueryGenerator
 import io.airbyte.cdk.read.SelectQuerySpec
 import io.airbyte.cdk.read.optimize
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.Connection
@@ -46,8 +47,11 @@ class JdbcMetadataQuerier(
     override fun streamNamespaces(): List<String> =
         memoizedTableNames.mapNotNull { it.namespace() }.distinct()
 
-    override fun streamNames(streamNamespace: String?): List<String> =
-        memoizedTableNames.filter { it.namespace() == streamNamespace }.map { it.name }
+    override fun streamNames(streamNamespace: String?): List<StreamIdentifier> =
+        memoizedTableNames
+            .filter { it.namespace() == streamNamespace }
+            .map { StreamDescriptor().withName(it.name).withNamespace(it.namespace()) }
+            .map(StreamIdentifier::from)
 
     fun <T> swallow(supplier: () -> T): T? {
         try {
@@ -90,11 +94,8 @@ class JdbcMetadataQuerier(
         }
     }
 
-    fun findTableName(
-        streamName: String,
-        streamNamespace: String?,
-    ): TableName? =
-        memoizedTableNames.find { it.name == streamName && it.namespace() == streamNamespace }
+    fun findTableName(streamID: StreamIdentifier): TableName? =
+        memoizedTableNames.find { it.name == streamID.name && it.namespace() == streamID.namespace }
 
     val memoizedColumnMetadata: Map<TableName, List<ColumnMetadata>> by lazy {
         val joinMap: Map<TableName, TableName> =
@@ -200,10 +201,9 @@ class JdbcMetadataQuerier(
     }
 
     override fun fields(
-        streamName: String,
-        streamNamespace: String?,
+        streamID: StreamIdentifier,
     ): List<Field> {
-        val table: TableName = findTableName(streamName, streamNamespace) ?: return listOf()
+        val table: TableName = findTableName(streamID) ?: return listOf()
         return columnMetadata(table).map { Field(it.label, fieldTypeMapper.toFieldType(it)) }
     }
 
@@ -285,15 +285,13 @@ class JdbcMetadataQuerier(
     val memoizedPrimaryKeys = mutableMapOf<TableName, List<List<String>>>()
 
     override fun primaryKey(
-        streamName: String,
-        streamNamespace: String?,
+        streamID: StreamIdentifier,
     ): List<List<String>> {
-        val table: TableName = findTableName(streamName, streamNamespace) ?: return listOf()
+        val table: TableName = findTableName(streamID) ?: return listOf()
         val memoized: List<List<String>>? = memoizedPrimaryKeys[table]
         if (memoized != null) return memoized
         val results = mutableListOf<PrimaryKeyRow>()
-        val streamPair = AirbyteStreamNameNamespacePair(streamName, streamNamespace)
-        log.info { "Querying primary keys in '$streamPair' for catalog discovery." }
+        log.info { "Querying primary keys in '$streamID' for catalog discovery." }
         try {
             val dbmd: DatabaseMetaData = conn.metaData
             dbmd.getPrimaryKeys(table.catalog, table.schema, table.name).use { rs: ResultSet ->
@@ -307,7 +305,7 @@ class JdbcMetadataQuerier(
                     )
                 }
             }
-            log.info { "Discovered all primary keys in '$streamPair'." }
+            log.info { "Discovered all primary keys in '$streamID'." }
         } catch (e: Exception) {
             throw RuntimeException("Primary key discovery query failed: ${e.message}", e)
         }
@@ -317,7 +315,7 @@ class JdbcMetadataQuerier(
         return pk
     }
 
-    private data class PrimaryKeyRow(
+    data class PrimaryKeyRow(
         val name: String,
         val ordinal: Int,
         val columnName: String,

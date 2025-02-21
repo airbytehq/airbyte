@@ -7,11 +7,11 @@ data:
       - ${subdomain}.zendesk.com
       - zendesk.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.15.0@sha256:09a84e0622f36393077332faf11cc239e77083fae5fa500592c049dca25888a7
   connectorSubtype: api
   connectorType: source
   definitionId: c8630570-086d-4a40-99ae-ea5b18673071
-  dockerImageTag: 1.0.13
+  dockerImageTag: 1.1.0-rc.1
   dockerRepository: airbyte/source-zendesk-talk
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-talk
   githubIssueLabel: source-zendesk-talk
@@ -21,7 +21,7 @@ data:
   name: Zendesk Talk
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-zendesk-talk
   registryOverrides:
     cloud:
@@ -35,9 +35,16 @@ data:
       1.0.0:
         upgradeDeadline: "2024-05-31"
         message: >-
-          The source Zendesk Talk connector is being migrated from the Python CDK to our declarative low-code CDK.  Due to changes to the incremental stream state message format and the removal of a nonexistent field from  the ivrs stream schema, this migration constitutes a breaking change. After updating, please reset your source  before resuming syncs. For more information, see our migration documentation for source Zendesk Talk.
+          The source Zendesk Talk connector is being migrated from the Python CDK
+          to our declarative low-code CDK.  Due to changes to the incremental stream
+          state message format and the removal of a nonexistent field from  the ivrs
+          stream schema, this migration constitutes a breaking change. After updating,
+          please reset your source  before resuming syncs. For more information, see
+          our migration documentation for source Zendesk Talk.
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests

@@ -1,10 +1,6 @@
-import PyAirbyteConnectors from '@site/src/components/PyAirbyteConnectors';
+# Using PyAirbyte
 
-# Getting Started with PyAirbyte (Beta)
-
-PyAirbyte is a library that provides a set of utilities to use Airbyte connectors in Python. It is meant to be used in situations where setting up an Airbyte server or cloud account is not possible or desirable, for example in a Jupyter notebook or when iterating on early prototypes on a developer's workstation.
-
-You can also check out this [YouTube video](https://youtu.be/tUTE-csnwCI) on how to get started with PyAirbyte!
+PyAirbyte brings the power of Airbyte to every Python and AI developer.
 
 ## Installation
 
@@ -12,11 +8,25 @@ You can also check out this [YouTube video](https://youtu.be/tUTE-csnwCI) on how
 pip install airbyte
 ```
 
-Or during the beta, you may want to install the latest from from source with:
+## Quickstarts
 
-```bash
-pip install 'git+https://github.com/airbytehq/PyAirbyte.git'
-```
+* **NEW:** [1.0 Launch Demo: AI and PyAirbyte](https://colab.research.google.com/github/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/AI%20ChatBot%20-%201.0%20Launch%20Demo.ipynb)
+* [Basic Demo](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Basic_Features_Demo.ipynb)
+* [CoinAPI](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_CoinAPI_Demo.ipynb)
+* [GA4](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_GA4_Demo.ipynb)
+* [Shopify](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Shopify_Demo.ipynb)
+* [GitHub](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Github_Incremental_Demo.ipynb)
+* [Postgres (cache)](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Postgres_Custom_Cache_Demo.ipynb)
+* [RAG With Langchain](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Document_Creation_RAG_with_Langchain_Demo.ipynb)
+
+## Demos
+
+Please check out this [YouTube video](https://youtu.be/tUTE-csnwCI) on how to get started with PyAirbyte!
+
+## PyAirbyte API Reference
+
+Please refer to our [PyAirbyte API Reference](https://airbytehq.github.io/PyAirbyte/index.html) for
+a full list of classes, methods, and usage examples.
 
 ## Usage
 
@@ -39,35 +49,3 @@ result = source.read()
 for name, records in result.streams.items():
     print(f"Stream {name}: {len(list(records))} records")
 ```
-
-## Quickstarts
-
-* [Basic Demo](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Basic_Features_Demo.ipynb)
-* [CoinAPI](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_CoinAPI_Demo.ipynb)
-* [GA4](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_GA4_Demo.ipynb) 
-* [Shopify](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Shopify_Demo.ipynb) 
-* [GitHub](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Github_Incremental_Demo.ipynb) 
-* [Postgres (cache)](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Postgres_Custom_Cache_Demo.ipynb)  
-* [RAG With Langchain](https://github.com/airbytehq/quickstarts/blob/main/pyairbyte_notebooks/PyAirbyte_Document_Creation_RAG_with_Langchain_Demo.ipynb)
-
-
-## API Reference
-
-For details on specific classes and methods, please refer to our [PyAirbyte API Reference](https://airbytehq.github.io/PyAirbyte/index.html).
-
-## Architecture
-
-[comment]: <> (Edit under https://docs.google.com/drawings/d/1M7ti2D4ha6cEtPnk04RLp1SSh3au4dRJsLupnGPigHQ/edit?usp=sharing)
-
-![Architecture](../../assets/docs/pyairbyte-high-level-architecture.svg)
-
-PyAirbyte is a python library that can be run in any context that supports Python >=3.9. It contains the following main components:
-* **Source**: A source object is using a Python connector and includes a configuration object. The configuration object is a dictionary that contains the configuration of the connector, like authentication or connection modalities. The source object is used to read data from the connector.
-* **Cache**: Data can be read directly from the source object. However, it is recommended to use a cache object to store the data. The cache object allows to temporarily store records from the source in a SQL database like a local DuckDB file or a Postgres or Snowflake instance.
-* **Result**: An object holding the records from a read operation on a source. It allows quick access to the records of each synced stream via the used cache object. Data can be accessed as a list of records, a Pandas DataFrame or via SQLAlchemy queries.
-
-## Available connectors
-
-The following connectors are available:
-
-<PyAirbyteConnectors />

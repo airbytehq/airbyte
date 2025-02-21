@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 from dagger import Client, Platform
+
 from pipelines.airbyte_ci.connectors.publish import pipeline as publish_pipeline
 from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.models.contexts.python_registry_publish import PythonPackageMetadata, PythonRegistryPublishContext
@@ -43,30 +44,34 @@ def context(dagger_client: Client):
 
 
 @pytest.mark.parametrize(
-    "package_path, package_name, expected_asset",
+    "package_path, package_name, version, expected_asset",
     [
         pytest.param(
-            "airbyte-integrations/connectors/source-apify-dataset",
-            "airbyte-source-apify-dataset",
-            "airbyte_source_apify_dataset-0.2.0-py3-none-any.whl",
+            "airbyte-integrations/connectors/source-fauna",
+            "airbyte-source-fauna",
+            "1.0.0",
+            "airbyte_source_fauna-1.0.0-py3-none-any.whl",
             id="setup.py project",
         ),
         pytest.param(
             "airbyte-integrations/connectors/destination-duckdb",
             "destination-duckdb",
+            "0.2.0",
             "destination_duckdb-0.2.0-py3-none-any.whl",
             id="poetry project",
         ),
     ],
 )
-async def test_run_poetry_publish(context: PythonRegistryPublishContext, package_path: str, package_name: str, expected_asset: str):
-    context.package_metadata = PythonPackageMetadata(package_name, "0.2.0")
+async def test_run_poetry_publish(
+    context: PythonRegistryPublishContext, package_path: str, package_name: str, version: str, expected_asset: str
+):
+    context.package_metadata = PythonPackageMetadata(package_name, version)
     context.package_path = package_path
     pypi_registry = (
         # need to use linux/amd64 because the pypiserver image is only available for that platform
         context.dagger_client.container(platform=Platform("linux/amd64"))
         .from_("pypiserver/pypiserver:v2.0.1")
-        .with_exec(["run", "-P", ".", "-a", "."])
+        .with_exec(["run", "-P", ".", "-a", "."], use_entrypoint=True)
         .with_exposed_port(8080)
         .as_service()
     )

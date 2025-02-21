@@ -11,6 +11,7 @@ from dagster import OpExecutionContext, asset
 from google.cloud import storage
 from orchestrator.logging import sentry
 
+
 GROUP_NAME = "connector_metrics"
 
 
@@ -59,7 +60,7 @@ def _convert_json_to_metrics_dict(jsonl_string: str) -> dict:
 
 @asset(required_resource_keys={"latest_metrics_gcs_blob"}, group_name=GROUP_NAME)
 @sentry.instrument_asset_op
-def latest_connnector_metrics(context: OpExecutionContext) -> dict:
+def latest_connector_metrics(context: OpExecutionContext) -> dict:
     latest_metrics_gcs_blob = context.resources.latest_metrics_gcs_blob
 
     latest_metrics_jsonl = _safe_read_gcs_file(latest_metrics_gcs_blob)

@@ -2,7 +2,7 @@
 package io.airbyte.cdk.check
 
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.fakesource.FakeSourceConfigurationJsonObject
+import io.airbyte.cdk.fakesource.FakeSourceConfigurationSpecification
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.micronaut.context.annotation.Property
@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test
 @MicronautTest(environments = ["source"], rebuildContext = true)
 @Property(name = Operation.PROPERTY, value = "check")
 class CheckTest {
-    @Inject lateinit var checkOperation: CheckOperation<FakeSourceConfigurationJsonObject>
+    @Inject lateinit var checkOperation: CheckOperation<FakeSourceConfigurationSpecification>
 
     @Inject lateinit var outputConsumer: BufferingOutputConsumer
 

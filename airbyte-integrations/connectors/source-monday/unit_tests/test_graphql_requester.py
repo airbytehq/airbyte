@@ -5,10 +5,12 @@
 from unittest.mock import MagicMock
 
 import pytest
+from source_monday import MondayGraphqlRequester
+
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
-from source_monday import MondayGraphqlRequester
+
 
 nested_object_schema = {
     "root": {
@@ -126,7 +128,6 @@ def test_get_schema_root_properties(mocker, monday_requester):
 
 
 def test_build_activity_query(mocker, monday_requester):
-
     mock_stream_state = {"updated_at_int": 1636738688}
     object_arguments = {"stream_state": mock_stream_state}
     mocker.patch.object(MondayGraphqlRequester, "_get_object_arguments", return_value="stream_state:{{ stream_state['updated_at_int'] }}")
@@ -140,7 +141,6 @@ def test_build_activity_query(mocker, monday_requester):
 
 
 def test_build_items_incremental_query(monday_requester):
-
     object_name = "test_items"
     field_schema = {
         "id": {"type": "integer"},
@@ -151,20 +151,21 @@ def test_build_items_incremental_query(monday_requester):
                 "text": {"type": ["null", "string"]},
                 "type": {"type": ["null", "string"]},
                 "value": {"type": ["null", "string"]},
-                "display_value": {"type": ["null", "string"]}
+                "display_value": {"type": ["null", "string"]},
             }
-        }
+        },
     }
     stream_slice = {"ids": [1, 2, 3]}
 
     built_query = monday_requester._build_items_incremental_query(object_name, field_schema, stream_slice)
 
-    assert built_query == "items(limit:100,ids:[1, 2, 3]){id,name,column_values{id,text,type,value,... on MirrorValue{display_value}," \
-                          "... on BoardRelationValue{display_value},... on DependencyValue{display_value}}}"
+    assert (
+        built_query == "items(limit:100,ids:[1, 2, 3]){id,name,column_values{id,text,type,value,... on MirrorValue{display_value},"
+        "... on BoardRelationValue{display_value},... on DependencyValue{display_value}}}"
+    )
 
 
 def test_get_request_headers(monday_requester):
-
     headers = monday_requester.get_request_headers()
 
-    assert headers == {"API-Version": "2024-01"}
+    assert headers == {"API-Version": "2024-10"}

@@ -8,6 +8,17 @@ Let's update the source. The bulk of the change is changing its parent class to
 requires a little bit of boilerplate:
 
 ```python
+# import the following libraries
+import logging
+import pendulum
+from airbyte_cdk.logger import AirbyteLogFormatter
+from airbyte_cdk.models import Level
+from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter, ConcurrentSource
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
+```
+
+```python
 class SourceSurveyMonkeyDemo(ConcurrentSourceAdapter):
     message_repository = InMemoryMessageRepository(Level(AirbyteLogFormatter.level_mapping[_logger.level]))
 
@@ -30,12 +41,18 @@ class SourceSurveyMonkeyDemo(ConcurrentSourceAdapter):
 
 We'll also need to update the `streams` method to wrap the streams in an adapter class to enable
 concurrency.
+```python
+# import the following libraries
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+from airbyte_cdk.sources.streams.concurrent.cursor import CursorField, ConcurrentCursor, FinalStateCursor
+```
+
 
 ```python
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = TokenAuthenticator(config["access_token"])
 
-        survey_stream = SurveyMonkeyBaseStream(name="surveys", path="/v3/surveys", primary_key="id", authenticator=auth, cursor_field="date_modified")
+        survey_stream = SurveyMonkeyBaseStream(name="surveys", path="/v3/surveys", primary_key="id", data_field="data", authenticator=auth, cursor_field="date_modified")
         synchronous_streams = [
             survey_stream,
             SurveyMonkeySubstream(name="survey_responses", path="/v3/surveys/{stream_slice[id]}/responses/", primary_key="id", authenticator=auth, parent_stream=survey_stream)
@@ -58,7 +75,8 @@ concurrency.
                     stream.state_converter,
                     cursor_field,
                     self._get_slice_boundary_fields(stream, state_manager),
-                    _START_DATE,
+                    pendulum.from_timestamp(_START_DATE),
+                    EpochValueConcurrentStreamStateConverter.get_end_provider()
                 )
             else:
                 cursor = FinalStateCursor(stream.name, stream.namespace, self.message_repository)
@@ -81,6 +99,11 @@ instead. The rest of the code change is mostly boilerplate.
 We'll also add a state converter to the `SurveyMonkeyBaseStream` to describe how the state cursor is
 formatted. We'll use the `EpochValueConcurrentStreamStateConverter` since the `get_updated_state`
 method returns the cursor as a timestamp
+
+```python
+# import the following library
+from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
+```
 
 ```
 state_converter = EpochValueConcurrentStreamStateConverter()
@@ -119,6 +142,11 @@ We'll now enable throttling to avoid going over the API rate limit. You can do t
 moving window rate limit policy for the `SurveyMonkeyBaseStream` class:
 
 ```python
+# import the following libraries
+from airbyte_cdk.sources.streams.call_rate import MovingWindowCallRatePolicy, HttpAPIBudget, Rate
+```
+
+```python
 class SurveyMonkeyBaseStream(HttpStream, ABC):
     def __init__(self, name: str, path: str, primary_key: Union[str, List[str]], data_field: Optional[str], cursor_field: Optional[str],
 **kwargs: Any) -> None:
@@ -147,8 +175,6 @@ boilerplate code and isn't specific to the Survey Monkey connector.
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-import sys
 import sys
 import traceback
 from datetime import datetime
@@ -157,9 +183,8 @@ from typing import List
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
 
-from airbyte_cdk.entrypoint import launch
-
 from .source import SourceSurveyMonkeyDemo
+
 def _get_source(args: List[str]):
     config_path = AirbyteEntrypoint.extract_config(args)
     state_path = AirbyteEntrypoint.extract_state(args)
