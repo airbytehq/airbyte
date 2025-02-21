@@ -433,7 +433,7 @@ class MSSQLQueryBuilder(
             name,
             outputSchema,
             tableName,
-            columns.joinToString(", ")
+            columns.joinToString(", ") { "[$it]" }
         )
     }
 
