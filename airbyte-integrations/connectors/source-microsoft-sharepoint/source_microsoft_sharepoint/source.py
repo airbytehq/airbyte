@@ -31,12 +31,11 @@ class SourceMicrosoftSharePoint(FileBasedSource):
         """
         Returns the specification describing what fields can be configured by a user when setting up a file-based source.
         """
-        tenant_id = self.config["credentials"]["tenant_id"] if self.config and self.config.get("credentials") else "TENANT_ID_PLACEHOLDER"
         consent_url = (
             PlaceholderUrlBuilder()
             .set_scheme("https")
             .set_host("login.microsoftonline.com")
-            .set_path(f"/{tenant_id}/oauth2/v2.0/authorize")
+            .set_path("/{{tenant_id}}/oauth2/v2.0/authorize")
             .add_key_value_placeholder_param("client_id")
             .add_key_value_placeholder_param("redirect_uri")
             .add_key_value_placeholder_param("state")
@@ -49,7 +48,7 @@ class SourceMicrosoftSharePoint(FileBasedSource):
             PlaceholderUrlBuilder()
             .set_scheme("https")
             .set_host("login.microsoftonline.com")
-            .set_path(f"/{tenant_id}/oauth2/v2.0/token")
+            .set_path("/{{tenant_id}}/oauth2/v2.0/token")
             .add_key_value_placeholder_param("client_id")
             .add_key_value_placeholder_param("auth_code")
             .add_key_value_placeholder_param("redirect_uri")

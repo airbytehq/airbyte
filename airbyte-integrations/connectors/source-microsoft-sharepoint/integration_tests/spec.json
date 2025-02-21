@@ -532,8 +532,8 @@
           }
         },
         "oauth_connector_input_specification": {
-          "consent_url": "https://login.microsoftonline.com/TENANT_ID_PLACEHOLDER/oauth2/v2.0/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}&{{scope_param}}&response_type=code",
-          "access_token_url": "https://login.microsoftonline.com/TENANT_ID_PLACEHOLDER/oauth2/v2.0/token?{{client_id_param}}&{{auth_code_param}}&{{redirect_uri_param}}&{{client_secret_param}}&grant_type=authorization_code",
+          "consent_url": "https://login.microsoftonline.com/{{tenant_id}}/oauth2/v2.0/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}&{{scope_param}}&response_type=code",
+          "access_token_url": "https://login.microsoftonline.com/{{tenant_id}}/oauth2/v2.0/token?{{client_id_param}}&{{auth_code_param}}&{{redirect_uri_param}}&{{client_secret_param}}&grant_type=authorization_code",
           "scope": "offline_access Files.Read.All Sites.Read.All"
         },
         "complete_oauth_output_specification": {
