@@ -5,6 +5,8 @@
 import json
 from unittest.mock import Mock
 
+from destination_glassflow.destination import DestinationGlassflow, create_sink_connection
+
 from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteRecordMessage,
@@ -15,7 +17,7 @@ from airbyte_cdk.models.airbyte_protocol import (
     DestinationSyncMode,
     SyncMode,
 )
-from destination_glassflow.destination import DestinationGlassflow, create_sink_connection
+
 
 TEST_STREAM = "test"
 TEST_NAMESPACE = "test_namespace"

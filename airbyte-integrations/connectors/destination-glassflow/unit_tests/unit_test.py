@@ -5,6 +5,9 @@ from typing import Any, Dict
 from unittest import mock
 from unittest.mock import Mock
 
+from destination_glassflow import DestinationGlassflow
+from glassflow import errors
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -17,8 +20,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_glassflow import DestinationGlassflow
-from glassflow import errors
+
 
 config = {"pipeline_id": "12345", "pipeline_access_token": "67890"}
 

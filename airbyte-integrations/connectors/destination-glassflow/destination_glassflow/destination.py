@@ -5,9 +5,11 @@
 from logging import Logger, getLogger
 from typing import Any, Iterable, Mapping
 
+from glassflow import PipelineDataSink, PipelineDataSource, errors
+
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
-from glassflow import PipelineDataSink, PipelineDataSource, errors
+
 
 logger = getLogger("airbyte")
 
