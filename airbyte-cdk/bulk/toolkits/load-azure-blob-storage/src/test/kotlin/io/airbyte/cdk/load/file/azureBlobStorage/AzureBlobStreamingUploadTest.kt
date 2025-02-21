@@ -39,7 +39,7 @@ class AzureBlobStreamingUploadTest {
                 containerName = "fakeContainer",
                 sharedAccessSignature = "null"
             )
-        metadata = mapOf("env" to "dev", "author" to "testUser")
+        metadata = mapOf("env" to "dev", "author" to "testUser", "ab-generation-id" to "0")
 
         // By default, let's assume blobName returns something
         every { blockBlobClient.blobName } returns "testBlob"
@@ -85,7 +85,8 @@ class AzureBlobStreamingUploadTest {
         // We want to ensure commitBlockList is NOT called
         val blobItem = mockk<BlockBlobItem>()
         every { blockBlobClient.commitBlockList(any(), any()) } returns blobItem
-        every { blockBlobClient.setMetadata(metadata) } just runs
+        every { blockBlobClient.setMetadata(mapOf("env" to "dev", "author" to "testUser")) } just
+            runs
 
         // Act
         val resultBlob = streamingUpload.complete()
@@ -94,7 +95,9 @@ class AzureBlobStreamingUploadTest {
         // 1) No block list calls
         verify(exactly = 0) { blockBlobClient.commitBlockList(any(), any()) }
         // 2) Metadata still set (the code checks for empty map, but here it's non-empty).
-        verify(exactly = 1) { blockBlobClient.setMetadata(metadata) }
+        verify(exactly = 1) {
+            blockBlobClient.setMetadata(mapOf("env" to "dev", "author" to "testUser"))
+        }
 
         // 3) Return object is AzureBlob
         assertEquals("testBlob", resultBlob.key)
@@ -129,7 +132,9 @@ class AzureBlobStreamingUploadTest {
                 true
             )
         }
-        verify(exactly = 1) { blockBlobClient.setMetadata(metadata) }
+        verify(exactly = 1) {
+            blockBlobClient.setMetadata(mapOf("env" to "dev", "author" to "testUser"))
+        }
         // Confirm the returned object
         assertEquals("testBlob", resultBlob.key)
         assertEquals(config, resultBlob.storageConfig)
@@ -155,7 +160,9 @@ class AzureBlobStreamingUploadTest {
         // Assert
         verify(exactly = 1) { blockBlobClient.commitBlockList(any(), true) }
         // setMetadata also only once
-        verify(exactly = 1) { blockBlobClient.setMetadata(metadata) }
+        verify(exactly = 1) {
+            blockBlobClient.setMetadata(mapOf("env" to "dev", "author" to "testUser"))
+        }
         // Both calls return the same AzureBlob reference
         assertEquals("testBlob", firstCall.key)
         assertEquals("testBlob", secondCall.key)

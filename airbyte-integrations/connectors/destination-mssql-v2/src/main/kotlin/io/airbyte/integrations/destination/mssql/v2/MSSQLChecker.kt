@@ -35,7 +35,7 @@ class MSSQLChecker(private val dataSourceFactory: MSSQLDataSourceFactory) :
 
     override fun check(config: MSSQLConfiguration) {
         val dataSource: DataSource = dataSourceFactory.getDataSource(config)
-        val sqlBuilder = MSSQLQueryBuilder(config, testStream)
+        val sqlBuilder = MSSQLQueryBuilder(config.schema, testStream)
 
         dataSource.connection.use { connection ->
             sqlBuilder.createTableIfNotExists(connection)
