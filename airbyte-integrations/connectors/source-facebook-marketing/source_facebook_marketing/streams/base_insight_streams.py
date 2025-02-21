@@ -77,6 +77,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         insights_lookback_window: int = None,
         insights_job_timeout: int = 60,
         level: str = "ad",
+        use_account_attribution_setting: bool = False,
+        use_unified_attribution_setting: bool = False,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -98,6 +100,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         self._insights_job_timeout = insights_job_timeout
         self.level = level
         self.entity_prefix = level
+        self.use_account_attribution_setting = use_account_attribution_setting
+        self.use_unified_attribution_setting = use_unified_attribution_setting
 
         # state
         self._cursor_values: Optional[Mapping[str, pendulum.Date]] = None  # latest period that was read for each account
@@ -370,6 +374,8 @@ class AdsInsights(FBMarketingIncrementalStream):
             "fields": self.fields(),
             "time_increment": self.time_increment,
             "action_attribution_windows": self.action_attribution_windows,
+            "use_account_attribution_setting": self.use_account_attribution_setting,
+            "use_unified_attribution_setting": self.use_unified_attribution_setting,
         }
         req_params.update(self._filter_all_statuses())
         return req_params
