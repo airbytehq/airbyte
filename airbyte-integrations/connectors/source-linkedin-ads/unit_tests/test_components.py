@@ -8,15 +8,20 @@ from unittest.mock import MagicMock
 
 import pytest
 from requests import Response, Session
+from requests.exceptions import InvalidURL
 from requests.models import PreparedRequest
 from source_linkedin_ads.components import (
     AnalyticsDatetimeBasedCursor,
     LinkedInAdsCustomRetriever,
+    LinkedInAdsErrorHandler,
     LinkedInAdsRecordExtractor,
     SafeEncodeHttpRequester,
     SafeHttpClient,
     StreamSlice,
 )
+
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 
 
 logger = logging.getLogger("airbyte")
@@ -134,3 +139,14 @@ def test_linkedin_ads_custom_retriever_read_records(mock_response, mock_retrieve
     assert len(records) == 2
     for record in records:
         assert "data" in record
+
+
+def test_linkedin_ads_error_handler_invalid_url():
+    error_handler = LinkedInAdsErrorHandler(config={}, parameters={})
+    exception = InvalidURL("Invalid URL specified")
+
+    resolution = error_handler.interpret_response(exception)
+
+    assert resolution.response_action == ResponseAction.RETRY
+    assert resolution.failure_type == FailureType.transient_error
+    assert "temporary DNS resolution issue" in resolution.error_message
