@@ -1,6 +1,8 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import asyncio
 import json
+import time
 from unittest import TestCase
 
 from advetiser_slices import mock_advertisers_slices
@@ -167,7 +169,7 @@ class TestAdsReportHourly(TestCase):
             state=self.state(),
         )
 
-        assert len(output.records) == 1
+        assert len(output.records) == 2
         assert output.state_messages[0].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
@@ -351,7 +353,7 @@ class TestAdGroupsReportsHourly(TestCase):
             state=self.state(),
         )
 
-        assert len(output.records) == 1
+        assert len(output.records) == 2
         assert output.state_messages[0].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
@@ -512,7 +514,7 @@ class TestAdvertisersReportsHourly(TestCase):
             state=self.state(),
         )
 
-        assert len(output.records) == 1
+        assert len(output.records) == 2
         assert output.state_messages[0].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
@@ -630,7 +632,7 @@ class TestCampaignsReportsHourly(TestCase):
             state=self.state(),
         )
 
-        assert len(output.records) == 1
+        assert len(output.records) == 2
         assert output.state_messages[0].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
