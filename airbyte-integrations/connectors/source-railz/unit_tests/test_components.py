@@ -2,15 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from datetime import datetime, timezone
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
-def test_get_tokens(components_module, requests_mock_fixture):
+def test_get_tokens(components_module):
     url = "https://auth.railz.ai/getAccess"
     responses = [
         {"access_token": "access_token1"},
         {"access_token": "access_token2"},
     ]
-    requests_mock_fixture.get(url, json=lambda request, context: responses.pop(0))
 
     timestamps = [
         datetime(2023, 1, 1, 12, 0, 0, tzinfo=timezone.utc).timestamp(),
@@ -29,8 +28,13 @@ def test_get_tokens(components_module, requests_mock_fixture):
         parameters={},
     )
 
-    # Mock time.time() to return our predefined timestamps
-    with patch("time.time", side_effect=timestamps):
+    def mock_requests_get(*args, **kwargs):
+        mock_response = MagicMock()
+        mock_response.json.return_value = responses.pop(0)
+        return mock_response
+
+    # Mock requests.get and time.time
+    with patch("requests.get", side_effect=mock_requests_get), patch("time.time", side_effect=timestamps):
         assert authenticator.token == "Bearer access_token1"
         assert authenticator.token == "Bearer access_token1"
         assert authenticator.token == "Bearer access_token2"
