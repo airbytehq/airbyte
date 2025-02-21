@@ -20,7 +20,7 @@ There are four different ways to configure connector resource requirements for a
 | Instance-wide        | Applies to all containers.                                                | Lowest         | Nothing                             | All others                              |
 | Connector definition | Applies to all connectors of that type (for example, all Stripe sources). | Second-lowest  | Instance-wide                       | Connector-specific, connection-specific |
 | Connector-specific   | Applies to one connector (for example, only _this_ Stripe source).          | Second-highest | Instance-wide, connector definition | Connection-specific                     |
-| Connection-specific  | Applies to this connection only.                                          | Highest        | All others                          | Nothing                                 |
+| Connection-specific  | Applies to this connection only (i.e. only _this_ source/destination combination).                                          | Highest        | All others                          | Nothing                                 |
 
 ## Best Practices for Allocating Resources
 
