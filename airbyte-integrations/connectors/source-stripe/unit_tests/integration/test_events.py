@@ -1,4 +1,6 @@
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+#
 
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
@@ -37,8 +39,6 @@ _ACCOUNT_ID = "account_id"
 _CLIENT_SECRET = "client_secret"
 _NO_STATE = {}
 _AVOIDING_INCLUSIVE_BOUNDARIES = timedelta(seconds=1)
-_SECOND_REQUEST = timedelta(seconds=1)
-_THIRD_REQUEST = timedelta(seconds=2)
 
 
 def _a_request() -> StripeRequestBuilder:
@@ -120,13 +120,13 @@ class FullRefreshTest(TestCase):
         slice_range = timedelta(days=30)
         slice_datetime = start_date + slice_range
         http_mocker.get(  # this first request has both gte and lte before 30 days even though we know there should not be records returned
-            _a_request().with_created_gte(start_date).with_created_lte(slice_datetime - timedelta(seconds=1)).with_limit(100).build(),
+            _a_request().with_created_gte(start_date).with_created_lte(slice_datetime - _AVOIDING_INCLUSIVE_BOUNDARIES).with_limit(100).build(),
             _a_response().build(),
         )
         http_mocker.get(
             _a_request()
             .with_created_gte(slice_datetime)
-            .with_created_lte(slice_datetime + slice_range - timedelta(seconds=1))
+            .with_created_lte(slice_datetime + slice_range - _AVOIDING_INCLUSIVE_BOUNDARIES)
             .with_limit(100)
             .build(),
             _a_response().build(),
@@ -159,7 +159,7 @@ class FullRefreshTest(TestCase):
         slice_range = timedelta(days=20)
         slice_datetime = start_date + slice_range
         http_mocker.get(
-            _a_request().with_created_gte(start_date).with_created_lte(slice_datetime - timedelta(seconds=1)).with_limit(100).build(),
+            _a_request().with_created_gte(start_date).with_created_lte(slice_datetime - _AVOIDING_INCLUSIVE_BOUNDARIES).with_limit(100).build(),
             _a_response().build(),
         )
         http_mocker.get(
@@ -176,7 +176,6 @@ class FullRefreshTest(TestCase):
             a_response_with_status(400),
         )
         output = self._read(_config())
-
         assert_stream_incomplete(output, _STREAM_NAME, "Your account is not set up to use Issuing")
 
     @HttpMocker()

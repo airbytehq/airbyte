@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
 from urllib.parse import urlencode
@@ -882,6 +882,7 @@ checkout_session_api_response = {
     }
 }
 
+
 checkout_session_line_items_api_response = {
     "/v1/checkout/sessions/cs_test_a1yxusdFIgDDkWTaKn6JTYniMDBzrmnBiXH8oRSExZt7tcbIzIEoZk1Lre/line_items": {
         "object": "list",
@@ -916,6 +917,7 @@ checkout_session_line_items_api_response = {
         ],
     },
 }
+
 
 checkout_session_events_response = {
     "/v1/events": {
