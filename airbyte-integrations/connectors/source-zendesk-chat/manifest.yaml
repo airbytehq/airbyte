@@ -168,8 +168,7 @@ definitions:
             - path:
                 - id
               value: >-
-                {{ record.get('agent_id', '')|string + '|' +
-                record.get('start_time', '')|string }}
+                {{ [record.get('agent_id', ''), '|', record.get('start_time', '')]|join }}
       schema_loader:
         type: InlineSchemaLoader
         schema:
