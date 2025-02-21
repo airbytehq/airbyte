@@ -542,13 +542,8 @@
           "properties": {
             "refresh_token": {
               "type": "string",
-              "path_in_connector_config": [
-                "credentials",
-                "refresh_token"
-              ],
-              "path_in_oauth_response": [
-                "refresh_token"
-              ]
+              "path_in_connector_config": ["credentials", "refresh_token"],
+              "path_in_oauth_response": ["refresh_token"]
             }
           }
         },
