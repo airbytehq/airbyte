@@ -300,6 +300,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.7.0   | 2025-02-27 | [54140](https://github.com/airbytehq/airbyte/pull/54140) | Add multisite support capabilities                                        |
 | 0.6.0   | 2025-02-20 | [54140](https://github.com/airbytehq/airbyte/pull/54140) | Implement file transfer mode to move raw files                            |
 | 0.5.2   | 2024-08-24 | [45646](https://github.com/airbytehq/airbyte/pull/45646) | Fix: handle wrong folder name                                             |
 | 0.5.1   | 2024-08-24 | [44660](https://github.com/airbytehq/airbyte/pull/44660) | Update dependencies                                                       |
