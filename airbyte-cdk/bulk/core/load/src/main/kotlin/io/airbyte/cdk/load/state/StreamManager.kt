@@ -184,7 +184,6 @@ class DefaultStreamManager(
     override fun markCheckpoint(): Pair<Long, Long> {
         val recordIndex = recordCount.get()
         val count = recordIndex - lastCheckpointRecordIndex.getAndSet(recordIndex)
-
         val checkpointId = CheckpointId(nextCheckpointId.getAndIncrement().toInt())
         checkpointCounts.merge(checkpointId, CheckpointCounts(recordsRead = count)) { old, _ ->
             if (old.recordsRead > 0) {
