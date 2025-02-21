@@ -35,7 +35,7 @@ class KlaviyoIncludedFieldExtractor(DpathExtractor):
                 included_relation_type = included_relation["type"]
                 included_relation_id = included_relation["id"]
 
-                target_relationship_id = target_relationships.get(included_relation_type, {}).get("data")["id"]
+                target_relationship_id = target_relationships.get(included_relation_type, {}).get("data", {}).get("id")
 
                 if included_relation_id == target_relationship_id:
                     target_relationships[included_relation_type]["data"].update(included_relation_attributes)
