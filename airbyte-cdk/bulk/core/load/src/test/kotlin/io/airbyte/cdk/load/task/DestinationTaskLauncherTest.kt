@@ -364,7 +364,7 @@ class DestinationTaskLauncherTest {
         val range = TreeRangeSet.create(listOf(Range.closed(0L, 100L)))
         val stream1 = MockDestinationCatalogFactory.stream1
         val streamManager = syncManager.getStreamManager(stream1.descriptor)
-        repeat(100) { streamManager.countRecordIn() }
+        repeat(100) { streamManager.incrementReadCount() }
 
         streamManager.markEndOfStream(true)
 

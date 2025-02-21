@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "2.6.4"
+version = "2.6.5"
 name = "source-salesforce"
 description = "Source implementation for Salesforce."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -28,3 +28,11 @@ pytest = "^6.1"
 pytest-timeout = "^2.2.0"
 requests-mock = "^1.9.3"
 freezegun = "^1.4.0"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

@@ -42,7 +42,6 @@ abstract class S3V2WriteTest(
     allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
     nullUnknownTypes: Boolean = false,
-    envVars: Map<String, String> = emptyMap(),
     private val mergesUnions: Boolean = false
 ) :
     BasicFunctionalityIntegrationTest(
@@ -128,7 +127,7 @@ abstract class S3V2WriteTest(
                     )
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             listOf(
                     """{"id": 1, "union_of_objects": {"field1": "a", "field2": 1, "field3": 3.14, "field4": "boo", "field5": "extra"}}""",
@@ -220,7 +219,7 @@ abstract class S3V2WriteTest(
 
         assertThrows<DestinationUncleanExitException> {
             runSync(
-                configContents,
+                updatedConfig,
                 stream,
                 listOf(
                         """{"id": 1, "union_of_objects": {"field1": "a"}}""",
@@ -299,7 +298,7 @@ abstract class S3V2WriteTest(
             }
 
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             expectedRecords.map { InputRecord(randomizedNamespace, "stream", it, 1L) }
         )

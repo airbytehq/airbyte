@@ -23,12 +23,11 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
-import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteTypeToSqlType
+import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteTypeToMssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setAsNullValue
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setValue
 import io.airbyte.integrations.destination.mssql.v2.convert.MssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.ResultSetToAirbyteValue.Companion.getAirbyteNamedValue
-import io.airbyte.integrations.destination.mssql.v2.convert.SqlTypeToMssqlType
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -115,6 +114,10 @@ const val CREATE_INDEX_QUERY = """
         CREATE ? INDEX ? ON [?].[?] (?)
     """
 
+const val DROP_TABLE_QUERY = """
+        DROP TABLE [?].[?];
+    """
+
 const val INSERT_INTO_QUERY =
     """
         SET NOCOUNT ON;
@@ -126,7 +129,7 @@ const val INSERT_INTO_QUERY =
 const val MERGE_INTO_QUERY =
     """
         SET NOCOUNT ON;
-        MERGE INTO [?$SCHEMA_KEY].[?$TABLE_KEY] AS Target
+        MERGE INTO [?$SCHEMA_KEY].[?$TABLE_KEY] WITH (TABLOCK) AS Target
         USING (VALUES (?$TEMPLATE_COLUMNS_KEY)) AS Source (?$COLUMNS_KEY)
         ON ?$UNIQUENESS_CONSTRAINT_KEY
         WHEN MATCHED THEN
@@ -153,12 +156,15 @@ const val ALTER_TABLE_MODIFY =
 
 const val DELETE_WHERE_COL_IS_NOT_NULL =
     """
-        DELETE FROM [?].[?]
+        SET NOCOUNT ON;
+        DELETE FROM [?].[?] WITH (TABLOCK)
         WHERE [?] is not NULL
     """
 
-const val DELETE_WHERE_COL_LESS_THAN = """
-        DELETE FROM [?].[?]
+const val DELETE_WHERE_COL_LESS_THAN =
+    """
+        SET NOCOUNT ON;
+        DELETE FROM [?].[?] WITH (TABLOCK)
         WHERE [?] < ?
     """
 
@@ -223,9 +229,9 @@ class MSSQLQueryBuilder(
             Append -> emptyList()
             Overwrite -> emptyList()
         }
+    private val indexedColumns: Set<String> = uniquenessKey.toSet()
 
-    private val toSqlType = AirbyteTypeToSqlType()
-    private val toMssqlType = SqlTypeToMssqlType()
+    private val toMssqlType = AirbyteTypeToMssqlType()
 
     val finalTableSchema: List<NamedField> =
         airbyteFinalTableFields + extractFinalTableSchema(stream.schema)
@@ -244,9 +250,7 @@ class MSSQLQueryBuilder(
     }
 
     private fun getSchema(): List<NamedSqlField> =
-        finalTableSchema.map {
-            NamedSqlField(it.name, toMssqlType.convert(toSqlType.convert(it.type.type)))
-        }
+        finalTableSchema.map { NamedSqlField(it.name, toMssqlType.convert(it.type.type)) }
 
     fun updateSchema(connection: Connection) {
         val existingSchema = getExistingSchema(connection)
@@ -309,6 +313,10 @@ class MSSQLQueryBuilder(
         createTableIfNotExistsQuery(finalTableSchema).executeUpdate(connection)
     }
 
+    fun dropTable(connection: Connection) {
+        DROP_TABLE_QUERY.toQuery(outputSchema, tableName).executeUpdate(connection)
+    }
+
     fun getFinalTableInsertColumnHeader(): String =
         getFinalTableInsertColumnHeader(finalTableSchema)
 
@@ -321,7 +329,7 @@ class MSSQLQueryBuilder(
                 outputSchema,
                 tableName,
                 COLUMN_NAME_AB_GENERATION_ID,
-                minGenerationId.toString()
+                minGenerationId.toString(),
             )
             .executeUpdate(connection)
 
@@ -425,7 +433,7 @@ class MSSQLQueryBuilder(
             name,
             outputSchema,
             tableName,
-            columns.joinToString(", ")
+            columns.joinToString(", ") { "[$it]" }
         )
     }
 
@@ -475,7 +483,12 @@ class MSSQLQueryBuilder(
         separator: String = DEFAULT_SEPARATOR
     ): String {
         return schema.joinToString(separator = separator) {
-            "[${it.name}] ${toMssqlType.convert(toSqlType.convert(it.type.type)).sqlString} NULL"
+            val mssqlType =
+                toMssqlType.convert(
+                    it.type.type,
+                    isIndexed = indexedColumns.contains(it.name),
+                )
+            "[${it.name}] ${mssqlType.sqlString} NULL"
         }
     }
 }

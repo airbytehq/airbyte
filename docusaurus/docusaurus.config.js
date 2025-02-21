@@ -115,7 +115,9 @@ const config = {
           sidebarPath: require.resolve("./sidebars.js"),
           editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
           path: "../docs",
-          exclude: ["**/*.inapp.md"],
+          exclude: [
+            "**/*.inapp.md"
+          ],
           beforeDefaultRemarkPlugins: [specDecoration, connectorList], // use before-default plugins so TOC rendering picks up inserted headings
           remarkPlugins: [
             docsHeaderDecoration,
@@ -196,7 +198,7 @@ const config = {
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
-        additionalLanguages: ["bash", "json"],
+        additionalLanguages: ["bash", "diff", "json"],
       },
     }),
 };
