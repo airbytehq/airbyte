@@ -1,4 +1,4 @@
-version: 0.72.1
+version: 6.33.7
 
 definitions:
   # COMMON PARTS
@@ -43,10 +43,10 @@ definitions:
       type: RequestOption
       field_name: limit
     pagination_strategy:
-      type: CustomPaginationStrategy
-      class_name: source_zendesk_chat.components.id_offset_pagination.ZendeskChatIdOffsetIncrementPaginationStrategy
-      id_field: id
+      type: CursorPagination
+      cursor_value: "{{ last_record['id'] + 1 }}"
       page_size: 100
+      stop_condition: "{{ not last_record }}"
   paginator_time_offset:
     type: DefaultPaginator
     page_token_option:
@@ -58,10 +58,10 @@ definitions:
       type: RequestOption
       field_name: limit
     pagination_strategy:
-      type: CustomPaginationStrategy
-      class_name: source_zendesk_chat.components.time_offset_pagination.ZendeskChatTimeOffsetIncrementPaginationStrategy
-      time_field_name: end_time
+      type: CursorPagination
       page_size: 1000
+      cursor_value: '{{ response.get("end_time", {}) }}'
+      stop_condition: "{{ last_page_size < 1_000 }}"
 
   # REQUESTERS
   requester:
@@ -141,29 +141,12 @@ definitions:
       # this is needed to ignore additional params for incremental syncs
       ignore_stream_slicer_parameters_on_paginated_requests: true
     incremental_sync:
-      type: CustomIncrementalSync
-      class_name: source_zendesk_chat.components.id_incremental_cursor.ZendeskChatIdIncrementalCursor
+      type: IncrementingCountCursor
       cursor_field: "id"
-      field_name: "since_id"
-  base_incremental_time_stream:
-    $ref: "#/definitions/base_stream_with_time_offset_pagination"
-    retriever:
-      $ref: "#/definitions/base_stream_with_time_offset_pagination/retriever"
-      # this is needed to ignore additional params for incremental syncs
-      ignore_stream_slicer_parameters_on_paginated_requests: true
-    incremental_sync:
-      type: CustomIncrementalSync
-      class_name: source_zendesk_chat.components.timestamp_based_cursor.ZendeskChatTimestampCursor
-      use_microseconds: "{{ parameters['use_microseconds'] }}"
-      cursor_field: "{{ parameters['cursor_field'] }}"
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%fZ"
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%s"
-      start_datetime:
-        datetime: "{{ format_datetime(config['start_date'], '%s') }}"
-      start_time_option:
-        field_name: start_time
+      start_value: 0
+      start_value_option:
+        type: RequestOption
+        field_name: since_id
         inject_into: "request_parameter"
 
   # FULL-REFRESH STREAMS
@@ -269,7 +252,23 @@ definitions:
   agents_timelines_stream:
     description: >-
       Agent Timelines Stream: https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export
-    $ref: "#/definitions/base_incremental_time_stream"
+    $ref: "#/definitions/base_stream_with_time_offset_pagination"
+    retriever:
+      $ref: "#/definitions/base_stream_with_time_offset_pagination/retriever"
+      # this is needed to ignore additional params for incremental syncs
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "{{ parameters['cursor_field'] }}"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%ms"
+      start_datetime:
+        datetime: "{{ format_datetime(config['start_date'], '%ms') }}"
+      start_time_option:
+        field_name: start_time
+        inject_into: "request_parameter"
     transformations:
       - type: AddFields
         fields:
@@ -285,18 +284,32 @@ definitions:
       name: "agent_timeline"
       data_field: "agent_timeline"
       path: "incremental/agent_timeline"
-      use_microseconds: true
   # CHATS
   chats_stream:
     description: >-
       Chats Stream: https://developer.zendesk.com/api-reference/live-chat/chat-api/incremental_export/#incremental-chat-export
-    $ref: "#/definitions/base_incremental_time_stream"
+    $ref: "#/definitions/base_stream_with_time_offset_pagination"
+    retriever:
+      $ref: "#/definitions/base_stream_with_time_offset_pagination/retriever"
+      # this is needed to ignore additional params for incremental syncs
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "{{ parameters['cursor_field'] }}"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%s"
+      start_datetime:
+        datetime: "{{ format_datetime(config['start_date'], '%s') }}"
+      start_time_option:
+        field_name: start_time
+        inject_into: "request_parameter"
     $parameters:
       cursor_field: "update_timestamp"
       name: "chats"
       data_field: "chats"
       path: "incremental/chats"
-      use_microseconds: false
 
 streams:
   - "#/definitions/accounts_stream"
@@ -316,3 +329,8 @@ check:
   type: CheckStream
   stream_names:
     - routing_settings
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 10
+  max_concurrency: 10
