@@ -29,6 +29,7 @@ definitions:
         type: DpathExtractor
         field_path:
           - data
+      schema_normalization: Default
     paginator:
       $ref: "#/definitions/base_paginator"
 

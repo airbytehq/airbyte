@@ -29,7 +29,7 @@
     },
     "created": {
       "description": "Timestamp representing the date and time when the file link was created.",
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "expired": {
       "description": "Boolean indicating whether the file link is expired or not.",

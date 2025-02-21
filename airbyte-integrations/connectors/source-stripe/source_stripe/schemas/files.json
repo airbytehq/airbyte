@@ -21,7 +21,7 @@
     },
     "created": {
       "description": "Timestamp indicating when the file was created",
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "expires_at": {
       "description": "Timestamp indicating when the file will expire",

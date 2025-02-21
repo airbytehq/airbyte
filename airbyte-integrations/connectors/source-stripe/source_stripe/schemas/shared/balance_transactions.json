@@ -62,7 +62,7 @@
       "type": ["null", "string"]
     },
     "created": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "amount": {
       "type": ["null", "integer"]

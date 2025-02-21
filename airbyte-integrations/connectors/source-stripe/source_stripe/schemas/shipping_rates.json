@@ -18,7 +18,7 @@
     },
     "created": {
       "description": "Timestamp indicating when the shipping rate was created",
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "delivery_estimate": {
       "description": "Estimated delivery time for the shipping rate",
