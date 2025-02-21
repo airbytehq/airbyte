@@ -31,7 +31,7 @@ class SourceMicrosoftSharePoint(FileBasedSource):
         """
         Returns the specification describing what fields can be configured by a user when setting up a file-based source.
         """
-        tenant_id = self.config["credentials"]["tenant_id"]
+        tenant_id = self.config["credentials"]["tenant_id"] if self.config and self.config.get("credentials") else "TENANT_ID_PLACEHOLDER"
         consent_url = (
             PlaceholderUrlBuilder()
             .set_scheme("https")
