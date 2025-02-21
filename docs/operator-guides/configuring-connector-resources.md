@@ -35,25 +35,9 @@ Start with the lowest-precedence configuration that's appropriate, then override
 - Use connector-specific configurations only when necessary
 - Apply connection-specific configurations for exceptional cases
 
-### Monitoring and Optimization
+We recommend that you start with the default resource allocations set by Airbyte. These should be sufficient for most use cases.
 
-- [Check logs](#debugging) to verify resource allocation effectiveness
-- Monitor for out-of-memory situations in the logs
-- Review resource usage patterns to identify opportunities to optimize
-
-### Scaling Up
-
-- Start with default profiles for all connectors
-- Monitor job performance and resource usage
-- Upgrade resource profiles only for connectors that need it
-- Upgrade resource profiles for specific connections as a last resort
-
-### Troubleshooting
-
-- Check logs for resource-related issues
-- Verify resource configurations through the UI or API
-- Review connection status and error messages
-- Address resource bottlenecks before scaling further
+If you have an issue that you suspect is due to insufficient resources, you should be able to confirm it via observability tools (e.g. Airbyte-provided [logs](#debugging)). If these indicate that there's an issue with CPU or memory, start by upgrading resource profiles only for connectors that need it. Upgrade resource profiles for specific connections as a last resort.
 
 ## Configuring Instance-Wide Requirements
 
