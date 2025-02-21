@@ -2,19 +2,72 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+
+import pendulum
+import requests
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
-from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
+from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import OffsetIncrement
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.message import MessageRepository
 
 
 @dataclass
-class ZendeskChatIdIncrementalCursor(Cursor):
+class ZendeskChatTimestampCursor(DatetimeBasedCursor):
+    """
+    Override for the default `DatetimeBasedCursor` to provide the `request_params["start_time"]` with added `microseconds`, as required by the API.
+    More info: https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export
+
+    The dates in future are not(!) allowed for the Zendesk Chat endpoints, and slicer values could be far away from exact cursor values.
+
+    Arguments:
+        use_microseconds: bool - whether or not to add dummy `000000` (six zeros) to provide the microseconds unit timestamps
+    """
+
+    use_microseconds: bool = True
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._use_microseconds = self.use_microseconds
+        self._start_date = self.config.get("start_date")
+        super().__post_init__(parameters=parameters)
+
+    def add_microseconds(
+        self,
+        params: MutableMapping[str, Any],
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> MutableMapping[str, Any]:
+        start_time = stream_slice.get(self._partition_field_start.eval(self.config))
+        if start_time:
+            params[self.start_time_option.field_name.eval(config=self.config)] = int(start_time) * 1000000
+        return params
+
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        params = {}
+        if self._use_microseconds:
+            params = self.add_microseconds(params, stream_slice)
+        else:
+            params[self.start_time_option.field_name.eval(config=self.config)] = stream_slice.get(
+                self._partition_field_start.eval(self.config)
+            )
+        return params
+
+
+@dataclass
+class ZendeskChatIdIncrementalCursor(DeclarativeCursor):
     """
     Custom Incremental Cursor implementation to provide the ability to pull data using `id`(int) as cursor.
     More info: https://developer.zendesk.com/api-reference/live-chat/chat-api/agents/#parameters
@@ -99,7 +152,7 @@ class ZendeskChatIdIncrementalCursor(Cursor):
         highest_observed_value = cursor_values.get("highest_observed_record_value") if cursor_values else 0
         return max(state_value, highest_observed_value)
 
-    def close_slice(self, stream_slice: StreamSlice) -> None:
+    def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
         cursor_values: dict = self.collect_cursor_values()
         self._cursor = self.process_state(cursor_values) if cursor_values else 0
 
@@ -153,3 +206,21 @@ class ZendeskChatIdIncrementalCursor(Cursor):
             return True
         else:
             return False
+
+    def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
+        return self.get_stream_state()
+
+
+@dataclass
+class ZendeskChatBansRecordExtractor(RecordExtractor):
+    """
+    Unnesting nested bans: `visitor`, `ip_address`.
+    """
+
+    def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
+        response_data = response.json()
+        ip_address: List[Mapping[str, Any]] = response_data.get("ip_address", [])
+        visitor: List[Mapping[str, Any]] = response_data.get("visitor", [])
+        bans = ip_address + visitor
+        bans = sorted(bans, key=lambda x: pendulum.parse(x["created_at"]) if x["created_at"] else pendulum.datetime(1970, 1, 1))
+        return bans
