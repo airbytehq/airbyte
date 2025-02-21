@@ -41,18 +41,6 @@ data:
     baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   connectorTestSuitesOptions:
     - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_SOURCE-MSSQL__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE_MSSQL_PERFORMANCE_TEST_CREDS
-          fileName: performance-config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-MSSQL__CREDS

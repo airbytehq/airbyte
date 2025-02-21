@@ -32,7 +32,7 @@ import org.junit.jupiter.api.function.Executable
 import org.testcontainers.containers.GenericContainer
 
 class DynamicDatatypeTestFactory<
-    DB : GenericContainer<*>,
+    DB,
     CS : ConfigurationSpecification,
     C : SourceConfiguration,
     F : SourceConfigurationFactory<CS, C>,
@@ -123,7 +123,7 @@ class DynamicDatatypeTestFactory<
 }
 
 interface DatatypeTestOperations<
-    DB : GenericContainer<*>,
+    DB,
     CS : ConfigurationSpecification,
     C : SourceConfiguration,
     F : SourceConfigurationFactory<CS, C>,
@@ -150,7 +150,7 @@ interface DatatypeTestCase {
 
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "control flow")
 class DiscoverAndReadAll<
-    DB : GenericContainer<*>,
+    DB,
     CS : ConfigurationSpecification,
     C : SourceConfiguration,
     F : SourceConfigurationFactory<CS, C>,

@@ -83,7 +83,7 @@ class CdcPartitionReaderMongoTest :
     override fun createDebeziumOperations(): DebeziumOperations<BsonTimestamp> =
         MongoTestDebeziumOperations()
 
-    inner class MongoTestDebeziumOperations : AbstractDebeziumOperationsForTest<BsonTimestamp>() {
+    inner class MongoTestDebeziumOperations : AbstractCdcPartitionReaderDebeziumOperationsForTest<BsonTimestamp>(stream) {
 
         override fun position(offset: DebeziumOffset): BsonTimestamp {
             val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode

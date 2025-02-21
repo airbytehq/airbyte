@@ -13,6 +13,9 @@ import java.util.Properties
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Supplier
 import org.apache.sshd.common.util.net.SshdSocketAddress
+import java.sql.CallableStatement
+import java.sql.ResultSet
+import java.sql.Statement
 
 private val log = KotlinLogging.logger {}
 
@@ -41,7 +44,7 @@ class JdbcConnectionFactory(
                 tunnelSession.address.hostName,
                 tunnelSession.address.port,
             )
-        log.info { "Creating new connection for '$jdbcUrl'." }
+        log.info { "Creating new connection for '$jdbcUrl'" }
         val props = Properties().apply { putAll(config.jdbcProperties) }
         return DriverManager.getConnection(jdbcUrl, props).also { it.isReadOnly = true }
     }

@@ -23,11 +23,12 @@ import java.util.function.Consumer
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import org.apache.kafka.connect.source.SourceRecord
 
 /** [PartitionReader] implementation for CDC with Debezium. */
-class CdcPartitionReader<T : Comparable<T>>(
+open class CdcPartitionReader<T : Comparable<T>>(
     val concurrencyResource: ConcurrencyResource,
     val streamRecordConsumers: Map<StreamIdentifier, StreamRecordConsumer>,
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
@@ -201,7 +202,8 @@ class CdcPartitionReader<T : Comparable<T>>(
             if (event.sourceRecord == null) {
                 numEventsWithoutSourceRecord.incrementAndGet()
             }
-            when (eventType) {
+
+            val counterToIncrement = when (eventType) {
                 EventType.TOMBSTONE -> numTombstones
                 EventType.HEARTBEAT -> numHeartbeats
                 EventType.KEY_JSON_INVALID,
@@ -209,7 +211,8 @@ class CdcPartitionReader<T : Comparable<T>>(
                 EventType.RECORD_DISCARDED_BY_DESERIALIZE,
                 EventType.RECORD_DISCARDED_BY_STREAM_ID -> numDiscardedRecords
                 EventType.RECORD_EMITTED -> numEmittedRecords
-            }.incrementAndGet()
+            }
+            counterToIncrement.incrementAndGet()
         }
 
         private fun findCloseReason(event: DebeziumEvent, eventType: EventType): CloseReason? {
@@ -221,13 +224,13 @@ class CdcPartitionReader<T : Comparable<T>>(
                 // in interrupting it until the snapshot is done.
                 return null
             }
-
             val currentPosition: T? = position(event.sourceRecord) ?: position(event.value)
             if (currentPosition == null || currentPosition < upperBound) {
                 return null
             }
+
             // Close because the current event is past the sync upper bound.
-            return when (eventType) {
+            val retVal = when (eventType) {
                 EventType.TOMBSTONE,
                 EventType.HEARTBEAT -> CloseReason.HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION
                 EventType.KEY_JSON_INVALID,
@@ -237,6 +240,8 @@ class CdcPartitionReader<T : Comparable<T>>(
                 EventType.RECORD_DISCARDED_BY_STREAM_ID ->
                     CloseReason.RECORD_REACHED_TARGET_POSITION
             }
+
+            return retVal
         }
 
         private fun position(sourceRecord: SourceRecord?): T? {

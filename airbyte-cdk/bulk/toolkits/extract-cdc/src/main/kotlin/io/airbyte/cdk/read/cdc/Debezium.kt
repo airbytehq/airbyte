@@ -13,7 +13,7 @@ import io.debezium.relational.history.HistoryRecord
 import org.apache.kafka.connect.source.SourceRecord
 
 /** Convenience wrapper around [ChangeEvent]. */
-class DebeziumEvent(event: ChangeEvent<String?, String?>) {
+data class DebeziumEvent(val event: ChangeEvent<String?, String?>) {
 
     /** This [SourceRecord] object is the preferred way to obtain the current position. */
     val sourceRecord: SourceRecord? = (event as? EmbeddedEngineChangeEvent<*, *, *>)?.sourceRecord()

@@ -73,7 +73,7 @@ class CdcPartitionReaderMySQLTest :
     override fun createDebeziumOperations(): DebeziumOperations<Position> =
         MySQLTestDebeziumOperations()
 
-    inner class MySQLTestDebeziumOperations : AbstractDebeziumOperationsForTest<Position>() {
+    inner class MySQLTestDebeziumOperations : AbstractCdcPartitionReaderDebeziumOperationsForTest<Position>(stream) {
 
         override fun position(offset: DebeziumOffset): Position {
             val offsetAsJson = offset.wrapped.values.first()

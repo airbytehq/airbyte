@@ -131,7 +131,7 @@ class CdcPartitionsCreatorTest {
         every { globalFeedBootstrap.currentState } returns Jsons.objectNode()
         every { globalFeedBootstrap.currentState(stream) } returns Jsons.objectNode()
         every { creatorOps.deserializeState(Jsons.objectNode()) } returns
-            AbortDebeziumWarmStartState("boom")
+                AbortDebeziumWarmStartState("boom")
         assertThrows(ConfigErrorException::class.java) { runBlocking { creator.run() } }
     }
 }

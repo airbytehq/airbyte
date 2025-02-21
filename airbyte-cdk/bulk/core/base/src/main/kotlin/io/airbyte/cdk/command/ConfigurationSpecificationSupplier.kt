@@ -4,9 +4,12 @@ package io.airbyte.cdk.command
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.util.Jsons
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.util.function.Supplier
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * Supplies a valid [T] configuration POJO instance, based on the `airbyte.connector.config`
@@ -39,11 +42,12 @@ class ConfigurationSpecificationSupplier<T : ConfigurationSpecification>(
             try {
                 Jsons.writeValueAsString(micronautPropertiesFallback)
             } catch (e: Exception) {
-                throw ConfigErrorException("failed to serialize fallback instance for $javaClass")
+                throw ConfigErrorException("failed to serialize fallback instance for $javaClass", e)
             }
         }
         val json: String = jsonPropertyValue ?: jsonMicronautFallback
-        return ValidatedJsonUtils.parseOne(javaClass, json)
+        val retVal = ValidatedJsonUtils.parseOne(javaClass, json)
+        return retVal
     }
 }
 
@@ -57,3 +61,7 @@ class ConfigurationSpecificationSupplier<T : ConfigurationSpecification>(
  * Strictly speaking, its subclasses are not really POJOs anymore, but who cares.
  */
 abstract class ConfigurationSpecification
+
+abstract class DbConfigurationSpecification(): ConfigurationSpecification() {
+    abstract var databaseName: String
+}

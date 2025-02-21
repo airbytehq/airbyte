@@ -117,13 +117,13 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
     @Throws(Exception::class)
     open fun testDataContent() {
         // Class used to make easier the error reporting
-        class MissedRecords( // Stream that is missing any value
+        data class MissedRecords( // Stream that is missing any value
             var streamName:
                 String?, // Which are the values that has not being gathered from the source
             var missedValues: List<String?>
         )
 
-        class UnexpectedRecord(val streamName: String, val unexpectedValue: String?)
+        data class UnexpectedRecord(val streamName: String, val unexpectedValue: String?)
 
         val catalog = configuredCatalog
         val allMessages = runRead(catalog)
