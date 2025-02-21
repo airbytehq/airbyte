@@ -66,6 +66,8 @@ class ConverterFactory(val customConverterClass: Class<out CustomConverter<*, *>
     ): CustomConverter.Converter {
         val noDefaultConverter = Converter(column, partialConverters, NoConversion)
         if (column.isOptional || !column.hasDefaultValue()) {
+            log.info { "Column is optional value: ${column.isOptional}" }
+            log.info { "Column hasDefaultValue value: ${column.hasDefaultValue()}" }
             log.info {
                 "Building custom converter for" +
                     " column '${column.dataCollection()}.${column.name()}'" +
@@ -100,8 +102,17 @@ class ConverterFactory(val customConverterClass: Class<out CustomConverter<*, *>
         private val loggingFlag = AtomicBoolean()
 
         override fun convert(input: Any?): Any? {
-            if (input == null && defaultValue is Converted) {
-                return defaultValue.output
+            log.info {
+                "Default value is: $defaultValue for converted field: ${convertedField.name()}"
+            }
+            if (input == null) {
+                if (defaultValue is Converted) {
+                    log.info { "Using default value: ${defaultValue.output}." }
+                    return defaultValue.output
+                } else {
+                    log.info { "No default value available. Return null" }
+                    return Converted(null).output
+                }
             }
             var cause: Throwable? = null
             for (converter in partialConverters) {
@@ -121,7 +132,7 @@ class ConverterFactory(val customConverterClass: Class<out CustomConverter<*, *>
                 log.warn(cause) {
                     "Converter $customConverterClass" +
                         " for field ${convertedField.dataCollection()}.${convertedField.name()}" +
-                        " cannot handle value '$input' of type ${input?.javaClass}."
+                        " cannot handle value '$input' of type ${input.javaClass}."
                 }
                 log.warn { "Future similar warnings from $customConverterClass will be silenced." }
             }
