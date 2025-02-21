@@ -69,7 +69,7 @@ definitions:
       - "%s"
     datetime_format: "%s"
     step: P{{ config.get('slice_range', 365) }}D
-    cursor_granularity: P1D
+    cursor_granularity: PT1S
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     start_datetime:
       type: MinMaxDatetime
@@ -227,6 +227,6 @@ api_budget:
 
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 25
+        - limit: "{{ 100 if 'sk_test_' in config['client_secret'] else 25 }}"
           interval: PT1S
       matchers: []

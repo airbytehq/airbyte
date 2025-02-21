@@ -317,8 +317,8 @@ class PersonsTest(TestCase):
 
     @HttpMocker()
     def test_incremental_with_newer_start_date(self, http_mocker):
-        start_datetime = _NOW - timedelta(days=2)
-        state_datetime = _NOW - timedelta(days=5)
+        start_datetime = _NOW - timedelta(days=7)
+        state_datetime = _NOW - timedelta(days=15)
         config = _create_config().with_start_date(start_datetime).build()
 
         http_mocker.get(

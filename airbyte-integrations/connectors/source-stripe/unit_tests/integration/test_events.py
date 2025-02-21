@@ -120,13 +120,13 @@ class FullRefreshTest(TestCase):
         slice_range = timedelta(days=30)
         slice_datetime = start_date + slice_range
         http_mocker.get(  # this first request has both gte and lte before 30 days even though we know there should not be records returned
-            _a_request().with_created_gte(start_date).with_created_lte(slice_datetime - timedelta(days=1)).with_limit(100).build(),
+            _a_request().with_created_gte(start_date).with_created_lte(slice_datetime - timedelta(seconds=1)).with_limit(100).build(),
             _a_response().build(),
         )
         http_mocker.get(
             _a_request()
             .with_created_gte(slice_datetime)
-            .with_created_lte(slice_datetime + slice_range - timedelta(days=1))
+            .with_created_lte(slice_datetime + slice_range - timedelta(seconds=1))
             .with_limit(100)
             .build(),
             _a_response().build(),
@@ -159,7 +159,7 @@ class FullRefreshTest(TestCase):
         slice_range = timedelta(days=20)
         slice_datetime = start_date + slice_range
         http_mocker.get(
-            _a_request().with_created_gte(start_date).with_created_lte(slice_datetime - timedelta(days=1)).with_limit(100).build(),
+            _a_request().with_created_gte(start_date).with_created_lte(slice_datetime - timedelta(seconds=1)).with_limit(100).build(),
             _a_response().build(),
         )
         http_mocker.get(
@@ -236,6 +236,18 @@ class FullRefreshTest(TestCase):
 @freezegun.freeze_time(_NOW.isoformat())
 class IncrementalTest(TestCase):
     @HttpMocker()
+    def test_given_no_initial_state_when_read_then_return_state_based_on_cursor_field(self, http_mocker: HttpMocker) -> None:
+        cursor_value = int(_A_START_DATE.timestamp()) + 1
+        http_mocker.get(
+            _a_request().with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
+            _a_response().with_record(_a_record().with_cursor(cursor_value)).build(),
+        )
+        output = self._read(_config().with_start_date(_A_START_DATE), _NO_STATE)
+        most_recent_state = output.most_recent_state
+        assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
+        assert most_recent_state.stream_state.created == str(cursor_value)
+
+    @HttpMocker()
     def test_given_state_when_read_then_use_state_for_query_params(self, http_mocker: HttpMocker) -> None:
         state_value = _A_START_DATE + timedelta(seconds=1)
         http_mocker.get(
@@ -256,22 +268,10 @@ class IncrementalTest(TestCase):
         We do not see exactly how this case can happen in a real life scenario but it is used to see if at least one state message
         would be populated given that no partitions were created.
         """
-        start_date = _NOW - timedelta(days=40)
-        slice_range = timedelta(days=30)
-        slice_datetime = start_date + slice_range
-        very_recent_cursor_state = int((start_date).timestamp())
-
-        http_mocker.get(
-            _a_request().with_created_gte(start_date).with_created_lte(slice_datetime - timedelta(days=1)).with_limit(100).build(),
-            _a_response().with_record(_a_record().with_cursor(very_recent_cursor_state)).build(),
-        )
-        http_mocker.get(
-            _a_request().with_created_gte(slice_datetime).with_created_lte(_NOW).with_limit(100).build(),
-            _a_response().with_record(_a_record().with_cursor(very_recent_cursor_state)).build(),
-        )
+        very_recent_cursor_state = int(_NOW.timestamp()) - 1
 
         output = self._read(
-            _config().with_start_date(_A_START_DATE).with_slice_range_in_days(slice_range.days),
+            _config().with_start_date(_A_START_DATE),
             StateBuilder().with_stream_state("events", {"created": very_recent_cursor_state}).build(),
         )
 

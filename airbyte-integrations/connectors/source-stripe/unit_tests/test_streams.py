@@ -271,7 +271,7 @@ refunds_api_objects = [
                     stream_name="balance_transactions",
                 ),
             ],
-            [{"start_time": "1632409215", "end_time": "1663858815"}, {"start_time": "1663945215", "end_time": "1692802815"}],
+            [{"start_time": "1632409215", "end_time": "1663945214"}, {"start_time": "1663945215", "end_time": "1692802815"}],
             "balance_transactions",
             "full_refresh",
             {},
