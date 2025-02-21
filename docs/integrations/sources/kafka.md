@@ -25,7 +25,7 @@ You'll need the following information to configure the Kafka source:
 - **Protocol** - The Protocol used to communicate with brokers. If using SASL, this includes how to authenticate to the brokers.
   - **PLAINTEXT** - no authentication and no encryption
   - **SASL PLAINTEXT** - no encryption; a `SASL JAAS Config` is needed to authenticate
-  - **SASL SSL** - encrypted 
+  - **SASL SSL** - encrypted
     - **SASL JAAS Config** configures authentication to the brokers
     - **SASL Mechanism** appropriate to your brokers' auth mechanism
     - **OAUTHBEARER token endpoint URL** Optional; If using SASL Mechanism `OAUTHBEARER`, set to the token endpoint URL; note this does not apply to schema registry auth
@@ -68,7 +68,7 @@ AVRO - deserialize Using confluent API. Please refer (https://docs.confluent.io/
 
 | Version | Date       | Pull Request                                                                                       | Subject                                                              |
 | :------ | :--------- |:---------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------|
-| 0.2.9   | 2025-02-18 | [53231](https://github.com/airbytehq/airbyte/pull/53231)                                           | Add configurations for OAUTHBEARER SASL Mechanism                    |
+| 0.3.0   | 2025-02-18 | [53231](https://github.com/airbytehq/airbyte/pull/53231)                                           | Add configurations for OAUTHBEARER SASL Mechanism                    |
 | 0.2.8 | 2025-02-07 | [53221](https://github.com/airbytehq/airbyte/pull/53221)                                           | For AVRO MessageFormat, schema_registry_password is a secret         |
 | 0.2.7 | 2025-01-10 | [51480](https://github.com/airbytehq/airbyte/pull/51480)                                           | Use a non root base image                                            |
 | 0.2.6 | 2024-12-18 | [49907](https://github.com/airbytehq/airbyte/pull/49907)                                           | Use a base image: airbyte/java-connector-base:1.0.0                  |
