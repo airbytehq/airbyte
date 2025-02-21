@@ -21,6 +21,9 @@ interface InputPartitioner {
 @Secondary
 class ByStreamInputPartitioner : InputPartitioner {
     override fun getPartition(record: DestinationRecordAirbyteValue, numParts: Int): Int {
+        if (numParts == 1) {
+            return 0
+        }
         return abs(record.stream.hashCode()) % numParts
     }
 }

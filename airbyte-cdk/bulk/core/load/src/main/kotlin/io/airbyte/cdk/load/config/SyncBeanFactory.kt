@@ -122,9 +122,7 @@ class SyncBeanFactory {
         loadStrategy: LoadStrategy? = null,
     ): PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>> {
         return PartitionedQueue(
-            Array(loadStrategy?.inputPartitions ?: 1) {
-                ChannelMessageQueue(Channel(Channel.UNLIMITED))
-            }
+            Array(loadStrategy?.inputPartitions ?: 1) { ChannelMessageQueue(Channel(10_000)) }
         )
     }
 
