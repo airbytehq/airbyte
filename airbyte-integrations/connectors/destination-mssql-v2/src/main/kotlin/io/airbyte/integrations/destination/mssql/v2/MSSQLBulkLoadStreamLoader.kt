@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.mssql.v2
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
@@ -192,7 +196,8 @@ class MSSQLBulkLoadStreamLoader(
             ObjectStoragePathConfiguration(
                 prefix = "blob",
                 stagingPrefix = null,
-                pathSuffixPattern = "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/\${EPOCH}/",
+                pathSuffixPattern =
+                    "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/\${EPOCH}/",
                 fileNamePattern = "{part_number}{format_extension}",
                 usesStagingDirectory = false
             )

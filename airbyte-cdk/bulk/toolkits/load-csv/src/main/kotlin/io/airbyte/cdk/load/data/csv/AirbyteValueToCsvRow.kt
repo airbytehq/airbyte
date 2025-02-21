@@ -27,30 +27,30 @@ sealed interface CsvFormat {
 }
 
 fun ObjectValue.toCsvRecord(schema: ObjectType, format: CsvFormat = CsvFormat.Standard): List<Any> {
-    return schema.properties.map { (key, _) ->
-        values[key]?.convertToCsvValue(format) ?: ""
-    }
+    return schema.properties.map { (key, _) -> values[key]?.convertToCsvValue(format) ?: "" }
 }
 
-private fun Any.convertToCsvValue(format: CsvFormat): Any = when (this) {
-    is ObjectValue -> toJson().serializeToString()
-    is ArrayValue -> toJson().serializeToString()
-    is StringValue -> value
-    is IntegerValue -> value
-    is NumberValue -> value
-    is NullValue -> ""
-    is TimestampWithTimezoneValue -> value
-    is TimestampWithoutTimezoneValue -> value
-    is BooleanValue -> when (format) {
-        CsvFormat.MsSql -> if (value) 1 else 0
-        CsvFormat.Standard -> value
+private fun Any.convertToCsvValue(format: CsvFormat): Any =
+    when (this) {
+        is ObjectValue -> toJson().serializeToString()
+        is ArrayValue -> toJson().serializeToString()
+        is StringValue -> value
+        is IntegerValue -> value
+        is NumberValue -> value
+        is NullValue -> ""
+        is TimestampWithTimezoneValue -> value
+        is TimestampWithoutTimezoneValue -> value
+        is BooleanValue ->
+            when (format) {
+                CsvFormat.MsSql -> if (value) 1 else 0
+                CsvFormat.Standard -> value
+            }
+        is DateValue -> value
+        is TimeWithTimezoneValue -> value
+        is TimeWithoutTimezoneValue -> value
+        is UnknownValue -> ""
+        else -> ""
     }
-    is DateValue -> value
-    is TimeWithTimezoneValue -> value
-    is TimeWithoutTimezoneValue -> value
-    is UnknownValue -> ""
-    else -> ""
-}
 
 fun ObjectValue.toMssqlCsvRecord(schema: ObjectType): List<Any> =
     toCsvRecord(schema, CsvFormat.MsSql)

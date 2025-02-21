@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.mssql.v2
 
 import io.airbyte.cdk.load.command.DestinationStream
@@ -49,10 +53,7 @@ abstract class AbstractMSSQLStreamLoader(
         }
     }
 
-    /**
-     * Removes data from older "generations," usually after a successful sync. Subclasses can
-     * override if needed to handle different logic or skip altogether.
-     */
+    /** Removes data from older "generations," usually after a successful sync. */
     private fun truncatePreviousGenerations() {
         try {
             dataSource.connection.use { connection ->
@@ -60,7 +61,7 @@ abstract class AbstractMSSQLStreamLoader(
             }
         } catch (e: Exception) {
             log.error(e) { "Error while truncating previous generations. Cause: ${e.message}" }
-            // Decide if you want to rethrow or ignore
+            throw e
         }
     }
 }

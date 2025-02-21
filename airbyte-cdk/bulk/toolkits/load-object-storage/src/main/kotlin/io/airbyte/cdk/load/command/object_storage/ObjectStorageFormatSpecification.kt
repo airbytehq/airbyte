@@ -250,7 +250,6 @@ data class MSSQLCSVFormatConfiguration(
     override val rootLevelFlattening: Boolean = true,
 ) : ObjectStorageFormatConfiguration {}
 
-
 data class AvroFormatConfiguration(
     override val extension: String = "avro",
     override val avroCompressionConfiguration: AvroCompressionConfiguration,

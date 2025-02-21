@@ -97,12 +97,11 @@ class AzureBlobStreamingUpload(
         return Base64.getEncoder().encodeToString(buffer.array())
     }
     /**
-     * Return a new map containing only valid key/value pairs according to Azure metadata constraints.
+     * Return a new map containing only valid key/value pairs according to Azure metadata
+     * constraints.
      */
     private fun filterInvalidMetadata(metadata: Map<String, String>): Map<String, String> {
-        return metadata.filter { (key, value) ->
-            isValidKey(key) && isValidValue(value)
-        }
+        return metadata.filter { (key, value) -> isValidKey(key) && isValidValue(value) }
     }
 
     private fun isValidKey(key: String): Boolean {
@@ -115,5 +114,4 @@ class AzureBlobStreamingUpload(
         if (invalidCharsRegex.containsMatchIn(value)) return false
         return value.all { it.code in 32..126 }
     }
-
 }

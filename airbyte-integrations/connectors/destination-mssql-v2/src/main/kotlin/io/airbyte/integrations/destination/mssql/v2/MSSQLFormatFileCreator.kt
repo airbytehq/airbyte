@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.mssql.v2
 
 import io.airbyte.cdk.load.command.DestinationStream
@@ -18,19 +22,19 @@ internal class MSSQLFormatFileCreator(
 
     /** Simple struct holding column metadata retrieved from SQL Server. */
     internal data class ColumnInfo(
-        val ordinalPosition: Int,  // 1-based position of the column in the table
-        val name: String,          // Column name
-        val dataType: String,      // e.g., "varchar", "int", "datetime"
-        val charMaxLength: Int?,   // May be null for non-character types
+        val ordinalPosition: Int, // 1-based position of the column in the table
+        val name: String, // Column name
+        val dataType: String, // e.g., "varchar", "int", "datetime"
+        val charMaxLength: Int?, // May be null for non-character types
     )
 
     /** Intermediate struct mapping a CSV column to its corresponding SQL column info. */
     internal data class CsvToDbColumn(
-        val csvPosition: Int,      // 1-based index in the CSV
-        val dbOrdinal: Int,        // The column's ordinal position in the table
-        val dbColumnName: String,  // Column name in the DB
-        val dbDataType: String,    // The column's data type in the DB
-        val dbCharLength: Int?,    // The column's max length in the DB
+        val csvPosition: Int, // 1-based index in the CSV
+        val dbOrdinal: Int, // The column's ordinal position in the table
+        val dbColumnName: String, // Column name in the DB
+        val dbDataType: String, // The column's data type in the DB
+        val dbCharLength: Int?, // The column's max length in the DB
     )
 
     fun createAndUploadFormatFile(defaultSchemaName: String): AzureBlob {
@@ -45,12 +49,13 @@ internal class MSSQLFormatFileCreator(
         val csvToDbMapping = buildCsvToDbMapping(csvColumnNames, dbColumns)
 
         // 4) Generate the .fmt content
-        val fmtContent = buildFormatFileContent(
-            csvToDbMapping = csvToDbMapping,
-            delimiter = ",",
-            rowDelimiter = "\\r\\n",
-            formatFileVersion = "12.0",
-        )
+        val fmtContent =
+            buildFormatFileContent(
+                csvToDbMapping = csvToDbMapping,
+                delimiter = ",",
+                rowDelimiter = "\\r\\n",
+                formatFileVersion = "12.0",
+            )
 
         // 5) Upload the format file to Azure Blob Storage
         val blobPath = buildFormatFileBlobPath(targetSchema)
@@ -61,7 +66,8 @@ internal class MSSQLFormatFileCreator(
      * Retrieves columns for a given table in SQL Server, returning them in ascending ordinal order.
      */
     internal fun fetchTableColumns(schemaName: String, tableName: String): List<ColumnInfo> {
-        val sql = """
+        val sql =
+            """
             SELECT 
                 ORDINAL_POSITION,
                 COLUMN_NAME,
@@ -111,10 +117,11 @@ internal class MSSQLFormatFileCreator(
         dbColumns: List<ColumnInfo>
     ): List<CsvToDbColumn> {
         return csvColumnNames.mapIndexed { idx, csvColName ->
-            val match = dbColumns.firstOrNull { it.name.equals(csvColName, ignoreCase = true) }
-                ?: error(
-                    "No matching DB column found for CSV column '$csvColName' in table schema.",
-                )
+            val match =
+                dbColumns.firstOrNull { it.name.equals(csvColName, ignoreCase = true) }
+                    ?: error(
+                        "No matching DB column found for CSV column '$csvColName' in table schema.",
+                    )
             CsvToDbColumn(
                 csvPosition = idx + 1,
                 dbOrdinal = match.ordinalPosition,
@@ -127,8 +134,8 @@ internal class MSSQLFormatFileCreator(
 
     /**
      * Builds the content of the non-XML format file (.fmt) for SQL Server’s BULK INSERT. This ties
-     * CSV columns (SQLCHAR, etc.) to table columns in the correct order, using UTF-8 collation
-     * and automatically determining a prefix length if the column is nullable.
+     * CSV columns (SQLCHAR, etc.) to table columns in the correct order, using UTF-8 collation and
+     * automatically determining a prefix length if the column is nullable.
      */
     internal fun buildFormatFileContent(
         csvToDbMapping: List<CsvToDbColumn>,
@@ -145,7 +152,8 @@ internal class MSSQLFormatFileCreator(
 
         // Next N lines: define each column.
         // Format:
-        // <CSVFieldPos> <BCPType> <PrefixLength> <Length> <Delimiter> <ServerColumnOrder> <ColumnName> <Collation>
+        // <CSVFieldPos> <BCPType> <PrefixLength> <Length> <Delimiter> <ServerColumnOrder>
+        // <ColumnName> <Collation>
         csvToDbMapping.forEachIndexed { i, mapping ->
             val (csvPos, dbOrdinal, dbColName, dbDataType, dbCharLength) = mapping
 
@@ -183,21 +191,33 @@ internal class MSSQLFormatFileCreator(
             "int" -> "SQLCHAR" to 12
             "bigint" -> "SQLCHAR" to 20
             "bit" -> "SQLCHAR" to 1
-            "datetime", "smalldatetime", "datetime2", "date", "time" -> "SQLCHAR" to 25
-            "decimal", "numeric", "money", "smallmoney", "float", "real" -> "SQLCHAR" to 50
-            "varchar", "char", "nvarchar", "nchar" -> {
+            "datetime",
+            "smalldatetime",
+            "datetime2",
+            "date",
+            "time" -> "SQLCHAR" to 25
+            "decimal",
+            "numeric",
+            "money",
+            "smallmoney",
+            "float",
+            "real" -> "SQLCHAR" to 50
+            "varchar",
+            "char",
+            "nvarchar",
+            "nchar" -> {
                 val length =
                     if (charMaxLength != null && charMaxLength > 0) {
                         // For nvarchar, consider doubling (2 bytes per char)
-                        (charMaxLength * if (dataType.startsWith("n")) 2 else 1)
-                            .coerceAtLeast(4) // small safety floor
+                        (charMaxLength * if (dataType.startsWith("n")) 2 else 1).coerceAtLeast(
+                            4
+                        ) // small safety floor
                     } else {
                         // fallback for (max) or unknown
                         8000
                     }
                 "SQLCHAR" to length
             }
-
             else -> "SQLCHAR" to 8000 // fallback for unknown or large types
         }
     }

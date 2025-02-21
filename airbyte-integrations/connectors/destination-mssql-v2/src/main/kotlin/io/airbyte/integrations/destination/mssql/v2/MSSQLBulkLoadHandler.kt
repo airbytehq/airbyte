@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.mssql.v2
 
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -177,8 +181,8 @@ class MSSQLBulkLoadHandler(
     }
 
     /**
-     * Builds a MERGE statement using the provided PK and non-PK columns,
-     * always quoting column names to avoid keyword conflicts.
+     * Builds a MERGE statement using the provided PK and non-PK columns, always quoting column
+     * names to avoid keyword conflicts.
      */
     private fun buildMergeSql(
         tempTableName: String,
@@ -187,9 +191,7 @@ class MSSQLBulkLoadHandler(
     ): String {
         // 1. ON condition:
         //    e.g. Target.[Pk1] = Source.[Pk1] AND Target.[Pk2] = Source.[Pk2]
-        val onCondition = primaryKeyColumns.joinToString(" AND ") {
-            "Target.[$it] = Source.[$it]"
-        }
+        val onCondition = primaryKeyColumns.joinToString(" AND ") { "Target.[$it] = Source.[$it]" }
 
         // 2. All columns for the INSERT statement (quoted)
         val allColumns = primaryKeyColumns + nonPkColumns
@@ -197,9 +199,7 @@ class MSSQLBulkLoadHandler(
 
         // 3. The UPDATE assignments for non-PK columns
         //    e.g. Target.[col1] = Source.[col1], Target.[col2] = ...
-        val updateAssignments = nonPkColumns.joinToString(", ") {
-            "Target.[$it] = Source.[$it]"
-        }
+        val updateAssignments = nonPkColumns.joinToString(", ") { "Target.[$it] = Source.[$it]" }
 
         // 4. The VALUES for the INSERT statement
         //    e.g. Source.[Pk1], Source.[col1], Source.[col2]...

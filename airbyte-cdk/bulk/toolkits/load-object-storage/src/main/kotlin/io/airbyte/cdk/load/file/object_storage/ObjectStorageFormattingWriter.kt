@@ -120,6 +120,7 @@ class MSSQLCSVFormattingWriter(
         printer.close()
     }
 }
+
 class CSVFormattingWriter(
     private val stream: DestinationStream,
     outputStream: OutputStream,
