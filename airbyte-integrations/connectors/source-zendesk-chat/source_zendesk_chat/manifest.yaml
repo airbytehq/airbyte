@@ -1,4 +1,4 @@
-version: 6.5.0
+version: 6.33.7
 
 definitions:
   # COMMON PARTS
@@ -288,24 +288,23 @@ definitions:
   chats_stream:
     description: >-
       Chats Stream: https://developer.zendesk.com/api-reference/live-chat/chat-api/incremental_export/#incremental-chat-export
-    base_incremental_time_stream:
-      $ref: "#/definitions/base_stream_with_time_offset_pagination"
-      retriever:
-        $ref: "#/definitions/base_stream_with_time_offset_pagination/retriever"
-        # this is needed to ignore additional params for incremental syncs
-        ignore_stream_slicer_parameters_on_paginated_requests: true
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: "{{ parameters['cursor_field'] }}"
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%fZ"
-          - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%s"
-        start_datetime:
-          datetime: "{{ format_datetime(config['start_date'], '%s') }}"
-        start_time_option:
-          field_name: start_time
-          inject_into: "request_parameter"
+    $ref: "#/definitions/base_stream_with_time_offset_pagination"
+    retriever:
+      $ref: "#/definitions/base_stream_with_time_offset_pagination/retriever"
+      # this is needed to ignore additional params for incremental syncs
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "{{ parameters['cursor_field'] }}"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%s"
+      start_datetime:
+        datetime: "{{ format_datetime(config['start_date'], '%s') }}"
+      start_time_option:
+        field_name: start_time
+        inject_into: "request_parameter"
     $parameters:
       cursor_field: "update_timestamp"
       name: "chats"
