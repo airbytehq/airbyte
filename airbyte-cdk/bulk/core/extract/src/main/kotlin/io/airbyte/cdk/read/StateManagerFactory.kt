@@ -120,7 +120,6 @@ class StateManagerFactory(
         val name: String = streamID.name
         val namespace: String? = streamID.namespace
         val streamLabel: String = streamID.toString()
-        // TEMP: "Airbyte, Inc_"
         when (metadataQuerier.streamNames(namespace).filter { it.name == name }.size) {
             0 -> {
                 handler.accept(StreamNotFound(streamID))
