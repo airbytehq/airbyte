@@ -4,10 +4,11 @@
 from datetime import datetime, timedelta
 from http import HTTPStatus
 from unittest.mock import Mock, patch
+from urllib.parse import parse_qs, urlparse
 
 import pytest
-from source_microsoft_sharepoint.utils import execute_query_with_retry, filter_http_urls, PlaceholderUrlBuilder
-from urllib.parse import parse_qs, urlparse
+from source_microsoft_sharepoint.utils import PlaceholderUrlBuilder, execute_query_with_retry, filter_http_urls
+
 from airbyte_cdk import AirbyteTracedException
 
 
