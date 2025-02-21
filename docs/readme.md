@@ -1,7 +1,3 @@
----
-displayed_sidebar: docs
----
-
 # Welcome to Airbyte Docs
 
 <Grid columns="1">
