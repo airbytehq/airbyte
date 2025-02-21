@@ -7,18 +7,23 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
-from glassflow.client import GlassFlowClient
-from glassflow.pipelines import PipelineClient
+from glassflow import PipelineDataSink, PipelineDataSource, errors
 
 logger = getLogger("airbyte")
 
 
-def create_connection(config: Mapping[str, Any]) -> PipelineClient:
+def create_source_connection(config: Mapping[str, Any]) -> PipelineDataSource:
     pipeline_id = config.get("pipeline_id")
     pipeline_access_token = config.get("pipeline_access_token")
 
-    client = GlassFlowClient()
-    return client.pipeline_client(pipeline_id=pipeline_id, pipeline_access_token=pipeline_access_token)
+    return PipelineDataSource(pipeline_id=pipeline_id, pipeline_access_token=pipeline_access_token)
+
+
+def create_sink_connection(config: Mapping[str, Any]) -> PipelineDataSink:
+    pipeline_id = config.get("pipeline_id")
+    pipeline_access_token = config.get("pipeline_access_token")
+
+    return PipelineDataSink(pipeline_id=pipeline_id, pipeline_access_token=pipeline_access_token)
 
 
 class DestinationGlassflow(Destination):
@@ -40,7 +45,7 @@ class DestinationGlassflow(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
         streams = {s.stream.name for s in configured_catalog.streams}
-        connection = create_connection(config)
+        connection = create_source_connection(config)
 
         for message in input_messages:
             if message.type == Type.STATE:
@@ -78,10 +83,12 @@ class DestinationGlassflow(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            connection = create_connection(config)
-            if connection.is_access_token_valid():
+            connection = create_source_connection(config)
+            try:
+                connection.validate_credentials()
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"The pipeline access token is not valid")
+            except errors.PipelineAccessTokenInvalidError:
+                return AirbyteConnectionStatus(status=Status.FAILED, message=f"The pipeline access token is not valid")
         except Exception as e:
             logger.error(f"Failed to create connection. Error: {e}")
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")

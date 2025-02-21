@@ -18,11 +18,9 @@ from airbyte_cdk.models import (
     Type,
 )
 from destination_glassflow import DestinationGlassflow
+from glassflow import errors
 
-config = {
-    "pipeline_id": "12345",
-    "pipeline_access_token": "67890"
-}
+config = {"pipeline_id": "12345", "pipeline_access_token": "67890"}
 
 
 def _init_mocks(client):
@@ -31,19 +29,19 @@ def _init_mocks(client):
     return pipeline
 
 
-@mock.patch("glassflow.client.PipelineClient")
+@mock.patch("destination_glassflow.destination.PipelineDataSource")
 def test_check_succeeds(client):
     pipeline = _init_mocks(client)
-    pipeline.is_access_token_valid.return_value = True
+    pipeline.validate_credentials.return_value = None
     destination = DestinationGlassflow()
     status = destination.check(logger=Mock(), config=config)
     assert status.status == Status.SUCCEEDED
 
 
-@mock.patch("glassflow.client.PipelineClient")
+@mock.patch("destination_glassflow.destination.PipelineDataSource")
 def test_check_fails(client):
     pipeline = _init_mocks(client)
-    pipeline.is_access_token_valid.return_value = False
+    pipeline.validate_credentials.side_effect = errors.PipelineAccessTokenInvalidError(mock.Mock())
     destination = DestinationGlassflow()
     status = destination.check(logger=Mock(), config=config)
     assert status.status == Status.FAILED
@@ -67,7 +65,7 @@ def _configured_catalog() -> ConfiguredAirbyteCatalog:
     return ConfiguredAirbyteCatalog(streams=[append_stream])
 
 
-@mock.patch("glassflow.client.PipelineClient")
+@mock.patch("destination_glassflow.destination.PipelineDataSource")
 def test_write_succeeds(client):
     stream = "test"
     data = {"field1": "test-value", "field2": "test-value"}
@@ -85,7 +83,7 @@ def test_write_succeeds(client):
     pipeline.publish.assert_called()
 
 
-@mock.patch("glassflow.client.PipelineClient")
+@mock.patch("destination_glassflow.destination.PipelineDataSource")
 def test_write_skips_message_from_unknown_stream(client):
     stream = "unknown_stream"
     data = {"field1": "test-value", "field2": "test-value"}

@@ -41,7 +41,8 @@ poetry run destination-glassflow write --config secrets/config.json --catalog sa
 To run tests locally, from the connector directory run:
 
 ```
-poetry run pytest tests
+poetry run pytest unit-tests
+poetry run pytest integration-tests
 ```
 
 ### Building the docker image

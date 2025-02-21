@@ -15,7 +15,7 @@ from airbyte_cdk.models.airbyte_protocol import (
     DestinationSyncMode,
     SyncMode,
 )
-from destination_glassflow.destination import DestinationGlassflow, create_connection
+from destination_glassflow.destination import DestinationGlassflow, create_sink_connection
 
 TEST_STREAM = "test"
 TEST_NAMESPACE = "test_namespace"
@@ -33,15 +33,14 @@ def _configured_catalog() -> ConfiguredAirbyteCatalog:
 
 
 def consume(config):
-    connection = create_connection(config=config)
+    connection = create_sink_connection(config=config)
 
     while True:
         # Consume transformed event from the pipeline
         res = connection.consume()
 
         if res.status_code == 200:
-            record = res.json()
-            assert res.content_type == "application/json"
+            record = res.event()
             assert record["data"] == TEST_MESSAGE
             assert record["stream"] == TEST_STREAM
             assert record["namespace"] == TEST_NAMESPACE
