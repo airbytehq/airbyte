@@ -60,7 +60,7 @@ class MSSQLDataDumper : DestinationDataDumper {
         stream: DestinationStream
     ): List<OutputRecord> {
         val config = getConfiguration(spec = spec as MSSQLSpecification, stream = stream)
-        val sqlBuilder = MSSQLQueryBuilder(config, stream)
+        val sqlBuilder = MSSQLQueryBuilder(config.schema, stream)
         val dataSource = DataSourceFactory().dataSource(config)
         val output = mutableListOf<OutputRecord>()
         dataSource.connection.use { connection ->

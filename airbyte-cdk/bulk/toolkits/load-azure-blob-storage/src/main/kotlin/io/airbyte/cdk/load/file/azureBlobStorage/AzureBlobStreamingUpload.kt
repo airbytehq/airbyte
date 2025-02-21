@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentSkipListMap
 import java.util.concurrent.atomic.AtomicBoolean
 
 private const val BLOB_ID_PREFIX = "block"
+private const val RESERVED_PREFIX = "x-ms-"
 
 class AzureBlobStreamingUpload(
     private val blockBlobClient: BlockBlobClient,
@@ -26,6 +27,7 @@ class AzureBlobStreamingUpload(
     private val log = KotlinLogging.logger {}
     private val isComplete = AtomicBoolean(false)
     private val blockIds = ConcurrentSkipListMap<Int, String>()
+    private val invalidCharsRegex = Regex("[<>:\"/\\\\?#*\\-]")
 
     /**
      * Each part that arrives is treated as a new block. We must generate unique block IDs for each
@@ -70,7 +72,7 @@ class AzureBlobStreamingUpload(
 
             // Set any metadata
             if (metadata.isNotEmpty()) {
-                blockBlobClient.setMetadata(metadata)
+                blockBlobClient.setMetadata(filterInvalidMetadata(metadata))
             }
         }
 
@@ -94,4 +96,24 @@ class AzureBlobStreamingUpload(
         // Encode the entire fixed-length buffer to Base64
         return Base64.getEncoder().encodeToString(buffer.array())
     }
+    /**
+     * Return a new map containing only valid key/value pairs according to Azure metadata constraints.
+     */
+    private fun filterInvalidMetadata(metadata: Map<String, String>): Map<String, String> {
+        return metadata.filter { (key, value) ->
+            isValidKey(key) && isValidValue(value)
+        }
+    }
+
+    private fun isValidKey(key: String): Boolean {
+        if (key.isBlank() || key.startsWith(RESERVED_PREFIX)) return false
+        if (invalidCharsRegex.containsMatchIn(key)) return false
+        return key.all { it.code in 32..126 }
+    }
+
+    private fun isValidValue(value: String): Boolean {
+        if (invalidCharsRegex.containsMatchIn(value)) return false
+        return value.all { it.code in 32..126 }
+    }
+
 }
