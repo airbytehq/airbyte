@@ -58,7 +58,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": "10000000000" },
+      "stream_state": { "created": 10000000000 },
       "stream_descriptor": { "name": "events" }
     }
   },
@@ -100,7 +100,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": "10000000000" },
+      "stream_state": { "created": 10000000000 },
       "stream_descriptor": { "name": "shipping_rates" }
     }
   },
@@ -121,7 +121,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": "10000000000" },
+      "stream_state": { "created": 10000000000 },
       "stream_descriptor": { "name": "balance_transactions" }
     }
   },
@@ -212,14 +212,14 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": "10000000000" },
+      "stream_state": { "created": 10000000000 },
       "stream_descriptor": { "name": "files" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": "10000000000" },
+      "stream_state": { "created": 10000000000 },
       "stream_descriptor": { "name": "file_links" }
     }
   },

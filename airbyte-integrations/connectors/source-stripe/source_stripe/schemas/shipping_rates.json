@@ -18,35 +18,11 @@
     },
     "created": {
       "description": "Timestamp indicating when the shipping rate was created",
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "delivery_estimate": {
       "description": "Estimated delivery time for the shipping rate",
-      "type": ["null", "object"],
-      "properties": {
-        "maximum": {
-          "type": ["null", "object"],
-          "properties": {
-            "unit": {
-              "type": ["null", "string"]
-            },
-            "value": {
-              "type": ["null", "integer"]
-            }
-          }
-        },
-        "minimum": {
-          "type": ["null", "object"],
-          "properties": {
-            "unit": {
-              "type": ["null", "string"]
-            },
-            "value": {
-              "type": ["null", "integer"]
-            }
-          }
-        }
-      }
+      "type": ["null", "string"]
     },
     "display_name": {
       "description": "Name displayed for the shipping rate",

@@ -3,7 +3,7 @@
   "properties": {
     "created": {
       "description": "The timestamp representing when the event was created.",
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "data": {
       "description": "Additional data related to the event, specific to the event type.",
