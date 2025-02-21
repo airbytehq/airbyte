@@ -226,6 +226,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.11.3      | 2025-02-12 | [51055](https://github.com/airbytehq/airbyte/pull/51055) | support PlanetScale MySQL |
 | 3.11.2      | 2025-02-06 | [53195](https://github.com/airbytehq/airbyte/pull/53195) | Fix typo in CDC configuration.                                                                                                                  |                                                                                                                  |
 | 3.11.1      | 2025-01-30  | [52039](https://github.com/airbytehq/airbyte/pull/52039)   | Adopt latest API changes from Bulk CDK.                                                                                                         |
 | 3.11.0      | 2025-01-14 | [51545](https://github.com/airbytehq/airbyte/pull/51545)   | Promoting release candidate 3.11.0-rc.1 to a main version.                                                                                      |
