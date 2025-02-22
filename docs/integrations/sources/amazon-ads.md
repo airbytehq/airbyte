@@ -153,6 +153,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.1.0   | 2025-02-20 | [53692](https://github.com/airbytehq/airbyte/pull/53692) | Migrate stream `Portfolios` to Portfolios API v3 |
 | 7.0.0   | 2025-02-06 | [48449](https://github.com/airbytehq/airbyte/pull/48449) | Migrate *-report streams to low-code                                                                                                                                   |
 | 6.2.7   | 2025-01-25 | [52210](https://github.com/airbytehq/airbyte/pull/52210) | Update dependencies                                                                                                                                                    |
 | 6.2.6   | 2025-01-18 | [51722](https://github.com/airbytehq/airbyte/pull/51722) | Update dependencies                                                                                                                                                    |
