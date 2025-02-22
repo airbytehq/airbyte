@@ -39,6 +39,7 @@ The Breezometer connector supports full sync refresh.
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
+| 0.2.14 | 2025-02-22 | [54277](https://github.com/airbytehq/airbyte/pull/54277) | Update dependencies |
 | 0.2.13 | 2025-02-15 | [53931](https://github.com/airbytehq/airbyte/pull/53931) | Update dependencies |
 | 0.2.12 | 2025-02-08 | [52936](https://github.com/airbytehq/airbyte/pull/52936) | Update dependencies |
 | 0.2.11 | 2025-01-25 | [52160](https://github.com/airbytehq/airbyte/pull/52160) | Update dependencies |
