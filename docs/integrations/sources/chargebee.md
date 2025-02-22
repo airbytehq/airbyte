@@ -106,7 +106,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0.10.0 | 2025-02-20 | [54182](https://github.com/airbytehq/airbyte/pull/54182) | Promoting release candidate 0.10.0-rc.1 to a main version. |
 | 0.10.0-rc.1  | 2025-07-02 | [53220](https://github.com/airbytehq/airbyte/pull/53220) | Replace custom `IncrementalSingleSliceCursor` component with low-code semi-incremental `DatetimeBasedCursor`   |
-| 0.9.0   | 2024-10-22 | [47243](https://github.com/airbytehq/airbyte/pull/47243) | Migrate to Manifest-only  |
+| 0.9.0   | 2025-02-06 | [47243](https://github.com/airbytehq/airbyte/pull/47243) | Migrate to Manifest-only  |
 | 0.8.0   | 2025-01-31 | [52685](https://github.com/airbytehq/airbyte/pull/52685) | Update to latest CDK version                                                                                                                                           |
 | 0.7.3   | 2025-01-11 | [49038](https://github.com/airbytehq/airbyte/pull/49038) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.7.2   | 2024-11-20 | [48510](https://github.com/airbytehq/airbyte/pull/48510) | Ensure no pagination issues on concurrent syncs                                                                                                                        |
