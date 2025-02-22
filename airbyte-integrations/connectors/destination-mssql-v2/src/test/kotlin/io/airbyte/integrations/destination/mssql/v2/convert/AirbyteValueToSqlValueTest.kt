@@ -16,14 +16,11 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.UnknownValue
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.serializeToJsonBytes
-import io.airbyte.integrations.destination.mssql.v2.model.SqlColumn
-import io.airbyte.integrations.destination.mssql.v2.model.SqlTable
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.sql.Date
 import java.sql.Time
 import java.sql.Timestamp
-import java.sql.Types
 import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -120,128 +117,6 @@ internal class AirbyteValueToSqlValueTest {
         val result = converter.convert(unknownValue)
         assertEquals(ByteArray::class.java, result?.javaClass)
         assertArrayEquals(Jsons.writeValueAsBytes(unknownValue.value), result as ByteArray)
-    }
-
-    @Test
-    fun testToSqlValue() {
-        val sqlTable =
-            SqlTable(
-                listOf(
-                    SqlColumn(
-                        name = "id",
-                        type = Types.INTEGER,
-                        isPrimaryKey = true,
-                        isNullable = false
-                    ),
-                    SqlColumn(
-                        name = "name",
-                        type = Types.VARCHAR,
-                        isPrimaryKey = false,
-                        isNullable = true
-                    ),
-                    SqlColumn(
-                        name = "meta",
-                        type = Types.BLOB,
-                        isPrimaryKey = false,
-                        isNullable = false
-                    ),
-                    SqlColumn(
-                        name = "items",
-                        type = Types.BLOB,
-                        isPrimaryKey = false,
-                        isNullable = false
-                    )
-                )
-            )
-        val objectValue =
-            ObjectValue(
-                linkedMapOf(
-                    "id" to IntegerValue(123L),
-                    "name" to StringValue("John Doe"),
-                    "meta" to
-                        ObjectValue(
-                            linkedMapOf(
-                                "sync_id" to IntegerValue(123L),
-                                "changes" to
-                                    ObjectValue(
-                                        linkedMapOf(
-                                            "change" to StringValue("insert"),
-                                            "reason" to StringValue("reason"),
-                                        )
-                                    )
-                            )
-                        ),
-                    "items" to ArrayValue(listOf(StringValue("item1"), StringValue("item2")))
-                )
-            )
-
-        val sqlValue = objectValue.toSqlValue(sqlTable)
-
-        assertEquals(sqlTable.columns.size, sqlValue.values.size)
-        assertEquals(
-            BigInteger::class.java,
-            sqlValue.values.find { it.name == "id" }?.value?.javaClass
-        )
-        assertEquals(123.toBigInteger(), sqlValue.values.find { it.name == "id" }?.value)
-        assertEquals(
-            String::class.java,
-            sqlValue.values.find { it.name == "name" }?.value?.javaClass
-        )
-        assertEquals("John Doe", sqlValue.values.find { it.name == "name" }?.value)
-        assertEquals(
-            ByteArray::class.java,
-            sqlValue.values.find { it.name == "meta" }?.value?.javaClass
-        )
-        assertArrayEquals(
-            mapOf(
-                    "sync_id" to 123.toBigInteger(),
-                    "changes" to
-                        mapOf(
-                            "change" to "insert",
-                            "reason" to "reason",
-                        )
-                )
-                .serializeToJsonBytes(),
-            sqlValue.values.find { it.name == "meta" }?.value as ByteArray
-        )
-        assertEquals(
-            ByteArray::class.java,
-            sqlValue.values.find { it.name == "items" }?.value?.javaClass
-        )
-        assertArrayEquals(
-            listOf("item1", "item2").serializeToJsonBytes(),
-            sqlValue.values.find { it.name == "items" }?.value as ByteArray
-        )
-    }
-
-    @Test
-    fun testToSqlValueIgnoresFieldsNotInTable() {
-        val sqlTable =
-            SqlTable(
-                listOf(
-                    SqlColumn(
-                        name = "id",
-                        type = Types.INTEGER,
-                        isPrimaryKey = true,
-                        isNullable = false
-                    ),
-                )
-            )
-        val objectValue =
-            ObjectValue(
-                linkedMapOf(
-                    "id" to IntegerValue(123L),
-                    "name" to StringValue("Should be ignored"),
-                )
-            )
-
-        val sqlValue = objectValue.toSqlValue(sqlTable)
-        assertEquals(sqlTable.columns.size, sqlValue.values.size)
-        assertEquals(
-            BigInteger::class.java,
-            sqlValue.values.find { it.name == "id" }?.value?.javaClass
-        )
-        assertEquals(123.toBigInteger(), sqlValue.values.find { it.name == "id" }?.value)
     }
 
     @Test

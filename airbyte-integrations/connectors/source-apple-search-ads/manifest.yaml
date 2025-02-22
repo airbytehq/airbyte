@@ -216,8 +216,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: ExponentialBackoffStrategy
+                    factor: "{{ config.backoff_factor }}"
                 response_filters:
                   - type: HttpResponseFilter
                     action: RETRY
@@ -235,7 +237,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: P30D
+        lookback_window: 'P{{ config.lookback_window}}D'
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -297,8 +299,10 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                max_retries: 10
                 backoff_strategies:
                   - type: ExponentialBackoffStrategy
+                    factor: "{{ config.backoff_factor }}"
                 response_filters:
                   - type: HttpResponseFilter
                     action: RETRY
@@ -324,7 +328,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: P30D
+        lookback_window: 'P{{ config.lookback_window}}D'
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -384,6 +388,7 @@ definitions:
             granularity: DAILY
           error_handler:
             type: DefaultErrorHandler
+            max_retries: 10
             response_filters:
               - type: HttpResponseFilter
                 action: IGNORE
@@ -397,6 +402,7 @@ definitions:
                   - 429
             backoff_strategies:
               - type: ExponentialBackoffStrategy
+                factor: "{{ config.backoff_factor }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -416,7 +422,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: P30D
+        lookback_window: 'P{{ config.lookback_window }}D'
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -514,6 +520,28 @@ spec:
         title: Client Secret
         airbyte_secret: true
         order: 4
+      lookback_window:
+        type: integer
+        default: 30
+        description: >-
+          Apple Search Ads uses a 30-day attribution window. However, you may consider smaller values in order
+          to shorten sync durations, at the cost of missing late data attributions.
+        title: Lookback Window
+        pattern: ^(30|[1-2][0-9]|[1-9])$
+        examples:
+          - 7
+        order: 5
+      backoff_factor:
+        type: integer
+        default: 5
+        description: >-
+          This factor factor determines the delay increase factor between retryable failures.
+          Valid values are integers between 1 and 20.
+        title: Exponential Backoff Factor
+        pattern: ^(20|1[0-9]|[1-9])$
+        examples:
+          - 10
+        order: 6
     additionalProperties: true
 
 metadata:
