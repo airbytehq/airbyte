@@ -66,6 +66,7 @@ class ConverterFactory(val customConverterClass: Class<out CustomConverter<*, *>
     ): CustomConverter.Converter {
         val noDefaultConverter = Converter(column, partialConverters, NoConversion)
         if (column.isOptional || !column.hasDefaultValue()) {
+            log.info { "Column is optional value: ${column.isOptional}" }
             log.info {
                 "Building custom converter for" +
                     " column '${column.dataCollection()}.${column.name()}'" +
@@ -100,8 +101,9 @@ class ConverterFactory(val customConverterClass: Class<out CustomConverter<*, *>
         private val loggingFlag = AtomicBoolean()
 
         override fun convert(input: Any?): Any? {
-            if (input == null && defaultValue is Converted) {
-                return defaultValue.output
+            if (input == null) {
+                return if (defaultValue is Converted) defaultValue.output
+                else Converted(null).output
             }
             var cause: Throwable? = null
             for (converter in partialConverters) {
@@ -121,7 +123,7 @@ class ConverterFactory(val customConverterClass: Class<out CustomConverter<*, *>
                 log.warn(cause) {
                     "Converter $customConverterClass" +
                         " for field ${convertedField.dataCollection()}.${convertedField.name()}" +
-                        " cannot handle value '$input' of type ${input?.javaClass}."
+                        " cannot handle value '$input' of type ${input.javaClass}."
                 }
                 log.warn { "Future similar warnings from $customConverterClass will be silenced." }
             }
