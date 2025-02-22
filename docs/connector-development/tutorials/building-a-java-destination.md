@@ -1,7 +1,3 @@
----
-displayed_sidebar: docs
----
-
 # Building a Java Destination
 
 :::warning
