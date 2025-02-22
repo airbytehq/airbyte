@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "3.3.32"
+version = "3.3.33"
 name = "source-facebook-marketing"
 description = "Source implementation for Facebook Marketing."
 authors = [ "Airbyte <contact@airbyte.io>",]
