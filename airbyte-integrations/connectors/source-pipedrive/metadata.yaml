@@ -7,7 +7,7 @@ data:
       - api.pipedrive.com # Please change to the hostname of the source.
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-pipedrive
   registryOverrides:
     cloud:
@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8286229-c680-4063-8c59-23b9b391c700
-  dockerImageTag: 2.3.7
+  dockerImageTag: 2.3.8
   dockerRepository: airbyte/source-pipedrive
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   githubIssueLabel: source-pipedrive
@@ -36,7 +36,7 @@ data:
   supportLevel: community
   tags:
     - cdk:low-code
-    - language:python
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
@@ -63,5 +63,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.33.1@sha256:06468f2b0acdb0126a29757f67025f8f837014f70e3f079e10e304b0e1a6be4b
 metadataSpecVersion: "1.0"
