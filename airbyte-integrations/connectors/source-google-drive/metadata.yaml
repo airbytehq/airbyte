@@ -7,7 +7,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 9f8dda77-1048-4368-815b-269bf54ee9b8
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   dockerRepository: airbyte/source-google-drive
   githubIssueLabel: source-google-drive
   icon: google-drive.svg
