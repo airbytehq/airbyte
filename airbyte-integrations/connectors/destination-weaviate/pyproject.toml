@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-weaviate"
-version = "0.2.51"
+version = "0.2.55"
 description = "Airbyte destination implementation for Weaviate."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -30,3 +30,11 @@ mypy = "^1.9.0"
 
 [tool.poetry.scripts]
 destination-weaviate = "destination_weaviate.run:run"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

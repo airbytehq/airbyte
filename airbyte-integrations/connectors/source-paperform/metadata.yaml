@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-paperform
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
   connectorSubtype: api
   connectorType: source
   definitionId: 9855e6be-a7b7-48a1-acc4-935f88215aed
-  dockerImageTag: 0.0.8
+  dockerImageTag: 0.0.12
   dockerRepository: airbyte/source-paperform
   githubIssueLabel: source-paperform
   icon: icon.svg

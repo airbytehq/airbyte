@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.5.18"
+version = "0.5.23"
 name = "source-file"
 description = "Source implementation for File"
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,7 +16,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_file"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "^3.10,<3.12"
 html5lib = "==1.1"
 beautifulsoup4 = "==4.11.1"
 openpyxl = "==3.1.0"
@@ -29,7 +29,7 @@ xlrd = "==2.0.1"
 boto3 = "==1.21.21"
 pyarrow = "14.0.2"
 s3fs = "==2022.7.1"
-lxml = "==4.9.1"
+lxml = "^5.0"
 gcsfs = "==2022.7.1"
 pyxlsb = "==1.0.10"
 genson = "==1.2.2"
@@ -47,3 +47,11 @@ pytest-mock = "^3.6.1"
 pytest = "==6.2.5"
 requests-mock = "^1.9.3"
 pytest-docker = "==2.0.1"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

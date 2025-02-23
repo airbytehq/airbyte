@@ -210,6 +210,28 @@ definitions:
       path: "automations"
       primary_key: "id"
 
+  categories_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    $parameters:
+      name: "categories"
+      path: "help_center/categories"
+      primary_key: "id"
+
+  sections_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    $parameters:
+      name: "sections"
+      path: "help_center/sections"
+      primary_key: "id"
+
   # Incremental cursor-based streams
   audit_logs_stream:
     $ref: "#/definitions/base_incremental_stream"
@@ -219,12 +241,12 @@ definitions:
       requester:
         $ref: "#/definitions/retriever/requester"
         request_parameters:
+          filter[created_at][]: "{{ [ stream_interval['start_time'], stream_interval['end_time'] ] if next_page_token is none else '' }}"
           sort: "created_at"
       paginator:
         $ref: "#/definitions/links_next_paginator"
     incremental_sync:
-      class_name: source_zendesk_support.components.ZendeskSupportAuditLogsIncrementalSync
-      type: CustomIncrementalSync
+      type: DatetimeBasedCursor
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S%z"
@@ -232,14 +254,6 @@ definitions:
       cursor_field: "{{ parameters.get('cursor_field',  'updated_at') }}"
       start_datetime:
         datetime: "{{ config.get('start_date') or day_delta(-3650, '%Y-%m-%dT%H:%M:%SZ') }}"
-      start_time_option:
-        inject_into: request_parameter
-        field_name: "filter[created_at][]"
-        type: RequestOption
-      end_time_option:
-        inject_into: request_parameter
-        field_name: "filter[created_at][]"
-        type: RequestOption
     $parameters:
       name: "audit_logs"
       path: "audit_logs"
@@ -601,6 +615,8 @@ streams:
   - $ref: "#/definitions/topics_stream"
   - $ref: "#/definitions/user_fields_stream"
   - $ref: "#/definitions/automations_stream"
+  - $ref: "#/definitions/categories_stream"
+  - $ref: "#/definitions/sections_stream"
   # Incremental streams
   - $ref: "#/definitions/audit_logs_stream"
   - $ref: "#/definitions/groups_stream"

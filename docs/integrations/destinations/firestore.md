@@ -39,6 +39,9 @@ Each stream will be output into a BigQuery table.
 
 | Version | Date       | Pull Request                                           | Subject                       |
 |:--------| :--------- | :----------------------------------------------------- | :---------------------------- |
+| 0.2.12 | 2025-02-22 | [54230](https://github.com/airbytehq/airbyte/pull/54230) | Update dependencies |
+| 0.2.11 | 2025-02-15 | [53881](https://github.com/airbytehq/airbyte/pull/53881) | Update dependencies |
+| 0.2.10 | 2025-02-01 | [52890](https://github.com/airbytehq/airbyte/pull/52890) | Update dependencies |
 | 0.2.9 | 2025-01-25 | [52152](https://github.com/airbytehq/airbyte/pull/52152) | Update dependencies |
 | 0.2.8 | 2025-01-11 | [51229](https://github.com/airbytehq/airbyte/pull/51229) | Update dependencies |
 | 0.2.7 | 2025-01-04 | [50911](https://github.com/airbytehq/airbyte/pull/50911) | Update dependencies |

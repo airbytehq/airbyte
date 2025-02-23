@@ -16,18 +16,18 @@ data:
             type: GSM
   connectorType: destination
   definitionId: 37a928c1-2d5c-431a-a97d-ae236bd1ea0c
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.11
   dockerRepository: airbyte/destination-mssql-v2
   documentationUrl: https://docs.airbyte.com/integrations/destinations/mssql-v2
   githubIssueLabel: destination-mssql-v2
   icon: icon.svg
   license: ELv2
-  name: MSSQL V2 Destination
+  name: MS SQL Server V2
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
-      enabled: false
+      enabled: true
   releaseStage: alpha
   supportLevel: community
   supportsRefreshes: true

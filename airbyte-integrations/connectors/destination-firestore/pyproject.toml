@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.9"
+version = "0.2.12"
 name = "destination-firestore"
 description = "Destination implementation for Google Firestore."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -26,3 +26,11 @@ destination-firestore = "destination_firestore.run:run"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

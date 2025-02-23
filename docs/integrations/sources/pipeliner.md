@@ -48,6 +48,10 @@ Using this connector we fetch data from various streams such as contacts, data, 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.13 | 2025-02-23 | [54591](https://github.com/airbytehq/airbyte/pull/54591) | Update dependencies |
+| 0.0.12 | 2025-02-15 | [54009](https://github.com/airbytehq/airbyte/pull/54009) | Update dependencies |
+| 0.0.11 | 2025-02-08 | [53473](https://github.com/airbytehq/airbyte/pull/53473) | Update dependencies |
+| 0.0.10 | 2025-02-01 | [53029](https://github.com/airbytehq/airbyte/pull/53029) | Update dependencies |
 | 0.0.9 | 2025-01-25 | [52512](https://github.com/airbytehq/airbyte/pull/52512) | Update dependencies |
 | 0.0.8 | 2025-01-18 | [51877](https://github.com/airbytehq/airbyte/pull/51877) | Update dependencies |
 | 0.0.7 | 2025-01-11 | [51358](https://github.com/airbytehq/airbyte/pull/51358) | Update dependencies |

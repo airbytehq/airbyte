@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-meilisearch"
-version = "1.0.13"
+version = "1.0.16"
 description = "Airbyte destination implementation for Meilisearch."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -26,3 +26,11 @@ pytest = "^ 8.0"
 
 [tool.poetry.scripts]
 destination-qdrant = "destination_meilisearch.run:run"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

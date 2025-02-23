@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-milvus"
-version = "0.0.46"
+version = "0.0.50"
 description = "Airbyte destination implementation for Milvus."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -28,3 +28,11 @@ mypy = "^1.9.0"
 
 [tool.poetry.scripts]
 destination-milvus = "destination_milvus.run:run"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

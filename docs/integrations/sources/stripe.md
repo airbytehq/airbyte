@@ -246,6 +246,10 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.8.7 | 2025-02-22 | [54468](https://github.com/airbytehq/airbyte/pull/54468) | Update dependencies |
+| 5.8.6 | 2025-02-15 | [54067](https://github.com/airbytehq/airbyte/pull/54067) | Update dependencies |
+| 5.8.5 | 2025-02-08 | [52018](https://github.com/airbytehq/airbyte/pull/52018) | Update dependencies |
+| 5.8.4 | 2025-02-03 | [49940](https://github.com/airbytehq/airbyte/pull/49940) | Update CDK version |
 | 5.8.3 | 2025-01-11 | [46832](https://github.com/airbytehq/airbyte/pull/46832) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 5.8.2 | 2024-12-10 | [46499](https://github.com/airbytehq/airbyte/pull/46499) | Source-Stripe: Refactor Customer Balance Transactions |
 | 5.8.1 | 2024-12-08 | [46499](https://github.com/airbytehq/airbyte/pull/46499) | Source-Stripe: Add new payout_balance_transactions incremental stream |

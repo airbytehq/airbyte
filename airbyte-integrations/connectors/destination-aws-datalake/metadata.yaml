@@ -3,8 +3,8 @@ data:
   connectorType: destination
   definitionId: 99878c90-0fbd-46d3-9d98-ffde879d17fc
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
-  dockerImageTag: 0.1.44
+    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+  dockerImageTag: 0.1.48
   dockerRepository: airbyte/destination-aws-datalake
   githubIssueLabel: destination-aws-datalake
   icon: awsdatalake.svg

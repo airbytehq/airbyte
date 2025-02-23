@@ -9,7 +9,7 @@ data:
       enabled: false
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-xero
   releases:
     breakingChanges:
@@ -27,11 +27,11 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
   connectorSubtype: api
   connectorType: source
   definitionId: 6fd1e833-dd6e-45ec-a727-ab917c5be892
-  dockerImageTag: 2.0.1
+  dockerImageTag: 2.1.3
   dockerRepository: airbyte/source-xero
   githubIssueLabel: source-xero
   icon: xero.svg
@@ -42,7 +42,7 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/xero
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   ab_internal:
     sl: 100

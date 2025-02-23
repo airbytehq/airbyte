@@ -9,11 +9,11 @@ data:
       - api.cohere.ai
       - ${embedding.api_base}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 7b7d7a0d-954c-45a0-bcfc-39a634b97736
-  dockerImageTag: 0.2.51
+  dockerImageTag: 0.2.55
   dockerRepository: airbyte/destination-weaviate
   documentationUrl: https://docs.airbyte.com/integrations/destinations/weaviate
   githubIssueLabel: destination-weaviate

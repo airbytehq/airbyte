@@ -4,9 +4,9 @@ This page contains the setup guide and reference information for the Timely sour
 
 ## Prerequisites
 
-1. Please follow these [steps](https://dev.timelyapp.com/#authorization) to obtain `Bearer_token` for your account.
-2. Login into your `https://app.timelyapp.com` portal, fetch the `account-id` present in the URL (example: URL `https://app.timelyapp.com/12345/calendar` and account-id `12345`).
-3. Get a start-date to your events. Dateformat `YYYY-MM-DD`.
+1. Please follow these [steps](https://dev.timelyapp.com/#authorization) to obtain `Bearer Token` for your account.
+2. Login into your `https://app.timelyapp.com` portal, fetch the `Account ID` present in the URL (example: URL `https://app.timelyapp.com/12345/calendar` and account-id `12345`).
+3. Get a start-date to your events. Date format `YYYY-MM-DDTHH:mm:ssZ`.
 
 ## Setup guide
 
@@ -17,7 +17,7 @@ This page contains the setup guide and reference information for the Timely sour
 1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Timely connector and select **Timely** from the Source type dropdown.
-4. Enter your `Bearer_token`, `account-id`, and `start-date`.
+4. Enter your `Bearer Token`, `Account ID`, and `Start Date`.
 5. Select `Authenticate your account`.
 6. Click **Set up source**.
 
@@ -26,17 +26,22 @@ This page contains the setup guide and reference information for the Timely sour
 The Timely source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
-| :---------------- | :--------- |
+| :---------------- |:-----------|
 | Full Refresh Sync | Yes        |
-| Incremental Sync  | No         |
+| Incremental Sync  | Yes        |
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date      | Pull Request                                             | Subject                                                                         |
-| :------ | :-------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| Version | Date       | Pull Request                                             | Subject                                                                         |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------|
+| 1.0.2 | 2025-02-22 | [54528](https://github.com/airbytehq/airbyte/pull/54528) | Update dependencies |
+| 1.0.1 | 2025-02-15 | [54055](https://github.com/airbytehq/airbyte/pull/54055) | Update dependencies |
+| 1.0.0 | 2025-01-07 | [45925](https://github.com/airbytehq/airbyte/pull/45925) | Add new streams, add incremental syncs, tidy inputs |
+| 0.4.13 | 2025-02-08 | [53561](https://github.com/airbytehq/airbyte/pull/53561) | Update dependencies |
+| 0.4.12 | 2025-02-01 | [53061](https://github.com/airbytehq/airbyte/pull/53061) | Update dependencies |
 | 0.4.11 | 2025-01-25 | [52384](https://github.com/airbytehq/airbyte/pull/52384) | Update dependencies |
 | 0.4.10 | 2025-01-18 | [52012](https://github.com/airbytehq/airbyte/pull/52012) | Update dependencies |
 | 0.4.9 | 2025-01-11 | [51398](https://github.com/airbytehq/airbyte/pull/51398) | Update dependencies |

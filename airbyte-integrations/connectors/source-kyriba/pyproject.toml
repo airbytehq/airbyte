@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.31"
+version = "0.1.34"
 name = "source-kyriba"
 description = "Source implementation for Kyriba."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -26,3 +26,11 @@ source-kyriba = "source_kyriba.run:run"
 pytest = "^6.1"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

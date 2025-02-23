@@ -249,7 +249,7 @@ Before parsing each document, the connector exports Google Document files to Doc
 
 This connector utilizes the open source [Unstructured](https://unstructured-io.github.io/unstructured/introduction.html#product-offerings) library to perform OCR and text extraction from PDFs and MS Word files, as well as from embedded tables and images. You can read more about the parsing logic in the [Unstructured docs](https://unstructured-io.github.io/unstructured/core/partition.html) and you can learn about other Unstructured tools and services at [www.unstructured.io](https://www.unstructured.io).
 
-#### Copy Raw Files Configuration
+### Copy Raw Files Configuration
 
 <FieldAnchor field="delivery_method.delivery_type">
 
@@ -271,9 +271,47 @@ Format options will not be taken into account. Instead, files will be transferre
 
 </FieldAnchor>
 
-##### Preserve Sub-Directories in File Paths
+#### Preserve Sub-Directories in File Paths
 
 If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files will be synced by their names only. This option is ignored when file-based replication is not enabled.
+
+### Replicate Permissions ACL
+This mode allows to sync Google Drive files permissions (ACLs) and Identities (users and groups) from your Google Workspace. 
+The Identities Stream is enabled by default.
+
+To use these features, ensure you have the correct permissions and have enabled the required Google APIs.
+
+#### Required Google APIs  
+Make sure the following APIs are enabled in your Google Cloud project:  
+
+- [Google Drive API](https://console.cloud.google.com/apis/library/drive.googleapis.com)  
+  Provides access to read file metadata and permissions in Google Drive.
+- [Google Admin SDK API](https://console.cloud.google.com/apis/library/admin.googleapis.com)  
+  Allows retrieval of users and groups in your Google Workspace.
+
+#### Authorization Scopes  
+When setting up this connector, ensure that the following scopes are authorized in the Google consent screen:  
+
+- https://www.googleapis.com/auth/drive.readonly  
+- https://www.googleapis.com/auth/admin.directory.group.readonly  
+- https://www.googleapis.com/auth/admin.directory.group.member.readonly  
+- https://www.googleapis.com/auth/admin.directory.user.readonly
+
+#### Domain Field (optional)
+If you are syncing **identities** (users and groups) from a different domain than the one associated with your user account, you must specify the `domain` field in the connector configuration.
+
+#### Streams  
+
+#### 1. Files Permissions (ACLs)  
+This stream syncs file permissions (Access Control Lists) for files in your Google Drive. You should set up a stream name and globs.
+
+#### 2. Identities (Users and Groups)  
+By default, this stream is enabled and retrieves information about **users and groups** in your Google Workspace. This helps you map file permissions (ACLs) to actual users and groups.
+
+#### Requirements:  
+- Ensure the **Google Admin SDK API** is enabled.  
+- The authenticated user must have the necessary Google Admin Directory permissions.
+
 
 ## Changelog
 
@@ -282,6 +320,11 @@ If enabled, sends subdirectory folder structure along with source file names to 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.2.2 | 2025-02-22 | [54416](https://github.com/airbytehq/airbyte/pull/54416) | Update dependencies |
+| 0.2.1 | 2025-02-15 | [53774](https://github.com/airbytehq/airbyte/pull/53774) | Update dependencies |
+| 0.2.0 | 2025-02-14 | [52099](https://github.com/airbytehq/airbyte/pull/52099) | Introduce ACLs and Permissions streams |
+| 0.1.2 | 2025-02-08 | [53320](https://github.com/airbytehq/airbyte/pull/53320) | Update dependencies |
+| 0.1.1 | 2025-02-01 | [43895](https://github.com/airbytehq/airbyte/pull/43895) | Update dependencies |
 | 0.1.0 | 2025-01-27 | [52572](https://github.com/airbytehq/airbyte/pull/52572) | Promoting release candidate 0.1.0-rc.1 to a main version. |
 | 0.1.0-rc.1  | 2025-01-20 | [51585](https://github.com/airbytehq/airbyte/pull/51585) | Bump cdk to enable universal file transfer |
 | 0.0.12 | 2024-06-06 | [39291](https://github.com/airbytehq/airbyte/pull/39291) | [autopull] Upgrade base image to v1.2.2 |

@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.4.28"
+version = "0.4.31"
 name = "source-convex"
 description = "Source implementation for Convex."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -27,3 +27,11 @@ responses = "^0.13.3"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
 pytest = "^6.1"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

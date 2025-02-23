@@ -106,6 +106,10 @@ It is unclear what populates this API and the sandbox environment does not provi
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.6 | 2025-02-23 | [54588](https://github.com/airbytehq/airbyte/pull/54588) | Update dependencies |
+| 0.0.5 | 2025-02-15 | [54008](https://github.com/airbytehq/airbyte/pull/54008) | Update dependencies |
+| 0.0.4 | 2025-02-08 | [53484](https://github.com/airbytehq/airbyte/pull/53484) | Update dependencies |
+| 0.0.3 | 2025-02-01 | [53016](https://github.com/airbytehq/airbyte/pull/53016) | Update dependencies |
 | 0.0.2 | 2025-01-25 | [52467](https://github.com/airbytehq/airbyte/pull/52467) | Update dependencies |
 | 0.0.1 | 2025-01-17 | | Initial release by [@GamesmenJordan](https://github.com/GamesmenJordan) via Connector Builder |
 

@@ -76,6 +76,11 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 
 | Version | Date       | Pull Request                                             | Subject                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------|
+| 2.0.13 | 2025-02-22 | [54444](https://github.com/airbytehq/airbyte/pull/54444) | Update dependencies |
+| 2.0.12 | 2025-02-20 | [54180](https://github.com/airbytehq/airbyte/pull/54180) | 🐛 Source Datadog : Fix the Pagination in the logs stream |
+| 2.0.11 | 2025-02-15 | [53705](https://github.com/airbytehq/airbyte/pull/53705) | Update dependencies |
+| 2.0.10 | 2025-02-08 | [53382](https://github.com/airbytehq/airbyte/pull/53382) | Update dependencies |
+| 2.0.9 | 2025-02-01 | [52866](https://github.com/airbytehq/airbyte/pull/52866) | Update dependencies |
 | 2.0.8 | 2025-01-25 | [52350](https://github.com/airbytehq/airbyte/pull/52350) | Update dependencies |
 | 2.0.7 | 2025-01-18 | [51677](https://github.com/airbytehq/airbyte/pull/51677) | Update dependencies |
 | 2.0.6 | 2024-01-16 | [48537](https://github.com/airbytehq/airbyte/pull/48537) | Update default start and end dates for logs stream, if they are not configured as default |

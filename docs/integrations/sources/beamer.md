@@ -20,6 +20,10 @@ Beamer NPS source
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.15 | 2025-02-22 | [54237](https://github.com/airbytehq/airbyte/pull/54237) | Update dependencies |
+| 0.0.14 | 2025-02-15 | [53897](https://github.com/airbytehq/airbyte/pull/53897) | Update dependencies |
+| 0.0.13 | 2025-02-08 | [53397](https://github.com/airbytehq/airbyte/pull/53397) | Update dependencies |
+| 0.0.12 | 2025-02-01 | [52923](https://github.com/airbytehq/airbyte/pull/52923) | Update dependencies |
 | 0.0.11 | 2025-01-25 | [52159](https://github.com/airbytehq/airbyte/pull/52159) | Update dependencies |
 | 0.0.10 | 2025-01-18 | [51738](https://github.com/airbytehq/airbyte/pull/51738) | Update dependencies |
 | 0.0.9 | 2025-01-11 | [51254](https://github.com/airbytehq/airbyte/pull/51254) | Update dependencies |

@@ -298,6 +298,11 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| 0.5.23 | 2025-02-22 | [54387](https://github.com/airbytehq/airbyte/pull/54387) | Update dependencies |
+| 0.5.22 | 2025-02-18 | [54141](https://github.com/airbytehq/airbyte/pull/54141) | Bump lxml |
+| 0.5.21 | 2025-02-15 | [53754](https://github.com/airbytehq/airbyte/pull/53754) | Update dependencies |
+| 0.5.20 | 2025-02-08 | [53339](https://github.com/airbytehq/airbyte/pull/53339) | Update dependencies |
+| 0.5.19 | 2025-02-01 | [52794](https://github.com/airbytehq/airbyte/pull/52794) | Update dependencies |
 | 0.5.18 | 2025-01-25 | [52317](https://github.com/airbytehq/airbyte/pull/52317) | Update dependencies |
 | 0.5.17 | 2025-01-18 | [48656](https://github.com/airbytehq/airbyte/pull/48656) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.5.16 | 2024-12-10 | [48804](https://github.com/airbytehq/airbyte/pull/48804) | Added reader options: skiprows & header for Excel files |

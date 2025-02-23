@@ -19,8 +19,13 @@ This page contains the setup guide and reference information for the Apple Searc
 4. Enter a name for your source.
 5. For **Org Id**, enter the Id of your organization (found in the Apple Search Ads UI).
 6. Enter the **Client ID** and the **Client Secret** from [Step 1](#step-1-set-up-apple-search-ads).
-7. For **Start Date** and **End Date**, enter the date in YYYY-MM-DD format. For DAILY reports, the Start Date can't be earlier than 90 days from today. If the End Date field is left blank, Airbyte will replicate data to today.
-8. Click **Set up source**.
+7. For **Start Date** and **End Date**, enter the date in YYYY-MM-DD format. For DAILY reports, the Start Date can't be
+   earlier than 90 days from today. If the End Date field is left blank, Airbyte will replicate data to today.
+8. When syncing large amounts of data over vast durations, you can customize **Exponential Backoff Factor** in order to
+   reduce the chance of synchronization failures in case of Apple's rate limit kicking in. 
+9. You can also decrease the **Lookback Window** in order to sync smaller amounts of data on each incremental sync, 
+   at the cost of missing late data attributions.
+10. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -59,7 +64,14 @@ However, at this moment and as indicated in the stream names, the connector only
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
-| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| 0.4.1 | 2025-02-22 | [54284](https://github.com/airbytehq/airbyte/pull/54284) | Update dependencies |
+| 0.4.0 | 2025-02-20 | [54170](https://github.com/airbytehq/airbyte/pull/54170) | Externalize backoff factor and lookback window configurations |
+| 0.3.3 | 2025-02-15 | [53920](https://github.com/airbytehq/airbyte/pull/53920) | Update dependencies |
+| 0.3.2 | 2025-02-14 | [53685](https://github.com/airbytehq/airbyte/pull/53685) | Fix granularity to daily |
+| 0.3.1 | 2025-02-08 | [53422](https://github.com/airbytehq/airbyte/pull/53422) | Update dependencies |
+| 0.3.0 | 2025-02-03 | [53136](https://github.com/airbytehq/airbyte/pull/53136) | Update API version to V5 |
+| 0.2.9 | 2025-02-01 | [52899](https://github.com/airbytehq/airbyte/pull/52899) | Update dependencies |
 | 0.2.8 | 2025-01-25 | [52197](https://github.com/airbytehq/airbyte/pull/52197) | Update dependencies |
 | 0.2.7 | 2025-01-18 | [51745](https://github.com/airbytehq/airbyte/pull/51745) | Update dependencies |
 | 0.2.6 | 2025-01-11 | [51249](https://github.com/airbytehq/airbyte/pull/51249) | Update dependencies |

@@ -43,7 +43,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,9 +82,9 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
     return (database.getSourceConfig().has(JdbcUtils.DATABASE_KEY) ? database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText() : null);
   }
 
-  public static String discoverClusteredIndexForStream(final JdbcDatabase database,
-                                                       final AirbyteStream stream) {
-    Map<String, String> clusteredIndexes = new HashMap<>();
+  public static Map<String, List<String>> discoverClusteredIndexForStream(final JdbcDatabase database,
+                                                                          final AirbyteStream stream) {
+    Map<String, List<String>> clusteredIndexes = new HashMap<>();
     try {
       // Get all clustered index names without specifying a table name
       clusteredIndexes = aggregateClusteredIndexes(database.bufferedResultSetQuery(
@@ -104,12 +103,10 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
     } catch (final SQLException e) {
       LOGGER.debug(String.format("Could not retrieve clustered indexes without a table name (%s), not blocking, fall back to use pk.", e));
     }
-    LOGGER.debug("clusteredIndexes: {}", StringUtils.join(clusteredIndexes));
-    final String streamName = stream.getName();
-    final String namespace = stream.getNamespace();
 
-    return clusteredIndexes.getOrDefault(
-        getFullyQualifiedTableName(namespace, streamName), null);
+    LOGGER.debug("Clustered Indexes: {}", clusteredIndexes);
+
+    return clusteredIndexes.isEmpty() ? null : clusteredIndexes;
   }
 
   @VisibleForTesting
@@ -123,16 +120,18 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
    *         multiple columns, we always use the first column.
    */
   @VisibleForTesting
-  static Map<String, String> aggregateClusteredIndexes(final List<ClusteredIndexAttributesFromDb> entries) {
-    final Map<String, String> result = new HashMap<>();
+  static Map<String, List<String>> aggregateClusteredIndexes(final List<ClusteredIndexAttributesFromDb> entries) {
+    final Map<String, List<String>> result = new HashMap<>();
+
     entries.forEach(entry -> {
       if (entry == null) {
         return;
       }
-      if (result.containsKey(entry.streamName())) {
-        return;
+      if (!result.containsKey(entry.streamName())) {
+        result.put(entry.streamName(), new ArrayList<>());
       }
-      result.put(entry.streamName, entry.columnName());
+      // Store the column name in a list to support composite clustered indexes.
+      result.get(entry.streamName()).add(entry.columnName());
     });
     return result;
   }

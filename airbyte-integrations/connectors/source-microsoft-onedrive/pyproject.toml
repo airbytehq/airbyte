@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.30"
+version = "0.2.34"
 name = "source-microsoft-onedrive"
 description = "Source implementation for Microsoft OneDrive."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -34,3 +34,11 @@ version = "^1"
 requests-mock = "^1.11.0"
 pytest = "^6.1"
 pytest-mock = "^3.6.1"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

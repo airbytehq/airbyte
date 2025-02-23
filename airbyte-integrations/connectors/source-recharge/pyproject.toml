@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "2.6.3"
+version = "2.6.6"
 name = "source-recharge"
 description = "Source implementation for Recharge."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -27,3 +27,11 @@ source-recharge = "source_recharge.run:run"
 pytest = "^6.1"
 requests-mock = "^1.11.0"
 pytest-mock = "^3.6.1"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

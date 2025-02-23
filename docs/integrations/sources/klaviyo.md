@@ -95,6 +95,10 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.13.1 | 2025-02-22 | [54369](https://github.com/airbytehq/airbyte/pull/54369) | Update dependencies |
+| 2.13.0 | 2025-02-18 | [51551](https://github.com/airbytehq/airbyte/pull/51551) | Upgrade to API v2024-10-15 |
+| 2.12.1 | 2025-02-15 | [52710](https://github.com/airbytehq/airbyte/pull/52710) | Update dependencies |
+| 2.12.0 | 2025-02-11 | [53223](https://github.com/airbytehq/airbyte/pull/53223) | Add API Budget |
 | 2.11.11 | 2025-01-27 | [52563](https://github.com/airbytehq/airbyte/pull/52563) | Fix `lists_detailed` incremental sync |
 | 2.11.10 | 2025-01-25 | [52285](https://github.com/airbytehq/airbyte/pull/52285) | Update dependencies |
 | 2.11.9 | 2025-01-11 | [51198](https://github.com/airbytehq/airbyte/pull/51198) | Update dependencies |

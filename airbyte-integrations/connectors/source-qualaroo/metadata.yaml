@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: eb655362-28a8-4311-8806-4fcc612734a7
-  dockerImageTag: 0.4.7
+  dockerImageTag: 0.4.11
   dockerRepository: airbyte/source-qualaroo
   githubIssueLabel: source-qualaroo
   icon: qualaroo.svg
@@ -41,5 +41,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
 metadataSpecVersion: "1.0"

@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.30"
+version = "0.1.33"
 name = "destination-cumulio"
 description = "Airbyte destination connector implementation for Cumul.io."
 authors = [ "Cumul.io <support@cumul.io>",]
@@ -25,3 +25,11 @@ destination-cumulio = "destination_cumulio.run:run"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

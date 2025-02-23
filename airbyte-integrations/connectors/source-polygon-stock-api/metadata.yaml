@@ -6,11 +6,11 @@ data:
     hosts:
       - api.polygon.io
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
   connectorSubtype: api
   connectorType: source
   definitionId: 5807d72f-0abc-49f9-8fa5-ae820007032b
-  dockerImageTag: 0.2.10
+  dockerImageTag: 0.2.13
   dockerRepository: airbyte/source-polygon-stock-api
   documentationUrl: https://docs.airbyte.com/integrations/sources/polygon-stock-api
   githubIssueLabel: source-polygon-stock-api

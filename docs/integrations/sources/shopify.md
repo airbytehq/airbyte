@@ -246,6 +246,9 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.6.4 | 2025-02-22 | [54477](https://github.com/airbytehq/airbyte/pull/54477) | Update dependencies |
+| 2.6.3 | 2025-02-15 | [51983](https://github.com/airbytehq/airbyte/pull/51983) | Update dependencies |
+| 2.6.2 | 2025-01-14 | [50976](https://github.com/airbytehq/airbyte/pull/50976) | Retry requests that return HTTP 500 |
 | 2.6.1 | 2025-02-16 | [51602](https://github.com/airbytehq/airbyte/pull/51602) | Updated the `UpgradeDeadline` for the deprecation notice about [this change](https://github.com/airbytehq/airbyte/pull/51037) |
 | 2.6.0 | 2025-01-15 | [51037](https://github.com/airbytehq/airbyte/pull/51037) | Deprecated the `ProductsGraphQL` and `CustomerSavedSearch` stream from the stream catalog |
 | 2.5.18 | 2025-01-11 | [51326](https://github.com/airbytehq/airbyte/pull/51326) | Update dependencies |

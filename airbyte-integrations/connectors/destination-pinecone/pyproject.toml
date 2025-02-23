@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-pinecone"
-version = "0.1.35"
+version = "0.1.39"
 description = "Airbyte destination implementation for Pinecone."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -28,3 +28,11 @@ mypy = "^1.9.0"
 
 [tool.poetry.scripts]
 destination-pinecone = "destination_pinecone.run:run"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

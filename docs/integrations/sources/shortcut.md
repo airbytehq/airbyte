@@ -53,6 +53,10 @@ Refer `https://developer.shortcut.com/api/rest/v3#Authentication` for more detai
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.14 | 2025-02-22 | [54524](https://github.com/airbytehq/airbyte/pull/54524) | Update dependencies |
+| 0.0.13 | 2025-02-15 | [54072](https://github.com/airbytehq/airbyte/pull/54072) | Update dependencies |
+| 0.0.12 | 2025-02-08 | [53585](https://github.com/airbytehq/airbyte/pull/53585) | Update dependencies |
+| 0.0.11 | 2025-02-01 | [53110](https://github.com/airbytehq/airbyte/pull/53110) | Update dependencies |
 | 0.0.10 | 2025-01-25 | [52393](https://github.com/airbytehq/airbyte/pull/52393) | Update dependencies |
 | 0.0.9 | 2025-01-18 | [51998](https://github.com/airbytehq/airbyte/pull/51998) | Update dependencies |
 | 0.0.8 | 2025-01-11 | [51451](https://github.com/airbytehq/airbyte/pull/51451) | Update dependencies |

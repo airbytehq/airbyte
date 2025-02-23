@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.31"
+version = "0.2.33"
 name = "source-google-directory"
 description = "Source implementation for Google Directory."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -30,3 +30,11 @@ source-google-directory = "source_google_directory.run:run"
 pytest-mock = "^3.6.1"
 requests-mock = "^1.9.3"
 pytest = "^6.1"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

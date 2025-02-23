@@ -5,7 +5,7 @@ data:
       - app-eu*.wrike.com
       - www.wrike.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
   remoteRegistries:
     pypi:
       enabled: false
@@ -18,7 +18,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9c13f986-a13b-4988-b808-4705badf71c2
-  dockerImageTag: 0.3.11
+  dockerImageTag: 0.3.15
   dockerRepository: airbyte/source-wrike
   githubIssueLabel: source-wrike
   icon: wrike.svg

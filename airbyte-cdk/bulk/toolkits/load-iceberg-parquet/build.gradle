@@ -9,6 +9,7 @@ dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
     api "org.apache.iceberg:iceberg-core:${project.ext.apacheIcebergVersion}"
     api "org.apache.iceberg:iceberg-api:${project.ext.apacheIcebergVersion}"
+    api("org.apache.iceberg:iceberg-data:${project.ext.apacheIcebergVersion}")
     api "org.apache.iceberg:iceberg-parquet:${project.ext.apacheIcebergVersion}"
     api "org.apache.iceberg:iceberg-nessie:${project.ext.apacheIcebergVersion}"
 

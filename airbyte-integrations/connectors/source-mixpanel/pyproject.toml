@@ -3,7 +3,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "3.4.16"
+version = "3.4.19"
 name = "source-mixpanel"
 description = "Source implementation for Mixpanel."
 authors = ["Airbyte <contact@airbyte.io>"]
@@ -26,3 +26,11 @@ source-mixpanel = "source_mixpanel.run:run"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6"
 pytest = "^6.1"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

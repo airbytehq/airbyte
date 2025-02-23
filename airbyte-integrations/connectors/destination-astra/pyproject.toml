@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-astra"
-version = "0.1.36"
+version = "0.1.40"
 description = "Airbyte destination implementation for Astra DB."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -27,3 +27,11 @@ mypy = "^1.9.0"
 
 [tool.poetry.scripts]
 destination-astra = "destination_astra.run:run"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

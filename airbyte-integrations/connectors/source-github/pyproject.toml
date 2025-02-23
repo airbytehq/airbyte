@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.8.23"
+version = "1.8.26"
 name = "source-github"
 description = "Source implementation for GitHub."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -29,3 +29,11 @@ freezegun = "^1.2"
 pytest-mock = "^3.6.1"
 pytest = "^6.2"
 responses = "^0.23.1"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

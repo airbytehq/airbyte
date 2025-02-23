@@ -36,6 +36,9 @@ Airbyte connector for Fulcrum would enable seamless data extraction from the Ful
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.13 | 2025-02-15 | [53769](https://github.com/airbytehq/airbyte/pull/53769) | Update dependencies |
+| 0.0.12 | 2025-02-08 | [53319](https://github.com/airbytehq/airbyte/pull/53319) | Update dependencies |
+| 0.0.11 | 2025-02-01 | [52839](https://github.com/airbytehq/airbyte/pull/52839) | Update dependencies |
 | 0.0.10 | 2025-01-25 | [52324](https://github.com/airbytehq/airbyte/pull/52324) | Update dependencies |
 | 0.0.9 | 2025-01-18 | [51627](https://github.com/airbytehq/airbyte/pull/51627) | Update dependencies |
 | 0.0.8 | 2025-01-11 | [51138](https://github.com/airbytehq/airbyte/pull/51138) | Update dependencies |

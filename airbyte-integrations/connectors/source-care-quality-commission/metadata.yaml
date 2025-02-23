@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-care-quality-commission
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.27.0@sha256:ffc5f087448ef40fd1ef8fe0fc660b16621be7c1e8ecfccd44002136b06c6efb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
   connectorSubtype: api
   connectorType: source
   definitionId: 2366b7bf-b83e-471c-b4a0-1405887fdf6e
-  dockerImageTag: 0.0.12
+  dockerImageTag: 0.0.16
   dockerRepository: airbyte/source-care-quality-commission
   githubIssueLabel: source-care-quality-commission
   icon: icon.svg

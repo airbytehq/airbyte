@@ -29,6 +29,10 @@ Integrate seamlessly with Drip using this Airbyte connector, enabling smooth dat
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.15 | 2025-02-22 | [54375](https://github.com/airbytehq/airbyte/pull/54375) | Update dependencies |
+| 0.0.14 | 2025-02-15 | [53724](https://github.com/airbytehq/airbyte/pull/53724) | Update dependencies |
+| 0.0.13 | 2025-02-08 | [53355](https://github.com/airbytehq/airbyte/pull/53355) | Update dependencies |
+| 0.0.12 | 2025-02-01 | [52807](https://github.com/airbytehq/airbyte/pull/52807) | Update dependencies |
 | 0.0.11 | 2025-01-25 | [52375](https://github.com/airbytehq/airbyte/pull/52375) | Update dependencies |
 | 0.0.10 | 2025-01-18 | [51683](https://github.com/airbytehq/airbyte/pull/51683) | Update dependencies |
 | 0.0.9 | 2025-01-11 | [51132](https://github.com/airbytehq/airbyte/pull/51132) | Update dependencies |

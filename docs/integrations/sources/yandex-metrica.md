@@ -92,6 +92,9 @@ Because of the way API works some syncs may take a long time to finish. Timeout 
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.0.33 | 2025-02-22 | [54476](https://github.com/airbytehq/airbyte/pull/54476) | Update dependencies |
+| 1.0.32 | 2025-02-15 | [54025](https://github.com/airbytehq/airbyte/pull/54025) | Update dependencies |
+| 1.0.31 | 2025-02-01 | [53072](https://github.com/airbytehq/airbyte/pull/53072) | Update dependencies |
 | 1.0.30 | 2025-01-25 | [52380](https://github.com/airbytehq/airbyte/pull/52380) | Update dependencies |
 | 1.0.29 | 2025-01-18 | [51974](https://github.com/airbytehq/airbyte/pull/51974) | Update dependencies |
 | 1.0.28 | 2025-01-11 | [51446](https://github.com/airbytehq/airbyte/pull/51446) | Update dependencies |

@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-qdrant"
-version = "0.1.28"
+version = "0.1.32"
 description = "Airbyte destination implementation for Qdrant."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -29,3 +29,11 @@ mypy = "^1.9"
 
 [tool.poetry.scripts]
 destination-qdrant = "destination_qdrant.run:run"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

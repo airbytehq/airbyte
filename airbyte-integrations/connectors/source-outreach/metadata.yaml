@@ -12,21 +12,23 @@ data:
       1.0.0:
         upgradeDeadline: "2024-06-30"
         message:
-          "The verison migrates the Outreach connector to the low-code framework for greater maintainability.
-          !! Important: The sequence_steps stream schema from API has a breaking change to creator field to an array contain integers other than strings"
+          "The verison migrates the Outreach connector to the low-code framework
+          for greater maintainability. !! Important: The sequence_steps stream schema
+          from API has a breaking change to creator field to an array contain integers
+          other than strings"
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-outreach
   connectorBuildOptions:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.33.6@sha256:81af934a2136edf0521a71697938cea20d1c6eb36c944566b9455bdd2a47d2bd
   connectorSubtype: api
   connectorType: source
   definitionId: 3490c201-5d95-4783-b600-eaf07a4c7787
-  dockerImageTag: 1.0.29
+  dockerImageTag: 1.1.2
   dockerRepository: airbyte/source-outreach
   githubIssueLabel: source-outreach
   icon: outreach.svg
@@ -37,8 +39,8 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/outreach
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   ab_internal:
     ql: 200
     sl: 100

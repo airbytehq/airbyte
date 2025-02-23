@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-chroma"
-version = "0.0.42"
+version = "0.0.46"
 description = "Airbyte destination implementation for Chroma."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -28,3 +28,11 @@ mypy = "^1.9.0"
 
 [tool.poetry.scripts]
 destination-chroma = "destination_chroma.run:run"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

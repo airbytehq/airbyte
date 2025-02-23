@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.1.32"
+version = "1.1.36" 
 name = "source-smartsheets"
 description = "Source implementation for Smartsheets."
 authors = [ "Nate Nowack <contact@airbyte.io>",]
@@ -28,3 +28,11 @@ source-smartsheets = "source_smartsheets.run:run"
 pytest = "^8.2.1"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

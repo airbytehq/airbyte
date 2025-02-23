@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "6.2.7"
+version = "7.0.1"
 name = "source-amazon-ads"
 description = "Source implementation for Amazon Ads."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -23,7 +23,15 @@ airbyte-cdk = "^6"
 source-amazon-ads = "source_amazon_ads.run:run"
 
 [tool.poetry.group.dev.dependencies]
-responses = "^0.25"
 freezegun = "*"
 requests-mock = "*"
 pytest-mock = "*"
+pendulum = "<3.0.0"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
