@@ -41,7 +41,7 @@ def bulk_retry_on_exception(more_exceptions: Optional[Tuple[Type[Exception], ...
                         sleep(self._job_backoff_time)
                 except ShopifyBulkExceptions.BulkJobCreationFailedConcurrentError:
                     if self._concurrent_attempt == self._concurrent_max_retry:
-                        message = f"The BULK Job couldn't be created at this time, since another job is running."
+                        message = "The BULK Job couldn't be created at this time, since another job is running."
                         LOGGER.error(message)
                         raise ShopifyBulkExceptions.BulkJobConcurrentError(message)
 

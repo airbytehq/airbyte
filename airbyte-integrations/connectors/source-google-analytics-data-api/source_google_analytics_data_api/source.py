@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import copy
 import datetime
 import json
 import logging
@@ -575,7 +574,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
                 if hasattr(ex, "failure_type") and ex.failure_type == FailureType.config_error:
                     # bad request and forbidden are set in mapper as config errors
                     raise ex
-                logger.error(f"Check failed", exc_info=ex)
+                logger.error("Check failed", exc_info=ex)
 
             if not metadata:
                 return False, "Failed to get metadata, over quota, try later"

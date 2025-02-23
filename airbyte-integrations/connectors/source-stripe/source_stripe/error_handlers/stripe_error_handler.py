@@ -2,12 +2,10 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import logging
 from typing import Optional, Union
 
 import requests
 
-from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
@@ -21,7 +19,7 @@ STRIPE_ERROR_CODES = {
     "oauth_not_supported": "Please use a different authentication method.",
 }
 
-DOCS_URL = f"https://docs.airbyte.com/integrations/sources/stripe"
+DOCS_URL = "https://docs.airbyte.com/integrations/sources/stripe"
 DOCUMENTATION_MESSAGE = f"Please visit {DOCS_URL} to learn more. "
 
 

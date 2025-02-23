@@ -10,7 +10,6 @@ import pendulum
 import requests
 
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.types import Record
 
 
 @dataclass

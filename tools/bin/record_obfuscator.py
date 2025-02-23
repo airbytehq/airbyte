@@ -53,7 +53,7 @@ if __name__ == "__main__":
         line = line.strip()
         try:
             data = json.loads(line)
-        except Exception as exc:
+        except Exception:
             # We don't expect invalid json so if we see it, it will go to stderr
             sys.stderr.write(f"{line}\n")
 

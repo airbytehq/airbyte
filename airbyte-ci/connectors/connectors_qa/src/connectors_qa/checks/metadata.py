@@ -1,6 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-import os
 from datetime import datetime, timedelta
 
 import toml

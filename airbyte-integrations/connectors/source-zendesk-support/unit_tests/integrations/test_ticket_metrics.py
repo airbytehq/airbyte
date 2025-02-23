@@ -5,7 +5,7 @@ from unittest import TestCase
 import freezegun
 import pendulum
 
-from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob, SyncMode
+from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
 from airbyte_cdk.test.state_builder import StateBuilder

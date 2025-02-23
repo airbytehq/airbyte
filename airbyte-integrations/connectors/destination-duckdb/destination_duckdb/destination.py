@@ -147,7 +147,7 @@ class DestinationDuckdb(Destination):
             pa_table = pa.Table.from_pydict(buffer[stream_name])
         except:
             logger.exception(
-                f"Writing with pyarrow view failed, falling back to writing with executemany. Expect some performance degradation."
+                "Writing with pyarrow view failed, falling back to writing with executemany. Expect some performance degradation."
             )
             query = f"""
             INSERT INTO {schema_name}.{table_name}

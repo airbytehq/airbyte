@@ -4,12 +4,10 @@
 
 
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
 @dataclass

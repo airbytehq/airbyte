@@ -181,7 +181,7 @@ class VectaraClient:
                             response.get("status").get("code") == "OK"
                             or response.get("status").get("statusDetail") == "Document should have at least one part."
                         )
-                    except AssertionError as e:
+                    except AssertionError:
                         # Handle the assertion error
                         pass
         else:

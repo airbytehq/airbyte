@@ -91,7 +91,7 @@ class TestIncludeDeleted(TestCase):
         output = self._read(config().with_ad_statuses(self.statuses), "ads")
         assert len(output.records) == 1
         account_state = AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state")[self.account_id]
-        assert self.filter_statuses_flag in account_state, f"State should include `filter_statuses` flag to track new records in the past."
+        assert self.filter_statuses_flag in account_state, "State should include `filter_statuses` flag to track new records in the past."
         assert account_state == {"filter_statuses": self.statuses, "updated_time": "2023-03-21T22:41:46-0700"}
 
     @HttpMocker()
@@ -141,7 +141,7 @@ class TestIncludeDeleted(TestCase):
         assert len(output.records) == 1
 
         account_state = AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state")[self.account_id]
-        assert self.filter_statuses_flag in account_state, f"State should include `filter_statuses` flag to track new records in the past."
+        assert self.filter_statuses_flag in account_state, "State should include `filter_statuses` flag to track new records in the past."
         assert account_state == {"filter_statuses": self.statuses, "updated_time": "2024-03-12T15:02:47-0700"}
 
     @HttpMocker()
@@ -185,5 +185,5 @@ class TestIncludeDeleted(TestCase):
         assert len(output.records) == 1
 
         account_state = AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state")[self.account_id]
-        assert self.filter_statuses_flag in account_state, f"State should include `filter_statuses` flag to track new records in the past."
+        assert self.filter_statuses_flag in account_state, "State should include `filter_statuses` flag to track new records in the past."
         assert account_state == {"filter_statuses": self.statuses, "updated_time": "2024-03-02T15:02:47-0700"}

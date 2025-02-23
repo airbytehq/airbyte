@@ -11,7 +11,6 @@ from destination_pinecone.config import PineconeIndexingModel
 from destination_pinecone.indexer import PineconeIndexer
 from pinecone import IndexDescription, exceptions
 from pinecone.grpc import PineconeGRPC
-from pinecone.models import IndexList
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 

@@ -110,6 +110,6 @@ elif args.action == "update" and args.product_id and args.update_payload:
         product = update_paypal_product(access_token, args.product_id, operations)
         print("Updated product:", product)
     except json.JSONDecodeError:
-        print(f"Invalid JSON in update payload")
+        print("Invalid JSON in update payload")
 else:
     print("Invalid arguments")

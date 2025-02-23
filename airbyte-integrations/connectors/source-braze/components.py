@@ -2,8 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import datetime
-import operator
 from dataclasses import dataclass, field
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 

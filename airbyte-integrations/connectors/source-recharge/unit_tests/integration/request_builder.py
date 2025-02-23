@@ -10,7 +10,7 @@ from typing import Any, MutableMapping
 
 from airbyte_cdk.test.mock_http.request import HttpRequest
 
-from .config import ACCESS_TOKEN, DATE_TIME_FORMAT
+from .config import DATE_TIME_FORMAT
 
 
 def get_stream_request(stream_name: str) -> RequestBuilder:

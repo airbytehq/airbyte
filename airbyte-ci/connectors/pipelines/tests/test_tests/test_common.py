@@ -7,7 +7,6 @@ import pathlib
 import time
 from typing import List
 
-import asyncclick as click
 import dagger
 import pytest
 import yaml

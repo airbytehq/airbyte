@@ -6,8 +6,6 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import requests
-
 if TYPE_CHECKING:
     from typing import Callable, List, Set, Tuple
 

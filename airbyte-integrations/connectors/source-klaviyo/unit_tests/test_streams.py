@@ -18,7 +18,7 @@ from source_klaviyo.source import SourceKlaviyo
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
-from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
@@ -115,7 +115,7 @@ class TestSemiIncrementalKlaviyoStream:
     )
     def test_read_records(self, start_date, stream_state, input_records, expected_records, requests_mock):
         state = {"metrics": {"updated": stream_state}} if stream_state else {}
-        requests_mock.register_uri("GET", f"https://a.klaviyo.com/api/metrics", status_code=200, json={"data": input_records})
+        requests_mock.register_uri("GET", "https://a.klaviyo.com/api/metrics", status_code=200, json={"data": input_records})
         records = read_records("metrics", CONFIG_NO_DATE | {"start_date": start_date}, state)
         assert records == expected_records
 
@@ -139,7 +139,7 @@ class TestProfilesStream:
                 },
             ],
         }
-        requests_mock.register_uri("GET", f"https://a.klaviyo.com/api/profiles", status_code=200, json=json)
+        requests_mock.register_uri("GET", "https://a.klaviyo.com/api/profiles", status_code=200, json=json)
 
         records = get_records(stream=stream)
         assert records == [
@@ -180,7 +180,7 @@ class TestGlobalExclusionsStream:
                 },
             ],
         }
-        requests_mock.register_uri("GET", f"https://a.klaviyo.com/api/profiles", status_code=200, json=json)
+        requests_mock.register_uri("GET", "https://a.klaviyo.com/api/profiles", status_code=200, json=json)
 
         records = get_records(stream=stream)
         assert records == [

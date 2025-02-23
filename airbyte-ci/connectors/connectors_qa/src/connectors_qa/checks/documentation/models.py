@@ -2,7 +2,7 @@
 
 import re
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Dict, List
 
 from connector_ops.utils import Connector  # type: ignore
 from jinja2 import Environment, FileSystemLoader

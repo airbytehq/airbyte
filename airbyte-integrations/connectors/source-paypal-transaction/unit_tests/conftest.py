@@ -1,7 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 # conftest.py
-import json
 from datetime import datetime
 from unittest.mock import patch
 

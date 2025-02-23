@@ -4,11 +4,8 @@
 
 
 import json
-import os
-import tempfile
 from pathlib import Path
 from typing import Any, Mapping
-from unittest import TestCase
 
 import pytest
 from source_amazon_seller_partner.config_migrations import MigrateAccountType, MigrateReportOptions, MigrateStreamNameOption

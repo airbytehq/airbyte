@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import Any, List, MutableMapping
+from typing import Any, MutableMapping
 
 
 ACCESS_TOKEN = "test_access_token"

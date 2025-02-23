@@ -37,7 +37,7 @@ def _catalog(sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
 
 def _a_profile_request(start_date: datetime) -> HttpRequest:
     return HttpRequest(
-        url=f"https://a.klaviyo.com/api/profiles",
+        url="https://a.klaviyo.com/api/profiles",
         query_params={
             "additional-fields[profile]": "predictive_analytics",
             "page[size]": "100",

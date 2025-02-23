@@ -18,7 +18,6 @@ from source_pinterest.streams import (
 )
 from source_pinterest.utils import get_analytics_columns
 
-from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction

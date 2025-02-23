@@ -3,7 +3,7 @@
 import json
 
 from airbyte_cdk.test.mock_http import HttpResponse
-from airbyte_cdk.test.mock_http.response_builder import HttpResponseBuilder, find_template
+from airbyte_cdk.test.mock_http.response_builder import find_template
 
 
 class JobCreateResponseBuilder:

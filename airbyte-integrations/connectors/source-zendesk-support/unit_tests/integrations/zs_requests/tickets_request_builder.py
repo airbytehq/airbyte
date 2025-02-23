@@ -1,8 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-import calendar
-
-import pendulum
 
 from .base_request_builder import ZendeskSupportBaseRequestBuilder
 from .request_authenticators.authenticator import Authenticator

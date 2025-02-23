@@ -2,8 +2,7 @@
 
 from unittest.mock import Mock, patch
 
-from pyarrow import MockOutputStream
-from source_gcs import LegacyConfigTransformer, helpers
+from source_gcs import LegacyConfigTransformer
 from source_gcs.spec import SourceGCSSpec
 
 

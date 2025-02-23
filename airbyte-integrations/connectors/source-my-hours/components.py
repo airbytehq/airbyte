@@ -48,7 +48,7 @@ class CustomAuthenticator(NoAuth):
         return self._access_token
 
     def _get_refresh_access_token_response(self):
-        url = f"https://api2.myhours.com/api/tokens/refresh"
+        url = "https://api2.myhours.com/api/tokens/refresh"
         headers = {"Content-Type": "application/json", "api-version": "1.0", self.auth_header: f"Bearer {self._access_token}"}
 
         data = {

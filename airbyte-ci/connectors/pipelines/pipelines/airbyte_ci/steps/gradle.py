@@ -12,7 +12,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, ClassVar, Dict, Generator, List, Optional, Tuple, cast
 
-from dagger import Container, ExecError
+from dagger import ExecError
 
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.helpers.utils import dagger_directory_as_zip_file
