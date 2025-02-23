@@ -182,12 +182,39 @@ class H2SourceIntegrationTest {
         }
     }
 
+    @Test
+    fun testEmptyTable() {
+        H2TestFixture().use { h2: H2TestFixture ->
+            val configPojo =
+                H2SourceConfigurationSpecification().apply {
+                    port = h2.port
+                    database = h2.database
+                    resumablePreferred = true
+                }
+            SyncsTestFixture.testReads(
+                configPojo,
+                h2::createConnection,
+                Companion::emptyTablePrelude,
+                "h2source/incremental-only-catalog.json",
+                null,
+                SyncsTestFixture.AfterRead.Companion.fromExpectedMessages(
+                    "h2source/empty.json",
+                ),
+            )
+        }
+    }
+
     companion object {
         @JvmStatic
         fun prelude(connection: Connection) {
             for (sql in listOf(CREATE_KV, INSERT_KV, CREATE_EVENTS, INSERT_EVENTS)) {
                 connection.createStatement().use { stmt: Statement -> stmt.execute(sql) }
             }
+        }
+
+        @JvmStatic
+        fun emptyTablePrelude(connection: Connection) {
+            connection.createStatement().use { stmt: Statement -> stmt.execute(CREATE_EVENTS) }
         }
 
         const val CREATE_KV = "CREATE TABLE kv (k INT PRIMARY KEY, v VARCHAR(60));"
