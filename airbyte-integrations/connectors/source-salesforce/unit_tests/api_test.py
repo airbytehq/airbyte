@@ -22,7 +22,6 @@ from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
     BulkIncrementalSalesforceStream,
     BulkSalesforceStream,
-    BulkSalesforceSubStream,
     IncrementalRestSalesforceStream,
     RestSalesforceStream,
 )

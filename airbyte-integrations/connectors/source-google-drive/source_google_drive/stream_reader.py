@@ -22,7 +22,7 @@ from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from source_google_drive.utils import get_folder_id
 
 from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
@@ -266,7 +266,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             file_metadata = self.google_drive_service.files().get(fileId=file.id, fields="size", supportsAllDrives=True).execute()
             return int(file_metadata["size"])
         except KeyError:
-            raise ErrorFetchingMetadata(f"Size was expected in metadata response but was missing")
+            raise ErrorFetchingMetadata("Size was expected in metadata response but was missing")
         except Exception as e:
             raise ErrorFetchingMetadata(f"An error occurred while retrieving file size: {str(e)}")
 

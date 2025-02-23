@@ -79,7 +79,7 @@ class LinnworksAuthenticator(Oauth2Authenticator):
             response.raise_for_status()
             response_json = response.json()
             return response_json[self.access_token_name], response_json[self.expires_in_name], response_json[self.server_name]
-        except Exception as e:
+        except Exception:
             try:
                 e = Exception(response.json()["Message"])
             except Exception:

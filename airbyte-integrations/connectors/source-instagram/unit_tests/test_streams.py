@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import datetime
 from unittest.mock import MagicMock
 
 import pytest
@@ -83,7 +82,6 @@ def test_user_insights_state(api, user_insights, values, slice_dates, expected):
     """
     This test shows how `STATE` is managed based on the scenario for Incremental Read.
     """
-    import pendulum
 
     # UserInsights stream
     stream = UserInsights(api=api, start_date="2023-01-01T01:01:01Z")

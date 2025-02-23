@@ -12,7 +12,6 @@ from connector_acceptance_test.config import (
     Config,
     EmptyStreamConfiguration,
     ExpectedRecordsConfig,
-    IgnoredFieldsConfiguration,
 )
 
 from airbyte_protocol.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode

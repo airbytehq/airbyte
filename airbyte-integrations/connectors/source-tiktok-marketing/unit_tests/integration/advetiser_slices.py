@@ -12,7 +12,7 @@ ADVERTISERS_FILE = "advertisers"
 def mock_advertisers_slices(http_mocker: HttpMocker, config: dict):
     http_mocker.get(
         HttpRequest(
-            url=f"https://business-api.tiktok.com/open_api/v1.3/oauth2/advertiser/get/",
+            url="https://business-api.tiktok.com/open_api/v1.3/oauth2/advertiser/get/",
             query_params={"secret": config["credentials"]["secret"], "app_id": config["credentials"]["app_id"]},
         ),
         HttpResponse(body=json.dumps(find_template(ADVERTISERS_FILE, __file__)), status_code=200),

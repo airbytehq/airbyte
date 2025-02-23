@@ -2,16 +2,13 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-import json
 from copy import deepcopy
 from unittest.mock import ANY
 
 import pytest
-from requests.status_codes import codes as status_codes
 
 from airbyte_cdk.models import (
     AirbyteCatalog,
-    AirbyteConnectionStatus,
     AirbyteErrorTraceMessage,
     AirbyteLogMessage,
     AirbyteMessage,
@@ -19,10 +16,8 @@ from airbyte_cdk.models import (
     AirbyteStream,
     AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
-    ConfiguredAirbyteCatalog,
     FailureType,
     Level,
-    Status,
     StreamDescriptor,
     SyncMode,
     TraceType,
@@ -30,7 +25,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob, AirbyteStreamStatus
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
-from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
 from .conftest import GoogleSheetsBaseTest, oauth_credentials, service_account_credentials
@@ -67,7 +62,7 @@ class TestSourceCheck(GoogleSheetsBaseTest):
         TestSourceCheck.get_spreadsheet_info_and_sheets(http_mocker, "check_succeeded_meta", 200)
         TestSourceCheck.get_sheet_first_row(http_mocker, "check_wrong_range", 200)
         error_message = (
-            f"Unable to read the schema of sheet. Error: Unexpected return result: Sheet was expected to contain data on exactly 1 sheet."
+            "Unable to read the schema of sheet. Error: Unexpected return result: Sheet was expected to contain data on exactly 1 sheet."
         )
         output = self._check(self._config, expecting_exception=True)
         trace_message = AirbyteTraceMessage(
@@ -89,7 +84,7 @@ class TestSourceCheck(GoogleSheetsBaseTest):
         TestSourceCheck.get_spreadsheet_info_and_sheets(http_mocker, "check_succeeded_meta", 200)
         TestSourceCheck.get_sheet_first_row(http_mocker, "check_duplicate_headers", 200)
 
-        error_message = f"The following duplicate headers were found in the sheet. Please fix them to continue: ['header1']"
+        error_message = "The following duplicate headers were found in the sheet. Please fix them to continue: ['header1']"
         output = self._check(self._config, expecting_exception=True)
         trace_message = AirbyteTraceMessage(
             type=TraceType.ERROR,
@@ -168,7 +163,7 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
             _STREAM_NAME: {"name": {"type": ["null", "string"]}, "age": {"type": ["null", "string"]}},
         }
         GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "discover_with_empty_column_spreadsheet_info_and_sheets", 200)
-        GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, f"discover_with_empty_column_get_sheet_first_row", 200)
+        GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, "discover_with_empty_column_get_sheet_first_row", 200)
 
         expected_streams = []
         for expected_stream_name, expected_stream_properties in expected_schemas_properties.items():
@@ -746,7 +741,7 @@ class TestSourceRead(GoogleSheetsBaseTest):
 
         output = self._read(self._config, catalog=configured_catalog, expecting_exception=True)
         expected_message = (
-            f"Unable to read the schema of sheet. Error: Unexpected return result: Sheet was expected to contain data on exactly 1 sheet."
+            "Unable to read the schema of sheet. Error: Unexpected return result: Sheet was expected to contain data on exactly 1 sheet."
         )
         assert output.errors[0].trace.error.message == expected_message
 
@@ -767,7 +762,7 @@ class TestSourceRead(GoogleSheetsBaseTest):
 
         output = self._read(self._config, catalog=configured_catalog, expecting_exception=True)
         expected_message = (
-            f"Unable to read the schema of sheet. Error: Unexpected return result: Sheet was expected to contain data on exactly 1 sheet."
+            "Unable to read the schema of sheet. Error: Unexpected return result: Sheet was expected to contain data on exactly 1 sheet."
         )
         assert output.errors[0].trace.error.message == expected_message
 

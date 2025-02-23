@@ -3,7 +3,6 @@
 #
 
 import logging
-from dataclasses import dataclass
 
 import backoff
 import requests

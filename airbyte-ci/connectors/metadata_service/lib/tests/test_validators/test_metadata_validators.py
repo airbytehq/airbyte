@@ -1,11 +1,8 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import pytest
-import requests
 import semver
-import yaml
 
-from metadata_service.docker_hub import get_latest_version_on_dockerhub
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.validators import metadata_validator
 

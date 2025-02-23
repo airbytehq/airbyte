@@ -80,7 +80,7 @@ class TestCheckConnectorUsesHTTPSOnly:
         # Arrange
         connector = mocker.MagicMock(code_directory=tmp_path)
         file_with_http_url = tmp_path / "file.py"
-        file_with_http_url.write_text(f"https://example.com")
+        file_with_http_url.write_text("https://example.com")
 
         # Act
         result = security.CheckConnectorUsesHTTPSOnly()._run(connector)

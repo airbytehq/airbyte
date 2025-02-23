@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from unittest.mock import MagicMock
 
 import pytest
-from requests import Response, Session
+from requests import Response
 from requests.models import PreparedRequest
 from source_linkedin_ads.components import (
     AnalyticsDatetimeBasedCursor,

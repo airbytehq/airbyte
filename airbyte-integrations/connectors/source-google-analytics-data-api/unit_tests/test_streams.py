@@ -14,7 +14,7 @@ from freezegun import freeze_time
 from requests.models import Response
 from source_google_analytics_data_api.source import GoogleAnalyticsDataApiBaseStream, SourceGoogleAnalyticsDataApi
 
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 
 from .utils import read_incremental
 

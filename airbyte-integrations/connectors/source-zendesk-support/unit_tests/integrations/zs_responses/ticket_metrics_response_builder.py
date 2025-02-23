@@ -7,7 +7,6 @@ from airbyte_cdk.test.mock_http.response_builder import (
     HttpResponse,
     HttpResponseBuilder,
     NestedPath,
-    RecordBuilder,
     find_template,
 )
 

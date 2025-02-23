@@ -15,7 +15,6 @@ from source_mixpanel.utils import read_full_refresh
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
-from airbyte_cdk.utils import AirbyteTracedException
 
 from .utils import get_url_to_mock, read_incremental, setup_response
 

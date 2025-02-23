@@ -5,8 +5,6 @@
 import functools
 from typing import List, Mapping, Optional
 
-import dpath.exceptions
-import dpath.util
 import icdiff
 import py
 from pprintpp import pformat

@@ -3,7 +3,7 @@
 #
 from __future__ import annotations
 
-from typing import Callable, Final
+from typing import Final
 
 import dagger
 
@@ -48,7 +48,7 @@ class AirbyteJavaConnectorBaseImage(bases.AirbyteConnectorBaseImage):
                         # tar is equired to untar java connector binary distributions.
                         # openssl is required because we need to ssh and scp sometimes.
                         # findutils is required for xargs, which is shipped as part of findutils.
-                        f"yum install -y shadow-utils tar openssl findutils",
+                        "yum install -y shadow-utils tar openssl findutils",
                         # Update first, but in the same .with_exec step as the package installation.
                         # Otherwise, we risk caching stale package URLs.
                         "yum update -y --security",

@@ -4,7 +4,6 @@
 
 from unittest.mock import patch
 
-import asyncclick as click
 import pytest
 from connector_ops.utils import Connector, ConnectorLanguage
 

@@ -2,10 +2,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 import json
-import unittest
 from unittest import TestCase
-
-import pytest
 
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse

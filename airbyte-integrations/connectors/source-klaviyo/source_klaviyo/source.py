@@ -3,7 +3,7 @@
 #
 
 
-from typing import Any, List, Mapping, Optional
+from typing import Any, Mapping, Optional
 
 from airbyte_cdk import TState
 from airbyte_cdk.models import ConfiguredAirbyteCatalog

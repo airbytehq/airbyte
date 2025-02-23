@@ -3,10 +3,7 @@
 #
 
 
-from unittest.mock import MagicMock
-
 import pytest
-import requests
 from source_airtable import SourceAirtable
 
 from airbyte_cdk.models import FailureType, SyncMode

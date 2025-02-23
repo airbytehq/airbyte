@@ -3,7 +3,7 @@
 #
 
 from dagster import AssetSelection, SkipReason, define_asset_job, job, op
-from orchestrator.assets import metadata, registry, registry_entry, specs_secrets_mask
+from orchestrator.assets import registry_entry
 from orchestrator.config import HIGH_QUEUE_PRIORITY, MAX_METADATA_PARTITION_RUN_REQUEST
 from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
 
@@ -103,7 +103,7 @@ def add_new_metadata_partitions_op(context):
     context.log.info(f"New etags found: {new_etags_found}")
 
     if not new_etags_found:
-        return SkipReason(f"No new metadata files to process in GCS bucket")
+        return SkipReason("No new metadata files to process in GCS bucket")
 
     # if there are more than the MAX_METADATA_PARTITION_RUN_REQUEST, we need to split them into multiple runs
     etags_to_process = new_etags_found

@@ -2,8 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
-from unittest.mock import patch
 
 import pendulum
 import pytest

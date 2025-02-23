@@ -6,7 +6,7 @@
 from unittest.mock import Mock
 
 import pytest
-from source_typeform.components import FormIdPartitionRouter, TypeformAuthenticator
+from source_typeform.components import FormIdPartitionRouter
 
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 
