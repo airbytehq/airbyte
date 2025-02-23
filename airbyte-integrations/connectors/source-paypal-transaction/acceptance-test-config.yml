@@ -37,6 +37,8 @@ acceptance_tests:
               # Have to add for testing PR CI.
           - name: list_disputes
             bypass_reason: "Disputes may not exist."
+          - name: transactions
+            bypass_reason: "Empty Stream."
         timeout_seconds: 3200
         expect_records:
           path: "integration_tests/sample_files/expected_records_sandbox.jsonl"
