@@ -202,13 +202,29 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
                 yield from self._list_directories_and_files(folder, folder_path_url)
 
+    def get_site_drive(self):
+        try:
+            if not self.config.site_url:
+                # get main site drives
+                drives = execute_query_with_retry(self.one_drive_client.drives.get())
+            else:
+                # get drives for site drives provided in the config
+                drives = execute_query_with_retry(self.one_drive_client.sites.get_by_url(self.config.site_url).drives.get())
+
+            return drives
+        except Exception as ex:
+            site = self.config.site_url if self.config.site_url else "default"
+            raise AirbyteTracedException(
+                f"Failed to retrieve drives from sharepoint {site} site. Error: {str(ex)}", failure_type=FailureType.config_error
+            )
+
     @property
     @lru_cache(maxsize=None)
     def drives(self):
         """
         Retrieves and caches SharePoint drives, including the user's drive based on authentication type.
         """
-        drives = execute_query_with_retry(self.one_drive_client.drives.get())
+        drives = self.get_site_drive()
 
         # skip this step for application authentication flow
         if self.config.credentials.auth_type != "Client" or (
@@ -299,7 +315,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
     def _get_file_transfer_paths(self, file: RemoteFile, local_directory: str) -> List[str]:
         preserve_directory_structure = self.preserve_directory_structure()
         file_path = file.uri
-        match = re.search(r"sharepoint\.com/Shared%20Documents(.*)", file_path)
+        match = re.search(r"sharepoint\.com(?:/sites/[^/]+)?/Shared%20Documents(.*)", file_path)
         if match:
             file_path = match.group(1)
 
