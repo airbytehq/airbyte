@@ -20,7 +20,7 @@ import jakarta.inject.Singleton
 @Singleton
 @JsonSchemaTitle("MSSQL V2 Destination Specification")
 @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
-class MSSQLSpecification : ConfigurationSpecification() {
+class MSSQLSpecification : ConfigurationSpecification(), LoadTypeSpecification {
     @get:JsonSchemaTitle("Host")
     @get:JsonPropertyDescription("The host name of the MSSQL database.")
     @get:JsonProperty("host")
@@ -74,6 +74,10 @@ class MSSQLSpecification : ConfigurationSpecification() {
     @get:JsonProperty("ssl_method")
     @get:JsonSchemaInject(json = """{"order":7}""")
     lateinit var sslMethod: EncryptionMethod
+
+    @get:JsonProperty("load_type")
+    @get:JsonSchemaInject(json = """{"always_show": true,"order":8}""")
+    override val loadType: LoadType = InsertLoadSpecification()
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "name")

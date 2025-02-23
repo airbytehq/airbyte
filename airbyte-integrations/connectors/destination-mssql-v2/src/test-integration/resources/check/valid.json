@@ -6,5 +6,8 @@
   "raw_data_schema": "guest",
   "ssl_method": { "name": "unencrypted" },
   "user": "sa",
-  "password": "replace_me"
+  "password": "replace_me",
+  "load_type": {
+    "load_type": "INSERT"
+  }
 }
