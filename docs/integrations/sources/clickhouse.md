@@ -80,6 +80,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                   |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
+| 0.2.4 | 2025-01-10 | [51495](https://github.com/airbytehq/airbyte/pull/51495) | Use a non root base image |
 | 0.2.3 | 2024-12-18 | [49901](https://github.com/airbytehq/airbyte/pull/49901) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.2.2 | 2024-02-13 | [35235](https://github.com/airbytehq/airbyte/pull/35235) | Adopt CDK 0.20.4 |
 | 0.2.1 | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |
