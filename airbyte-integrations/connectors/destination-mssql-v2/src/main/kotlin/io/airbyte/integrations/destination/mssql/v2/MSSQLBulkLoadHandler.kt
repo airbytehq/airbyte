@@ -152,23 +152,26 @@ class MSSQLBulkLoadHandler(
         // The ROWS_PER_BATCH hint can help optimize the bulk load.
         // If not provided, it won't be included in the statement.
         val rowBatchClause = rowsPerBatch?.let { "ROWS_PER_BATCH = $it," } ?: ""
-        return StringBuilder().apply {
-            append("BULK INSERT $fullyQualifiedTableName\n")
-            append("FROM '$dataFilePath'\n")
-            append("WITH (\n")
-            if (SystemUtils.IS_OS_WINDOWS) {
-                // Only supported in Windows installations
-                append("\tCODEPAGE = '$CODE_PAGE',\n")
+        return StringBuilder()
+            .apply {
+                append("BULK INSERT $fullyQualifiedTableName\n")
+                append("FROM '$dataFilePath'\n")
+                append("WITH (\n")
+                if (SystemUtils.IS_OS_WINDOWS) {
+                    // Only supported in Windows installations
+                    append("\tCODEPAGE = '$CODE_PAGE',\n")
+                }
+                append("\tDATA_SOURCE = '$bulkUploadDataSource',\n")
+                append("\tFORMATFILE_DATA_SOURCE = '$bulkUploadDataSource',\n")
+                append("\tFIRSTROW = 2,\n")
+                append("\tFORMAT = '$FILE_FORMAT',\n")
+                append("\tFORMATFILE = '$formatFilePath',\n")
+                append("\t$rowBatchClause\n")
+                append("\tKEEPNULLS\n")
+                append(")")
             }
-            append("\tDATA_SOURCE = '$bulkUploadDataSource',\n")
-            append("\tFORMATFILE_DATA_SOURCE = '$bulkUploadDataSource',\n")
-            append("\tFIRSTROW = 2,\n")
-            append("\tFORMAT = '$FILE_FORMAT',\n")
-            append("\tFORMATFILE = '$formatFilePath',\n")
-            append("\t$rowBatchClause\n")
-            append("\tKEEPNULLS\n")
-            append(")")
-        }.toString().trimIndent()
+            .toString()
+            .trimIndent()
     }
 
     /** Creates a Global temp table by cloning the column structure from the main table. */
