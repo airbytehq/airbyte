@@ -64,6 +64,8 @@ https://blog.magnetismsolutions.com/blog/paulnieuwelaar/2021/9/21/setting-up-an-
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| 0.1.23 | 2025-02-22 | [54356](https://github.com/airbytehq/airbyte/pull/54356) | Update dependencies |
+| 0.1.22 | 2025-02-15 | [46493](https://github.com/airbytehq/airbyte/pull/46493) | Update dependencies |
 | 0.1.21 | 2024-09-26 | [ ](https://github.com/airbytehq/airbyte/pull/ ) | Make Dataverse available on Airbyte Cloud |
 | 0.1.20 | 2024-09-21 | [45777](https://github.com/airbytehq/airbyte/pull/45777) | Update dependencies |
 | 0.1.19 | 2024-09-14 | [45482](https://github.com/airbytehq/airbyte/pull/45482) | Update dependencies |
