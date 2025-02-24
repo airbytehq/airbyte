@@ -30,6 +30,7 @@ Please follow the instructions in the following [referralhero](https://support.r
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.3 | 2025-02-23 | [54597](https://github.com/airbytehq/airbyte/pull/54597) | Update dependencies |
 | 0.0.2 | 2025-02-15 | [47509](https://github.com/airbytehq/airbyte/pull/47509) | Update dependencies |
 | 0.0.1 | 2024-10-07 | | Initial release by [@bala-ceg](https://github.com/bala-ceg) via Connector Builder |
 

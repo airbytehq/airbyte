@@ -6,11 +6,11 @@ data:
     hosts:
       - https://api.mailgun.net/
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.33.6@sha256:81af934a2136edf0521a71697938cea20d1c6eb36c944566b9455bdd2a47d2bd
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
   connectorSubtype: api
   connectorType: source
   definitionId: 5b9cb09e-1003-4f9c-983d-5779d1b2cd51
-  dockerImageTag: 0.3.11
+  dockerImageTag: 0.3.12
   dockerRepository: airbyte/source-mailgun
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailgun
   githubIssueLabel: source-mailgun
