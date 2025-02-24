@@ -1,0 +1,18 @@
+{
+  "host": "localhost",
+  "port": 1433,
+  "database": "replace_me_database_name",
+  "schema": "mssql_default_schema_placeholder",
+  "raw_data_schema": "guest",
+  "ssl_method": { "name": "unencrypted" },
+  "user": "replace_me_username",
+  "password": "replace_me_password",
+  "load_type": {
+    "load_type": "BULK",
+    "azure_blob_storage_endpoint": "replace_me_azure_endpoint",
+    "azure_blob_storage_account_name": "replace_me_azure_account",
+    "azure_blob_storage_container_name": "replace_me_azure_container",
+    "shared_access_signature": "replace_me_shared_access",
+    "bulk_load_data_source": "replace_me_bulk_data_source"
+  }
+}
