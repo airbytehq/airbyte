@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlobClient
 import io.airbyte.integrations.destination.mssql.v2.MSSQLFormatFileCreator
@@ -106,8 +110,8 @@ class MSSQLFormatFileCreatorTest {
 
         verify { connection.prepareStatement(sql) }
         verify { connection.close() }
-        verify { preparedStatement.setString(1,"dbo") }
-        verify { preparedStatement.setString(2,"test_table") }
+        verify { preparedStatement.setString(1, "dbo") }
+        verify { preparedStatement.setString(2, "test_table") }
         verify { preparedStatement.executeQuery() }
         verify { preparedStatement.close() }
         verify { resultSet.close() }
