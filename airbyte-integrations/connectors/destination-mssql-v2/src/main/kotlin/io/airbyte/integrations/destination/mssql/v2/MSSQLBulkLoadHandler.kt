@@ -153,20 +153,20 @@ class MSSQLBulkLoadHandler(
         // If not provided, it won't be included in the statement.
         val rowBatchClause = rowsPerBatch?.let { "ROWS_PER_BATCH = $it," } ?: ""
         return StringBuilder().apply {
-            append("BULK INSERT $fullyQualifiedTableName")
-            append("FROM '$dataFilePath'")
-            append("WITH (")
+            append("BULK INSERT $fullyQualifiedTableName\n")
+            append("FROM '$dataFilePath'\n")
+            append("WITH (\n")
             if (SystemUtils.IS_OS_WINDOWS) {
                 // Only supported in Windows installations
-                append("\tCODEPAGE = '$CODE_PAGE',")
+                append("\tCODEPAGE = '$CODE_PAGE',\n")
             }
-            append("\tDATA_SOURCE = '$bulkUploadDataSource',")
-            append("\tFORMATFILE_DATA_SOURCE = '$bulkUploadDataSource',")
-            append("\tFIRSTROW = 2,")
-            append("\tFORMAT = '$FILE_FORMAT',")
-            append("\tFORMATFILE = '$formatFilePath',")
-            append("\t$rowBatchClause")
-            append("\t$rowBatchClause")
+            append("\tDATA_SOURCE = '$bulkUploadDataSource',\n")
+            append("\tFORMATFILE_DATA_SOURCE = '$bulkUploadDataSource',\n")
+            append("\tFIRSTROW = 2,\n")
+            append("\tFORMAT = '$FILE_FORMAT',\n")
+            append("\tFORMATFILE = '$formatFilePath',\n")
+            append("\t$rowBatchClause\n")
+            append("\tKEEPNULLS\n")
             append(")")
         }.toString().trimIndent()
     }
