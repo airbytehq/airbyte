@@ -37,6 +37,7 @@ import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.util.UUID
+import kotlin.math.absoluteValue
 
 private val logger = KotlinLogging.logger {}
 
@@ -426,7 +427,7 @@ class MSSQLQueryBuilder(
         columns: List<String>,
         clustered: Boolean = false
     ): String {
-        val name = "${fqTableName.replace('.', '_')}_${columns.hashCode()}"
+        val name = "${fqTableName.replace('.', '_')}_${columns.hashCode().absoluteValue}"
         val indexType = if (clustered) "CLUSTERED" else ""
         return CREATE_INDEX_QUERY.toQuery(
             indexType,
