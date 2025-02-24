@@ -52,7 +52,7 @@ definitions:
     type: DefaultErrorHandler
     max_retries: 5
     response_filters:
-      - http_codes: [ 401 ]
+      - http_codes: [401]
         action: RETRY
         error_message: "Unauthorized error while report status checking. Known error. Please, retry the request or restart sync."
 
