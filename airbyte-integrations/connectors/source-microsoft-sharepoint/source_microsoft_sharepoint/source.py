@@ -56,15 +56,15 @@ class SourceMicrosoftSharePoint(FileBasedSource):
         oauth_connector_input_specification = OauthConnectorInputSpecification(
             consent_url=consent_url,
             access_token_url=access_token_url,
-            access_token_headers = {
+            access_token_headers={
                 "Content-Type": "application/x-www-form-urlencoded",
             },
-            access_token_params= {
+            access_token_params={
                 "code": "{{ auth_code_value }}",
                 "client_id": "{{ client_id_value }}",
                 "redirect_uri": "{{ redirect_uri_value }}",
                 "client_secret": "{{ client_secret_value }}",
-                "grant_type": "authorization_code"
+                "grant_type": "authorization_code",
             },
             scope=scopes,
         )
