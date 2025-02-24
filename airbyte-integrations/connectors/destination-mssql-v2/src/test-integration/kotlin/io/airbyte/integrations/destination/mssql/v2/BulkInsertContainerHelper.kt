@@ -4,11 +4,13 @@
 
 package io.airbyte.integrations.destination.mssql.v2
 
-import com.azure.storage.blob.BlobContainerClient
+import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.BlobServiceClientBuilder
-import com.azure.storage.blob.sas.BlobContainerSasPermission
-import com.azure.storage.blob.sas.BlobServiceSasSignatureValues
 import com.azure.storage.common.StorageSharedKeyCredential
+import com.azure.storage.common.sas.AccountSasPermission
+import com.azure.storage.common.sas.AccountSasResourceType
+import com.azure.storage.common.sas.AccountSasService
+import com.azure.storage.common.sas.AccountSasSignatureValues
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.DefaultNamespaceResult
 import io.airbyte.integrations.destination.mssql.v2.BulkInsertContainerHelper.getAccountName
@@ -21,9 +23,9 @@ import java.time.OffsetDateTime
 import java.util.UUID
 import org.testcontainers.azure.AzuriteContainer
 import org.testcontainers.containers.MSSQLServerContainer.MS_SQL_SERVER_PORT
-import org.testcontainers.containers.Network
 
 private const val BLOB_STORAGE_CREDENTIAL = "MyAzureBlobStorageCredential"
+private const val BLOB_STORAGE_PORT = 10000
 private const val DATA_SOURCE_NAME = "MyAzureBlobStorage"
 private const val DATABASE_NAME = "bulkinsert"
 private const val MASTER_ENCRYPTION_PASSWORD = "Ma\$TEr_PA55w0RD!"
@@ -54,7 +56,11 @@ object BulkInsertContainerHelper {
 
             // Start the Azure storage container if not already started
             if (!testContainer.isRunning()) {
-                testContainer.withNetwork(getNetwork()).withNetworkAliases(NETWORK_ALIAS).start()
+                testContainer
+                    .withNetwork(getNetwork())
+                    .withNetworkAliases(NETWORK_ALIAS)
+                    .withNetworkMode(getNetwork().id)
+                    .start()
 
                 val sharedKeyCredential =
                     StorageSharedKeyCredential(WELL_KNOWN_ACCOUNT_NAME, WELL_KNOWN_ACCOUNT_KEY)
@@ -68,13 +74,12 @@ object BulkInsertContainerHelper {
                 val blobContainerClient =
                     blobServiceClient.getBlobContainerClient("test-container-${UUID.randomUUID()}")
 
-                sharedAccessSignature = generateSas(blobContainerClient = blobContainerClient)
-
                 blobContainerClient.createIfNotExists()
 
                 accountUrl = blobServiceClient.accountUrl
                 blobContainer = blobContainerClient.blobContainerName ?: ""
                 blobContainerUrl = blobContainerClient.blobContainerUrl ?: ""
+                sharedAccessSignature = generateAccountSas(blobServiceClient)
 
                 prepareDatabaseForBulkInsert()
             }
@@ -89,28 +94,33 @@ object BulkInsertContainerHelper {
 
     fun getSharedAccessSignature(): String = sharedAccessSignature
 
-    private fun getBlobContainerUrl(): String = blobContainerUrl
-
-    private fun generateSas(blobContainerClient: BlobContainerClient): String {
+    private fun generateAccountSas(blobServiceClient: BlobServiceClient): String {
         val expiryTime = OffsetDateTime.now().plusDays(2)
-        val sasPermission =
-            BlobContainerSasPermission()
-                .setAddPermission(true)
-                .setExecutePermission(true)
-                .setCreatePermission(true)
-                .setDeletePermission(true)
-                .setDeleteVersionPermission(true)
-                .setListPermission(true)
-                .setReadPermission(true)
-                .setWritePermission(true)
-        val sasSignatureValues =
-            BlobServiceSasSignatureValues(expiryTime, sasPermission)
-                .setStartTime(OffsetDateTime.now().minusMinutes(5))
+        val accountSasPermission = AccountSasPermission()
+            .setAddPermission(true)
+            .setCreatePermission(true)
+            .setDeletePermission(true)
+            .setDeleteVersionPermission(true)
+            .setListPermission(true)
+            .setReadPermission(true)
+            .setWritePermission(true)
+        val accountSasService = AccountSasService()
+            .setBlobAccess(true)
+            .setFileAccess(true)
+            .setTableAccess(true)
+        val accountSasResourceType = AccountSasResourceType()
+            .setService(true)
+            .setContainer(true)
+            .setObject(true)
 
-        // Add &comp=list&restype=container to treat the requested resource as a container, not a
-        // blob
-//        return "${blobContainerClient.generateSas(sasSignatureValues)}&comp=list&restype=container"
-        return blobContainerClient.generateSas(sasSignatureValues)
+        val accountSasSignatureValues = AccountSasSignatureValues(
+            expiryTime,
+            accountSasPermission,
+            accountSasService,
+            accountSasResourceType,
+        ).setStartTime(OffsetDateTime.now().minusMinutes(5))
+
+        return blobServiceClient.generateAccountSas(accountSasSignatureValues)
     }
 
     private fun prepareDatabaseForBulkInsert() {
@@ -126,7 +136,7 @@ object BulkInsertContainerHelper {
                     "CREATE DATABASE SCOPED CREDENTIAL $BLOB_STORAGE_CREDENTIAL WITH IDENTITY = 'SHARED ACCESS SIGNATURE', SECRET = '${getSharedAccessSignature()}'",
                 )
                 statement.execute(
-                    "CREATE EXTERNAL DATA SOURCE $DATA_SOURCE_NAME WITH ( TYPE = BLOB_STORAGE, LOCATION = '${getBlobContainerUrl().replace("localhost", NETWORK_ALIAS)}', CREDENTIAL = $BLOB_STORAGE_CREDENTIAL)",
+                    "CREATE EXTERNAL DATA SOURCE $DATA_SOURCE_NAME WITH ( TYPE = BLOB_STORAGE, LOCATION = '${createBlobContainerUrl()}', CREDENTIAL = $BLOB_STORAGE_CREDENTIAL)",
                 )
             }
         }
@@ -148,6 +158,10 @@ object BulkInsertContainerHelper {
                 )
             }
             .toString()
+    }
+
+    private fun createBlobContainerUrl(): String {
+        return "http://$NETWORK_ALIAS:$BLOB_STORAGE_PORT/$WELL_KNOWN_ACCOUNT_NAME/${getBlobContainer()}"
     }
 }
 
