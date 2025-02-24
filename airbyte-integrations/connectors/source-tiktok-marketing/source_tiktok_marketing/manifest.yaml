@@ -24,6 +24,7 @@ definitions:
       response_filters:
         - predicate: "{{ response.get('code') == 40100 }}"
           action: RATE_LIMITED
+          error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
         - predicate: "{{ response.get('code') != 0 }}"
           action: FAIL
           error_message: "{{ response['message'] }}"
