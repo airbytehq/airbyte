@@ -80,6 +80,7 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
+| 2.6.6 | 2025-02-22 | [54547](https://github.com/airbytehq/airbyte/pull/54547) | Update dependencies |
 | 2.6.5 | 2025-02-15 | [53943](https://github.com/airbytehq/airbyte/pull/53943) | Update dependencies |
 | 2.6.4 | 2025-02-01 | [53018](https://github.com/airbytehq/airbyte/pull/53018) | Update dependencies |
 | 2.6.3 | 2025-01-25 | [52468](https://github.com/airbytehq/airbyte/pull/52468) | Update dependencies |
