@@ -2086,10 +2086,7 @@ definitions:
 
 api_budget:
   type: HTTPAPIBudget
-  # Each policy here uses a MovingWindowCallRatePolicy with two rates:
-  # one for burst (per-second) and one for steady (per-minute).
   policies:
-    # Profiles (and global_exclusions share the same endpoint)
     - type: MovingWindowCallRatePolicy
       rates:
         - limit: 1 # burst: 0.0167 calls per second
@@ -2097,7 +2094,6 @@ api_budget:
       matchers:
         - method: GET
           url_path_pattern: "orders/v0/orders(\\?.*)?$" # matches '/orders' (exact or with trailing slash/extra)
-    # Lists Detailed (uses a different URL path – note the extra segment)
     - type: MovingWindowCallRatePolicy
       rates:
         - limit: 1 # burst: 0.5 call per second
@@ -2107,7 +2103,6 @@ api_budget:
           url_path_pattern: "orders/v0/orders/[^/]+/orderItems(\\?.*)?$" # matches /orderItems
   # Other API budget settings:
   status_codes_for_ratelimit_hit: [429]
-  maximum_attempts_to_acquire: 100000
 
 streams:
   # REST Streams
