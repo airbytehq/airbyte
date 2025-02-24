@@ -52,7 +52,7 @@ jobs:
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --metadata-changes-only publish --pre-release"
+          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --metadata-changes-only publish --main-release"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
           max_attempts: 2
           retry_wait_seconds: 600 # 10 minutes
