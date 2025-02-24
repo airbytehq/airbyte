@@ -8,6 +8,7 @@ import io.airbyte.cdk.jdbc.converters.DateTimeConverter
 import io.debezium.spi.converter.CustomConverter
 import io.debezium.spi.converter.RelationalColumn
 import io.debezium.time.Conversions
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*
@@ -27,6 +28,7 @@ import org.apache.kafka.connect.data.SchemaBuilder
 class MySqlSourceCdcTemporalConverter : CustomConverter<SchemaBuilder, RelationalColumn> {
 
     private val DATE_TYPES = arrayOf("DATE", "DATETIME", "TIME", "TIMESTAMP")
+    private val log = KotlinLogging.logger {}
     override fun configure(props: Properties?) {}
 
     override fun converterFor(
@@ -57,6 +59,11 @@ class MySqlSourceCdcTemporalConverter : CustomConverter<SchemaBuilder, Relationa
 
         registration?.register(SchemaBuilder.string().optional()) { x ->
             if (x == null) {
+                if (fieldType.uppercase() == "DATETIME") {
+                    log.info {
+                        "Default value for ${field.name()} is ${convertDefaultValue(field)}"
+                    }
+                }
                 return@register convertDefaultValue(field)
             }
 
