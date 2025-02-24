@@ -4,9 +4,11 @@
 package io.airbyte.integrations.destination.postgres.typing_deduping
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler
 import io.airbyte.commons.exceptions.ConfigErrorException
+import io.airbyte.commons.json.Jsons
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
 import io.airbyte.integrations.base.destination.typing_deduping.Array
@@ -14,7 +16,15 @@ import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
+import io.airbyte.integrations.destination.postgres.PostgresDestination
 import io.airbyte.integrations.destination.postgres.PostgresGenerationHandler
+import io.airbyte.integrations.destination.postgres.PostgresSQLNameTransformer
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.FileOutputStream
+import java.io.PrintWriter
+import java.nio.file.Files
+import java.nio.file.Path
+import java.util.Optional
 import org.jooq.SQLDialect
 
 class PostgresDestinationHandler(
@@ -91,4 +101,122 @@ class PostgresDestinationHandler(
             throw e
         }
     }
+}
+
+private val logger = KotlinLogging.logger {}
+/**
+ * Assumes that the old_raw_table_5mb_part1/part2 + new_input_table_5mb_part1/part2 tables already exist.
+ * Will drop+recreate the old_final_table_5mb / new_final_table_5mb tables as needed.
+ */
+fun main() {
+    val size = "50gb"
+    val runOldRawTablesFast = false
+    val runOldRawTablesSlow = false
+    val runNewTableNaive = false
+    val runNewTableOptimized = false
+
+    val config = Jsons.deserialize(Files.readString(Path.of("/Users/edgao/Desktop/postgres_raw_tables_experimentation.json")))
+    val generator = PostgresSqlGenerator(PostgresSQLNameTransformer(), cascadeDrop = true)
+    val destHandler = PostgresDestinationHandler(
+        databaseName = "postgres",
+        DefaultJdbcDatabase(PostgresDestination().getDataSource(config)),
+        rawTableSchema = "no_raw_tables_experiment",
+        PostgresGenerationHandler(),
+    )
+
+    fun resetOldTypingDeduping() {
+        // reset the raw tables (i.e. unset loaded_at)
+        destHandler.execute(Sql.separately(
+            """
+                UPDATE `dataline-integration-testing`.`no_raw_tables_experiment`.`old_raw_table_${size}_part1`
+                SET `_airbyte_loaded_at` = NULL
+                WHERE true
+            """.trimIndent(),
+            """
+                UPDATE `dataline-integration-testing`.`no_raw_tables_experiment`.`old_raw_table_${size}_part2`
+                SET `_airbyte_loaded_at` = NULL
+                WHERE true
+            """.trimIndent(),
+        ))
+        // drop+recreate `old_final_table_${size}`
+        // part=0 here b/c the part number doesn't matter (we don't need the raw tables yet)
+        destHandler.execute(generator.createTable(getStreamConfig(size, 0), suffix = "", force = true))
+    }
+
+    if (runOldRawTablesFast) {
+        resetOldTypingDeduping()
+        logger.info { "Executing old-style fast T+D for $size dataset, part 1 (upsert to empty table)" }
+        destHandler.execute(
+            generator.updateTable(
+                getStreamConfig(size, part = 1),
+                finalSuffix = "",
+                minRawTimestamp = Optional.empty(),
+                useExpensiveSaferCasting = false,
+            )
+        )
+        logger.info { "Executing old-style fast T+D for $size dataset, part 2 (upsert to populated table)" }
+        destHandler.execute(
+            generator.updateTable(
+                getStreamConfig(size, part = 2),
+                finalSuffix = "",
+                minRawTimestamp = Optional.empty(),
+                useExpensiveSaferCasting = false,
+            )
+        )
+    }
+
+    if (runOldRawTablesSlow) {
+        resetOldTypingDeduping()
+        logger.info { "Executing old-style slow T+D for $size dataset, part 1 (upsert to empty table)" }
+        destHandler.execute(
+            generator.updateTable(
+                getStreamConfig(size, part = 1),
+                finalSuffix = "",
+                minRawTimestamp = Optional.empty(),
+                useExpensiveSaferCasting = true,
+            )
+        )
+        logger.info { "Executing old-style slow T+D for $size dataset, part 2 (upsert to populated table)" }
+        destHandler.execute(
+            generator.updateTable(
+                getStreamConfig(size, part = 2),
+                finalSuffix = "",
+                minRawTimestamp = Optional.empty(),
+                useExpensiveSaferCasting = true,
+            )
+        )
+    }
+
+//    PrintWriter(FileOutputStream("/Users/edgao/code/airbyte/raw_table_experiments/generated_files/postgres_newstyle.sql")).use { out ->
+//        out.println("-- naive create table --------------------------------")
+//        out.printSql(getNewStyleCreateFinalTableQuery(size, optimized = false))
+//
+//        repeat(10) { out.println() }
+//        out.println("""-- "naive" dedup query -------------------------------""")
+//        out.println(getNewStyleDedupingQuery(size, 1, optimized = false))
+//
+//        repeat(10) { out.println() }
+//        out.println("-- optimized create table --------------------------------")
+//        out.printSql(getNewStyleCreateFinalTableQuery(size, optimized = true))
+//
+//        repeat(10) { out.println() }
+//        out.println("""-- "optimized" dedup query -------------------------------""")
+//        out.println(getNewStyleDedupingQuery(size, 1, optimized = true))
+//    }
+//
+//    if (runNewTableNaive) {
+//        destHandler.execute(getNewStyleCreateFinalTableQuery(size, optimized = false))
+//        logger.info { "Executing new-style naive deduping for $size dataset, part 1 (upsert to empty table)" }
+//        destHandler.execute(Sql.of(getNewStyleDedupingQuery(size, 1, optimized = false)))
+//        logger.info { "Executing new-style naive deduping for $size dataset, part 2 (upsert to populated table)" }
+//        destHandler.execute(Sql.of(getNewStyleDedupingQuery(size, 2, optimized = false)))
+//    }
+//
+//    if (runNewTableOptimized) {
+//        destHandler.execute(getNewStyleCreateFinalTableQuery(size, optimized = true))
+//        logger.info { "Executing new-style optimized deduping for $size dataset, part 1 (upsert to empty table)" }
+//        destHandler.execute(Sql.of(getNewStyleDedupingQuery(size, 1, optimized = true)))
+//        logger.info { "Executing new-style optimized deduping for $size dataset, part 2 (upsert to populated table)" }
+//        destHandler.execute(Sql.of(getNewStyleDedupingQuery(size, 2, optimized = true)))
+//    }
 }
