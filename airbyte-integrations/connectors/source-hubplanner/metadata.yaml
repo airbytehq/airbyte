@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 8097ceb9-383f-42f6-9f92-d3fd4bcc7689
-  dockerImageTag: 0.3.11
+  dockerImageTag: 0.3.12
   dockerRepository: airbyte/source-hubplanner
   githubIssueLabel: source-hubplanner
   icon: hubplanner.svg
@@ -43,5 +43,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.33.6@sha256:81af934a2136edf0521a71697938cea20d1c6eb36c944566b9455bdd2a47d2bd
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
 metadataSpecVersion: "1.0"

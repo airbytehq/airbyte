@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.6"
+version = "0.1.7"
 name = "source-netsuite"
 description = "Source implementation for Netsuite."
 authors = [ "Airbyte <contact@airbyte.io>",]
