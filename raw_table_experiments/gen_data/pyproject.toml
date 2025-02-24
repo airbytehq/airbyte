@@ -10,6 +10,7 @@ package-mode = false
 python = ">=3.10"
 pytz = "^2025.1"
 google-cloud-storage = "^3.0.0"
+psutil = "^7.0.0"
 
 
 [build-system]
