@@ -428,7 +428,7 @@ class MSSQLQueryBuilder(
         columns: List<String>,
         clustered: Boolean = false
     ): String {
-        val name = "${fqTableName.replace('.', '_')}_${shortHash(columns.hashCode())}"
+        val name = "[${fqTableName.replace('.', '_')}_${shortHash(columns.hashCode())}]"
         val indexType = if (clustered) "CLUSTERED" else ""
         return CREATE_INDEX_QUERY.toQuery(
             indexType,
