@@ -33,7 +33,9 @@ import io.airbyte.cdk.load.message.Undefined
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.KillableScope
+import io.airbyte.cdk.load.task.OnSyncFailureOnly
+import io.airbyte.cdk.load.task.Task
+import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.airbyte.cdk.load.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -41,7 +43,7 @@ import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 
-interface InputConsumerTask : KillableScope
+interface InputConsumerTask : Task
 
 /**
  * Routes @[DestinationStreamAffinedMessage]s by stream to the appropriate channel and @
@@ -68,6 +70,8 @@ class DefaultInputConsumerTask(
 ) : InputConsumerTask {
     private val log = KotlinLogging.logger {}
 
+    override val terminalCondition: TerminalCondition = OnSyncFailureOnly
+
     private suspend fun handleRecord(
         reserved: Reserved<DestinationStreamAffinedMessage>,
         sizeBytes: Long
@@ -79,7 +83,7 @@ class DefaultInputConsumerTask(
             is DestinationRecord -> {
                 val wrapped =
                     StreamRecordEvent(
-                        index = manager.countRecordIn(),
+                        index = manager.incrementReadCount(),
                         sizeBytes = sizeBytes,
                         payload = message.asRecordSerialized()
                     )
@@ -100,14 +104,13 @@ class DefaultInputConsumerTask(
                 recordQueue.close()
             }
             is DestinationFile -> {
-                val index = manager.countRecordIn()
+                val index = manager.incrementReadCount()
                 // destinationTaskLauncher.handleFile(stream, message, index)
                 fileTransferQueue.publish(FileTransferQueueMessage(stream, message, index))
             }
             is DestinationFileStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
                 manager.markEndOfStream(true)
-                fileTransferQueue.close()
                 val envelope =
                     BatchEnvelope(
                         SimpleBatch(Batch.State.COMPLETE),
@@ -192,6 +195,7 @@ class DefaultInputConsumerTask(
         } finally {
             log.info { "Closing record queues" }
             catalog.streams.forEach { recordQueueSupplier.get(it.descriptor).close() }
+            fileTransferQueue.close()
         }
     }
 }

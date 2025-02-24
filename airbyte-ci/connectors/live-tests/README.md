@@ -5,7 +5,7 @@ This project contains utilities for running connector tests against live data.
 ## Requirements
 
 - `docker`
-- `Python ^3.10`
+- `Python ^3.11`
 - `pipx`
 - `poetry`
 
@@ -174,10 +174,22 @@ The traffic recorded on the control connector is passed to the target connector 
 | `--auto-select-connection` | Automatically select a connection for testing.                                                                                               | Optional          |
 | `--stream`                 | Name of the stream to test. Can be specified multiple times to test multiple streams.                                                        | Optional          |
 | `--should-read-with-state` | Specify whether to read with state. If not provided, a prompt will appear to choose.                                                         | Optional          |
+| `--disable-proxy`          | Specify whether to disable proxy. If not provided, a proxy will be enabled.                                                                  | Optional          |
 | `--test-evaluation-mode`   | Whether to run tests in "diagnostic" mode or "strict" mode. In diagnostic mode, eligible tests will always pass unless there's an exception. | Optional          |
 | `--connection-subset`      | The subset of connections to select from. Possible values are "sandboxes" or "all" (defaults to sandboxes).                                  | Optional          |
 
 ## Changelog
+
+
+### 0.21.2
+Fix selected streams filter in regression tests
+
+### 0.21.1
+Update Python version requirement from 3.10 to 3.11.
+
+### 0.21.0
+Add `disable_proxy` flag
+
 
 ### 0.20.0
 Support multiple connection objects in the regression tests suite.

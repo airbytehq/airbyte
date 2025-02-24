@@ -50,3 +50,7 @@ Choose the deployment guide that's right for you.
 - [AWS Fargate](https://aws.amazon.com/fargate/) is not currently supported.
 - [AWS ECS](https://aws.amazon.com/ecs/) is not currently supported.
 :::
+
+:::note
+As part of maintaining your Airbyte instance, you'll need to do periodic upgrades. See our documentation on [when and how to upgrade Airbyte](../operator-guides/upgrading-airbyte.md) for details. 
+:::

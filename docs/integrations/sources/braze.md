@@ -54,9 +54,14 @@ Rate limits table: https://www.braze.com/docs/api/api_limits/#rate-limits-by-req
 
 | Version | Date       | Pull Request                                             | Subject                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------- |
-| 0.3.0   | 2023-11-04 | [31857](https://github.com/airbytehq/airbyte/pull/31857) | Add Campaigns, Canvases, Segments Details Streams                  |
-| 0.2.0   | 2023-10-28 | [31607](https://github.com/airbytehq/airbyte/pull/31607) | Fix CanvasAnalytics Stream Null Data for step_stats, variant_stats |
-| 0.1.4   | 2023-11-03 | [20520](https://github.com/airbytehq/airbyte/pull/20520) | Fix integration tests                                              |
-| 0.1.3   | 2022-12-15 | [20520](https://github.com/airbytehq/airbyte/pull/20520) | The Braze connector born                                           |
+| 0.4.4 | 2025-02-22 | [54275](https://github.com/airbytehq/airbyte/pull/54275) | Update dependencies |
+| 0.4.3 | 2025-02-15 | [53870](https://github.com/airbytehq/airbyte/pull/53870) | Update dependencies |
+| 0.4.2 | 2025-02-08 | [53426](https://github.com/airbytehq/airbyte/pull/53426) | Update dependencies |
+| 0.4.1 | 2025-02-01 | [52922](https://github.com/airbytehq/airbyte/pull/52922) | Update dependencies |
+| 0.4.0 | 2024-10-24 | [47329](https://github.com/airbytehq/airbyte/pull/47329) | Migrate to Manifest-only |
+| 0.3.0 | 2023-11-04 | [31857](https://github.com/airbytehq/airbyte/pull/31857) | Add Campaigns, Canvases, Segments Details Streams |
+| 0.2.0 | 2023-10-28 | [31607](https://github.com/airbytehq/airbyte/pull/31607) | Fix CanvasAnalytics Stream Null Data for step_stats, variant_stats |
+| 0.1.4 | 2023-11-03 | [20520](https://github.com/airbytehq/airbyte/pull/20520) | Fix integration tests |
+| 0.1.3 | 2022-12-15 | [20520](https://github.com/airbytehq/airbyte/pull/20520) | The Braze connector born |
 
 </details>

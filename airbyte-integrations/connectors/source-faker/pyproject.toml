@@ -27,3 +27,11 @@ source-faker = "source_faker.run:run"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
 pytest = "^6.2"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
