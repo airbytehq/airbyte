@@ -28,9 +28,101 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# -------------------------------
-# CONFIGURATION
-# -------------------------------
+
+def calculate_optimal_file_split(total_size_mb: int, max_files: int = 0) -> Tuple[int, int]:
+    """
+    Calculate the optimal number of files and size per file based on total target size.
+    
+    Args:
+        total_size_mb: Total size to generate across all files in MB
+        max_files: Maximum number of files to create (0 for auto-determine)
+        
+    Returns:
+        Tuple of (number of files, size per file in MB)
+    """
+    # Available CPU cores (for parallel processing)
+    available_cores = os.cpu_count() or 4
+    
+    # Get available memory (in MB)
+    # Use 50% of available memory as our target working limit
+    try:
+        available_memory_mb = psutil.virtual_memory().available // (1024 * 1024) // 2
+    except:
+        # If psutil is not available, assume a conservative 2GB
+        available_memory_mb = 2 * 1024
+    
+    logger.info(f"Available memory for processing: {available_memory_mb} MB")
+    logger.info(f"Available CPU cores: {available_cores}")
+    
+    # For very small sizes (< 100MB), just create one file
+    if total_size_mb < 100:
+        return 1, total_size_mb
+        
+    # For testing sizes (< 1GB), use available cores as the number of files
+    if total_size_mb < 1024:
+        num_files = min(available_cores, 4)  # Use up to 4 files for small test data
+        size_per_file = (total_size_mb + num_files - 1) // num_files
+        return num_files, size_per_file
+    
+    # For small-medium sizes (1GB-10GB), use all available cores
+    if total_size_mb < 10 * 1024:
+        # Split based on available cores
+        num_files = available_cores
+        size_per_file = (total_size_mb + num_files - 1) // num_files
+        return num_files, size_per_file
+        
+    # For large sizes (>10GB), optimize for parallelism
+    # Target file size of 2GB per file to balance memory and speed
+    target_size_per_file = 2 * 1024  # 2GB per file
+    num_files = (total_size_mb + target_size_per_file - 1) // target_size_per_file
+    
+    # Cap number of files to 2x available cores for efficiency
+    max_suggested_files = available_cores * 2
+    
+    if max_files > 0:
+        # User specified max files
+        num_files = min(num_files, max_files)
+    else:
+        # Auto determine, but cap at 2x available cores
+        num_files = min(num_files, max_suggested_files)
+    
+    # Recalculate size per file
+    size_per_file = (total_size_mb + num_files - 1) // num_files
+    
+    # Ensure we use at least one file
+    num_files = max(1, num_files)
+    
+    return num_files, size_per_file
+
+def calculate_chunk_level_parallelism(target_size_mb: int, chunk_size_mb: int, max_parallel_chunks: int = None) -> int:
+    """
+    Calculate how many chunks to generate in parallel based on system resources.
+    
+    Args:
+        target_size_mb: Target file size in MB
+        chunk_size_mb: Chunk size in MB
+        max_parallel_chunks: Maximum parallel chunks (defaults to CPU count)
+        
+    Returns:
+        Number of chunks to generate in parallel
+    """
+    if max_parallel_chunks is None:
+        max_parallel_chunks = os.cpu_count() or 4
+    
+    # Calculate estimated total chunks
+    total_chunks = (target_size_mb + chunk_size_mb - 1) // chunk_size_mb
+    
+    # For very small files with few chunks, limit parallelism
+    if total_chunks < 4:
+        return min(total_chunks, max_parallel_chunks)
+    
+    # For medium files, use available cores
+    if total_chunks < 16:
+        return min(total_chunks, max_parallel_chunks)
+    
+    # For large files with many chunks, increase parallelism
+    return max_parallel_chunks
+
 def calculate_optimal_chunk_size(target_size_mb: int) -> int:
     """
     Calculate optimal chunk size based on target file size to minimize composition levels.
@@ -200,6 +292,7 @@ class GeneratorConfig:
     start_date: datetime = datetime(2025, 1, 1, 12, 0, 0)
     cursor_increment: timedelta = timedelta(minutes=1)
     cache_size: int = 10_000
+    parallel_chunks: int = None  # Number of chunks to generate in parallel
 
     def __post_init__(self):
         # Auto-calculate optimal chunk size if not provided
@@ -216,12 +309,19 @@ class GeneratorConfig:
                 self.log_frequency = 100_000
             else:  # >= 10GB
                 self.log_frequency = 1_000_000
+        
+        # Calculate parallel chunks if not provided
+        if self.parallel_chunks is None:
+            self.parallel_chunks = calculate_chunk_level_parallelism(
+                self.target_size_mb, self.chunk_size_mb
+            )
             
         # Print configuration details
         stats = calculate_composition_stats(self.target_size_mb, self.chunk_size_mb)
         logger.info(f"Target size: {self.target_size_mb} MB ({self.target_size_mb/1024:.2f} GB)")
         logger.info(f"Chunk size: {self.chunk_size_mb} MB")
         logger.info(f"Expected chunks: {stats['total_chunks']}")
+        logger.info(f"Parallel chunk generation: {self.parallel_chunks}")
         logger.info(f"Composition levels: {stats['composition_levels']}")
         logger.info(f"Intermediate blobs: {stats['intermediate_blobs']}")
         logger.info(f"Log frequency: Every {self.log_frequency:,} rows")
@@ -329,6 +429,90 @@ class CSVGenerator:
             json.dumps(self.data_generator.random_array()),
             json.dumps(self.data_generator.random_json_object()),
         ]
+    
+    def _generate_chunk(self, chunk_index: int, start_row: int, start_pk: int, start_cursor: datetime) -> Tuple[str, int, int]:
+        """
+        Generate a single chunk of data and upload to GCS.
+        
+        Args:
+            chunk_index: Index of this chunk
+            start_row: Row number to start at
+            start_pk: Primary key to start at
+            start_cursor: Cursor time to start at
+            
+        Returns:
+            Tuple of (blob_name, rows_generated, end_pk)
+        """
+        final_blob_name = self._get_final_blob_name(chunk_index)
+        chunk_blob_name = f"{final_blob_name}.part_{chunk_index:05d}"
+        
+        buffer = io.StringIO()
+        writer = csv.writer(buffer, quoting=csv.QUOTE_MINIMAL)
+        
+        row_count = 0
+        current_pk = start_pk
+        cursor = start_cursor
+        used_pks = []
+        # For memory efficiency, limit the cache size
+        max_pk_cache = min(1000, 10_000_000 // self.config.target_size_mb)
+        
+        # Fill the chunk
+        while buffer.tell() < self.config.chunk_size_bytes:
+            # Determine whether to use an existing PK or generate a new one
+            if len(used_pks) > max_pk_cache and random.random() < (self.config.duplicate_pct / 100):
+                row_pk = random.choice(used_pks)
+            else:
+                row_pk = current_pk
+                used_pks.append(row_pk)
+                current_pk += 1
+            
+            # Generate row data
+            row_data = self.generate_row(row_pk, cursor)
+            writer.writerow(row_data)
+            
+            # Update counters
+            cursor += self.config.cursor_increment
+            row_count += 1
+            
+            # Log progress occasionally
+            if row_count % self.config.log_frequency == 0:
+                logger.info(f"Chunk #{chunk_index}: Generated {row_count:,} rows")
+        
+        # Get final data
+        data = buffer.getvalue()
+        
+        # Upload to GCS
+        chunk_blob = self.bucket.blob(chunk_blob_name)
+        encoded_data = data.encode("utf-8")
+        chunk_size_mb = len(encoded_data) / (1024 * 1024)
+        
+        logger.info(f"Uploading chunk #{chunk_index:05d} ({row_count:,} rows, {chunk_size_mb:.2f} MB)")
+        
+        # Upload with retry
+        max_retries = 3
+        for retry in range(max_retries):
+            try:
+                chunk_blob.upload_from_string(
+                    data,
+                    content_type="text/csv",
+                    timeout=300  # 5 minute timeout
+                )
+                break
+            except Exception as e:
+                if retry == max_retries - 1:
+                    raise
+                logger.warning(f"Upload failed, retry {retry+1}/{max_retries}: {e}")
+                time.sleep(2 ** retry)  # Exponential backoff
+        
+        logger.info(f"Successfully uploaded chunk #{chunk_index:05d}")
+        
+        return chunk_blob_name, row_count, current_pk
+
+    def _get_final_blob_name(self, file_index: Optional[int] = None) -> str:
+        """Get the final blob name based on configuration."""
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        index_suffix = f"_{file_index:03d}" if file_index is not None else ""
+        return f"data_export_{self.config.target_size_mb}MB_{timestamp}{index_suffix}.csv"
 
     def _clean_up_blobs(self, blob_names: List[str], batch_size: int = 20) -> None:
         """
@@ -474,7 +658,7 @@ class CSVGenerator:
         logger.info(f"Composition complete: {final_blob_name} ({final_size_gb:.2f} GB)")
 
     def generate_csv(self, file_index: Optional[int] = None) -> str:
-        """Generate and upload CSV file to GCS with memory optimization for laptop use."""
+        """Generate and upload CSV file to GCS with parallel chunk generation."""
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         index_suffix = f"_{file_index:03d}" if file_index is not None else ""
         final_blob_name = (
@@ -489,334 +673,245 @@ class CSVGenerator:
 
         start_time = time.time()
         
-        # We'll store chunk names instead of blob objects to save memory
+        # Calculate total number of chunks needed
+        total_chunks = (self.config.target_size_bytes + self.config.chunk_size_bytes - 1) // self.config.chunk_size_bytes
+        estimated_bytes_per_row = 200  # Rough estimation
+        estimated_rows_per_chunk = self.config.chunk_size_bytes // estimated_bytes_per_row
+        
+        logger.info(f"Preparing to generate {total_chunks} chunks with approximately {estimated_rows_per_chunk:,} rows each")
+        
+        # Use parallel chunk generation
         chunk_names = []
-        total_bytes_written = 0
-        row_count = 0
-
-        # For memory-efficiency, determine PK cache size based on target file size
-        max_pk_cache = min(1000, 10_000_000 // self.config.target_size_mb)
-        if self.config.target_size_mb > 10_000:  # > 10GB
-            # Use reservoir sampling for very large files
-            max_pk_cache = 100
-            
-        used_pks = []
-        current_pk = 1
+        total_rows = 0
         
-        # Monitor memory usage
-        try:
-            import psutil
-            process = psutil.Process(os.getpid())
-            memory_monitoring = True
-        except:
-            memory_monitoring = False
-            
-        # Calculate rows per chunk estimation (for buffer sizing)
-        # Based on rough estimation that each row is ~200 bytes
-        estimated_rows_per_chunk = (self.config.chunk_size_bytes // 200)
+        # Process chunks in batches to avoid overwhelming the system
+        chunk_batch_size = self.config.parallel_chunks
         
-        def log_memory_usage():
-            """Log current memory usage if monitoring is available"""
-            if memory_monitoring:
-                memory_mb = process.memory_info().rss / (1024 * 1024)
-                logger.info(f"Current memory usage: {memory_mb:.2f} MB")
-        
-        def generate_chunk():
-            """Generate a single chunk of CSV data"""
-            nonlocal current_pk, row_count, total_bytes_written
+        for batch_start in range(0, total_chunks, chunk_batch_size):
+            batch_end = min(batch_start + chunk_batch_size, total_chunks)
+            batch_indices = list(range(batch_start, batch_end))
             
-            # Create a new buffer for this chunk
-            buffer = io.StringIO()
-            writer = csv.writer(buffer, quoting=csv.QUOTE_MINIMAL)
+            logger.info(f"Processing chunk batch {batch_start}-{batch_end-1} ({len(batch_indices)} chunks)")
             
-            # No headers in any case (removed header generation code)
-            
-            chunk_rows = 0
-            cursor = self.config.start_date + self.config.cursor_increment * row_count
-            chunk_target_bytes = self.config.chunk_size_bytes
-            
-            # Generate rows until we fill the chunk
-            while buffer.tell() < chunk_target_bytes:
-                # Determine whether to use an existing PK or generate a new one
-                if len(used_pks) >= max_pk_cache:
-                    # Reservoir sampling approach for large files
-                    if random.random() < 0.5:  # 50% chance to replace
-                        # Replace random element
-                        idx = random.randint(0, len(used_pks) - 1)
-                        used_pks[idx] = current_pk
-                        row_pk = current_pk
-                        current_pk += 1
-                    else:
-                        # Use existing PK
-                        row_pk = random.choice(used_pks)
-                elif used_pks and random.random() < (self.config.duplicate_pct / 100):
-                    row_pk = random.choice(used_pks)
-                else:
-                    row_pk = current_pk
-                    used_pks.append(row_pk)
-                    current_pk += 1
+            # Function for chunk generation (for parallel execution)
+            def generate_chunk_task(chunk_idx):
+                """Function to generate a single chunk (for use with ThreadPoolExecutor)"""
+                # Each chunk gets its own PK range and cursor range
+                chunk_start_row = chunk_idx * estimated_rows_per_chunk
+                chunk_start_cursor = self.config.start_date + self.config.cursor_increment * chunk_start_row
                 
-                # Generate row data
-                row_data = self.generate_row(row_pk, cursor)
-                writer.writerow(row_data)
+                # Generate an appropriate starting PK based on chunk index
+                # Use a large offset to prevent overlaps between chunks
+                chunk_start_pk = 1 + chunk_idx * (estimated_rows_per_chunk * 2)
                 
-                # Update counters
-                cursor += self.config.cursor_increment
-                row_count += 1
-                chunk_rows += 1
+                logger.info(f"Starting chunk #{chunk_idx:05d} generation")
                 
-                # Log progress periodically
-                if row_count % self.config.log_frequency == 0:
-                    progress = (total_bytes_written / self.config.target_size_bytes) * 100
-                    logger.info(
-                        f"Generated {row_count:,} rows, {total_bytes_written / 1024 / 1024:.2f} MB "
-                        f"({progress:.1f}%)"
-                    )
-                    # Check memory periodically
-                    if row_count % (self.config.log_frequency * 10) == 0:
-                        log_memory_usage()
-                        # Force garbage collection for large files
-                        if self.config.target_size_mb > 10_000:
-                            gc.collect()
-                
-                # Break if we've achieved our overall target
-                if total_bytes_written + buffer.tell() >= self.config.target_size_bytes:
-                    break
-            
-            # Get final data
-            data = buffer.getvalue()
-            bytes_generated = len(data.encode('utf-8'))
-            
-            return data, bytes_generated, chunk_rows
-            
-        def upload_chunk(data, chunk_rows):
-            """Upload a chunk to GCS and return the blob name"""
-            nonlocal total_bytes_written
-            
-            chunk_index = len(chunk_names)
-            part_name = f"{final_blob_name}.part_{chunk_index:05d}"
-            chunk_blob = self.bucket.blob(part_name)
-            
-            encoded_data = data.encode("utf-8")
-            chunk_size_mb = len(encoded_data) / (1024 * 1024)
-            
-            logger.info(
-                f"Uploading chunk #{chunk_index:05d} "
-                f"({chunk_rows:,} rows, {chunk_size_mb:.2f} MB)"
-            )
-
-            # Simple retry logic
-            max_retries = 3
-            retry_count = 0
-            
-            while retry_count < max_retries:
                 try:
-                    chunk_blob.upload_from_string(
-                        data,
-                        content_type="text/csv",
-                        timeout=300  # 5 minute timeout for larger chunks
+                    buffer = io.StringIO()
+                    writer = csv.writer(buffer, quoting=csv.QUOTE_MINIMAL)
+                    
+                    row_count = 0
+                    current_pk = chunk_start_pk
+                    cursor = chunk_start_cursor
+                    
+                    # For memory efficiency, use a smaller PK cache for large files
+                    max_pk_cache = min(1000, 1_000_000 // self.config.target_size_mb)
+                    used_pks = []
+                    
+                    # Log progress more frequently
+                    progress_log_interval = min(100_000, self.config.log_frequency // 10)
+                    last_log_size = 0
+                    start_time = time.time()
+                    
+                    # Fill the chunk
+                    while buffer.tell() < self.config.chunk_size_bytes:
+                        # Determine whether to use an existing PK or generate a new one
+                        if used_pks and random.random() < (self.config.duplicate_pct / 100):
+                            row_pk = random.choice(used_pks)
+                        else:
+                            row_pk = current_pk
+                            if len(used_pks) < max_pk_cache:
+                                used_pks.append(row_pk)
+                            current_pk += 1
+                        
+                        # Generate row data
+                        row_data = self.generate_row(row_pk, cursor)
+                        writer.writerow(row_data)
+                        
+                        # Update counters
+                        cursor += self.config.cursor_increment
+                        row_count += 1
+                        
+                        # Log progress more frequently with size information
+                        if row_count % progress_log_interval == 0:
+                            current_size = buffer.tell()
+                            size_mb = current_size / (1024 * 1024)
+                            mb_since_last = (current_size - last_log_size) / (1024 * 1024)
+                            percent_complete = (size_mb / self.config.chunk_size_mb) * 100
+                            elapsed = time.time() - start_time
+                            speed = mb_since_last / (elapsed if elapsed > 0 else 1)
+                            
+                            logger.info(
+                                f"Chunk #{chunk_idx:05d}: {row_count:,} rows, "
+                                f"{size_mb:.2f} MB ({percent_complete:.1f}%), "
+                                f"generating at {speed:.2f} MB/s"
+                            )
+                            
+                            # Reset for next interval
+                            last_log_size = current_size
+                            start_time = time.time()
+                    
+                    # Get final data
+                    data = buffer.getvalue()
+                    encoded_data = data.encode("utf-8")
+                    chunk_size_mb = len(encoded_data) / (1024 * 1024)
+                    
+                    logger.info(
+                        f"Chunk #{chunk_idx:05d} generation complete: "
+                        f"{row_count:,} rows, {chunk_size_mb:.2f} MB"
                     )
-                    break
+                    
+                    # Upload to GCS
+                    chunk_blob_name = f"{final_blob_name}.part_{chunk_idx:05d}"
+                    chunk_blob = self.bucket.blob(chunk_blob_name)
+                    
+                    logger.info(f"Uploading chunk #{chunk_idx:05d} to GCS...")
+                    
+                    # Upload with retry
+                    max_retries = 3
+                    for retry in range(max_retries):
+                        try:
+                            upload_start = time.time()
+                            chunk_blob.upload_from_string(
+                                data,
+                                content_type="text/csv",
+                                timeout=300  # 5 minute timeout
+                            )
+                            upload_duration = time.time() - upload_start
+                            upload_speed = chunk_size_mb / upload_duration if upload_duration > 0 else 0
+                            
+                            logger.info(
+                                f"Successfully uploaded chunk #{chunk_idx:05d} "
+                                f"({chunk_size_mb:.2f} MB at {upload_speed:.2f} MB/s)"
+                            )
+                            break
+                        except Exception as e:
+                            if retry == max_retries - 1:
+                                raise
+                            logger.warning(f"Upload failed for chunk #{chunk_idx:05d}, retry {retry+1}/{max_retries}: {e}")
+                            time.sleep(2 ** retry)  # Exponential backoff
+                    
+                    return chunk_blob_name, row_count
                 except Exception as e:
-                    retry_count += 1
-                    if retry_count == max_retries:
-                        raise Exception(f"Failed to upload chunk after {max_retries} attempts") from e
-                    logger.warning(f"Chunk upload failed, attempt {retry_count} of {max_retries}: {str(e)}")
-                    time.sleep(2 ** retry_count)  # Exponential backoff
+                    logger.error(f"Error generating chunk #{chunk_idx:05d}: {str(e)}")
+                    raise
             
-            # Track total bytes and chunk name
-            total_bytes_written += len(encoded_data)
-            chunk_names.append(part_name)
+            # Use thread pool for parallel chunk generation
+            batch_chunk_names = []
+            batch_rows = 0
             
-            logger.info(f"Successfully uploaded chunk #{chunk_index:05d}")
-            
-            # Add sleep to prevent overwhelming GCS
-            time.sleep(0.1)
-            
-            # Force garbage collection for large files
-            if self.config.target_size_mb > 10_000:
-                gc.collect()
-        
-        # Main chunk generation loop
-        logger.info(f"Beginning generation of {final_blob_name}")
-        log_memory_usage()
-        
-        while total_bytes_written < self.config.target_size_bytes:
-            # Generate chunk data
-            chunk_data, chunk_bytes, chunk_rows = generate_chunk()
-            
-            # Upload if we have data
-            if chunk_data and chunk_bytes > 0:
-                upload_chunk(chunk_data, chunk_rows)
-            else:
-                # Break if no more data generated
-                break
+            with concurrent.futures.ThreadPoolExecutor(max_workers=len(batch_indices)) as executor:
+                # Submit all tasks
+                futures = {
+                    executor.submit(generate_chunk_task, idx): idx 
+                    for idx in batch_indices
+                }
                 
-            # Log memory usage
-            if memory_monitoring and len(chunk_names) % 5 == 0:
-                log_memory_usage()
+                # Process results as they complete
+                for future in concurrent.futures.as_completed(futures):
+                    chunk_idx = futures[future]
+                    try:
+                        chunk_name, rows = future.result()
+                        batch_chunk_names.append(chunk_name)
+                        batch_rows += rows
+                    except Exception as e:
+                        logger.error(f"Chunk #{chunk_idx} failed: {str(e)}")
+            
+            # Add batch results to overall results
+            chunk_names.extend(batch_chunk_names)
+            total_rows += batch_rows
+            
+            logger.info(f"Completed batch {batch_start}-{batch_end-1}: {batch_rows:,} rows generated")
+            
+            # Clean up between batches
+            gc.collect()
+        
+        # Sort chunk names to ensure proper order
+        chunk_names.sort()
         
         # Compose chunks into final file
         self._compose_chunks(final_blob_name, chunk_names)
         
         # Calculate statistics
         duration = time.time() - start_time
-        mb_written = total_bytes_written / (1024 * 1024)
+        mb_written = (self.config.target_size_bytes) / (1024 * 1024)
         speed_mbps = mb_written / duration if duration > 0 else 0
         
         summary = (
-            f"Generated {final_blob_name}: {row_count:,} rows, "
+            f"Generated {final_blob_name}: {total_rows:,} rows, "
             f"{mb_written:.2f} MB in {duration:.2f}s ({speed_mbps:.2f} MB/s)"
         )
         logger.info(summary)
         
-        # Final memory check
-        log_memory_usage()
-        
         return summary
 
 def main(total_size_mb: int, max_files: int = 0, project_id: str = "dataline-integration-testing", 
-         bucket_name: str = "no_raw_tables") -> None:
+         bucket_name: str = "no_raw_tables", parallel_chunks: int = None) -> None:
     """
     Generate CSV file(s) with a total size of specified MB.
-    Memory-optimized for laptop use.
+    Optimized for VM environments with multiple CPUs.
     
     Args:
         total_size_mb: Total size to generate in MB
         max_files: Maximum number of files to create (0 for auto-determine)
         project_id: GCS project ID
         bucket_name: GCS bucket name
+        parallel_chunks: Number of chunks to generate in parallel (None for auto-determine)
     """
-    # Calculate optimal number of files and size per file
-    num_files, size_per_file = calculate_optimal_file_split(total_size_mb, max_files)
+    # Available CPU cores for logging
+    available_cores = os.cpu_count() or 4
+    
+    # If parallel_chunks is None, set it based on CPU count
+    if parallel_chunks is None:
+        parallel_chunks = available_cores
     
     logger.info(f"Generating {total_size_mb} MB total data")
-    logger.info(f"Strategy: {num_files} file(s) of {size_per_file} MB each")
+    logger.info(f"Available CPU cores: {available_cores}")
+    logger.info(f"Using {parallel_chunks} parallel chunk generators")
     
-    # Try to detect available memory
-    try:
-        memory_mb = psutil.virtual_memory().available // (1024 * 1024)
-        logger.info(f"Available system memory: {memory_mb} MB")
-    except:
-        logger.info("Could not detect system memory (psutil not available)")
+    # Create a single file with optimized parallel chunk generation
+    config = GeneratorConfig(
+        project_id=project_id,
+        bucket_name=bucket_name,
+        target_size_mb=total_size_mb,
+        parallel_chunks=parallel_chunks
+    )
     
-    # For memory-constrained environments with large files, run sequentially
-    sequential_execution = (size_per_file > 10_000) or (total_size_mb > 100_000)
+    # Create a single generator instance
+    generator = CSVGenerator(config)
     
-    if sequential_execution:
-        logger.info("Using sequential execution to manage memory usage")
-        results = []
-        
-        for i in range(num_files):
-            logger.info(f"Starting file {i+1}/{num_files}")
-            
-            # Clean memory between files
-            gc.collect()
-            
-            config = GeneratorConfig(
-                project_id=project_id,
-                bucket_name=bucket_name,
-                target_size_mb=size_per_file,
-                start_date=datetime(2025, 1, 1, 12, 0, 0) + timedelta(days=i)
-            )
-            generator = CSVGenerator(config)
-            result = generator.generate_csv(file_index=i)
-            
-            results.append(result)
-            logger.info(f"Completed file {i+1}/{num_files}")
-            
-            # Force garbage collection between files
-            gc.collect()
-            
-            # Sleep between files to let system recover
-            if i < num_files - 1:
-                logger.info("Pausing between files to free system resources...")
-                time.sleep(10)
-        
-        logger.info("All sequential tasks complete.")
-        for result in results:
-            logger.info(f"Final result: {result}")
-        return
+    # Generate the file
+    result = generator.generate_csv()
     
-    # For smaller files or when memory is plentiful, use parallel execution
-    if num_files == 1:
-        # Single file generation
-        base_config = GeneratorConfig(
-            project_id=project_id,
-            bucket_name=bucket_name,
-            target_size_mb=size_per_file,
-        )
-        generator = CSVGenerator(base_config)
-        result = generator.generate_csv()
-        logger.info(f"Completed generation: {result}")
-        return
-    
-    # Multiple files in parallel
-    max_workers = min(num_files, os.cpu_count() or 4)
-    logger.info(f"Starting {num_files} parallel CSV generation tasks using {max_workers} workers...")
-    results = []
-
-    def generate_with_index(index: int) -> str:
-        """Generate a CSV file with a unique index."""
-        config = GeneratorConfig(
-            project_id=project_id,
-            bucket_name=bucket_name,
-            target_size_mb=size_per_file,
-            start_date=datetime(2025, 1, 1, 12, 0, 0) + timedelta(days=index)
-        )
-        generator = CSVGenerator(config)
-        return generator.generate_csv(file_index=index)
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        # Submit tasks but limit concurrent executions
-        futures = []
-        for i in range(num_files):
-            future = executor.submit(generate_with_index, i)
-            futures.append(future)
-            
-            # For larger sizes, add a small delay between submissions to stagger resource usage
-            if size_per_file > 1024 and i < num_files - 1:
-                time.sleep(2)
-
-        # Process results as they complete
-        for future in concurrent.futures.as_completed(futures):
-            try:
-                result = future.result()
-                results.append(result)
-                logger.info(f"Completed generation: {result}")
-                # Force GC after each completion
-                gc.collect()
-            except Exception as exc:
-                logger.error("Generation failed", exc_info=exc)
-
-    logger.info("All parallel tasks complete.")
-    for result in results:
-        logger.info(f"Final result: {result}")
+    logger.info(f"Completed generation: {result}")
 
 if __name__ == "__main__":
-    # Parse command line arguments with memory consideration flag
-    parser = argparse.ArgumentParser(description='Generate CSV files of specified total size with memory optimization')
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Generate CSV files of specified total size with parallel processing')
     parser.add_argument('--size', type=int, default=1024, help='Total size to generate in MB (default: 1024 MB)')
-    parser.add_argument('--max-files', type=int, default=0, 
-                        help='Maximum number of files to create (0 for auto-determine)')
     parser.add_argument('--project', type=str, default="dataline-integration-testing", 
                         help='GCS project ID')
     parser.add_argument('--bucket', type=str, default="no_raw_tables", 
                         help='GCS bucket name')
-    parser.add_argument('--low-memory', action='store_true',
-                        help='Force low-memory mode (smaller buffers, sequential processing)')
+    parser.add_argument('--parallel-chunks', type=int, default=None,
+                        help='Number of chunks to generate in parallel (default: CPU count)')
     
     args = parser.parse_args()
     
-    # If low-memory flag is set, adjust global configuration
-    if args.low_memory:
-        logger.info("Low memory mode enabled - optimizing for minimal memory usage")
-        # Could set global flags here if needed
-        
-    # Generate files
+    # Generate file
     main(
-        total_size_mb=args.size, 
-        max_files=args.max_files,
+        total_size_mb=args.size,
         project_id=args.project,
-        bucket_name=args.bucket
+        bucket_name=args.bucket,
+        parallel_chunks=args.parallel_chunks
     )
