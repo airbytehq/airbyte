@@ -7,7 +7,7 @@ package io.airbyte.cdk.load.check
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.NullType
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 
 /**
  * A check operation that is run before the destination is used.
@@ -25,7 +25,7 @@ interface DestinationChecker<C : DestinationConfiguration> {
         DestinationStream(
             descriptor = DestinationStream.Descriptor("testing", "test"),
             importType = Append,
-            schema = NullType,
+            schema = ObjectTypeWithoutSchema,
             generationId = 1,
             minimumGenerationId = 0,
             syncId = 1,

@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.5.2"
+version = "0.6.1"
 name = "source-microsoft-sharepoint"
 description = "Source implementation for Microsoft SharePoint."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,19 +16,27 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_microsoft_sharepoint"
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.12"
+python = "^3.11,<3.12"
 msal = "==1.25.0"
 Office365-REST-Python-Client = "==2.5.5"
 smart-open = "==6.4.0"
+airbyte-cdk = {extras = ["file-based"], version = "^6"}
 
 [tool.poetry.scripts]
 source-microsoft-sharepoint = "source_microsoft_sharepoint.run:run"
 
-[tool.poetry.dependencies.airbyte-cdk]
-extras = [ "file-based",]
-version = "^4"
+
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.6.1"
-requests-mock = "^1.11.0"
-pytest = "^6.1"
+requests-mock = "^1.12.1"
+pytest = "^8"
+poethepoet = "^0.32.2"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

@@ -5,14 +5,15 @@
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.models import SyncMode
 from source_surveymonkey.streams import SurveyIds, Surveys
 
+from airbyte_cdk.models import SyncMode
 
-@pytest.mark.parametrize("stream, expected_records_file, stream_slice", [
-    (SurveyIds, "records_survey_ids.json", None),
-    (Surveys, "records_surveys.json", {"survey_id": "307785415"})
-])
+
+@pytest.mark.parametrize(
+    "stream, expected_records_file, stream_slice",
+    [(SurveyIds, "records_survey_ids.json", None), (Surveys, "records_surveys.json", {"survey_id": "307785415"})],
+)
 def test_survey_stream_read_records(requests_mock, args_mock, read_json, stream, expected_records_file, stream_slice):
     requests_mock.get(
         "https://api.surveymonkey.com/v3/surveys",
@@ -30,8 +31,11 @@ def test_survey_stream_read_records(requests_mock, args_mock, read_json, stream,
                     }
                 },
             },
-            {"status_code": 200, "headers": {"X-Ratelimit-App-Global-Minute-Remaining": "100"},
-             "json": read_json("response_survey_ids.json")},
+            {
+                "status_code": 200,
+                "headers": {"X-Ratelimit-App-Global-Minute-Remaining": "100"},
+                "json": read_json("response_survey_ids.json"),
+            },
         ],
     )
     requests_mock.get("https://api.surveymonkey.com/v3/surveys/307785415/details", json=read_json("response_survey_details.json"))
@@ -42,10 +46,10 @@ def test_survey_stream_read_records(requests_mock, args_mock, read_json, stream,
     assert list(records) == expected_records
 
 
-@pytest.mark.parametrize("additional_arguments, expected_slices", [
-    ({}, [{"survey_id": "307785415"}, {"survey_id": "307785388"}]),
-    ({"survey_ids": ["307785415"]}, [{"survey_id": "307785415"}])
-])
+@pytest.mark.parametrize(
+    "additional_arguments, expected_slices",
+    [({}, [{"survey_id": "307785415"}, {"survey_id": "307785388"}]), ({"survey_ids": ["307785415"]}, [{"survey_id": "307785415"}])],
+)
 def test_survey_slices(requests_mock, args_mock, read_json, additional_arguments, expected_slices):
     if not additional_arguments:
         requests_mock.get("https://api.surveymonkey.com/v3/surveys", json=read_json("response_survey_ids.json"))
@@ -54,11 +58,14 @@ def test_survey_slices(requests_mock, args_mock, read_json, additional_arguments
     assert list(stream_slices) == expected_slices
 
 
-@pytest.mark.parametrize("endpoint, records_filename", [
-    ("survey_pages", "records_survey_pages.json"),
-    ("survey_questions", "records_survey_questions.json"),
-    ("survey_collectors", "records_survey_collectors.json")
-])
+@pytest.mark.parametrize(
+    "endpoint, records_filename",
+    [
+        ("survey_pages", "records_survey_pages.json"),
+        ("survey_questions", "records_survey_questions.json"),
+        ("survey_collectors", "records_survey_collectors.json"),
+    ],
+)
 def test_survey_data(requests_mock, read_records, read_json, endpoint, records_filename):
     requests_mock.get("https://api.surveymonkey.com/v3/surveys/307785415/details", json=read_json("response_survey_details.json"))
     requests_mock.get("https://api.surveymonkey.com/v3/surveys/307785415/collectors", json=read_json("response_survey_collectors.json"))

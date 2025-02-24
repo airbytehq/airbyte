@@ -7,6 +7,9 @@ from typing import Any, Mapping
 from unittest.mock import Mock
 
 import pytest
+from destination_xata import DestinationXata
+from xata.client import XataClient
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -18,8 +21,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_xata import DestinationXata
-from xata.client import XataClient
 
 
 @pytest.fixture(name="config")

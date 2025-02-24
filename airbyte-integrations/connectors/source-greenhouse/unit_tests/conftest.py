@@ -5,8 +5,9 @@
 from unittest.mock import MagicMock, Mock
 
 import pytest
-from airbyte_cdk.sources.streams import Stream
 from source_greenhouse.components import GreenHouseSlicer, GreenHouseSubstreamSlicer
+
+from airbyte_cdk.sources.streams import Stream
 
 
 @pytest.fixture
@@ -18,4 +19,11 @@ def greenhouse_slicer():
 @pytest.fixture
 def greenhouse_substream_slicer():
     parent_stream = MagicMock(spec=Stream)
-    return GreenHouseSubstreamSlicer(cursor_field='cursor_field', stream_slice_field='slice_field', parent_stream=parent_stream, parent_key='parent_key', parameters={}, request_cursor_field=None)
+    return GreenHouseSubstreamSlicer(
+        cursor_field="cursor_field",
+        stream_slice_field="slice_field",
+        parent_stream=parent_stream,
+        parent_key="parent_key",
+        parameters={},
+        request_cursor_field=None,
+    )

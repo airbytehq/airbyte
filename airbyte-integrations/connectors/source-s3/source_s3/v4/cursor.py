@@ -11,6 +11,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamState
 
+
 logger = logging.Logger("source-S3")
 
 

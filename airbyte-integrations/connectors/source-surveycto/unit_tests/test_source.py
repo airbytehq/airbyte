@@ -26,9 +26,11 @@ def source_fixture():
 
 @pytest.fixture(name="mock_survey_cto")
 def mock_survey_cto_fixture():
-    with patch("source_surveycto.source.Helpers.call_survey_cto", return_value="value") as mock_call_survey_cto, patch(
-        "source_surveycto.source.Helpers.get_filter_data", return_value="value"
-    ) as mock_filter_data, patch("source_surveycto.source.Helpers.get_json_schema", return_value="value") as mock_json_schema:
+    with (
+        patch("source_surveycto.source.Helpers.call_survey_cto", return_value="value") as mock_call_survey_cto,
+        patch("source_surveycto.source.Helpers.get_filter_data", return_value="value") as mock_filter_data,
+        patch("source_surveycto.source.Helpers.get_json_schema", return_value="value") as mock_json_schema,
+    ):
         yield mock_call_survey_cto, mock_filter_data, mock_json_schema
 
 

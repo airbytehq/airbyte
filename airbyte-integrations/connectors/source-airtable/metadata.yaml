@@ -7,11 +7,11 @@ data:
       - api.airtable.com
       - airtable.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
   connectorSubtype: api
   connectorType: source
   definitionId: 14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212
-  dockerImageTag: 4.4.0
+  dockerImageTag: 4.5.1
   dockerRepository: airbyte/source-airtable
   documentationUrl: https://docs.airbyte.com/integrations/sources/airtable
   githubIssueLabel: source-airtable
@@ -34,10 +34,12 @@ data:
       4.0.0:
         message: This release introduces changes to columns with formula to parse values directly from `array` to `string` or `number` (where it is possible). Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.
         upgradeDeadline: "2023-10-23"
+    rolloutConfiguration:
+      enableProgressiveRollout: false
   supportLevel: certified
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:

@@ -6,10 +6,11 @@ from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
+from pendulum.parsing.exceptions import ParserError
+
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from pendulum.parsing.exceptions import ParserError
 
 
 @dataclass

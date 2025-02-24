@@ -1,0 +1,40 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/motherduck",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Destination MotherDuck",
+    "type": "object",
+    "required": ["motherduck_api_key"],
+    "additionalProperties": true,
+    "properties": {
+      "motherduck_api_key": {
+        "title": "MotherDuck Access Token",
+        "type": "string",
+        "description": "API access token to use for authentication to a MotherDuck database.",
+        "airbyte_secret": true
+      },
+      "destination_path": {
+        "title": "Destination DB",
+        "type": "string",
+        "description": "Path to a .duckdb file or 'md:<DATABASE_NAME>' to connect to a MotherDuck database. If 'md:' is specified without a database name, the default MotherDuck database name ('my_db') will be used.",
+        "examples": [
+          "/local/destination.duckdb",
+          "md:",
+          "md:data_db",
+          "md:my_db"
+        ],
+        "default": "md:"
+      },
+      "schema": {
+        "title": "Schema Name",
+        "type": "string",
+        "description": "Database schema name, defaults to 'main' if not specified.",
+        "examples": ["main", "airbyte_raw", "my_schema"]
+      }
+    }
+  },
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": true,
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"]
+}

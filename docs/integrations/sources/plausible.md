@@ -48,7 +48,9 @@ The [stated rate limit](https://plausible.io/docs/stats-api) is 600 requests per
 
 | Version | Date       | Pull Request                                             | Subject        |
 |:--------|:-----------| :------------------------------------------------------- | :------------- |
-| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.3 | 2025-02-23 | [54559](https://github.com/airbytehq/airbyte/pull/54559) | Update dependencies |
+| 0.2.2 | 2025-02-15 | [48194](https://github.com/airbytehq/airbyte/pull/48194) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-14 | [44085](https://github.com/airbytehq/airbyte/pull/44085) | Refactor connector to manifest-only format |
 | 0.1.14 | 2024-08-12 | [43731](https://github.com/airbytehq/airbyte/pull/43731) | Update dependencies |
 | 0.1.13 | 2024-08-10 | [43680](https://github.com/airbytehq/airbyte/pull/43680) | Update dependencies |

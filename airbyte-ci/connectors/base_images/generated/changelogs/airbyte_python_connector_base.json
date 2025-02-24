@@ -1,5 +1,20 @@
 [
   {
+    "version": "4.0.0",
+    "changelog_entry": "Python 3.11.11",
+    "dockerfile_example": "FROM docker.io/python:3.11.11-slim-bookworm@sha256:6ed5bff4d7d377e2a27d9285553b8c21cfccc4f00881de1b24c9bc8d90016e82\nRUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime\nRUN adduser --uid 1000 --system --group --no-create-home airbyte\nRUN mkdir --mode 755 /custom_cache\nRUN mkdir --mode 755 /airbyte\nRUN chown airbyte:airbyte /airbyte\nENV PIP_CACHE_DIR=/custom_cache/pip\nRUN pip install --upgrade pip==24.0 setuptools==70.0.0\nENV POETRY_VIRTUALENVS_CREATE=false\nENV POETRY_VIRTUALENVS_IN_PROJECT=false\nENV POETRY_NO_INTERACTION=1\nRUN pip install poetry==1.8.4\nRUN sh -c apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get clean\nRUN sh -c apt-get install -y socat=1.7.4.4-2\nRUN sh -c apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1\nRUN mkdir -p 755 /usr/share/nltk_data"
+  },
+  {
+    "version": "3.0.0",
+    "changelog_entry": "Create airbyte user",
+    "dockerfile_example": "FROM docker.io/python:3.10.14-slim-bookworm@sha256:2407c61b1a18067393fecd8a22cf6fceede893b6aaca817bf9fbfe65e33614a3\nRUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime\nRUN adduser --uid 1000 --system --group --no-create-home airbyte\nRUN mkdir --mode 755 /custom_cache\nRUN mkdir --mode 755 /airbyte\nRUN chown airbyte:airbyte /airbyte\nENV PIP_CACHE_DIR=/custom_cache/pip\nRUN pip install --upgrade pip==24.0 setuptools==70.0.0\nENV POETRY_VIRTUALENVS_CREATE=false\nENV POETRY_VIRTUALENVS_IN_PROJECT=false\nENV POETRY_NO_INTERACTION=1\nRUN pip install poetry==1.6.1\nRUN sh -c apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get clean\nRUN sh -c apt-get install -y socat=1.7.4.4-2\nRUN sh -c apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1\nRUN mkdir -p 755 /usr/share/nltk_data"
+  },
+  {
+    "version": "3.0.0-rc.1",
+    "changelog_entry": "Update Python 3.10.4 image + create airbyte user",
+    "dockerfile_example": "FROM docker.io/python:3.10.14-slim-bookworm@sha256:2407c61b1a18067393fecd8a22cf6fceede893b6aaca817bf9fbfe65e33614a3\nRUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime\nRUN adduser --uid 1000 --system --group --no-create-home airbyte\nRUN mkdir --mode 755 /custom_cache\nRUN mkdir --mode 755 /airbyte\nRUN chown airbyte:airbyte /airbyte\nENV PIP_CACHE_DIR=/custom_cache/pip\nRUN pip install --upgrade pip==24.0 setuptools==70.0.0\nENV POETRY_VIRTUALENVS_CREATE=false\nENV POETRY_VIRTUALENVS_IN_PROJECT=false\nENV POETRY_NO_INTERACTION=1\nRUN pip install poetry==1.6.1\nRUN sh -c apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get clean\nRUN sh -c apt-get install -y socat=1.7.4.4-2\nRUN sh -c apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1\nRUN mkdir -p 755 /usr/share/nltk_data"
+  },
+  {
     "version": "2.0.0",
     "changelog_entry": "Use Python 3.10",
     "dockerfile_example": "FROM docker.io/python:3.10.14-slim-bookworm@sha256:3b37199fbc5a730a551909b3efa7b29105c859668b7502451c163f2a4a7ae1ed\nRUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime\nRUN pip install --upgrade pip==24.0 setuptools==70.0.0\nENV POETRY_VIRTUALENVS_CREATE=false\nENV POETRY_VIRTUALENVS_IN_PROJECT=false\nENV POETRY_NO_INTERACTION=1\nRUN pip install poetry==1.6.1\nRUN sh -c apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get clean\nRUN sh -c apt-get install -y socat=1.7.4.4-2\nRUN sh -c apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1\nRUN mkdir /usr/share/nltk_data"
@@ -13,6 +28,11 @@
     "version": "1.2.2",
     "changelog_entry": "Fix Python 3.9.19 image digest",
     "dockerfile_example": "FROM docker.io/python:3.9.19-slim-bookworm@sha256:088d9217202188598aac37f8db0929345e124a82134ac66b8bb50ee9750b045b\nRUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime\nRUN pip install --upgrade pip==24.0 setuptools==70.0.0\nENV POETRY_VIRTUALENVS_CREATE=false\nENV POETRY_VIRTUALENVS_IN_PROJECT=false\nENV POETRY_NO_INTERACTION=1\nRUN pip install poetry==1.6.1\nRUN sh -c apt update && apt-get install -y socat=1.7.4.4-2\nRUN sh -c apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1\nRUN mkdir /usr/share/nltk_data"
+  },
+  {
+    "version": "1.2.2-rc.1",
+    "changelog_entry": "Create an airbyte user and use it",
+    "dockerfile_example": "FROM docker.io/python:3.9.19-slim-bookworm@sha256:088d9217202188598aac37f8db0929345e124a82134ac66b8bb50ee9750b045b\nRUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime\nRUN sh -c apt update && apt-get install -y socat=1.7.4.4-2\nRUN adduser --uid 1000 --system --group --no-create-home airbyte\nRUN mkdir --mode 755 /custom_cache\nRUN mkdir --mode 755 /airbyte\nRUN chown airbyte:airbyte /airbyte\nENV PIP_CACHE_DIR=/custom_cache/pip\nRUN pip install --upgrade pip==24.0 setuptools==70.0.0\nENV POETRY_VIRTUALENVS_CREATE=false\nENV POETRY_VIRTUALENVS_IN_PROJECT=false\nENV POETRY_NO_INTERACTION=1\nRUN pip install poetry==1.6.1\nRUN sh -c apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1\nRUN mkdir -p 755 /usr/share/nltk_data"
   },
   {
     "version": "1.2.1",

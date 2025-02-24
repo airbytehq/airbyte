@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import _csv
 import re
 import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
@@ -9,20 +10,20 @@ from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 from urllib.parse import urlparse
 
-import _csv
 import pendulum
-from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_protocol.models import SyncMode
 from bingads import ServiceClient
 from bingads.v13.internal.reporting.row_report import _RowReport
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord
 from bingads.v13.reporting import ReportingDownloadParameters
 from cached_property import cached_property
+from suds import WebFault, sudsobject
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_bing_ads.base_streams import Accounts, BingAdsStream
 from source_bing_ads.utils import transform_date_format_to_rfc_3339, transform_report_hourly_datetime_format_to_rfc_3339
-from suds import WebFault, sudsobject
 
 
 class HourlyReportTransformerMixin:

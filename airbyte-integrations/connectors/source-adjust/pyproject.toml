@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.24"
+version = "0.1.33"
 name = "source-adjust"
 description = "Source implementation for Adjust."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -25,3 +25,11 @@ source-adjust = "source_adjust.run:run"
 requests-mock = "^1.9.3"
 pytest = "^6.1"
 pytest-mock = "^3.6.1"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

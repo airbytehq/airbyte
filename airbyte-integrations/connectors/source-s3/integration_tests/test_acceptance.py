@@ -19,6 +19,9 @@ from typing import TYPE_CHECKING, Literal
 import orjson
 import pytest
 import yaml
+from pydantic import BaseModel
+from source_s3.v4.source import SourceS3
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteStream,
@@ -29,8 +32,7 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.test import entrypoint_wrapper
-from pydantic import BaseModel
-from source_s3.v4.source import SourceS3
+
 
 if TYPE_CHECKING:
     from airbyte_cdk import Source
@@ -70,6 +72,7 @@ class AcceptanceTestInstance(BaseModel):
     def instance_name(self) -> str:
         return self.config_path.stem
 
+
 def get_acceptance_tests(category: str) -> list[AcceptanceTestInstance]:
     all_tests_config = yaml.safe_load(ACCEPTANCE_TEST_CONFIG_PATH.read_text())
     return [
@@ -77,6 +80,7 @@ def get_acceptance_tests(category: str) -> list[AcceptanceTestInstance]:
         for test in all_tests_config["acceptance_tests"][category]["tests"]
         if "iam_role" not in test["config_path"]
     ]
+
 
 # TODO: Convert to a CDK class for better reuse and portability.
 # class TestSourceAcceptanceTestSuiteBase:

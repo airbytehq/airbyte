@@ -18,14 +18,14 @@ interface JdbcPartitionFactory<
     /** The state shared by all partitions. Includes global resources. */
     val sharedState: A
 
-    /** Get or create the [JdbcStreamState] for a [stream]. */
-    fun streamState(stream: Stream): S
+    /** Get or create the [JdbcStreamState] for a [Stream]. */
+    fun streamState(streamFeedBootstrap: StreamFeedBootstrap): S
 
     /**
-     * Deserializes [opaqueStateValue] and creates a [JdbcPartition] instance corresponding to all
-     * remaining unread data in the [stream], if any; null otherwise.
+     * Deserializes the current [OpaqueStateValue] and creates a [JdbcPartition] instance
+     * corresponding to all remaining unread data in the [Stream], if any; null otherwise.
      */
-    fun create(stream: Stream, opaqueStateValue: OpaqueStateValue?): P?
+    fun create(streamFeedBootstrap: StreamFeedBootstrap): P?
 
     /** Subdivides the [unsplitPartition] by splitting at the [opaqueStateValues], if possible. */
     fun split(unsplitPartition: P, opaqueStateValues: List<OpaqueStateValue>): List<P>

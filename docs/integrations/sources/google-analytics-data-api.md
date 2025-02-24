@@ -272,6 +272,10 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 |:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
+| 2.6.2 | 2024-12-14 | [48649](https://github.com/airbytehq/airbyte/pull/48649) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 2.6.1 | 2024-10-29 | [47899](https://github.com/airbytehq/airbyte/pull/47899) | Update dependencies |
+| 2.6.0 | 2024-10-28 | [47013](https://github.com/airbytehq/airbyte/pull/47013) | Migrate to CDK v5 |
+| 2.5.13 | 2024-10-28 | [47061](https://github.com/airbytehq/airbyte/pull/47061) | Update dependencies |
 | 2.5.12 | 2024-10-12 | [46819](https://github.com/airbytehq/airbyte/pull/46819) | Update dependencies |
 | 2.5.11 | 2024-10-05 | [46475](https://github.com/airbytehq/airbyte/pull/46475) | Update dependencies |
 | 2.5.10 | 2024-09-28 | [46158](https://github.com/airbytehq/airbyte/pull/46158) | Update dependencies |

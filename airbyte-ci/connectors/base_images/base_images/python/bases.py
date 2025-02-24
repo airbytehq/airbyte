@@ -6,10 +6,11 @@ from __future__ import annotations
 from typing import Callable, Final
 
 import dagger
+
 from base_images import bases, published_image
 from base_images import sanity_checks as base_sanity_checks
 from base_images.python import sanity_checks as python_sanity_checks
-from base_images.root_images import PYTHON_3_10_14
+from base_images.root_images import PYTHON_3_11_11
 
 
 class AirbyteManifestOnlyConnectorBaseImage(bases.AirbyteConnectorBaseImage):
@@ -19,7 +20,7 @@ class AirbyteManifestOnlyConnectorBaseImage(bases.AirbyteConnectorBaseImage):
 
 
 class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
-    root_image: Final[published_image.PublishedImage] = PYTHON_3_10_14
+    root_image: Final[published_image.PublishedImage] = PYTHON_3_11_11
     repository: Final[str] = "airbyte/python-connector-base"
     pip_cache_name: Final[str] = "pip_cache"
     nltk_data_path: Final[str] = "/usr/share/nltk_data"
@@ -29,6 +30,10 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
             "https://github.com/nltk/nltk_data/raw/5db857e6f7df11eabb5e5665836db9ec8df07e28/packages/taggers/averaged_perceptron_tagger.zip"
         },
     }
+
+    @property
+    def pip_cache_path(self) -> str:
+        return f"{self.CACHE_DIR_PATH}/pip"
 
     def install_cdk_system_dependencies(self) -> Callable:
         def get_nltk_data_dir() -> dagger.Directory:
@@ -71,7 +76,9 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
             - nltk data
             """
             container = with_tesseract_and_poppler(container)
-            container = container.with_exec(["mkdir", self.nltk_data_path]).with_directory(self.nltk_data_path, get_nltk_data_dir())
+            container = container.with_exec(["mkdir", "-p", "755", self.nltk_data_path]).with_directory(
+                self.nltk_data_path, get_nltk_data_dir()
+            )
             return container
 
         return with_file_based_connector_dependencies
@@ -92,18 +99,17 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
 
         return (
             self.get_base_container(platform)
-            .with_mounted_cache("/root/.cache/pip", pip_cache_volume)
-            .with_exec(["ln", "-snf", "/usr/share/zoneinfo/Etc/UTC", "/etc/localtime"], use_entrypoint=True)
-            .with_exec(["pip", "install", "--upgrade", "pip==24.0", "setuptools==70.0.0"], use_entrypoint=True)
+            .with_mounted_cache(self.pip_cache_path, pip_cache_volume, owner=self.USER)
+            .with_env_variable("PIP_CACHE_DIR", self.pip_cache_path)
+            # Upgrade pip to the expected version
+            .with_exec(["pip", "install", "--upgrade", "pip==24.0", "setuptools==70.0.0"])
             # Declare poetry specific environment variables
             .with_env_variable("POETRY_VIRTUALENVS_CREATE", "false")
             .with_env_variable("POETRY_VIRTUALENVS_IN_PROJECT", "false")
             .with_env_variable("POETRY_NO_INTERACTION", "1")
-            .with_exec(["pip", "install", "poetry==1.6.1"])
-            .with_exec(
-                ["sh", "-c", "apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get clean"], use_entrypoint=True
-            )
-            .with_exec(["sh", "-c", "apt-get install -y socat=1.7.4.4-2"], use_entrypoint=True)
+            .with_exec(["pip", "install", "poetry==1.8.4"])
+            .with_exec(["sh", "-c", "apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get clean"])
+            .with_exec(["sh", "-c", "apt-get install -y socat=1.7.4.4-2"])
             # Install CDK system dependencies
             .with_(self.install_cdk_system_dependencies())
         )
@@ -119,9 +125,14 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
         container = self.get_container(platform)
         await base_sanity_checks.check_timezone_is_utc(container)
         await base_sanity_checks.check_a_command_is_available_using_version_option(container, "bash")
-        await python_sanity_checks.check_python_version(container, "3.10.14")
+        await python_sanity_checks.check_python_version(container, "3.11.11")
         await python_sanity_checks.check_pip_version(container, "24.0")
-        await python_sanity_checks.check_poetry_version(container, "1.6.1")
+        await base_sanity_checks.check_user_exists(container, self.USER, expected_uid=self.USER_ID, expected_gid=self.USER_ID)
+        await base_sanity_checks.check_user_can_read_dir(container, self.USER, self.AIRBYTE_DIR_PATH)
+        await base_sanity_checks.check_user_can_read_dir(container, self.USER, self.nltk_data_path)
+        await base_sanity_checks.check_user_can_read_dir(container, self.USER, self.CACHE_DIR_PATH)
+        await base_sanity_checks.check_user_can_write_dir(container, self.USER, self.AIRBYTE_DIR_PATH)
+        await python_sanity_checks.check_poetry_version(container, "1.8.4")
         await python_sanity_checks.check_python_image_has_expected_env_vars(container)
         await base_sanity_checks.check_a_command_is_available_using_version_option(container, "socat", "-V")
         await base_sanity_checks.check_socat_version(container, "1.7.4.4")

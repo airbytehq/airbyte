@@ -1,0 +1,9 @@
+dependencies {
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
+
+    implementation("org.tukaani:xz:1.9")
+    api("org.apache.avro:avro:1.11.0")
+
+    testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:core:bulk-cdk-core-load"))
+}
