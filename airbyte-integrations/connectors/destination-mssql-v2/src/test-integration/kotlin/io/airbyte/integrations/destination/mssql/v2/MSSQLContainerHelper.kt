@@ -11,6 +11,7 @@ import io.airbyte.integrations.destination.mssql.v2.MSSQLContainerHelper.getPort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.testcontainers.containers.MSSQLServerContainer
 import org.testcontainers.containers.MSSQLServerContainer.MS_SQL_SERVER_PORT
+import org.testcontainers.containers.Network
 
 val logger = KotlinLogging.logger {}
 
@@ -20,10 +21,13 @@ val logger = KotlinLogging.logger {}
  */
 object MSSQLContainerHelper {
 
+    private val network = Network.newNetwork()
+
     private val testContainer =
         MSSQLServerContainer("mcr.microsoft.com/mssql/server:2022-latest")
             .acceptLicense()
-            .withLogConsumer({ e -> logger.debug { e.utf8String } })
+            .withNetwork(network)
+            .withLogConsumer { e -> logger.debug { e.utf8String } }
 
     fun start() {
         synchronized(lock = testContainer) {
@@ -33,9 +37,9 @@ object MSSQLContainerHelper {
         }
     }
 
-    fun getConnectionUrl(): String = testContainer.getJdbcUrl()
-
     fun getHost(): String = testContainer.host
+
+    fun getNetwork(): Network = network
 
     fun getPassword(): String = testContainer.password
 

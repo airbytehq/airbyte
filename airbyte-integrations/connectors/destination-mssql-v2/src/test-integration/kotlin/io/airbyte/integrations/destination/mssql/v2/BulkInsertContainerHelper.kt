@@ -15,16 +15,19 @@ import io.airbyte.integrations.destination.mssql.v2.BulkInsertContainerHelper.ge
 import io.airbyte.integrations.destination.mssql.v2.BulkInsertContainerHelper.getAccountUrl
 import io.airbyte.integrations.destination.mssql.v2.BulkInsertContainerHelper.getBlobContainer
 import io.airbyte.integrations.destination.mssql.v2.BulkInsertContainerHelper.getSharedAccessSignature
+import io.airbyte.integrations.destination.mssql.v2.MSSQLContainerHelper.getNetwork
 import java.sql.DriverManager
 import java.time.OffsetDateTime
 import java.util.UUID
 import org.testcontainers.azure.AzuriteContainer
 import org.testcontainers.containers.MSSQLServerContainer.MS_SQL_SERVER_PORT
+import org.testcontainers.containers.Network
 
 private const val BLOB_STORAGE_CREDENTIAL = "MyAzureBlobStorageCredential"
 private const val DATA_SOURCE_NAME = "MyAzureBlobStorage"
 private const val DATABASE_NAME = "bulkinsert"
 private const val MASTER_ENCRYPTION_PASSWORD = "Ma\$TEr_PA55w0RD!"
+private const val NETWORK_ALIAS = "blob-storage"
 private const val WELL_KNOWN_ACCOUNT_NAME = "devstoreaccount1"
 private const val WELL_KNOWN_ACCOUNT_KEY =
     "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
@@ -51,7 +54,7 @@ object BulkInsertContainerHelper {
 
             // Start the Azure storage container if not already started
             if (!testContainer.isRunning()) {
-                testContainer.start()
+                testContainer.withNetwork(getNetwork()).withNetworkAliases(NETWORK_ALIAS).start()
 
                 val sharedKeyCredential =
                     StorageSharedKeyCredential(WELL_KNOWN_ACCOUNT_NAME, WELL_KNOWN_ACCOUNT_KEY)
@@ -103,6 +106,9 @@ object BulkInsertContainerHelper {
         val sasSignatureValues =
             BlobServiceSasSignatureValues(expiryTime, sasPermission)
                 .setStartTime(OffsetDateTime.now().minusMinutes(5))
+
+        // Add &comp=list&restype=container to treat the requested resource as a container, not a
+        // blob
         return "${blobContainerClient.generateSas(sasSignatureValues)}&comp=list&restype=container"
     }
 
@@ -119,7 +125,7 @@ object BulkInsertContainerHelper {
                     "CREATE DATABASE SCOPED CREDENTIAL $BLOB_STORAGE_CREDENTIAL WITH IDENTITY = 'SHARED ACCESS SIGNATURE', SECRET = '${getSharedAccessSignature()}'",
                 )
                 statement.execute(
-                    "CREATE EXTERNAL DATA SOURCE $DATA_SOURCE_NAME WITH ( TYPE = BLOB_STORAGE, LOCATION = '${getBlobContainerUrl()}', CREDENTIAL = $BLOB_STORAGE_CREDENTIAL)",
+                    "CREATE EXTERNAL DATA SOURCE $DATA_SOURCE_NAME WITH ( TYPE = BLOB_STORAGE, LOCATION = '${getBlobContainerUrl().replace("localhost", NETWORK_ALIAS)}', CREDENTIAL = $BLOB_STORAGE_CREDENTIAL)",
                 )
             }
         }
