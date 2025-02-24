@@ -25,6 +25,7 @@ Using this connector we can extract Historical Data , Splits and Dividends data 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.12 | 2025-02-22 | [54307](https://github.com/airbytehq/airbyte/pull/54307) | Update dependencies |
 | 0.0.11 | 2025-02-15 | [53842](https://github.com/airbytehq/airbyte/pull/53842) | Update dependencies |
 | 0.0.10 | 2025-02-08 | [53262](https://github.com/airbytehq/airbyte/pull/53262) | Update dependencies |
 | 0.0.9 | 2025-02-01 | [52761](https://github.com/airbytehq/airbyte/pull/52761) | Update dependencies |

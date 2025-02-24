@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4f2f093d-ce44-4121-8118-9d13b7bfccd0
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   dockerRepository: airbyte/source-netsuite
   documentationUrl: https://docs.airbyte.com/integrations/sources/netsuite
   githubIssueLabel: source-netsuite
