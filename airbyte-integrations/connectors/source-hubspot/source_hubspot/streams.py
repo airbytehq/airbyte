@@ -334,6 +334,7 @@ class Stream(HttpStream, ABC):
     """Base class for all streams. Responsible for data fetching and pagination"""
 
     entity: str = None
+    cast_fields: List = None
     updated_at_field: str = None
     created_at_field: str = None
 
@@ -699,10 +700,40 @@ class Stream(HttpStream, ABC):
 
         return record
 
+    def _cast_record_fields_with_schema_if_needed(self, record: Mapping, properties: Mapping[str, Any] = None) -> Mapping:
+        """
+        Cast specific record items from the response to the JSON Schema type
+        """
+        if not self.cast_fields:
+            return record
+
+        properties = self.get_json_schema().get("properties")
+
+        for field_name, field_value in record.items():
+            if field_name not in self.cast_fields:
+                continue
+            if field_name not in properties:
+                self.logger.info(
+                    "Property discarded: not maching with stream properties schema: record id:{}, property_value: {}".format(
+                        record.get("id"), field_name
+                    )
+                )
+                continue
+            declared_field_types = properties[field_name].get("type", [])
+            if not isinstance(declared_field_types, Iterable):
+                declared_field_types = [declared_field_types]
+            format = properties[field_name].get("format")
+            record[field_name] = self._cast_value(
+                declared_field_types=declared_field_types, field_name=field_name, field_value=field_value, declared_format=format
+            )
+
+        return record
+
     def _transform(self, records: Iterable) -> Iterable:
         """Preprocess record before emitting"""
         for record in records:
             record = self._cast_record_fields_if_needed(record)
+            record = self._cast_record_fields_with_schema_if_needed(record)
             if self.created_at_field and self.updated_at_field and record.get(self.updated_at_field) is None:
                 record[self.updated_at_field] = record[self.created_at_field]
             if self._transformations:
@@ -1893,32 +1924,6 @@ class MarketingEmails(Stream):
     primary_key = "id"
     scopes = {"content"}
     cast_fields = ["rootMicId"]
-
-    def _cast_record_fields_if_needed(self, record: Mapping, properties: Mapping[str, Any] = None) -> Mapping:
-        """
-        Cast specific record items from the response to the JSON Schema type
-        """
-        properties = self.get_json_schema()["properties"]
-
-        for field_name, field_value in record.items():
-            if field_name not in self.cast_fields:
-                continue
-            if field_name not in properties:
-                self.logger.info(
-                    "Property discarded: not maching with properties schema: record id:{}, property_value: {}".format(
-                        record.get("id"), field_name
-                    )
-                )
-                continue
-            declared_field_types = properties[field_name].get("type", [])
-            if not isinstance(declared_field_types, Iterable):
-                declared_field_types = [declared_field_types]
-            format = properties[field_name].get("format")
-            record[field_name] = self._cast_value(
-                declared_field_types=declared_field_types, field_name=field_name, field_value=field_value, declared_format=format
-            )
-
-        return record
 
 
 class Owners(ClientSideIncrementalStream):
