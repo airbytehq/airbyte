@@ -517,7 +517,7 @@
           "title": "Site URL",
           "description": "Url of SharePoint site to search for files. Leave empty to search in the main site.",
           "default": "",
-          "order": 4,
+          "order": 5,
           "type": "string"
         }
       },
