@@ -96,29 +96,28 @@ object BulkInsertContainerHelper {
 
     private fun generateAccountSas(blobServiceClient: BlobServiceClient): String {
         val expiryTime = OffsetDateTime.now().plusDays(5)
-        val accountSasPermission = AccountSasPermission()
-            .setAddPermission(true)
-            .setCreatePermission(true)
-            .setDeletePermission(true)
-            .setDeleteVersionPermission(true)
-            .setListPermission(true)
-            .setReadPermission(true)
-            .setWritePermission(true)
-        val accountSasService = AccountSasService()
-            .setBlobAccess(true)
-            .setFileAccess(true)
-            .setTableAccess(true)
-        val accountSasResourceType = AccountSasResourceType()
-            .setService(true)
-            .setContainer(true)
-            .setObject(true)
+        val accountSasPermission =
+            AccountSasPermission()
+                .setAddPermission(true)
+                .setCreatePermission(true)
+                .setDeletePermission(true)
+                .setDeleteVersionPermission(true)
+                .setListPermission(true)
+                .setReadPermission(true)
+                .setWritePermission(true)
+        val accountSasService =
+            AccountSasService().setBlobAccess(true).setFileAccess(true).setTableAccess(true)
+        val accountSasResourceType =
+            AccountSasResourceType().setService(true).setContainer(true).setObject(true)
 
-        val accountSasSignatureValues = AccountSasSignatureValues(
-            expiryTime,
-            accountSasPermission,
-            accountSasService,
-            accountSasResourceType,
-        ).setStartTime(OffsetDateTime.now().minusDays(5))
+        val accountSasSignatureValues =
+            AccountSasSignatureValues(
+                    expiryTime,
+                    accountSasPermission,
+                    accountSasService,
+                    accountSasResourceType,
+                )
+                .setStartTime(OffsetDateTime.now().minusDays(5))
 
         return blobServiceClient.generateAccountSas(accountSasSignatureValues)
     }
