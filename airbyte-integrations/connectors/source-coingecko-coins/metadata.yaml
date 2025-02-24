@@ -16,7 +16,7 @@ data:
       packageName: airbyte-source-coingecko-coins
   registryOverrides:
     cloud:
-      enabled: false # Did not pass acceptance tests
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
