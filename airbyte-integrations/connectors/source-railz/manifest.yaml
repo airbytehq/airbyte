@@ -1026,7 +1026,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
         record_filter:
-          condition: "{{ not stream_state.get(stream_slice.connection.businessName, {}).get(stream_slice.connection.serviceName) or record[parameters.cursor_field] >= stream_state[stream_slice.connection.businessName][stream_slice.connection.serviceName][parameters.cursor_field] }}"
+          condition: "{{ record[parameters.cursor_field] >= stream_interval['start_date'] }}"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -1034,7 +1034,7 @@ definitions:
             parent_key: /
             partition_field: connection
             stream:
-              $ref: "#/definitions/connections_slice_stream"     
+              $ref: "#/definitions/connections_slice_stream"
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
