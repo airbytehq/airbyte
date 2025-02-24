@@ -95,7 +95,7 @@ object BulkInsertContainerHelper {
     fun getSharedAccessSignature(): String = sharedAccessSignature
 
     private fun generateAccountSas(blobServiceClient: BlobServiceClient): String {
-        val expiryTime = OffsetDateTime.now().plusDays(2)
+        val expiryTime = OffsetDateTime.now().plusDays(5)
         val accountSasPermission = AccountSasPermission()
             .setAddPermission(true)
             .setCreatePermission(true)
@@ -118,7 +118,7 @@ object BulkInsertContainerHelper {
             accountSasPermission,
             accountSasService,
             accountSasResourceType,
-        ).setStartTime(OffsetDateTime.now().minusMinutes(5))
+        ).setStartTime(OffsetDateTime.now().minusDays(5))
 
         return blobServiceClient.generateAccountSas(accountSasSignatureValues)
     }
