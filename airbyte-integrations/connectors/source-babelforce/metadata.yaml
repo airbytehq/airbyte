@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-      - ${region}.babelforce.com
+      - "*.babelforce.com"
   remoteRegistries:
     pypi:
       enabled: false
@@ -10,7 +10,7 @@ data:
     oss:
       enabled: true
     cloud:
-      enabled: false
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 971c3e1e-78a5-411e-ad56-c4052b50876b
