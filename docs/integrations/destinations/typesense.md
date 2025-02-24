@@ -44,6 +44,7 @@ To connect a Typesense with HA, you can type multiple hosts on the host field us
 
 | Version | Date       | Pull Request                                             | Subject                                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------ |
+| 0.1.41 | 2025-02-22 | [53929](https://github.com/airbytehq/airbyte/pull/53929) | Update dependencies |
 | 0.1.40 | 2025-02-08 | [53387](https://github.com/airbytehq/airbyte/pull/53387) | Update dependencies |
 | 0.1.39 | 2025-02-04 | [49984](https://github.com/airbytehq/airbyte/pull/49984) | Typo default port |
 | 0.1.38 | 2025-02-04 | [53131](https://github.com/airbytehq/airbyte/pull/53131) | Document id is overwritten by writer |

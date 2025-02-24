@@ -32,6 +32,7 @@ Incremental sync in `scheduled_events` uses `start_time` as a cursor. This may l
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 | ------- | ---------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.2 | 2025-02-22 | [54274](https://github.com/airbytehq/airbyte/pull/54274) | Update dependencies |
 | 0.1.1 | 2025-02-15 | [51240](https://github.com/airbytehq/airbyte/pull/51240) | Update dependencies |
 | 0.1.0 | 2025-02-12 | [52566](https://github.com/airbytehq/airbyte/pull/52566) | Add stream organization members, groups, available event types, and scheduled events. |
 | 0.0.8 | 2024-12-28 | [50462](https://github.com/airbytehq/airbyte/pull/50462) | Update dependencies |

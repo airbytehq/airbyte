@@ -259,6 +259,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 0.2.34 | 2025-02-22 | [54358](https://github.com/airbytehq/airbyte/pull/54358) | Update dependencies |
 | 0.2.33 | 2025-02-15 | [53855](https://github.com/airbytehq/airbyte/pull/53855) | Update dependencies |
 | 0.2.32 | 2025-02-08 | [53283](https://github.com/airbytehq/airbyte/pull/53283) | Update dependencies |
 | 0.2.31 | 2025-02-01 | [52781](https://github.com/airbytehq/airbyte/pull/52781) | Update dependencies |
