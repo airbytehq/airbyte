@@ -109,13 +109,13 @@ private val logger = KotlinLogging.logger {}
  * Will drop+recreate the old_final_table_5mb / new_final_table_5mb tables as needed.
  */
 fun main() {
-    val size = "50gb"
-    val runOldRawTablesFast = false
-    val runOldRawTablesSlow = false
+    val size = "5mb"
+    val runOldRawTablesFast = true
+    val runOldRawTablesSlow = true
     val runNewTableNaive = false
     val runNewTableOptimized = false
 
-    val config = Jsons.deserialize(Files.readString(Path.of("/Users/edgao/Desktop/postgres_raw_tables_experimentation.json")))
+    val config = Jsons.deserialize(Files.readString(Path.of("/Users/edgao/Desktop/postgres_raw_tables_experiment.json")))
     val generator = PostgresSqlGenerator(PostgresSQLNameTransformer(), cascadeDrop = true)
     val destHandler = PostgresDestinationHandler(
         databaseName = "postgres",
@@ -128,13 +128,13 @@ fun main() {
         // reset the raw tables (i.e. unset loaded_at)
         destHandler.execute(Sql.separately(
             """
-                UPDATE `dataline-integration-testing`.`no_raw_tables_experiment`.`old_raw_table_${size}_part1`
-                SET `_airbyte_loaded_at` = NULL
+                UPDATE no_raw_tables_experiment.old_raw_table_${size}_part1
+                SET _airbyte_loaded_at = NULL
                 WHERE true
             """.trimIndent(),
             """
-                UPDATE `dataline-integration-testing`.`no_raw_tables_experiment`.`old_raw_table_${size}_part2`
-                SET `_airbyte_loaded_at` = NULL
+                UPDATE no_raw_tables_experiment.old_raw_table_${size}_part2
+                SET _airbyte_loaded_at = NULL
                 WHERE true
             """.trimIndent(),
         ))
