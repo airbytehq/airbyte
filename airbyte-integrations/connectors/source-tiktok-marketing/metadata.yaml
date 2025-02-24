@@ -22,12 +22,11 @@ data:
   registryOverrides:
     cloud:
       enabled: true
-      dockerImageTag: 4.3.7
     oss:
       enabled: true
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
     breakingChanges:
       4.0.0:
         message:
