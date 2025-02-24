@@ -13,6 +13,7 @@ This connector is in early access, and SHOULD NOT be used for production workloa
 
 | Version | Date       | Pull Request                                               | Subject                                              |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------|
+| 0.1.11  | 2025-02-21 | [54197](https://github.com/airbytehq/airbyte/pull/54197)   | RC9: Fix index column names with invalid characters. |
 | 0.1.10  | 2025-02-20 | [54186](https://github.com/airbytehq/airbyte/pull/54186)   | RC8: Fix String support.                             |
 | 0.1.9   | 2025-02-11 | [53364](https://github.com/airbytehq/airbyte/pull/53364)   | RC7: Revert deletion change.                         |
 | 0.1.8   | 2025-02-11 | [53364](https://github.com/airbytehq/airbyte/pull/53364)   | RC6: Break up deletes into loop to reduce locking.   |

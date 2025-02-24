@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 60a1efcc-c31c-4c63-b508-5b48b6a9f4a6
-  dockerImageTag: 0.2.29
+  dockerImageTag: 0.2.30
   maxSecondsBetweenMessages: 7200
   dockerRepository: airbyte/source-kyve
   githubIssueLabel: source-kyve
