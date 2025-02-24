@@ -23,6 +23,7 @@ application {
 }
 
 val junitVersion = "5.11.4"
+val testContainersVersion = "1.20.5"
 
 configurations.configureEach {
     // Exclude additional SLF4J providers from all classpaths
@@ -47,7 +48,10 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
-    integrationTestImplementation("org.testcontainers:mssqlserver:1.20.4")
+    integrationTestImplementation("org.testcontainers:azure:$testContainersVersion")
+    integrationTestImplementation("org.testcontainers:mssqlserver:$testContainersVersion")
+    integrationTestImplementation("com.azure:azure-identity:1.15.3")
+    integrationTestImplementation("com.azure:azure-storage-blob:12.29.0")
 }
 
 tasks.named<Test>("test") {

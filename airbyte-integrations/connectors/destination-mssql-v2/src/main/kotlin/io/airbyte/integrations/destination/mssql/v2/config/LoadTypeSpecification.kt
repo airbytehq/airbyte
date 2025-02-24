@@ -40,7 +40,8 @@ interface LoadTypeSpecification {
                         accountName = lt.azureBlobStorageAccountName,
                         containerName = lt.azureBlobStorageContainerName,
                         sharedAccessSignature = lt.azureBlobStorageSharedAccessSignature,
-                        bulkLoadDataSource = lt.bulkLoadDataSource
+                        bulkLoadDataSource = lt.bulkLoadDataSource,
+                        endpoint = lt.azureBlobStorageEndpoint,
                     )
                 }
                 is InsertLoadSpecification -> InsertLoadTypeConfiguration()
@@ -152,7 +153,19 @@ class BulkLoadSpecification(
             "always_show": true
         }"""
     )
-    val bulkLoadDataSource: String
+    val bulkLoadDataSource: String,
+    @get:JsonSchemaTitle("Endpoint")
+    @get:JsonPropertyDescription("The Azure Blob Service endpoint.")
+    @get:JsonProperty("azure_blob_storage_endpoint")
+    @JsonSchemaInject(
+        json =
+            """{
+            "examples": "https://myaccount.blob.core.windows.net",
+            "order": 5,
+            "always_show": true
+        }"""
+    )
+    override val azureBlobStorageEndpoint: String?
 ) : LoadType(loadType), AzureBlobStorageSpecification
 
 /**
@@ -185,7 +198,8 @@ data class BulkLoadConfiguration(
     val accountName: String,
     val containerName: String,
     val sharedAccessSignature: String,
-    val bulkLoadDataSource: String
+    val bulkLoadDataSource: String,
+    val endpoint: String?
 ) : LoadTypeConfiguration
 
 /**

@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
@@ -31,6 +32,7 @@ import org.junit.jupiter.api.BeforeAll
 
 abstract class MSSQLWriterTest(
     configPath: String,
+    configUpdater: ConfigurationUpdater,
     dataDumper: DestinationDataDumper,
     dataCleaner: DestinationCleaner,
 ) :
@@ -51,7 +53,7 @@ abstract class MSSQLWriterTest(
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullUnknownTypes = false,
         nullEqualsUnset = true,
-        configUpdater = MSSQLConfigUpdater(),
+        configUpdater = configUpdater,
     )
 
 class MSSQLDataDumper : DestinationDataDumper {
@@ -140,9 +142,10 @@ class MSSQLDataCleaner : DestinationCleaner {
 
 internal class StandardInsert :
     MSSQLWriterTest(
-        "check/valid.json",
-        MSSQLDataDumper(),
-        MSSQLDataCleaner(),
+        configPath = "check/valid.json",
+        configUpdater = MSSQLConfigUpdater(),
+        dataDumper = MSSQLDataDumper(),
+        dataCleaner = MSSQLDataCleaner(),
     ) {
 
     companion object {
@@ -150,6 +153,23 @@ internal class StandardInsert :
         @BeforeAll
         fun beforeAll() {
             MSSQLContainerHelper.start()
+        }
+    }
+}
+
+internal class BulkInsert :
+    MSSQLWriterTest(
+        configPath = "check/valid-bulk.json",
+        configUpdater = BulkInsertConfigUpdater(),
+        dataDumper = MSSQLDataDumper(),
+        dataCleaner = MSSQLDataCleaner(),
+    ) {
+
+    companion object {
+        @JvmStatic
+        @BeforeAll
+        fun beforeAll() {
+            BulkInsertContainerHelper.start()
         }
     }
 }

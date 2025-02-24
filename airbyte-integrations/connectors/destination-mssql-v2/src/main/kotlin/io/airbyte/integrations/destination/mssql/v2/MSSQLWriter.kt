@@ -85,7 +85,8 @@ class MSSQLWriter(
                     AzureBlobStorageConfiguration(
                         accountName = bulkLoadConfiguration.accountName,
                         containerName = bulkLoadConfiguration.containerName,
-                        sharedAccessSignature = bulkLoadConfiguration.sharedAccessSignature
+                        sharedAccessSignature = bulkLoadConfiguration.sharedAccessSignature,
+                        endpoint = bulkLoadConfiguration.endpoint,
                     )
             }
         return AzureBlobStorageClientFactory(configProvider).make()

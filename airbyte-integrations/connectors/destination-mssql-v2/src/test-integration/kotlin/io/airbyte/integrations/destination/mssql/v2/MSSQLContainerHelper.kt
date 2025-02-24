@@ -33,11 +33,15 @@ object MSSQLContainerHelper {
         }
     }
 
+    fun getConnectionUrl(): String = testContainer.getJdbcUrl()
+
     fun getHost(): String = testContainer.host
 
     fun getPassword(): String = testContainer.password
 
     fun getPort(): Int? = testContainer.getMappedPort(MS_SQL_SERVER_PORT)
+
+    fun getUsername(): String = testContainer.username
 
     fun getIpAddress(): String? {
         // Ensure that the container is started first
@@ -60,7 +64,10 @@ class MSSQLConfigUpdater : ConfigurationUpdater {
                 getIpAddress()?.let { config.replace("localhost", it) } ?: updatedConfig
             }
 
-        updatedConfig = updatedConfig.replace("replace_me", MSSQLContainerHelper.getPassword())
+        updatedConfig =
+            updatedConfig.replace("replace_me_username", MSSQLContainerHelper.getUsername())
+        updatedConfig =
+            updatedConfig.replace("replace_me_password", MSSQLContainerHelper.getPassword())
         logger.debug { "Using updated MSSQL configuration: $updatedConfig" }
         return updatedConfig
     }
