@@ -110,9 +110,9 @@ private val logger = KotlinLogging.logger {}
  */
 fun main() {
     val size = "5mb"
-    val runOldRawTablesFast = true
-    val runOldRawTablesSlow = true
-    val runNewTableNaive = false
+    val runOldRawTablesFast = false
+    val runOldRawTablesSlow = false
+    val runNewTableNaive = true
     val runNewTableOptimized = false
 
     val config = Jsons.deserialize(Files.readString(Path.of("/Users/edgao/Desktop/postgres_raw_tables_experiment.json")))
@@ -187,14 +187,14 @@ fun main() {
         )
     }
 
-//    PrintWriter(FileOutputStream("/Users/edgao/code/airbyte/raw_table_experiments/generated_files/postgres_newstyle.sql")).use { out ->
-//        out.println("-- naive create table --------------------------------")
-//        out.printSql(getNewStyleCreateFinalTableQuery(size, optimized = false))
-//
-//        repeat(10) { out.println() }
-//        out.println("""-- "naive" dedup query -------------------------------""")
-//        out.println(getNewStyleDedupingQuery(size, 1, optimized = false))
-//
+    PrintWriter(FileOutputStream("/Users/edgao/code/airbyte/raw_table_experiments/generated_files/postgres_newstyle.sql")).use { out ->
+        out.println("-- naive create table --------------------------------")
+        out.printSql(getNewStyleCreateFinalTableQuery(size, optimized = false))
+
+        repeat(10) { out.println() }
+        out.println("""-- "naive" dedup query -------------------------------""")
+        out.printSql(getNewStyleDedupingQuery(size, 1, optimized = false))
+
 //        repeat(10) { out.println() }
 //        out.println("-- optimized create table --------------------------------")
 //        out.printSql(getNewStyleCreateFinalTableQuery(size, optimized = true))
@@ -202,21 +202,130 @@ fun main() {
 //        repeat(10) { out.println() }
 //        out.println("""-- "optimized" dedup query -------------------------------""")
 //        out.println(getNewStyleDedupingQuery(size, 1, optimized = true))
-//    }
-//
-//    if (runNewTableNaive) {
-//        destHandler.execute(getNewStyleCreateFinalTableQuery(size, optimized = false))
-//        logger.info { "Executing new-style naive deduping for $size dataset, part 1 (upsert to empty table)" }
-//        destHandler.execute(Sql.of(getNewStyleDedupingQuery(size, 1, optimized = false)))
-//        logger.info { "Executing new-style naive deduping for $size dataset, part 2 (upsert to populated table)" }
-//        destHandler.execute(Sql.of(getNewStyleDedupingQuery(size, 2, optimized = false)))
-//    }
-//
-//    if (runNewTableOptimized) {
-//        destHandler.execute(getNewStyleCreateFinalTableQuery(size, optimized = true))
-//        logger.info { "Executing new-style optimized deduping for $size dataset, part 1 (upsert to empty table)" }
-//        destHandler.execute(Sql.of(getNewStyleDedupingQuery(size, 1, optimized = true)))
-//        logger.info { "Executing new-style optimized deduping for $size dataset, part 2 (upsert to populated table)" }
-//        destHandler.execute(Sql.of(getNewStyleDedupingQuery(size, 2, optimized = true)))
-//    }
+    }
+
+    if (runNewTableNaive) {
+        destHandler.execute(getNewStyleCreateFinalTableQuery(size, optimized = false))
+        logger.info { "Executing new-style naive deduping for $size dataset, part 1 (upsert to empty table)" }
+        destHandler.execute(getNewStyleDedupingQuery(size, 1, optimized = false))
+        logger.info { "Executing new-style naive deduping for $size dataset, part 2 (upsert to populated table)" }
+        destHandler.execute(getNewStyleDedupingQuery(size, 2, optimized = false))
+    }
+
+    if (runNewTableOptimized) {
+        destHandler.execute(getNewStyleCreateFinalTableQuery(size, optimized = true))
+        logger.info { "Executing new-style optimized deduping for $size dataset, part 1 (upsert to empty table)" }
+        destHandler.execute(getNewStyleDedupingQuery(size, 1, optimized = true))
+        logger.info { "Executing new-style optimized deduping for $size dataset, part 2 (upsert to populated table)" }
+        destHandler.execute(getNewStyleDedupingQuery(size, 2, optimized = true))
+    }
+}
+
+fun getNewStyleCreateFinalTableQuery(size: String, optimized: Boolean): Sql {
+    if (optimized) {
+        throw NotImplementedError("TODO do something")
+    }
+    return Sql.separately(
+        "DROP TABLE IF EXISTS no_raw_tables_experiment.new_final_table_${size}",
+        """
+            create table "no_raw_tables_experiment"."new_final_table_${size}" (
+              "_airbyte_raw_id" varchar(36) not null,
+              "_airbyte_extracted_at" timestamp with time zone not null,
+              "_airbyte_generation_id" bigint,
+              "_airbyte_meta" jsonb not null,
+              "primary_key" bigint,
+              "cursor" timestamp,
+              "string" varchar,
+              "bool" boolean,
+              "integer" bigint,
+              "float" decimal(38, 9),
+              "date" date,
+              "ts_with_tz" timestamp with time zone,
+              "ts_without_tz" timestamp,
+              "time_with_tz" time with time zone,
+              "time_no_tz" time,
+              "array" jsonb,
+              "json_object" jsonb
+            );
+        """.trimIndent()
+    )
+}
+
+fun getNewStyleDedupingQuery(size: String, part: Int, optimized: Boolean): Sql {
+    if (optimized) {
+        throw NotImplementedError("TODO do something")
+    }
+    return Sql.transactionally(
+        """
+            insert into
+              "no_raw_tables_experiment"."new_final_table_${size}" (
+                "primary_key",
+                "cursor",
+                "string",
+                "bool",
+                "integer",
+                "float",
+                "date",
+                "ts_with_tz",
+                "ts_without_tz",
+                "time_with_tz",
+                "time_no_tz",
+                "array",
+                "json_object",
+                "_airbyte_raw_id",
+                "_airbyte_extracted_at",
+                "_airbyte_generation_id",
+                "_airbyte_meta"
+              )
+            with "numbered_rows" as (
+              select
+                *,
+                row_number() over (partition by "primary_key" order by "cursor" desc NULLS LAST, "_airbyte_extracted_at" desc) as "row_number"
+              from "no_raw_tables_experiment"."new_input_table_${size}_part${part}"
+            )
+            select
+              "primary_key",
+              "cursor",
+              "string",
+              "bool",
+              "integer",
+              "float",
+              "date",
+              "ts_with_tz",
+              "ts_without_tz",
+              "time_with_tz",
+              "time_no_tz",
+              "array",
+              "json_object",
+              "_airbyte_raw_id",
+              "_airbyte_extracted_at",
+              "_airbyte_generation_id",
+              "_airbyte_meta"
+            from "numbered_rows"
+            where "row_number" = 1;
+        """.trimIndent(),
+        """
+            delete from "no_raw_tables_experiment"."new_final_table_${size}"
+            where
+              "_airbyte_raw_id" in (
+                select
+                  "_airbyte_raw_id"
+                from
+                  (
+                    select
+                      "_airbyte_raw_id",
+                      row_number() over (
+                        partition by "primary_key"
+                        order by
+                          "cursor" desc NULLS LAST,
+                          "_airbyte_extracted_at" desc
+                      ) as "row_number"
+                    from
+                      "no_raw_tables_experiment"."new_final_table_${size}"
+                  ) as "airbyte_ids"
+                where
+                  "row_number" <> 1
+              );
+        """.trimIndent(),
+    )
 }

@@ -154,5 +154,5 @@ SELECT
   '{"changes":[],"sync_id":42}' :: jsonb,
   42,
   *
-FROM no_raw_tables_experiment.input_typed_data_part1 AS t;
+FROM no_raw_tables_experiment.input_typed_data_part2 AS t;
 ```
