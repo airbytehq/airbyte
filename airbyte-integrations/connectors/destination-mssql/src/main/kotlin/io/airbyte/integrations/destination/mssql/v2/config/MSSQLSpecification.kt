@@ -47,16 +47,22 @@ class MSSQLSpecification : ConfigurationSpecification(), LoadTypeSpecification {
     @get:JsonSchemaInject(json = """{"examples":["public"],"default":"public","order":3}""")
     val schema: String = "public"
 
+    @get:JsonSchemaTitle("Authentication Method")
+    @get:JsonPropertyDescription("The authentication method which is used to access the database.")
+    @get:JsonProperty("authentication_method")
+    @get:JsonSchemaInject(json = """{"order":4}""")
+    val authenticationMethod: AuthenticationMethod = SqlPassword()
+
     @get:JsonSchemaTitle("User")
     @get:JsonPropertyDescription("The username which is used to access the database.")
     @get:JsonProperty("user")
-    @get:JsonSchemaInject(json = """{"order":4}""")
+    @get:JsonSchemaInject(json = """{"order":5}""")
     val user: String = "user"
 
     @get:JsonSchemaTitle("Password")
     @get:JsonPropertyDescription("The password associated with this username.")
     @get:JsonProperty("password")
-    @get:JsonSchemaInject(json = """{"airbyte_secret":true,"order":5}""")
+    @get:JsonSchemaInject(json = """{"airbyte_secret":true,"order":6}""")
     val password: String? = null
 
     @get:JsonSchemaTitle("JDBC URL Params")
@@ -64,7 +70,7 @@ class MSSQLSpecification : ConfigurationSpecification(), LoadTypeSpecification {
         "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
     )
     @get:JsonProperty("jdbc_url_params")
-    @get:JsonSchemaInject(json = """{"order":6}""")
+    @get:JsonSchemaInject(json = """{"order":7}""")
     val jdbcUrlParams: String? = null
 
     @get:JsonSchemaTitle("SSL Method")
@@ -72,12 +78,39 @@ class MSSQLSpecification : ConfigurationSpecification(), LoadTypeSpecification {
         "The encryption method which is used to communicate with the database."
     )
     @get:JsonProperty("ssl_method")
-    @get:JsonSchemaInject(json = """{"order":7}""")
+    @get:JsonSchemaInject(json = """{"order":8}""")
     lateinit var sslMethod: EncryptionMethod
 
     @get:JsonProperty("load_type")
     @get:JsonSchemaInject(json = """{"always_show": true,"order":8}""")
     override val loadType: LoadType = InsertLoadSpecification()
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "name")
+@JsonSubTypes(
+    JsonSubTypes.Type(value = ActiveDirectoryPassword::class, name = ActiveDirectoryPassword.NAME),
+    JsonSubTypes.Type(value = SqlPassword::class, name = SqlPassword.NAME),
+)
+sealed interface AuthenticationMethod {
+    @get:JsonProperty("name") val name: String
+}
+
+@JsonSchemaTitle("ActiveDirectory Password")
+@JsonSchemaDescription("Connect to SQL Server using ActiveDirectory username and password.")
+class ActiveDirectoryPassword: AuthenticationMethod {
+    companion object {
+        const val NAME = "ActiveDirectoryPassword"
+    }
+    override val name: String = NAME
+}
+
+@JsonSchemaTitle("Sql Password")
+@JsonSchemaDescription("Connect to SQL Server using database username and password.")
+class SqlPassword: AuthenticationMethod {
+    companion object {
+        const val NAME = "SqlPassword"
+    }
+    override val name: String = NAME
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "name")

@@ -35,24 +35,57 @@
         "default" : "public",
         "order" : 3
       },
+      "authentication_method" : {
+        "oneOf" : [ {
+          "title" : "ActiveDirectory Password",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Connect to SQL Server using ActiveDirectory username and password.",
+          "properties" : {
+            "name" : {
+              "type" : "string",
+              "enum" : [ "ActiveDirectoryPassword" ],
+              "default" : "ActiveDirectoryPassword"
+            }
+          },
+          "required" : [ "name" ]
+        }, {
+          "title" : "Sql Password",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Connect to SQL Server using database username and password.",
+          "properties" : {
+            "name" : {
+              "type" : "string",
+              "enum" : [ "SqlPassword" ],
+              "default" : "SqlPassword"
+            }
+          },
+          "required" : [ "name" ]
+        } ],
+        "description" : "The authentication method which is used to access the database.",
+        "title" : "Authentication Method",
+        "order" : 4,
+        "type" : "object"
+      },
       "user" : {
         "type" : "string",
         "description" : "The username which is used to access the database.",
         "title" : "User",
-        "order" : 4
+        "order" : 5
       },
       "password" : {
         "type" : "string",
         "description" : "The password associated with this username.",
         "title" : "Password",
         "airbyte_secret" : true,
-        "order" : 5
+        "order" : 6
       },
       "jdbc_url_params" : {
         "type" : "string",
         "description" : "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
         "title" : "JDBC URL Params",
-        "order" : 6
+        "order" : 7
       },
       "ssl_method" : {
         "oneOf" : [ {
@@ -116,7 +149,7 @@
         } ],
         "description" : "The encryption method which is used to communicate with the database.",
         "title" : "SSL Method",
-        "order" : 7,
+        "order" : 8,
         "type" : "object"
       },
       "load_type" : {
@@ -187,11 +220,11 @@
         "description" : "Specifies the type of load mechanism (e.g., BULK, INSERT) and its associated configuration.",
         "title" : "Load Type",
         "always_show" : true,
-        "order" : 8,
+        "order" : 9,
         "type" : "object"
       }
     },
-    "required" : [ "host", "port", "database", "schema", "user", "ssl_method", "load_type" ]
+    "required" : [ "host", "port", "database", "schema", "authentication_method", "user", "ssl_method", "load_type" ]
   },
   "supportsIncremental" : true,
   "supportsNormalization" : false,

@@ -21,6 +21,22 @@ internal class DataSourceFactoryTest {
             )
         val dataSource = config.toSQLServerDataSource()
         assertTrue { dataSource.url.startsWith("jdbc:sqlserver://myhost:1234;databaseName=db;") }
+        assertTrue { dataSource.url.contains("authentication=SqlPassword".toRegex())}
+    }
+
+    @Test
+    fun `test data source base url conversion with authentication method`() {
+        val authenticationMethod = ActiveDirectoryPassword()
+        val config =
+            Fixtures.defaultConfig.copy(
+                host = "myhost",
+                port = 1234,
+                database = "db",
+                authenticationMethod = authenticationMethod,
+            )
+        val dataSource = config.toSQLServerDataSource()
+        assertTrue { dataSource.url.startsWith("jdbc:sqlserver://myhost:1234;databaseName=db;") }
+        assertTrue { dataSource.url.contains("authentication=${authenticationMethod.name}".toRegex())}
     }
 
     @Test
@@ -86,6 +102,7 @@ internal class DataSourceFactoryTest {
                 port = 1433,
                 database = "master",
                 schema = "dbo",
+                authenticationMethod = SqlPassword(),
                 user = "airbyte",
                 password = "super secure o//",
                 jdbcUrlParams = null,
