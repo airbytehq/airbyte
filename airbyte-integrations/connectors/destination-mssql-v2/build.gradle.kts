@@ -42,6 +42,7 @@ dependencies {
     implementation("com.github.spotbugs:spotbugs-annotations:4.9.0")
     implementation("io.micronaut:micronaut-inject:4.7.12")
     implementation("com.zaxxer:HikariCP:6.2.1")
+    implementation("org.apache.commons:commons-lang3:3.17.0")
 
     testImplementation("io.mockk:mockk:1.13.16")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")

@@ -109,7 +109,8 @@ object BulkInsertContainerHelper {
 
         // Add &comp=list&restype=container to treat the requested resource as a container, not a
         // blob
-        return "${blobContainerClient.generateSas(sasSignatureValues)}&comp=list&restype=container"
+//        return "${blobContainerClient.generateSas(sasSignatureValues)}&comp=list&restype=container"
+        return blobContainerClient.generateSas(sasSignatureValues)
     }
 
     private fun prepareDatabaseForBulkInsert() {

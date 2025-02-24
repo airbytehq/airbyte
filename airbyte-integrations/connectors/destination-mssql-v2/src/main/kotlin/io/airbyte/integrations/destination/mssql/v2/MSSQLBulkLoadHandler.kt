@@ -10,6 +10,7 @@ import java.sql.SQLException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
+import org.apache.commons.lang3.SystemUtils
 
 private val logger = KotlinLogging.logger {}
 
@@ -151,20 +152,23 @@ class MSSQLBulkLoadHandler(
         // The ROWS_PER_BATCH hint can help optimize the bulk load.
         // If not provided, it won't be included in the statement.
         val rowBatchClause = rowsPerBatch?.let { "ROWS_PER_BATCH = $it," } ?: ""
-        return """
-            BULK INSERT $fullyQualifiedTableName
-            FROM '$dataFilePath'
-            WITH (
-                CODEPAGE = '$CODE_PAGE',
-                DATA_SOURCE = '$bulkUploadDataSource',
-                FORMATFILE_DATA_SOURCE = '$bulkUploadDataSource',
-                FIRSTROW = 2,
-                FORMAT = '$FILE_FORMAT',
-                FORMATFILE = '$formatFilePath',
-                $rowBatchClause
-                KEEPNULLS
-            )
-        """.trimIndent()
+        return StringBuilder().apply {
+            append("BULK INSERT $fullyQualifiedTableName")
+            append("FROM '$dataFilePath'")
+            append("WITH (")
+            if (SystemUtils.IS_OS_WINDOWS) {
+                // Only supported in Windows installations
+                append("\tCODEPAGE = '$CODE_PAGE',")
+            }
+            append("\tDATA_SOURCE = '$bulkUploadDataSource',")
+            append("\tFORMATFILE_DATA_SOURCE = '$bulkUploadDataSource',")
+            append("\tFIRSTROW = 2,")
+            append("\tFORMAT = '$FILE_FORMAT',")
+            append("\tFORMATFILE = '$formatFilePath',")
+            append("\t$rowBatchClause")
+            append("\t$rowBatchClause")
+            append(")")
+        }.toString().trimIndent()
     }
 
     /** Creates a Global temp table by cloning the column structure from the main table. */
