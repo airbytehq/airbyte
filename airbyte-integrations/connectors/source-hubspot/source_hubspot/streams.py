@@ -1892,6 +1892,33 @@ class MarketingEmails(Stream):
     created_at_field = "created"
     primary_key = "id"
     scopes = {"content"}
+    cast_fields = ["rootMicId"]
+
+    def _cast_record_fields_if_needed(self, record: Mapping, properties: Mapping[str, Any] = None) -> Mapping:
+        """
+        Cast specific record items from the response to the JSON Schema type
+        """
+        properties = self.get_json_schema()["properties"]
+
+        for field_name, field_value in record.items():
+            if field_name not in self.cast_fields:
+                continue
+            if field_name not in properties:
+                self.logger.info(
+                    "Property discarded: not maching with properties schema: record id:{}, property_value: {}".format(
+                        record.get("id"), field_name
+                    )
+                )
+                continue
+            declared_field_types = properties[field_name].get("type", [])
+            if not isinstance(declared_field_types, Iterable):
+                declared_field_types = [declared_field_types]
+            format = properties[field_name].get("format")
+            record[field_name] = self._cast_value(
+                declared_field_types=declared_field_types, field_name=field_name, field_value=field_value, declared_format=format
+            )
+
+        return record
 
 
 class Owners(ClientSideIncrementalStream):
