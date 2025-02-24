@@ -99,4 +99,60 @@ SELECT
   '{"changes":[],"sync_id":42}' :: jsonb,
   42
 FROM no_raw_tables_experiment.input_typed_data_part2 t;
+
+CREATE TABLE no_raw_tables_experiment.new_input_table_5mb_part1 (
+  _airbyte_raw_id varchar,
+  _airbyte_extracted_at timestamp with time zone,
+  _airbyte_meta jsonb,
+  _airbyte_generation_id bigint,
+  "primary_key" bigint,
+  "cursor" timestamp,
+  "string" varchar,
+  "bool" boolean,
+  "integer" bigint,
+  "float" decimal(38, 9),
+  "date" date,
+  "ts_with_tz" timestamp with time zone,
+  "ts_without_tz" timestamp,
+  "time_with_tz" time with time zone,
+  "time_no_tz" time,
+  "array" jsonb,
+  "json_object" jsonb
+);
+INSERT INTO no_raw_tables_experiment.new_input_table_5mb_part1
+SELECT
+  gen_random_uuid(),
+  ts_with_tz,
+  '{"changes":[],"sync_id":42}' :: jsonb,
+  42,
+  *
+FROM no_raw_tables_experiment.input_typed_data_part1 AS t;
+
+CREATE TABLE no_raw_tables_experiment.new_input_table_5mb_part2 (
+  _airbyte_raw_id varchar,
+  _airbyte_extracted_at timestamp with time zone,
+  _airbyte_meta jsonb,
+  _airbyte_generation_id bigint,
+  "primary_key" bigint,
+  "cursor" timestamp,
+  "string" varchar,
+  "bool" boolean,
+  "integer" bigint,
+  "float" decimal(38, 9),
+  "date" date,
+  "ts_with_tz" timestamp with time zone,
+  "ts_without_tz" timestamp,
+  "time_with_tz" time with time zone,
+  "time_no_tz" time,
+  "array" jsonb,
+  "json_object" jsonb
+);
+INSERT INTO no_raw_tables_experiment.new_input_table_5mb_part2
+SELECT
+  gen_random_uuid(),
+  ts_with_tz,
+  '{"changes":[],"sync_id":42}' :: jsonb,
+  42,
+  *
+FROM no_raw_tables_experiment.input_typed_data_part1 AS t;
 ```
