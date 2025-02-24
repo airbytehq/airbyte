@@ -1,5 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import logging
 from dataclasses import dataclass
 from typing import Optional, Union
 
@@ -9,9 +10,9 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     WaitTimeFromHeaderBackoffStrategy,
 )
 
-import logging
 
 logger = logging.getLogger("airbyte")
+
 
 @dataclass
 class AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy(WaitTimeFromHeaderBackoffStrategy):
@@ -34,7 +35,7 @@ class AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy(WaitTimeFromHeaderBac
                 f"Backoff time: {time_from_header}, attempt #{attempt_count}, "
                 f"response_headers: {response_or_exception.headers}, "
                 f"status_code: {response_or_exception.status_code}, "
-                )
+            )
         if time_from_header:
             return 1 / float(time_from_header)
         else:
