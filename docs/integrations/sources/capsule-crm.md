@@ -36,6 +36,7 @@ Capsule CRM connector  enables seamless data syncing from Capsule CRM to various
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.13 | 2025-02-22 | [54262](https://github.com/airbytehq/airbyte/pull/54262) | Update dependencies |
 | 0.0.12 | 2025-02-15 | [53923](https://github.com/airbytehq/airbyte/pull/53923) | Update dependencies |
 | 0.0.11 | 2025-02-08 | [53384](https://github.com/airbytehq/airbyte/pull/53384) | Update dependencies |
 | 0.0.10 | 2025-02-01 | [52934](https://github.com/airbytehq/airbyte/pull/52934) | Update dependencies |

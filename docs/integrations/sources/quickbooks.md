@@ -108,6 +108,7 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 
 | Version     | Date       | Pull Request                                             | Subject                                                            |
 |:------------|:-----------|:---------------------------------------------------------| :----------------------------------------------------------------- |
+| 4.0.2 | 2025-02-23 | [54573](https://github.com/airbytehq/airbyte/pull/54573) | Update dependencies |
 | 4.0.1 | 2025-02-15 | [46789](https://github.com/airbytehq/airbyte/pull/46789) | Update dependencies |
 | 4.0.0 | 2025-01-18 | [51615](https://github.com/airbytehq/airbyte/pull/51615) | Remove nested credentials object from config to enable overwriting of new refresh token in config |
 | 3.0.26 | 2024-11-01 | [48089](https://github.com/airbytehq/airbyte/pull/48089) | Promoting release candidate 3.0.26-rc.1 to a main version. |

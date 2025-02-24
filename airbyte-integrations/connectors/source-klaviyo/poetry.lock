@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.33.7"
+version = "6.36.1"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 files = [
-    {file = "airbyte_cdk-6.33.7-py3-none-any.whl", hash = "sha256:28ff2cd13c37c56ae62308a86d915570514e01528170cabfd32c7a66ac76002a"},
-    {file = "airbyte_cdk-6.33.7.tar.gz", hash = "sha256:e38d721ebff63f6817dcb98799104ae3b22b0f72148de49401429679cdd70ac6"},
+    {file = "airbyte_cdk-6.36.1-py3-none-any.whl", hash = "sha256:b5a3ad83a551087b2c5a75607c07455615e330d12eebd7bad75e0e31fda7016d"},
+    {file = "airbyte_cdk-6.36.1.tar.gz", hash = "sha256:d1d58ae82494bdc066d452645241c8b76e0b2525bdd0ff86a95b3292885c9cab"},
 ]
 
 [package.dependencies]
@@ -158,13 +158,13 @@ files = [
 
 [[package]]
 name = "cachetools"
-version = "5.5.1"
+version = "5.5.2"
 description = "Extensible memoizing collections and decorators"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "cachetools-5.5.1-py3-none-any.whl", hash = "sha256:b76651fdc3b24ead3c648bbdeeb940c1b04d365b38b4af66788f9ec4a81d42bb"},
-    {file = "cachetools-5.5.1.tar.gz", hash = "sha256:70f238fbba50383ef62e55c6aff6d9673175fe59f7c6782c7a0b9e38f4a9df95"},
+    {file = "cachetools-5.5.2-py3-none-any.whl", hash = "sha256:d26a22bcc62eb95c3beabd9f1ee5e820d3d2704fe2967cbe350e20c8ffcd3f0a"},
+    {file = "cachetools-5.5.2.tar.gz", hash = "sha256:1a661caa9175d26759571b2e19580f9d6393969e5dfca11fdb1f947a23e640d4"},
 ]
 
 [[package]]

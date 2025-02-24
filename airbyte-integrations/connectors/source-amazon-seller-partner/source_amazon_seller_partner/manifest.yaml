@@ -65,6 +65,11 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 403
                 backoff_strategies:
                   - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
@@ -131,6 +136,11 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 403
                 backoff_strategies:
                   - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
@@ -210,6 +220,11 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 403
                 backoff_strategies:
                   - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
@@ -279,6 +294,11 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 403
                 backoff_strategies:
                   - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
@@ -340,6 +360,11 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 403
                 backoff_strategies:
                   - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                     type: CustomBackoffStrategy
@@ -2058,6 +2083,26 @@ definitions:
         fields:
           - path: ["dataEndTime"]
             value: "{{ format_datetime(stream_slice['end_time'], '%Y-%m-%d') }}"
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1 # burst: 0.0167 calls per second
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "orders/v0/orders(\\?.*)?$" # matches '/orders' (exact or with trailing slash/extra)
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1 # burst: 0.5 call per second
+          interval: PT2S
+      matchers:
+        - method: GET
+          url_path_pattern: "orders/v0/orders/[^/]+/orderItems(\\?.*)?$" # matches /orderItems
+  # Other API budget settings:
+  status_codes_for_ratelimit_hit: [429]
 
 streams:
   # REST Streams
