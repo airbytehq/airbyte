@@ -4,9 +4,9 @@
 
 package io.airbyte.cdk.load.data
 
-sealed interface AirbyteType
+import com.fasterxml.jackson.databind.JsonNode
 
-data object NullType : AirbyteType
+sealed interface AirbyteType
 
 data object StringType : AirbyteType
 
@@ -18,9 +18,13 @@ data object NumberType : AirbyteType
 
 data object DateType : AirbyteType
 
-data class TimestampType(val hasTimezone: Boolean) : AirbyteType
+data object TimestampTypeWithTimezone : AirbyteType
 
-data class TimeType(val hasTimezone: Boolean) : AirbyteType
+data object TimestampTypeWithoutTimezone : AirbyteType
+
+data object TimeTypeWithTimezone : AirbyteType
+
+data object TimeTypeWithoutTimezone : AirbyteType
 
 data class ArrayType(val items: FieldType) : AirbyteType
 
@@ -32,8 +36,21 @@ data object ObjectTypeWithEmptySchema : AirbyteType
 
 data object ObjectTypeWithoutSchema : AirbyteType
 
-data class UnionType(val options: List<AirbyteType>) : AirbyteType
+data class UnionType(val options: Set<AirbyteType>) : AirbyteType {
+    companion object {
+        fun of(options: Set<AirbyteType>): AirbyteType {
+            if (options.size == 1) {
+                return options.first()
+            }
+            return UnionType(options)
+        }
 
-data class UnknownType(val what: String) : AirbyteType
+        fun of(options: List<AirbyteType>): AirbyteType = of(options.toSet())
+
+        fun of(vararg options: AirbyteType): AirbyteType = of(options.toSet())
+    }
+}
+
+data class UnknownType(val schema: JsonNode) : AirbyteType
 
 data class FieldType(val type: AirbyteType, val nullable: Boolean)

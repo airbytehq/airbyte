@@ -1,0 +1,1944 @@
+version: 5.10.3
+
+type: DeclarativeSource
+
+description: >-
+  The Sharetribe source connector which ingests data from the sharetribe integrations API.
+  Sharetribe is a no code marketplace builder tool.
+  The source supports a number of API changes.
+  For more information, checkout the website https://www.sharetribe.com/
+
+  This source uses the OAuth configuration for handling requests.
+  A client_ID and client_secret is required in order to setup a connection.
+  For more details about the API, check out https://www.sharetribe.com/api-reference/integration.html
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/integration_api/users/query
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: perPage
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: createdAtStart
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - createdAt
+              value: "{{ record['attributes']['createdAt'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+              - createdAt
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    marketplace:
+      type: DeclarativeStream
+      name: marketplace
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/integration_api/marketplace/show
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/marketplace"
+    listings:
+      type: DeclarativeStream
+      name: listings
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/integration_api/listings/query
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: perPage
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: createdAtStart
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - createdAt
+              value: "{{ record['attributes']['createdAt'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+              - createdAt
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/listings"
+    transactions:
+      type: DeclarativeStream
+      name: transactions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/integration_api/transactions/query
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: perPage
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: createdAtStart
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - createdAt
+              value: "{{ record['attributes']['createdAt'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+              - createdAt
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transactions"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/integration_api/events/query
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: perPage
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: createdAtStart
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - createdAt
+              value: "{{ record['attributes']['createdAt'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+              - createdAt
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    messages:
+      type: DeclarativeStream
+      name: messages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/integration_api/transactions/query
+          http_method: GET
+          request_parameters:
+            include: messages
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - included
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: perPage
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: createdAtStart
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - createdAt
+              value: "{{ record['attributes']['createdAt'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+              - createdAt
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/messages"
+    bookings:
+      type: DeclarativeStream
+      name: bookings
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/integration_api/transactions/query
+          http_method: GET
+          request_parameters:
+            include: booking
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - included
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: perPage
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: createdAtStart
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - createdAt
+              value: "{{ record['attributes']['createdAt'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+              - createdAt
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/bookings"
+    reviews:
+      type: DeclarativeStream
+      name: reviews
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/integration_api/transactions/query
+          http_method: GET
+          request_parameters:
+            include: reviews
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - included
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: perPage
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: createdAtStart
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - createdAt
+              value: "{{ record['attributes']['createdAt'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+              - createdAt
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reviews"
+  base_requester:
+    type: HttpRequester
+    url_base: https://flex-api.sharetribe.com
+    authenticator:
+      type: OAuthAuthenticator
+      scopes:
+        - integ
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: client_credentials
+      client_secret: "{{ config[\"client_secret\"] }}"
+      access_token_name: access_token
+      refresh_request_body: {}
+      token_refresh_endpoint: https://flex-api.sharetribe.com/v1/auth/token
+
+streams:
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/marketplace"
+  - $ref: "#/definitions/streams/listings"
+  - $ref: "#/definitions/streams/transactions"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/messages"
+  - $ref: "#/definitions/streams/bookings"
+  - $ref: "#/definitions/streams/reviews"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - start_date
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 2
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      oauth_access_token:
+        type: string
+        description: >-
+          The current access token. This field might be overridden by the
+          connector based on the token refresh endpoint response.
+        title: Access token
+        airbyte_secret: true
+        order: 3
+      oauth_token_expiry_date:
+        type: string
+        description: >-
+          The date the current access token expires in. This field might be
+          overridden by the connector based on the token refresh endpoint
+          response.
+        title: Token expiry date
+        format: date-time
+        order: 4
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    users: true
+    marketplace: true
+    listings: true
+    transactions: true
+    events: true
+    messages: true
+    bookings: true
+    reviews: true
+  testedStreams:
+    users:
+      streamHash: db0703aac3abe86912fd2b77069132d164f7a0cf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    marketplace:
+      streamHash: 295c2db2cc5ab7fc45ae59bc15b2860800bc31df
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    listings:
+      streamHash: 4aea47adbb1caa9e65411ec5da81362d8e1265f8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    transactions:
+      streamHash: 89520ec0e3208b722492c95c4e8565dc093b7fbd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    events:
+      streamHash: 151acf210509220554188a3f5e68ba5626d4b02d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    messages:
+      streamHash: d3ca766498bd2fc164853112a2099d7a4613a518
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    bookings:
+      streamHash: b1f4dcb1c3551c679fdf3ed5bf74e834237ad3be
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    reviews:
+      streamHash: 332199c4894cb71f381b46dd6838d3ac40b47ecb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          banned:
+            type:
+              - boolean
+              - "null"
+          deleted:
+            type:
+              - boolean
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          emailVerified:
+            type:
+              - boolean
+              - "null"
+          identityProviders:
+            type:
+              - array
+              - "null"
+          permissions:
+            type:
+              - object
+              - "null"
+            properties:
+              initiateTransactions:
+                type:
+                  - string
+                  - "null"
+              postListings:
+                type:
+                  - string
+                  - "null"
+              read:
+                type:
+                  - string
+                  - "null"
+          profile:
+            type:
+              - object
+              - "null"
+            properties:
+              metadata:
+                type:
+                  - object
+                  - "null"
+              abbreviatedName:
+                type:
+                  - string
+                  - "null"
+              displayName:
+                type:
+                  - string
+                  - "null"
+              firstName:
+                type:
+                  - string
+                  - "null"
+              lastName:
+                type:
+                  - string
+                  - "null"
+              privateData:
+                type:
+                  - object
+                  - "null"
+              protectedData:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  terms:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+              publicData:
+                type:
+                  - object
+                  - "null"
+          state:
+            type:
+              - string
+              - "null"
+          stripeConnected:
+            type:
+              - boolean
+              - "null"
+      createdAt:
+        type: string
+      id:
+        type: string
+    required:
+      - id
+      - createdAt
+  marketplace:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+    required:
+      - id
+  listings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          metadata:
+            type:
+              - object
+              - "null"
+          availabilityPlan:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              entries:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    dayOfWeek:
+                      type:
+                        - string
+                        - "null"
+                    endTime:
+                      type:
+                        - string
+                        - "null"
+                    seats:
+                      type:
+                        - number
+                        - "null"
+                    startTime:
+                      type:
+                        - string
+                        - "null"
+              timezone:
+                type:
+                  - string
+                  - "null"
+          deleted:
+            type:
+              - boolean
+              - "null"
+          geolocation:
+            type:
+              - object
+              - "null"
+            properties:
+              lat:
+                type:
+                  - number
+                  - "null"
+              lng:
+                type:
+                  - number
+                  - "null"
+          price:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          privateData:
+            type:
+              - object
+              - "null"
+          publicData:
+            type:
+              - object
+              - "null"
+            properties:
+              exampleField:
+                type:
+                  - string
+                  - "null"
+              listingType:
+                type:
+                  - string
+                  - "null"
+              location:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  address:
+                    type:
+                      - string
+                      - "null"
+                  building:
+                    type:
+                      - string
+                      - "null"
+              transactionProcessAlias:
+                type:
+                  - string
+                  - "null"
+              unitType:
+                type:
+                  - string
+                  - "null"
+          state:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+      createdAt:
+        type: string
+      id:
+        type: string
+    required:
+      - id
+      - createdAt
+  transactions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          metadata:
+            type:
+              - object
+              - "null"
+          lastTransition:
+            type:
+              - string
+              - "null"
+          lastTransitionedAt:
+            type:
+              - string
+              - "null"
+          lineItems:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                code:
+                  type:
+                    - string
+                    - "null"
+                includeFor:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                lineTotal:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - number
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                percentage:
+                  type:
+                    - number
+                    - "null"
+                quantity:
+                  type:
+                    - number
+                    - "null"
+                reversal:
+                  type:
+                    - boolean
+                    - "null"
+                unitPrice:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - number
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+          payinTotal:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          payoutTotal:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          processName:
+            type:
+              - string
+              - "null"
+          processVersion:
+            type:
+              - number
+              - "null"
+          protectedData:
+            type:
+              - object
+              - "null"
+            properties:
+              shippingDetails:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  address:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      city:
+                        type:
+                          - string
+                          - "null"
+                      country:
+                        type:
+                          - string
+                          - "null"
+                      line1:
+                        type:
+                          - string
+                          - "null"
+                      postalCode:
+                        type:
+                          - string
+                          - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              stripePaymentIntents:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  default:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      stripePaymentIntentClientSecret:
+                        type:
+                          - string
+                          - "null"
+                      stripePaymentIntentId:
+                        type:
+                          - string
+                          - "null"
+              unitType:
+                type:
+                  - string
+                  - "null"
+          transitions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                by:
+                  type:
+                    - string
+                    - "null"
+                createdAt:
+                  type:
+                    - string
+                    - "null"
+                transition:
+                  type:
+                    - string
+                    - "null"
+      createdAt:
+        type: string
+      id:
+        type: string
+    required:
+      - id
+      - createdAt
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          auditData:
+            type:
+              - object
+              - "null"
+            properties:
+              clientId:
+                type:
+                  - string
+                  - "null"
+              requestId:
+                type:
+                  - string
+                  - "null"
+              userId:
+                type:
+                  - string
+                  - "null"
+          eventType:
+            type:
+              - string
+              - "null"
+          marketplaceId:
+            type:
+              - string
+              - "null"
+          previousValues:
+            type:
+              - object
+              - "null"
+            properties:
+              attributes:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  emailVerified:
+                    type:
+                      - boolean
+                      - "null"
+                  lastTransition:
+                    type:
+                      - string
+                      - "null"
+                  lastTransitionedAt:
+                    type:
+                      - string
+                      - "null"
+                  publicData:
+                    type:
+                      - object
+                      - "null"
+                    properties: {}
+                  state:
+                    type:
+                      - string
+                      - "null"
+                  stripeConnected:
+                    type:
+                      - boolean
+                      - "null"
+                  transitions:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        by:
+                          type:
+                            - string
+                            - "null"
+                        createdAt:
+                          type:
+                            - string
+                            - "null"
+                        transition:
+                          type:
+                            - string
+                            - "null"
+              relationships:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  images:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      data:
+                        type:
+                          - array
+                          - "null"
+                  stripeAccount:
+                    type:
+                      - object
+                      - "null"
+                    properties: {}
+          resource:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              attributes:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  metadata:
+                    type:
+                      - object
+                      - "null"
+                  availabilityPlan:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      entries:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            dayOfWeek:
+                              type:
+                                - string
+                                - "null"
+                            endTime:
+                              type:
+                                - string
+                                - "null"
+                            seats:
+                              type:
+                                - number
+                                - "null"
+                            startTime:
+                              type:
+                                - string
+                                - "null"
+                      timezone:
+                        type:
+                          - string
+                          - "null"
+                  banned:
+                    type:
+                      - boolean
+                      - "null"
+                  createdAt:
+                    type:
+                      - string
+                      - "null"
+                  deleted:
+                    type:
+                      - boolean
+                      - "null"
+                  displayEnd:
+                    type:
+                      - string
+                      - "null"
+                  displayStart:
+                    type:
+                      - string
+                      - "null"
+                  email:
+                    type:
+                      - string
+                      - "null"
+                  emailVerified:
+                    type:
+                      - boolean
+                      - "null"
+                  end:
+                    type:
+                      - string
+                      - "null"
+                  geolocation:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      lat:
+                        type:
+                          - number
+                          - "null"
+                      lng:
+                        type:
+                          - number
+                          - "null"
+                  identityProviders:
+                    type:
+                      - array
+                      - "null"
+                  lastTransition:
+                    type:
+                      - string
+                      - "null"
+                  lastTransitionedAt:
+                    type:
+                      - string
+                      - "null"
+                  lineItems:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        code:
+                          type:
+                            - string
+                            - "null"
+                        includeFor:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        lineTotal:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            amount:
+                              type:
+                                - number
+                                - "null"
+                            currency:
+                              type:
+                                - string
+                                - "null"
+                        percentage:
+                          type:
+                            - number
+                            - "null"
+                        quantity:
+                          type:
+                            - number
+                            - "null"
+                        reversal:
+                          type:
+                            - boolean
+                            - "null"
+                        unitPrice:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            amount:
+                              type:
+                                - number
+                                - "null"
+                            currency:
+                              type:
+                                - string
+                                - "null"
+                  payinTotal:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      amount:
+                        type:
+                          - number
+                          - "null"
+                      currency:
+                        type:
+                          - string
+                          - "null"
+                  payoutTotal:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      amount:
+                        type:
+                          - number
+                          - "null"
+                      currency:
+                        type:
+                          - string
+                          - "null"
+                  permissions:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      initiateTransactions:
+                        type:
+                          - string
+                          - "null"
+                      postListings:
+                        type:
+                          - string
+                          - "null"
+                      read:
+                        type:
+                          - string
+                          - "null"
+                  price:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      amount:
+                        type:
+                          - number
+                          - "null"
+                      currency:
+                        type:
+                          - string
+                          - "null"
+                  privateData:
+                    type:
+                      - object
+                      - "null"
+                  processName:
+                    type:
+                      - string
+                      - "null"
+                  processVersion:
+                    type:
+                      - number
+                      - "null"
+                  profile:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      metadata:
+                        type:
+                          - object
+                          - "null"
+                      abbreviatedName:
+                        type:
+                          - string
+                          - "null"
+                      displayName:
+                        type:
+                          - string
+                          - "null"
+                      firstName:
+                        type:
+                          - string
+                          - "null"
+                      lastName:
+                        type:
+                          - string
+                          - "null"
+                      privateData:
+                        type:
+                          - object
+                          - "null"
+                      protectedData:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          terms:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - string
+                                - "null"
+                      publicData:
+                        type:
+                          - object
+                          - "null"
+                  protectedData:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      shippingDetails:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          address:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              city:
+                                type:
+                                  - string
+                                  - "null"
+                              country:
+                                type:
+                                  - string
+                                  - "null"
+                              line1:
+                                type:
+                                  - string
+                                  - "null"
+                              postalCode:
+                                type:
+                                  - string
+                                  - "null"
+                          name:
+                            type:
+                              - string
+                              - "null"
+                      stripePaymentIntents:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          default:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              stripePaymentIntentClientSecret:
+                                type:
+                                  - string
+                                  - "null"
+                              stripePaymentIntentId:
+                                type:
+                                  - string
+                                  - "null"
+                      unitType:
+                        type:
+                          - string
+                          - "null"
+                  publicData:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      exampleField:
+                        type:
+                          - string
+                          - "null"
+                      listingType:
+                        type:
+                          - string
+                          - "null"
+                      location:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          address:
+                            type:
+                              - string
+                              - "null"
+                          building:
+                            type:
+                              - string
+                              - "null"
+                      transactionProcessAlias:
+                        type:
+                          - string
+                          - "null"
+                      unitType:
+                        type:
+                          - string
+                          - "null"
+                  seats:
+                    type:
+                      - number
+                      - "null"
+                  start:
+                    type:
+                      - string
+                      - "null"
+                  state:
+                    type:
+                      - string
+                      - "null"
+                  stripeConnected:
+                    type:
+                      - boolean
+                      - "null"
+                  title:
+                    type:
+                      - string
+                      - "null"
+                  transitions:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        by:
+                          type:
+                            - string
+                            - "null"
+                        createdAt:
+                          type:
+                            - string
+                            - "null"
+                        transition:
+                          type:
+                            - string
+                            - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              relationships:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  author:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      data:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          id:
+                            type:
+                              - string
+                              - "null"
+                  booking:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      data:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          id:
+                            type:
+                              - string
+                              - "null"
+                  currentStock:
+                    type:
+                      - object
+                      - "null"
+                    properties: {}
+                  customer:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      data:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          id:
+                            type:
+                              - string
+                              - "null"
+                  images:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      data:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            type:
+                              type:
+                                - string
+                                - "null"
+                            id:
+                              type:
+                                - string
+                                - "null"
+                  listing:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      data:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          id:
+                            type:
+                              - string
+                              - "null"
+                  marketplace:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      data:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          id:
+                            type:
+                              - string
+                              - "null"
+                  profileImage:
+                    type:
+                      - object
+                      - "null"
+                    properties: {}
+                  provider:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      data:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          id:
+                            type:
+                              - string
+                              - "null"
+                  stockReservation:
+                    type:
+                      - object
+                      - "null"
+                    properties: {}
+                  stripeAccount:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      data:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          id:
+                            type:
+                              - string
+                              - "null"
+                  transaction:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      data:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          id:
+                            type:
+                              - string
+                              - "null"
+          resourceId:
+            type:
+              - string
+              - "null"
+          resourceType:
+            type:
+              - string
+              - "null"
+          sequenceId:
+            type:
+              - number
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+      createdAt:
+        type: string
+      id:
+        type: string
+    required:
+      - id
+      - createdAt
+  messages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          content:
+            type:
+              - string
+              - "null"
+      createdAt:
+        type: string
+      id:
+        type: string
+    required:
+      - id
+      - createdAt
+  bookings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          displayEnd:
+            type:
+              - string
+              - "null"
+          displayStart:
+            type:
+              - string
+              - "null"
+          end:
+            type:
+              - string
+              - "null"
+          seats:
+            type:
+              - number
+              - "null"
+          start:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+      createdAt:
+        type: string
+      id:
+        type: string
+    required:
+      - id
+      - createdAt
+  reviews:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          content:
+            type:
+              - string
+              - "null"
+          rating:
+            type:
+              - number
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+      createdAt:
+        type: string
+      id:
+        type: string
+    required:
+      - id
+      - createdAt

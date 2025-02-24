@@ -80,17 +80,7 @@ class ShopifyBulkTemplates:
 @dataclass
 class ShopifyBulkQuery:
     config: Mapping[str, Any]
-    parent_stream_name: Optional[str] = None
-    parent_stream_cursor: Optional[str] = None
-
-    @property
-    def has_parent_stream(self) -> bool:
-        return True if self.parent_stream_name and self.parent_stream_cursor else False
-
-    @property
-    def parent_cursor_key(self) -> Optional[str]:
-        if self.has_parent_stream:
-            return f"{self.parent_stream_name}_{self.parent_stream_cursor}"
+    parent_stream_cursor_alias: Optional[str] = None
 
     @property
     def shop_id(self) -> int:
@@ -143,37 +133,11 @@ class ShopifyBulkQuery:
         """
         return ["__typename", "id"]
 
-    def _inject_parent_cursor_field(self, nodes: List[Field], key: str = "updatedAt", index: int = 2) -> List[Field]:
-        if self.has_parent_stream:
+    def inject_parent_cursor_field(self, nodes: List[Field], key: str = "updatedAt", index: int = 2) -> List[Field]:
+        if self.parent_stream_cursor_alias:
             # inject parent cursor key as alias to the `updatedAt` parent cursor field
-            nodes.insert(index, Field(name="updatedAt", alias=self.parent_cursor_key))
-
+            nodes.insert(index, Field(name=key, alias=self.parent_stream_cursor_alias))
         return nodes
-
-    def _add_parent_record_state(self, record: MutableMapping[str, Any], items: List[dict], to_rfc3339: bool = False) -> List[dict]:
-        """
-        Adds a parent cursor value to each item in the list.
-
-        This method iterates over a list of dictionaries and adds a new key-value pair to each dictionary.
-        The key is the value of `self.query_name`, and the value is another dictionary with a single key "updated_at"
-        and the provided `parent_cursor_value`.
-
-        Args:
-            items (List[dict]): A list of dictionaries to which the parent cursor value will be added.
-            parent_cursor_value (str): The value to be set for the "updated_at" key in the nested dictionary.
-
-        Returns:
-            List[dict]: The modified list of dictionaries with the added parent cursor values.
-        """
-
-        if self.has_parent_stream:
-            parent_cursor_value: Optional[str] = record.get(self.parent_cursor_key, None)
-            parent_state = self.tools._datetime_str_to_rfc3339(parent_cursor_value) if to_rfc3339 and parent_cursor_value else None
-
-            for item in items:
-                item[self.parent_stream_name] = {self.parent_stream_cursor: parent_state}
-
-        return items
 
     def get(self, filter_field: Optional[str] = None, start: Optional[str] = None, end: Optional[str] = None) -> str:
         # define filter query string, if passed
@@ -339,7 +303,7 @@ class Metafield(ShopifyBulkQuery):
         elif isinstance(self.type.value, str):
             nodes = [*nodes, metafield_node]
 
-        nodes = self._inject_parent_cursor_field(nodes)
+        nodes = self.inject_parent_cursor_field(nodes)
 
         return nodes
 
@@ -372,9 +336,6 @@ class Metafield(ShopifyBulkQuery):
         else:
             metafields = record_components.get("Metafield", [])
             if len(metafields) > 0:
-                if self.has_parent_stream:
-                    # add parent state to each metafield
-                    metafields = self._add_parent_record_state(record, metafields, to_rfc3339=True)
                 yield from self._process_components(metafields)
 
 
@@ -637,7 +598,7 @@ class MetafieldProductImage(Metafield):
         media_node = self.get_edge_node("media", media_fields)
 
         fields: List[Field] = ["__typename", "id", media_node]
-        fields = self._inject_parent_cursor_field(fields)
+        fields = self.inject_parent_cursor_field(fields)
 
         return fields
 
@@ -1144,6 +1105,29 @@ class CustomerJourney(ShopifyBulkQuery):
                                     term
                                 }
                             }
+                            customerJourney {
+                                moments {
+                                    ... on CustomerVisit {
+                                        id
+                                        landingPage
+                                        landingPageHtml
+                                        occurredAt
+                                        referralCode
+                                        referralInfoHtml
+                                        referrerUrl
+                                        source
+                                        sourceDescription
+                                        sourceType
+                                        utmParameters {
+                                            campaign
+                                            content
+                                            medium
+                                            source
+                                            term
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -1166,6 +1150,16 @@ class CustomerJourney(ShopifyBulkQuery):
         "sourceDescription",
         Field(name="utmParameters", fields=["campaign", "content", "medium", "source", "term"]),
     ]
+
+    customer_visit_fragment: List[InlineFragment] = [
+        InlineFragment(type="CustomerVisit", fields=visit_fields),
+    ]
+
+    # # use this in the next version
+    # moments_fields: List[Field] = [
+    #     Field(name="edges", fields=[Field(name="node", fields=customer_visit_fragment)]),
+    # ]
+
     customer_journey_summary_fields: List[Field] = [
         "ready",
         Field(name="momentsCount", fields=["count", "precision"]),
@@ -1173,6 +1167,8 @@ class CustomerJourney(ShopifyBulkQuery):
         "daysToConversion",
         Field(name="firstVisit", fields=visit_fields),
         Field(name="lastVisit", fields=visit_fields),
+        # # use this in the next version
+        # Field(name="moments", fields=moments_fields),
     ]
 
     query_nodes: List[Field] = [
@@ -1181,6 +1177,12 @@ class CustomerJourney(ShopifyBulkQuery):
         "createdAt",
         "updatedAt",
         Field(name="customerJourneySummary", fields=customer_journey_summary_fields),
+        Field(
+            name="customerJourney",
+            fields=[
+                Field(name="moments", fields=customer_visit_fragment),
+            ],
+        ),
     ]
 
     record_composition = {
@@ -1191,6 +1193,9 @@ class CustomerJourney(ShopifyBulkQuery):
         self,
         visit_data: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
+        if not visit_data:
+            return {}
+
         # save the id before it's resolved
         visit_data["admin_graphql_api_id"] = visit_data.get("id")
         # resolve the order_id to str
@@ -1201,14 +1206,24 @@ class CustomerJourney(ShopifyBulkQuery):
         visit_data = self.tools.fields_names_to_snake_case(visit_data)
         return visit_data
 
+    def process_moments(self, entity: List[Mapping[str, Any]]) -> List[MutableMapping[str, Any]]:
+        moments = []
+        for item in entity:
+            moments.append(self.process_visit(item))
+        return moments
+
     def process_customer_journey(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         customer_journey_summary = record.get("customerJourneySummary", {})
         if customer_journey_summary:
             # process first, last visit data
-            first_visit = customer_journey_summary.get("firstVisit", {})
-            last_visit = customer_journey_summary.get("lastVisit", {})
-            customer_journey_summary["firstVisit"] = self.process_visit(first_visit) if first_visit else {}
-            customer_journey_summary["lastVisit"] = self.process_visit(last_visit) if last_visit else {}
+            customer_journey_summary["firstVisit"] = self.process_visit(customer_journey_summary.get("firstVisit"))
+            customer_journey_summary["lastVisit"] = self.process_visit(customer_journey_summary.get("lastVisit"))
+
+            # # this will be a part of summary in the next api version
+            if customer_journey := record.get("customerJourney", {}):
+                moments = customer_journey.get("moments", [])
+                customer_journey_summary["moments"] = self.process_moments(moments)
+
         # cast field names to snake_case
         customer_journey_summary = self.tools.fields_names_to_snake_case(customer_journey_summary)
         return customer_journey_summary
@@ -2422,7 +2437,7 @@ class ProductImage(ShopifyBulkQuery):
 
     @property
     def query_nodes(self) -> List[Field]:
-        return self._inject_parent_cursor_field(self.nodes)
+        return self.inject_parent_cursor_field(self.nodes)
 
     def _process_component(self, entity: List[dict]) -> List[dict]:
         for item in entity:
@@ -2499,8 +2514,6 @@ class ProductImage(ShopifyBulkQuery):
 
             # add the product_id to each `Image`
             record["images"] = self._add_product_id(record.get("images", []), record.get("id"))
-            # add the product cursor to each `Image`
-            record["images"] = self._add_parent_record_state(record, record.get("images", []), to_rfc3339=True)
             record["images"] = self._merge_with_media(record_components)
             record.pop("record_components")
 
@@ -2551,6 +2564,10 @@ class ProductVariant(ShopifyBulkQuery):
                                 color
                                 image {
                                     id
+                                    image {
+                                        src
+                                        url
+                                    }
                                 }
                             }
                         }
@@ -2558,6 +2575,8 @@ class ProductVariant(ShopifyBulkQuery):
                     grams: weight
                     image {
                         image_id: id
+                        image_src: src
+                        image_url: url
                     }
                     old_inventory_quantity: inventoryQuantity
                     product {
@@ -2597,7 +2616,6 @@ class ProductVariant(ShopifyBulkQuery):
 
     @property
     def query_nodes(self) -> Optional[Union[List[Field], List[str]]]:
-
         prices_fields: List[str] = ["amount", "currencyCode"]
         presentment_prices_fields: List[Field] = [
             Field(
@@ -2618,7 +2636,7 @@ class ProductVariant(ShopifyBulkQuery):
             "id",
             "name",
             Field(name="hasVariants", alias="has_variants"),
-            Field(name="swatch", fields=["color", Field(name="image", fields=["id"])]),
+            Field(name="swatch", fields=["color", Field(name="image", fields=["id", Field(name="image", fields=["src", "url"])])]),
         ]
         option_fields: List[Field] = [
             "name",
@@ -2628,6 +2646,12 @@ class ProductVariant(ShopifyBulkQuery):
         presentment_prices = (
             [Field(name="presentmentPrices", fields=presentment_prices_fields)] if self._should_include_presentment_prices else []
         )
+
+        image_fields = [
+            Field(name="id", alias="image_id"),
+            Field(name="src", alias="image_src"),
+            Field(name="url", alias="image_url"),
+        ]
 
         query_nodes: List[Field] = [
             "__typename",
@@ -2652,7 +2676,7 @@ class ProductVariant(ShopifyBulkQuery):
             "taxCode",
             Field(name="selectedOptions", alias="options", fields=option_fields),
             Field(name="weight", alias="grams"),
-            Field(name="image", fields=[Field(name="id", alias="image_id")]),
+            Field(name="image", fields=image_fields),
             Field(name="inventoryQuantity", alias="old_inventory_quantity"),
             Field(name="product", fields=[Field(name="id", alias="product_id")]),
             Field(name="fulfillmentService", fields=[Field(name="handle", alias="fulfillment_service")]),
@@ -2718,6 +2742,9 @@ class ProductVariant(ShopifyBulkQuery):
         record["product_id"] = self._unnest_and_resolve_id(record, "product", "product_id")
         record["inventory_item_id"] = self._unnest_and_resolve_id(record, "inventoryItem", "inventory_item_id")
         record["image_id"] = self._unnest_and_resolve_id(record, "image", "image_id")
+        image = record.get("image", {})
+        record["image_src"] = image.get("image_src") if image else None
+        record["image_url"] = image.get("image_url") if image else None
         # unnest `fulfillment_service` from `fulfillmentService`
         record["fulfillment_service"] = record.get("fulfillmentService", {}).get("fulfillment_service")
         # cast the `price` to number, could be literally `None`

@@ -4,13 +4,13 @@ data:
     sl: 200
   allowedHosts:
     hosts:
-      - zopim.com
+      - "*.zendesk.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
   connectorSubtype: api
   connectorType: source
   definitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
-  dockerImageTag: 0.3.1
+  dockerImageTag: 1.0.4
   dockerRepository: airbyte/source-zendesk-chat
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-chat
   githubIssueLabel: source-zendesk-chat
@@ -28,6 +28,11 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "The subdomain configuration field is now required following a Live Chat API update."
+        upgradeDeadline: "2024-11-12"
   supportLevel: certified
   tags:
     - language:python

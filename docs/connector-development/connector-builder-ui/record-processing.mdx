@@ -4,9 +4,257 @@ import Diff from "./assets/record-processing-schema-diff.png";
 
 Connectors built with the connector builder always make HTTP requests, receive the responses and emit records. Besides making the right requests, it's important to properly hand over the records to the system:
 
+- Decode the response body (HTTP response format)
 - Extract the records (record selection)
 - Do optional post-processing (transformations)
 - Provide record meta data to the system to inform downstream processes (primary key and declared schema)
+
+## Response Decoding
+
+<iframe
+  width="800"
+  height="490"
+  src="https://www.loom.com/embed/ae6dce06ccb24795a8eddcdf0fe33a84"
+  frameborder="0"
+  webkitallowfullscreen
+  mozallowfullscreen
+  allowfullscreen
+></iframe>
+
+The first step in converting an HTTP response into records is decoding the response body into normalized JSON objects, as the rest of the record processing logic performed by the connector expects to operate on JSON objects.
+
+The HTTP Response Format is used to configure this decoding by declaring what the encoding of the response body is.
+
+Each of the supported formats are explained below.
+
+### JSON
+
+Example JSON response body:
+```json
+{
+  "cod": "200",
+  "message": 0,
+  "cnt": 40,
+  "list": [
+    {
+      "dt": 1728604800,
+      "main": {
+        "temp": 283.51,
+        "feels_like": 283.21,
+        "temp_min": 283.51,
+        "temp_max": 285.11,
+        "pressure": 1014,
+        "sea_level": 1014,
+        "grnd_level": 982,
+        "humidity": 100,
+        "temp_kf": -1.6
+      }
+    },
+    {
+      "dt": 1728615600,
+      "main": {
+        "temp": 283.55,
+        "feels_like": 283.13,
+        "temp_min": 283.55,
+        "temp_max": 283.63,
+        "pressure": 1014,
+        "sea_level": 1014,
+        "grnd_level": 983,
+        "humidity": 95,
+        "temp_kf": -0.08
+      }
+    },
+    ...
+  ]
+}
+```
+
+This is the most common response format. APIs usually include a `"Content-Type": "application/json"` response header when returning a JSON body.
+
+In this case, no extra decoding needs to happen to convert these responses into JSON because they are already in JSON format.
+
+### XML
+
+Example XML response body:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<weatherdata>
+  <location>
+    <name>Lyon</name>
+    <type></type>
+    <country>FR</country>
+    <timezone>7200</timezone>
+  </location>
+  <sun rise="2024-10-11T05:52:02" set="2024-10-11T17:02:14"></sun>
+  <forecast>
+    <time from="2024-10-10T21:00:00" to="2024-10-11T00:00:00">
+      <symbol number="800" name="clear sky" var="01n"></symbol>
+      <precipitation probability="0"></precipitation>
+      <windDirection deg="156" code="SSE" name="South-southeast"></windDirection>
+      <windSpeed mps="0.59" unit="m/s" name="Calm"></windSpeed>
+      <windGust gust="0.73" unit="m/s"></windGust>
+    </time>
+    <time from="2024-10-11T00:00:00" to="2024-10-11T03:00:00">
+      <symbol number="800" name="clear sky" var="01n"></symbol>
+      <precipitation probability="0"></precipitation>
+      <windDirection deg="307" code="NW" name="Northwest"></windDirection>
+      <windSpeed mps="0.77" unit="m/s" name="Calm"></windSpeed>
+      <windGust gust="0.89" unit="m/s"></windGust>
+    </time>
+    ...
+  </forecast>
+</weatherdata>
+```
+
+APIs usually include a `"Content-Type": "application/xml"` response header when returning an XML body.
+
+In this case, the XML body is converted into a normalized JSON format by following the patterns described in [this spec](https://www.xml.com/pub/a/2006/05/31/converting-between-xml-and-json.html) from xml.com.
+
+For the above example, the XML response format setting would result in the following normalized JSON output:
+```json
+{
+  "weatherdata": {
+    "location": {
+      "name": "Lyon",
+      "country": "FR",
+      "timezone": "7200",
+    },
+    "sun": {
+      "@rise": "2024-10-11T05:52:02",
+      "@set": "2024-10-11T17:02:14"
+    },
+    "forecast": {
+      "time": [
+        {
+          "@from": "2024-10-10T21:00:00",
+          "@to": "2024-10-11T00:00:00",
+          "symbol": {
+            "@number": "800",
+            "@name": "clear sky",
+            "@var": "01n"
+          },
+          "precipitation": {
+            "@probability": "0"
+          },
+          "windDirection": {
+            "@deg": "156",
+            "@code": "SSE",
+            "@name": "South-southeast"
+          },
+          "windSpeed": {
+            "@mps": "0.59",
+            "@unit": "m/s",
+            "@name": "Calm"
+          },
+          "windGust": {
+            "@gust": "0.73",
+            "@unit": "m/s"
+          }
+        },
+        {
+          "@from": "2024-10-11T00:00:00",
+          "@to": "2024-10-11T03:00:00",
+          "symbol": {
+            "@number": "800",
+            "@name": "clear sky",
+            "@var": "01n"
+          },
+          "precipitation": {
+            "@probability": "0"
+          },
+          "windDirection": {
+            "@deg": "307",
+            "@code": "NW",
+            "@name": "Northwest"
+          },
+          "windSpeed": {
+            "@mps": "0.77",
+            "@unit": "m/s",
+            "@name": "Calm"
+          },
+          "windGust": {
+            "@gust": "0.89",
+            "@unit": "m/s"
+          }
+        },
+        ...
+      ]
+    }
+  }
+}
+```
+
+### JSON Lines
+
+Example JSON Lines response body:
+```jsonlines
+{"name": "John", "age": 30, "city": "New York"}
+{"name": "Alice", "age": 25, "city": "Los Angeles"}
+{"name": "Bob", "age": 50, "city": "Las Vegas"}
+```
+
+[JSON Lines](https://jsonlines.org/) is a text format that contains one JSON object per line, with newlines in between.
+
+There is no standardized `Content-Type` header for API responses containing JSON Lines, so it is common for APIs to just include a `"Content-Type": "text/html"` or `"Content-Type": "text/plain"` response header in this case.
+
+For the above example, the JSON Lines response format setting would result in the following normalized JSON output:
+```
+[
+  {
+    "name": "John",
+    "age": 30,
+    "city": "New York"
+  },
+  {
+    "name": "Alice",
+    "age": 25,
+    "city": "Los Angeles"
+  },
+  {
+    "name": "Bob",
+    "age": 50,
+    "city": "Las Vegas"
+  }
+]
+```
+
+### Iterable
+
+Example iterable response body:
+```
+2021-04-14 16:52:18 +00:00
+2021-04-14 16:52:23 +00:00
+2021-04-14 16:52:21 +00:00
+2021-04-14 16:52:23 +00:00
+2021-04-14 16:52:27 +00:00
+```
+
+This response format option is used for API response bodies that are text containing strings separated by newlines.
+
+APIs are likely to include a `"Content-Type": "text/html"` or `"Content-Type": "text/plain"` response header in this case.
+
+By convention, the connector will wrap each of these strings in a JSON object under a `record` key.
+
+For the above example, the Iterable response format setting would result in the following normalized JSON output:
+```
+[
+  {
+    "record": "2021-04-14 16:52:18 +00:00"
+  },
+  {
+    "record": "2021-04-14 16:52:23 +00:00"
+  },
+  {
+    "record": "2021-04-14 16:52:21 +00:00"
+  },
+  {
+    "record": "2021-04-14 16:52:23 +00:00"
+  },
+  {
+    "record": "2021-04-14 16:52:27 +00:00"
+  }
+]
+```
 
 ## Record Selection
 
@@ -20,7 +268,7 @@ Connectors built with the connector builder always make HTTP requests, receive t
   allowfullscreen
 ></iframe>
 
-When doing HTTP requests, the connector expects the records to be part of the response JSON body. The "Record Selector" component of the stream can be used to configure how records should be extracted from the response body.
+After decoding the response into normalized JSON objects (see [Response Decoding](#response-decoding)), the connector must then decide how to extract records from those JSON objects.
 
 The Record Selector component contains a few different levers to configure this extraction:
 - Field Path
@@ -187,15 +435,15 @@ For example, say your API response looks like this:
 [
   {
     "id": 1,
-    "status": "pending" 
+    "status": "pending"
   },
   {
     "id": 2,
-    "status": "active" 
+    "status": "active"
   },
   {
     "id": 3,
-    "status": "expired" 
+    "status": "expired"
   }
 ]
 ```
@@ -205,7 +453,7 @@ You can accomplish this by setting the Record Filter to `{{ record.status != 'ex
 
 Any records for which this expression evaluates to `true` will be emitted by the connector, and any for which it evaluates to `false` will be excluded from the output.
 
-Note that Record Filter value must be an [interpolated string](/connector-development/config-based/advanced-topics#string-interpolation) with the filtering condition placed inside double curly braces `{{ }}`.
+Note that Record Filter value must be an [interpolated string](/connector-development/config-based/advanced-topics/string-interpolation.md) with the filtering condition placed inside double curly braces `{{ }}`.
 
 ### Cast Record Fields to Schema Types
 Sometimes the type of a field in the record is not the desired type. If the existing field type can be simply cast to the desired type, this can be solved by setting the stream's declared schema to the desired type and enabling `Cast Record Fields to Schema Types`.

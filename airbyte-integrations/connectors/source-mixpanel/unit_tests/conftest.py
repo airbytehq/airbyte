@@ -45,11 +45,13 @@ def patch_time(mocker):
 ENV_REQUEST_CACHE_PATH = "REQUEST_CACHE_PATH"
 os.environ["REQUEST_CACHE_PATH"] = ENV_REQUEST_CACHE_PATH
 
+
 def delete_cache_files(cache_directory):
     directory_path = Path(cache_directory)
     if directory_path.exists() and directory_path.is_dir():
         for file_path in directory_path.glob("*.sqlite"):
             file_path.unlink()
+
 
 @pytest.fixture(autouse=True)
 def clear_cache_before_each_test():

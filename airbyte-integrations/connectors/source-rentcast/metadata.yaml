@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.rentcast.io"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-rentcast
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
+  connectorSubtype: api
+  connectorType: source
+  definitionId: f1d3c80a-b443-49b9-ad32-560ce3d61edb
+  dockerImageTag: 0.0.13
+  dockerRepository: airbyte/source-rentcast
+  githubIssueLabel: source-rentcast
+  icon: icon.svg
+  license: MIT
+  name: RentCast
+  releaseDate: 2024-10-18
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/rentcast
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.command
 
-import io.airbyte.protocol.models.Jsons
+import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
@@ -26,7 +26,7 @@ class DestinationCatalogTest {
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withStream(
                                 AirbyteStream()
-                                    .withJsonSchema(Jsons.deserialize("""{"type": "object"}"""))
+                                    .withJsonSchema("""{"type": "object"}""".deserializeToNode())
                                     .withNamespace("namespace1")
                                     .withName("name1")
                             ),
@@ -37,7 +37,7 @@ class DestinationCatalogTest {
                             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
                             .withStream(
                                 AirbyteStream()
-                                    .withJsonSchema(Jsons.deserialize("""{"type": "object"}"""))
+                                    .withJsonSchema("""{"type": "object"}""".deserializeToNode())
                                     .withNamespace("namespace2")
                                     .withName("name2")
                             )
@@ -50,7 +50,7 @@ class DestinationCatalogTest {
                             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
                             .withStream(
                                 AirbyteStream()
-                                    .withJsonSchema(Jsons.deserialize("""{"type": "object"}"""))
+                                    .withJsonSchema("""{"type": "object"}""".deserializeToNode())
                                     .withNamespace("namespace3")
                                     .withName("name3")
                             ),

@@ -186,6 +186,7 @@ Table "accounts" {
     "company" object
     "country" string
     "created" integer
+    "updated" integer
     "default_currency" string
     "details_submitted" boolean
     "email" string
@@ -235,6 +236,30 @@ Table "balance_transactions" {
     "created" integer
     "amount" integer
     "reporting_category" string
+}
+
+Table "payout_balance_transactions" {
+    "payout" string
+    "fee" integer
+    "currency" string
+    "source" string
+    "fee_details" array
+    "available_on" integer
+    "status" string
+    "description" string
+    "net" integer
+    "exchange_rate" number
+    "type" string
+    "id" string
+    "object" string
+    "created" integer
+    "updated" integer
+    "amount" integer
+    "reporting_category" string
+
+    indexes {
+        (payout, id) [pk]
+    }
 }
 
 Table "files" {
@@ -1141,6 +1166,8 @@ Table "invoice_line_items" {
     "discounts" array
     "tax_rates" array
     "tax_amounts" array
+    "created" integer
+    "updated" integer
 }
 
 Table "subscription_items" {
@@ -1167,6 +1194,7 @@ Table "subscription_items" {
     "billing_thresholds" object
     "tax_rates" array
     "price" object
+    "updated" integer
 }
 
 Table "transfer_reversals" {

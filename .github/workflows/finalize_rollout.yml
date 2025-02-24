@@ -14,7 +14,7 @@ on:
         options: ["promote", "rollback"]
 jobs:
   finalize_rollout:
-    name: Finalize connector rollout
+    name: Finalize connector rollout for ${{ github.event.inputs.connector_name }}
     runs-on: connector-publish-large
     env:
       ACTION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }}
@@ -28,13 +28,13 @@ jobs:
         shell: bash
       - name: Checkout Airbyte
         uses: actions/checkout@v4
-      - name: Promote {{ github.event.inputs.connector_name }} release candidate
+      - name: Promote ${{ github.event.inputs.connector_name }} release candidate
         id: promote-release-candidate
         if: ${{ env.ACTION == 'promote' }}
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -45,13 +45,13 @@ jobs:
           slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           subcommand: "connectors --name=${{ github.event.inputs.connector_name }} publish --promote-release-candidate"
-      - name: Rollback {{ github.event.inputs.connector_name }} release candidate
+      - name: Rollback ${{ github.event.inputs.connector_name }} release candidate
         id: rollback-release-candidate
         if: ${{ env.ACTION == 'rollback' }}
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}

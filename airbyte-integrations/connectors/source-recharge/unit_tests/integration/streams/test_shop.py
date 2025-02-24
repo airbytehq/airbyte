@@ -6,11 +6,13 @@ import json
 from unittest import TestCase
 
 import freezegun
+
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
 from ..config import NOW
 from ..utils import StreamTestCase, read_full_refresh
+
 
 _STREAM_NAME = "shop"
 

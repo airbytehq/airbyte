@@ -11,7 +11,6 @@ from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonF
 
 @dataclass
 class AdjustSchemaLoader(JsonFileSchemaLoader):
-
     config: Mapping[str, Any]
 
     def get_json_schema(self) -> Mapping[str, Any]:
