@@ -15,7 +15,7 @@ from source_microsoft_sharepoint.utils import PlaceholderUrlBuilder
 
 
 class SourceMicrosoftSharePoint(FileBasedSource):
-    SCOPES = ["offline_access", "Files.Read.All"]
+    SCOPES = ["offline_access", "Files.Read.All", "Sites.Read.All"]
 
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: Optional[TState]):
         super().__init__(
@@ -49,18 +49,23 @@ class SourceMicrosoftSharePoint(FileBasedSource):
             .set_scheme("https")
             .set_host("login.microsoftonline.com")
             .set_path("/{{tenant_id}}/oauth2/v2.0/token")
-            .add_key_value_placeholder_param("client_id")
-            .add_key_value_placeholder_param("auth_code")
-            .add_key_value_placeholder_param("redirect_uri")
-            .add_key_value_placeholder_param("client_secret")
-            .add_literal_param("grant_type=authorization_code")
             .build()
         )
-        scopes = " ".join(SourceMicrosoftSharePoint.SCOPES)  # , "Sites.ReadWrite.All", "Sites.Manage.All"
+        scopes = " ".join(SourceMicrosoftSharePoint.SCOPES)
 
         oauth_connector_input_specification = OauthConnectorInputSpecification(
             consent_url=consent_url,
             access_token_url=access_token_url,
+            access_token_headers = {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            access_token_params= {
+                "code": "{{ auth_code_value }}",
+                "client_id": "{{ client_id_value }}",
+                "redirect_uri": "{{ redirect_uri_value }}",
+                "client_secret": "{{ client_secret_value }}",
+                "grant_type": "authorization_code"
+            },
             scope=scopes,
         )
 

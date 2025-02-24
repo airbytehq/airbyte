@@ -151,4 +151,5 @@ class PlaceholderUrlBuilder:
            https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code
         """
         query_string = "&".join(self._segments)
-        return f"{self._scheme}://{self._host}{self._path}?{query_string}"
+        query_string = "?" + query_string if query_string else ""
+        return f"{self._scheme}://{self._host}{self._path}{query_string}"
