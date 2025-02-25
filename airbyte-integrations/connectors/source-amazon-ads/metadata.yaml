@@ -9,11 +9,11 @@ data:
       - advertising-api-eu.amazon.com
       - advertising-api-fe.amazon.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
   connectorSubtype: api
   connectorType: source
   definitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
-  dockerImageTag: 6.2.7
+  dockerImageTag: 7.0.1
   dockerRepository: airbyte/source-amazon-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
   githubIssueLabel: source-amazon-ads
@@ -35,6 +35,18 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      7.0.0:
+        message:
+          "This version introduces new report streams, replacing SponsoredDisplayReportStream and SponsoredProductsReportStream with detailed breakdowns.
+          Primary keys have changed, and metrics are now correctly typed at the root level. We recommend using new detailed streams with the same dataset."
+        upgradeDeadline: "2025-02-24"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "sponsored_display_report_stream"
+              - "sponsored_brands_v3_report_stream"
+              - "sponsored_products_report_stream"
       6.0.0:
         message:
           "The Report API V2 is being deprecated in favor of V3. Given this change, fields available through the sponsoredDisplayReportStream stream will change,
