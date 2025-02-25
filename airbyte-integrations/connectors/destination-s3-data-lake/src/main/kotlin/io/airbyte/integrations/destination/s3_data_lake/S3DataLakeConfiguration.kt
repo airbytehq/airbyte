@@ -24,16 +24,16 @@ data class S3DataLakeConfiguration(
     override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration,
     override val s3BucketConfiguration: S3BucketConfiguration,
     override val icebergCatalogConfiguration: IcebergCatalogConfiguration,
-    override val numProcessRecordsWorkers: Int,
-    override val numProcessBatchWorkers: Int,
+    // Now that partitioning is enabled, we can run more than one worker.
+    // This will likely not show performance improvements in the cloud without additional
+    // resources. In the future, if enterprise or oss users need more flexibility, we can
+    // expose this in their configurations.
+    override val numProcessRecordsWorkers: Int = 2
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
     IcebergCatalogConfigurationProvider,
-    S3BucketConfigurationProvider {
-    override val recordBatchSizeBytes: Long
-        get() = 1500 * 1024 * 1024
-}
+    S3BucketConfigurationProvider {}
 
 @Singleton
 class S3DataLakeConfigurationFactory :
@@ -46,12 +46,6 @@ class S3DataLakeConfigurationFactory :
             awsAccessKeyConfiguration = pojo.toAWSAccessKeyConfiguration(),
             s3BucketConfiguration = pojo.toS3BucketConfiguration(),
             icebergCatalogConfiguration = pojo.toIcebergCatalogConfiguration(),
-            // When running in dedup mode, we need to process everything in serial,
-            // so that we don't overwrite newer records with older records.
-            // For the sake of simplicity, just set workers to 1 regardless of
-            // sync mode.
-            numProcessRecordsWorkers = 1,
-            numProcessBatchWorkers = 1,
         )
     }
 }
