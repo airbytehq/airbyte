@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
-  dockerImageTag: 3.1.8
+  dockerImageTag: 3.1.9
   dockerRepository: airbyte/source-instagram
   githubIssueLabel: source-instagram
   icon: instagram.svg
@@ -45,6 +45,8 @@ data:
       - story_insights
       - users
       - user_lifetime_insights
+      - profile_activity
+      - navigation
   documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
   erdUrl: https://dbdocs.io/airbyteio/source-instagram?view=relationships
   tags:

@@ -233,6 +233,8 @@ class InstagramBreakDownResultsTransformation(RecordTransformation):
     """
 
     def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record_total_value = record.pop("total_value")
-        record["value"] = {res.get("dimension_values", [""])[0]: res.get("value") for res in record_total_value["breakdowns"][0]["results"]}
+        if record.get("total_value"):
+            res = record.pop("total_value")
+            record["value"] = {res.get("dimension_values", [""])[0]: res.get("value") for res in res["breakdowns"][0]["results"]}
         return record
+        

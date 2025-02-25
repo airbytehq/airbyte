@@ -1,0 +1,17 @@
+{
+  "data": [
+    {
+      "id": "18026588782970433",
+      "breakdown": "story_navigation_action_type",
+      "page_id": "103326699331825",
+      "business_account_id": "17841457777488191",
+      "metric": "profile_activity",
+      "value": {
+        "tap_forward": 2,
+        "tap_back": 1,
+        "tap_exit": 2,
+        "swipe_forward": 4
+      }
+    }
+  ]
+}
