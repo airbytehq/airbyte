@@ -29,7 +29,7 @@ import java.sql.Types
 
 class AirbyteValueToStatement {
     companion object {
-        private val toSqlType = AirbyteTypeToSqlType()
+        private val toSqlType = AirbyteTypeToMssqlType()
         private val toSqlValue = AirbyteValueToSqlValue()
         private val valueCoercingMapper =
             AirbyteValueDeepCoercingMapper(
@@ -67,7 +67,7 @@ class AirbyteValueToStatement {
 
         fun PreparedStatement.setAsNullValue(idx: Int, type: AirbyteType) {
             val sqlType = toSqlType.convert(type)
-            setNull(idx, sqlType)
+            setNull(idx, sqlType.sqlType)
         }
 
         private fun PreparedStatement.setAsBooleanValue(idx: Int, value: BooleanValue) {
@@ -95,7 +95,7 @@ class AirbyteValueToStatement {
             value: StringValue,
             type: AirbyteType
         ) {
-            val sqlType = toSqlType.convert(type)
+            val sqlType = toSqlType.convert(type).sqlType
             if (sqlType == Types.VARCHAR || sqlType == Types.LONGVARCHAR) {
                 setString(idx, value.value)
             } else {

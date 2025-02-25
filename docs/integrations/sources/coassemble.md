@@ -26,6 +26,7 @@ See the [Coassemble API docs](https://developers.coassemble.com/get-started) for
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.14 | 2025-02-22 | [54419](https://github.com/airbytehq/airbyte/pull/54419) | Update dependencies |
 | 0.0.13 | 2025-02-15 | [53757](https://github.com/airbytehq/airbyte/pull/53757) | Update dependencies |
 | 0.0.12 | 2025-02-08 | [53331](https://github.com/airbytehq/airbyte/pull/53331) | Update dependencies |
 | 0.0.11 | 2025-02-01 | [52795](https://github.com/airbytehq/airbyte/pull/52795) | Update dependencies |
