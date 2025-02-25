@@ -20,7 +20,6 @@ import io.airbyte.cdk.load.data.csv.toCsvRecord
 import io.airbyte.cdk.load.data.csv.toMssqlCsvRecord
 import io.airbyte.cdk.load.data.dataWithAirbyteMeta
 import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineTest
-import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.file.StreamProcessor
 import io.airbyte.cdk.load.file.avro.toAvroWriter
