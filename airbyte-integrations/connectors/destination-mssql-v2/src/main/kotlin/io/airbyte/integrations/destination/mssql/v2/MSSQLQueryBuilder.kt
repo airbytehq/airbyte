@@ -69,6 +69,8 @@ fun String.toQuery(context: Map<String, String>): String =
         context[it.groupValues[1]] ?: throw IllegalStateException("Context is missing ${it.value}")
     }
 
+fun shortHash(hashCode: Int): String = "%02x".format(hashCode)
+
 private val VAR_REGEX = "\\?(\\w+)".toRegex()
 
 private const val SCHEMA_KEY = "schema"
@@ -426,7 +428,7 @@ class MSSQLQueryBuilder(
         columns: List<String>,
         clustered: Boolean = false
     ): String {
-        val name = "${fqTableName.replace('.', '_')}_${columns.hashCode()}"
+        val name = "[${fqTableName.replace('.', '_')}_${shortHash(columns.hashCode())}]"
         val indexType = if (clustered) "CLUSTERED" else ""
         return CREATE_INDEX_QUERY.toQuery(
             indexType,

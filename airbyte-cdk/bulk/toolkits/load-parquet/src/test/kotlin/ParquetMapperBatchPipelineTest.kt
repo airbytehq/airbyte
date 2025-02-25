@@ -4,12 +4,12 @@
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.*
-import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
+import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineTest
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
 
-class ParquetMapperPipelineTest {
+class ParquetMapperBatchPipelineTest {
     @Test
     fun `test conversions nested in unions`() {
         val stream = mockk<DestinationStream>()
@@ -81,7 +81,7 @@ class ParquetMapperPipelineTest {
                         ),
                 )
             )
-        val pipeline = ParquetMapperPipelineFactory().create(stream)
+        val pipeline = ParquetMapperPipelineTest().create(stream)
         val schemaMapped = pipeline.finalSchema as ObjectType
         val (recordMapped, _) = pipeline.map(record)
 
