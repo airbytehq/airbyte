@@ -8,7 +8,7 @@ import uuid
 from enum import Enum, auto
 from typing import Dict, Optional
 
-import tomli
+import tomllib
 import tomli_w
 from dagger import Container, Directory
 
