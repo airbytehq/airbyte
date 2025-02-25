@@ -52,7 +52,7 @@ class NetsuiteStream(HttpStream, ABC):
 
     @property
     def default_datetime_format(self) -> str:
-        return NETSUITE_INPUT_DATE_FORMATS[self.index_datetime_format]
+        return "%d.%m.%Y"
 
     @property
     def name(self) -> str:
