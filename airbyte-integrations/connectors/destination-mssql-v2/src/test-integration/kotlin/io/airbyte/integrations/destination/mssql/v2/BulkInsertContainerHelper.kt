@@ -11,6 +11,8 @@ import com.azure.storage.common.sas.AccountSasPermission
 import com.azure.storage.common.sas.AccountSasResourceType
 import com.azure.storage.common.sas.AccountSasService
 import com.azure.storage.common.sas.AccountSasSignatureValues
+import com.azure.storage.common.sas.SasIpRange
+import com.azure.storage.common.sas.SasProtocol
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.DefaultNamespaceResult
 import io.airbyte.integrations.destination.mssql.v2.BulkInsertContainerHelper.getAccountName
@@ -18,11 +20,18 @@ import io.airbyte.integrations.destination.mssql.v2.BulkInsertContainerHelper.ge
 import io.airbyte.integrations.destination.mssql.v2.BulkInsertContainerHelper.getBlobContainer
 import io.airbyte.integrations.destination.mssql.v2.BulkInsertContainerHelper.getSharedAccessSignature
 import io.airbyte.integrations.destination.mssql.v2.MSSQLContainerHelper.getNetwork
+import java.io.File
+import java.net.URI
 import java.sql.DriverManager
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 import org.testcontainers.azure.AzuriteContainer
+import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.MSSQLServerContainer.MS_SQL_SERVER_PORT
+import org.testcontainers.containers.NginxContainer
+import org.testcontainers.containers.wait.strategy.HttpWaitStrategy
+import org.testcontainers.utility.MountableFile
 
 private const val BLOB_STORAGE_CREDENTIAL = "MyAzureBlobStorageCredential"
 private const val BLOB_STORAGE_PORT = 10000
@@ -82,6 +91,41 @@ object BulkInsertContainerHelper {
                 sharedAccessSignature = generateAccountSas(blobServiceClient)
 
                 prepareDatabaseForBulkInsert()
+
+                val proxyPassUrl = "http://$NETWORK_ALIAS:$BLOB_STORAGE_PORT/$WELL_KNOWN_ACCOUNT_NAME\$uri\$is_args\$args"
+                val nginxConf = File.createTempFile("nginx", ".tmp")
+                nginxConf.writeText(
+                    """
+                    events {}
+                    http {
+                        server {
+                            listen       80;
+                            resolver     127.0.0.11;
+                            location ~ ^/ {
+                                proxy_pass $proxyPassUrl;
+                                proxy_pass_request_headers      on;
+                            }
+                        }
+                    }
+                """.trimIndent(),
+                )
+
+                val nginx = NginxContainer("nginx:1.27.4")
+                    .withExposedPorts(80)
+                    .withNetwork(getNetwork())
+                    .withNetworkAliases("$WELL_KNOWN_ACCOUNT_NAME.blob.core.windows.net")
+                    .withCopyToContainer(MountableFile.forHostPath(nginxConf.path), "/etc/nginx/nginx.conf")
+                    .withLogConsumer { e -> logger.info { e.utf8String } }
+
+                nginx.start()
+
+//                val test = GenericContainer("alpine:3.17")
+//                    .withNetwork(getNetwork())
+//                    .withCommand("top")
+//                test.start()
+//
+//                val uri = URI("http://$WELL_KNOWN_ACCOUNT_NAME.blob.core.windows.net/$blobContainer?restype=container&comp=list&$sharedAccessSignature")
+//                println(test.execInContainer("wget", uri.toString()))
             }
         }
     }
@@ -95,7 +139,7 @@ object BulkInsertContainerHelper {
     fun getSharedAccessSignature(): String = sharedAccessSignature
 
     private fun generateAccountSas(blobServiceClient: BlobServiceClient): String {
-        val expiryTime = OffsetDateTime.now().plusDays(5)
+        val expiryTime = OffsetDateTime.now(ZoneOffset.UTC).plusDays(5)
         val accountSasPermission =
             AccountSasPermission()
                 .setAddPermission(true)
@@ -117,7 +161,9 @@ object BulkInsertContainerHelper {
                     accountSasService,
                     accountSasResourceType,
                 )
-                .setStartTime(OffsetDateTime.now().minusDays(5))
+                .setStartTime(OffsetDateTime.now(ZoneOffset.UTC).minusDays(5))
+                .setProtocol(SasProtocol.HTTPS_HTTP)
+                .setSasIpRange(SasIpRange().setIpMax("0.0.0.0").setIpMax("255.255.255.255"))
 
         return blobServiceClient.generateAccountSas(accountSasSignatureValues)
     }
@@ -129,13 +175,13 @@ object BulkInsertContainerHelper {
                 statement.execute("CREATE DATABASE $DATABASE_NAME")
                 statement.execute("USE $DATABASE_NAME")
                 statement.execute(
-                    "CREATE MASTER KEY ENCRYPTION BY PASSWORD = '$MASTER_ENCRYPTION_PASSWORD'",
+                    "CREATE MASTER KEY ENCRYPTION BY PASSWORD = '$MASTER_ENCRYPTION_PASSWORD'"
                 )
                 statement.execute(
-                    "CREATE DATABASE SCOPED CREDENTIAL $BLOB_STORAGE_CREDENTIAL WITH IDENTITY = 'SHARED ACCESS SIGNATURE', SECRET = '${getSharedAccessSignature()}'",
+                    "CREATE DATABASE SCOPED CREDENTIAL $BLOB_STORAGE_CREDENTIAL WITH IDENTITY = 'SHARED ACCESS SIGNATURE', SECRET = '${getSharedAccessSignature()}'"
                 )
                 statement.execute(
-                    "CREATE EXTERNAL DATA SOURCE $DATA_SOURCE_NAME WITH ( TYPE = BLOB_STORAGE, LOCATION = '${createBlobContainerUrl()}', CREDENTIAL = $BLOB_STORAGE_CREDENTIAL)",
+                    "CREATE EXTERNAL DATA SOURCE $DATA_SOURCE_NAME WITH ( TYPE = BLOB_STORAGE, LOCATION = '${createBlobContainerUrl()}', CREDENTIAL = $BLOB_STORAGE_CREDENTIAL)"
                 )
             }
         }
@@ -160,7 +206,7 @@ object BulkInsertContainerHelper {
     }
 
     private fun createBlobContainerUrl(): String {
-        return "http://$NETWORK_ALIAS:$BLOB_STORAGE_PORT/$WELL_KNOWN_ACCOUNT_NAME/${getBlobContainer()}"
+        return "http://$WELL_KNOWN_ACCOUNT_NAME.blob.core.windows.net/${getBlobContainer()}"
     }
 }
 
