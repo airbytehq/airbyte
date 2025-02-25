@@ -33,7 +33,9 @@ fun MSSQLConfiguration.toSQLServerDataSource(): SQLServerDataSource {
     val connectionString =
         StringBuilder()
             .apply {
-                append("jdbc:sqlserver://${host}:${port};databaseName=${database};authentication=${authenticationMethod.name}")
+                append(
+                    "jdbc:sqlserver://${host}:${port};databaseName=${database};authentication=${authenticationMethod.name}"
+                )
 
                 when (sslMethod) {
                     is EncryptedVerify -> {
