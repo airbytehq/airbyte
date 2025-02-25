@@ -67,7 +67,6 @@ data class DefaultJdbcStreamStateValue(
                         cursors = mapOf(cursor.id to cursorCheckpoint),
                     )
                 )
-
             }
     }
 }
