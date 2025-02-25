@@ -32,7 +32,7 @@ data:
   ab_internal:
     sl: 100
     ql: 100
-    is_enterprise: true
+    isEnterprise: true
   connectorTestSuitesOptions:
     - suite: unitTests
 metadataSpecVersion: "1.0"
