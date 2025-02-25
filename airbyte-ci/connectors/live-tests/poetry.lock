@@ -944,14 +944,14 @@ test-randomorder = ["pytest-randomly"]
 
 [[package]]
 name = "dagger-io"
-version = "0.16.0"
+version = "0.16.1"
 description = "A client package for running Dagger pipelines in Python."
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "dagger_io-0.16.0-py3-none-any.whl", hash = "sha256:4a03c0eea7f02dcc486e7aee22bbfafb65eac993124ac89df5083023f09c31b1"},
-    {file = "dagger_io-0.16.0.tar.gz", hash = "sha256:5605638dbce38e04d54548ffa9fc736838906a04d046f8390d21bb53285fa575"},
+    {file = "dagger_io-0.16.1-py3-none-any.whl", hash = "sha256:e53e8569562120324a59699795cb0bcd3a33f3ee0d72f82102581ea9bf03e442"},
+    {file = "dagger_io-0.16.1.tar.gz", hash = "sha256:370b53fcef5a7309f7053dff9707c775e882c6454897be6f62a02fba0d4a2bb5"},
 ]
 
 [package.dependencies]
@@ -4847,4 +4847,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11,<3.12"
-content-hash = "ca752ca67a30a83263f333917ed0b7f88f19433456b46fb5a4e8031fab01527b"
+content-hash = "ffdb6485d2169f4048a4ae7229835b7a86e5731ae079dad3454e3ed6d0e844c4"
