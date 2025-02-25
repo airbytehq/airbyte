@@ -51,6 +51,7 @@ dependencies {
 
     integrationTestImplementation("org.testcontainers:azure:$testContainersVersion")
     integrationTestImplementation("org.testcontainers:mssqlserver:$testContainersVersion")
+    integrationTestImplementation("org.testcontainers:nginx:$testContainersVersion")
     integrationTestImplementation("com.azure:azure-identity:1.15.3")
     integrationTestImplementation("com.azure:azure-storage-blob:12.29.0")
 }
