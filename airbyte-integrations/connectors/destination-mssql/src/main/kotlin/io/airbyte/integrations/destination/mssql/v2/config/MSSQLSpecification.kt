@@ -51,7 +51,7 @@ class MSSQLSpecification : ConfigurationSpecification(), LoadTypeSpecification {
     @get:JsonPropertyDescription("The authentication method which is used to access the database.")
     @get:JsonProperty("authentication_method")
     @get:JsonSchemaInject(json = """{"order":4}""")
-    val authenticationMethod: AuthenticationMethod = SqlPassword()
+    lateinit var authenticationMethod: AuthenticationMethod
 
     @get:JsonSchemaTitle("User")
     @get:JsonPropertyDescription("The username which is used to access the database.")
