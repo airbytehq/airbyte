@@ -5,15 +5,19 @@ connectionSpecification:
   type: object
   required:
     - domain_url
-    - access_key
+    - client_secret
+    - client_id
   properties:
     domain_url:
       type: string
       title: Domain URL
       examples:
         - "https://company-name.gainsightcloud.com"
-    access_key:
+    client_id:
       type: string
-      title: Access Key
+      title: Client ID
+    client_secret:
+      type: string
+      title: Client Secret
       airbyte_secret: true
   additionalProperties: true
