@@ -5,7 +5,7 @@ from unittest.mock import patch
 from xml.etree import ElementTree
 
 import pytest
-from source_falcon.schema_helper import ReportXMLSchemaHelper
+from source_workday.schema_helper import ReportXMLSchemaHelper
 
 
 @pytest.mark.parametrize(

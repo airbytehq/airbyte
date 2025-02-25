@@ -37,7 +37,7 @@ definitions:
                 value: "{{ record }}"
         schema_loader:
           type: CustomSchemaLoader
-          class_name: source_falcon.schema_loader.ReportSchemaLoader
+          class_name: source_workday.schema_loader.ReportSchemaLoader
     base_requester:
       type: HttpRequester
       url_base: https://{{config.host}}/ccx/service/customreport2/{{config.tenant_id}}/

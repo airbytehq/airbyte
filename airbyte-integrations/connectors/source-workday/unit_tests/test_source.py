@@ -4,7 +4,7 @@ import pathlib
 import unittest
 from unittest.mock import MagicMock
 
-from source_falcon import SourceFalcon
+from source_workday import SourceWorkday
 
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
@@ -23,7 +23,7 @@ def mock_schema_request(http_mocker: HttpMocker, report: str):
     )
 
 
-class TestSourceFalcon(unittest.TestCase):
+class TestSourceWorkday(unittest.TestCase):
     raas_config = {
         "tenant_id": "test_tenant",
         "host": "test_host",
@@ -47,20 +47,20 @@ class TestSourceFalcon(unittest.TestCase):
 
     @HttpMocker()
     def test_raas_streams(self, http_mocker: HttpMocker):
-        source = SourceFalcon()
+        source = SourceWorkday()
         mock_schema_request(http_mocker=http_mocker, report="report_1")
         streams = source.streams(self.raas_config)
         assert len(streams) == 1
         assert streams[0].name == self.raas_config["credentials"]["report_ids"][0]
 
     def test_rest_streams(self):
-        source = SourceFalcon()
+        source = SourceWorkday()
         streams = source.streams(self.rest_config)
         assert len(streams) == 11
 
     @HttpMocker()
     def test_raas_check(self, http_mocker: HttpMocker):
-        source = SourceFalcon()
+        source = SourceWorkday()
         mock_schema_request(http_mocker=http_mocker, report="report_1")
 
         http_mocker.get(
@@ -77,7 +77,7 @@ class TestSourceFalcon(unittest.TestCase):
 
     @HttpMocker()
     def test_rest_check(self, http_mocker: HttpMocker):
-        source = SourceFalcon()
+        source = SourceWorkday()
 
         http_mocker.get(
             HttpRequest(

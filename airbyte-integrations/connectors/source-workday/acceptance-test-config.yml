@@ -1,10 +1,10 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
-connector_image: airbyte/source-falcon:dev
+connector_image: airbyte/source-workday:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_falcon/spec.yaml"
+      - spec_path: "source_workday/spec.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"

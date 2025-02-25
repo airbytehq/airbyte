@@ -5,11 +5,11 @@
 
 import sys
 
-from source_falcon import SourceFalcon
+from source_workday import SourceWorkday
 
 from airbyte_cdk.entrypoint import launch
 
 
 if __name__ == "__main__":
-    source = SourceFalcon()
+    source = SourceWorkday()
     launch(source, sys.argv[1:])

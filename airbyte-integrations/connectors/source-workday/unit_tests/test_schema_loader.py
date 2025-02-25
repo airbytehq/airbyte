@@ -2,8 +2,8 @@
 
 from unittest.mock import patch
 
-from source_falcon.schema_helper import ReportXMLSchemaHelper
-from source_falcon.schema_loader import ReportSchemaLoader
+from source_workday.schema_helper import ReportXMLSchemaHelper
+from source_workday.schema_loader import ReportSchemaLoader
 
 
 def test_schema_loader_uses_cached_schema():

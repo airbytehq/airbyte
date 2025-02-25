@@ -2,7 +2,7 @@
 
 from typing import Any, Mapping
 
-from source_falcon.schema_helper import ReportXMLSchemaHelper
+from source_workday.schema_helper import ReportXMLSchemaHelper
 
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 

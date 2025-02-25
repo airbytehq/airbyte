@@ -3,7 +3,7 @@
 import json
 from typing import Any, Dict
 
-from source_falcon.source import SourceFalcon
+from source_workday.source import SourceWorkday
 from unit_tests.integration.rest.test_base import TestBase
 
 from airbyte_cdk.models import SyncMode
@@ -39,7 +39,7 @@ class TestWorkersRelatedStreams(TestCommon):
                     status_code=200,
                 ),
             )
-        output = read(SourceFalcon(), self.config(), self.catalog())
+        output = read(SourceWorkday(), self.config(), self.catalog())
         assert len(output.records) == self.output_records_count
 
     @HttpMocker()
@@ -86,7 +86,7 @@ class TestWorkersRelatedStreams(TestCommon):
                 ),
             )
 
-        output = read(SourceFalcon(), self.config(), self.catalog())
+        output = read(SourceWorkday(), self.config(), self.catalog())
         assert len(output.records) == total * 3  # 250 records per worker, workers count is 3
 
 
@@ -112,7 +112,7 @@ class TestWorkersRelatedStreamsIncremental(TestWorkersRelatedStreams):
             )
 
         output = read(
-            SourceFalcon(),
+            SourceWorkday(),
             self.config(),
             self.catalog(SyncMode.incremental),
             StateBuilder().with_stream_state(self.stream_name, self.state).build(),

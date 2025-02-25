@@ -4,22 +4,22 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 version = "0.2.0"
-name = "source-falcon"
-description = "Source implementation for falcon."
+name = "source-workday"
+description = "Source implementation for Workday."
 authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
 readme = "README.md"
-documentation = "https://docs.airbyte.com/integrations/sources/falcon"
+documentation = "https://docs.airbyte.com/integrations/sources/workday"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
-packages = [ { include = "source_falcon" }, {include = "main.py" } ]
+packages = [ { include = "source_workday" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
 airbyte-cdk = "^5"
 
 [tool.poetry.scripts]
-source-falcon = "source_falcon.run:run"
+source-workday = "source_workday.run:run"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "*"

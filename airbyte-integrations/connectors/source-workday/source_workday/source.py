@@ -7,7 +7,7 @@ from cgitb import reset
 from copy import deepcopy
 from typing import Any, List, Mapping, Tuple
 
-from source_falcon.schema_helper import ReportXMLSchemaHelper
+from source_workday.schema_helper import ReportXMLSchemaHelper
 from typing_extensions import override
 
 from airbyte_cdk import HttpAvailabilityStrategy, Stream
@@ -33,7 +33,7 @@ REPORTS_STREAM_NAME = "Reports"
 
 
 # Declarative Source
-class SourceFalcon(YamlDeclarativeSource):
+class SourceWorkday(YamlDeclarativeSource):
     def __init__(self):
         super().__init__(**{"path_to_yaml": "manifest.yaml"})
 

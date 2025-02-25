@@ -3,6 +3,7 @@
 #
 
 
-from .source import SourceFalcon
+from .source import SourceWorkday
 
-__all__ = ["SourceFalcon"]
+
+__all__ = ["SourceWorkday"]

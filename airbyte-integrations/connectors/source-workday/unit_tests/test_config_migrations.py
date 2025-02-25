@@ -5,8 +5,8 @@ import pathlib
 from typing import Any, Mapping
 
 import pytest
-from source_falcon import SourceFalcon
-from source_falcon.config_migrations import MigrateRAASCredentials
+from source_workday import SourceWorkday
+from source_workday.config_migrations import MigrateRAASCredentials
 
 
 def load_config(path: str) -> Mapping[str, Any]:
@@ -38,7 +38,7 @@ def revert_config(path: str) -> None:
 )
 def test_migrate_config(config_file_path, run_revert):
     args = ["check", "--config", config_file_path]
-    source = SourceFalcon()
+    source = SourceWorkday()
 
     MigrateRAASCredentials().migrate(args, source)
     migrated_config = load_config(config_file_path)

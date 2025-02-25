@@ -1,7 +1,7 @@
-# Falcon Source
+# Workday Source
 
-This is the repository for the Falcon configuration based source connector.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/falcon).
+This is the repository for the workday configuration based source connector.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/workday).
 
 ## Local development
 
@@ -22,8 +22,8 @@ poetry install --with dev
 
 ### Create credentials
 
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/falcon)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_falcon/spec.yaml` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/workday)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_workday/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file.
 
@@ -31,10 +31,10 @@ See `sample_files/sample_config.json` for a sample config file.
 ### Locally running the connector
 
 ```
-poetry run source-falcon spec
-poetry run source-falcon check --config secrets/config.json
-poetry run source-falcon discover --config secrets/config.json
-poetry run source-falcon read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run source-workday spec
+poetry run source-workday check --config secrets/config.json
+poetry run source-workday discover --config secrets/config.json
+poetry run source-workday read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
 ### Running tests
@@ -50,27 +50,27 @@ poetry run pytest unit_tests
 1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
 2. Run the following command to build the docker image:
 ```bash
-airbyte-ci connectors --name=source-falcon build
+airbyte-ci connectors --name=source-workday build
 ```
 
-An image will be available on your host with the tag `airbyte/source-falcon:dev`.
+An image will be available on your host with the tag `airbyte/source-workday:dev`.
 
 
 ### Running as a docker container
 
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-falcon:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-falcon:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-falcon:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-falcon:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-workday:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-workday:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-workday:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-workday:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ### Running our CI test suite
 
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
 ```bash
-airbyte-ci connectors --name=source-falcon test
+airbyte-ci connectors --name=source-workday test
 ```
 
 ### Customizing acceptance Tests
@@ -80,7 +80,7 @@ If your connector requires to create or destroy resources for use during accepta
 
 ### Dependency Management
 
-All of your dependencies should be managed via Poetry. 
+All of your dependencies should be managed via Poetry.
 To add a new dependency, run:
 ```bash
 poetry add <package-name>
@@ -91,12 +91,12 @@ Please commit the changes to `pyproject.toml` and `poetry.lock` files.
 ## Publishing a new version of the connector
 
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
-1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-falcon test`
-2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
+1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-workday test`
+2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)):
     - bump the `dockerImageTag` value in in `metadata.yaml`
     - bump the `version` value in `pyproject.toml`
 3. Make sure the `metadata.yaml` content is up to date.
-4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/falcon.md`).
+4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/workday.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
