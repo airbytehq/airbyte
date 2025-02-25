@@ -114,7 +114,7 @@ class SourceMicrosoftSharePointSpec(AbstractFileBasedSpec, BaseModel):
     site_url: str = Field(
         title="Site URL",
         description="Url of SharePoint site to search for files. Leave empty to search in the main site.",
-        order=4,
+        order=5,
         default="",
     )
 
