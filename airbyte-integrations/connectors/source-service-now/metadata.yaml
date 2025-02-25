@@ -24,8 +24,8 @@ data:
   name: service-now
   releaseDate: 2021-01-01
   releaseStage: alpha
-  supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-service-now
+  supportLevel: certified
+  documentationUrl: https://docs.airbyte.com/integrations/sources/service-now
   tags:
     - cdk:low-code
     - language:manifest-only
