@@ -46,6 +46,7 @@ The Younium source connector supports the following [sync modes](https://docs.ai
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
+| 0.4.10 | 2025-02-22 | [54495](https://github.com/airbytehq/airbyte/pull/54495) | Update dependencies |
 | 0.4.9 | 2025-02-15 | [54028](https://github.com/airbytehq/airbyte/pull/54028) | Update dependencies |
 | 0.4.8 | 2025-02-08 | [53520](https://github.com/airbytehq/airbyte/pull/53520) | Update dependencies |
 | 0.4.7 | 2025-02-01 | [53042](https://github.com/airbytehq/airbyte/pull/53042) | Update dependencies |

@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-teamtailor
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.33.6@sha256:81af934a2136edf0521a71697938cea20d1c6eb36c944566b9455bdd2a47d2bd
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
   connectorSubtype: api
   connectorType: source
   definitionId: 6d811b1b-5b94-4d5a-a74a-c2e46e5cb87c
-  dockerImageTag: 0.0.14
+  dockerImageTag: 0.0.15
   dockerRepository: airbyte/source-teamtailor
   githubIssueLabel: source-teamtailor
   icon: icon.svg
