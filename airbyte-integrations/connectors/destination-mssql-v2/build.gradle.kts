@@ -49,11 +49,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
-    integrationTestImplementation("org.testcontainers:azure:$testContainersVersion")
     integrationTestImplementation("org.testcontainers:mssqlserver:$testContainersVersion")
-    integrationTestImplementation("org.testcontainers:nginx:$testContainersVersion")
-    integrationTestImplementation("com.azure:azure-identity:1.15.3")
-    integrationTestImplementation("com.azure:azure-storage-blob:12.29.0")
 }
 
 tasks.named<Test>("test") {

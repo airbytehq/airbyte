@@ -19,8 +19,7 @@ class AzureBlobStorageClientFactory(
     @Secondary
     fun make(): AzureBlobClient {
         val endpoint =
-            azureBlobStorageConfigurationProvider.azureBlobStorageConfiguration.endpoint
-                ?: "https://${azureBlobStorageConfigurationProvider.azureBlobStorageConfiguration.accountName}.blob.core.windows.net"
+            "https://${azureBlobStorageConfigurationProvider.azureBlobStorageConfiguration.accountName}.blob.core.windows.net"
 
         val azureServiceClient =
             BlobServiceClientBuilder()

@@ -43,18 +43,11 @@ interface AzureBlobStorageSpecification {
     )
     val azureBlobStorageSharedAccessSignature: String
 
-    @get:JsonSchemaTitle("Azure Blob Storage Endpoint")
-    @get:JsonPropertyDescription("The Azure Blob Service endpoint.")
-    @get:JsonProperty("azure_blob_storage_endpoint")
-    @get:JsonSchemaInject(json = """{"examples":"https://myaccount.blob.core.windows.net"}""")
-    val azureBlobStorageEndpoint: String?
-
     fun toAzureBlobStorageConfiguration(): AzureBlobStorageConfiguration {
         return AzureBlobStorageConfiguration(
             azureBlobStorageAccountName,
             azureBlobStorageContainerName,
             azureBlobStorageSharedAccessSignature,
-            azureBlobStorageEndpoint,
         )
     }
 }
@@ -63,7 +56,6 @@ data class AzureBlobStorageConfiguration(
     val accountName: String,
     val containerName: String,
     val sharedAccessSignature: String,
-    val endpoint: String?
 )
 
 interface AzureBlobStorageConfigurationProvider {

@@ -169,7 +169,7 @@ internal class BulkInsert :
         @JvmStatic
         @BeforeAll
         fun beforeAll() {
-            BulkInsertContainerHelper.start()
+            MSSQLContainerHelper.start()
         }
     }
 }
