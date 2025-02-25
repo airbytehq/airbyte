@@ -475,8 +475,8 @@ not_empty_subfolder_response = {
                     "http://example.com/download",
                     datetime.strptime("2021-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
                     None,
-                    'dummy_drive_id',
-                    True
+                    "dummy_drive_id",
+                    True,
                 )
             ],
             False,
@@ -499,8 +499,8 @@ not_empty_subfolder_response = {
                     "http://example.com/nested",
                     datetime.strptime("2021-01-02T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
                     None,
-                    'dummy_drive_id',
-                    True
+                    "dummy_drive_id",
+                    True,
                 )
             ],
             False,
