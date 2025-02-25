@@ -23,6 +23,7 @@ Docs : https://smartreach.io/api_docs#smartreach-api
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.13 | 2025-02-22 | [54480](https://github.com/airbytehq/airbyte/pull/54480) | Update dependencies |
 | 0.0.12 | 2025-02-15 | [54098](https://github.com/airbytehq/airbyte/pull/54098) | Update dependencies |
 | 0.0.11 | 2025-02-08 | [53577](https://github.com/airbytehq/airbyte/pull/53577) | Update dependencies |
 | 0.0.10 | 2025-02-01 | [53082](https://github.com/airbytehq/airbyte/pull/53082) | Update dependencies |

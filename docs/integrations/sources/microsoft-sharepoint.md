@@ -300,31 +300,32 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
-| 0.6.0   | 2025-02-20 | [54140](https://github.com/airbytehq/airbyte/pull/54140) | Implement file transfer mode to move raw files                            |
-| 0.5.2   | 2024-08-24 | [45646](https://github.com/airbytehq/airbyte/pull/45646) | Fix: handle wrong folder name                                             |
-| 0.5.1   | 2024-08-24 | [44660](https://github.com/airbytehq/airbyte/pull/44660) | Update dependencies                                                       |
-| 0.5.0   | 2024-08-19 | [42983](https://github.com/airbytehq/airbyte/pull/42983) | Migrate to CDK v4.5.1                                                     |
-| 0.4.5   | 2024-08-19 | [44382](https://github.com/airbytehq/airbyte/pull/44382) | Update dependencies                                                       |
-| 0.4.4   | 2024-08-12 | [43743](https://github.com/airbytehq/airbyte/pull/43743) | Update dependencies                                                       |
-| 0.4.3   | 2024-08-10 | [43565](https://github.com/airbytehq/airbyte/pull/43565) | Update dependencies                                                       |
-| 0.4.2   | 2024-08-03 | [43235](https://github.com/airbytehq/airbyte/pull/43235) | Update dependencies                                                       |
-| 0.4.1   | 2024-07-27 | [42704](https://github.com/airbytehq/airbyte/pull/42704) | Update dependencies                                                       |
-| 0.4.0   | 2024-07-25 | [42008](https://github.com/airbytehq/airbyte/pull/42008) | Migrate to CDK v3.5.3                                                     |
-| 0.3.1   | 2024-07-20 | [42143](https://github.com/airbytehq/airbyte/pull/42143) | Update dependencies                                                       |
-| 0.3.0   | 2024-07-16 | [42007](https://github.com/airbytehq/airbyte/pull/42007) | Migrate to CDK v2.4.0                                                     |
-| 0.2.11  | 2024-07-13 | [41688](https://github.com/airbytehq/airbyte/pull/41688) | Update dependencies                                                       |
-| 0.2.10  | 2024-07-10 | [41589](https://github.com/airbytehq/airbyte/pull/41589) | Update dependencies                                                       |
-| 0.2.9   | 2024-07-06 | [40917](https://github.com/airbytehq/airbyte/pull/40917) | Update dependencies                                                       |
-| 0.2.8   | 2024-06-26 | [40539](https://github.com/airbytehq/airbyte/pull/40539) | Update dependencies                                                       |
-| 0.2.7   | 2024-06-25 | [40357](https://github.com/airbytehq/airbyte/pull/40357) | Update dependencies                                                       |
-| 0.2.6   | 2024-06-24 | [40233](https://github.com/airbytehq/airbyte/pull/40233) | Update dependencies                                                       |
-| 0.2.5   | 2024-06-22 | [39987](https://github.com/airbytehq/airbyte/pull/39987) | Update dependencies                                                       |
-| 0.2.4   | 2024-05-29 | [38675](https://github.com/airbytehq/airbyte/pull/38675) | Avoid error on empty stream when running discover                         |
-| 0.2.3   | 2024-04-17 | [37372](https://github.com/airbytehq/airbyte/pull/37372) | Make refresh token optional                                               |
-| 0.2.2   | 2024-03-28 | [36573](https://github.com/airbytehq/airbyte/pull/36573) | Update QL to 400                                                          |
-| 0.2.1   | 2024-03-22 | [36381](https://github.com/airbytehq/airbyte/pull/36381) | Unpin CDK                                                                 |
-| 0.2.0   | 2024-03-06 | [35830](https://github.com/airbytehq/airbyte/pull/35830) | Add fetching shared items                                                 |
-| 0.1.0   | 2024-01-25 | [33537](https://github.com/airbytehq/airbyte/pull/33537) | New source                                                                |
+| 0.6.1 | 2025-02-22 | [45062](https://github.com/airbytehq/airbyte/pull/45062) | Update dependencies |
+| 0.6.0 | 2025-02-20 | [54140](https://github.com/airbytehq/airbyte/pull/54140) | Implement file transfer mode to move raw files |
+| 0.5.2 | 2024-08-24 | [45646](https://github.com/airbytehq/airbyte/pull/45646) | Fix: handle wrong folder name |
+| 0.5.1 | 2024-08-24 | [44660](https://github.com/airbytehq/airbyte/pull/44660) | Update dependencies |
+| 0.5.0 | 2024-08-19 | [42983](https://github.com/airbytehq/airbyte/pull/42983) | Migrate to CDK v4.5.1 |
+| 0.4.5 | 2024-08-19 | [44382](https://github.com/airbytehq/airbyte/pull/44382) | Update dependencies |
+| 0.4.4 | 2024-08-12 | [43743](https://github.com/airbytehq/airbyte/pull/43743) | Update dependencies |
+| 0.4.3 | 2024-08-10 | [43565](https://github.com/airbytehq/airbyte/pull/43565) | Update dependencies |
+| 0.4.2 | 2024-08-03 | [43235](https://github.com/airbytehq/airbyte/pull/43235) | Update dependencies |
+| 0.4.1 | 2024-07-27 | [42704](https://github.com/airbytehq/airbyte/pull/42704) | Update dependencies |
+| 0.4.0 | 2024-07-25 | [42008](https://github.com/airbytehq/airbyte/pull/42008) | Migrate to CDK v3.5.3 |
+| 0.3.1 | 2024-07-20 | [42143](https://github.com/airbytehq/airbyte/pull/42143) | Update dependencies |
+| 0.3.0 | 2024-07-16 | [42007](https://github.com/airbytehq/airbyte/pull/42007) | Migrate to CDK v2.4.0 |
+| 0.2.11 | 2024-07-13 | [41688](https://github.com/airbytehq/airbyte/pull/41688) | Update dependencies |
+| 0.2.10 | 2024-07-10 | [41589](https://github.com/airbytehq/airbyte/pull/41589) | Update dependencies |
+| 0.2.9 | 2024-07-06 | [40917](https://github.com/airbytehq/airbyte/pull/40917) | Update dependencies |
+| 0.2.8 | 2024-06-26 | [40539](https://github.com/airbytehq/airbyte/pull/40539) | Update dependencies |
+| 0.2.7 | 2024-06-25 | [40357](https://github.com/airbytehq/airbyte/pull/40357) | Update dependencies |
+| 0.2.6 | 2024-06-24 | [40233](https://github.com/airbytehq/airbyte/pull/40233) | Update dependencies |
+| 0.2.5 | 2024-06-22 | [39987](https://github.com/airbytehq/airbyte/pull/39987) | Update dependencies |
+| 0.2.4 | 2024-05-29 | [38675](https://github.com/airbytehq/airbyte/pull/38675) | Avoid error on empty stream when running discover |
+| 0.2.3 | 2024-04-17 | [37372](https://github.com/airbytehq/airbyte/pull/37372) | Make refresh token optional |
+| 0.2.2 | 2024-03-28 | [36573](https://github.com/airbytehq/airbyte/pull/36573) | Update QL to 400 |
+| 0.2.1 | 2024-03-22 | [36381](https://github.com/airbytehq/airbyte/pull/36381) | Unpin CDK |
+| 0.2.0 | 2024-03-06 | [35830](https://github.com/airbytehq/airbyte/pull/35830) | Add fetching shared items |
+| 0.1.0 | 2024-01-25 | [33537](https://github.com/airbytehq/airbyte/pull/33537) | New source |
 
 </details>
 

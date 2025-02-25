@@ -27,6 +27,10 @@ class MockTaskLauncher : DestinationTaskLauncher {
         batchEnvelopes.add(wrapped)
     }
 
+    override suspend fun handleStreamComplete(stream: DestinationStream.Descriptor) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun handleStreamClosed(stream: DestinationStream.Descriptor) {
         throw NotImplementedError()
     }
