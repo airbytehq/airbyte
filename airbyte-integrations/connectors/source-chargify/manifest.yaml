@@ -1,6 +1,10 @@
-version: 4.5.4
+version: 5.7.5
 
 type: DeclarativeSource
+
+description: >-
+  Chargify/Maxio connector which supports customers, subscriptions, invoices,
+  coupons, transactions and products. Incremental syncing is supported
 
 check:
   type: CheckStream
@@ -20,12 +24,15 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: customers.json
           http_method: GET
+          request_parameters:
+            sort: updated_at
+            direction: asc
+            date_field: updated_at
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - "*"
               - customer
         paginator:
           type: DefaultPaginator
@@ -41,6 +48,27 @@ definitions:
             type: PageIncrement
             page_size: 200
             start_from_page: 1
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start_datetime
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -56,12 +84,15 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: subscriptions.json
           http_method: GET
+          request_parameters:
+            sort: updated_at
+            direction: asc
+            date_field: updated_at
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - "*"
               - subscription
         paginator:
           type: DefaultPaginator
@@ -77,6 +108,27 @@ definitions:
             type: PageIncrement
             page_size: 200
             start_from_page: 1
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start_datetime
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -90,14 +142,18 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: invoices
+          path: invoices.json
           http_method: GET
+          request_parameters:
+            sort: updated_at
+            direction: asc
+            date_field: updated_at
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - invoices.json
+              - invoices
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -112,27 +168,52 @@ definitions:
             type: PageIncrement
             page_size: 200
             start_from_page: 1
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start_datetime
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/invoices"
     coupons:
       type: DeclarativeStream
-      name: coupons
-      primary_key:
-        - id
       retriever:
         type: SimpleRetriever
+        request_parameters:
+          sort: updated_at
+          direction: asc
+          date_field: updated_at
         requester:
           $ref: "#/definitions/base_requester"
           path: coupons.json
           http_method: GET
+          request_parameters:
+            sort: updated_at
+            direction: asc
+            date_field: updated_at
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - "*"
               - coupon
         paginator:
           type: DefaultPaginator
@@ -148,28 +229,56 @@ definitions:
             type: PageIncrement
             page_size: 200
             start_from_page: 1
+      name: coupons
+      primary_key:
+        - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start_datetime
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/coupons"
     transactions:
       type: DeclarativeStream
-      name: transactions
-      primary_key:
-        - id
       retriever:
         type: SimpleRetriever
+        request_parameters:
+          sort: created_at
+          direction: asc
+          date_field: created_at
         requester:
           $ref: "#/definitions/base_requester"
-          path: transaction
+          path: transactions.json
           http_method: GET
+          request_parameters:
+            sort: created_at
+            direction: asc
+            date_field: created_at
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - "*"
-              - transactions.json
+              - transaction
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -184,17 +293,101 @@ definitions:
             type: PageIncrement
             page_size: 200
             start_from_page: 1
+      name: transactions
+      primary_key:
+        - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start_datetime
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/transactions"
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: products.json
+          http_method: GET
+          request_parameters:
+            sort: updated_at
+            direction: asc
+            date_field: updated_at
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - product
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 200
+            start_from_page: 1
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%d %H:%M:%S.%f+00:00"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: start_datetime
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['domain'] }}/
     authenticator:
       type: BasicHttpAuthenticator
-      username: '{{ config["api_key"] }}'
       password: x
+      username: "{{ config[\"api_key\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/customers"
@@ -202,6 +395,7 @@ streams:
   - $ref: "#/definitions/streams/invoices"
   - $ref: "#/definitions/streams/coupons"
   - $ref: "#/definitions/streams/transactions"
+  - $ref: "#/definitions/streams/products"
 
 spec:
   type: Spec
@@ -211,13 +405,13 @@ spec:
     required:
       - api_key
       - domain
-      - username
+      - start_date
     properties:
       api_key:
         type: string
         description: Maxio Advanced Billing/Chargify API Key.
-        title: API Key
         order: 0
+        title: API Key
         airbyte_secret: true
       domain:
         type: string
@@ -226,146 +420,176 @@ spec:
         title: Domain
       username:
         type: string
-        title: Username
         order: 2
+        title: Username
       password:
         type: string
+        order: 3
         title: Password
         always_show: true
         airbyte_secret: true
-        order: 3
+      start_date:
+        type: string
+        order: 4
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
     additionalProperties: true
 
 metadata:
   autoImportSchema:
-    customers: false
+    customers: true
     subscriptions: false
     invoices: false
     coupons: false
     transactions: false
+    products: false
   yamlComponents:
+    streams:
+      subscriptions:
+        - recordSelector
+      invoices:
+        - recordSelector
+      transactions:
+        - recordSelector
+      products:
+        - recordSelector
     global:
       - authenticator
-  testedStreams: {}
+  testedStreams:
+    customers:
+      hasRecords: true
+      streamHash: c4bce0c0f0780f67f8789c55ec8f3b26d7fe9439
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    subscriptions:
+      hasRecords: true
+      streamHash: bdedd423e8c7bc6fe2fa5ba50da7b71b29749ea7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    invoices:
+      hasRecords: true
+      streamHash: c87477603131ac6422c5b3b8618990a348a339da
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    coupons:
+      hasRecords: true
+      streamHash: 716cf6379ca3035c093da6be9d8dad5925977ce0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    transactions:
+      hasRecords: true
+      streamHash: d476a6245db85a2768810a46a7e20defa107afd9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    products:
+      hasRecords: true
+      streamHash: ba95db2d1aee1a6a843beaf3df5886db6c6e63e9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
   customers:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       address:
         type:
-          - "null"
           - string
+          - "null"
       address_2:
         type:
-          - "null"
           - string
-      cc_emails:
-        type:
           - "null"
-          - string
       city:
         type:
-          - "null"
           - string
+          - "null"
       country:
         type:
-          - "null"
           - string
+          - "null"
       country_name:
         type:
-          - "null"
           - string
+          - "null"
       created_at:
         type:
-          - "null"
           - string
-        format: date-time
-      default_subscription_group_uid:
-        type:
           - "null"
-          - string
       email:
         type:
-          - "null"
           - string
+          - "null"
       first_name:
         type:
-          - "null"
           - string
-      id:
-        type:
           - "null"
-          - integer
+      id:
+        type: number
       last_name:
         type:
-          - "null"
           - string
-      locale:
-        type:
           - "null"
-          - string
       organization:
         type:
-          - "null"
           - string
-      parent_id:
-        type:
           - "null"
-          - integer
       phone:
         type:
-          - "null"
           - string
-      portal_customer_created_at:
-        type:
           - "null"
-          - string
-      portal_invite_last_accepted_at:
-        type:
-          - "null"
-          - string
-      portal_invite_last_sent_at:
-        type:
-          - "null"
-          - string
-        format: date-time
       reference:
         type:
-          - "null"
           - string
+          - "null"
       state:
         type:
-          - "null"
           - string
+          - "null"
       state_name:
         type:
-          - "null"
           - string
+          - "null"
       tax_exempt:
         type:
-          - "null"
           - boolean
-      updated_at:
-        type:
           - "null"
-          - string
-        format: date-time
+      updated_at:
+        type: string
       vat_number:
         type:
-          - "null"
           - string
+          - "null"
+      vat_status:
+        type:
+          - string
+          - "null"
       verified:
         type:
+          - boolean
           - "null"
-          - string
       zip:
         type:
-          - "null"
           - string
+          - "null"
+    required:
+      - id
+      - updated_at
   subscriptions:
     type:
       - "null"
@@ -1625,3 +1849,8 @@ schemas:
         type:
           - "null"
           - string
+  products:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
