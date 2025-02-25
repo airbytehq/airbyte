@@ -171,6 +171,7 @@ class TestAdsReportHourly(TestCase):
         assert output.state_messages[0].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
+        print("\ntest\n")
 
     @HttpMocker()
     def test_read_with_include_deleted(self, http_mocker: HttpMocker):

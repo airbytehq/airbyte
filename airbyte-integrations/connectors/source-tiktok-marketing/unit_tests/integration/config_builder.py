@@ -10,7 +10,6 @@ class ConfigBuilder:
             "credentials": {"auth_type": "oauth2.0", "access_token": "access token", "app_id": "11111111111111111111", "secret": "secret"},
             "start_date": "2024-01-01",
             "include_deleted": False,
-            "concurrency_level": 1,  # mock server tests with multiple requests fail with concurrency_level > 1
         }
 
     def with_include_deleted(self) -> "ConfigBuilder":
