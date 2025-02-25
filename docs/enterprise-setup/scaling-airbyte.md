@@ -36,7 +36,7 @@ global:
         memory: ## e.g. 150m
 ```
 
-If your Airbyte deployment is underprovisioned, you may notice occasional 'stuck jobs' that remain in-progress for long periods, with eventual failures related to unavailable pods. Increasing job CPU and memory limits may also allow for increased sync speeds.
+If your Airbyte deployment is under-provisioned, you may notice occasional 'stuck jobs' that remain in-progress for long periods, with eventual failures related to unavailable pods. Increasing job CPU and memory limits may also allow for increased sync speeds. For help and best practices, see [Configuring connector resources](../operator-guides/configuring-connector-resources).
 
 ### Concurrent Sync Limits
 
