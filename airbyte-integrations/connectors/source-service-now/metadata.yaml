@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 23867633-144a-4d7f-845a-a8bd9b9b9e5d
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-service-now
   githubIssueLabel: source-service-now
   icon: icon.svg
