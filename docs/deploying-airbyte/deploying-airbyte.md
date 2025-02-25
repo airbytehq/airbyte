@@ -8,7 +8,7 @@ All self-managed instances of Airbyte must be deployed somewhere that can handle
 
 ## Overview
 
-Airbyte must be deployed to a Kubernetes cluster. However, there is great flexibility in how you achieve this. You can deploy to a cloud provider like AWS EKS, Google Cloud, or Azure. You can also deploy to a single node like an AWS EC2, Google GCE, or an Azure Virtual Machine. Some options are easier than others and are more suitable to those with less Kubernetes experience.
+Airbyte must be deployed to a Kubernetes cluster. However, there is great flexibility in how you achieve this. You can deploy to a cloud provider like AWS EKS, Google GKE, or Azure AKE. You can also deploy to a single node like an AWS EC2, Google GCE, or an Azure Virtual Machine. Some options are easier than others and are more suitable to those with less Kubernetes experience.
 
 ## Before you start
 
@@ -49,8 +49,4 @@ Choose the deployment guide that's right for you.
 :::note
 - [AWS Fargate](https://aws.amazon.com/fargate/) is not currently supported.
 - [AWS ECS](https://aws.amazon.com/ecs/) is not currently supported.
-:::
-
-:::note
-As part of maintaining your Airbyte instance, you'll need to do periodic upgrades. See our documentation on [when and how to upgrade Airbyte](../operator-guides/upgrading-airbyte.md) for details. 
 :::
