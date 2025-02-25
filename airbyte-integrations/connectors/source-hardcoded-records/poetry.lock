@@ -52,7 +52,7 @@ vector-db-based = ["cohere (==4.21)", "langchain (==0.1.16)", "openai[embeddings
 type = "git"
 url = "https://github.com/airbytehq/airbyte-python-cdk.git"
 reference = "aj/feat/mini-cat-test-suites"
-resolved_reference = "3de3edf2fa3ebf9f426f9029a9d2cc2de11158ba"
+resolved_reference = "6248994b6424b7e3b41fc6759574e40e5a87eea9"
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
