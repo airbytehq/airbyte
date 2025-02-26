@@ -109,9 +109,9 @@ private val logger = KotlinLogging.logger {}
  * Will drop+recreate the old_final_table_5mb / new_final_table_5mb tables as needed.
  */
 fun main() {
-    val size = "5mb"
-    val runOldRawTablesFast = false
-    val runOldRawTablesSlow = false
+    val size = "5gb"
+    val runOldRawTablesFast = true
+    val runOldRawTablesSlow = true
     val runNewTableNaive = true
     val runNewTableOptimized = false
 
@@ -212,13 +212,13 @@ fun main() {
         destHandler.execute(getNewStyleDedupingQuery(size, 2, optimized = false))
     }
 
-    if (runNewTableOptimized) {
-        destHandler.execute(getNewStyleCreateFinalTableQuery(size, optimized = true))
-        logger.info { "Executing new-style optimized deduping for $size dataset, part 1 (upsert to empty table)" }
-        destHandler.execute(getNewStyleDedupingQuery(size, 1, optimized = true))
-        logger.info { "Executing new-style optimized deduping for $size dataset, part 2 (upsert to populated table)" }
-        destHandler.execute(getNewStyleDedupingQuery(size, 2, optimized = true))
-    }
+//    if (runNewTableOptimized) {
+//        destHandler.execute(getNewStyleCreateFinalTableQuery(size, optimized = true))
+//        logger.info { "Executing new-style optimized deduping for $size dataset, part 1 (upsert to empty table)" }
+//        destHandler.execute(getNewStyleDedupingQuery(size, 1, optimized = true))
+//        logger.info { "Executing new-style optimized deduping for $size dataset, part 2 (upsert to populated table)" }
+//        destHandler.execute(getNewStyleDedupingQuery(size, 2, optimized = true))
+//    }
 }
 
 fun getNewStyleCreateFinalTableQuery(size: String, optimized: Boolean): Sql {
