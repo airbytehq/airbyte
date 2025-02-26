@@ -51,8 +51,45 @@ def scrub_unwanted_fields_(fields_to_exclude: dict, obj: dict[str, str]) -> dict
     return new_dict
 
 
-# Basic full refresh stream
+def update_case_request_params(params: dict, next_page_token: dict, cursor_value: str):
+    """updates the request params for the Case stream"""
+    # next_page_token = {'format': ['json'], 'indexed_on_start': ['2024-12-01T00:00:00.000000'], 'order_by': ['indexed_on'], 'limit': ['5000'], 'offset': ['5000']}
+    MAX_OFFSET = 900000
+    params.update(next_page_token)
+    if "offset" in next_page_token and int(next_page_token["offset"][0]) >= MAX_OFFSET:
+        params["indexed_on_start"] = cursor_value.replace("Z", "")
+        params["offset"] = "0"
+    return params
+
+
+def mk_case_record(record: dict):
+    """returns a case record"""
+    record["streamname"] = "case"
+    record["indexed_on"] = ensure_single_trailing_z(record["indexed_on"])
+    record["xform_ids"] = ",".join(record["xform_ids"])
+    retval = {
+        "id": record["id"],
+        "indexed_on": record["indexed_on"],
+        "data": record,
+    }
+    return retval
+
+
+def mk_form_record(record: dict, fields_to_exclude: dict, cursor_field: str):
+    """returns a form record"""
+    newform = scrub_unwanted_fields_(fields_to_exclude, record)
+    newform[cursor_field] = ensure_single_trailing_z(newform[cursor_field])
+    retval = {
+        "id": newform["id"],
+        "data": newform,
+    }
+    retval[cursor_field] = newform[cursor_field]
+    return retval
+
+
 class CommcareStream(HttpStream, ABC):
+    """Basic full refresh stream"""
+
     def __init__(self, project_space, form_fields_to_exclude, **kwargs):
         super().__init__(**kwargs)
         self.project_space = project_space
@@ -240,28 +277,9 @@ class Case(IncrementalStream):
             "limit": str(LIMIT),
         }
         if next_page_token:
-            # next_page_token = {'format': ['json'], 'indexed_on_start': ['2024-12-01T00:00:00.000000'], 'order_by': ['indexed_on'], 'limit': ['5000'], 'offset': ['5000']}
-            MAX_OFFSET = 900000
-            if (
-                "offset" in next_page_token
-                and int(next_page_token["offset"][0]) >= MAX_OFFSET
-            ):
-                self.logger.info(
-                    "=========== last_record, params before, params after ==========="
-                )
-                self.logger.info(self.last_record)
-                self.logger.info(params)
-                params.update(next_page_token)
-                params["indexed_on_start"] = self.last_record[
-                    self.cursor_field
-                ].replace("Z", "")
-                params["offset"] = "0"
-                self.logger.info(params)
-                self.logger.info(
-                    "================================================================"
-                )
-            else:
-                params.update(next_page_token)
+            params = update_case_request_params(
+                params, next_page_token, self.last_record[self.cursor_field]
+            )
         return params
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -271,21 +289,7 @@ class Case(IncrementalStream):
                 self._cursor_value = parse_datetime_with_microseconds(
                     record[self.cursor_field]
                 )
-                # Make indexed_on tz aware
-                record.update(
-                    {
-                        "streamname": "case",
-                        "indexed_on": ensure_single_trailing_z(record["indexed_on"]),
-                    }
-                )
-                # convert xform_ids field from array to comma separated list so flattening won't create
-                # one field per item. This is because some cases have up to 2000 xform_ids and we don't want 2000 extra
-                # fields in the schema
-                record["xform_ids"] = ",".join(record["xform_ids"])
-                retval = {}
-                retval["id"] = record["id"]
-                retval["indexed_on"] = ensure_single_trailing_z(record["indexed_on"])
-                retval["data"] = record
+                retval = mk_case_record(record)
                 yield retval
         if self._cursor_value.microsecond == 0:
             # Airbyte converts the cursor_field value (datetime) to string when it saves the state and
@@ -358,14 +362,9 @@ class Form(IncrementalStream):
                 record[self.cursor_field]
             )
             CommcareStream.forms.add(record["id"])
-            newform = self.scrub_unwanted_fields(record)
-            retval = {}
-            retval["id"] = newform["id"]
-            newform[self.cursor_field] = ensure_single_trailing_z(
-                newform[self.cursor_field]
+            retval = mk_form_record(
+                record, self.form_fields_to_exclude, self.cursor_field
             )
-            retval[self.cursor_field] = newform[self.cursor_field]
-            retval["data"] = newform
             yield retval
         if self._cursor_value.microsecond == 0:
             # Airbyte converts the cursor_field value (datetime) to string when it saves the state and

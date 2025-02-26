@@ -10,6 +10,9 @@ from source_commcare.source import (
     scrub_unwanted_fields_,
     ensure_single_trailing_z,
     parse_datetime_with_microseconds,
+    update_case_request_params,
+    mk_case_record,
+    mk_form_record,
 )
 from datetime import datetime
 
@@ -189,3 +192,91 @@ def test_scrub_unwanted_fields_3():
         },
     )
     assert retval == {"age": 25, "subobj": {}}
+
+
+def test_update_case_request_params():
+    """tests update_case_request_params"""
+    assert update_case_request_params(
+        {
+            "indexed_on_start": "2022-01-01T00:00:00",
+            "offset": "10",
+        },
+        {
+            "format": ["json"],
+            "indexed_on_start": ["2024-12-01T00:00:00.000000"],
+            "order_by": ["indexed_on"],
+            "limit": ["5000"],
+            "offset": ["5000"],
+        },
+        "2022-01-01T00:00:00Z",
+    ) == {
+        "format": ["json"],
+        "indexed_on_start": ["2024-12-01T00:00:00.000000"],
+        "order_by": ["indexed_on"],
+        "limit": ["5000"],
+        "offset": ["5000"],
+    }
+    assert update_case_request_params(
+        {
+            "indexed_on_start": "2022-01-01T00:00:00",
+            "offset": "0",
+        },
+        {
+            "format": ["json"],
+            "indexed_on_start": ["2024-12-01T00:00:00.000000"],
+            "order_by": ["indexed_on"],
+            "limit": ["5000"],
+            "offset": ["900000"],
+        },
+        "2022-02-01T00:00:00Z",
+    ) == {
+        "format": ["json"],
+        "indexed_on_start": "2022-02-01T00:00:00",
+        "order_by": ["indexed_on"],
+        "limit": ["5000"],
+        "offset": "0",
+    }
+
+
+def test_mk_case_record():
+    """tests mk_case_record"""
+    assert mk_case_record(
+        {
+            "k1": "v1",
+            "indexed_on": "2022-01-01T00:00:00",
+            "id": "record-id",
+            "xform_ids": ["form-1", "form-2", "form-3"],
+        }
+    ) == {
+        "id": "record-id",
+        "indexed_on": "2022-01-01T00:00:00Z",
+        "data": {
+            "k1": "v1",
+            "streamname": "case",
+            "indexed_on": "2022-01-01T00:00:00Z",
+            "id": "record-id",
+            "xform_ids": "form-1,form-2,form-3",
+        },
+    }
+
+
+def test_mk_form_record():
+    """tests mk_form_record"""
+    assert mk_form_record(
+        {
+            "exclude": "this field",
+            "k1": "v1",
+            "id": "form-id",
+            "indexed_on": "2022-01-01T00:00:00",
+        },
+        {"exclude": True},
+        "indexed_on",
+    ) == {
+        "id": "form-id",
+        "indexed_on": "2022-01-01T00:00:00Z",
+        "data": {
+            "id": "form-id",
+            "k1": "v1",
+            "indexed_on": "2022-01-01T00:00:00Z",
+        },
+    }
