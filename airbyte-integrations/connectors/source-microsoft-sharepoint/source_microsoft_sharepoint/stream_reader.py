@@ -299,7 +299,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
     def _get_file_transfer_paths(self, file: RemoteFile, local_directory: str) -> List[str]:
         preserve_directory_structure = self.preserve_directory_structure()
         file_path = file.uri
-        match = re.search(r"sharepoint\.com(?:/sites/[^/]+)?/Shared%20Documents(.*)", file_path)
+        match = re.search(r"sharepoint\.com/Shared%20Documents(.*)", file_path)
         if match:
             file_path = match.group(1)
 

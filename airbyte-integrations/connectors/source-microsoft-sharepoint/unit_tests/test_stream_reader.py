@@ -39,7 +39,6 @@ def setup_reader_class():
     config.start_date = None
     config.credentials = Mock()
     config.folder_path = "."
-    config.site_url = ""
     config.credentials.auth_type = "Client"
     config.search_scope = "ALL"
     reader.config = config  # Set up the necessary configuration
