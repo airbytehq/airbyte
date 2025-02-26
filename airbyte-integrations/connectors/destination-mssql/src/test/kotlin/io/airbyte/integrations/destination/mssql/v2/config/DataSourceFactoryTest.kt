@@ -21,7 +21,6 @@ internal class DataSourceFactoryTest {
             )
         val dataSource = config.toSQLServerDataSource()
         assertTrue { dataSource.url.startsWith("jdbc:sqlserver://myhost:1234;databaseName=db;") }
-        assertTrue { dataSource.url.contains("authentication=SqlPassword".toRegex()) }
     }
 
     @Test
