@@ -12,6 +12,8 @@ authors = ["Airbyte <contact@airbyte.io>"]
 python = "^3.10,<3.13"
 airbyte-cdk = "^6"
 pytest = "^8"
+
+[tool.poetry.group.dev.dependencies]
 requests-mock = "*"
 
 [tool.pytest.ini_options]
