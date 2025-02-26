@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
-  dockerImageTag: 0.12.2
+  dockerImageTag: 0.13.0-rc.1
   dockerRepository: airbyte/source-intercom
   documentationUrl: https://docs.airbyte.com/integrations/sources/intercom
   githubIssueLabel: source-intercom
@@ -18,9 +18,6 @@ data:
   license: MIT
   maxSecondsBetweenMessages: 60
   name: Intercom
-  releases:
-    rolloutConfiguration:
-      enableProgressiveRollout: false
   remoteRegistries:
     pypi:
       enabled: false
@@ -31,6 +28,9 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   suggestedStreams:
     streams:
       - conversations
