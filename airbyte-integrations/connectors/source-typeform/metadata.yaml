@@ -24,6 +24,8 @@ data:
       packageName: airbyte-source-typeform
   registryOverrides:
     cloud:
+      # Pinned because manifest-only migration broke Cloud a bit
+      dockerImageTag: 1.3.27
       enabled: true
     oss:
       enabled: true
