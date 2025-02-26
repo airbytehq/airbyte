@@ -17,13 +17,13 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e2276f19-1c19-4d4e-ae6c-7df3c9c4ad49
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   dockerRepository: airbyte/source-brevo
   githubIssueLabel: source-brevo
   icon: icon.svg
   license: MIT
   name: Brevo
-  releaseDate: 2024-11-28
+  releaseDate: 2025-02-25
   releaseStage: alpha
   supportLevel: community
   connectorTestSuitesOptions:
