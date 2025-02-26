@@ -171,12 +171,12 @@ definitions:
           fields:
             - path:
                 - creationDate
-              value: "{{ format_datetime(record['extendedData']['creationDateTime'], '%ms') }}"
+              value: "{{ (format_datetime(record['extendedData']['creationDateTime'], '%s') | int * 1000) + (format_datetime(record['extendedData']['creationDateTime'], '%f')[:3] | int) }}"
         - type: AddFields
           fields:
             - path:
                 - lastUpdatedDate
-              value: "{{ format_datetime(record['extendedData']['lastUpdateDateTime'], '%ms') }}"
+              value: "{{ (format_datetime(record['extendedData']['lastUpdateDateTime'], '%s') | int * 1000) + (format_datetime(record['extendedData']['lastUpdateDateTime'], '%f')[:3] | int) }}"
         - type: AddFields
           fields:
             - path:
