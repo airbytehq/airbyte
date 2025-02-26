@@ -10,6 +10,8 @@ import java.sql.SQLException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
+import kotlin.math.absoluteValue
+import kotlin.random.Random
 import org.apache.commons.lang3.SystemUtils
 
 private val logger = KotlinLogging.logger {}
@@ -230,6 +232,6 @@ class MSSQLBulkLoadHandler(
     private fun generateLocalTempTableName(): String {
         val timestamp =
             LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss_SSS"))
-        return "##TempTable_$timestamp"
+        return "##TempTable_${timestamp}_${Random.nextInt().absoluteValue}"
     }
 }
