@@ -55,7 +55,6 @@ class RecordToPartAccumulator<U : OutputStream>(
                                     pathFactory.getPathToFile(
                                         stream,
                                         fileNo,
-                                        isStaging = pathFactory.supportsStaging
                                     )
                                 ),
                             fileNumber = fileNo
