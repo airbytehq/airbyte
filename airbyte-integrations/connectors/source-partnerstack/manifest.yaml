@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.36.2
 
 type: DeclarativeSource
 
@@ -20,8 +20,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /customers
           http_method: GET
-          request_parameters:
-            min_created: "{{ timestamp(config['start_date']) * 1000 }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -44,11 +42,20 @@ definitions:
             page_size: 250
             cursor_value: "{{ last_record['key'] }}"
             stop_condition: "{{ response.data.has_more is false }}"
-        partition_router:
-          type: CustomPartitionRouter
-          class_name: source_declarative_manifest.components.PartnerstackSlicer
-          cursor_field: updated_at
-          request_cursor_field: min_updated
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: min_updated
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -64,8 +71,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /deals
           http_method: GET
-          request_parameters:
-            min_created: "{{ timestamp(config['start_date']) * 1000 }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -88,11 +93,20 @@ definitions:
             page_size: 250
             cursor_value: "{{ last_record['key'] }}"
             stop_condition: "{{ response.data.has_more is false }}"
-        partition_router:
-          type: CustomPartitionRouter
-          class_name: source_declarative_manifest.components.PartnerstackSlicer
-          cursor_field: updated_at
-          request_cursor_field: min_updated
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: min_updated
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -108,8 +122,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /groups
           http_method: GET
-          request_parameters:
-            min_created: "{{ timestamp(config['start_date']) * 1000 }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -132,11 +144,20 @@ definitions:
             page_size: 250
             cursor_value: "{{ last_record['key'] }}"
             stop_condition: "{{ response.data.has_more is false }}"
-        partition_router:
-          type: CustomPartitionRouter
-          class_name: source_declarative_manifest.components.PartnerstackSlicer
-          cursor_field: updated_at
-          request_cursor_field: min_updated
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: min_updated
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -152,8 +173,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /leads
           http_method: GET
-          request_parameters:
-            min_created: "{{ timestamp(config['start_date']) * 1000 }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -176,11 +195,20 @@ definitions:
             page_size: 250
             cursor_value: "{{ last_record['key'] }}"
             stop_condition: "{{ response.data.has_more is false }}"
-        partition_router:
-          type: CustomPartitionRouter
-          class_name: source_declarative_manifest.components.PartnerstackSlicer
-          cursor_field: updated_at
-          request_cursor_field: min_updated
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: min_updated
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -196,8 +224,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /partnerships
           http_method: GET
-          request_parameters:
-            min_created: "{{ timestamp(config['start_date']) * 1000 }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -220,11 +246,20 @@ definitions:
             page_size: 250
             cursor_value: "{{ last_record['key'] }}"
             stop_condition: "{{ response.data.has_more is false }}"
-        partition_router:
-          type: CustomPartitionRouter
-          class_name: source_declarative_manifest.components.PartnerstackSlicer
-          cursor_field: updated_at
-          request_cursor_field: min_updated
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: min_updated
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -241,7 +276,7 @@ definitions:
           path: /rewards
           http_method: GET
           request_parameters:
-            min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+            min_created: "{{ (timestamp(config['start_date']) * 1000) | int }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -264,11 +299,6 @@ definitions:
             page_size: 250
             cursor_value: "{{ last_record['key'] }}"
             stop_condition: "{{ response.data.has_more is false }}"
-        partition_router:
-          type: CustomPartitionRouter
-          class_name: source_declarative_manifest.components.PartnerstackSlicer
-          cursor_field: updated_at
-          request_cursor_field: min_updated
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -285,7 +315,7 @@ definitions:
           path: /transactions
           http_method: GET
           request_parameters:
-            min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+            min_created: "{{ (timestamp(config['start_date']) * 1000) | int }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -308,22 +338,17 @@ definitions:
             page_size: 250
             cursor_value: "{{ last_record['key'] }}"
             stop_condition: "{{ response.data.has_more is false }}"
-        partition_router:
-          type: CustomPartitionRouter
-          class_name: source_declarative_manifest.components.PartnerstackSlicer
-          cursor_field: updated_at
-          request_cursor_field: min_updated
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/transactions"
   base_requester:
     type: HttpRequester
-    url_base: https://api.partnerstack.com/api/v2/
+    url_base: https://api.partnerstack.com/api/v2
     authenticator:
       type: BasicHttpAuthenticator
-      password: "{{ config[\"private_key\"] }}"
-      username: "{{ config[\"public_key\"] }}"
+      password: "{{ config['private_key'] }}"
+      username: "{{ config['public_key'] }}"
 
 streams:
   - $ref: "#/definitions/streams/customers"
@@ -377,36 +402,9 @@ metadata:
     rewards: false
     transactions: false
   yamlComponents:
-    streams:
-      customers:
-        - parentStreams
-      deals:
-        - parentStreams
-      groups:
-        - parentStreams
-      leads:
-        - parentStreams
-      partnerships:
-        - parentStreams
-      rewards:
-        - parentStreams
-      transactions:
-        - parentStreams
-  testedStreams:
-    customers:
-      streamHash: c2eba8bd15d7813dd7ba423f9b0042b0f6dfac40
-    deals:
-      streamHash: a38f2d9b37097ab5c2006a4fa0a57832a7d37853
-    groups:
-      streamHash: 0f25775268557a5a5755d901a27d4bc8dbd7ad8c
-    leads:
-      streamHash: 4f19b2e237c2acf5f80fbeb7fe064f61af69ea41
-    partnerships:
-      streamHash: 439e78ab77cf808f662f5c1f1261d797f5ed21b9
-    rewards:
-      streamHash: 0cb439c57f89325a494602d73bdb317edacbd54d
-    transactions:
-      streamHash: c7832b93b5454f10ad06b84190e298ae3221a8ad
+    global:
+      - authenticator
+  testedStreams: {}
   assist: {}
 
 schemas:
