@@ -18,7 +18,7 @@ import io.airbyte.cdk.load.data.TimeStringToInteger
 import io.airbyte.cdk.load.data.UnionTypeToDisjointRecord
 import io.airbyte.cdk.load.data.UnionValueToDisjointRecord
 
-class ParquetMapperPipelineFactory : MapperPipelineFactory {
+class ParquetMapperPipelineTest : MapperPipelineFactory {
     override fun create(stream: DestinationStream): MapperPipeline =
         MapperPipeline(
             stream.schema,
