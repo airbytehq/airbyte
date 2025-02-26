@@ -31,7 +31,7 @@ Before starting this tutorial, make sure you have the following:
 
     - [An API application](using-airbyte/configuring-api-access.md) in Airbyte, your client ID, and your client secret.
 
-    - If you're running locally, your server URL (usually `http://localhost:8000/api/public/v1/`).
+    - The URL of your Airbyte server (e.g. `http://localhost:8000/api/public/v1/`).
 
     - Your workspace ID. To get your workspace ID, open your workspace in Airbyte, then copy the ID from the URL. It looks like this: `039da657-f061-493e-a836-9bce86bc5e35`.
 
