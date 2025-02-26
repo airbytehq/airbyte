@@ -28,6 +28,7 @@ Docs https://simfin.readme.io/reference/getting-started-1
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.13 | 2025-02-22 | [54509](https://github.com/airbytehq/airbyte/pull/54509) | Update dependencies |
 | 0.0.12 | 2025-02-15 | [54074](https://github.com/airbytehq/airbyte/pull/54074) | Update dependencies |
 | 0.0.11 | 2025-02-08 | [53578](https://github.com/airbytehq/airbyte/pull/53578) | Update dependencies |
 | 0.0.10 | 2025-02-01 | [53084](https://github.com/airbytehq/airbyte/pull/53084) | Update dependencies |

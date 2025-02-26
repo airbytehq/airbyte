@@ -25,7 +25,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -302,7 +302,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -689,7 +689,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -754,7 +754,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -824,7 +824,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -999,7 +999,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1208,7 +1208,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1321,7 +1321,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1450,7 +1450,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1670,7 +1670,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1752,7 +1752,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1837,7 +1837,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1969,7 +1969,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -2129,7 +2129,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -2432,7 +2432,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -2514,7 +2514,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -2591,7 +2591,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -2950,7 +2950,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -3035,7 +3035,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -3132,7 +3132,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -3214,7 +3214,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -3479,7 +3479,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -3764,7 +3764,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -3861,7 +3861,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -3945,7 +3945,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -4244,7 +4244,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -4319,7 +4319,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -4409,7 +4409,7 @@ definitions:
           http_method: GET
           request_parameters:
             count_total: "True"
-            updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+            updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -4597,7 +4597,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -4871,7 +4871,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -5257,7 +5257,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -5321,7 +5321,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -5390,7 +5390,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -5564,7 +5564,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -5772,7 +5772,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -5882,7 +5882,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -6008,7 +6008,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -6225,7 +6225,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -6306,7 +6306,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -6390,7 +6390,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -6519,7 +6519,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -6678,7 +6678,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -6977,7 +6977,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -7056,7 +7056,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -7130,7 +7130,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -7485,7 +7485,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -7569,7 +7569,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -7664,7 +7664,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -7743,7 +7743,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -8003,7 +8003,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -8285,7 +8285,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -8379,7 +8379,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -8462,7 +8462,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -8760,7 +8760,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -8834,7 +8834,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -8923,7 +8923,7 @@ streams:
         http_method: GET
         request_parameters:
           count_total: "True"
-          updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
+          updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:

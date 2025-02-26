@@ -115,7 +115,7 @@ class MySqlSourceCdcIntegrationTest {
             JdbcConnectionFactory(MySqlSourceConfigurationFactory().make(config()))
         }
 
-        val configuredCatalog: ConfiguredAirbyteCatalog = run {
+        val configuredCatalog: ConfiguredAirbyteCatalog by lazy {
             val desc = StreamDescriptor().withName("tbl").withNamespace("test")
             val discoveredStream =
                 DiscoveredStream(
