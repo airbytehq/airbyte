@@ -131,7 +131,7 @@ to role identifier($airbyte_role);
 commit;
 ```
 
-3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html). 
+3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html).
   Make sure to select the **All Queries** checkbox if using the Classic Console or select and highlight the entire query if you are using Snowsight.
 
 ### Step 2: Set up a data loading method
@@ -191,21 +191,35 @@ Airbyte outputs each stream into its own raw table in `airbyte_internal` schema 
 overriden by user) and a final table with Typed columns. Contents in raw table are _NOT_
 deduplicated.
 
+**Note:** By default, Airbyte creates permanent tables. If you prefer transient tables, create a
+dedicated transient database for Airbyte. For more information, refer
+to[Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html)
+
 ### Raw Table schema
 
-| Airbyte field          | Description                                                        | Column type              |
-| ---------------------- | ------------------------------------------------------------------ | ------------------------ |
-| \_airbyte_raw_id       | A UUID assigned to each processed event                            | VARCHAR                  |
-| \_airbyte_extracted_at | A timestamp for when the event was pulled from the data source     | TIMESTAMP WITH TIME ZONE |
-| \_airbyte_loaded_at    | Timestamp to indicate when the record was loaded into Typed tables | TIMESTAMP WITH TIME ZONE |
-| \_airbyte_data         | A JSON blob with the event data.                                   | VARIANT                  |
+The raw table contains these fields:
+- `_airbyte_raw_id`
+- `_airbyte_generation_id`
+- `_airbyte_extracted_at`
+- `_airbyte_loaded_at`
+- `_airbyte_meta`
+- `_airbyte_data`
+
+`_airbyte_data` is a JSON blob with the event data. See [here](/understanding-airbyte/airbyte-metadata-fields)
+for more information about the other fields.
 
 **Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table
 could be subject to change in future versions.
 
-**Note:** By default, Airbyte creates permanent tables. If you prefer transient tables, create a
-dedicated transient database for Airbyte. For more information, refer
-to[ Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html)
+### Final Table schema
+
+The final table contains these fields, in addition to the columns declared in your stream schema:
+- `airbyte_raw_id`
+- `_airbyte_generation_id`
+- `airbyte_extracted_at`
+- `_airbyte_meta`
+
+Again, see [here](/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
 
 ## Data type map
 
@@ -266,8 +280,12 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                          |
 | :-------------- | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 3.15.0          | 2024-09-18 | [\#45437](https://github.com/airbytehq/airbyte/pull/45437)   | upgrade all dependencies                                                                                                                                          |
-| 3.14.0          | 2024-09-18 | [\#45431](https://github.com/airbytehq/airbyte/pull/45431) | truncate large records queries                                                                                                                                                        |
+| 3.15.4 | 2025-01-10 | [51503](https://github.com/airbytehq/airbyte/pull/51503) | Use a non root base image |
+| 3.15.3 | 2024-12-18 | [49913](https://github.com/airbytehq/airbyte/pull/49913) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 3.15.2          | 2024-10-31 | [\#48070](https://github.com/airbytehq/airbyte/pull/48070) | upgrade JDBC driver to 3.20.0                                                                                                                                                    |
+| 3.15.1          | 2024-10-20 | [\#46989](https://github.com/airbytehq/airbyte/pull/46989) | add snowflake transaction wrapper for rollback support                                                                                                                           |
+| 3.15.0          | 2024-09-18 | [\#45437](https://github.com/airbytehq/airbyte/pull/45437) | upgrade all dependencies                                                                                                                                                         |
+| 3.14.0          | 2024-09-18 | [\#45431](https://github.com/airbytehq/airbyte/pull/45431) | truncate large records queries                                                                                                                                                   |
 | 3.13.0          | 2024-09-17 | [\#45422](https://github.com/airbytehq/airbyte/pull/45422) | speed up metadata queries                                                                                                                                                        |
 | 3.12.0          | 2024-09-17 | [\#38585](https://github.com/airbytehq/airbyte/pull/38585) | force UTF8 collation when creating schemas and tables                                                                                                                            |
 | 3.11.12         | 2024-09-12 | [\#45370](https://github.com/airbytehq/airbyte/pull/45370) | fix a race condition in our orphanedThreadFilter                                                                                                                                 |

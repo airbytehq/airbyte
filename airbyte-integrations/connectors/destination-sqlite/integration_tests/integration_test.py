@@ -12,6 +12,8 @@ from typing import Dict
 from unittest.mock import MagicMock
 
 import pytest
+from destination_sqlite import DestinationSqlite
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -23,7 +25,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_sqlite import DestinationSqlite
 
 
 @pytest.fixture(autouse=True)

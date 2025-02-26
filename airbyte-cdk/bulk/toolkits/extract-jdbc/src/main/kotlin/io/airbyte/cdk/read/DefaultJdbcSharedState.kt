@@ -6,7 +6,6 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
-import io.airbyte.cdk.output.OutputConsumer
 import jakarta.inject.Singleton
 import java.time.Instant
 
@@ -14,11 +13,9 @@ import java.time.Instant
 @Singleton
 class DefaultJdbcSharedState(
     override val configuration: JdbcSourceConfiguration,
-    override val outputConsumer: OutputConsumer,
     override val selectQuerier: SelectQuerier,
     val constants: DefaultJdbcConstants,
     internal val concurrencyResource: ConcurrencyResource,
-    private val globalLockResource: GlobalLockResource,
 ) : JdbcSharedState {
 
     // First hit to the readStartTime initializes the value.
@@ -53,32 +50,14 @@ class DefaultJdbcSharedState(
         )
 
     override fun tryAcquireResourcesForCreator(): JdbcPartitionsCreator.AcquiredResources? {
-        val acquiredLock: GlobalLockResource.AcquiredGlobalLock =
-            globalLockResource.tryAcquire() ?: return null
         val acquiredThread: ConcurrencyResource.AcquiredThread =
-            concurrencyResource.tryAcquire()
-                ?: run {
-                    acquiredLock.close()
-                    return null
-                }
-        return JdbcPartitionsCreator.AcquiredResources {
-            acquiredThread.close()
-            acquiredLock.close()
-        }
+            concurrencyResource.tryAcquire() ?: return null
+        return JdbcPartitionsCreator.AcquiredResources { acquiredThread.close() }
     }
 
     override fun tryAcquireResourcesForReader(): JdbcPartitionReader.AcquiredResources? {
-        val acquiredLock: GlobalLockResource.AcquiredGlobalLock =
-            globalLockResource.tryAcquire() ?: return null
         val acquiredThread: ConcurrencyResource.AcquiredThread =
-            concurrencyResource.tryAcquire()
-                ?: run {
-                    acquiredLock.close()
-                    return null
-                }
-        return JdbcPartitionReader.AcquiredResources {
-            acquiredThread.close()
-            acquiredLock.close()
-        }
+            concurrencyResource.tryAcquire() ?: return null
+        return JdbcPartitionReader.AcquiredResources { acquiredThread.close() }
     }
 }

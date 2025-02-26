@@ -2,10 +2,12 @@ data:
   ab_internal:
     ql: 200
     sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
   connectorSubtype: api
   connectorType: source
   definitionId: 68b9c98e-0747-4c84-b05b-d30b47686725
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.4.4
   dockerRepository: airbyte/source-braze
   documentationUrl: https://docs.airbyte.com/integrations/sources/braze
   githubIssueLabel: source-braze
@@ -14,7 +16,7 @@ data:
   name: Braze
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-braze
   registryOverrides:
     cloud:
@@ -24,7 +26,7 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests

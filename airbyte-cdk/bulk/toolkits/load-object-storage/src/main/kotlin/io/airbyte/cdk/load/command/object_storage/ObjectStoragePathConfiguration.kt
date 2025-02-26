@@ -6,9 +6,8 @@ package io.airbyte.cdk.load.command.object_storage
 
 data class ObjectStoragePathConfiguration(
     val prefix: String,
-    val stagingPrefix: String?,
-    val pathSuffixPattern: String?,
-    val fileNamePattern: String?
+    val pathPattern: String?,
+    val fileNamePattern: String?,
 )
 
 interface ObjectStoragePathConfigurationProvider {

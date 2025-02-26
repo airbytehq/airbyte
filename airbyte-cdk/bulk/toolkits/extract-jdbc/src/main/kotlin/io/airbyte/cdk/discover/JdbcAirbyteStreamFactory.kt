@@ -1,52 +1,52 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.discover
 
-import com.fasterxml.jackson.databind.node.ObjectNode
-import io.airbyte.cdk.jdbc.BinaryStreamFieldType
+import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.jdbc.BooleanFieldType
 import io.airbyte.cdk.jdbc.CharacterStreamFieldType
 import io.airbyte.cdk.jdbc.ClobFieldType
 import io.airbyte.cdk.jdbc.JsonStringFieldType
 import io.airbyte.cdk.jdbc.NCharacterStreamFieldType
 import io.airbyte.cdk.jdbc.NClobFieldType
+import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
-import jakarta.inject.Singleton
 
-@Singleton
-class JdbcAirbyteStreamFactory : AirbyteStreamFactory {
+/** [JdbcAirbyteStreamFactory] implements [create] for JDBC sources. */
+interface JdbcAirbyteStreamFactory : AirbyteStreamFactory, MetaFieldDecorator {
 
-    override fun createGlobal(discoveredStream: DiscoveredStream) =
-        AirbyteStreamFactory.createAirbyteStream(discoveredStream).apply {
-            supportedSyncModes = listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
-            (jsonSchema["properties"] as ObjectNode).apply {
-                for (metaField in CommonMetaField.entries) {
-                    set<ObjectNode>(metaField.id, metaField.type.airbyteSchemaType.asJsonSchema())
+    override fun create(
+        config: SourceConfiguration,
+        discoveredStream: DiscoveredStream
+    ): AirbyteStream {
+        val isCdc = config.isCdc()
+        val hasPK = hasValidPrimaryKey(discoveredStream)
+        val hasPotentialCursorField = hasPotentialCursorFields(discoveredStream)
+
+        val syncModes =
+            when {
+                // Incremental sync is only provided as a sync option if the stream has a potential
+                // cursor field or is configured as CDC with a valid primary key.
+                !isCdc && hasPotentialCursorField || isCdc && hasPK ->
+                    listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
+                else -> listOf(SyncMode.FULL_REFRESH)
+            }
+        val primaryKey: List<List<String>> =
+            if (isCdc || hasPK) discoveredStream.primaryKeyColumnIDs else emptyList()
+        val stream =
+            AirbyteStreamFactory.createAirbyteStream(discoveredStream).apply {
+                if (isCdc && hasPK) {
+                    decorateAirbyteStream(this)
                 }
+                supportedSyncModes = syncModes
+                sourceDefinedPrimaryKey = primaryKey
+                sourceDefinedCursor = isCdc && hasPK
+                isResumable = hasPK
             }
-            defaultCursorField = listOf(CommonMetaField.CDC_LSN.id)
-            sourceDefinedCursor = true
-            if (hasValidPrimaryKey(discoveredStream)) {
-                sourceDefinedPrimaryKey = discoveredStream.primaryKeyColumnIDs
-                isResumable = true
-            }
-        }
-
-    override fun createNonGlobal(discoveredStream: DiscoveredStream) =
-        AirbyteStreamFactory.createAirbyteStream(discoveredStream).apply {
-            if (hasCursorFields(discoveredStream)) {
-                supportedSyncModes = listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)
-            } else {
-                supportedSyncModes = listOf(SyncMode.FULL_REFRESH)
-            }
-            sourceDefinedCursor = false
-            if (hasValidPrimaryKey(discoveredStream)) {
-                sourceDefinedPrimaryKey = discoveredStream.primaryKeyColumnIDs
-                isResumable = true
-            }
-        }
+        return stream
+    }
 
     /** Does the [discoveredStream] have a field that could serve as a cursor? */
-    fun hasCursorFields(discoveredStream: DiscoveredStream): Boolean =
+    fun hasPotentialCursorFields(discoveredStream: DiscoveredStream): Boolean =
         !discoveredStream.columns.none(::isPossibleCursor)
 
     /** Does the [discoveredStream] have a valid primary key declared? */
@@ -79,7 +79,6 @@ class JdbcAirbyteStreamFactory : AirbyteStreamFactory {
     fun isPossiblePrimaryKeyElement(field: Field): Boolean =
         when (field.type) {
             !is LosslessFieldType -> false
-            BinaryStreamFieldType,
             CharacterStreamFieldType,
             NCharacterStreamFieldType,
             ClobFieldType,

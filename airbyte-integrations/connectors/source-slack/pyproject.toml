@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.3.1"
+version = "1.3.2"
 name = "source-slack"
 description = "Source implementation for Slack."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -28,3 +28,11 @@ source-slack = "source_slack.run:run"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
 pytest = "^6.1"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "graph.microsoft.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-microsoft-entra-id
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 337930a3-778a-413e-99cf-e79a3fca1c74
+  dockerImageTag: 0.0.11
+  dockerRepository: airbyte/source-microsoft-entra-id
+  githubIssueLabel: source-microsoft-entra-id
+  icon: icon.svg
+  license: MIT
+  name: Microsoft Entra Id
+  releaseDate: 2024-10-18
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-entra-id
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

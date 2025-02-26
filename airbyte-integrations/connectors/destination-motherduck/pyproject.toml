@@ -1,0 +1,46 @@
+[tool.poetry]
+name = "airbyte-destination-motherduck"
+version = "0.1.17"
+description = "Destination implementation for MotherDuck."
+authors = ["Guen Prawiroatmodjo, Simon Späti, Airbyte"]
+license = "MIT"
+readme = "README.md"
+
+[[tool.poetry.packages]]
+include = "destination_motherduck"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+# NOTE: You can toggle between pinned and local CDK version for testing:
+airbyte-cdk = {version = "^5.15.0", extras = ["sql"] }
+# airbyte-cdk = { path = "../../../airbyte-cdk/python", extras = ["sql"] }
+duckdb = "1.1.2"
+duckdb-engine = "^0.13.4"
+pyarrow = "15.0.2"
+sqlalchemy = ">=1.4.51,!=2.0.36,<3.0"
+rich = "^13.7.0"
+overrides = "^7.4.0"
+python-ulid = "^3.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"
+ruff = "^0.7.1"
+black = "^23.7.0"
+mypy = "^1.5.1"
+faker = "24.4.0"
+coverage = "^7.5.3"
+freezegun = "^1.5.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
+[tool.poetry.scripts]
+destination-motherduck = "destination_motherduck.run:run"
