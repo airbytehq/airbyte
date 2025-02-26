@@ -287,7 +287,9 @@ definitions:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: []
+          field_path:
+              - items
+              - '*'
       partition_router:
       - type: CustomPartitionRouter
         class_name: source_declarative_manifest.components.FormIdPartitionRouter
@@ -1259,6 +1261,7 @@ definitions:
           type: DpathExtractor
           field_path:
           - items
+          - '*'
       paginator:
         type: DefaultPaginator
         page_size_option:
@@ -1663,6 +1666,7 @@ definitions:
           type: DpathExtractor
           field_path:
           - items
+          - '*'
       partition_router:
       - type: CustomPartitionRouter
         class_name: source_declarative_manifest.components.FormIdPartitionRouter
@@ -1816,6 +1820,7 @@ definitions:
           type: DpathExtractor
           field_path:
           - items
+          - '*'
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -2020,6 +2025,7 @@ definitions:
           type: DpathExtractor
           field_path:
           - items
+          - '*'
       paginator:
         type: DefaultPaginator
         page_token_option:
