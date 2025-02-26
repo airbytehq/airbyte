@@ -1,9 +1,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+import time
 from dataclasses import dataclass
 from typing import Any, List, Mapping, MutableMapping, Optional
 
-import time
 import requests
 
 from airbyte_cdk.entrypoint import logger

@@ -2,18 +2,18 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import time
-import pytest
 import random
+import time
+from typing import Any, MutableMapping
+from unittest.mock import MagicMock, patch
+
+import pytest
 import requests
+from requests.auth import HTTPBasicAuth
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.streams import Stream
-from requests.auth import HTTPBasicAuth
-from typing import Any, MutableMapping
-from unittest.mock import MagicMock, patch
-
 
 
 @pytest.fixture(name="config")
@@ -252,7 +252,9 @@ class TestFreshdeskTicketsPaginationStrategy:
             ),  # Page limit is hit
         ],
     )
-    def test_returns_none_when_fewer_records_than_page_size(self, components_module, response, current_page, last_records, expected, config):
+    def test_returns_none_when_fewer_records_than_page_size(
+        self, components_module, response, current_page, last_records, expected, config
+    ):
         pagination_strategy = components_module.FreshdeskTicketsPaginationStrategy(config=config, page_size=4, parameters={})
         pagination_strategy.PAGE_LIMIT = 5
         pagination_strategy._page = current_page
@@ -266,7 +268,9 @@ class TestFreshdeskTicketsPaginationStrategy:
         (60, 1),  # CallCredit.consume called with cost 1 when requests_per_minute is set
     ],
 )
-def test_sends_request_with_default_parameters_and_receives_response(components_module, mocker, requests_per_minute, expected_call_credit_cost):
+def test_sends_request_with_default_parameters_and_receives_response(
+    components_module, mocker, requests_per_minute, expected_call_credit_cost
+):
     config = {"requests_per_minute": requests_per_minute} if requests_per_minute is not None else {}
     parameters = {}
 
@@ -348,6 +352,7 @@ def _read_incremental(stream_instance: Stream, stream_state: MutableMapping[str,
             res.append(record)
     return res, stream_instance.state
 
+
 @pytest.mark.skip
 @pytest.mark.parametrize(
     "stream_name, resource",
@@ -394,6 +399,7 @@ def test_full_refresh_conversations(components_module, authenticator, config, re
 
     assert len(records) == 50
 
+
 @pytest.mark.skip
 def test_full_refresh_settings(components_module, config, requests_mock):
     json_resp = {"primary_language": "en", "supported_languages": [], "portal_languages": []}
@@ -433,6 +439,7 @@ def test_incremental(components_module, stream_name, resource, config, requests_
     assert len(records) == 25
     assert "updated_at" in state
     assert state["updated_at"] == highest_updated_at
+
 
 @pytest.mark.skip
 @pytest.mark.parametrize(
