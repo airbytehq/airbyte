@@ -202,29 +202,13 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
                 yield from self._list_directories_and_files(folder, folder_path_url)
 
-    def get_site_drive(self):
-        try:
-            if not self.config.site_url:
-                # get main site drives
-                drives = execute_query_with_retry(self.one_drive_client.drives.get())
-            else:
-                # get drives for site drives provided in the config
-                drives = execute_query_with_retry(self.one_drive_client.sites.get_by_url(self.config.site_url).drives.get())
-
-            return drives
-        except Exception as ex:
-            site = self.config.site_url if self.config.site_url else "default"
-            raise AirbyteTracedException(
-                f"Failed to retrieve drives from sharepoint {site} site. Error: {str(ex)}", failure_type=FailureType.config_error
-            )
-
     @property
     @lru_cache(maxsize=None)
     def drives(self):
         """
         Retrieves and caches SharePoint drives, including the user's drive based on authentication type.
         """
-        drives = self.get_site_drive()
+        drives = execute_query_with_retry(self.one_drive_client.drives.get())
 
         # skip this step for application authentication flow
         if self.config.credentials.auth_type != "Client" or (

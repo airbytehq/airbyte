@@ -95,9 +95,6 @@ def execute_query_with_retry(obj, max_retries=5, initial_retry_after=5, max_retr
     raise AirbyteTracedException(message, message, failure_type=FailureType.system_error)
 
 
-from urllib.parse import urlencode, urlunparse
-
-
 class PlaceholderUrlBuilder:
     """
     A basic builder that constructs a URL with placeholder parameters like:
