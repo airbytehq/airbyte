@@ -197,6 +197,24 @@ definitions:
               partition_field: id
               stream:
                 $ref: "#/definitions/streams/employees_directory_stream"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        global_substream_cursor: true
+        cursor_field: _cursor
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "0"
+          datetime_format: "%s"
+        is_data_feed: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - _cursor
+              value: "0"
       schema_loader:
         type: CustomSchemaLoader
         class_name: source_declarative_manifest.components.CustomFieldsSchemaLoader
@@ -920,3 +938,5 @@ schemas:
         type:
           - "null"
           - string
+      _cursor:
+        type: integer
