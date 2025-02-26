@@ -159,17 +159,20 @@ internal class StandardInsert :
 
 internal class BulkInsert :
     MSSQLWriterTest(
-        configPath = "check/valid-bulk.json",
+        configPath = CONFIG_FILE,
         configUpdater = BulkInsertConfigUpdater(),
         dataDumper = MSSQLDataDumper(),
         dataCleaner = MSSQLDataCleaner(),
     ) {
 
     companion object {
+        private const val CONFIG_FILE = "check/valid-bulk.json"
+
         @JvmStatic
         @BeforeAll
         fun beforeAll() {
             MSSQLContainerHelper.start()
+            MSSQLContainerHelper.initializeDatabaseForBulkInsert(CONFIG_FILE)
         }
     }
 }
