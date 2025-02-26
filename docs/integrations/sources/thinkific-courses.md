@@ -1,5 +1,7 @@
 # Thinkific Courses
-Getting Course information from thinkific
+
+Thinkific is a leading platform for creating, marketing, and selling courses, digital products, communities and learning experiences.
+This connector retrives basic data information from courses.
 
 ## Configuration
 
@@ -12,8 +14,8 @@ Getting Course information from thinkific
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | Courses |  | DefaultPaginator | ✅ |  ❌  |
-| Chapters |  | No pagination | ✅ |  ❌  |
-| Contents |  | No pagination | ✅ |  ❌  |
+| Courses Chapters |  | DefaultPaginator | ✅ |  ❌  |
+| Contents |  | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
