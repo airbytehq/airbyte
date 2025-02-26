@@ -1,4 +1,4 @@
-version: 6.13.0
+version: 6.36.3
 
 type: DeclarativeSource
 
@@ -16,21 +16,6 @@ definitions:
       name: Courses
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 25
-            start_from_page: 1
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: courses
@@ -43,13 +28,28 @@ definitions:
             type: DpathExtractor
             field_path:
               - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 250
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Courses"
-    Chapters:
+    Courses Chapters:
       type: DeclarativeStream
-      name: Chapters
+      name: Courses Chapters
       retriever:
         type: SimpleRetriever
         requester:
@@ -64,18 +64,32 @@ definitions:
             type: DpathExtractor
             field_path:
               - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 250
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/Courses"
               parent_key: id
               partition_field: course_id
+              stream:
+                $ref: "#/definitions/streams/Courses"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Chapters"
+          $ref: "#/schemas/Courses Chapters"
     Contents:
       type: DeclarativeStream
       name: Contents
@@ -93,14 +107,28 @@ definitions:
             type: DpathExtractor
             field_path:
               - items
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 250
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/Chapters"
               parent_key: id
               partition_field: chapter_id
+              stream:
+                $ref: "#/definitions/streams/Courses Chapters"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -118,7 +146,7 @@ definitions:
 
 streams:
   - $ref: "#/definitions/streams/Courses"
-  - $ref: "#/definitions/streams/Chapters"
+  - $ref: "#/definitions/streams/Courses Chapters"
   - $ref: "#/definitions/streams/Contents"
 
 spec:
@@ -142,69 +170,58 @@ spec:
     additionalProperties: true
 
 metadata:
-  assist: {}
-  testedStreams:
-    Courses:
-      hasRecords: true
-      streamHash: 376f3c7512589cf936eb7b69b6e04dfc498dc871
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Chapters:
-      hasRecords: true
-      streamHash: 3b596d054e694bc2a080a2503e7772a632efddf7
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    Contents:
-      hasRecords: true
-      streamHash: f2d34b17faff769019a225b22515d51a6d3a3d8c
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
+  autoImportSchema:
+    Courses: true
+    Courses Chapters: true
+    Contents: true
   yamlComponents:
     global:
       - authenticator
-  autoImportSchema:
-    Courses: true
-    Chapters: true
-    Contents: true
+  testedStreams:
+    Courses:
+      streamHash: 502c97d516c0cc742f9284ee1036ba428400769f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Courses Chapters:
+      streamHash: 5eaff284c21c79afedd7c176e8be15bb6d972145
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Contents:
+      streamHash: 6827e7bd3857e8469a75c6a43a94cfc5d3b14edf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
 
 schemas:
   Courses:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       description:
         type:
           - string
           - "null"
-      id:
+      administrator_user_ids:
         type:
-          - number
+          - array
           - "null"
-      name:
+        items:
+          type:
+            - number
+            - "null"
+      banner_image_url:
         type:
           - string
-          - "null"
-      slug:
-        type:
-          - string
-          - "null"
-      user_id:
-        type:
-          - number
-          - "null"
-      keywords:
-        type:
-          - string
-          - "null"
-      product_id:
-        type:
-          - number
           - "null"
       chapter_ids:
         type:
@@ -214,18 +231,6 @@ schemas:
           type:
             - number
             - "null"
-      instructor_id:
-        type:
-          - number
-          - "null"
-      reviews_enabled:
-        type:
-          - boolean
-          - "null"
-      banner_image_url:
-        type:
-          - string
-          - "null"
       contact_information:
         type:
           - string
@@ -234,16 +239,11 @@ schemas:
         type:
           - string
           - "null"
-      administrator_user_ids:
-        type:
-          - array
-          - "null"
-    additionalProperties: true
-  Chapters:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
       id:
+        type:
+          - number
+          - "null"
+      instructor_id:
         type:
           - number
           - "null"
@@ -251,10 +251,27 @@ schemas:
         type:
           - string
           - "null"
-      position:
+      product_id:
         type:
           - number
           - "null"
+      reviews_enabled:
+        type:
+          - boolean
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+  Courses Chapters:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
       content_ids:
         type:
           - array
@@ -267,18 +284,38 @@ schemas:
         type:
           - number
           - "null"
-    additionalProperties: true
-  Contents:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
       id:
         type:
           - number
           - "null"
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+  Contents:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      chapter_id:
+        type:
+          - number
+          - "null"
+      contentable_type:
+        type:
+          - string
+          - "null"
       free:
         type:
           - boolean
+          - "null"
+      id:
+        type:
+          - number
           - "null"
       name:
         type:
@@ -292,12 +329,3 @@ schemas:
         type:
           - string
           - "null"
-      chapter_id:
-        type:
-          - number
-          - "null"
-      contentable_type:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
