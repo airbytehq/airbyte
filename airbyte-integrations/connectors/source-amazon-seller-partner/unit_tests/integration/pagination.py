@@ -7,6 +7,7 @@ from typing import Any, Dict
 
 from airbyte_cdk.test.mock_http.response_builder import PaginationStrategy
 
+
 NEXT_TOKEN_STRING = "MDAwMDAwMDAwMQ=="
 
 

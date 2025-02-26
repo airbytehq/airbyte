@@ -14,7 +14,6 @@ from airbyte_cdk.sources.streams.core import Stream
 @dataclass
 class OrderIdsPartitionRouter(SubstreamPartitionRouter):
     def stream_slices(self) -> Iterable[StreamSlice]:
-
         stream_map = {stream_config.stream.name: stream_config.stream for stream_config in self.parent_stream_configs}
 
         board_ids = set(self.config.get("board_ids", []))

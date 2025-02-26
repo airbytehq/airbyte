@@ -7,9 +7,10 @@ import json
 import pytest
 import requests
 import responses
+from source_iterable.source import SourceIterable
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
-from source_iterable.source import SourceIterable
 
 
 @responses.activate
