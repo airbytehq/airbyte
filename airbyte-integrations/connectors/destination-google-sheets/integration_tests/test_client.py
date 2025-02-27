@@ -26,6 +26,7 @@ if "TEST_SERVICE_CONFIG" in globals():
 
 # ----- BEGIN TESTS -----
 
+
 def test_oauth_client():
     client = TEST_CLIENT.authorize()
     assert isinstance(client, pygsheets_client)
@@ -33,13 +34,15 @@ def test_oauth_client():
     for i in ["token_uri", "expiry"]:
         assert i in client.oauth.to_json()
 
+
 @pytest.mark.skipif(TEST_SERVICE_CLIENT is None, reason="No service account config provided")
 def test_service_account_client():
     client = TEST_SERVICE_CLIENT.authorize()
     assert isinstance(client, pygsheets_client)
     # Service account client has different structure than OAuth client
-    assert hasattr(client, 'drive')
-    assert hasattr(client, 'sheet')
+    assert hasattr(client, "drive")
+    assert hasattr(client, "sheet")
+
 
 # def test_client():
 #     client = TEST_CLIENT.authorize()
@@ -58,29 +61,37 @@ def test_service_account_client():
     ],
     ids=["client_main_retries", "client_drive_retries", "client_sheet_retries"],
 )
-
 @pytest.mark.parametrize(
     "client_instance, property, expected_retries",
     [
         (TEST_CLIENT, "retries", 100),
         (AUTHORIZED_CLIENT, "drive.retries", 100),
         (AUTHORIZED_CLIENT, "sheet.retries", 100),
-    ] + ([] if TEST_SERVICE_CLIENT is None else [
-        (TEST_SERVICE_CLIENT, "retries", 100),
-        (AUTHORIZED_SERVICE_CLIENT, "drive.retries", 100),
-        (AUTHORIZED_SERVICE_CLIENT, "sheet.retries", 100),
-    ]),
+    ]
+    + (
+        []
+        if TEST_SERVICE_CLIENT is None
+        else [
+            (TEST_SERVICE_CLIENT, "retries", 100),
+            (AUTHORIZED_SERVICE_CLIENT, "drive.retries", 100),
+            (AUTHORIZED_SERVICE_CLIENT, "sheet.retries", 100),
+        ]
+    ),
     ids=[
-        "client_main_retries", 
-        "client_drive_retries", 
+        "client_main_retries",
+        "client_drive_retries",
         "client_sheet_retries",
-    ] + ([] if TEST_SERVICE_CLIENT is None else [
-        "service_client_main_retries",
-        "service_client_drive_retries",
-        "service_client_sheet_retries",
-    ]),
+    ]
+    + (
+        []
+        if TEST_SERVICE_CLIENT is None
+        else [
+            "service_client_main_retries",
+            "service_client_drive_retries",
+            "service_client_sheet_retries",
+        ]
+    ),
 )
-
 def test_max_retries_are_set(client_instance, property, expected_retries):
     if "." in property:
         parts = property.split(".")

@@ -47,7 +47,7 @@ def test_check():
     expected = AirbyteConnectionStatus(status=Status.SUCCEEDED)
     actual = TEST_DESTINATION.check(logger=AirbyteLogger, config=TEST_CONFIG)
     assert actual == expected
-    
+
     # Test with service account config if available
     if "TEST_SERVICE_CONFIG" in globals() and TEST_SERVICE_CONFIG is not None:
         actual_service = TEST_DESTINATION.check(logger=AirbyteLogger, config=TEST_SERVICE_CONFIG)
@@ -61,38 +61,51 @@ def test_check():
         (TEST_CONFIG, '{"type": "LOG", "log": {"level": "INFO", "message": "Successfully refreshed auth session"}}', False),
         (TEST_CONFIG, '{"type": "LOG", "log": {"level": "INFO", "message": "Writing data for stream: stream_1"}}', True),
         (TEST_CONFIG, '{"type": "LOG", "log": {"level": "INFO", "message": "No duplicated records found for stream: stream_1"}}', True),
-    ] + ([] if TEST_SERVICE_CONFIG is None else [
-        (TEST_SERVICE_CONFIG, '{"type": "LOG", "log": {"level": "INFO", "message": "Writing data for stream: stream_1"}}', True),
-        (TEST_SERVICE_CONFIG, '{"type": "LOG", "log": {"level": "INFO", "message": "No duplicated records found for stream: stream_1"}}', True),
-    ]),
+    ]
+    + (
+        []
+        if TEST_SERVICE_CONFIG is None
+        else [
+            (TEST_SERVICE_CONFIG, '{"type": "LOG", "log": {"level": "INFO", "message": "Writing data for stream: stream_1"}}', True),
+            (
+                TEST_SERVICE_CONFIG,
+                '{"type": "LOG", "log": {"level": "INFO", "message": "No duplicated records found for stream: stream_1"}}',
+                True,
+            ),
+        ]
+    ),
     ids=[
         "token needs refresh",
         "token refreshed",
         "writing stream",
         "no dups found for stream",
-    ] + ([] if TEST_SERVICE_CONFIG is None else [
-        "service writing stream",
-        "service no dups found for stream",
-    ]),
+    ]
+    + (
+        []
+        if TEST_SERVICE_CONFIG is None
+        else [
+            "service writing stream",
+            "service no dups found for stream",
+        ]
+    ),
 )
-
 def test_write(config, expected, raised):
     # clean worksheet after previous test
     TEST_SPREADSHEET.clean_worksheet(TEST_STREAM)
 
     # Skip OAuth refresh tests for service account
-    is_service_auth = "credentials" in config and isinstance(config["credentials"], dict) and \
-                     "auth_type" in config["credentials"] and config["credentials"]["auth_type"] == "service"
+    is_service_auth = (
+        "credentials" in config
+        and isinstance(config["credentials"], dict)
+        and "auth_type" in config["credentials"]
+        and config["credentials"]["auth_type"] == "service"
+    )
     if is_service_auth and "refreshing" in expected.lower():
         pytest.skip("Token refresh tests don't apply to service account auth")
 
     # perform test
     with CaptureStdOut() as output:
-        list(
-            TEST_DESTINATION.write(
-                config=config, configured_catalog=TEST_CATALOG, input_messages=read_input_messages(TEST_RECORDS_PATH)
-            )
-        )
+        list(TEST_DESTINATION.write(config=config, configured_catalog=TEST_CATALOG, input_messages=read_input_messages(TEST_RECORDS_PATH)))
 
     assert True if not raised else any(msg == expected for msg in output)
 

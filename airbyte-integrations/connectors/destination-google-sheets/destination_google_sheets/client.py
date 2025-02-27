@@ -3,14 +3,14 @@
 #
 
 
-from typing import Dict
 import json
+from typing import Dict
 
 import pygsheets
 from google.auth.transport.requests import Request
 from google.oauth2 import credentials as client_account
-from pygsheets.client import Client as pygsheets_client
 from google.oauth2 import service_account
+from pygsheets.client import Client as pygsheets_client
 
 from airbyte_cdk import AirbyteLogger
 
@@ -48,7 +48,6 @@ class GoogleSheetsClient:
             self.logger.error(f"Failed to authorize with service account. Error: {str(e)}")
             self.logger.error(f"Error type: {type(e)}")
             raise
-        
 
         # Increase max number of retries if Rate Limit is reached. Error: <HttpError 429>
         client.drive.retries = self.retries  # for google drive api
