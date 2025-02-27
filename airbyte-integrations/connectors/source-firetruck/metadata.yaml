@@ -2,6 +2,7 @@ data:
   ab_internal:
     ql: 200
     sl: 0
+    isEnterprise: true
   allowedHosts:
     hosts:
       - ${host}
@@ -9,21 +10,21 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 196a42fc-39f2-473f-88ff-d68b2ea702e9
-  dockerImageTag: 0.0.34
-  dockerRepository: airbyte/source-firetruck
-  documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-oracle
-  githubIssueLabel: source-firetruck
+  dockerImageTag: 0.0.35
+  dockerRepository: airbyte/source-oracle-enterprise
+  documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-oracle-enterprise
+  githubIssueLabel: source-oracle-enterprise
   icon: oracle.svg
   license: Airbyte Enterprise
   maxSecondsBetweenMessages: 7200
-  name: Firetruck Source
+  name: Oracle Enterprise Source
   connectorBuildOptions:
     baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
-      enabled: false
+      enabled: true
   releaseStage: alpha
   supportLevel: certified
   tags:
