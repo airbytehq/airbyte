@@ -21,16 +21,13 @@ import io.airbyte.integrations.destination.mssql.v2.BulkInsertContainerHelper.ge
 import io.airbyte.integrations.destination.mssql.v2.BulkInsertContainerHelper.getSharedAccessSignature
 import io.airbyte.integrations.destination.mssql.v2.MSSQLContainerHelper.getNetwork
 import java.io.File
-import java.net.URI
 import java.sql.DriverManager
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 import org.testcontainers.azure.AzuriteContainer
-import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.MSSQLServerContainer.MS_SQL_SERVER_PORT
 import org.testcontainers.containers.NginxContainer
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy
 import org.testcontainers.utility.MountableFile
 
 private const val BLOB_STORAGE_CREDENTIAL = "MyAzureBlobStorageCredential"
@@ -92,7 +89,8 @@ object BulkInsertContainerHelper {
 
                 prepareDatabaseForBulkInsert()
 
-                val proxyPassUrl = "http://$NETWORK_ALIAS:$BLOB_STORAGE_PORT/$WELL_KNOWN_ACCOUNT_NAME\$uri\$is_args\$args"
+                val proxyPassUrl =
+                    "http://$NETWORK_ALIAS:$BLOB_STORAGE_PORT/$WELL_KNOWN_ACCOUNT_NAME\$uri\$is_args\$args"
                 val nginxConf = File.createTempFile("nginx", ".tmp")
                 nginxConf.writeText(
                     """
@@ -110,22 +108,27 @@ object BulkInsertContainerHelper {
                 """.trimIndent(),
                 )
 
-                val nginx = NginxContainer("nginx:1.27.4")
-                    .withExposedPorts(80)
-                    .withNetwork(getNetwork())
-                    .withNetworkAliases("$WELL_KNOWN_ACCOUNT_NAME.blob.core.windows.net")
-                    .withCopyToContainer(MountableFile.forHostPath(nginxConf.path), "/etc/nginx/nginx.conf")
-                    .withLogConsumer { e -> logger.info { e.utf8String } }
+                val nginx =
+                    NginxContainer("nginx:1.27.4")
+                        .withExposedPorts(80)
+                        .withNetwork(getNetwork())
+                        .withNetworkAliases("$WELL_KNOWN_ACCOUNT_NAME.blob.core.windows.net")
+                        .withCopyToContainer(
+                            MountableFile.forHostPath(nginxConf.path),
+                            "/etc/nginx/nginx.conf"
+                        )
+                        .withLogConsumer { e -> logger.info { e.utf8String } }
 
                 nginx.start()
 
-//                val test = GenericContainer("alpine:3.17")
-//                    .withNetwork(getNetwork())
-//                    .withCommand("top")
-//                test.start()
-//
-//                val uri = URI("http://$WELL_KNOWN_ACCOUNT_NAME.blob.core.windows.net/$blobContainer?restype=container&comp=list&$sharedAccessSignature")
-//                println(test.execInContainer("wget", uri.toString()))
+                //                val test = GenericContainer("alpine:3.17")
+                //                    .withNetwork(getNetwork())
+                //                    .withCommand("top")
+                //                test.start()
+                //
+                //                val uri =
+                // URI("http://$WELL_KNOWN_ACCOUNT_NAME.blob.core.windows.net/$blobContainer?restype=container&comp=list&$sharedAccessSignature")
+                //                println(test.execInContainer("wget", uri.toString()))
             }
         }
     }
@@ -172,16 +175,24 @@ object BulkInsertContainerHelper {
         val connectionUrl = createDatabaseConnectionUrl()
         DriverManager.getConnection(connectionUrl).use { connection ->
             connection.createStatement().use { statement ->
-                statement.execute("CREATE DATABASE $DATABASE_NAME")
-                statement.execute("USE $DATABASE_NAME")
                 statement.execute(
-                    "CREATE MASTER KEY ENCRYPTION BY PASSWORD = '$MASTER_ENCRYPTION_PASSWORD'"
+                    """
+                            IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = '$DATABASE_NAME')
+                            BEGIN
+                                CREATE DATABASE [$DATABASE_NAME];
+                            END
+                        """.trimIndent()
                 )
                 statement.execute(
-                    "CREATE DATABASE SCOPED CREDENTIAL $BLOB_STORAGE_CREDENTIAL WITH IDENTITY = 'SHARED ACCESS SIGNATURE', SECRET = '${getSharedAccessSignature()}'"
-                )
-                statement.execute(
-                    "CREATE EXTERNAL DATA SOURCE $DATA_SOURCE_NAME WITH ( TYPE = BLOB_STORAGE, LOCATION = '${createBlobContainerUrl()}', CREDENTIAL = $BLOB_STORAGE_CREDENTIAL)"
+                    """
+                            USE [$DATABASE_NAME];
+                            IF NOT EXISTS(SELECT * FROM sys.external_data_sources WHERE name = '$DATA_SOURCE_NAME')
+                            BEGIN
+                                CREATE MASTER KEY ENCRYPTION BY PASSWORD = '$MASTER_ENCRYPTION_PASSWORD';
+                                CREATE DATABASE SCOPED CREDENTIAL $BLOB_STORAGE_CREDENTIAL WITH IDENTITY = 'SHARED ACCESS SIGNATURE', SECRET = '${getSharedAccessSignature()}';
+                                CREATE EXTERNAL DATA SOURCE $DATA_SOURCE_NAME WITH ( TYPE = BLOB_STORAGE, LOCATION = '${createBlobContainerUrl()}', CREDENTIAL = $BLOB_STORAGE_CREDENTIAL);
+                            END
+                        """.trimIndent(),
                 )
             }
         }
