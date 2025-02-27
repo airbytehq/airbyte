@@ -1540,8 +1540,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             "id1" to 1,
                             "id2" to 201,
                             "updated_at" to TimestampWithTimezoneValue("2000-01-01T00:02:00Z"),
-                            "name" to "Bob1",
-                            "_ab_cdc_deleted_at" to null
+                            "name" to "Bob1"
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
