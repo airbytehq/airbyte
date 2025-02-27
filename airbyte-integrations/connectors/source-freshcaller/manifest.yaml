@@ -1,4 +1,4 @@
-version: 5.10.2
+version: 6.36.3
 
 type: DeclarativeSource
 
@@ -260,13 +260,33 @@ metadata:
     call_metrics: false
   testedStreams:
     users:
-      streamHash: 4e5c41e61ff76d61b3bcfcfa01830993fd6ae2c7
+      streamHash: 1808de5c97801cd59a8c0d821abff1f0e1910eb4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     teams:
-      streamHash: 8976412c1b2645730976c50391dabea659dba163
+      streamHash: 3299c61591194e8bc83213935ade1181a8ca5a47
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     calls:
-      streamHash: 8139378ad1f05eab12a9b1049312f12a8da8bf20
+      streamHash: adf38b7d7a7be5c66af48f9242cd9564c05c03fc
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     call_metrics:
-      streamHash: 07f800dc30ec7bba8c4d3e4e4fe04c5eb1e35cad
+      streamHash: cac1d9110abcf5a546585d12d492409fe2eb4f1c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist: {}
 
 schemas:
