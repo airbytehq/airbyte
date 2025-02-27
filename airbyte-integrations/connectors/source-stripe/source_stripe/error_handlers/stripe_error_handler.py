@@ -28,6 +28,12 @@ DOCUMENTATION_MESSAGE = f"Please visit {DOCS_URL} to learn more. "
 
 class StripeErrorHandler(HttpStatusErrorHandler):
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
+        if isinstance(response_or_exception, InvalidURL):
+                return ErrorResolution(
+                    response_action=ResponseAction.RETRY,
+                    failure_type=FailureType.transient_error,
+                    error_message="source-stripe has faced a temporary DNS resolution issue. Retrying...",
+                )
         if not isinstance(response_or_exception, Exception) and response_or_exception.status_code in (
             requests.codes.bad_request,
             requests.codes.forbidden,
@@ -43,10 +49,4 @@ class StripeErrorHandler(HttpStatusErrorHandler):
                     reason += response_error_message
 
                 return ErrorResolution(response_action=ResponseAction.IGNORE, error_message=reason)
-        if isinstance(response_or_exception, InvalidURL):
-                return ErrorResolution(
-                    response_action=ResponseAction.RETRY,
-                    failure_type=FailureType.transient_error,
-                    error_message="source-stripe has faced a temporary DNS resolution issue. Retrying...",
-                )
         return super().interpret_response(response_or_exception)
