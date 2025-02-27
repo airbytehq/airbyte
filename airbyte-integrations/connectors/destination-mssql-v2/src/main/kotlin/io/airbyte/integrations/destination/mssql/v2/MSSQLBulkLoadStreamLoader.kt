@@ -195,8 +195,7 @@ class MSSQLBulkLoadStreamLoader(
         override val objectStoragePathConfiguration =
             ObjectStoragePathConfiguration(
                 prefix = "blob",
-                pathPattern =
-                    "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/\${EPOCH}/",
+                pathPattern = "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/\${EPOCH}/",
                 fileNamePattern = "{part_number}{format_extension}",
             )
     }

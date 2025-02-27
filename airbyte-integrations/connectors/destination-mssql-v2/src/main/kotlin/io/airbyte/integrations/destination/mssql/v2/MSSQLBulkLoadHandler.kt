@@ -145,14 +145,13 @@ class MSSQLBulkLoadHandler(
     }
 
     private fun quoteIdentifier(identifier: String): String {
-        // Split on '.', then bracket each piece (like database.schema.table -> [database].[schema].[table])
-        return identifier.split(".")
-            .joinToString(".") { segment ->
-                // Escape closing bracket if present:   a]b -> a]]b
-                "[${segment.replace("]", "]]")}]"
-            }
+        // Split on '.', then bracket each piece (like database.schema.table ->
+        // [database].[schema].[table])
+        return identifier.split(".").joinToString(".") { segment ->
+            // Escape closing bracket if present:   a]b -> a]]b
+            "[${segment.replace("]", "]]")}]"
+        }
     }
-
 
     /** Builds the BULK INSERT SQL statement with optional rowsPerBatch. */
     private fun buildBulkInsertSql(

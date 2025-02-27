@@ -107,11 +107,13 @@ class MSSQLCSVFormattingWriter(
 ) : ObjectStorageFormattingWriter {
     private val finalSchema = stream.schema.withAirbyteMeta(true)
     private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
-    private val mssqlRowValidator  = MSSQLCsvRowValidator()
+    private val mssqlRowValidator = MSSQLCsvRowValidator()
     override fun accept(record: DestinationRecordAirbyteValue) {
 
         printer.printRecord(
-            mssqlRowValidator.validate(record, this.finalSchema).dataWithAirbyteMeta(stream, true)
+            mssqlRowValidator
+                .validate(record, this.finalSchema)
+                .dataWithAirbyteMeta(stream, true)
                 .toCsvRecord(finalSchema),
         )
     }

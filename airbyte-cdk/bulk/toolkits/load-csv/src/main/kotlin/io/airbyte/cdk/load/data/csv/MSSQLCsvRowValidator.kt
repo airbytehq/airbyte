@@ -1,5 +1,8 @@
-package io.airbyte.cdk.load.data.csv
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
 
+package io.airbyte.cdk.load.data.csv
 
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.BooleanType
@@ -59,13 +62,14 @@ class MSSQLCsvRowValidator {
         columnName: String,
         fieldType: FieldType,
         meta: Meta
-    ): AirbyteValue = when (this) {
-        is StringValue -> validateStringValue(columnName, this, fieldType, meta)
-        is IntegerValue -> validateIntegerValue(columnName, this, meta)
-        is BooleanValue -> validateBooleanValue(this)
-        // If it’s any other data type, we just skip validation logic here.
-        else -> this
-    }
+    ): AirbyteValue =
+        when (this) {
+            is StringValue -> validateStringValue(columnName, this, fieldType, meta)
+            is IntegerValue -> validateIntegerValue(columnName, this, meta)
+            is BooleanValue -> validateBooleanValue(this)
+            // If it’s any other data type, we just skip validation logic here.
+            else -> this
+        }
 
     private fun validateStringValue(
         columnName: String,
@@ -87,8 +91,7 @@ class MSSQLCsvRowValidator {
                 )
                 return NullValue
             }
-        }
-        else if (fieldType.isBooleanColumn()) {
+        } else if (fieldType.isBooleanColumn()) {
             val asIntValue = parseBooleanAsIntValue(rawString)
             if (asIntValue == null) {
                 meta.nullify(
@@ -203,11 +206,12 @@ class MSSQLCsvRowValidator {
     }
 
     private fun Meta.nullify(fieldName: String, reason: AirbyteRecordMessageMetaChange.Reason) {
-        val metaChange = Meta.Change(
-            field = fieldName,
-            change = AirbyteRecordMessageMetaChange.Change.NULLED,
-            reason = reason,
-        )
+        val metaChange =
+            Meta.Change(
+                field = fieldName,
+                change = AirbyteRecordMessageMetaChange.Change.NULLED,
+                reason = reason,
+            )
         (this.changes as MutableList).add(metaChange)
     }
 }
