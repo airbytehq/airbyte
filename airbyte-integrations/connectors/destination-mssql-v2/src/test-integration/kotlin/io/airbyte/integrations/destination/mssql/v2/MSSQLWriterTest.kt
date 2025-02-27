@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.mssql.v2
 
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
@@ -14,6 +15,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
+import io.airbyte.cdk.load.test.util.FakeConfigurationUpdater
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
@@ -59,15 +61,30 @@ abstract class MSSQLWriterTest(
 class MSSQLDataDumper : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): List<OutputRecord> {
-        val config = getConfiguration(spec = spec as MSSQLSpecification, stream = stream)
+        val config = getConfiguration(spec = spec as MSSQLSpecification)
         val sqlBuilder = MSSQLQueryBuilder(config.schema, stream)
         val dataSource = DataSourceFactory().dataSource(config)
         val output = mutableListOf<OutputRecord>()
         dataSource.connection.use { connection ->
-            SELECT_FROM.toQuery(sqlBuilder.outputSchema, sqlBuilder.tableName).executeQuery(
-                connection
+            var selectQuery = SELECT_FROM.toQuery(sqlBuilder.outputSchema, sqlBuilder.tableName)
+            if (stream.importType is Dedupe) {
+                val importType = stream.importType as Dedupe
+                val primaryKeyColumns =
+                    if (importType.primaryKey.isNotEmpty()) {
+                        importType.primaryKey.flatten()
+                    } else {
+                        // If no dedicated PK is provided, use the cursor as the PK
+                        importType.cursor
+                    }
+                selectQuery =
+                    selectQuery + " ORDER BY " + primaryKeyColumns.joinToString(",") { "[$it]" }
+            } else {
+                selectQuery = "$selectQuery ORDER BY [id]"
+            }
+            selectQuery.toQuery(sqlBuilder.outputSchema, sqlBuilder.tableName).executeQuery(
+                connection,
             ) { rs ->
                 while (rs.next()) {
                     val objectValue = sqlBuilder.readResult(rs, sqlBuilder.finalTableSchema)
@@ -96,9 +113,9 @@ class MSSQLDataDumper : DestinationDataDumper {
                                                 }
                                                 .toList(),
                                         syncId =
-                                            meta.additionalProperties["syncId"]
+                                            meta.additionalProperties["sync_id"]
                                                 ?.toString()
-                                                ?.toLong()
+                                                ?.toLong(),
                                     )
                                 },
                         )
@@ -117,6 +134,13 @@ class MSSQLDataDumper : DestinationDataDumper {
     }
 
     private fun getConfiguration(
+        spec: ConfigurationSpecification,
+    ): MSSQLConfiguration {
+        return MSSQLConfigurationFactory()
+            .makeWithOverrides(spec = spec as MSSQLSpecification, overrides = emptyMap())
+    }
+
+    private fun getConfigurationWithOverride(
         spec: ConfigurationSpecification,
         stream: DestinationStream
     ): MSSQLConfiguration {
@@ -160,19 +184,12 @@ internal class StandardInsert :
 internal class BulkInsert :
     MSSQLWriterTest(
         configPath = CONFIG_FILE,
-        configUpdater = BulkInsertConfigUpdater(),
+        configUpdater = FakeConfigurationUpdater,
         dataDumper = MSSQLDataDumper(),
         dataCleaner = MSSQLDataCleaner(),
     ) {
 
     companion object {
         private const val CONFIG_FILE = "check/valid-bulk.json"
-
-        @JvmStatic
-        @BeforeAll
-        fun beforeAll() {
-            MSSQLContainerHelper.start()
-            MSSQLContainerHelper.initializeDatabaseForBulkInsert(CONFIG_FILE)
-        }
     }
 }
