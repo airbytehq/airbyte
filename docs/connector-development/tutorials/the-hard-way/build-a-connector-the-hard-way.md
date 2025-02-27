@@ -20,7 +20,7 @@ demonstrate the following concepts in action:
 **This tutorial is meant for those interested in learning how the Airbyte Specification
 works in detail, not for creating production connectors**. If you're building a real source, you
 should start with using the [Connector Builder](../../connector-builder-ui/overview), or the
-[Connector Development Kit](https://github.com/airbytehq/airbyte/tree/master/airbyte-cdk/python/docs/tutorials).
+[Connector Development Kit](../../cdk-python/).
 
 :::
 
@@ -84,9 +84,7 @@ $ cd airbyte-integrations/connector-templates/generator
 $ ./generate.sh
 ```
 
-Select the `Generic Source` template and call the connector `stock-ticker-api`:
-
-![](../../../.gitbook/assets/newsourcetutorial_plop.gif)
+Select the `Generic Source` template and call the connector `stock-ticker-api`.
 
 :::info
 
@@ -1145,86 +1143,50 @@ After you see the above banner printed out in the terminal window where you are 
 `docker compose up`, visit [http://localhost:8000](http://localhost:8000) in your browser and log in
 with the default credentials: username `airbyte` and password `password`.
 
-If this is the first time using the Airbyte UI, then you will be prompted to go through a first-time
-wizard. To skip it, click the "Skip Onboarding" button.
+## Setup a connection to sync data in Airbyte
 
-In the UI, click the "Settings" button in the left side bar:
+1. In the UI, click the "Settings" button in the left side bar. Then on the Settings page, select Sources.
 
-![](../../../.gitbook/assets/newsourcetutorial_sidebar_settings.png)
+2. Then on the Settings/Sources page, click "+ New Connector" button at the top right.
 
-Then on the Settings page, select Sources
+3. On the modal that pops up, enter the following information then click "Add"
 
-![](../../../.gitbook/assets/newsourcetutorial_settings_page.png)
-
-Then on the Settings/Sources page, click "+ New Connector" button at the top right:
-
-![](../../../.gitbook/assets/newsourcetutorial_settings_sources_newconnector.png)
-
-On the modal that pops up, enter the following information then click "Add"
-
-![](../../../.gitbook/assets/newsourcetutorial_new_connector_modal.png)
-
-After you click "Add", the modal will close and you will be back at the Settings page. Now click
+4. After you click "Add", the modal will close and you will be back at the Settings page. Now click
 "Sources" in the navigation bar on the left:
 
-![](../../../.gitbook/assets/newsourcetutorial_sources_navbar.png)
-
-You will be redirected to Sources page, which, if you have not set up any connections, will be
+5. You will be redirected to Sources page, which, if you have not set up any connections, will be
 empty. On the Sources page click "+ new source" in the top right corner:
 
-![](../../../.gitbook/assets/newsourcetutorial_sources_page.png)
-
-A new modal will prompt you for details of the new source. Type "Stock Ticker" in the Name field.
+6. A new modal will prompt you for details of the new source. Type "Stock Ticker" in the Name field.
 Then, find your connector in the Source type dropdown. We have lots of connectors already, so it
-might be easier to find your connector by typing part of its name:
+might be easier to find your connector by typing part of its name.
 
-![](../../../.gitbook/assets/newsourcetutorial_find_your_connector.png)
-
-After you select your connector in the Source type dropdown, the modal will show two more fields:
-API Key and Stock Ticker. Remember that `spec.json` file you created at the very beginning of this
+7. After you select your connector in the Source type dropdown, the modal will show two more fields: API Key and Stock Ticker. Remember that `spec.json` file you created at the very beginning of this
 tutorial? These fields should correspond to the `properties` section of that file. Copy-paste your
 Polygon.io API key and a stock ticker into these fields and then click "Set up source" button at the
 bottom right of the modal.
 
-![](../../../.gitbook/assets/newsourcetutorial_source_config.png)
-
-Once you click "Set up source", Airbyte will spin up your connector and run "check" method to verify
+8. Once you click "Set up source", Airbyte will spin up your connector and run "check" method to verify
 the configuration. You will see a progress bar briefly and if the configuration is valid, you will
 see a success message, the modal will close and you will see your connector on the updated Sources
 page.
 
-![](../../../.gitbook/assets/newsourcetutorial_sources_stock_ticker.png)
-
-Next step is to add a destination. On the same page, click "add destination" and then click "+ add a
+9. Next step is to add a destination. On the same page, click "add destination" and then click "+ add a
 new destination":
 
-![](../../../.gitbook/assets/newsourcetutorial_add_destination_new_destination.png)
-
-"New destination" wizard will show up. Type a name (e.g. "Local JSON") into the Name field and
+10. "New destination" wizard will show up. Type a name (e.g. "Local JSON") into the Name field and
 select "Local JSON" in Destination type drop-down. After you select the destination type, type
 `/local/tutorial_json` into Destination path field. When we run syncs, we'll find the output on our
 local filesystem in `/tmp/airbyte_local/tutorial_json`.
 
-Click "Set up destination" at the lower right of the form.
+11. Click "Set up destination" at the lower right of the form.
 
-![](../../../.gitbook/assets/newsourcetutorial_add_destination.png)
-
-After that Airbyte will test the destination and prompt you to configure the connection between
+12. After that Airbyte will test the destination and prompt you to configure the connection between
 Stock Ticker source and Local JSON destination. Select "Mirror source structure" in the Destination
 Namespace, check the checkbox next to the stock_prices stream, and click "Set up connection" button
-at the bottom of the form:
+at the bottom of the form.
 
-![](../../../.gitbook/assets/newsourcetutorial_configure_connection.png)
-
-Ta-da! Your connection is now configured to sync once a day. You will see your new connection on the
-next screen:
-
-![](../../../.gitbook/assets/newsourcetutorial_connection_done.png)
-
-Airbyte will run the first sync job as soon as your connection is saved. Navigate to "Connections"
-in the side bar and wait for the first sync to succeed:
-
-![](../../../.gitbook/assets/newsourcetutorial_first_sync.png)
+13. Ta-da! Your connection is now configured to sync once a day.  Airbyte will run the first sync job as soon as your connection is saved. Navigate to "Connections" in the side bar and wait for the first sync to succeed:
 
 Let's verify the output. From your shell, run:
 

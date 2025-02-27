@@ -1,0 +1,24 @@
+{
+  "object": "list",
+  "url": "/v1/balance_transactions",
+  "has_more": false,
+  "data": [
+    {
+      "id": "txn_1MiN3gLkdIwHu7ixxapQrznl",
+      "object": "balance_transaction",
+      "amount": -400,
+      "available_on": 1678043844,
+      "created": 1678043844,
+      "currency": "usd",
+      "description": null,
+      "exchange_rate": null,
+      "fee": 0,
+      "fee_details": [],
+      "net": -400,
+      "reporting_category": "transfer",
+      "source": "tr_1MiN3gLkdIwHu7ixNCZvFdgA",
+      "status": "available",
+      "type": "transfer"
+    }
+  ]
+}

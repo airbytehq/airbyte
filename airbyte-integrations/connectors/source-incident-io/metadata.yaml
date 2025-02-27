@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.incident.io"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-incident-io
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 7926da90-399e-4f9f-9833-52d8dc3fcb29
+  dockerImageTag: 0.0.13
+  dockerRepository: airbyte/source-incident-io
+  githubIssueLabel: source-incident-io
+  icon: icon.svg
+  license: MIT
+  name: Incident
+  releaseDate: 2024-10-03
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/incident-io
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

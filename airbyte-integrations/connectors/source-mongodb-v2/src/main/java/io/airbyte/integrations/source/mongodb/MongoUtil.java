@@ -18,7 +18,6 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.MongoIterable;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Projections;
 import io.airbyte.commons.exceptions.ConfigErrorException;
@@ -38,7 +37,6 @@ import java.util.OptionalInt;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -75,20 +73,6 @@ public class MongoUtil {
 
   static final Set<String> SCHEMALESS_FIELDS =
       Set.of(CDC_UPDATED_AT, CDC_DELETED_AT, DEFAULT_CURSOR_FIELD, DEFAULT_PRIMARY_KEY, SCHEMALESS_MODE_DATA_FIELD);
-
-  /**
-   * Tests whether the database exists in target MongoDB instance.
-   *
-   * @param mongoClient The {@link MongoClient} used to query the MongoDB server for the database
-   *        names.
-   * @param databaseName The database name from the source's configuration.
-   * @return {@code true} if the database exists, {@code false} otherwise.
-   */
-  public static boolean checkDatabaseExists(final MongoClient mongoClient, final String databaseName) {
-    final MongoIterable<String> databaseNames = mongoClient.listDatabaseNames();
-    return StreamSupport.stream(databaseNames.spliterator(), false)
-        .anyMatch(name -> name.equalsIgnoreCase(databaseName));
-  }
 
   /**
    * Returns the set of collections that the current credentials are authorized to access.

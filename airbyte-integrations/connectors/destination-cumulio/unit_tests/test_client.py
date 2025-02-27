@@ -9,6 +9,7 @@ from unittest.mock import ANY, MagicMock, patch
 import pytest
 from destination_cumulio.client import CumulioClient
 
+
 # "# type: ignore" was added in several places to avoid mypy complaining about patching functions with MagicMock
 
 

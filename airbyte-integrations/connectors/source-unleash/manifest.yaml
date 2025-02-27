@@ -1,0 +1,240 @@
+version: 5.10.2
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - features
+
+definitions:
+  streams:
+    features:
+      type: DeclarativeStream
+      name: features
+      primary_key:
+        - name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: features
+          http_method: GET
+          request_parameters:
+            project: "{{ config[\"project_name\"] }}"
+            namePrefix: "{{ config[\"nameprefix\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: Unauthorized
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 403
+                    error_message: Forbidden
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - features
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/features"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config["api_url"] }}/api/client
+    authenticator:
+      type: ApiKeyAuthenticator
+      inject_into:
+        type: RequestOption
+        inject_into: header
+        field_name: Authorization
+      api_token: "{{ config[\"api_token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/features"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+      - api_url
+    properties:
+      api_token:
+        type: string
+        description: >-
+          Your API Token (Server-Side SDK [Client]). See <a
+          href="https://docs.getunleash.io/how-to/how-to-create-api-tokens/">here</a>.
+          The token is case sensitive.
+        title: API Token Client
+        airbyte_secret: true
+        examples:
+          - >-
+            project:environment.be44368985f7fb3237c584ef86f3d6bdada42ddbd63a019d26955178
+          - >-
+            *:environment.be44368985f7fb3237c584ef86f3d6bdada42ddbd63a019d26955178
+          - be44368985f7fb3237c584ef86f3d6bdada42ddbd63a019d26955178
+        order: 0
+      api_url:
+        type: string
+        description: "Your API URL. No trailing slash. ex: https://unleash.host.com/api"
+        title: API URL
+        order: 1
+      project_name:
+        type: string
+        description: >-
+          Use this if you want to filter the API call for only one given project
+          (can be used in addition to the "Feature Name Prefix" field). See <a
+          href="https://docs.getunleash.io/reference/api/legacy/unleash/client/features#filter-feature-toggles">here</a>
+        title: Project Name
+        order: 2
+      nameprefix:
+        type: string
+        description: >-
+          Use this if you want to filter the API call for only one given project
+          (can be used in addition to the "Feature Name Prefix" field). See <a
+          href="https://docs.getunleash.io/reference/api/legacy/unleash/client/features#filter-feature-toggles">here</a>
+        title: Feature Name Prefix
+        order: 3
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    features: false
+  testedStreams:
+    features:
+      streamHash: 8950acc55e5fdb5c59254187acde679a6e37f06e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  features:
+    type: object
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - string
+          - "null"
+      enabled:
+        type:
+          - boolean
+          - "null"
+      stale:
+        type:
+          - boolean
+          - "null"
+      strategies:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            constraints:
+              type:
+                - array
+                - "null"
+            parameters:
+              type:
+                - object
+                - "null"
+      strategy:
+        type:
+          - string
+          - "null"
+      parameters:
+        type:
+          - object
+          - "null"
+      impressionData:
+        type:
+          - boolean
+          - "null"
+      variants:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            weight:
+              type:
+                - integer
+                - "null"
+            weightType:
+              type:
+                - string
+                - "null"
+            stickiness:
+              type:
+                - string
+                - "null"
+            payload:
+              type:
+                - object
+                - "null"
+            overrides:
+              type:
+                - array
+                - "null"
+    additionalProperties: true

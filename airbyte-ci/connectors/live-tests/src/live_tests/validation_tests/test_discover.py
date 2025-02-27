@@ -1,18 +1,26 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from typing import TYPE_CHECKING, Callable, List, Union
+from __future__ import annotations
+
+from typing import Callable, List, Union
 
 import dpath.util
 import jsonschema
 import pytest
 from airbyte_protocol.models import AirbyteCatalog
+
 from live_tests.commons.models import ExecutionResult
-from live_tests.utils import fail_test_on_failing_execution_results, find_all_values_for_key_in_schema
+from live_tests.utils import fail_test_on_failing_execution_results, find_all_values_for_key_in_schema, get_catalog
 
 pytestmark = [
     pytest.mark.anyio,
 ]
+
+
+@pytest.fixture(scope="session")
+def target_discovered_catalog(discover_target_execution_result: ExecutionResult) -> AirbyteCatalog:
+    return get_catalog(discover_target_execution_result)
 
 
 @pytest.mark.allow_diagnostic_mode

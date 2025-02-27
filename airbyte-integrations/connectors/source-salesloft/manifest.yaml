@@ -1,0 +1,4542 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    account_tiers:
+      type: DeclarativeStream
+      name: account_tiers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /account_tiers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account_tiers"
+    import:
+      type: DeclarativeStream
+      name: import
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /imports
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/import"
+    person_stages:
+      type: DeclarativeStream
+      name: person_stages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /person_stages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/person_stages"
+    phone_number_assignments:
+      type: DeclarativeStream
+      name: phone_number_assignments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /phone_number_assignments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/phone_number_assignments"
+    steps:
+      type: DeclarativeStream
+      name: steps
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /steps
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/steps"
+    team_template_attachments:
+      type: DeclarativeStream
+      name: team_template_attachments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /team_template_attachments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/team_template_attachments"
+    email_template_attachments:
+      type: DeclarativeStream
+      name: email_template_attachments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: email_template_attachments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/email_template_attachments"
+    crm_users:
+      type: DeclarativeStream
+      name: crm_users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: crm_users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/crm_users"
+    groups:
+      type: DeclarativeStream
+      name: groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups"
+    custom_fields:
+      type: DeclarativeStream
+      name: custom_fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /custom_fields
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_fields"
+    call_dispositions:
+      type: DeclarativeStream
+      name: call_dispositions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /call_dispositions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/call_dispositions"
+    call_sentiments:
+      type: DeclarativeStream
+      name: call_sentiments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /call_sentiments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/call_sentiments"
+    meetings:
+      type: DeclarativeStream
+      name: meetings
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /meetings
+          http_method: GET
+          request_parameters:
+            created_at[gt]: "{{ config['start_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/meetings"
+    people:
+      type: DeclarativeStream
+      name: people
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /people
+          http_method: GET
+          request_parameters:
+            sort_direction: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/people"
+    cadences:
+      type: DeclarativeStream
+      name: cadences
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /cadences
+          http_method: GET
+          request_parameters:
+            sort_direction: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cadences"
+    cadence_memberships:
+      type: DeclarativeStream
+      name: cadence_memberships
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /cadence_memberships
+          http_method: GET
+          request_parameters:
+            sort_direction: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cadence_memberships"
+    emails:
+      type: DeclarativeStream
+      name: emails
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /activities/emails
+          http_method: GET
+          request_parameters:
+            sort_direction: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/emails"
+    calls:
+      type: DeclarativeStream
+      name: calls
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /activities/calls
+          http_method: GET
+          request_parameters:
+            sort_direction: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/calls"
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts
+          http_method: GET
+          request_parameters:
+            sort_direction: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    account_stages:
+      type: DeclarativeStream
+      name: account_stages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /account_stages
+          http_method: GET
+          request_parameters:
+            sort_direction: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account_stages"
+    actions:
+      type: DeclarativeStream
+      name: actions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /actions
+          http_method: GET
+          request_parameters:
+            sort_direction: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/actions"
+    email_templates:
+      type: DeclarativeStream
+      name: email_templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /email_templates
+          http_method: GET
+          request_parameters:
+            sort_direction: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/email_templates"
+    notes:
+      type: DeclarativeStream
+      name: notes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /notes
+          http_method: GET
+          request_parameters:
+            sort_direction: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/notes"
+    team_templates:
+      type: DeclarativeStream
+      name: team_templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /team_templates
+          http_method: GET
+          request_parameters:
+            sort_direction: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/team_templates"
+    crm_activities:
+      type: DeclarativeStream
+      name: crm_activities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /crm_activities
+          http_method: GET
+          request_parameters:
+            sort_direction: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/crm_activities"
+    successes:
+      type: DeclarativeStream
+      name: successes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /successes
+          http_method: GET
+          request_parameters:
+            sort_direction: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/successes"
+    call_data_records:
+      type: DeclarativeStream
+      name: call_data_records
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /call_data_records
+          http_method: GET
+          request_parameters:
+            updated_at[gt]: "{{ config['start_date'] }}"
+            sort_direction: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/call_data_records"
+    searches:
+      type: DeclarativeStream
+      name: searches
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /meetings/settings/searches
+          http_method: POST
+          request_parameters:
+            sort_direction: ASC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/searches"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.salesloft.com/v2
+    authenticator:
+      type: SelectiveAuthenticator
+      authenticator_selection_path:
+        - credentials
+        - auth_type
+      authenticators:
+        oauth2.0:
+          type: CustomAuthenticator
+          class_name: source_declarative_manifest.components.SingleUseOauth2Authenticator
+          client_id: "{{ config['credentials']['client_id'] }}"
+          client_secret: "{{ config['credentials']['client_secret'] }}"
+          refresh_token: "{{ config['credentials']['refresh_token'] }}"
+          refresh_request_body: {}
+          token_refresh_endpoint: https://accounts.salesloft.com/oauth/token
+          grant_type: refresh_token
+        api_key:
+          type: BearerAuthenticator
+          api_token: "{{ config['credentials']['api_key'] }}"
+
+streams:
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/account_tiers"
+  - $ref: "#/definitions/streams/import"
+  - $ref: "#/definitions/streams/person_stages"
+  - $ref: "#/definitions/streams/phone_number_assignments"
+  - $ref: "#/definitions/streams/steps"
+  - $ref: "#/definitions/streams/team_template_attachments"
+  - $ref: "#/definitions/streams/email_template_attachments"
+  - $ref: "#/definitions/streams/crm_users"
+  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/custom_fields"
+  - $ref: "#/definitions/streams/call_dispositions"
+  - $ref: "#/definitions/streams/call_sentiments"
+  - $ref: "#/definitions/streams/meetings"
+  - $ref: "#/definitions/streams/people"
+  - $ref: "#/definitions/streams/cadences"
+  - $ref: "#/definitions/streams/cadence_memberships"
+  - $ref: "#/definitions/streams/emails"
+  - $ref: "#/definitions/streams/calls"
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/account_stages"
+  - $ref: "#/definitions/streams/actions"
+  - $ref: "#/definitions/streams/email_templates"
+  - $ref: "#/definitions/streams/notes"
+  - $ref: "#/definitions/streams/team_templates"
+  - $ref: "#/definitions/streams/crm_activities"
+  - $ref: "#/definitions/streams/successes"
+  - $ref: "#/definitions/streams/call_data_records"
+  - $ref: "#/definitions/streams/searches"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - credentials
+      - start_date
+    properties:
+      credentials:
+        type: object
+        oneOf:
+          - type: object
+            title: Authenticate via OAuth
+            required:
+              - client_id
+              - client_secret
+              - refresh_token
+              - access_token
+              - token_expiry_date
+              - auth_type
+            properties:
+              auth_type:
+                type: string
+                const: oauth2.0
+              client_id:
+                type: string
+                description: The Client ID of your Salesloft developer application.
+                title: Client ID
+              access_token:
+                type: string
+                description: Access Token for making authenticated requests.
+                airbyte_secret: true
+              client_secret:
+                type: string
+                description: The Client Secret of your Salesloft developer application.
+                title: Client Secret
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                description: The token for obtaining a new access token.
+                title: Refresh Token
+                airbyte_secret: true
+              token_expiry_date:
+                type: string
+                description: The date-time when the access token should be refreshed.
+                format: date-time
+          - type: object
+            title: Authenticate via API Key
+            required:
+              - api_key
+              - auth_type
+            properties:
+              api_key:
+                type: string
+                description: >-
+                  API Key for making authenticated requests. More instruction on
+                  how to find this value in our <a
+                  href="https://docs.airbyte.com/integrations/sources/salesloft#setup-guide">docs</a>
+                title: API Key
+                airbyte_secret: true
+              auth_type:
+                type: string
+                const: api_key
+        order: 0
+        title: Credentials
+      start_date:
+        type: string
+        description: >-
+          The date from which you'd like to replicate data for Salesloft API, in
+          the format YYYY-MM-DDT00:00:00Z. All data generated after this date
+          will be replicated.
+        title: Start Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+        examples:
+          - "2020-11-16T00:00:00Z"
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    users: true
+    account_tiers: true
+    import: true
+    person_stages: true
+    phone_number_assignments: true
+    steps: true
+    team_template_attachments: true
+    email_template_attachments: true
+    crm_users: true
+    groups: true
+    custom_fields: true
+    call_dispositions: true
+    call_sentiments: true
+    meetings: true
+    people: true
+    cadences: true
+    cadence_memberships: true
+    emails: true
+    calls: true
+    accounts: true
+    account_stages: true
+    actions: true
+    email_templates: true
+    notes: true
+    team_templates: true
+    crm_activities: true
+    successes: true
+    call_data_records: true
+    searches: true
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams: {}
+  assist: {}
+
+schemas:
+  users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - "null"
+          - boolean
+      bcc_email_address:
+        type:
+          - "null"
+          - string
+      click_to_call_enabled:
+        type:
+          - "null"
+          - boolean
+      created_at:
+        type: string
+        format: date-time
+      crm_connected:
+        type:
+          - "null"
+          - boolean
+      email:
+        type:
+          - "null"
+          - string
+      email_client_configured:
+        type:
+          - "null"
+          - boolean
+      email_client_email_address:
+        type:
+          - "null"
+          - string
+      email_signature:
+        type:
+          - "null"
+          - string
+      email_signature_click_tracking_disabled:
+        type:
+          - "null"
+          - boolean
+      email_signature_type:
+        type:
+          - "null"
+          - string
+      external_feature_flags:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties: {}
+      first_name:
+        type:
+          - "null"
+          - string
+      from_address:
+        type:
+          - "null"
+          - string
+      full_email_address:
+        type:
+          - "null"
+          - string
+      group:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      guid:
+        type:
+          - "null"
+          - string
+      id:
+        type: integer
+      job_role:
+        type:
+          - "null"
+          - string
+      last_name:
+        type:
+          - "null"
+          - string
+      local_dial_enabled:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      phone_client:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      phone_number_assignment:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      role:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+              - string
+      sending_email_address:
+        type:
+          - "null"
+          - string
+      slack_username:
+        type:
+          - "null"
+          - string
+      team:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      team_admin:
+        type:
+          - "null"
+          - boolean
+      time_zone:
+        type:
+          - "null"
+          - string
+      twitter_handle:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+  account_tiers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: string
+        format: date-time
+      id:
+        type: integer
+      name:
+        type:
+          - "null"
+          - string
+      order:
+        type:
+          - "null"
+          - integer
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+  import:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: string
+        format: date-time
+      current_people_count:
+        type:
+          - "null"
+          - integer
+      id:
+        type: integer
+      imported_people_count:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+  person_stages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: string
+        format: date-time
+      id:
+        type: integer
+      name:
+        type:
+          - "null"
+          - string
+      order:
+        type:
+          - "null"
+          - integer
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+  phone_number_assignments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      number:
+        type:
+          - "null"
+          - string
+      user:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+  steps:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      cadence:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      day:
+        type:
+          - "null"
+          - integer
+      details:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      disabled:
+        type:
+          - "null"
+          - boolean
+      display_name:
+        type:
+          - "null"
+          - string
+      id:
+        type: integer
+      name:
+        type:
+          - "null"
+          - string
+      step_number:
+        type:
+          - "null"
+          - integer
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+  team_template_attachments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      attachment_file_size:
+        type:
+          - "null"
+          - integer
+      attachment_id:
+        type:
+          - "null"
+          - integer
+      download_url:
+        type:
+          - "null"
+          - string
+      id:
+        type: integer
+      name:
+        type:
+          - "null"
+          - string
+      team_template:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+  email_template_attachments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      attachment_file_size:
+        type:
+          - "null"
+          - integer
+      attachment_id:
+        type:
+          - "null"
+          - integer
+      download_url:
+        type:
+          - "null"
+          - string
+      id:
+        type: integer
+      name:
+        type:
+          - "null"
+          - string
+      team_template:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+  crm_users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: string
+        format: date-time
+      crm_id:
+        type:
+          - "null"
+          - string
+      id:
+        type: integer
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      user:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+  groups:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      name:
+        type:
+          - "null"
+          - string
+      parent_id:
+        type:
+          - "null"
+          - integer
+  custom_fields:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      field_type:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      value_type:
+        type:
+          - "null"
+          - string
+  call_dispositions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+  call_sentiments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+  meetings:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      account_id:
+        type:
+          - "null"
+          - string
+      all_day:
+        type:
+          - "null"
+          - boolean
+      attendees:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            deleted_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            email:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            organizer:
+              type:
+                - "null"
+                - boolean
+            status:
+              type:
+                - "null"
+                - string
+            status_changed:
+              type:
+                - "null"
+                - boolean
+      booked_by_meetings_settings:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            email_address:
+              - "null"
+              - string
+      booked_by_user:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+      cadence:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      calendar_id:
+        type:
+          - "null"
+          - string
+      calendar_type:
+        type:
+          - "null"
+          - string
+      canceled_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      crm_custom_fields:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      crm_references:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      end_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+      event_id:
+        type:
+          - "null"
+          - string
+      event_source:
+        type:
+          - "null"
+          - string
+      guests:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      i_cal_uid:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      location:
+        type:
+          - "null"
+          - string
+      meeting_type:
+        type:
+          - "null"
+          - string
+      no_show:
+        type:
+          - "null"
+          - boolean
+      owned_by_meetings_settings:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            email_address:
+              - "null"
+              - string
+      person:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      recipient_email:
+        type:
+          - "null"
+          - string
+      recipient_name:
+        type:
+          - "null"
+          - string
+      reschedule_status:
+        type:
+          - "null"
+          - string
+      start_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+      status:
+        type:
+          - "null"
+          - string
+      step:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      strict_attribution:
+        type:
+          - "null"
+          - boolean
+      task_id:
+        type:
+          - "null"
+          - integer
+      title:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+  people:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      account:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      bouncing:
+        type:
+          - "null"
+          - boolean
+      city:
+        type:
+          - "null"
+          - string
+      contact_restrictions:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      country:
+        type:
+          - "null"
+          - string
+      counts:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          calls:
+            type:
+              - "null"
+              - integer
+          emails_bounced:
+            type:
+              - "null"
+              - integer
+          emails_clicked:
+            type:
+              - "null"
+              - integer
+          emails_replied_to:
+            type:
+              - "null"
+              - integer
+          emails_sent:
+            type:
+              - "null"
+              - integer
+          emails_viewed:
+            type:
+              - "null"
+              - integer
+      created_at:
+        type: string
+        format: date-time
+      crm_id:
+        type:
+          - "null"
+          - string
+      crm_object_type:
+        type:
+          - "null"
+          - string
+      crm_url:
+        type:
+          - "null"
+          - string
+      custom_fields:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties: {}
+      display_name:
+        type:
+          - "null"
+          - string
+      do_not_contact:
+        type:
+          - "null"
+          - boolean
+      email_address:
+        type:
+          - "null"
+          - string
+      first_name:
+        type:
+          - "null"
+          - string
+      full_email_address:
+        type:
+          - "null"
+          - string
+      home_phone:
+        type:
+          - "null"
+          - string
+      id:
+        type: integer
+      import:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      job_seniority:
+        type:
+          - "null"
+          - string
+      last_completed_step:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      last_completed_step_cadence:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      last_contacted_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      last_contacted_by:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      last_contacted_type:
+        type:
+          - "null"
+          - string
+      last_name:
+        type:
+          - "null"
+          - string
+      last_replied_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      linkedin_url:
+        type:
+          - "null"
+          - string
+      locale:
+        type:
+          - "null"
+          - string
+      mobile_phone:
+        type:
+          - "null"
+          - string
+      most_recent_cadence:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      owner:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      owner_crm_id:
+        type:
+          - "null"
+          - string
+      person_company_industry:
+        type:
+          - "null"
+          - string
+      person_company_name:
+        type:
+          - "null"
+          - string
+      person_company_website:
+        type:
+          - "null"
+          - string
+      person_stage:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      personal_email_address:
+        type:
+          - "null"
+          - string
+      personal_website:
+        type:
+          - "null"
+          - string
+      phone:
+        type:
+          - "null"
+          - string
+      phone_extension:
+        type:
+          - "null"
+          - string
+      secondary_email_address:
+        type:
+          - "null"
+          - string
+      state:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      title:
+        type:
+          - "null"
+          - string
+      twitter_handle:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type: string
+        format: date-time
+      work_city:
+        type:
+          - "null"
+          - string
+      work_country:
+        type:
+          - "null"
+          - string
+      work_state:
+        type:
+          - "null"
+          - string
+  cadences:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      added_stage:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      archived_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      bounced_stage:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      counts:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          cadence_people:
+            type:
+              - "null"
+              - integer
+          target_daily_people:
+            type:
+              - "null"
+              - integer
+      created_at:
+        type: string
+        format: date-time
+      creator:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      finished_stage:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      id:
+        type: integer
+      latest_active_date:
+        type:
+          - "null"
+          - string
+        format: date
+      name:
+        type:
+          - "null"
+          - string
+      opt_out_link_included:
+        type:
+          - "null"
+          - boolean
+      owner:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      remove_bounces_enabled:
+        type:
+          - "null"
+          - boolean
+      remove_replies_enabled:
+        type:
+          - "null"
+          - boolean
+      replied_stage:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      shared:
+        type:
+          - "null"
+          - boolean
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      team_cadence:
+        type:
+          - "null"
+          - boolean
+      updated_at:
+        type: string
+        format: date-time
+  cadence_memberships:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      added_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      cadence:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      counts:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          bounces:
+            type:
+              - "null"
+              - integer
+          calls:
+            type:
+              - "null"
+              - integer
+          clicks:
+            type:
+              - "null"
+              - integer
+          replies:
+            type:
+              - "null"
+              - integer
+          sent_emails:
+            type:
+              - "null"
+              - integer
+          views:
+            type:
+              - "null"
+              - integer
+      created_at:
+        type: string
+        format: date-time
+      current_state:
+        type:
+          - "null"
+          - string
+      currently_on_cadence:
+        type:
+          - "null"
+          - boolean
+      id:
+        type: integer
+      latest_action:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      person:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      person_deleted:
+        type:
+          - "null"
+          - boolean
+      updated_at:
+        type: string
+        format: date-time
+      user:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+  emails:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      action:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+      bounced:
+        type:
+          - "null"
+          - boolean
+      subject:
+        type:
+          - "null"
+          - string
+      body:
+        type:
+          - "null"
+          - string
+      cadence:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      click_tracking:
+        type:
+          - "null"
+          - boolean
+      counts:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          attachments:
+            type:
+              - "null"
+              - integer
+          clicks:
+            type:
+              - "null"
+              - integer
+          replies:
+            type:
+              - "null"
+              - integer
+          unique_devices:
+            type:
+              - "null"
+              - integer
+          unique_locations:
+            type:
+              - "null"
+              - integer
+          views:
+            type:
+              - "null"
+              - integer
+      created_at:
+        type: string
+        format: date-time
+      crm_activity:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      email_template:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      headers:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          In-Reply-To:
+            type:
+              - "null"
+              - string
+          References:
+            type:
+              - "null"
+              - string
+          bcc:
+            type:
+              - "null"
+              - string
+          cc:
+            type:
+              - "null"
+              - string
+          in_reply_to:
+            type:
+              - "null"
+              - string
+          to:
+            type:
+              - "null"
+              - string
+      id:
+        type: integer
+      mailing:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+      personalization:
+        type:
+          - "null"
+          - string
+      recipient:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      recipient_email_address:
+        type:
+          - "null"
+          - string
+      send_after:
+        type:
+          - "null"
+          - string
+        format: date-time
+      sent_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      status:
+        type:
+          - "null"
+          - string
+      step:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      updated_at:
+        type: string
+        format: date-time
+      user:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      view_tracking:
+        type:
+          - "null"
+          - boolean
+  calls:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      action:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+      cadence:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      called_person:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      created_at:
+        type: string
+        format: date-time
+      crm_activity:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      disposition:
+        type:
+          - "null"
+          - string
+      duration:
+        type:
+          - "null"
+          - integer
+      id:
+        type: integer
+      note:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      sentiment:
+        type:
+          - "null"
+          - string
+      step:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      to:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type: string
+        format: date-time
+      user:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+  accounts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      account_tier:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      archived_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      city:
+        type:
+          - "null"
+          - string
+      company_stage:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      company_type:
+        type:
+          - "null"
+          - string
+      conversational_name:
+        type:
+          - "null"
+          - string
+      country:
+        type:
+          - "null"
+          - string
+      counts:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          people:
+            type:
+              - "null"
+              - integer
+      created_at:
+        type: string
+        format: date-time
+      creator:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      crm_id:
+        type:
+          - "null"
+          - string
+      crm_object_type:
+        type:
+          - "null"
+          - string
+      crm_url:
+        type:
+          - "null"
+          - string
+      do_not_contact:
+        type:
+          - "null"
+          - boolean
+      domain:
+        type:
+          - "null"
+          - string
+      founded:
+        type:
+          - "null"
+          - string
+      id:
+        type: integer
+      industry:
+        type:
+          - "null"
+          - string
+      last_contacted_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      last_contacted_by:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      last_contacted_person:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      last_contacted_type:
+        type:
+          - "null"
+          - string
+      linkedin_url:
+        type:
+          - "null"
+          - string
+      locale:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      owner:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      owner_crm_id:
+        type:
+          - "null"
+          - string
+      phone:
+        type:
+          - "null"
+          - string
+      postal_code:
+        type:
+          - "null"
+          - string
+      revenue_range:
+        type:
+          - "null"
+          - string
+      size:
+        type:
+          - "null"
+          - string
+      state:
+        type:
+          - "null"
+          - string
+      street:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      twitter_handle:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type: string
+        format: date-time
+      website:
+        type:
+          - "null"
+          - string
+  account_stages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type: integer
+      name:
+        type:
+          - "null"
+          - string
+      order:
+        type:
+          - "null"
+          - integer
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+  actions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      action_details:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      cadence:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      created_at:
+        type: string
+        format: date-time
+      due:
+        type:
+          - "null"
+          - boolean
+      due_on:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type: integer
+      multitouch_group_id:
+        type:
+          - "null"
+          - integer
+      person:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      status:
+        type:
+          - "null"
+          - string
+      step:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      updated_at:
+        type: string
+        format: date-time
+      user:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+  email_templates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          attachments:
+            type:
+              - "null"
+              - string
+      archived_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      body:
+        type:
+          - "null"
+          - string
+      body_preview:
+        type:
+          - "null"
+          - string
+      cadence_template:
+        type:
+          - "null"
+          - boolean
+      click_tracking_enabled:
+        type:
+          - "null"
+          - boolean
+      counts:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          bounces:
+            type:
+              - "null"
+              - integer
+          clicks:
+            type:
+              - "null"
+              - integer
+          replies:
+            type:
+              - "null"
+              - integer
+          sent_emails:
+            type:
+              - "null"
+              - integer
+          views:
+            type:
+              - "null"
+              - integer
+      created_at:
+        type: string
+        format: date-time
+      groups:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            _href:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - integer
+      id:
+        type: integer
+      last_used_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      open_tracking_enabled:
+        type:
+          - "null"
+          - boolean
+      shared:
+        type:
+          - "null"
+          - boolean
+      subject:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      team_template:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+      template_owner:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      title:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+  notes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      associated_with:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      call:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      content:
+        type:
+          - "null"
+          - string
+      created_at:
+        type: string
+        format: date-time
+      id:
+        type: integer
+      updated_at:
+        type: string
+        format: date-time
+      user:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+  team_templates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      _links:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          attachments:
+            type:
+              - "null"
+              - string
+      archived_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      body:
+        type:
+          - "null"
+          - string
+      body_preview:
+        type:
+          - "null"
+          - string
+      click_tracking_enabled:
+        type:
+          - "null"
+          - boolean
+      counts:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          bounces:
+            type:
+              - "null"
+              - integer
+          clicks:
+            type:
+              - "null"
+              - integer
+          replies:
+            type:
+              - "null"
+              - integer
+          sent_emails:
+            type:
+              - "null"
+              - integer
+          views:
+            type:
+              - "null"
+              - integer
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type: string
+      last_modified_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      last_modified_user:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      last_used_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      open_tracking_enabled:
+        type:
+          - "null"
+          - boolean
+      subject:
+        type:
+          - "null"
+          - string
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      title:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+  crm_activities:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      activity_type:
+        type:
+          - "null"
+          - string
+      created_at:
+        type: string
+        format: date-time
+      crm_id:
+        type:
+          - "null"
+          - string
+      custom_crm_fields:
+        type:
+          - "null"
+          - object
+      error:
+        type:
+          - "null"
+          - string
+      id:
+        type: integer
+      person:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      subject:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type: string
+        format: date-time
+      user:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+  successes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      counts:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          total_calls:
+            type:
+              - "null"
+              - integer
+          total_emails:
+            type:
+              - "null"
+              - integer
+          total_other_touches:
+            type:
+              - "null"
+              - integer
+      created_at:
+        type: string
+        format: date-time
+      id:
+        type: integer
+      latest_action:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+      latest_cadence:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      latest_call:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      latest_email:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      latest_step:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      person:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      succeeded_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      success_window_started_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      user:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+  call_data_records:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      call:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      call_type:
+        type:
+          - "null"
+          - string
+      call_uuid:
+        type:
+          - "null"
+          - string
+      called_person:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      direction:
+        type:
+          - "null"
+          - string
+      duration:
+        type:
+          - "null"
+          - integer
+      from:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      recording:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          recording_status:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+      status:
+        type:
+          - "null"
+          - string
+      to:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      user:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+  searches:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      active_meeting_url:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          url:
+            type:
+              - "null"
+              - string
+      allow_booking_on_behalf:
+        type:
+          - "null"
+          - boolean
+      allow_booking_overtime:
+        type:
+          - "null"
+          - boolean
+      allow_event_detail:
+        type:
+          - "null"
+          - boolean
+      allow_event_overlap:
+        type:
+          - "null"
+          - boolean
+      availability_limit:
+        type:
+          - "null"
+          - integer
+      availability_limit_enabled:
+        type:
+          - "null"
+          - boolean
+      buffer_time_duration:
+        type:
+          - "null"
+          - integer
+      calendar_type:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      default_meeting_length:
+        type:
+          - "null"
+          - integer
+      email_address:
+        type:
+          - "null"
+          - string
+      enable_calendar_sync:
+        type:
+          - "null"
+          - boolean
+      enable_dynamic_location:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - integer
+      location:
+        type:
+          - "null"
+          - string
+      primary_calendar_connection_failed:
+        type:
+          - "null"
+          - boolean
+      primary_calendar_id:
+        type:
+          - "null"
+          - string
+      primary_calendar_name:
+        type:
+          - "null"
+          - string
+      reschedule_meetings_enabled:
+        type:
+          - "null"
+          - boolean
+      schedule_buffer_enabled:
+        type:
+          - "null"
+          - boolean
+      schedule_delay:
+        type:
+          - "null"
+          - integer
+      time_zone:
+        type:
+          - "null"
+          - string
+      times_available:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      title:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      user:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+      user_details:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      user_slug:
+        type:
+          - "null"
+          - string

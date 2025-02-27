@@ -11,6 +11,7 @@ import java.nio.file.Path
 import java.time.Duration
 import java.util.Properties
 import java.util.regex.Pattern
+import kotlin.reflect.KClass
 import org.apache.kafka.connect.connector.Connector
 import org.apache.kafka.connect.runtime.standalone.StandaloneConfig
 import org.apache.kafka.connect.storage.FileOffsetBackingStore
@@ -33,6 +34,7 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
         // default values from debezium CommonConnectorConfig
         with("max.batch.size", "2048")
         with("max.queue.size", "8192")
+        with("max.queue.size.in.bytes", BYTE_VALUE_256_MB)
         // Disabling retries because debezium startup time might exceed our 60-second wait limit
         // The maximum number of retries on connection errors before failing (-1 = no limit, 0 =
         // disabled, > 0 = num of retries).
@@ -56,7 +58,10 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
         // unless we set the following.
         with("value.converter.replace.null.with.default", "false")
         // Timeout for DebeziumEngine's close() method.
-        with("debezium.embedded.shutdown.pause.before.interrupt.ms", "10000")
+        // We find that in production, substantial time is in fact legitimately required here.
+        with("debezium.embedded.shutdown.pause.before.interrupt.ms", "60000")
+        // Unblock CDC syncs by skipping errors caused by unparseable DDLs
+        with("schema.history.internal.skip.unparseable.ddl", "true")
     }
 
     fun withOffset(): DebeziumPropertiesBuilder = apply {
@@ -125,8 +130,27 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
         }
     }
 
-    companion object {
+    fun withConverters(
+        vararg converters: KClass<out RelationalColumnCustomConverter>
+    ): DebeziumPropertiesBuilder = withConverters(*converters.map { it.java }.toTypedArray())
 
+    fun withConverters(
+        vararg converters: Class<out RelationalColumnCustomConverter>
+    ): DebeziumPropertiesBuilder {
+        val classByKey: Map<String, Class<out RelationalColumnCustomConverter>> =
+            converters.associateBy {
+                it.getDeclaredConstructor().newInstance().debeziumPropertiesKey
+            }
+        return apply {
+            with("converters", classByKey.keys.joinToString(separator = ","))
+            for ((key, converterClass) in classByKey) {
+                with("${key}.type", converterClass.canonicalName)
+            }
+        }
+    }
+
+    companion object {
+        private const val BYTE_VALUE_256_MB = (256 * 1024 * 1024).toString()
         fun joinIncludeList(includes: List<String>): String =
             includes.map { it.replace(",", "\\,") }.joinToString(",")
 
