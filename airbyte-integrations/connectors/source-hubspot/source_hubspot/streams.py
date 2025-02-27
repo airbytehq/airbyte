@@ -747,7 +747,7 @@ class Stream(HttpStream, ABC):
 
         def field_validation(field_name: str, field_value: Any):
             # properties fields is cast by _cast_record_fields_if_needed
-            return field_name in properties and field_name != "properties"
+            return field_name in self.cast_fields and field_name != "properties"
 
         return self._cast_record(
             record=record,
