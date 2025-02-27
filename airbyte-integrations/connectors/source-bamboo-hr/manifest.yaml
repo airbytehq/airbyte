@@ -120,6 +120,52 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/time_off_requests_stream"
+    timesheet_entries:
+      type: DeclarativeStream
+      name: timesheet_entries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /time_tracking/timesheet_entries
+          http_method: GET
+          request_headers:
+            Accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: start
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date or (now_utc() - duration('P30DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: start
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: end
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P1M
+        cursor_granularity: P1D
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/timesheet_entries"
   base_requester:
     type: HttpRequester
     url_base: https://api.bamboohr.com/api/gateway.php/{{ config['subdomain'] }}/v1/
@@ -133,6 +179,7 @@ streams:
   - $ref: "#/definitions/streams/employees_directory_stream"
   - $ref: "#/definitions/streams/meta_fields_stream"
   - $ref: "#/definitions/streams/time_off_requests_stream"
+  - $ref: "#/definitions/streams/timesheet_entries"
 
 spec:
   type: Spec
@@ -182,6 +229,7 @@ metadata:
     employees_directory_stream: false
     meta_fields_stream: false
     time_off_requests_stream: false
+    timesheet_entries: false
   yamlComponents:
     global:
       - authenticator
@@ -362,3 +410,50 @@ schemas:
           - object
         additionalProperties: true
         properties: {}
+  timesheet_entries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      approved:
+        type:
+          - boolean
+          - "null"
+      approvedAt:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      employeeId:
+        type:
+          - number
+          - "null"
+      end:
+        type: string
+      hours:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      note:
+        type:
+          - string
+          - "null"
+      start:
+        type: string
+      timezone:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - start
+      - end
