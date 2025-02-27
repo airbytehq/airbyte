@@ -756,18 +756,6 @@ class Stream(HttpStream, ABC):
             field_validation=field_validation,
         )
 
-    def _cast_record_field(
-        self, properties: Mapping[str, Any], field_name: str, field_value: Any, record: Mapping[str, Any], properties_key: str = None
-    ):
-        declared_field_types = properties[field_name].get("type", [])
-        if not isinstance(declared_field_types, Iterable):
-            declared_field_types = [declared_field_types]
-        declared_format = properties[field_name].get("format")
-        record_to_cast = record[properties_key] if properties_key else record
-        record_to_cast[field_name] = self._cast_value(
-            declared_field_types=declared_field_types, field_name=field_name, field_value=field_value, declared_format=declared_format
-        )
-
     def _transform(self, records: Iterable) -> Iterable:
         """Preprocess record before emitting"""
         for record in records:
