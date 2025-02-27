@@ -189,6 +189,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.7.0 | 2025-02-24 | [54656](https://github.com/airbytehq/airbyte/pull/54656) | Promoting release candidate 4.7.0-rc.1 to a main version. |
 | 4.7.0-rc.1 | 2025-02-13 | [53620](https://github.com/airbytehq/airbyte/pull/53620) | Replace ZendeskSupportAuditLogsIncrementalSync with low-code DatetimeBasedCursor |
 | 4.6.0 | 2024-12-09 | [47939](https://github.com/airbytehq/airbyte/pull/47939) | Add `User Identities` stream                                                                                                                                                                                                         |
 | 4.5.0 | 2024-12-02 | [48761](https://github.com/airbytehq/airbyte/pull/48761) | Add `Categories` and `Sections` stream |

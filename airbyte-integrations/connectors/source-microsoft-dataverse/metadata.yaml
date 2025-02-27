@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9220e3de-3b60-4bb2-a46f-046d59ea235a
-  dockerImageTag: 0.1.22
+  dockerImageTag: 0.1.23
   dockerRepository: airbyte/source-microsoft-dataverse
   githubIssueLabel: source-microsoft-dataverse
   icon: microsoftdataverse.svg
