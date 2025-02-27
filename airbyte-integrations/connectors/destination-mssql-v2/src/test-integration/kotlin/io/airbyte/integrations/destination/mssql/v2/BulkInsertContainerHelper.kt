@@ -53,7 +53,7 @@ object BulkInsertContainerHelper {
 
     private val testContainer =
         AzuriteContainer("mcr.microsoft.com/azure-storage/azurite:3.33.0")
-            .withLogConsumer({ e -> logger.debug { e.utf8String } })
+            .withLogConsumer { e -> logger.debug { e.utf8String } }
 
     fun start() {
         synchronized(testContainer) {
@@ -87,48 +87,11 @@ object BulkInsertContainerHelper {
                 blobContainerUrl = blobContainerClient.blobContainerUrl ?: ""
                 sharedAccessSignature = generateAccountSas(blobServiceClient)
 
+                // Set up a nginx proxy to map the public Azure blob storage URL to the container
+                createProxyForBlobStorage()
+
+                // Create the external data source for the bulk insert
                 prepareDatabaseForBulkInsert()
-
-                val proxyPassUrl =
-                    "http://$NETWORK_ALIAS:$BLOB_STORAGE_PORT/$WELL_KNOWN_ACCOUNT_NAME\$uri\$is_args\$args"
-                val nginxConf = File.createTempFile("nginx", ".tmp")
-                nginxConf.writeText(
-                    """
-                    events {}
-                    http {
-                        server {
-                            listen       80;
-                            resolver     127.0.0.11;
-                            location ~ ^/ {
-                                proxy_pass $proxyPassUrl;
-                                proxy_pass_request_headers      on;
-                            }
-                        }
-                    }
-                """.trimIndent(),
-                )
-
-                val nginx =
-                    NginxContainer("nginx:1.27.4")
-                        .withExposedPorts(80)
-                        .withNetwork(getNetwork())
-                        .withNetworkAliases("$WELL_KNOWN_ACCOUNT_NAME.blob.core.windows.net")
-                        .withCopyToContainer(
-                            MountableFile.forHostPath(nginxConf.path),
-                            "/etc/nginx/nginx.conf"
-                        )
-                        .withLogConsumer { e -> logger.info { e.utf8String } }
-
-                nginx.start()
-
-                //                val test = GenericContainer("alpine:3.17")
-                //                    .withNetwork(getNetwork())
-                //                    .withCommand("top")
-                //                test.start()
-                //
-                //                val uri =
-                // URI("http://$WELL_KNOWN_ACCOUNT_NAME.blob.core.windows.net/$blobContainer?restype=container&comp=list&$sharedAccessSignature")
-                //                println(test.execInContainer("wget", uri.toString()))
             }
         }
     }
@@ -169,6 +132,40 @@ object BulkInsertContainerHelper {
                 .setSasIpRange(SasIpRange().setIpMax("0.0.0.0").setIpMax("255.255.255.255"))
 
         return blobServiceClient.generateAccountSas(accountSasSignatureValues)
+    }
+
+    private fun createProxyForBlobStorage() {
+        val proxyPassUrl =
+            "http://$NETWORK_ALIAS:$BLOB_STORAGE_PORT/$WELL_KNOWN_ACCOUNT_NAME\$uri\$is_args\$args"
+        val nginxConf = File.createTempFile("nginx", ".tmp")
+        nginxConf.writeText(
+            """
+                    events {}
+                    http {
+                        server {
+                            listen       80;
+                            resolver     127.0.0.11;
+                            location ~ ^/ {
+                                proxy_pass $proxyPassUrl;
+                                proxy_pass_request_headers      on;
+                            }
+                        }
+                    }
+                """.trimIndent(),
+        )
+
+        val nginx =
+            NginxContainer("nginx:1.27.4")
+                .withExposedPorts(80)
+                .withNetwork(getNetwork())
+                .withNetworkAliases("$WELL_KNOWN_ACCOUNT_NAME.blob.core.windows.net")
+                .withCopyToContainer(
+                    MountableFile.forHostPath(nginxConf.path),
+                    "/etc/nginx/nginx.conf"
+                )
+                .withLogConsumer { e -> logger.debug { e.utf8String } }
+
+        nginx.start()
     }
 
     private fun prepareDatabaseForBulkInsert() {
