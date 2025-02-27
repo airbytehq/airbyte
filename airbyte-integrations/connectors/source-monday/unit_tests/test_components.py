@@ -10,12 +10,11 @@ import pytest
 from requests import Response
 
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
-from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
-from airbyte_cdk.sources.streams import Stream
-
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
+from airbyte_cdk.sources.streams import Stream
 
 
 def _create_response(content: Any) -> Response:
