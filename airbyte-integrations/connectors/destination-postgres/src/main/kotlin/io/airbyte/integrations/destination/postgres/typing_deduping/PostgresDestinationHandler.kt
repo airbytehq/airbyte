@@ -110,8 +110,8 @@ private val logger = KotlinLogging.logger {}
  */
 fun main() {
     val size = "5gb"
-    val runOldRawTablesFast = true
-    val runOldRawTablesSlow = true
+    val runOldRawTablesFast = false
+    val runOldRawTablesSlow = false
     val runNewTableNaive = true
     val runNewTableOptimized = false
 

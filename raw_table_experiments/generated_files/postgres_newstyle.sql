@@ -1,6 +1,6 @@
 -- naive create table --------------------------------
-DROP TABLE IF EXISTS no_raw_tables_experiment.new_final_table_5mb;
-create table "no_raw_tables_experiment"."new_final_table_5mb" (
+DROP TABLE IF EXISTS no_raw_tables_experiment.new_final_table_5gb;
+create table "no_raw_tables_experiment"."new_final_table_5gb" (
   "_airbyte_raw_id" varchar(36) not null,
   "_airbyte_extracted_at" timestamp with time zone not null,
   "_airbyte_generation_id" bigint,
@@ -31,7 +31,7 @@ create table "no_raw_tables_experiment"."new_final_table_5mb" (
 
 -- "naive" dedup query -------------------------------
 insert into
-  "no_raw_tables_experiment"."new_final_table_5mb" (
+  "no_raw_tables_experiment"."new_final_table_5gb" (
     "primary_key",
     "cursor",
     "string",
@@ -54,7 +54,7 @@ with "numbered_rows" as (
   select
     *,
     row_number() over (partition by "primary_key" order by "cursor" desc NULLS LAST, "_airbyte_extracted_at" desc) as "row_number"
-  from "no_raw_tables_experiment"."new_input_table_5mb_part1"
+  from "no_raw_tables_experiment"."new_input_table_5gb_part1"
 )
 select
   "primary_key",
@@ -76,7 +76,7 @@ select
   "_airbyte_meta"
 from "numbered_rows"
 where "row_number" = 1;
-delete from "no_raw_tables_experiment"."new_final_table_5mb"
+delete from "no_raw_tables_experiment"."new_final_table_5gb"
 where
   "_airbyte_raw_id" in (
     select
@@ -92,7 +92,7 @@ where
               "_airbyte_extracted_at" desc
           ) as "row_number"
         from
-          "no_raw_tables_experiment"."new_final_table_5mb"
+          "no_raw_tables_experiment"."new_final_table_5gb"
       ) as "airbyte_ids"
     where
       "row_number" <> 1
