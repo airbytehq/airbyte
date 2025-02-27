@@ -36,12 +36,6 @@ class StripeErrorHandler(HttpStatusErrorHandler):
             error_code = parsed_error.get("error", {}).get("code")
             error_message = STRIPE_ERROR_CODES.get(error_code, parsed_error.get("error", {}).get("message"))
 
-            if isinstance(response_or_exception, InvalidURL):
-                return ErrorResolution(
-                    response_action=ResponseAction.RETRY,
-                    failure_type=FailureType.transient_error,
-                    error_message="source-stripe has faced a temporary DNS resolution issue. Retrying...",
-                )
             if error_message:
                 reason = f"The endpoint {response_or_exception.url} returned {response_or_exception.status_code}: {response_or_exception.reason}. {error_message}.  {DOCUMENTATION_MESSAGE} "
                 response_error_message = HttpStream.parse_response_error_message(response_or_exception)
@@ -49,4 +43,10 @@ class StripeErrorHandler(HttpStatusErrorHandler):
                     reason += response_error_message
 
                 return ErrorResolution(response_action=ResponseAction.IGNORE, error_message=reason)
+        if isinstance(response_or_exception, InvalidURL):
+                return ErrorResolution(
+                    response_action=ResponseAction.RETRY,
+                    failure_type=FailureType.transient_error,
+                    error_message="source-stripe has faced a temporary DNS resolution issue. Retrying...",
+                )
         return super().interpret_response(response_or_exception)
