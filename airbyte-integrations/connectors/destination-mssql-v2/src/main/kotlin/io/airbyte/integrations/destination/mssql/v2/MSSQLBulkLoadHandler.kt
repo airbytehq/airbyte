@@ -10,6 +10,9 @@ import java.sql.SQLException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
+import kotlin.math.absoluteValue
+import kotlin.random.Random
+import org.apache.commons.lang3.SystemUtils
 
 private val logger = KotlinLogging.logger {}
 
@@ -141,6 +144,16 @@ class MSSQLBulkLoadHandler(
         }
     }
 
+    private fun quoteIdentifier(identifier: String): String {
+        // Split on '.', then bracket each piece (like database.schema.table -> [database].[schema].[table])
+        return identifier.split(".")
+            .joinToString(".") { segment ->
+                // Escape closing bracket if present:   a]b -> a]]b
+                "[${segment.replace("]", "]]")}]"
+            }
+    }
+
+
     /** Builds the BULK INSERT SQL statement with optional rowsPerBatch. */
     private fun buildBulkInsertSql(
         fullyQualifiedTableName: String,
@@ -148,23 +161,30 @@ class MSSQLBulkLoadHandler(
         formatFilePath: String,
         rowsPerBatch: Long? = null
     ): String {
+        val quotedTableName = quoteIdentifier(fullyQualifiedTableName)
         // The ROWS_PER_BATCH hint can help optimize the bulk load.
         // If not provided, it won't be included in the statement.
         val rowBatchClause = rowsPerBatch?.let { "ROWS_PER_BATCH = $it," } ?: ""
-        return """
-            BULK INSERT $fullyQualifiedTableName
-            FROM '$dataFilePath'
-            WITH (
-                CODEPAGE = '$CODE_PAGE',
-                DATA_SOURCE = '$bulkUploadDataSource',
-                FORMATFILE_DATA_SOURCE = '$bulkUploadDataSource',
-                FIRSTROW = 2,
-                FORMAT = '$FILE_FORMAT',
-                FORMATFILE = '$formatFilePath',
-                $rowBatchClause
-                KEEPNULLS
-            )
-        """.trimIndent()
+        return StringBuilder()
+            .apply {
+                append("BULK INSERT $quotedTableName\n")
+                append("FROM '$dataFilePath'\n")
+                append("WITH (\n")
+                if (SystemUtils.IS_OS_WINDOWS) {
+                    // Only supported in Windows installations
+                    append("\tCODEPAGE = '$CODE_PAGE',\n")
+                }
+                append("\tDATA_SOURCE = '$bulkUploadDataSource',\n")
+                append("\tFORMATFILE_DATA_SOURCE = '$bulkUploadDataSource',\n")
+                append("\tFIRSTROW = 2,\n")
+                append("\tFORMAT = '$FILE_FORMAT',\n")
+                append("\tFORMATFILE = '$formatFilePath',\n")
+                append("\t$rowBatchClause\n")
+                append("\tKEEPNULLS\n")
+                append(")")
+            }
+            .toString()
+            .trimIndent()
     }
 
     /** Creates a Global temp table by cloning the column structure from the main table. */
@@ -189,6 +209,7 @@ class MSSQLBulkLoadHandler(
         primaryKeyColumns: List<String>,
         nonPkColumns: List<String>
     ): String {
+        val quotedTableName = quoteIdentifier("$schemaName.$mainTableName")
         // 1. ON condition:
         //    e.g. Target.[Pk1] = Source.[Pk1] AND Target.[Pk2] = Source.[Pk2]
         val onCondition = primaryKeyColumns.joinToString(" AND ") { "Target.[$it] = Source.[$it]" }
@@ -206,7 +227,7 @@ class MSSQLBulkLoadHandler(
         val sourceColumnsCsv = allColumns.joinToString(", ") { "Source.[$it]" }
 
         return """
-        MERGE INTO $schemaName.$mainTableName AS Target
+        MERGE INTO $quotedTableName AS Target
         USING $tempTableName AS Source
             ON $onCondition
         WHEN MATCHED THEN
@@ -223,6 +244,6 @@ class MSSQLBulkLoadHandler(
     private fun generateLocalTempTableName(): String {
         val timestamp =
             LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss_SSS"))
-        return "##TempTable_$timestamp"
+        return "##TempTable_${timestamp}_${Random.nextInt().absoluteValue}"
     }
 }

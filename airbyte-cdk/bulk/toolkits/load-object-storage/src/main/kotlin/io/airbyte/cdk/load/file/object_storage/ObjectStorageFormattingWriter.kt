@@ -16,8 +16,8 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.avro.AvroMapperPipelineFactory
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
+import io.airbyte.cdk.load.data.csv.MSSQLCsvRowValidator
 import io.airbyte.cdk.load.data.csv.toCsvRecord
-import io.airbyte.cdk.load.data.csv.toMssqlCsvRecord
 import io.airbyte.cdk.load.data.dataWithAirbyteMeta
 import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineTest
 import io.airbyte.cdk.load.data.withAirbyteMeta
@@ -107,9 +107,12 @@ class MSSQLCSVFormattingWriter(
 ) : ObjectStorageFormattingWriter {
     private val finalSchema = stream.schema.withAirbyteMeta(true)
     private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
+    private val mssqlRowValidator  = MSSQLCsvRowValidator()
     override fun accept(record: DestinationRecordAirbyteValue) {
+
         printer.printRecord(
-            record.dataWithAirbyteMeta(stream, true).toMssqlCsvRecord(finalSchema),
+            mssqlRowValidator.validate(record, this.finalSchema).dataWithAirbyteMeta(stream, true)
+                .toCsvRecord(finalSchema),
         )
     }
     override fun flush() {
