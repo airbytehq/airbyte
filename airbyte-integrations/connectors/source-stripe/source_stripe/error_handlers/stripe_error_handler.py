@@ -11,7 +11,7 @@ from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
-
+from requests.exceptions import InvalidURL
 
 STRIPE_ERROR_CODES = {
     "more_permissions_required": "This is most likely due to insufficient permissions on the credentials in use. "
@@ -34,6 +34,13 @@ class StripeErrorHandler(HttpStatusErrorHandler):
             parsed_error = response_or_exception.json()
             error_code = parsed_error.get("error", {}).get("code")
             error_message = STRIPE_ERROR_CODES.get(error_code, parsed_error.get("error", {}).get("message"))
+
+            if isinstance(response_or_exception, InvalidURL):
+                return ErrorResolution(
+                    response_action=ResponseAction.RETRY,
+                    failure_type=FailureType.transient_error,
+                    error_message="source-stripe has faced a temporary DNS resolution issue. Retrying...",
+                )
             if error_message:
                 reason = f"The endpoint {response_or_exception.url} returned {response_or_exception.status_code}: {response_or_exception.reason}. {error_message}.  {DOCUMENTATION_MESSAGE} "
                 response_error_message = HttpStream.parse_response_error_message(response_or_exception)
