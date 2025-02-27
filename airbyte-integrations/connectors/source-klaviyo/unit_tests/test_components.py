@@ -22,7 +22,7 @@ resolver = ManifestReferenceResolver()
 transformer = ManifestComponentTransformer()
 
 
-def test_transform(components_module, requests_mock):
+def test_transform(components_module):
     config = {"api_key": "api_key"}
     transformator = components_module.CampaignsDetailedTransformation(config=config)
     input_record = {
@@ -30,20 +30,20 @@ def test_transform(components_module, requests_mock):
         "relationships": {"campaign-messages": {"links": {"related": "https://a.klaviyo.com/api/related_link"}}},
     }
 
-    requests_mock.register_uri(
-        "GET",
-        f"https://a.klaviyo.com/api/campaign-recipient-estimations/{input_record['id']}",
-        status_code=200,
-        json={"data": {"attributes": {"estimated_recipient_count": 10}}},
-        complete_qs=True,
-    )
-    requests_mock.register_uri(
-        "GET",
-        input_record["relationships"]["campaign-messages"]["links"]["related"],
-        status_code=200,
-        json={"data": [{"attributes": {"field": "field"}}]},
-        complete_qs=True,
-    )
+    def get_response(*args, **kwargs):
+        url = kwargs["url"]
+        if f"https://a.klaviyo.com/api/campaign-recipient-estimations/{input_record['id']}" == url:
+            response_estimated_recipient_count = MagicMock()
+            response_estimated_recipient_count.json.return_value = {"data": {"attributes": {"estimated_recipient_count": 10}}}
+            return (MagicMock(), response_estimated_recipient_count)
+        if url == input_record["relationships"]["campaign-messages"]["links"]["related"]:
+            response_campaign_messages = MagicMock()
+            response_campaign_messages.json.return_value = {"data": [{"attributes": {"field": "field"}}]}
+            return (MagicMock(), response_campaign_messages)
+        raise ValueError("Unexpected endpoint was called")
+
+    transformator._http_client = MagicMock()
+    transformator._http_client.send_request.side_effect = get_response
 
     transformator.transform(input_record)
 
@@ -51,7 +51,7 @@ def test_transform(components_module, requests_mock):
     assert "estimated_recipient_count" in input_record
 
 
-def test_transform_not_campaign_messages(components_module, requests_mock):
+def test_transform_not_campaign_messages(components_module):
     config = {"api_key": "api_key"}
     transformator = components_module.CampaignsDetailedTransformation(config=config)
     input_record = {
@@ -59,20 +59,20 @@ def test_transform_not_campaign_messages(components_module, requests_mock):
         "relationships": {"campaign-messages": {"links": {"related": "https://a.klaviyo.com/api/related_link"}}},
     }
 
-    requests_mock.register_uri(
-        "GET",
-        f"https://a.klaviyo.com/api/campaign-recipient-estimations/{input_record['id']}",
-        status_code=200,
-        json={"data": {"attributes": {"estimated_recipient_count": 10}}},
-        complete_qs=True,
-    )
-    requests_mock.register_uri(
-        "GET",
-        input_record["relationships"]["campaign-messages"]["links"]["related"],
-        status_code=200,
-        json={},
-        complete_qs=True,
-    )
+    def get_response(*args, **kwargs):
+        url = kwargs["url"]
+        if f"https://a.klaviyo.com/api/campaign-recipient-estimations/{input_record['id']}" == url:
+            response_estimated_recipient_count = MagicMock()
+            response_estimated_recipient_count.json.return_value = {"data": {"attributes": {"estimated_recipient_count": 10}}}
+            return (MagicMock(), response_estimated_recipient_count)
+        if url == input_record["relationships"]["campaign-messages"]["links"]["related"]:
+            response_campaign_messages = MagicMock()
+            response_campaign_messages.json.return_value = {}
+            return (MagicMock(), response_campaign_messages)
+        raise ValueError("Unexpected endpoint was called")
+
+    transformator._http_client = MagicMock()
+    transformator._http_client.send_request.side_effect = get_response
 
     transformator.transform(input_record)
 
@@ -80,7 +80,7 @@ def test_transform_not_campaign_messages(components_module, requests_mock):
     assert "estimated_recipient_count" in input_record
 
 
-def test_transform_not_estimated_recipient_count(components_module, requests_mock):
+def test_transform_not_estimated_recipient_count(components_module):
     config = {"api_key": "api_key"}
     transformator = components_module.CampaignsDetailedTransformation(config=config)
     input_record = {
@@ -88,20 +88,20 @@ def test_transform_not_estimated_recipient_count(components_module, requests_moc
         "relationships": {"campaign-messages": {"links": {"related": "https://a.klaviyo.com/api/related_link"}}},
     }
 
-    requests_mock.register_uri(
-        "GET",
-        f"https://a.klaviyo.com/api/campaign-recipient-estimations/{input_record['id']}",
-        status_code=200,
-        json={"data": {"attributes": {}}},
-        complete_qs=True,
-    )
-    requests_mock.register_uri(
-        "GET",
-        input_record["relationships"]["campaign-messages"]["links"]["related"],
-        status_code=200,
-        json={"data": [{"attributes": {"field": "field"}}]},
-        complete_qs=True,
-    )
+    def get_response(*args, **kwargs):
+        url = kwargs["url"]
+        if f"https://a.klaviyo.com/api/campaign-recipient-estimations/{input_record['id']}" == url:
+            response_estimated_recipient_count = MagicMock()
+            response_estimated_recipient_count.json.return_value = {"data": {"attributes": {}}}
+            return (MagicMock(), response_estimated_recipient_count)
+        if url == input_record["relationships"]["campaign-messages"]["links"]["related"]:
+            response_campaign_messages = MagicMock()
+            response_campaign_messages.json.return_value = {"data": [{"attributes": {"field": "field"}}]}
+            return (MagicMock(), response_campaign_messages)
+        raise ValueError("Unexpected endpoint was called")
+
+    transformator._http_client = MagicMock()
+    transformator._http_client.send_request.side_effect = get_response
 
     transformator.transform(input_record)
 
