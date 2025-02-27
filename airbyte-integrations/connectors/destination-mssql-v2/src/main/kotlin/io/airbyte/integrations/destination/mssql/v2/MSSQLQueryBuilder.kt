@@ -346,7 +346,7 @@ class MSSQLQueryBuilder(
                 changes =
                     record.meta?.changes?.map { it.asProtocolObject() }?.toMutableList()
                         ?: mutableListOf()
-                setAdditionalProperty("syncId", stream.syncId)
+                setAdditionalProperty("sync_id", stream.syncId)
             }
 
         schema.forEachIndexed { index, field ->

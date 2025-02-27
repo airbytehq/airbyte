@@ -5,13 +5,10 @@
 package io.airbyte.integrations.destination.mssql.v2
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfiguration
-import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfigurationProvider
-import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlobClient
-import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlobStorageClientFactory
 import io.airbyte.cdk.load.state.DestinationFailure
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
+import io.airbyte.integrations.destination.mssql.v2.config.AzureBlobStorageClientCreator
 import io.airbyte.integrations.destination.mssql.v2.config.BulkLoadConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.InsertLoadTypeConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
@@ -47,7 +44,8 @@ class MSSQLWriter(
                     sqlBuilder = sqlBuilder,
                     bulkUploadDataSource = loadConfig.bulkLoadDataSource,
                     defaultSchema = config.schema,
-                    azureBlobClient = createAzureBlobClient(loadConfig),
+                    azureBlobClient =
+                        AzureBlobStorageClientCreator.createAzureBlobClient(loadConfig),
                 )
             }
             is InsertLoadTypeConfiguration -> {
@@ -70,24 +68,5 @@ class MSSQLWriter(
     override suspend fun teardown(destinationFailure: DestinationFailure?) {
         dataSource?.let { dataSourceFactory.disposeDataSource(it) }
         super.teardown(destinationFailure)
-    }
-
-    /**
-     * Creates an [AzureBlobClient] based on the [BulkLoadConfiguration]. This method is only called
-     * if the load configuration is Azure Blob.
-     */
-    private fun createAzureBlobClient(
-        bulkLoadConfiguration: BulkLoadConfiguration
-    ): AzureBlobClient {
-        val configProvider =
-            object : AzureBlobStorageConfigurationProvider {
-                override val azureBlobStorageConfiguration =
-                    AzureBlobStorageConfiguration(
-                        accountName = bulkLoadConfiguration.accountName,
-                        containerName = bulkLoadConfiguration.containerName,
-                        sharedAccessSignature = bulkLoadConfiguration.sharedAccessSignature,
-                    )
-            }
-        return AzureBlobStorageClientFactory(configProvider).make()
     }
 }
