@@ -139,7 +139,8 @@ data class DestinationRecord(
             Meta(
                 message.record.meta?.changes?.map { Meta.Change(it.field, it.change, it.reason) }
                     ?: emptyList()
-            )
+            ),
+            serialized.length.toLong()
         )
     }
 }
@@ -159,6 +160,7 @@ data class DestinationRecordAirbyteValue(
     val data: AirbyteValue,
     val emittedAtMs: Long,
     val meta: Meta?,
+    val serializedSizeBytes: Long = 0L
 )
 
 data class DestinationFile(

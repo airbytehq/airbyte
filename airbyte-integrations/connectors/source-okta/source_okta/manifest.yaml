@@ -1035,9 +1035,7 @@ streams:
         path: /api/v1/logs
         http_method: GET
         request_parameters:
-          since: >-
-            {{ stream_state.published if stream_state else config['start_date'] if 'start_date' in config else day_delta(-7, format='%Y-%m-%dT%H:%M:%SZ') 
-            }}
+          since: "{{ stream_interval.start_time if stream_interval.start_time else config['start_date'] if 'start_date' in config else day_delta(-7, format='%Y-%m-%dT%H:%M:%SZ') }}"
         authenticator:
           $ref: "#/definitions/selective_authenticator"
         error_handler:
@@ -1768,6 +1766,7 @@ streams:
               - okta.customizations.read
               - okta.customizations.manage
               - okta.workflows.invoke
+              - okta.users.apitokens.read
             type: string
             description: Type of permissions
           conditions:
