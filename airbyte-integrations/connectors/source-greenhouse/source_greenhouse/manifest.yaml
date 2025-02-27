@@ -3217,8 +3217,8 @@ definitions:
     $parameters:
       name: "eeoc"
       path: "eeoc"
-      cursor_field: "submitted_after"
-      cursor_request_option: "created_after"
+      cursor_field: "submitted_at"
+      cursor_request_option: "submitted_after"
     primary_key: "application_id"
     retriever:
       $ref: "#/definitions/retriever"
