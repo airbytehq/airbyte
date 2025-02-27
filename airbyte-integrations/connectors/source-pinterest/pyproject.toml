@@ -27,7 +27,7 @@ source-pinterest = "source_pinterest.run:run"
 requests-mock = "^1.11.0"
 pytest-mock = "^3.6.1"
 responses = "^0.13.3"
-pytest = "^6.1"
+pytest = "^8.0.0"
 
 
 [tool.poe]

@@ -27,7 +27,7 @@ source-stripe = "source_stripe.run:run"
 requests-mock = "^1.11.0"
 freezegun = "==1.2.2"
 pytest-mock = "^3.6.1"
-pytest = "^7"
+pytest = "^8.0.0"
 
 
 [tool.poe]

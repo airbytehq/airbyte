@@ -27,7 +27,7 @@ source-tiktok-marketing = "source_tiktok_marketing.run:run"
 requests-mock = "==1.12.1"
 timeout-decorator = "==0.5.0"
 pytest-mock = "^3.6.1"
-pytest = "^6.1"
+pytest = "^8.0.0"
 
 
 [tool.poe]

@@ -33,7 +33,7 @@ extras = [ "s3",]
 version = "==5.1.0"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.1"
+pytest = "^8.0.0"
 moto = "==4.2.14"
 docker = "^7.0.0"
 pytest-mock = "^3.6.1"
