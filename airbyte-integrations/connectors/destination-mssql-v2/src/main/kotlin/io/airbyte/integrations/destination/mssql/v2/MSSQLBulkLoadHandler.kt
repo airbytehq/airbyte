@@ -144,6 +144,15 @@ class MSSQLBulkLoadHandler(
         }
     }
 
+    private fun quoteIdentifier(identifier: String): String {
+        // Split on '.', then bracket each piece (like database.schema.table ->
+        // [database].[schema].[table])
+        return identifier.split(".").joinToString(".") { segment ->
+            // Escape closing bracket if present:   a]b -> a]]b
+            "[${segment.replace("]", "]]")}]"
+        }
+    }
+
     /** Builds the BULK INSERT SQL statement with optional rowsPerBatch. */
     private fun buildBulkInsertSql(
         fullyQualifiedTableName: String,
@@ -151,12 +160,13 @@ class MSSQLBulkLoadHandler(
         formatFilePath: String,
         rowsPerBatch: Long? = null
     ): String {
+        val quotedTableName = quoteIdentifier(fullyQualifiedTableName)
         // The ROWS_PER_BATCH hint can help optimize the bulk load.
         // If not provided, it won't be included in the statement.
         val rowBatchClause = rowsPerBatch?.let { "ROWS_PER_BATCH = $it," } ?: ""
         return StringBuilder()
             .apply {
-                append("BULK INSERT $fullyQualifiedTableName\n")
+                append("BULK INSERT $quotedTableName\n")
                 append("FROM '$dataFilePath'\n")
                 append("WITH (\n")
                 if (SystemUtils.IS_OS_WINDOWS) {
@@ -198,6 +208,7 @@ class MSSQLBulkLoadHandler(
         primaryKeyColumns: List<String>,
         nonPkColumns: List<String>
     ): String {
+        val quotedTableName = quoteIdentifier("$schemaName.$mainTableName")
         // 1. ON condition:
         //    e.g. Target.[Pk1] = Source.[Pk1] AND Target.[Pk2] = Source.[Pk2]
         val onCondition = primaryKeyColumns.joinToString(" AND ") { "Target.[$it] = Source.[$it]" }
@@ -215,7 +226,7 @@ class MSSQLBulkLoadHandler(
         val sourceColumnsCsv = allColumns.joinToString(", ") { "Source.[$it]" }
 
         return """
-        MERGE INTO $schemaName.$mainTableName AS Target
+        MERGE INTO $quotedTableName AS Target
         USING $tempTableName AS Source
             ON $onCondition
         WHEN MATCHED THEN
