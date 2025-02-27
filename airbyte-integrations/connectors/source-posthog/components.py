@@ -7,7 +7,7 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 from airbyte_cdk.sources.declarative.incremental import Cursor
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
+from airbyte_cdk.sources.declarative.partition_routers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
 
