@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "3.1.2"
+version = "3.1.8"
 name = "source-instagram"
 description = "Source implementation for Instagram."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_instagram"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-facebook-business = "==19.0.3"
+facebook-business = "==21.0.5"
 airbyte-cdk = "^2"
 cached-property = "==1.5.2"
 
@@ -28,3 +28,11 @@ source-instagram = "source_instagram.run:run"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6"
 pytest = "^6.1"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

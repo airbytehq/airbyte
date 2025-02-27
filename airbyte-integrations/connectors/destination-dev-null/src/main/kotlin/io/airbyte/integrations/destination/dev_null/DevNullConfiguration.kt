@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
-import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 
 /** This is the simplified configuration object actually used by the implementation. */
@@ -27,10 +26,8 @@ data class Failing(val numMessages: Int) : DevNullType
 
 data class Throttled(val millisPerRecord: Long) : DevNullType
 
-data class DevNullConfiguration(
-    val type: DevNullType,
-    override val recordBatchSizeBytes: Long = 200 * 1024 * 1024,
-) : DestinationConfiguration()
+data class DevNullConfiguration(val type: DevNullType, val ackRatePerRecord: Int = 10_000) :
+    DestinationConfiguration()
 
 /**
  * This factory is injected into the initialization code and used to map from the client-provided
@@ -40,14 +37,11 @@ data class DevNullConfiguration(
  * rest of the implementation.
  */
 @Singleton
-class DevNullConfigurationFactory(
-    @Value("\${airbyte.destination.record-batch-size-override}")
-    private val recordBatchSizeBytesOverride: Long?
-) : DestinationConfigurationFactory<DevNullSpecification, DevNullConfiguration> {
+class DevNullConfigurationFactory :
+    DestinationConfigurationFactory<DevNullSpecification, DevNullConfiguration> {
     private val log = KotlinLogging.logger {}
 
     override fun makeWithoutExceptionHandling(pojo: DevNullSpecification): DevNullConfiguration {
-        log.info { "Record batch size from environment: $recordBatchSizeBytesOverride" }
         return when (pojo) {
             is DevNullSpecificationOss -> {
                 when (pojo.testDestination) {
@@ -108,10 +102,7 @@ class DevNullConfigurationFactory(
                     }
                 }
             }
-        }.copy(
-            recordBatchSizeBytes = recordBatchSizeBytesOverride
-                    ?: DestinationConfiguration.DEFAULT_RECORD_BATCH_SIZE_BYTES
-        )
+        }
     }
 }
 

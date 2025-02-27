@@ -19,8 +19,7 @@ REFRESH_TOKEN = "amazon_refresh_token"
 
 CONFIG_START_DATE = "2023-01-01T00:00:00Z"
 CONFIG_END_DATE = "2023-01-30T00:00:00Z"
-VENDOR_TRAFFIC_REPORT_CONFIG_END_DATE = "2023-01-01T23:59:59Z"
-NOW = pendulum.now(tz="utc")
+NOW = pendulum.datetime(year=2024, month=6, day=1)
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
