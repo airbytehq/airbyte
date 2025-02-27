@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
@@ -21,8 +22,10 @@ import io.airbyte.cdk.load.data.TimeTypeWithTimezone
 import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
+import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.math.BigInteger
 import java.time.LocalDate
@@ -67,7 +70,8 @@ class MSSQLCsvRowValidator {
             is StringValue -> validateStringValue(columnName, this, fieldType, meta)
             is IntegerValue -> validateIntegerValue(columnName, this, meta)
             is BooleanValue -> validateBooleanValue(this)
-            // If it’s any other data type, we just skip validation logic here.
+            is NumberValue -> validateNumberValue(this)
+            is ObjectValue -> validateObjectValue(this, fieldType, meta)
             else -> this
         }
 
@@ -84,19 +88,23 @@ class MSSQLCsvRowValidator {
         val rawString = value.value
 
         if (fieldType.isNumericColumn()) {
-            if (!safeParseBigDecimal(rawString)) {
-                meta.nullify(
-                    columnName,
-                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
+            return runCatching { NumberValue(rawString.toBigDecimal()) }
+                .fold(
+                    onSuccess = { validateNumberValue(it) },
+                    onFailure = {
+                        meta.nullify(
+                            columnName,
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                        )
+                        NullValue
+                    }
                 )
-                return NullValue
-            }
         } else if (fieldType.isBooleanColumn()) {
             val asIntValue = parseBooleanAsIntValue(rawString)
             if (asIntValue == null) {
                 meta.nullify(
                     columnName,
-                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
+                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
                 )
                 return NullValue
             }
@@ -105,7 +113,7 @@ class MSSQLCsvRowValidator {
             if (!safeParseDate(rawString)) {
                 meta.nullify(
                     columnName,
-                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
+                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
                 )
                 return NullValue
             }
@@ -113,7 +121,7 @@ class MSSQLCsvRowValidator {
             if (!safeParseTime(rawString)) {
                 meta.nullify(
                     columnName,
-                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
+                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
                 )
                 return NullValue
             }
@@ -121,10 +129,12 @@ class MSSQLCsvRowValidator {
             if (!safeParseTimestamp(rawString)) {
                 meta.nullify(
                     columnName,
-                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
+                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
                 )
                 return NullValue
             }
+        } else if (fieldType.isUnionColumn()) {
+            return StringValue(Jsons.serialize(rawString))
         }
         return value
     }
@@ -138,7 +148,7 @@ class MSSQLCsvRowValidator {
         if (value.value > LIMITS.MAX_BIGINT) {
             meta.nullify(
                 columnName,
-                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
+                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
             )
             return NullValue
         }
@@ -147,6 +157,32 @@ class MSSQLCsvRowValidator {
 
     private fun validateBooleanValue(value: BooleanValue): IntegerValue {
         return if (value.value) LIMITS.TRUE else LIMITS.FALSE
+    }
+
+    private fun validateNumberValue(value: NumberValue): NumberValue {
+        // Force to BigDecimal -> re-box as NumberValue
+        return NumberValue(value.value.toDouble().toBigDecimal())
+    }
+
+    private fun validateObjectValue(
+        value: ObjectValue,
+        fieldType: FieldType,
+        meta: Meta
+    ): ObjectValue {
+        // If the schema says it's actually an object, we recursively validate.
+        val actualObjType = fieldType.type
+        if (actualObjType is ObjectType) {
+            val convertedValues = LinkedHashMap<String, AirbyteValue>(value.values.size)
+            value.values.forEach { (propName, propValue) ->
+                val subType = actualObjType.properties[propName]
+                val validated =
+                    if (subType != null) propValue.validateAndReplace(propName, subType, meta)
+                    else propValue
+                convertedValues[propName] = validated
+            }
+            return ObjectValue(convertedValues)
+        }
+        return value
     }
 
     private fun parseBooleanAsIntValue(value: String): IntegerValue? {
@@ -161,22 +197,16 @@ class MSSQLCsvRowValidator {
         }
     }
 
-    private fun safeParseBigDecimal(value: String): Boolean {
-        return runCatching { value.toBigDecimal() }.isSuccess
-    }
-
     private fun safeParseDate(value: String): Boolean {
         return runCatching { LocalDate.parse(value) }.isSuccess
     }
 
     private fun safeParseTime(value: String): Boolean {
-        // Attempt offset time, then local time
         if (runCatching { OffsetTime.parse(value) }.isSuccess) return true
         return runCatching { LocalTime.parse(value) }.isSuccess
     }
 
     private fun safeParseTimestamp(value: String): Boolean {
-        // Attempt offset date-time, then local date-time
         if (runCatching { OffsetDateTime.parse(value) }.isSuccess) return true
         return runCatching { LocalDateTime.parse(value) }.isSuccess
     }
@@ -187,6 +217,10 @@ class MSSQLCsvRowValidator {
 
     private fun FieldType.isStringColumn(): Boolean {
         return type is StringType
+    }
+
+    private fun FieldType.isUnionColumn(): Boolean {
+        return type is UnionType
     }
 
     private fun FieldType.isBooleanColumn(): Boolean {
@@ -210,7 +244,7 @@ class MSSQLCsvRowValidator {
             Meta.Change(
                 field = fieldName,
                 change = AirbyteRecordMessageMetaChange.Change.NULLED,
-                reason = reason,
+                reason = reason
             )
         (this.changes as MutableList).add(metaChange)
     }
