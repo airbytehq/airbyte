@@ -12,7 +12,6 @@ import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
 import kotlin.math.absoluteValue
 import kotlin.random.Random
-import org.apache.commons.lang3.SystemUtils
 
 private val logger = KotlinLogging.logger {}
 
@@ -169,10 +168,7 @@ class MSSQLBulkLoadHandler(
                 append("BULK INSERT $quotedTableName\n")
                 append("FROM '$dataFilePath'\n")
                 append("WITH (\n")
-                if (SystemUtils.IS_OS_WINDOWS) {
-                    // Only supported in Windows installations
-                    append("\tCODEPAGE = '$CODE_PAGE',\n")
-                }
+                append("\tCODEPAGE = '$CODE_PAGE',\n")
                 append("\tDATA_SOURCE = '$bulkUploadDataSource',\n")
                 append("\tFORMATFILE_DATA_SOURCE = '$bulkUploadDataSource',\n")
                 append("\tFIRSTROW = 2,\n")
