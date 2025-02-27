@@ -126,18 +126,23 @@ fun main() {
 
     fun resetOldTypingDeduping() {
         // reset the raw tables (i.e. unset loaded_at)
-        destHandler.execute(Sql.separately(
-            """
-                UPDATE no_raw_tables_experiment.old_raw_table_${size}_part1
-                SET _airbyte_loaded_at = NULL
-                WHERE true
-            """.trimIndent(),
-            """
-                UPDATE no_raw_tables_experiment.old_raw_table_${size}_part2
-                SET _airbyte_loaded_at = NULL
-                WHERE true
-            """.trimIndent(),
-        ))
+        for (part in listOf(1, 2)) {
+            destHandler.execute(
+                Sql.separately(
+                    """DROP INDEX IF EXISTS no_raw_tables_experiment.old_raw_table_${size}_part${part}_raw_id""",
+                    """DROP INDEX IF EXISTS no_raw_tables_experiment.old_raw_table_${size}_part${part}_extracted_at""",
+                    """DROP INDEX IF EXISTS no_raw_tables_experiment.old_raw_table_${size}_part${part}_loaded_at""",
+                    """
+                    UPDATE no_raw_tables_experiment.old_raw_table_${size}_part${part}
+                        SET _airbyte_loaded_at = NULL
+                        WHERE true
+                    """.trimIndent(),
+                    """CREATE INDEX old_raw_table_${size}_part${part}_raw_id ON no_raw_tables_experiment.old_raw_table_${size}_part${part}(_airbyte_raw_id)""",
+                    """CREATE INDEX old_raw_table_${size}_part${part}_extracted_at ON no_raw_tables_experiment.old_raw_table_${size}_part${part}(_airbyte_extracted_at)""",
+                    """CREATE INDEX old_raw_table_${size}_part${part}_loaded_at ON no_raw_tables_experiment.old_raw_table_${size}_part${part}(_airbyte_loaded_at, _airbyte_extracted_at)""",
+                ),
+            )
+        }
         // drop+recreate `old_final_table_${size}`
         // part=0 here b/c the part number doesn't matter (we don't need the raw tables yet)
         destHandler.execute(generator.createTable(getStreamConfig(size, 0), suffix = "", force = true))
