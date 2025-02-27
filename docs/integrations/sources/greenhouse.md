@@ -74,6 +74,9 @@ The Greenhouse connector should not run into Greenhouse API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.5.32 | 2025-02-01 | [52724](https://github.com/airbytehq/airbyte/pull/52724) | Update dependencies |
+| 0.5.31 | 2025-01-25 | [51842](https://github.com/airbytehq/airbyte/pull/51842) | Update dependencies |
+| 0.5.30 | 2025-01-11 | [51214](https://github.com/airbytehq/airbyte/pull/51214) | Update dependencies |
 | 0.5.29 | 2024-12-28 | [50632](https://github.com/airbytehq/airbyte/pull/50632) | Update dependencies |
 | 0.5.28 | 2024-12-21 | [50109](https://github.com/airbytehq/airbyte/pull/50109) | Update dependencies |
 | 0.5.27 | 2024-12-14 | [49248](https://github.com/airbytehq/airbyte/pull/49248) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

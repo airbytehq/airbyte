@@ -13,6 +13,7 @@ import anyio
 import semver
 import yaml
 from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification  # type: ignore
+from auto_merge.consts import AUTO_MERGE_BYPASS_CI_CHECKS_LABEL  # type: ignore
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage  # type: ignore
 from dagger import Container, Directory, ExecError, File, ImageLayerCompression, Platform, QueryError
 from pydantic import BaseModel, ValidationError
@@ -313,6 +314,13 @@ class UploadSpecToCache(Step):
         raise InvalidSpecOutputError("No spec found in the output of the SPEC command.")
 
     async def _get_connector_spec(self, connector: Container, deployment_mode: str) -> str:
+        """
+        Get the connector spec by running the `spec` command in the connector container.
+
+        Args:
+            connector (Container): The connector container.
+            deployment_mode (str): The deployment mode to run the spec command in. Valid values are "OSS" and "CLOUD".
+        """
         spec_output = (
             await connector.with_env_variable("DEPLOYMENT_MODE", deployment_mode).with_exec(["spec"], use_entrypoint=True).stdout()
         )
@@ -753,7 +761,9 @@ async def run_connector_promote_pipeline(context: PublishConnectorContext, semap
                     all_modified_files.update(
                         await add_changelog_entry.export_modified_files(context.connector.local_connector_documentation_directory)
                     )
-                post_changelog_pr_update = CreateOrUpdatePullRequest(context, skip_ci=False, labels=["auto-merge"])
+                post_changelog_pr_update = CreateOrUpdatePullRequest(
+                    context, skip_ci=True, labels=[AUTO_MERGE_BYPASS_CI_CHECKS_LABEL, "promoted-rc"]
+                )
                 pr_creation_args, pr_creation_kwargs = get_promotion_pr_creation_arguments(
                     all_modified_files, context, results, current_version, promoted_version
                 )

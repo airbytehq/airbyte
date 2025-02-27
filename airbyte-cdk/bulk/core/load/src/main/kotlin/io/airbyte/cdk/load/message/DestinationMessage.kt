@@ -139,7 +139,8 @@ data class DestinationRecord(
             Meta(
                 message.record.meta?.changes?.map { Meta.Change(it.field, it.change, it.reason) }
                     ?: emptyList()
-            )
+            ),
+            serialized.length.toLong()
         )
     }
 }
@@ -159,6 +160,7 @@ data class DestinationRecordAirbyteValue(
     val data: AirbyteValue,
     val emittedAtMs: Long,
     val meta: Meta?,
+    val serializedSizeBytes: Long = 0L
 )
 
 data class DestinationFile(
@@ -359,7 +361,7 @@ data class StreamCheckpoint(
 }
 
 data class GlobalCheckpoint(
-    val state: JsonNode,
+    val state: JsonNode?,
     override val sourceStats: Stats?,
     override val destinationStats: Stats? = null,
     val checkpoints: List<Checkpoint> = emptyList(),
@@ -406,7 +408,8 @@ data object Undefined : DestinationMessage {
 @Singleton
 class DestinationMessageFactory(
     private val catalog: DestinationCatalog,
-    @Value("\${airbyte.file-transfer.enabled}") private val fileTransferEnabled: Boolean,
+    @Value("\${airbyte.destination.core.file-transfer.enabled}")
+    private val fileTransferEnabled: Boolean,
 ) {
     fun fromAirbyteMessage(
         message: AirbyteMessage,
