@@ -31,6 +31,7 @@ import io.airbyte.integrations.destination.mssql.v2.config.MSSQLSpecification
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import java.nio.file.Files
+import java.nio.file.Path
 import java.sql.Connection
 import java.time.Instant
 import java.time.LocalDate
@@ -43,13 +44,13 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
 
 abstract class MSSQLWriterTest(
-    configPath: String,
+    configPath: Path,
     configUpdater: ConfigurationUpdater,
     dataDumper: DestinationDataDumper,
     dataCleaner: DestinationCleaner,
 ) :
     BasicFunctionalityIntegrationTest(
-        configContents = Files.readString(MSSQLTestConfigUtil.getConfigPath(configPath)),
+        configContents = Files.readString(configPath),
         configSpecClass = MSSQLSpecification::class.java,
         dataDumper = dataDumper,
         destinationCleaner = dataCleaner,
@@ -244,7 +245,7 @@ class MSSQLDataCleaner(
 
 internal class StandardInsert :
     MSSQLWriterTest(
-        configPath = "check/valid.json",
+        configPath = MSSQLTestConfigUtil.getConfigPath("check/valid.json"),
         configUpdater = MSSQLConfigUpdater(),
         dataDumper =
             MSSQLDataDumper { spec ->
@@ -279,7 +280,7 @@ internal class StandardInsert :
 
 internal class BulkInsert :
     MSSQLWriterTest(
-        configPath = CONFIG_FILE,
+        configPath = Path.of(CONFIG_FILE),
         configUpdater = FakeConfigurationUpdater,
         dataDumper =
             MSSQLDataDumper { spec ->
@@ -291,7 +292,7 @@ internal class BulkInsert :
                 mssqlSpecification =
                     ValidatedJsonUtils.parseOne(
                         MSSQLSpecification::class.java,
-                        Files.readString(MSSQLTestConfigUtil.getConfigPath(CONFIG_FILE))
+                        Files.readString(Path.of(CONFIG_FILE))
                     )
             ) { spec -> MSSQLConfigurationFactory().makeWithOverrides(spec, emptyMap()) },
     ) {
