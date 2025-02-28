@@ -199,21 +199,48 @@ class Account(TotangoSearchStream):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
-        Handles pagination based on the API response.
+        Extracts the next page token from the API response to enable pagination.                  
+        The function:
+        1. Extracts the hits (records) from the response
+        2. Checks if we've reached the last page by comparing hits length to requested count
+        3. Computes the next offset by parsing the original request and adding the record count
+        4. Returns None for last page, or the next offset dict for pagination
+
+        From Totango Documentation:
+        To page through results, ask for 1000 records (count: 1000). If you receive 1000 records, assume 
+        theres more, in which case you want to pull the next 1000 records (offset: 1000…then 2000…etc.). 
+        Repeat paging until the number of records returned is less than 1000.
         """
-        total_hits = response.json().get("response", {}).get("stats", {}).get("total_hits", 0)
-        current_offset = response.json().get("response", {}).get("accounts", {}).get("offset", 0)
+        response_json = response.json()
+        accounts_data = response_json.get("response", {}).get("accounts", {})
+        hits = accounts_data.get("hits", [])
         count = self.record_count
 
-        if current_offset + count < total_hits:
-            return {"offset": current_offset + count}
-        return None
+        # If the number of records returned is less than the requested count,
+        # then this is the last page.
+        if len(hits) < count:
+            return None
+
+        # Since the API doesn't echo back the offset, computing it manually.
+        try:
+            request_body = json.loads(response.request.body)
+            query = json.loads(request_body.get("query", "{}"))
+            current_offset = query.get("offset", 0)
+        except (KeyError, json.JSONDecodeError):
+            current_offset = 0
+
+        next_offset = current_offset + count
+
+        return {"offset": next_offset}
+
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         Parses the API response to yield individual records.
         """
-        accounts = response.json().get("response", {}).get("accounts", {}).get("hits", [])
+        raw_response = response.json()
+        print("total records: ", raw_response.get("response", {}).get("accounts", {}).get("total_hits", 0))
+        accounts = raw_response.get("response", {}).get("accounts", {}).get("hits", [])
         fields = self.get_fields()
         for account in accounts:
             selected_fields = account.get("selected_fields", [])
@@ -305,6 +332,54 @@ class Tasks(HttpSubStream, TotangoStream):
         return None
 
 
+class ActivityTypes(TotangoStream):
+
+    @property   
+    def name(self):
+        return "activity_types"
+    
+    def __init__(self, authenticator: TotangoAuthenticator):
+        super().__init__(authenticator=authenticator)
+    
+    @property
+    def http_method(self) -> str:
+        return "GET"
+    
+    @property
+    def primary_key(self):
+        return "activity_type_id"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+    
+    def path(self, stream_state=None, stream_slice=None, next_page_token=None) -> str:
+        return "/api/v3/activity-types/"
+
+    def get_json_schema(self):
+        return {
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "properties": {
+                "activity_type_id": {"type": "string"},
+                "display_name": {"type": "string"},
+                "num_of_activities_assign_to_me": {"type": "number"},
+                "icon_class": {"type": "string"},
+                "system_type": {"type": "boolean"},
+                "default_type": {"type": "boolean"},
+                "disabled": {"type": "boolean"},
+            }
+        }
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        Parses the API response to yield individual records.
+        """
+        response_json = response.json()
+
+        for item in response_json:
+            yield item
+
+
 class SourceTotango(AbstractSource):
     logger = logging.getLogger("SourceTotango")
 
@@ -340,5 +415,6 @@ class SourceTotango(AbstractSource):
             Tasks(parent=Account(
                 authenticator=authenticator, config=config),
                 authenticator=authenticator
-            )
+            ),
+            ActivityTypes(authenticator=authenticator)
         ]
