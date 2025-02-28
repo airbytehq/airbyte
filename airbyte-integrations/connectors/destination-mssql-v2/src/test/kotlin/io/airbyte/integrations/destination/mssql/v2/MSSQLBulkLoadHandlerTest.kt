@@ -75,7 +75,7 @@ class MSSQLBulkLoadHandlerTest {
         // Verify that the prepared statement was created with the correct SQL
         val sqlSlot = slot<String>()
         verify { connection.prepareStatement(capture(sqlSlot)) }
-        assertTrue(sqlSlot.captured.contains("BULK INSERT dbo.MyMainTable"))
+        assertTrue(sqlSlot.captured.contains("BULK INSERT [dbo].[MyMainTable]"))
         assertTrue(sqlSlot.captured.contains("FROM '$dataFilePath'"))
         assertTrue(sqlSlot.captured.contains("FORMATFILE = '$formatFilePath'"))
 
@@ -157,14 +157,14 @@ class MSSQLBulkLoadHandlerTest {
 
         // 2) The second statement should do the bulk insert into temp table
         assertTrue(
-            sqlStatements.any { it.contains("BULK INSERT ##TempTable_") },
-            "Expected a statement containing BULK INSERT ##TempTable_"
+            sqlStatements.any { it.contains("BULK INSERT [##TempTable_") },
+            "Expected a statement containing BULK INSERT [##TempTable_"
         )
 
         // 3) The third statement should be MERGE into the main table
         assertTrue(
-            sqlStatements.any { it.contains("MERGE INTO dbo.MyMainTable AS Target") },
-            "Expected a statement containing MERGE INTO dbo.MyMainTable AS Target"
+            sqlStatements.any { it.contains("MERGE INTO [dbo].[MyMainTable] AS Target") },
+            "Expected a statement containing MERGE INTO [dbo].[MyMainTable] AS Target"
         )
 
         // No rollback, commit should be called once
@@ -311,7 +311,7 @@ class MSSQLBulkLoadHandlerTest {
         verify { connection.prepareStatement(capture(sqlSlot)) }
 
         val mergeStatement =
-            sqlSlot.find { it.contains("MERGE INTO dbo.MyMainTable AS Target") }
+            sqlSlot.find { it.contains("MERGE INTO [dbo].[MyMainTable] AS Target") }
                 ?: fail("MERGE statement not found")
 
         // Should have ON condition for both PK columns
