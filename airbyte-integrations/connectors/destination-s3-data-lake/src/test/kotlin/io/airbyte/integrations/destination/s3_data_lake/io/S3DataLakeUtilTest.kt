@@ -20,7 +20,7 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
-import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
+import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineTest
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
@@ -215,7 +215,7 @@ internal class S3DataLakeUtilTest {
                 emittedAtMs = System.currentTimeMillis(),
                 meta = Meta(),
             )
-        val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
+        val pipeline = ParquetMapperPipelineTest().create(airbyteStream)
         val columns =
             mutableListOf(
                 Types.NestedField.required(1, "id", Types.IntegerType.get()),
@@ -267,7 +267,7 @@ internal class S3DataLakeUtilTest {
                 emittedAtMs = System.currentTimeMillis(),
                 meta = Meta(),
             )
-        val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
+        val pipeline = ParquetMapperPipelineTest().create(airbyteStream)
         val columns =
             mutableListOf(
                 Types.NestedField.required(1, "id", Types.IntegerType.get()),
@@ -314,7 +314,7 @@ internal class S3DataLakeUtilTest {
                 emittedAtMs = System.currentTimeMillis(),
                 meta = Meta(),
             )
-        val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
+        val pipeline = ParquetMapperPipelineTest().create(airbyteStream)
         val columns =
             mutableListOf(
                 Types.NestedField.required(1, "id", Types.IntegerType.get()),
@@ -366,7 +366,6 @@ internal class S3DataLakeUtilTest {
                 icebergCatalogConfiguration = icebergCatalogConfiguration,
                 s3BucketConfiguration = s3BucketConfiguration,
                 numProcessRecordsWorkers = 1,
-                numProcessBatchWorkers = 1,
             )
         val catalogProperties = s3DataLakeUtil.toCatalogProperties(config = configuration)
         assertEquals(ICEBERG_CATALOG_TYPE_NESSIE, catalogProperties[ICEBERG_CATALOG_TYPE])
@@ -458,7 +457,7 @@ internal class S3DataLakeUtilTest {
                 minimumGenerationId = 1,
                 syncId = 1,
             )
-        val pipeline = ParquetMapperPipelineFactory().create(stream)
+        val pipeline = ParquetMapperPipelineTest().create(stream)
         val schema = icebergUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
         assertEquals(primaryKeys.toSet(), schema.identifierFieldNames())
         assertEquals(6, schema.columns().size)
@@ -488,7 +487,7 @@ internal class S3DataLakeUtilTest {
                 minimumGenerationId = 1,
                 syncId = 1,
             )
-        val pipeline = ParquetMapperPipelineFactory().create(stream)
+        val pipeline = ParquetMapperPipelineTest().create(stream)
         val schema = icebergUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
         assertEquals(emptySet<String>(), schema.identifierFieldNames())
         assertEquals(6, schema.columns().size)
