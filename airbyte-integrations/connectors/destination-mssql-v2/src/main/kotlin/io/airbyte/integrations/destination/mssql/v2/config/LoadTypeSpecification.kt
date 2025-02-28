@@ -42,7 +42,6 @@ interface LoadTypeSpecification {
                         sharedAccessSignature = lt.azureBlobStorageSharedAccessSignature,
                         bulkLoadDataSource = lt.bulkLoadDataSource,
                         validateValues = lt.validateValues
-
                     )
                 }
                 is InsertLoadSpecification -> InsertLoadTypeConfiguration()
@@ -162,7 +161,8 @@ class BulkLoadSpecification(
     )
     @get:JsonProperty("bulk_load_validate_values_pre_load")
     @JsonSchemaInject(
-        json = """{
+        json =
+            """{
         "examples": ["false"],
         "default": false,
         "type": "boolean",
@@ -171,7 +171,6 @@ class BulkLoadSpecification(
     }"""
     )
     val validateValues: Boolean?
-
 ) : LoadType(loadType), AzureBlobStorageSpecification
 
 /**
