@@ -18,7 +18,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /recents
+          path: v1/recents
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -69,7 +69,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /dealFields
+          path: v1/dealFields
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -102,7 +102,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /goals/find
+          path: v1/goals/find
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -127,7 +127,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /recents
+          path: v1/recents
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -180,7 +180,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /recents
+          path: v1/recents
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -231,7 +231,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /leadLabels
+          path: v1/leadLabels
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -253,7 +253,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /leads
+          path: v1/leads
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -286,7 +286,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /recents
+          path: v1/recents
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -339,7 +339,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /recents
+          path: v1/recents
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -390,7 +390,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /activityTypes
+          path: v1/activityTypes
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -412,7 +412,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /activityFields
+          path: v1/activityFields
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -443,7 +443,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /currencies
+          path: v1/currencies
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -467,7 +467,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: mailbox/mailThreads/{{ stream_partition.thread_id }}/mailMessages
+          path: v1/mailbox/mailThreads/{{ stream_partition.thread_id }}/mailMessages
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -508,7 +508,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /organizations
+          path: v1/organizations
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -540,7 +540,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /organizationFields
+          path: v1/organizationFields
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -571,7 +571,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /permissionSets
+          path: v1/permissionSets
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -595,7 +595,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /recents
+          path: v1/recents
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -646,7 +646,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /personFields
+          path: v1/personFields
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -679,7 +679,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /recents
+          path: v1/recents
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -732,7 +732,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /recents
+          path: v1/recents
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -783,7 +783,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /productFields
+          path: v1/productFields
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -814,7 +814,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /roles
+          path: v1/roles
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -847,7 +847,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /recents
+          path: v1/recents
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -900,7 +900,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /recents
+          path: v1/recents
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -951,7 +951,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: deals/{{ stream_slice.parent_id }}/products
+          path: v1/deals/{{ stream_slice.parent_id }}/products
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -992,7 +992,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: mailbox/mailThreads
+          path: v1/mailbox/mailThreads
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
@@ -1030,7 +1030,7 @@ definitions:
           $ref: "#/schemas/mailThreads"
   base_requester:
     type: HttpRequester
-    url_base: https://api.pipedrive.com/v1
+    url_base: https://api.pipedrive.com/
 
 streams:
   - $ref: "#/definitions/streams/deals"
@@ -1114,7 +1114,7 @@ metadata:
     stages: false
     users: false
     deal_products: false
-    mailThreads: true
+    mailThreads: false
   yamlComponents:
     streams:
       deals:
@@ -1136,8 +1136,118 @@ metadata:
       stages:
         - recordSelector
   testedStreams:
+    deal_fields:
+      streamHash: 2dcceac0c36936299612f3ba221532446d068fd8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    goals:
+      streamHash: 5dd918304f44e9382ceddca3160722052db05c53
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    lead_labels:
+      streamHash: 4529273c02f87dec57267625c5314171b3f06154
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    leads:
+      streamHash: 7da898e49f0739935d862082377b1ed2d2e5b24d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    activity_types:
+      streamHash: 0bd30dcf4935c4668bd0a5569a199fe59d4ab04b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    activity_fields:
+      streamHash: 3a07394d800c448627c98ca20f03af8826a2ec48
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    currencies:
+      streamHash: 18a725f171b6acdc8b82ac701280536d2451d7ae
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    mail:
+      streamHash: eaf13873356a147c0c8a1f821e4e988a14e27b09
+      hasResponse: false
+      responsesAreSuccessful: false
+      hasRecords: false
+      primaryKeysArePresent: false
+      primaryKeysAreUnique: false
+    organizations:
+      streamHash: 166c80bf7becfb09d846f0d035caf3a785f5a560
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organization_fields:
+      streamHash: af9484fdc43863ee7b41a8019b85325c025a3c28
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    permission_sets:
+      streamHash: bf8d0b57f92e7086c4f61ac9c5b58517fa01dd02
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    person_fields:
+      streamHash: 730346f33e25f02858f0da1c34191062ce32fa0c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    product_fields:
+      streamHash: def5f6bd4ee1046efbf27f5a3c185e7ca872dd92
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    roles:
+      streamHash: 0b7c02fef6ed17d9d18bbd4dde1669ab38ad497d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: 6f08d2ca937033de8e19f14ca30f80f863aa8a85
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     mailThreads:
-      streamHash: null
+      streamHash: 1fb532c7bd1e79a526829bc19b2728e65aff2893
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist: {}
 
 schemas:
@@ -4032,4 +4142,131 @@ schemas:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      version:
+        type: integer
+      account_id:
+        type: string
+      add_time:
+        type: string
+      all_messages_sent_flag:
+        type: integer
+      archived_flag:
+        type: integer
+      deal_id:
+        type:
+          - integer
+          - "null"
+      deal_status:
+        type:
+          - string
+          - "null"
+      deleted_flag:
+        type: integer
+      drafts_parties:
+        type: array
+      external_deleted_flag:
+        type: integer
+      first_message_timestamp:
+        type: string
+      first_message_to_me_flag:
+        type: integer
+      folders:
+        type: array
+        items:
+          type: string
+      has_attachments_flag:
+        type: integer
+      has_draft_flag:
+        type: integer
+      has_inline_attachments_flag:
+        type: integer
+      has_real_attachments_flag:
+        type: integer
+      has_sent_flag:
+        type: integer
+      id:
+        type: integer
+      last_message_received_timestamp:
+        type: string
+      last_message_sent_timestamp:
+        type:
+          - string
+          - "null"
+      last_message_timestamp:
+        type: string
+      mail_link_tracking_enabled_flag:
+        type: integer
+      parties:
+        type: object
+        properties:
+          from:
+            type: array
+            items:
+              type: object
+              properties:
+                email_address:
+                  type: string
+                id:
+                  type: integer
+                latest_sent:
+                  type: boolean
+                linked_organization_id:
+                  type:
+                    - integer
+                    - "null"
+                linked_person_id:
+                  type: integer
+                linked_person_name:
+                  type: string
+                mail_message_party_id:
+                  type: integer
+                message_time:
+                  type: integer
+                name:
+                  type: string
+          to:
+            type: array
+            items:
+              type: object
+              properties:
+                email_address:
+                  type: string
+                id:
+                  type: integer
+                latest_sent:
+                  type: boolean
+                linked_organization_id:
+                  type:
+                    - integer
+                    - "null"
+                linked_person_id:
+                  type: integer
+                linked_person_name:
+                  type: string
+                mail_message_party_id:
+                  type: integer
+                message_time:
+                  type: integer
+                name:
+                  type: string
+      shared_flag:
+        type: integer
+      smart_bcc_flag:
+        type: integer
+      snippet:
+        type: string
+      snippet_draft:
+        type:
+          - string
+          - "null"
+      snippet_sent:
+        type: string
+      subject:
+        type: string
+      synced_flag:
+        type: integer
+      update_time:
+        type: string
+      user_id:
+        type: integer
