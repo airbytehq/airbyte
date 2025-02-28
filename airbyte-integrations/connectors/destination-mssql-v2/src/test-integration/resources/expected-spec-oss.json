@@ -171,6 +171,15 @@
               "examples" : [ "MyAzureBlobStorage" ],
               "order" : 4,
               "always_show" : true
+            },
+            "bulk_load_validate_values_pre_load" : {
+              "type" : "boolean",
+              "description" : "When enabled, Airbyte will validate all values before loading them into the destination table. This provides stronger data integrity guarantees but may significantly impact performance.",
+              "title" : "Pre-Load Value Validation",
+              "examples" : [ "false" ],
+              "default" : false,
+              "order" : 5,
+              "always_show" : false
             }
           },
           "required" : [ "load_type", "azure_blob_storage_account_name", "azure_blob_storage_container_name", "shared_access_signature", "bulk_load_data_source" ]
