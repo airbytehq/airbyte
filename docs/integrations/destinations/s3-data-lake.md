@@ -1,15 +1,5 @@
 # S3 Data Lake
 
-:::caution
-
-This connector is in early access and still evolving.
-Future updates may introduce breaking changes.
-
-We're interested in hearing about your experience! See [Github](https://github.com/airbytehq/airbyte/discussions/50404)
-for more information on joining the beta.
-
-:::
-
 This page guides you through the process of setting up the S3 Data Lake destination connector.
 
 This connector writes the Iceberg table format to S3, or an S3-compatible storage backend.
