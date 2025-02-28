@@ -56,6 +56,7 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.1.3 | 2025-02-24 | [53976](https://github.com/airbytehq/airbyte/pull/54654) | Lower mailings endpoint page size to 100 from 1000 |
 | 1.1.2 | 2025-02-15 | [53976](https://github.com/airbytehq/airbyte/pull/53976) | Update dependencies |
 | 1.1.1 | 2025-02-08 | [53480](https://github.com/airbytehq/airbyte/pull/53480) | Update dependencies |
 | 1.1.0 | 2025-02-05 | [47294](https://github.com/airbytehq/airbyte/pull/47294) | Migrate to manifest only format |
