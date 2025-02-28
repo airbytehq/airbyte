@@ -47,7 +47,7 @@ interface AzureBlobStorageSpecification {
         return AzureBlobStorageConfiguration(
             azureBlobStorageAccountName,
             azureBlobStorageContainerName,
-            azureBlobStorageSharedAccessSignature,
+            azureBlobStorageSharedAccessSignature
         )
     }
 }
@@ -55,7 +55,7 @@ interface AzureBlobStorageSpecification {
 data class AzureBlobStorageConfiguration(
     val accountName: String,
     val containerName: String,
-    val sharedAccessSignature: String,
+    val sharedAccessSignature: String
 )
 
 interface AzureBlobStorageConfigurationProvider {

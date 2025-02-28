@@ -71,9 +71,12 @@ class AzureBlobStreamingUpload(
             }
 
             // Set any metadata
-            filterInvalidMetadata(metadata)
-                .takeIf { it.isNotEmpty() }
-                ?.let { filteredBlobMetadata -> blockBlobClient.setMetadata(filteredBlobMetadata) }
+            if (metadata.isNotEmpty()) {
+                val filteredMetadata = filterInvalidMetadata(metadata)
+                if (filteredMetadata.isNotEmpty()) {
+                    blockBlobClient.setMetadata(filteredMetadata)
+                }
+            }
         }
 
         return AzureBlob(blockBlobClient.blobName, config)
