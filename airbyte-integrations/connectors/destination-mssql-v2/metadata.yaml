@@ -9,8 +9,8 @@ data:
     - suite: unitTests
     - suite: integrationTests
       testSecrets:
-        - fileName: s3_dest_v2_minimal_required_config.json
-          name: SECRET_DESTINATION-S3-V2-MINIMAL-REQUIRED-CONFIG
+        - fileName: bulk_upload_config.json
+          name: SECRET_DESTINATION_MSSQL_V2_BULK_LOAD_CONFIG
           secretStore:
             alias: airbyte-connector-testing-secret-store
             type: GSM
