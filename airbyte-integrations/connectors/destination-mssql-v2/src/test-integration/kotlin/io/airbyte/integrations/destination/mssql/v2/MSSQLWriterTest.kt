@@ -298,6 +298,6 @@ internal class BulkInsert :
     ) {
 
     companion object {
-        private const val CONFIG_FILE = "secrets/bulk_upload_config.json"
+        const val CONFIG_FILE = "secrets/bulk_upload_config.json"
     }
 }
