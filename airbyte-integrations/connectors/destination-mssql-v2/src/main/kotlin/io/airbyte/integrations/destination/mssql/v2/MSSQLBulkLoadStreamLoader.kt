@@ -41,6 +41,7 @@ class MSSQLBulkLoadStreamLoader(
     bulkUploadDataSource: String,
     private val defaultSchema: String,
     private val azureBlobClient: AzureBlobClient,
+    private val validateValuesPreLoad: Boolean,
 ) : AbstractMSSQLStreamLoader(dataSource, stream, sqlBuilder) {
 
     // Bulk-load related collaborators
@@ -83,7 +84,7 @@ class MSSQLBulkLoadStreamLoader(
     override suspend fun createBatchAccumulator(): BatchAccumulator {
         val writerFactory =
             BufferedFormattingWriterFactory(
-                ObjectStorageFormattingWriterFactory(CsvFormatProvider()),
+                ObjectStorageFormattingWriterFactory(CsvFormatProvider(validateValuesPreLoad)),
                 NoOpCompressionProvider()
             )
 
@@ -185,9 +186,10 @@ class MSSQLBulkLoadStreamLoader(
     }
 
     /** Provides a CSV format configuration for object storage. */
-    private class CsvFormatProvider : ObjectStorageFormatConfigurationProvider {
+    private class CsvFormatProvider(validateValuesPreLoad: Boolean) :
+        ObjectStorageFormatConfigurationProvider {
         override val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration =
-            MSSQLCSVFormatConfiguration()
+            MSSQLCSVFormatConfiguration(validateValuesPreLoad = validateValuesPreLoad)
     }
 
     /** Defines how blob paths are constructed. For example, "blob/.../{timestamp}/..." etc. */

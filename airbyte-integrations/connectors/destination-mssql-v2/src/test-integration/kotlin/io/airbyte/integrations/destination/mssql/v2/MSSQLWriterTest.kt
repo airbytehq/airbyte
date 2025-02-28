@@ -94,7 +94,7 @@ class MSSQLDataDumper : DestinationDataDumper {
                                                 }
                                                 .toList(),
                                         syncId =
-                                            meta.additionalProperties["syncId"]
+                                            meta.additionalProperties["sync_id"]
                                                 ?.toString()
                                                 ?.toLong()
                                     )

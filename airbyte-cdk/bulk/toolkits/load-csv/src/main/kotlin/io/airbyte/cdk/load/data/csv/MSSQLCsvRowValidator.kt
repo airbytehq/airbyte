@@ -42,7 +42,18 @@ private object LIMITS {
     val FALSE = IntegerValue(0)
 }
 
-class MSSQLCsvRowValidator {
+/**
+ * Creates a validator for MSSQL CSV rows.
+ *
+ * @param validateValuesPreLoad Whether to validate string values before loading them into the csv
+ * file.
+ * ```
+ *                             This is optional and disabled by default as it's a computationally
+ *                             expensive operation that can significantly impact performance.
+ *                             Only enable if strict data validation is required.
+ * ```
+ */
+class MSSQLCsvRowValidator(private val validateValuesPreLoad: Boolean) {
 
     fun validate(
         record: DestinationRecordAirbyteValue,
@@ -53,7 +64,7 @@ class MSSQLCsvRowValidator {
 
         schema.properties.forEach { (columnName, fieldType) ->
             val oldValue = values[columnName]
-            if (oldValue != null && oldValue !is NullValue) {
+            if (oldValue != null && oldValue !is NullValue && record.meta != null) {
                 values[columnName] =
                     oldValue.validateAndReplace(columnName, fieldType, record.meta!!)
             }
@@ -81,7 +92,7 @@ class MSSQLCsvRowValidator {
         fieldType: FieldType,
         meta: Meta
     ): AirbyteValue {
-        if (fieldType.isStringColumn()) {
+        if (!validateValuesPreLoad || fieldType.isStringColumn()) {
             return value
         }
 
