@@ -10,16 +10,16 @@ from functools import lru_cache
 from io import IOBase
 from os import makedirs, path
 from os.path import getsize
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Iterator, Callable
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Tuple
 
 import pytz
 import requests
 import smart_open
 from msal import ConfidentialClientApplication
+from office365.directory.groups.collection import GroupCollection
+from office365.directory.users.collection import UserCollection
 from office365.graph_client import GraphClient
 from office365.onedrive.driveitems.driveItem import DriveItem
-from office365.directory.users.collection import UserCollection
-from office365.directory.groups.collection import GroupCollection
 from office365.runtime.auth.token_response import TokenResponse
 from office365.sharepoint.client_context import ClientContext
 
