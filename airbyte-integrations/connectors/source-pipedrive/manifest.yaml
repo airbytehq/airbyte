@@ -479,7 +479,7 @@ definitions:
           field_name: "start"
       requester:
         type: HttpRequester
-        url_base: "https://api.pipedrive.com/api/v2"
+        url_base: "https://api.pipedrive.com/v1"
         http_method: "GET"
         path: "/recents"
         request_parameters:
@@ -655,7 +655,7 @@ definitions:
           field_name: "start"
       requester:
         type: HttpRequester
-        url_base: "https://api.pipedrive.com/api/v2"
+        url_base: "https://api.pipedrive.com/v1"
         http_method: "GET"
         path: "/recents"
         request_parameters:
@@ -1032,7 +1032,7 @@ definitions:
           field_name: "start"
       requester:
         type: HttpRequester
-        url_base: "https://api.pipedrive.com/api/v2"
+        url_base: "https://api.pipedrive.com/v1"
         http_method: "GET"
         path: "/recents"
         request_parameters:
