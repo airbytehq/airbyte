@@ -1,126 +1,6 @@
 version: 6.33.0
 type: DeclarativeSource
 definitions:
-  selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path:
-      - "data"
-  selector_increment:
-    type: RecordSelector
-    extractor:
-      class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
-      field_path:
-      - "data"
-      - "*"
-      nullable_nested_field: data
-  selector_users:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path:
-      - "data"
-      - "*"
-      - "data"
-      - "*"
-  requester:
-    type: HttpRequester
-    url_base: "https://api.pipedrive.com/api/v2"
-    http_method: "GET"
-    request_parameters:
-      api_token: "{{ config['api_token'] }}"
-      limit: "50"
-  retriever:
-    type: SimpleRetriever
-    record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path:
-        - "data"
-    paginator:
-      type: "DefaultPaginator"
-      pagination_strategy:
-        type: "CursorPagination"
-        cursor_value: "{{ response['additional_data']['pagination']['next_start']
-          }}"
-      page_token_option:
-        type: "RequestOption"
-        inject_into: "request_parameter"
-        field_name: "start"
-    requester:
-      type: HttpRequester
-      url_base: "https://api.pipedrive.com/api/v2"
-      http_method: "GET"
-      request_parameters:
-        api_token: "{{ config['api_token'] }}"
-        limit: "50"
-  retriever_increment:
-    type: SimpleRetriever
-    record_selector:
-      type: RecordSelector
-      extractor:
-        class_name: source_declarative_manifest.components.NullCheckedDpathExtractor
-        field_path:
-        - "data"
-        - "*"
-        nullable_nested_field: data
-    paginator:
-      type: "DefaultPaginator"
-      pagination_strategy:
-        type: "CursorPagination"
-        cursor_value: "{{ response['additional_data']['pagination']['next_start']
-          }}"
-      page_token_option:
-        type: "RequestOption"
-        inject_into: "request_parameter"
-        field_name: "start"
-    requester:
-      type: HttpRequester
-      url_base: "https://api.pipedrive.com/api/v2"
-      http_method: "GET"
-      request_parameters:
-        api_token: "{{ config['api_token'] }}"
-        limit: "50"
-  incremental_base:
-    type: DatetimeBasedCursor
-    cursor_field: "update_time"
-    datetime_format: "%Y-%m-%d %H:%M:%S"
-    start_datetime:
-      datetime: "{{ format_datetime(config['replication_start_date'], '%Y-%m-%d %H:%M:%S')
-        }}"
-      datetime_format: "%Y-%m-%d %H:%M:%S"
-    start_time_option:
-      field_name: "since_timestamp"
-      inject_into: "request_parameter"
-  base_stream:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-          - "data"
-      paginator:
-        type: "DefaultPaginator"
-        pagination_strategy:
-          type: "CursorPagination"
-          cursor_value: "{{ response['additional_data']['pagination']['next_start']
-            }}"
-        page_token_option:
-          type: "RequestOption"
-          inject_into: "request_parameter"
-          field_name: "start"
-      requester:
-        type: HttpRequester
-        url_base: "https://api.pipedrive.com/api/v2"
-        http_method: "GET"
-        request_parameters:
-          api_token: "{{ config['api_token'] }}"
-          limit: "50".
   deals_stream:
     type: DeclarativeStream
     retriever:
@@ -151,6 +31,9 @@ definitions:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
           items: "deal"
+        path: "/recents"
+        authenticator:
+          type: NoAuth
     name: "deals"
     primary_key: "id"
     incremental_sync:
@@ -428,6 +311,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "/dealFields"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -597,6 +481,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "/recents"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -772,6 +657,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "/recents"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -853,6 +739,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "/leadLabels"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -907,6 +794,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "/leads"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -1005,6 +893,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/v1"
         http_method: "GET"
+        path: "/goals/find"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -1145,6 +1034,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "/recents"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -1304,6 +1194,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "/recents"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -1652,6 +1543,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "/activityTypes"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -1728,6 +1620,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "/activityFields"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -1865,6 +1758,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "/currencies"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -1927,6 +1821,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "mailbox/mailThreads/{{ stream_partition.thread_id }}/mailMessages"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -1960,6 +1855,7 @@ definitions:
                 type: HttpRequester
                 url_base: "https://api.pipedrive.com/api/v2"
                 http_method: "GET"
+                path: "mailbox/mailThreads"
                 request_parameters:
                   api_token: "{{ config['api_token'] }}"
                   limit: "50"
@@ -2167,6 +2063,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "/organizations"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -2471,6 +2368,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "/organizationFields"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -2631,6 +2529,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "/permissionSets"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -2687,6 +2586,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "/recents"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -2995,6 +2895,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/v1"
         http_method: "GET"
+        path: "/personFields"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -3139,6 +3040,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "/recents"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -3226,6 +3128,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "/recents"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -3369,6 +3272,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "/productFields"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -3512,6 +3416,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "/roles"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -3580,6 +3485,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/api/v2"
         http_method: "GET"
+        path: "/recents"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -3680,6 +3586,7 @@ definitions:
         type: HttpRequester
         url_base: "https://api.pipedrive.com/v1"
         http_method: "GET"
+        path: "/recents"
         request_parameters:
           api_token: "{{ config['api_token'] }}"
           limit: "50"
@@ -3840,6 +3747,7 @@ definitions:
                 type: HttpRequester
                 url_base: "https://api.pipedrive.com/api/v2"
                 http_method: "GET"
+                path: "/dealFields"
                 request_parameters:
                   api_token: "{{ config['api_token'] }}"
                   limit: "50"
