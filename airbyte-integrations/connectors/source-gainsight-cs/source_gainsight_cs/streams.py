@@ -1,18 +1,22 @@
-from abc import ABC
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
-
 import requests
+from abc import ABC
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
 from airbyte_cdk.sources.streams.http import HttpStream
 
+from .authenticator import GainsightCsAuthenticator
 
 class GainsightCsStream(HttpStream, ABC):
-    def __init__(self, domain_url: str, **kwargs):
+    def __init__(self, authenticator: 'GainsightCsAuthenticator', **kwargs):
         super().__init__(**kwargs)
-        self.domain_url = f"{domain_url}/v1/"
+        self._authenticator = authenticator
 
     @property
+    def authenticator(self):
+        return self._authenticator
+    
+    @property
     def url_base(self):
-        return self.domain_url
+        return f"{self._authenticator.domain_url}/v1/"
 
 
 class GainsightCsObjectStream(GainsightCsStream):
@@ -39,8 +43,8 @@ class GainsightCsObjectStream(GainsightCsStream):
         "JSONSTRING": ["null", "string"]
     }
 
-    def __init__(self, name: str, domain_url: str, **kwargs):
-        super().__init__(domain_url, **kwargs)
+    def __init__(self, name: str, authenticator: GainsightCsAuthenticator, **kwargs):
+        super().__init__(authenticator, **kwargs)
         self.object_name = name
         self._primary_key = None
 
@@ -95,11 +99,10 @@ class GainsightCsObjectStream(GainsightCsStream):
             "type": "object",
             "properties": {}
         }
-        url = f"{self.url_base}meta/services/objects/{self.name}/describe?idd=true"
-        auth_headers = self.authenticator.get_auth_header()
 
+        url = f"{self.url_base}meta/services/objects/{self.name}/describe?idd=true"
         try:
-            session = requests.get(url, headers=auth_headers)
+            session = requests.get(url, auth=self.authenticator)
             body = session.json()
             full_schema = base_schema
             fields = body['data'][0]['fields']
