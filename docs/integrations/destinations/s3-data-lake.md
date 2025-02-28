@@ -117,6 +117,11 @@ If these conditions are not met, you may see inaccurate data in the destination 
 taking precendence over newer records). If this happens, you should use the `append` or `overwrite`
 sync mode.
 
+:::caution
+Certain API sources are known to have streams which do not meet these conditions, including
+Stripe and Monday.
+:::
+
 ## Branching
 
 Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/branching/) over your data.
