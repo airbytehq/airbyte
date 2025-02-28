@@ -19,7 +19,7 @@ from source_instagram import SourceInstagram
 from .common import remove_params_from_url
 
 
-GRAPH_URL = resolve_manifest(source=SourceInstagram()).record.data["manifest"]["definitions"]["base_requester"]["url_base"]
+GRAPH_URL = "https://graph.facebook.com/v21.0"
 
 
 def get_http_response(name: str, path: str, request_params: Dict, config: Config) -> Optional[MutableMapping[str, Any]]:
