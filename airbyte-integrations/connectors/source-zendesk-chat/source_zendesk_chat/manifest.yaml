@@ -178,7 +178,7 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: ["data"]
-    primary_key: ""
+    primary_key: []
     $parameters:
       name: "routing_settings"
       data_field: "data"
@@ -278,7 +278,7 @@ definitions:
             value: "{{ format_datetime(record.get('start_time', config['start_date']), '%Y-%m-%dT%H:%M:%SZ') }}"
           # 2) make the composite `id` field
           - path: ["id"]
-            value: "{{ record.get('agent_id', '')|string + '|' + record.get('start_time', '')|string }}"
+            value: "{{ [record.get('agent_id', ''), record.get('start_time', '')]|join('|') }}"
     $parameters:
       cursor_field: "start_time"
       name: "agent_timeline"
