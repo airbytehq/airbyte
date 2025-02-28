@@ -74,7 +74,14 @@ class ObjectStorageFormattingWriterFactory(
                     flatten
                 )
             is CSVFormatConfiguration -> CSVFormattingWriter(stream, outputStream, flatten)
-            is MSSQLCSVFormatConfiguration -> MSSQLCSVFormattingWriter(stream, outputStream)
+            is MSSQLCSVFormatConfiguration ->
+                MSSQLCSVFormattingWriter(
+                    stream,
+                    outputStream,
+                    (formatConfigProvider.objectStorageFormatConfiguration
+                            as MSSQLCSVFormatConfiguration)
+                        .validateValuesPreLoad,
+                )
         }
     }
 }
@@ -104,10 +111,11 @@ class JsonFormattingWriter(
 class MSSQLCSVFormattingWriter(
     private val stream: DestinationStream,
     outputStream: OutputStream,
+    validateValuesPreLoad: Boolean,
 ) : ObjectStorageFormattingWriter {
     private val finalSchema = stream.schema.withAirbyteMeta(true)
     private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
-    private val mssqlRowValidator = MSSQLCsvRowValidator()
+    private val mssqlRowValidator = MSSQLCsvRowValidator(validateValuesPreLoad)
     override fun accept(record: DestinationRecordAirbyteValue) {
 
         printer.printRecord(

@@ -46,6 +46,7 @@ class MSSQLWriter(
                     defaultSchema = config.schema,
                     azureBlobClient =
                         AzureBlobStorageClientCreator.createAzureBlobClient(loadConfig),
+                    validateValuesPreLoad = loadConfig.validateValuesPreLoad ?: false
                 )
             }
             is InsertLoadTypeConfiguration -> {

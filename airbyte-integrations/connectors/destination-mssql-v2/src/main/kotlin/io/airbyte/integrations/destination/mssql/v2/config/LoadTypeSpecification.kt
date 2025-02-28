@@ -41,6 +41,7 @@ interface LoadTypeSpecification {
                         containerName = lt.azureBlobStorageContainerName,
                         sharedAccessSignature = lt.azureBlobStorageSharedAccessSignature,
                         bulkLoadDataSource = lt.bulkLoadDataSource,
+                        validateValuesPreLoad = lt.validateValuesPreLoad
                     )
                 }
                 is InsertLoadSpecification -> InsertLoadTypeConfiguration()
@@ -153,6 +154,23 @@ class BulkLoadSpecification(
         }"""
     )
     val bulkLoadDataSource: String,
+    @get:JsonSchemaTitle("Pre-Load Value Validation")
+    @get:JsonPropertyDescription(
+        "When enabled, Airbyte will validate all values before loading them into the destination table. " +
+            "This provides stronger data integrity guarantees but may significantly impact performance."
+    )
+    @get:JsonProperty("bulk_load_validate_values_pre_load")
+    @JsonSchemaInject(
+        json =
+            """{
+        "examples": ["false"],
+        "default": false,
+        "type": "boolean",
+        "order": 5,
+        "always_show": false
+    }"""
+    )
+    val validateValuesPreLoad: Boolean?
 ) : LoadType(loadType), AzureBlobStorageSpecification
 
 /**
@@ -186,6 +204,7 @@ data class BulkLoadConfiguration(
     val containerName: String,
     val sharedAccessSignature: String,
     val bulkLoadDataSource: String,
+    val validateValuesPreLoad: Boolean?
 ) : LoadTypeConfiguration
 
 /**
