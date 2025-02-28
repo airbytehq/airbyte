@@ -1,0 +1,12 @@
+#
+# Company vocabulary
+#
+Airbyte
+Airbyte's
+Self-Managed Community
+Self-Managed Enterprise
+Cloud
+Cloud Teams
+Cloud Enterprise
+abctl
+PyAirbyte
