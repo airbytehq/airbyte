@@ -1,7 +1,7 @@
 connector_image: airbyte/source-posthog:dev
 tests:
   spec:
-    - spec_path: "source_posthog/spec.json"
+    - spec_path: "manifest.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
