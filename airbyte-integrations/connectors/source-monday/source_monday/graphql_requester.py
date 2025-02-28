@@ -149,11 +149,14 @@ class MondayGraphqlRequester(HttpRequester):
         """
         nested_limit = self.nested_limit.eval(self.config)
 
-        created_at = (object_arguments.get("stream_state", dict()) or dict()).get("created_at_int")
-        object_arguments.pop("stream_state")
+        created_at = (object_arguments.get("stream_slice", dict()) or dict()).get("start_time")
+        object_arguments.pop("stream_slice")
 
-        if created_at:
-            created_at = datetime.fromtimestamp(created_at).strftime("%Y-%m-%dT%H:%M:%SZ")
+        # 1 is default start time, so we can skip it to get all the data
+        if created_at and created_at != "1":
+            created_at = datetime.fromtimestamp(int(created_at)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        else:
+            created_at = None
 
         query = self._build_query(object_name, field_schema, limit=nested_limit, page=sub_page, fromt=created_at)
         arguments = self._get_object_arguments(**object_arguments)
@@ -188,7 +191,7 @@ class MondayGraphqlRequester(HttpRequester):
         elif self.name == "items":
             # `items` stream use a separate pagination strategy where first level pages are across `boards` and sub-pages are across `items`
             page, sub_page = page if page else (None, None)
-            if not stream_slice:
+            if "start_time" in stream_slice:
                 query_builder = partial(self._build_items_query, sub_page=sub_page)
             else:
                 query_builder = partial(self._build_items_incremental_query, stream_slice=stream_slice)
@@ -196,7 +199,7 @@ class MondayGraphqlRequester(HttpRequester):
             query_builder = self._build_teams_query
         elif self.name == "activity_logs":
             page, sub_page = page if page else (None, None)
-            query_builder = partial(self._build_activity_query, sub_page=sub_page, stream_state=stream_state)
+            query_builder = partial(self._build_activity_query, sub_page=sub_page, stream_slice=stream_slice)
         else:
             query_builder = self._build_query
         query = query_builder(

@@ -37,32 +37,30 @@ class MondayActivityExtractor(RecordExtractor):
     decoder: Decoder = JsonDecoder(parameters={})
 
     def extract_records(self, response: requests.Response) -> List[Record]:
-        response_body = self.decoder.decode(response)
-        result = []
-        if not response_body["data"]["boards"]:
-            return result
-
-        for board_data in response_body["data"]["boards"]:
-            if not isinstance(board_data, dict) or not board_data.get("activity_logs"):
+        response_decoded = self.decoder.decode(response)
+        for response_body in response_decoded:
+            if not response_body["data"]["boards"]:
+                yield from []
                 continue
-            for record in board_data.get("activity_logs", []):
-                json_data = json.loads(record["data"])
-                new_record = record
-                if record.get("created_at"):
-                    new_record.update({"created_at_int": int(record.get("created_at", 0)) // 10_000_000})
-                else:
+
+            for board_data in response_body["data"]["boards"]:
+                if not isinstance(board_data, dict) or not board_data.get("activity_logs"):
                     continue
+                for record in board_data.get("activity_logs", []):
+                    json_data = json.loads(record["data"])
+                    new_record = record
+                    if record.get("created_at"):
+                        new_record.update({"created_at_int": int(record.get("created_at", 0)) // 10_000_000})
+                    else:
+                        continue
 
-                if record.get("entity") == "pulse" and json_data.get("pulse_id"):
-                    new_record.update({"pulse_id": json_data.get("pulse_id")})
+                    if record.get("entity") == "pulse" and json_data.get("pulse_id"):
+                        new_record.update({"pulse_id": json_data.get("pulse_id")})
 
-                if record.get("entity") == "board" and json_data.get("board_id"):
-                    new_record.update({"board_id": json_data.get("board_id")})
+                    if record.get("entity") == "board" and json_data.get("board_id"):
+                        new_record.update({"board_id": json_data.get("board_id")})
 
-                result.append(new_record)
-
-        return result
-
+                    yield new_record
 
 @dataclass
 class MondayIncrementalItemsExtractor(RecordExtractor):
@@ -84,21 +82,21 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
                     field_list[path_index] = InterpolatedString.create(field_list[path_index], parameters=parameters)
 
     def try_extract_records(self, response: requests.Response, field_path: List[Union[InterpolatedString, str]]) -> List[Record]:
-        response_body = self.decoder.decode(response)
+        decoded_response = self.decoder.decode(response)
+        for response_body in decoded_response:
+            path = [path.eval(self.config) for path in field_path]
+            extracted = dpath.util.values(response_body, path) if path else response_body
 
-        path = [path.eval(self.config) for path in field_path]
-        extracted = dpath.util.values(response_body, path) if path else response_body
+            pattern_path = "*" in path
+            if not pattern_path:
+                extracted = dpath.util.get(response_body, path, default=[])
 
-        pattern_path = "*" in path
-        if not pattern_path:
-            extracted = dpath.util.get(response_body, path, default=[])
-
-        if extracted:
-            if isinstance(extracted, list) and None in extracted:
-                logger.warning(f"Record with null value received; errors: {response_body.get('errors')}")
-                return [x for x in extracted if x]
-            return extracted if isinstance(extracted, list) else [extracted]
-        return []
+            if extracted:
+                if isinstance(extracted, list) and None in extracted:
+                    logger.warning(f"Record with null value received; errors: {response_body.get('errors')}")
+                    return [x for x in extracted if x]
+                return extracted if isinstance(extracted, list) else [extracted]
+            return []
 
     def extract_records(self, response: requests.Response) -> List[Record]:
         result = self.try_extract_records(response, field_path=self.field_path)
