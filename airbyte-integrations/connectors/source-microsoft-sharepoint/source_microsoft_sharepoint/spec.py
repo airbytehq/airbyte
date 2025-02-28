@@ -30,7 +30,6 @@ class RemoteIdentityType(Enum):
 
 class RemoteIdentity(BaseModel):
     remote_id: str
-    parent_id: str | None = None
     name: str | None = None
     description: str | None = None
     email_address: str | None = None

@@ -10,13 +10,18 @@ from functools import lru_cache
 from io import IOBase
 from os import makedirs, path
 from os.path import getsize
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Iterator, Callable
 
+import pytz
 import requests
 import smart_open
 from msal import ConfidentialClientApplication
 from office365.graph_client import GraphClient
 from office365.onedrive.driveitems.driveItem import DriveItem
+from office365.directory.users.collection import UserCollection
+from office365.directory.groups.collection import GroupCollection
+from office365.runtime.auth.token_response import TokenResponse
+from office365.sharepoint.client_context import ClientContext
 
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
@@ -28,6 +33,10 @@ from source_microsoft_sharepoint.spec import RemoteIdentity, RemoteIdentityType,
 
 from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
 from .utils import FolderNotFoundException, MicrosoftSharePointRemoteFile, execute_query_with_retry, filter_http_urls
+
+
+def datetime_now() -> datetime:
+    return datetime.now(pytz.UTC)
 
 
 class SourceMicrosoftSharePointClient:
@@ -53,9 +62,20 @@ class SourceMicrosoftSharePointClient:
             self._client = GraphClient(self._get_access_token)
         return self._client
 
-    def _get_access_token(self):
+    @staticmethod
+    def _get_scope(tenant_prefix: str = None):
+        """
+        Returns the scope for the access token.
+        We use admin site to retrieve objects like Site groups and users.
+        """
+        if tenant_prefix:
+            admin_site_url = f"https://{tenant_prefix}-admin.sharepoint.com"
+            return [f"{admin_site_url}/.default"]
+        return ["https://graph.microsoft.com/.default"]
+
+    def _get_access_token(self, tenant_prefix: str = None):
         """Retrieves an access token for SharePoint access."""
-        scope = ["https://graph.microsoft.com/.default"]
+        scope = self._get_scope(tenant_prefix)
         refresh_token = self.config.credentials.refresh_token if hasattr(self.config.credentials, "refresh_token") else None
 
         if refresh_token:
@@ -69,6 +89,13 @@ class SourceMicrosoftSharePointClient:
             raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
 
         return result
+
+    def get_token_response_object_wrapper(self, tenant_prefix: str):
+        def get_token_response_object():
+            token = self._get_access_token(tenant_prefix=tenant_prefix)
+            return TokenResponse.from_json(token)
+
+        return get_token_response_object
 
 
 class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
@@ -105,6 +132,16 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
     def get_access_token(self):
         # Directly fetch a new access token from the auth_client each time it's called
         return self.auth_client._get_access_token()["access_token"]
+
+    def get_token_response_object(self, tenant_prefix: str = None) -> Callable:
+        """ "
+        When building a ClientContext using with_access_token method,
+        the token_func param is expected to be a method/callable that returns a TokenResponse object.
+
+        tenant_prefix is used to determine the scope of the access token.
+        return: A callable that returns a TokenResponse object.
+        """
+        return self.auth_client.get_token_response_object_wrapper(tenant_prefix=tenant_prefix)
 
     @config.setter
     def config(self, value: SourceMicrosoftSharePointSpec):
@@ -407,8 +444,132 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                 f"There was an error while trying to download the file {file.uri}: {str(e)}", failure_type=FailureType.config_error
             )
 
-    def load_identity_groups(self):
-        return None
+    @lru_cache(maxsize=None)
+    def get_site(self, graph_client: GraphClient, site_url: str = None):
+        if site_url:
+            site = execute_query_with_retry(graph_client.sites.get_by_url(site_url))
+        else:
+            site = execute_query_with_retry(graph_client.sites.root.get())
+        return site
+
+    def get_users(self) -> UserCollection:
+        users = execute_query_with_retry(self.one_drive_client.users.get())
+        return users
+
+    def get_groups(self) -> GroupCollection:
+        groups = execute_query_with_retry(self.one_drive_client.groups.get())
+        return groups
+
+    @staticmethod
+    def get_site_prefix(site):
+        site_url = site.web_url
+        host_name = site.site_collection.hostname
+        return site_url, host_name.split(".")[0]
+
+    def get_client_context(self):
+        site_url, root_site_prefix = self.get_site_prefix(self.get_site(self.one_drive_client))
+        client_context = ClientContext(site_url).with_access_token(self.get_token_response_object(tenant_prefix=root_site_prefix))
+        return client_context
+
+    def get_site_users(self) -> UserCollection:
+        client_context = self.get_client_context()
+        site_users = client_context.web.site_users
+        client_context.load(site_users)
+        client_context.execute_query()
+        return site_users
+
+    def get_site_groups(self) -> GroupCollection:
+        client_context = self.get_client_context()
+        site_groups = client_context.web.site_groups
+        client_context.load(site_groups)
+        client_context.execute_query()
+        return site_groups
+
+    def get_applications(self):
+        applications = execute_query_with_retry(self.one_drive_client.applications.get())
+        return applications
+
+    def get_devices(self):
+        devices = self.one_drive_client.execute_request_direct("devices")
+        devices.raise_for_status()
+        return devices.json().get("value")
+
+    def load_identity_groups(self, logger: logging.Logger) -> Iterator[Dict[str, Any]]:
+        users = self.get_users()
+        if users:
+            for user in users:
+                rfp = RemoteIdentity(
+                    remote_id=user.id,
+                    name=user.properties["displayName"],
+                    description=user.user_principal_name,
+                    email_address=user.mail,
+                    type=RemoteIdentityType.USER,
+                    modified_at=datetime_now(),
+                )
+                yield rfp.dict()
+
+        groups = self.get_groups()
+        if groups:
+            for group in groups:
+                rfp = RemoteIdentity(
+                    remote_id=group.id,
+                    name=group.display_name,
+                    description=group.properties["description"],
+                    email_address=group.mail,
+                    type=RemoteIdentityType.GROUP,
+                    modified_at=datetime_now(),
+                )
+                # todo: get members of the group
+                yield rfp.dict()
+
+        site_users = self.get_site_users()
+        if site_users:
+            for site_user in site_users:
+                rfp = RemoteIdentity(
+                    remote_id=site_user.id,
+                    name=site_user.properties["Title"],
+                    description=site_user.user_principal_name,
+                    email_address=site_user.properties["Email"],
+                    type=RemoteIdentityType.SITE_USER,
+                    modified_at=datetime_now(),
+                )
+                yield rfp.dict()
+
+        site_groups = self.get_site_groups()
+        if site_groups:
+            for site_group in site_groups:
+                rfp = RemoteIdentity(
+                    remote_id=site_group.id,
+                    name=site_group.properties["Title"],
+                    description=site_group.properties["Description"],
+                    type=RemoteIdentityType.SITE_GROUP,
+                    modified_at=datetime_now(),
+                )
+                # todo: get members of the site group
+                yield rfp.dict()
+
+        applications = self.get_applications()
+        if applications:
+            for application in applications:
+                rfp = RemoteIdentity(
+                    remote_id=application.id,
+                    name=application.display_name,
+                    description=application.properties["description"],
+                    type=RemoteIdentityType.APPLICATION,
+                    modified_at=datetime_now(),
+                )
+                yield rfp.dict()
+
+        devices = self.get_devices()
+        if devices:
+            for device in devices:
+                rfp = RemoteIdentity(
+                    remote_id=device.get("id"),
+                    name=device.get("displayName"),
+                    type=RemoteIdentityType.DEVICE,
+                    modified_at=datetime_now(),
+                )
+                yield rfp.dict()
 
     def get_file_permissions(self, file: MicrosoftSharePointRemoteFile, logger: logging.Logger) -> Tuple[List[RemoteIdentity], bool]:
         """
