@@ -24,6 +24,7 @@ data class MSSQLConfiguration(
 ) : DestinationConfiguration(), MSSQLLoadTypeConfigurationProvider {
     override val numProcessRecordsWorkers = 1
     override val numProcessBatchWorkers = 1
+    override val processEmptyFiles: Boolean = true
 }
 
 @Singleton
