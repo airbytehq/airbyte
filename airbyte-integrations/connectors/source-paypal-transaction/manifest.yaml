@@ -1,9 +1,12 @@
 version: 0.82.0
 type: DeclarativeSource
 
+description: >-
+  Fetches data on transactions, balances, products, disputes, and invoices from PayPal API.
+
 spec:
   type: Spec
-  documentation_url: https://docs.airbyte.com/integrations/sources/paypal-transactions
+  documentation_url: https://docs.airbyte.com/integrations/sources/paypal-transaction
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
     type: object
@@ -776,7 +779,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $schema: https://json-schema.org/draft-07/schema#
+        $schema: http://json-schema.org/draft-07/schema#
         type:
           - "null"
           - object
@@ -905,7 +908,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $schema: https://json-schema.org/draft-07/schema#
+        $schema: http://json-schema.org/draft-07/schema#
         type:
           - "null"
           - object
@@ -987,7 +990,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $schema: https://json-schema.org/draft-07/schema#
+        $schema: http://json-schema.org/draft-07/schema#
         type:
           - "null"
           - object
@@ -1134,7 +1137,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $schema: https://json-schema.org/draft-07/schema#
+        $schema: http://json-schema.org/draft-07/schema#
         type:
           - "null"
           - object
@@ -2354,7 +2357,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $schema: https://json-schema.org/draft-07/schema#
+        $schema: http://json-schema.org/draft-07/schema#
         type:
           - "null"
           - object

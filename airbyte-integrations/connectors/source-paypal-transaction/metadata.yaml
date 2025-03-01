@@ -21,7 +21,7 @@ data:
   name: Paypal Transaction
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-paypal-transaction
   registryOverrides:
     cloud:
