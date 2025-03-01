@@ -1,4 +1,4 @@
-FROM airbyte/python-connector-base:4.0.0@sha256:a1e8a1e2f6a8c4f3a31e4d7b7aa7e4a2d3c9e7a0e5c61b94d1e14d5a3e5d9f9a
+FROM airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
 
 COPY poetry.lock pyproject.toml ./
 
