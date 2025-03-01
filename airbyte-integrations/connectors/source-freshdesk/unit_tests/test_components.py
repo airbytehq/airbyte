@@ -216,9 +216,10 @@ class TestFreshdeskTicketsIncrementalSync:
         sync = components_module.FreshdeskTicketsIncrementalSync("2022-01-01", "updated_at", "%Y-%m-%d", {}, {})
 
         # Setup mock for start_time_option.field_name.eval
-        with patch.object(sync, "start_time_option") as mock_start_time_option, \
-             patch.object(sync, "_partition_field_start") as mock_partition_field_start:
-
+        with (
+            patch.object(sync, "start_time_option") as mock_start_time_option,
+            patch.object(sync, "_partition_field_start") as mock_partition_field_start,
+        ):
             mock_field_name = MagicMock()
             mock_field_name.eval.return_value = "partition_field_start"
 
@@ -269,9 +270,7 @@ class TestFreshdeskTicketsPaginationStrategy:
         (60, 1),  # CallCredit.consume called with cost 1 when requests_per_minute is set
     ],
 )
-def test_sends_request_with_default_parameters_and_receives_response(
-    components_module, requests_per_minute, expected_call_credit_cost
-):
+def test_sends_request_with_default_parameters_and_receives_response(components_module, requests_per_minute, expected_call_credit_cost):
     config = {"requests_per_minute": requests_per_minute} if requests_per_minute is not None else {}
     parameters = {}
 
