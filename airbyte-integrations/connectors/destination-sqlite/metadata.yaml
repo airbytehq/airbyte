@@ -26,5 +26,5 @@ data:
     - suite: unitTests
     - suite: integrationTests
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0
+    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:8e24dc6f5958feb5eb72859c70dd82b772dbf719edb8c51b0f5fac1c70d0f74f
 metadataSpecVersion: "1.0"
