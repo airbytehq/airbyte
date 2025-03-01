@@ -17,7 +17,7 @@ class Oauth2(BaseModel):
         title = "Authenticate via Oauth2"
         discriminator = "auth_type"
 
-    auth_type: Literal["oauth2"] = Field("oauth2", const=True)
+    auth_type: Literal["oauth2"] = Field(default="oauth2")
     tenant_id: str = Field(title="Tenant ID", description="Tenant ID of the Microsoft Azure Application user", airbyte_secret=True)
     client_id: str = Field(
         title="Client ID",
@@ -41,7 +41,7 @@ class ClientCredentials(BaseModel):
         title = "Authenticate via Client Credentials"
         discriminator = "auth_type"
 
-    auth_type: Literal["client_credentials"] = Field("client_credentials", const=True)
+    auth_type: Literal["client_credentials"] = Field(default="client_credentials")
     app_tenant_id: str = Field(title="Tenant ID", description="Tenant ID of the Microsoft Azure Application", airbyte_secret=True)
     app_client_id: str = Field(
         title="Client ID",
@@ -60,7 +60,7 @@ class StorageAccountKey(BaseModel):
         title = "Authenticate via Storage Account Key"
         discriminator = "auth_type"
 
-    auth_type: Literal["storage_account_key"] = Field("storage_account_key", const=True)
+    auth_type: Literal["storage_account_key"] = Field(default="storage_account_key")
     azure_blob_storage_account_key: str = Field(
         title="Azure Blob Storage account key",
         description="The Azure blob storage account key.",
