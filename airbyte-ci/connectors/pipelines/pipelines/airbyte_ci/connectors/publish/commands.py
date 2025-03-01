@@ -122,6 +122,14 @@ def filter_out_third_party_connectors(
     default=False,
     is_flag=True,
 )
+@click.option(
+    "--force-publish-overwrite-metadata",
+    help="Force publish even if the connector version has not been incremented.",
+    type=click.BOOL,
+    default=False,
+    is_flag=True,
+    envvar="FORCE_PUBLISH_OVERWRITE_METADATA",
+)
 @click.pass_context
 async def publish(
     ctx: click.Context,
@@ -136,6 +144,7 @@ async def publish(
     python_registry_check_url: str,
     promote_release_candidate: bool,
     rollback_release_candidate: bool,
+    force_publish_overwrite_metadata: bool = False,
 ) -> bool:
     if promote_release_candidate and rollback_release_candidate:
         raise click.UsageError("You can't promote and rollback a release candidate at the same time.")
@@ -193,6 +202,7 @@ async def publish(
                 python_registry_url=python_registry_url,
                 python_registry_check_url=python_registry_check_url,
                 rollout_mode=rollout_mode,
+                force_publish_overwrite_metadata=force_publish_overwrite_metadata,
                 ci_github_access_token=ctx.obj.get("ci_github_access_token"),
             )
             for connector in ctx.obj["selected_connectors_with_modified_files"]

@@ -14,6 +14,10 @@ on:
       publish-options:
         description: "Options to pass to the 'airbyte-ci connectors publish' command. Use --pre-release or --main-release depending on whether you want to publish a dev image or not. "
         default: "--pre-release"
+      force-publish-overwrite-metadata:
+        description: "Force publish even if the connector version has not been incremented."
+        type: boolean
+        default: false
       airbyte_ci_binary_url:
         description: "URL to the airbyte-ci binary to use for the action. If not provided, the action will use the latest release of airbyte-ci."
         default: "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci"
@@ -65,7 +69,7 @@ jobs:
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"
+          subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }} ${{ github.event.inputs.force-publish-overwrite-metadata == true && '--force-publish-overwrite-metadata' || '' }}"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
           airbyte_ci_binary_url: ${{ github.event.inputs.airbyte_ci_binary_url }}
           max_attempts: 2
