@@ -16,8 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "destination_sqlite"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "==0.1.72"
+python = "^3.10,<3.13"
+airbyte-cdk = "^6.36.4"
 
 [tool.poetry.scripts]
 destination-sqlite = "destination_sqlite.run:run"
