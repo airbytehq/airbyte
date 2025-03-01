@@ -23,7 +23,7 @@ airbyte-cdk = "0.80.0"
 source-prestashop = "source_prestashop.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.1"
+pytest = "^8.0.0"
 pytest-mock = "^3.6.1"
 requests-mock = "^1.9.3"
 
