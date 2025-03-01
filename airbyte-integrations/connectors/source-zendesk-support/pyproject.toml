@@ -24,7 +24,7 @@ pytz = "==2024.1"
 source-zendesk-support = "source_zendesk_support.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.1"
+pytest = "^8.0.0"
 pytest-mock = "^3.6"
 requests-mock = "^1"
 freezegun = "^1.4.0"

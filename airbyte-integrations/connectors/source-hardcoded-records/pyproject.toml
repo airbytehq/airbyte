@@ -24,7 +24,7 @@ source-hardcoded-records = "source_hardcoded_records.run:run"
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.6.1"
-pytest = "^6.2"
+pytest = "^8.0.0"
 
 
 [tool.poe]
