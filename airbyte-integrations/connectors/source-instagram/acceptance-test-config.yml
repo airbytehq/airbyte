@@ -29,6 +29,10 @@ acceptance_tests:
             bypass_reason: Stories available only 24 hours
           - name: story_insights
             bypass_reason: Stories available only 24 hours, so do the insights
+          - name: profile_activity
+            bypass_reason: Profile statistic changed frequently
+          - name: navigation
+            bypass_reason: Navigation statistic changed frequently
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

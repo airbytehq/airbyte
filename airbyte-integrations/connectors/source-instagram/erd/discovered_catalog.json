@@ -564,6 +564,82 @@
       "default_cursor_field": ["date"],
       "source_defined_primary_key": [["business_account_id"], ["date"]],
       "is_resumable": true
+    },
+    {
+      "name": "profile_activity",
+      "json_schema": {
+        "type": "object",
+        "$schema": "http://json-schema.org/schema#",
+        "additionalProperties": true,
+        "properties": {
+          "business_account_id": {
+            "description": "The unique identifier of the Instagram business account associated with the media.",
+            "type": ["null", "string"]
+          },
+          "page_id": {
+            "description": "The unique identifier of the Instagram page where the media is posted.",
+            "type": ["null", "string"]
+          },
+          "id": {
+            "description": "The unique identifier of the media.",
+            "type": ["null", "string"]
+          },
+          "breakdown": {
+            "description": "The breakdown of the insights data, such as age, gender, location, etc.",
+            "type": ["null", "string"]
+          },
+          "metric": {
+            "description": "The specific metric or measure tracked in the insights data",
+            "type": ["null", "string"]
+          },
+          "value": {
+            "description": "The actual value of the metric for the given breakdown and page",
+            "type": ["null", "object"]
+          }
+        },
+        "required": ["id","breakdown"]
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["id"], ["breakdown"]],
+      "is_resumable": false
+    },
+    {
+      "name": "navigation",
+      "json_schema": {
+        "type": "object",
+        "$schema": "http://json-schema.org/schema#",
+        "additionalProperties": true,
+        "properties": {
+          "business_account_id": {
+            "description": "The unique identifier of the Instagram business account associated with the media.",
+            "type": ["null", "string"]
+          },
+          "page_id": {
+            "description": "The unique identifier of the Instagram page where the media is posted.",
+            "type": ["null", "string"]
+          },
+          "id": {
+            "description": "The unique identifier of the media.",
+            "type": ["null", "string"]
+          },
+          "breakdown": {
+            "description": "The breakdown of the insights data, such as age, gender, location, etc.",
+            "type": ["null", "string"]
+          },
+          "metric": {
+            "description": "The specific metric or measure tracked in the insights data",
+            "type": ["null", "string"]
+          },
+          "value": {
+            "description": "The actual value of the metric for the given breakdown and page",
+            "type": ["null", "object"]
+          }
+        },
+        "required": ["id","breakdown"]
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["id"], ["breakdown"]],
+      "is_resumable": false
     }
   ]
 }
