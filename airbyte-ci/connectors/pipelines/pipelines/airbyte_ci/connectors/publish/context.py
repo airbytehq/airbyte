@@ -47,6 +47,7 @@ class PublishConnectorContext(ConnectorContext):
         python_registry_url: str,
         python_registry_check_url: str,
         rollout_mode: RolloutMode,
+        force_publish_overwrite_metadata: bool = False,
         gha_workflow_run_url: Optional[str] = None,
         dagger_logs_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
@@ -68,6 +69,7 @@ class PublishConnectorContext(ConnectorContext):
         self.python_registry_url = python_registry_url
         self.python_registry_check_url = python_registry_check_url
         self.rollout_mode = rollout_mode
+        self.force_publish_overwrite_metadata = force_publish_overwrite_metadata
 
         pipeline_name = f"{rollout_mode.value} {connector.technical_name}"
         pipeline_name = pipeline_name + " (pre-release)" if pre_release else pipeline_name

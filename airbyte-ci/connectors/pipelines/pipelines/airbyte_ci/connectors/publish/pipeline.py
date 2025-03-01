@@ -22,6 +22,7 @@ from pipelines import consts
 from pipelines.airbyte_ci.connectors.build_image import steps
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext, RolloutMode
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
+from pipelines.airbyte_ci.connectors.test.steps.common import VersionIncrementCheck
 from pipelines.airbyte_ci.metadata.pipeline import MetadataUpload, MetadataValidation
 from pipelines.airbyte_ci.steps.bump_version import SetConnectorVersion
 from pipelines.airbyte_ci.steps.changelog import AddChangelogEntry
@@ -431,6 +432,28 @@ class SetPromotedVersion(SetConnectorVersion):
         return await super()._run()
 
 
+class VersionIncrementPublishCheck(VersionIncrementCheck):
+    context: PublishConnectorContext
+    title = "Connector version increment publish check"
+
+    @property
+    def should_run(self) -> bool:
+        """Always run the version increment check for publishing, regardless of metadata flags.
+        This ensures that we always check for version increments when publishing, even if the connector
+        has opted out of version checks in its metadata.
+        """
+        return True
+
+    async def _run(self) -> StepResult:
+        if self.context.force_publish_overwrite_metadata:
+            return StepResult(
+                step=self,
+                status=StepStatus.SKIPPED,
+                stdout="Skipping version increment check because force_publish_overwrite_metadata is set to True.",
+            )
+        return await super()._run()
+
+
 class DisableProgressiveRollout(StepModifyingFiles):
     context: PublishConnectorContext
     title = "Disable progressive rollout in metadata file"
@@ -511,6 +534,18 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
 
             # Exit early if the metadata file is invalid.
             if metadata_validation_results.status is not StepStatus.SUCCESS:
+                return create_connector_report(results, context)
+
+            # Check if the connector version has been incremented
+            version_increment_check_results = await VersionIncrementPublishCheck(context).run()
+            results.append(version_increment_check_results)
+
+            # Exit early if the version has not been incremented and force_publish_overwrite_metadata is False
+            if version_increment_check_results.status is StepStatus.FAILURE:
+                context.logger.info(
+                    "The connector version has not been incremented. Skipping publish. "
+                    "Set force_publish_overwrite_metadata to True to force publish."
+                )
                 return create_connector_report(results, context)
 
             check_connector_image_results = await CheckConnectorImageDoesNotExist(context).run()
