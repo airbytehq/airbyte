@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6cbea164-3237-433b-9abb-36d384ee4cbf
-  dockerImageTag: 0.1.31
+  dockerImageTag: 0.1.32
   dockerRepository: airbyte/source-gridly
   githubIssueLabel: source-gridly
   icon: gridly.svg
