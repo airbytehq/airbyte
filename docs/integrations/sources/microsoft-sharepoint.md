@@ -300,6 +300,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.7.1 | 2025-03-01 | [54749](https://github.com/airbytehq/airbyte/pull/54749) | Update dependencies |
 | 0.7.0 | 2025-02-27 | [54200](https://github.com/airbytehq/airbyte/pull/54200) | Add advanced Oauth |
 | 0.6.1 | 2025-02-22 | [45062](https://github.com/airbytehq/airbyte/pull/45062) | Update dependencies |
 | 0.6.0 | 2025-02-20 | [54140](https://github.com/airbytehq/airbyte/pull/54140) | Implement file transfer mode to move raw files |
