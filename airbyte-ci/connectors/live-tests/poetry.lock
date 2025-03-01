@@ -944,14 +944,14 @@ test-randomorder = ["pytest-randomly"]
 
 [[package]]
 name = "dagger-io"
-version = "0.13.3"
+version = "0.16.2"
 description = "A client package for running Dagger pipelines in Python."
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "dagger_io-0.13.3-py3-none-any.whl", hash = "sha256:c3be14bd2c77ad265f944612123ef6f7653cf0365ffee0c70bf2a2662dc9783d"},
-    {file = "dagger_io-0.13.3.tar.gz", hash = "sha256:fb9f602b8493f6e5f66afba4c6f51485dccb7c4795fbde7d92e188c69e8961b7"},
+    {file = "dagger_io-0.16.2-py3-none-any.whl", hash = "sha256:4dd56d9511c81c4ff3ffb741365a575fa82d92d095ba8f259680cc7c3f05cd83"},
+    {file = "dagger_io-0.16.2.tar.gz", hash = "sha256:274e715cf6d586c758f071427b79a8b8e41f81f22c4e5dd5173435f0f346034f"},
 ]
 
 [package.dependencies]
@@ -959,7 +959,7 @@ anyio = ">=3.6.2"
 beartype = ">=0.18.2"
 cattrs = ">=22.2.0"
 gql = {version = ">=3.5.0", extras = ["httpx"]}
-opentelemetry-exporter-otlp-proto-grpc = ">=1.23.0"
+opentelemetry-exporter-otlp-proto-http = ">=1.23.0"
 opentelemetry-sdk = ">=1.23.0"
 platformdirs = ">=2.6.2"
 rich = ">=10.11.0"
@@ -2672,25 +2672,25 @@ files = [
 opentelemetry-proto = "1.27.0"
 
 [[package]]
-name = "opentelemetry-exporter-otlp-proto-grpc"
+name = "opentelemetry-exporter-otlp-proto-http"
 version = "1.27.0"
-description = "OpenTelemetry Collector Protobuf over gRPC Exporter"
+description = "OpenTelemetry Collector Protobuf over HTTP Exporter"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "opentelemetry_exporter_otlp_proto_grpc-1.27.0-py3-none-any.whl", hash = "sha256:56b5bbd5d61aab05e300d9d62a6b3c134827bbd28d0b12f2649c2da368006c9e"},
-    {file = "opentelemetry_exporter_otlp_proto_grpc-1.27.0.tar.gz", hash = "sha256:af6f72f76bcf425dfb5ad11c1a6d6eca2863b91e63575f89bb7b4b55099d968f"},
+    {file = "opentelemetry_exporter_otlp_proto_http-1.27.0-py3-none-any.whl", hash = "sha256:688027575c9da42e179a69fe17e2d1eba9b14d81de8d13553a21d3114f3b4d75"},
+    {file = "opentelemetry_exporter_otlp_proto_http-1.27.0.tar.gz", hash = "sha256:2103479092d8eb18f61f3fbff084f67cc7f2d4a7d37e75304b8b56c1d09ebef5"},
 ]
 
 [package.dependencies]
 deprecated = ">=1.2.6"
 googleapis-common-protos = ">=1.52,<2.0"
-grpcio = ">=1.0.0,<2.0.0"
 opentelemetry-api = ">=1.15,<2.0"
 opentelemetry-exporter-otlp-proto-common = "1.27.0"
 opentelemetry-proto = "1.27.0"
 opentelemetry-sdk = ">=1.27.0,<1.28.0"
+requests = ">=2.7,<3.0"
 
 [[package]]
 name = "opentelemetry-proto"
@@ -4847,4 +4847,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11,<3.12"
-content-hash = "49e999fa7909c078f493f667b7064e73cd612dd2b42571f2e2f80f7fba8d807f"
+content-hash = "da8a8e6af3adaebd0177010cdf6fec0a397c3689c660da0219f001f6d4d5f77a"
