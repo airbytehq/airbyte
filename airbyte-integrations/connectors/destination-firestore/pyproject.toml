@@ -20,7 +20,6 @@ python = ">=3.10,<3.13"
 google-auth = "^2.35.0"
 google-cloud-firestore = "^2.19.0"
 airbyte-cdk = "^6.0.0"
-nltk = "^3.9.1"
 
 [tool.poetry.scripts]
 destination-firestore = "destination_firestore.run:run"
