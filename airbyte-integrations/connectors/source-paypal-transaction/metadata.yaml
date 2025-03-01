@@ -42,7 +42,7 @@ data:
       - list_payments
   supportLevel: certified
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:manifest-only
   connectorTestSuitesOptions:
     - suite: liveTests
