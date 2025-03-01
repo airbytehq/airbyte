@@ -153,6 +153,7 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Vendor Direct Fulfillment Shipping](https://developer-docs.amazon.com/sp-api/docs/vendor-direct-fulfillment-shipping-api-v1-reference) \(incremental\)
 - [Vendor Forecasting Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
 - [Vendor Orders](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders) \(incremental\)
+- [Vendor Order Status](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseOrdersStatus) \(incremental\)
 - [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 <!-- env:oss -->
 - [Amazon Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
@@ -248,18 +249,19 @@ Create a separate connection for streams which usually fail with error above "Fa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.7.1 | 2025-07-15 | [63309](https://github.com/airbytehq/airbyte/pull/63309) | Adds `type` property to `config_normalization_rules` in manifest |
-| 4.7.0 | 2025-07-08 | [62850](https://github.com/airbytehq/airbyte/pull/62850) | Promoting release candidate 4.7.0-rc.1 to a main version. |
+| 4.8.0      | 2025-07-29 | [53225](https://github.com/airbytehq/airbyte/pull/) | Add VendorOrdersStatus stream |
+| 4.7.1      | 2025-07-15 | [63309](https://github.com/airbytehq/airbyte/pull/63309) | Adds `type` property to `config_normalization_rules` in manifest |
+| 4.7.0      | 2025-07-08 | [62850](https://github.com/airbytehq/airbyte/pull/62850) | Promoting release candidate 4.7.0-rc.1 to a main version. |
 | 4.7.0-rc.1 | 2025-06-30 | [62119](https://github.com/airbytehq/airbyte/pull/62119) | Migrate to manifest-only |
-| 4.6.4 | 2025-06-15 | [54870](https://github.com/airbytehq/airbyte/pull/54870) | Update dependencies |
-| 4.6.3 | 2025-06-03 | [61351](https://github.com/airbytehq/airbyte/pull/61351) | Update dependencies |
-| 4.6.2 | 2025-04-09 | [57537](https://github.com/airbytehq/airbyte/pull/57537)     |Fix Extend Minimum Date Range|
-| 4.6.1 | 2025-04-08 | [55238](https://github.com/airbytehq/airbyte/pull/55238)     |Fix daterange in `DatetimeBasedCursor` and Added configurable step size for financial events streams (`list_financial_event_groups`, `list_financial_events`)|
-| 4.6.0 | 2025-02-24 | [53225](https://github.com/airbytehq/airbyte/pull/53225) | Add API Budget |
-| 4.5.3 | 2025-02-22 | [53928](https://github.com/airbytehq/airbyte/pull/53928) | Update dependencies |
-| 4.5.2 | 2025-02-17 | [53693](https://github.com/airbytehq/airbyte/pull/53693) | Add app_id to server configuration (OAuth) |
-| 4.5.1 | 2025-02-08 | [49297](https://github.com/airbytehq/airbyte/pull/49297) | Update dependencies |
-| 4.5.0 | 2025-02-04 | [53155](https://github.com/airbytehq/airbyte/pull/53155) | Promoting release candidate 4.5.0-rc.5 to a main version. |
+| 4.6.4      | 2025-06-15 | [54870](https://github.com/airbytehq/airbyte/pull/54870) | Update dependencies |
+| 4.6.3      | 2025-06-03 | [61351](https://github.com/airbytehq/airbyte/pull/61351) | Update dependencies |
+| 4.6.2      | 2025-04-09 | [57537](https://github.com/airbytehq/airbyte/pull/57537)     |Fix Extend Minimum Date Range|
+| 4.6.1      | 2025-04-08 | [55238](https://github.com/airbytehq/airbyte/pull/55238)     |Fix daterange in `DatetimeBasedCursor` and Added configurable step size for financial events streams (`list_financial_event_groups`, `list_financial_events`)|
+| 4.6.0      | 2025-02-24 | [53225](https://github.com/airbytehq/airbyte/pull/53225) | Add API Budget |
+| 4.5.3      | 2025-02-22 | [53928](https://github.com/airbytehq/airbyte/pull/53928) | Update dependencies |
+| 4.5.2      | 2025-02-17 | [53693](https://github.com/airbytehq/airbyte/pull/53693) | Add app_id to server configuration (OAuth) |
+| 4.5.1      | 2025-02-08 | [49297](https://github.com/airbytehq/airbyte/pull/49297) | Update dependencies |
+| 4.5.0      | 2025-02-04 | [53155](https://github.com/airbytehq/airbyte/pull/53155) | Promoting release candidate 4.5.0-rc.5 to a main version. |
 | 4.5.0-rc.5 | 2025-01-31 | [52700](https://github.com/airbytehq/airbyte/pull/52700)  | Use incremental_dependency for the OrderItems substream                                                                                                                             |
 | 4.5.0-rc.4 | 2025-01-31 | [52683](https://github.com/airbytehq/airbyte/pull/52683)  | Fix Rate Limiting issue; disable concurrency                                                                                                                                        |
 | 4.5.0-rc.3 | 2025-01-28 | [52619](https://github.com/airbytehq/airbyte/pull/52619)  | Fix `Orders` pagination                                                                                                                                                             |
