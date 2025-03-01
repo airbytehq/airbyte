@@ -265,7 +265,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%SZ"
       datetime_format: "%ms"
       start_datetime:
-        datetime: "{{ format_datetime(config['start_date'], '%ms') }}"
+        datetime: "{{ format_datetime(config['start_date'], '%s') }}"
       start_time_option:
         field_name: start_time
         inject_into: "request_parameter"
