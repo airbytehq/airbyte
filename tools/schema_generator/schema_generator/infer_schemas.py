@@ -30,7 +30,7 @@ import genson.schema.strategies as strategies
 from genson import SchemaBuilder
 from genson.schema.strategies.object import Object
 
-from airbyte_cdk.models import AirbyteMessage, Type
+# Import removed as we're using JSON dictionaries directly
 
 
 class NoRequiredObj(Object):
