@@ -15,7 +15,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.11,<3.12"
+python = "^3.12"
 airbyte-cdk = "*"
 airbyte-protocol-models = "<1.0.0"
 cachetools = "~=5.3.3"
@@ -35,7 +35,7 @@ pandas = "^2.2.1"
 pytest-sugar = "^1.0.0"
 asyncer = "^0.0.5"
 rich = "^13.7.1"
-mitmproxy = "^10.2.4"
+mitmproxy = "^11.1.2"
 requests = "<=2.31.1"  # Pinned due to this issue https://github.com/docker/docker-py/issues/3256#issuecomment-2127688011
 pyyaml = "~=6.0.1"
 dpath = "^2.1.6"
@@ -68,7 +68,7 @@ type_check = "mypy src --disallow-untyped-defs"
 pre-push = []
 
 [tool.airbyte_ci]
-python_versions = ["3.11"]
+python_versions = ["3.12"]
 optional_poetry_groups = ["dev"]
 poe_tasks = []
 required_environment_variables = ["DOCKER_HUB_USERNAME", "DOCKER_HUB_PASSWORD"]
