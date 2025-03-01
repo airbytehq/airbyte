@@ -26,6 +26,7 @@ if "TEST_SERVICE_CONFIG" in globals():
 
 # ----- BEGIN TESTS -----
 
+
 def test_oauth_client():
     client = TEST_CLIENT.authorize()
     assert isinstance(client, pygsheets_client)
@@ -33,13 +34,15 @@ def test_oauth_client():
     for i in ["token_uri", "expiry"]:
         assert i in client.oauth.to_json()
 
+
 @pytest.mark.skipif(TEST_SERVICE_CLIENT is None, reason="No service account config provided")
 def test_service_account_client():
     client = TEST_SERVICE_CLIENT.authorize()
     assert isinstance(client, pygsheets_client)
     # Service account client has different structure than OAuth client
-    assert hasattr(client, 'drive')
-    assert hasattr(client, 'sheet')
+    assert hasattr(client, "drive")
+    assert hasattr(client, "sheet")
+
 
 @pytest.mark.parametrize(
     "client_instance, property, expected_retries",
@@ -84,4 +87,3 @@ def test_max_retries_are_set(client_instance, property, expected_retries):
 
 
 # ----- END TESTS -----
-
