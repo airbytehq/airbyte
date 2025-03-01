@@ -328,14 +328,14 @@ toml = ["tomli"]
 
 [[package]]
 name = "dagger-io"
-version = "0.16.1"
+version = "0.16.2"
 description = "A client package for running Dagger pipelines in Python."
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "dagger_io-0.16.1-py3-none-any.whl", hash = "sha256:e53e8569562120324a59699795cb0bcd3a33f3ee0d72f82102581ea9bf03e442"},
-    {file = "dagger_io-0.16.1.tar.gz", hash = "sha256:370b53fcef5a7309f7053dff9707c775e882c6454897be6f62a02fba0d4a2bb5"},
+    {file = "dagger_io-0.16.2-py3-none-any.whl", hash = "sha256:4dd56d9511c81c4ff3ffb741365a575fa82d92d095ba8f259680cc7c3f05cd83"},
+    {file = "dagger_io-0.16.2.tar.gz", hash = "sha256:274e715cf6d586c758f071427b79a8b8e41f81f22c4e5dd5173435f0f346034f"},
 ]
 
 [package.dependencies]
@@ -2185,4 +2185,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11, <3.12"
-content-hash = "6d87fe9be18c141d0041ef27117041a4de53d1692710c622372782726972a023"
+content-hash = "4cda604431fa68c5d6a063b9c9f7144f5354910a5c674f8fec6dd73a92c1c9bb"
