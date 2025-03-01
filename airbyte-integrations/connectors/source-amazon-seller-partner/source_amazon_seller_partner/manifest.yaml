@@ -320,6 +320,76 @@ definitions:
             stop_condition: '{{ not response.get("payload", {}).get("pagination", {}).get("nextToken") }}'
             cursor_value: "{{ response.payload.pagination.nextToken }}"
 
+    vendor_orders_status:
+      type: DeclarativeStream
+      name: VendorOrdersStatus
+      primary_key:
+        - purchaseOrderNumber
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: changedBefore
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P7D"
+        cursor_granularity: "PT0S" # TODO: check if it is valid?
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_end_date', now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          field_name: changedAfter
+          inject_into: request_parameter
+        end_time_option:
+          field_name: changedBefore
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["changedBefore"]
+              value: "{{ stream_slice['end_time'] }}"
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "vendor/orders/v1/purchaseOrdersStatus"
+          http_method: GET
+          request_headers:
+            content-type: "application/json"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 403
+                backoff_strategies:
+                  - class_name: "source_amazon_seller_partner.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                    type: CustomBackoffStrategy
+                    header: x-amzn-RateLimit-Limit
+                    default_backoff_time: 60
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["payload", "ordersStatus"]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: nextToken
+          pagination_strategy:
+            type: CursorPagination
+            stop_condition: '{{ not response.get("payload", {}).get("pagination", {}).get("nextToken") }}'
+            cursor_value: "{{ response.payload.pagination.nextToken }}"
+
     # FinanceStream
     list_financial_event_groups:
       type: DeclarativeStream
@@ -2112,6 +2182,7 @@ streams:
   - $ref: "#/definitions/streams/list_financial_events"
   - $ref: "#/definitions/streams/vendor_direct_fulfillment_shipping"
   - $ref: "#/definitions/streams/vendor_orders"
+  - $ref: "#/definitions/streams/vendor_orders_status"
 
     # Reports Streams
   - $ref: "#/definitions/streams/get_flat_file_all_orders_data_by_order_date_general"

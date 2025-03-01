@@ -1,0 +1,81 @@
+{
+    "payload": {
+        "ordersStatus": [
+            {
+            "itemStatus": [
+                {
+                "orderedQuantity": {
+                    "orderedQuantityDetails": [
+                    {
+                        "orderedQuantity": {
+                        "unitSize": 1,
+                        "amount": 2,
+                        "unitOfMeasure": "Eaches"
+                        },
+                        "cancelledQuantity": {
+                        "unitSize": 1,
+                        "amount": 1,
+                        "unitOfMeasure": "Eaches"
+                        },
+                        "updatedDate": "2024-08-31T15:16:17Z"
+                    }
+                    ],
+                    "orderedQuantity": {
+                    "unitSize": 1,
+                    "amount": 2,
+                    "unitOfMeasure": "Eaches"
+                    }
+                },
+                "acknowledgementStatus": {
+                    "rejectedQuantity": {
+                    "unitSize": 1,
+                    "amount": 2,
+                    "unitOfMeasure": "Eaches"
+                    },
+                    "acknowledgementStatusDetails": [
+                    {
+                        "rejectedQuantity": {
+                        "unitSize": 1,
+                        "amount": 0,
+                        "unitOfMeasure": "Eaches"
+                        },
+                        "acceptedQuantity": {
+                        "unitSize": 1,
+                        "amount": 2,
+                        "unitOfMeasure": "Eaches"
+                        },
+                        "acknowledgementDate": "2024-08-01T16:00:00Z"
+                    }
+                    ],
+                    "confirmationStatus": "APPROVED"
+                },
+                "netCost": {
+                    "currencyCode": "USD",
+                    "amount": 27.37
+                },
+                "itemSequenceNumber": "1",
+                "vendorProductIdentifier": "123456ABC",
+                "buyerProductIdentifier": "123456ABC",
+                "listPrice": {
+                    "currencyCode": "GBP",
+                    "amount": 19.99
+                },
+                "receivingStatus": {
+                    "receiveStatus": "NOT_RECEIVED"
+                }
+                }
+            ],
+            "lastUpdatedDate": "2024-09-10T11:12:13Z",
+            "purchaseOrderDate": "2024-09-01T15:16:17Z",
+            "purchaseOrderNumber": "123ABC",
+            "purchaseOrderStatus": "OPEN",
+            "sellingParty": {
+                "partyId": "MOO"
+            },
+            "shipToParty": {
+                "partyId": "BAA"
+            }
+            }
+        ]
+    }
+}
