@@ -25,6 +25,7 @@ Wonderi
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.13 | 2025-03-01 | [54815](https://github.com/airbytehq/airbyte/pull/54815) | Update dependencies |
 | 0.0.12 | 2025-02-22 | [54336](https://github.com/airbytehq/airbyte/pull/54336) | Update dependencies |
 | 0.0.11 | 2025-02-15 | [53279](https://github.com/airbytehq/airbyte/pull/53279) | Update dependencies |
 | 0.0.10 | 2025-02-01 | [52738](https://github.com/airbytehq/airbyte/pull/52738) | Update dependencies |
