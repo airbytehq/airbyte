@@ -5,4 +5,5 @@
 
 from .source import SourceAmazonSqs
 
+
 __all__ = ["SourceAmazonSqs"]
