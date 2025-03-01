@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "schema-generator"
-version = "0.1.0"
+version = "0.1.1"
 description = "Util to create catalog schemas for an Airbyte Connector."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
