@@ -246,6 +246,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.8.8 | 2025-02-28 | [54711](https://github.com/airbytehq/airbyte/pull/54711) | Add retry error handler for `requests.exceptions.InvalidURL' |
 | 5.8.7 | 2025-02-22 | [54468](https://github.com/airbytehq/airbyte/pull/54468) | Update dependencies |
 | 5.8.6 | 2025-02-15 | [54067](https://github.com/airbytehq/airbyte/pull/54067) | Update dependencies |
 | 5.8.5 | 2025-02-08 | [52018](https://github.com/airbytehq/airbyte/pull/52018) | Update dependencies |
