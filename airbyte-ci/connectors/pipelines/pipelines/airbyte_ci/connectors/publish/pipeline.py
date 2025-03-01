@@ -436,6 +436,14 @@ class VersionIncrementPublishCheck(VersionIncrementCheck):
     context: PublishConnectorContext
     title = "Connector version increment publish check"
 
+    @property
+    def should_run(self) -> bool:
+        """Always run the version increment check for publishing, regardless of metadata flags.
+        This ensures that we always check for version increments when publishing, even if the connector
+        has opted out of version checks in its metadata.
+        """
+        return True
+
     async def _run(self) -> StepResult:
         if self.context.force_publish_overwrite_metadata:
             return StepResult(
