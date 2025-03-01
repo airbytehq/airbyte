@@ -21,6 +21,7 @@ bingads = "^13.0.18.1"
 urllib3 = "^1.26.18"
 airbyte-cdk = "^6.33"
 cached-property = "^1.5.2"
+pendulum = "^2.1.2"
 
 [tool.poetry.scripts]
 source-bing-ads = "source_bing_ads.run:run"
