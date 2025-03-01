@@ -10,10 +10,10 @@ readme = "README.md"
 include = "destination_motherduck"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.10,<3.13"
 
 # NOTE: You can toggle between pinned and local CDK version for testing:
-airbyte-cdk = {version = "^5.15.0", extras = ["sql"] }
+airbyte-cdk = {version = "^6.0.0", extras = ["sql"] }
 # airbyte-cdk = { path = "../../../airbyte-cdk/python", extras = ["sql"] }
 duckdb = "1.1.2"
 duckdb-engine = "^0.13.4"
@@ -22,6 +22,7 @@ sqlalchemy = ">=1.4.51,!=2.0.36,<3.0"
 rich = "^13.7.0"
 overrides = "^7.4.0"
 python-ulid = "^3.0.0"
+nltk = "^3.9.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
