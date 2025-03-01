@@ -29,7 +29,6 @@ from pipelines.airbyte_ci.steps.changelog import AddChangelogEntry
 from pipelines.airbyte_ci.steps.pull_request import CreateOrUpdatePullRequest
 from pipelines.airbyte_ci.steps.python_registry import PublishToPythonRegistry, PythonRegistryPublishContext
 from pipelines.consts import LOCAL_BUILD_PLATFORM
-from pipelines.models.steps import StepResult, StepStatus
 from pipelines.dagger.actions.remote_storage import upload_to_gcs
 from pipelines.dagger.actions.system import docker
 from pipelines.helpers.connectors.dagger_fs import dagger_read_file, dagger_write_file
@@ -442,7 +441,7 @@ class VersionIncrementPublishCheck(VersionIncrementCheck):
             return StepResult(
                 step=self,
                 status=StepStatus.SKIPPED,
-                stdout="Skipping version increment check because force_publish_overwrite_metadata is set to True."
+                stdout="Skipping version increment check because force_publish_overwrite_metadata is set to True.",
             )
         return await super()._run()
 
