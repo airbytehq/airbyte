@@ -24,7 +24,7 @@ airbyte-cdk = "^0"
 source-freshdesk = "source_freshdesk.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.2"
+pytest = "^8.0.0"
 pytest-mock = "^3.6"
 requests-mock = "^1"
 

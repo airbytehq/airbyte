@@ -29,7 +29,7 @@ source-google-directory = "source_google_directory.run:run"
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.6.1"
 requests-mock = "^1.9.3"
-pytest = "^6.1"
+pytest = "^8.0.0"
 
 
 [tool.poe]
