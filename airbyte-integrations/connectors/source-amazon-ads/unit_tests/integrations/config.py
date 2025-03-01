@@ -5,6 +5,7 @@ from typing import Any, Dict, List
 
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
+
 CLIENT_ID = "amzn.app-oa2-client.test"
 CLIENT_SECRET = "test-secret"
 REGION = "NA"

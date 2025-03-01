@@ -5,8 +5,9 @@
 
 from typing import Literal, Union
 
-from airbyte_cdk.destinations.vector_db_based.config import VectorDBConfigModel
 from pydantic.v1 import BaseModel, Field
+
+from airbyte_cdk.destinations.vector_db_based.config import VectorDBConfigModel
 
 
 class NoAuth(BaseModel):

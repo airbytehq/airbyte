@@ -24,6 +24,12 @@ definitions:
             q: search
           request_headers:
             Linkedin-Version: "202404"
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -55,6 +61,7 @@ definitions:
       name: account_users
       primary_key:
         - account
+        - user
       retriever:
         type: SimpleRetriever
         requester:
@@ -67,6 +74,12 @@ definitions:
             accounts: urn:li:sponsoredAccount:{{stream_slice.get('account_id')}}
           request_headers:
             Linkedin-Version: "202404"
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -127,6 +140,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -193,6 +212,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -253,9 +278,9 @@ definitions:
           request_parameters:
             q: criteria
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202410"
             X-RestLi-Method: FINDER
-          error_handler:
+          error_handlers:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
@@ -278,6 +303,11 @@ definitions:
                     http_codes:
                       - 500
                       - 503
+              - type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -341,6 +371,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -381,14 +417,119 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/conversions"
+    lead_forms:
+      type: DeclarativeStream
+      name: lead_forms
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: leadForms?owner=(sponsoredAccount:urn%3Ali%3AsponsoredAccount%3A{{stream_slice.get('account_id')}})
+          http_method: GET
+          request_parameters:
+            q: owner
+            count: "500"
+          request_headers:
+            LinkedIn-Version: "202406"
+            X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - elements
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lead_forms"
+    lead_form_responses:
+      type: DeclarativeStream
+      name: lead_form_responses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /leadFormResponses?owner=(sponsoredAccount:urn%3Ali%3AsponsoredAccount%3A{{stream_slice.get('account_id')}})&leadType=(leadType:SPONSORED)
+          http_method: GET
+          request_parameters:
+            q: owner
+            count: "500"
+          request_headers:
+            LinkedIn-Version: "202406"
+            X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - elements
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lead_form_responses"
     ad_campaign_analytics:
       type: DeclarativeStream
       name: ad_campaign_analytics
       primary_key:
         - string_of_pivot_values
         - end_date
+        - sponsoredCampaign
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_campaign_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -396,8 +537,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_campaign_analytics
           request_parameters:
             q: analytics
             pivot: "(value:CAMPAIGN)"
@@ -408,6 +547,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -464,6 +609,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_creative_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -471,8 +618,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_creative_analytics
           request_parameters:
             q: analytics
             pivot: "(value:CREATIVE)"
@@ -483,6 +628,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -539,6 +690,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_impression_device_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -546,8 +699,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_impression_device_analytics
           request_parameters:
             q: analytics
             pivot: "(value:IMPRESSION_DEVICE_TYPE)"
@@ -558,6 +709,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -614,6 +771,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_company_size_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -621,8 +780,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_company_size_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_COMPANY_SIZE)"
@@ -633,6 +790,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -689,6 +852,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_country_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -696,8 +861,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_country_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_COUNTRY_V2)"
@@ -708,6 +871,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -764,6 +933,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_job_function_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -771,8 +942,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_job_function_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_JOB_FUNCTION)"
@@ -783,6 +952,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -839,6 +1014,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_job_title_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -846,8 +1023,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_job_title_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_JOB_TITLE)"
@@ -858,6 +1033,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -914,6 +1095,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_industry_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -921,8 +1104,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_industry_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_INDUSTRY)"
@@ -933,6 +1114,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -989,6 +1176,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_seniority_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -996,8 +1185,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_seniority_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_SENIORITY)"
@@ -1008,6 +1195,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1064,6 +1257,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_region_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -1071,8 +1266,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_region_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_REGION_V2)"
@@ -1083,6 +1276,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1139,6 +1338,8 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: ad_member_company_analytics
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -1146,8 +1347,6 @@ definitions:
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
           http_method: GET
-          $parameters:
-            name: ad_member_company_analytics
           request_parameters:
             q: analytics
             pivot: "(value:MEMBER_COMPANY)"
@@ -1158,6 +1357,12 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1206,6 +1411,88 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/ad_member_company_analytics"
+    custom_analytics_report:
+      type: DeclarativeStream
+      name: custom_analytics_report
+      primary_key:
+        - string_of_pivot_values
+        - end_date
+        - sponsoredCampaign
+      retriever:
+        class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
+        $parameters:
+          name: custom_analytics_report
+        requester:
+          type: CustomRequester
+          class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
+          url_base: https://api.linkedin.com/rest/
+          authenticator: "#/definitions/authenticator"
+          path: adAnalytics
+          http_method: GET
+          request_parameters:
+            q: analytics
+            pivot: "DYNAMIC_FIELD"
+            timeGranularity: "DYNAMIC_FIELD"
+            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{stream_slice.get('campaign_id')}})"
+            dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
+            fields: "{{stream_slice['fields']}}"
+          request_headers:
+            Linkedin-Version: "202404"
+            X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
+        record_selector:
+          type: RecordSelector
+          $parameters:
+            transformations:
+              - type: AddFields
+                fields:
+                  - path:
+                      - sponsoredCampaign
+                    value: "{{stream_slice.get('campaign_id')}}"
+                    value_type: string
+              - type: AddFields
+                fields:
+                  - path:
+                      - pivot
+                    value: "DYNAMIC_FIELD"
+                    value_type: string
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
+          schema_normalization: Default
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: campaign_id
+              stream:
+                $ref: "#/definitions/streams/campaigns"
+      incremental_sync:
+        type: CustomIncrementalSync
+        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        cursor_field: end_date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        cursor_granularity: P0D
+        step: P30D
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ad_campaign_analytics"
   base_requester:
     type: HttpRequester
     url_base: https://api.linkedin.com/rest/
@@ -1235,6 +1522,8 @@ streams:
   - $ref: "#/definitions/streams/campaign_groups"
   - $ref: "#/definitions/streams/creatives"
   - $ref: "#/definitions/streams/conversions"
+  - $ref: "#/definitions/streams/lead_forms"
+  - $ref: "#/definitions/streams/lead_form_responses"
   - $ref: "#/definitions/streams/ad_member_seniority_analytics"
   - $ref: "#/definitions/streams/ad_campaign_analytics"
   - $ref: "#/definitions/streams/ad_creative_analytics"
@@ -1247,6 +1536,40 @@ streams:
   - $ref: "#/definitions/streams/ad_member_region_analytics"
   - $ref: "#/definitions/streams/ad_member_company_analytics"
 
+dynamic_streams:
+  - type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/streams/custom_analytics_report"
+    components_resolver:
+      type: ConfigComponentsResolver
+      stream_config:
+        type: StreamConfig
+        configs_pointer:
+          - ad_analytics_reports
+      components_mapping:
+        - type: ComponentMappingDefinition
+          field_path: ["**", "name"]
+          value: "custom_{{components_values['name']}}"
+        - type: ComponentMappingDefinition
+          field_path: ["retriever", "requester", "request_parameters", "pivot"]
+          value: "(value:{{components_values['pivot_by']}})"
+        - type: ComponentMappingDefinition
+          field_path:
+            ["retriever", "requester", "request_parameters", "timeGranularity"]
+          value: "(value:{{components_values['time_granularity']}})"
+        - type: ComponentMappingDefinition
+          field_path:
+            [
+              "retriever",
+              "record_selector",
+              "**",
+              "transformations",
+              1,
+              "fields",
+              0,
+              "value",
+            ]
+          value: "{{components_values['pivot_by']}}"
 spec:
   type: Spec
   connection_specification:
@@ -1418,6 +1741,8 @@ metadata:
     campaign_groups: false
     creatives: false
     conversions: false
+    lead_forms: false
+    lead_form_responses: false
     ad_campaign_analytics: false
     ad_creative_analytics: false
     ad_impression_device_analytics: false
@@ -2036,6 +2361,11 @@ schemas:
             type:
               - "null"
               - array
+      name:
+        description: The name of the creative.
+        type:
+          - "null"
+          - string
       isServing:
         description: Boolean indicating if the creative is currently serving.
         type:
@@ -2191,6 +2521,356 @@ schemas:
         type:
           - "null"
           - array
+
+  lead_forms:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    title: "Lead forms"
+    description: |
+      Lead Forms are used to request data from members responding to the Lead Form.
+      Lead Forms can include multiple questions, hidden fields, and custom consent checkboxes.
+      Many of these components are structured as sub-objects of the Lead Form.
+      For details: https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync?view=li-lms-2024-06&tabs=http#lead-form-schema
+    additionalProperties: true
+    properties:
+      id:
+        description: Numerical identifier for the form.
+        type:
+          - integer
+      name:
+        description: Name of the Lead Form provided by the owner.
+        type:
+          - "null"
+          - string
+      owner:
+        description: |
+          URN that identifies the owner of the Lead Form.
+          It's a Union of sponsoredAccount and organization.
+          sponsoredAccount is an URN of SponsoredAccountUrn that indicates the account of the advertiser.
+          organization is an URN of OrganizationUrn that indicates the company account of the marketer.
+        type:
+          - "null"
+          - object
+        properties:
+          sponsoredAccount:
+            type:
+              - "null"
+              - string
+      state:
+        description: Information about the current state of the Lead Form.
+        type:
+          - "null"
+          - string
+      content:
+        description: Content of the Lead Form which will be displayed to the viewer.
+        type:
+          - "null"
+          - object
+        properties:
+          headline:
+            description: Headline of the form.
+            type:
+              - "null"
+              - object
+          description:
+            description: Description of the form. Optional since the owner may choose to not have this information.
+            type:
+              - "null"
+              - object
+          questions:
+            description: Questions to request information from the viewer. At least one question should be present.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                questionId:
+                  description: Unique identifier of the LeadGenFormQuestion.
+                  type:
+                    - "null"
+                    - integer
+                name:
+                  description: Name of the question, shown to the owner only.
+                  type:
+                    - "null"
+                    - string
+                question:
+                  description: The question prompt, shown to the viewer.
+                  type:
+                    - "null"
+                    - object
+                textPrompt:
+                  description: The description or hint of the question, shown to the viewer. Empty in case No hint is provided.
+                  type:
+                    - "null"
+                    - string
+                predefinedField:
+                  description: |
+                    The predefined field that the question is requesting.
+                    This field is used for specifying viewer specific fields(e.g. First name, City, School, etc.) that should be used to prefill the question response.
+                    Customized questions do not request a predefined field and will leave this field empty.
+                  type:
+                    - "null"
+                    - string
+                responseEditable:
+                  description: True if the member viewing the form can edit a pre-filled form response. Default is true.
+                  type:
+                    - "null"
+                    - boolean
+                responseRequired:
+                  description: True if the response is required for the question. Default is true.
+                  type:
+                    - "null"
+                    - boolean
+                questionDetails:
+                  description: The specific details of the question including default answer, answer restrictions etc. We allow text and selection questions.
+                  type:
+                    - "null"
+                    - object
+                questionSubmissionCriteria:
+                  description: |
+                    The criteria for submission of response for the question.
+                    For example: allow only Non-freemium emails for the work email form question.
+                    A question submission criteria is exclusive to the predefined field tied to the question.
+                  type:
+                    - "null"
+                    - object
+                label:
+                  description: The label of the question specified by marketers. These labels for the questions are unique within the context of a single form.
+                  type:
+                    - "null"
+                    - string
+
+          legalInfo:
+            description: Legal information displayed alongside the Lead Form.
+            type:
+              - "null"
+              - object
+          postSubmissionInfo:
+            description: |
+              Information displayed to the user after submitting the form (e.g. thank you message, etc.).
+              Optional since not all use cases require a post submission experience.
+            type:
+              - "null"
+              - object
+      created:
+        description: An epoch time corresponding to the creation of the form.
+        type:
+          - "null"
+          - integer
+      lastModified:
+        description: An epoch time corresponding to the last modified of of the form.
+        type:
+          - "null"
+          - integer
+      creationLocale:
+        description: |
+          Locale of the entity.
+          This field serves as the preferred locale for all fields within the Lead Form with an object type that is capable of localization, such as MultiLocaleString.
+        type:
+          - "null"
+          - object
+      hiddenFields:
+        description: |
+          Hidden fields used by the owner to track key attributes of the form that generated the lead.
+          The field is empty if the owner chooses to not append any tracking attributes to the Lead Form.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            name:
+              type:
+                - "null"
+                - string
+            value:
+              type:
+                - "null"
+                - string
+      reviewInfo:
+        description: |
+          Latest information about the content review of the Lead Form.
+          It will not be present if the form has not been reviewed by the review pipeline.
+        type:
+          - "null"
+          - object
+      versionId:
+        description: The version ID of the form. This is a derived field and is generated on the server side.
+        type:
+          - "null"
+          - integer
+      versionTag:
+        description: The number of times the form has been modified.
+        type:
+          - "null"
+          - string
+
+  lead_form_responses:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    title: "Lead form responses"
+    description: |
+      The Lead Form Responses API returns the response data for leads that filled out a Lead Form.
+      Collecting Lead Form responses requires the viewer is the owner of the Lead Form.
+      For details: https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync?view=li-lms-2024-06&tabs=http#lead-form-response-schema
+    additionalProperties: true
+    properties:
+      id:
+        description: Unique id to identify the Lead Form Response.
+        type:
+          - "null"
+          - string
+      leadType:
+        description: Type of the lead representing the origination of the lead.
+        type:
+          - "null"
+          - string
+      form:
+        description: URN identifying which form this FormResponse belongs to.
+        type:
+          - "null"
+          - object
+      owner:
+        description: |
+          Owner of this Lead Form Response.
+          It is a Union of sponsoredAccount and organization.
+          sponsoredAccount is an URN of SponsoredAccountUrn that indicates the ad account of the advertiser.
+          organization is an URN of OrganizationUrn that indicates the company page of the advertiser.
+        type:
+          - "null"
+          - object
+        properties:
+          sponsoredAccount:
+            type:
+              - "null"
+              - string
+      ownerInfo:
+        description: Record containing entity info that owns this Lead Form Response. It's a optional Union of sponsoredAccountInfo and organizationInfo.
+        type:
+          - "null"
+          - object
+      leadMetadata:
+        description: Metadata of a lead. This field is optional for test leads and other use cases where sponsored lead metadata (e.g. campaign) may not be relevant. If there is no value, the field is not returned.
+        type:
+          - "null"
+          - object
+        properties:
+          sponsoredLeadMetadata:
+            type:
+              - "null"
+              - object
+            properties:
+              campaign:
+                type:
+                  - "null"
+                  - string
+      leadMetadataInfo:
+        description: Record containing a subset of fields resolved on demand from the lead metadata references (e.g. campaign name , campaign type). If there is no value, an empty object is returned.
+        type:
+          - "null"
+          - object
+      associatedEntity:
+        description: URN identifying which entity the lead is associated with. This field is optional for test leads and other use cases where leads don't have any associatedEntity. If there is no value, the field is not returned.
+        type:
+          - "null"
+          - object
+        properties:
+          associatedCreative:
+            type:
+              - "null"
+              - string
+      associatedEntityInfo:
+        description: Record containing useful fields (creative status, ugc reference etc.) resolved on demand from the associated entity object. If there is no value, an empty object is returned.
+        type:
+          - "null"
+          - object
+      submittedAt:
+        description: An epoch timestamp that recording when the form response was submitted.
+        type:
+          - "null"
+          - integer
+      responseId:
+        description: The unique identifier for the form response generated in the front-end when a submitter submits the response.
+        type:
+          - "null"
+          - object
+      formResponse:
+        description: Answers provided by the form submitter.
+        type:
+          - "null"
+          - object
+        properties:
+          answers:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                questionId:
+                  type:
+                    - "null"
+                    - integer
+                answerDetails:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    textQuestionAnswer:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        answer:
+                          type:
+                            - "null"
+                            - string
+                    multipleChoiceAnswer:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        options:
+                          type:
+                            - "null"
+                            - array
+                          items:
+                            type:
+                              - "null"
+                              - integer
+          consentResponses:
+            type:
+              - "null"
+              - array
+      testLead:
+        description: Whether this is a test lead created for testing purposes.
+        type:
+          - "null"
+          - boolean
+      submitter:
+        description: |
+          From version 202408 onwards, Guest Leads (when a user submits a form without being logged in) submitted to lead forms, submitter field is treated as a null field and omitted from the JSON response.
+          For non-guest leads, the submitter field will still be included in the response and will provide the person's URN. Ex: "submitter": "urn:li:person:MpGcnvaU_p".	Yes
+        type:
+          - "null"
+          - string
+      versionedLeadGenFormUrn:
+        description: URN identifying which form this FormResponse belongs to.
+        type:
+          - "null"
+          - string
 
   ad_campaign_analytics:
     $schema: "http://json-schema.org/draft-07/schema#"

@@ -12,6 +12,7 @@ import asyncer
 import dagger
 from anyio import Semaphore
 from connector_ops.utils import Connector  # type: ignore
+
 from connectors_insights.insights import generate_insights_for_connector
 from connectors_insights.result_backends import GCSBucket, LocalDir
 from connectors_insights.utils import gcs_uri_to_bucket_key, get_all_connectors_in_directory, remove_strict_encrypt_suffix
@@ -110,7 +111,7 @@ async def generate(
             for connector in connectors:
                 soon_results.append(
                     connector_task_group.soonify(generate_insights_for_connector)(
-                        dagger_client.pipeline(connector.technical_name),
+                        dagger_client,
                         connector,
                         semaphore,
                         rewrite,

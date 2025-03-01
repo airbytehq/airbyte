@@ -4,7 +4,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 94bd199c-2ff0-4aa2-b98e-17f0acb72610
-  dockerImageTag: 0.4.24
+  dockerImageTag: 0.4.26
   dockerRepository: airbyte/destination-duckdb
   githubIssueLabel: destination-duckdb
   icon: duckdb.svg
@@ -34,8 +34,8 @@ data:
     jobSpecific:
       - jobType: check_connection
         resourceRequirements:
-          memory_limit: 2Gi
-          memory_request: 2Gi
+          memory_limit: 800Mi
+          memory_request: 800Mi
       - jobType: sync
         resourceRequirements:
           memory_limit: 2Gi

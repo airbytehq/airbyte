@@ -73,7 +73,10 @@ This guide will walk through how to create the credentials you need to run this 
 
 | Version | Date       | Pull Request                                             | Subject                                                       |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------ |
-| 0.5.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.5.4 | 2025-02-23 | [54575](https://github.com/airbytehq/airbyte/pull/54575) | Update dependencies |
+| 0.5.3 | 2025-02-15 | [53973](https://github.com/airbytehq/airbyte/pull/53973) | Update dependencies |
+| 0.5.2 | 2025-02-08 | [47502](https://github.com/airbytehq/airbyte/pull/47502) | Update dependencies |
+| 0.5.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.5.0 | 2024-08-14 | [44086](https://github.com/airbytehq/airbyte/pull/44086) | Refactor connector to manifest-only format |
 | 0.4.13 | 2024-08-12 | [43861](https://github.com/airbytehq/airbyte/pull/43861) | Update dependencies |
 | 0.4.12 | 2024-08-10 | [43663](https://github.com/airbytehq/airbyte/pull/43663) | Update dependencies |

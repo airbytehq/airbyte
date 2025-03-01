@@ -154,11 +154,8 @@ def apply_generated_fields(metadata_data: dict, metadata_entry: LatestMetadataEn
     Returns:
         dict: The metadata data field with the generated fields applied.
     """
-<<<<<<< HEAD
-=======
 
     # get the generated fields from the metadata data if none, create an empty dictionary
->>>>>>> 46dabe355a (feat(registry): add cdk version)
     generated_fields = metadata_data.get("generated") or {}
 
     # Add the source file metadata

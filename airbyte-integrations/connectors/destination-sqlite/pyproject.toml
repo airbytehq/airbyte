@@ -24,3 +24,11 @@ destination-sqlite = "destination_sqlite.run:run"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

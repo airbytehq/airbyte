@@ -7,7 +7,7 @@ package io.airbyte.cdk.load.message
 import com.google.common.collect.Range
 import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
-import io.airbyte.cdk.load.file.LocalFile
+import io.airbyte.cdk.load.command.DestinationStream
 
 /**
  * Represents an accumulated batch of records in some stage of processing.
@@ -21,11 +21,16 @@ import io.airbyte.cdk.load.file.LocalFile
  * the associated ranges have been persisted remotely, and that platform checkpoint messages can be
  * emitted.
  *
- * [State.SPILLED] is used internally to indicate that records have been spooled to disk for
+ * [State.STAGED] is used internally to indicate that records have been spooled to disk for
  * processing and should not be used by implementors.
  *
  * When a stream has been read to End-of-stream, and all ranges between 0 and End-of-stream are
  * [State.COMPLETE], then all records are considered to have been processed.
+ *
+ * A [Batch] may contain an optional `groupId`. If provided, the most advanced state provided for
+ * any batch will apply to all batches with the same `groupId`. This is useful for a case where each
+ * batch represents part of a larger work unit that is only completed when all parts are processed.
+ * (We used most advanced instead of latest to avoid race conditions.)
  *
  * The intended usage for implementors is to implement the provided interfaces in case classes that
  * contain the necessary metadata for processing, using them in @
@@ -46,48 +51,39 @@ import io.airbyte.cdk.load.file.LocalFile
  * ```
  */
 interface Batch {
+    val groupId: String?
+
     enum class State {
-        SPILLED,
-        LOCAL,
+        PROCESSED,
+        STAGED,
         PERSISTED,
-        COMPLETE
+        COMPLETE;
+
+        fun isPersisted(): Boolean =
+            when (this) {
+                PERSISTED,
+                COMPLETE -> true
+                else -> false
+            }
     }
 
-    fun isPersisted(): Boolean =
-        when (state) {
-            State.PERSISTED,
-            State.COMPLETE -> true
-            else -> false
-        }
+    fun isPersisted(): Boolean = state.isPersisted()
 
     val state: State
+
+    /**
+     * If a [Batch] is [State.COMPLETE], there's nothing further to do. If it is part of a group,
+     * then its state will be updated by the next batch in the group that advances.
+     */
+    val requiresProcessing: Boolean
+        get() = state != State.COMPLETE && groupId == null
 }
 
 /** Simple batch: use if you need no other metadata for processing. */
-data class SimpleBatch(override val state: Batch.State) : Batch
-
-/** Represents a file of records locally staged. */
-abstract class StagedLocalFile() : Batch {
-    abstract val localFile: LocalFile
-    abstract val totalSizeBytes: Long
-    override val state: Batch.State = Batch.State.LOCAL
-}
-
-/** Represents a remote object containing persisted records. */
-abstract class RemoteObject() : Batch {
-    override val state: Batch.State = Batch.State.PERSISTED
-    abstract val key: String
-}
-
-/**
- * Represents a file of raw records staged to disk for pre-processing. Used internally by the
- * framework
- */
-data class SpilledRawMessagesLocalFile(
-    override val localFile: LocalFile,
-    override val totalSizeBytes: Long,
-    override val state: Batch.State = Batch.State.SPILLED
-) : StagedLocalFile()
+data class SimpleBatch(
+    override val state: Batch.State,
+    override val groupId: String? = null,
+) : Batch
 
 /**
  * Internally-used wrapper for tracking the association between a batch and the range of records it
@@ -95,14 +91,20 @@ data class SpilledRawMessagesLocalFile(
  */
 data class BatchEnvelope<B : Batch>(
     val batch: B,
-    val ranges: RangeSet<Long> = TreeRangeSet.create()
+    val ranges: RangeSet<Long> = TreeRangeSet.create(),
+    val streamDescriptor: DestinationStream.Descriptor
 ) {
     constructor(
         batch: B,
-        range: Range<Long>
-    ) : this(batch = batch, ranges = TreeRangeSet.create(listOf(range)))
+        range: Range<Long>?,
+        streamDescriptor: DestinationStream.Descriptor
+    ) : this(
+        batch = batch,
+        ranges = range?.let { TreeRangeSet.create(listOf(range)) } ?: TreeRangeSet.create(),
+        streamDescriptor = streamDescriptor
+    )
 
     fun <C : Batch> withBatch(newBatch: C): BatchEnvelope<C> {
-        return BatchEnvelope(newBatch, ranges)
+        return BatchEnvelope(newBatch, ranges, streamDescriptor)
     }
 }

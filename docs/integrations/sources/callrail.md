@@ -37,6 +37,8 @@ This Source is capable of syncing the following core Streams:
 
 | Version | Date       | Pull Request                                             | Subject                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------- |
+| 0.2.2 | 2025-02-22 | [54241](https://github.com/airbytehq/airbyte/pull/54241) | Update dependencies |
+| 0.2.1 | 2025-02-15 | [47584](https://github.com/airbytehq/airbyte/pull/47584) | Update dependencies |
 | 0.2.0 | 2024-08-23 | [44591](https://github.com/airbytehq/airbyte/pull/44591) | Refactor connector to manifest-only format |
 | 0.1.14 | 2024-08-17 | [44240](https://github.com/airbytehq/airbyte/pull/44240) | Update dependencies |
 | 0.1.13 | 2024-08-12 | [43796](https://github.com/airbytehq/airbyte/pull/43796) | Update dependencies |

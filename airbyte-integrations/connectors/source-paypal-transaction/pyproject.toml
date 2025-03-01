@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "2.5.7"
+version = "2.5.8"
 name = "source-paypal-transaction"
 description = "Source implementation for Paypal Transaction."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -28,3 +28,11 @@ pytest = "^8.0"
 pytest-mock = "^3.12"
 requests-mock = "^1.11.0"
 selenium = "^4.17.2"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

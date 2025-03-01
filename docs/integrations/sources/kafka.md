@@ -52,12 +52,15 @@ AVRO - deserialize Using confluent API. Please refer (https://docs.confluent.io/
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                                                                       | Subject                                                              |
-| :------ | :--------- | :------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------- |
-| 0.2.5   | 2024-06-12 | [32538](https://github.com/airbytehq/airbyte/pull/32538)                                           | Fix empty airbyte data column   |
-| 0.2.4   | 2024-02-13 | [35229](https://github.com/airbytehq/airbyte/pull/35229)                                           | Adopt CDK 0.20.4                                                     |
-| 0.2.4   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453)                                           | bump CDK version                                                     |
-| 0.2.3   | 2022-12-06 | [19587](https://github.com/airbytehq/airbyte/pull/19587)                                           | Fix missing data before consumer is closed                           |
-| 0.2.2   | 2022-11-04 | [18648](https://github.com/airbytehq/airbyte/pull/18648)                                           | Add missing record_count increment for JSON                          |
+| :------ | :--------- |:---------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------|
+| 0.2.8 | 2025-02-07 | [53221](https://github.com/airbytehq/airbyte/pull/53221)                                           | For AVRO MessageFormat, schema_registry_password is a secret         |
+| 0.2.7 | 2025-01-10 | [51480](https://github.com/airbytehq/airbyte/pull/51480)                                           | Use a non root base image                                            |
+| 0.2.6 | 2024-12-18 | [49907](https://github.com/airbytehq/airbyte/pull/49907)                                           | Use a base image: airbyte/java-connector-base:1.0.0                  |
+| 0.2.5 | 2024-06-12 | [32538](https://github.com/airbytehq/airbyte/pull/32538)                                           | Fix empty airbyte data column                                        |
+| 0.2.4 | 2024-02-13 | [35229](https://github.com/airbytehq/airbyte/pull/35229)                                           | Adopt CDK 0.20.4                                                     |
+| 0.2.4 | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453)                                           | bump CDK version                                                     |
+| 0.2.3 | 2022-12-06 | [19587](https://github.com/airbytehq/airbyte/pull/19587)                                           | Fix missing data before consumer is closed                           |
+| 0.2.2 | 2022-11-04 | [18648](https://github.com/airbytehq/airbyte/pull/18648)                                           | Add missing record_count increment for JSON                          |
 | 0.2.1   | 2022-11-04 | This version was the same as 0.2.0 and was committed so using 0.2.2 next to keep versions in order |
 | 0.2.0   | 2022-08-22 | [13864](https://github.com/airbytehq/airbyte/pull/13864)                                           | Added AVRO format support and Support for maximum records to process |
 | 0.1.7   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864)                                           | Updated stacktrace format for any trace message errors               |

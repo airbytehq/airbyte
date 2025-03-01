@@ -30,7 +30,7 @@ data class Global(
  */
 data class Stream(
     val id: StreamIdentifier,
-    val fields: List<Field>,
+    val schema: Set<FieldOrMetaField>,
     val configuredSyncMode: ConfiguredSyncMode,
     val configuredPrimaryKey: List<Field>?,
     val configuredCursor: FieldOrMetaField?,
@@ -43,6 +43,9 @@ data class Stream(
 
     override val label: String
         get() = id.toString()
+
+    val fields: List<Field>
+        get() = schema.filterIsInstance<Field>()
 }
 
 /** List of [Stream]s this [Feed] emits records for. */

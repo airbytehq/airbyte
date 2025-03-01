@@ -4,9 +4,11 @@
 
 package io.airbyte.cdk.read.cdc
 
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.read.FieldValueChange
 import io.airbyte.cdk.read.Stream
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import org.apache.kafka.connect.source.SourceRecord
 
 /** Stateless connector-specific Debezium operations. */
@@ -18,23 +20,51 @@ interface CdcPartitionsCreatorDebeziumOperations<T : Comparable<T>> {
     /** Extracts the WAL position from a [DebeziumOffset]. */
     fun position(offset: DebeziumOffset): T
 
-    /** Synthesizes a [DebeziumInput] when no incumbent [OpaqueStateValue] is available. */
-    fun synthesize(): DebeziumInput
+    /**
+     * Synthesizes a [DebeziumColdStartingState] when no incumbent [OpaqueStateValue] is available.
+     */
+    fun generateColdStartOffset(): DebeziumOffset
 
-    /** Builds a [DebeziumInput] using an incumbent [OpaqueStateValue]. */
-    fun deserialize(opaqueStateValue: OpaqueStateValue, streams: List<Stream>): DebeziumInput
+    /** Generates Debezium properties for use with a [DebeziumColdStartingState]. */
+    fun generateColdStartProperties(): Map<String, String>
+
+    /** Maps an incumbent [OpaqueStateValue] into a [DebeziumWarmStartState]. */
+    fun deserializeState(opaqueStateValue: OpaqueStateValue): DebeziumWarmStartState
+
+    /** Generates Debezium properties for use with a [ValidDebeziumWarmStartState]. */
+    fun generateWarmStartProperties(streams: List<Stream>): Map<String, String>
 }
 
 interface CdcPartitionReaderDebeziumOperations<T : Comparable<T>> {
 
-    /** Transforms a [DebeziumRecordValue] into an [AirbyteRecordMessage]. */
-    fun toAirbyteRecordMessage(
+    /**
+     * Transforms a [DebeziumRecordKey] and a [DebeziumRecordValue] into a [DeserializedRecord].
+     *
+     * Returning null means that the event should be treated like a heartbeat.
+     */
+    fun deserializeRecord(
         key: DebeziumRecordKey,
-        value: DebeziumRecordValue
-    ): AirbyteRecordMessage
+        value: DebeziumRecordValue,
+        stream: Stream,
+    ): DeserializedRecord?
 
-    /** Maps a [DebeziumState] to an [OpaqueStateValue]. */
-    fun serialize(debeziumState: DebeziumState): OpaqueStateValue
+    /** Identifies the namespace of the stream that this event belongs to, if applicable. */
+    fun findStreamNamespace(
+        key: DebeziumRecordKey,
+        value: DebeziumRecordValue,
+    ): String?
+
+    /** Identifies the null of the stream that this event belongs to, if applicable. */
+    fun findStreamName(
+        key: DebeziumRecordKey,
+        value: DebeziumRecordValue,
+    ): String?
+
+    /** Maps a Debezium state to an [OpaqueStateValue]. */
+    fun serializeState(
+        offset: DebeziumOffset,
+        schemaHistory: DebeziumSchemaHistory?
+    ): OpaqueStateValue
 
     /** Tries to extract the WAL position from a [DebeziumRecordValue]. */
     fun position(recordValue: DebeziumRecordValue): T?
@@ -42,3 +72,9 @@ interface CdcPartitionReaderDebeziumOperations<T : Comparable<T>> {
     /** Tries to extract the WAL position from a [SourceRecord]. */
     fun position(sourceRecord: SourceRecord): T?
 }
+
+/** [DeserializedRecord]s are used to generate Airbyte RECORD messages. */
+data class DeserializedRecord(
+    val data: ObjectNode,
+    val changes: Map<Field, FieldValueChange>,
+)

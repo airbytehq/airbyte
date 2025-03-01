@@ -1,4 +1,22 @@
+connector_image: airbyte/source-amazon-ads:dev
+test_strictness_level: high
 acceptance_tests:
+  spec:
+    tests:
+      - spec_path: integration_tests/spec.json
+        backward_compatibility_tests_config:
+          disable_for_version: 5.0.0
+  connection:
+    tests:
+      - config_path: secrets/config.json
+        status: succeed
+      - config_path: integration_tests/invalid_config.json
+        status: exception
+  discovery:
+    tests:
+      - config_path: secrets/config.json
+        backward_compatibility_tests_config:
+          disable_for_version: 3.4.3
   basic_read:
     tests:
       - config_path: secrets/config.json
@@ -17,15 +35,31 @@ acceptance_tests:
             bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: attribution_report_performance_campaign
             bypass_reason: "can't populate stream because it requires real ad campaign"
-          - name: sponsored_display_report_stream
-            bypass_reason: "can't populate stream because it requires real ad campaign"
-          - name: sponsored_brands_report_stream
-            bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_brands_v3_report_stream
             bypass_reason: "can't populate stream because it requires real ad campaign"
-          - name: sponsored_brands_video_report_stream
+          - name: sponsored_display_campaigns_report_stream
             bypass_reason: "can't populate stream because it requires real ad campaign"
-          - name: sponsored_products_report_stream
+          - name: sponsored_display_adgroups_report_stream
+            bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_display_productads_report_stream
+            bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_display_targets_report_stream
+            bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_display_asins_report_stream
+            bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_products_campaigns_report_stream
+            bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_products_adgroups_report_stream
+            bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_products_keywords_report_stream
+            bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_products_targets_report_stream
+            bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_products_productads_report_stream
+            bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_products_asins_keywords_report_stream
+            bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_products_asins_targets_report_stream
             bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_display_creatives
             bypass_reason: "can't populate stream because it requires real ad campaign"
@@ -34,17 +68,6 @@ acceptance_tests:
         timeout_seconds: 2400
         expect_records:
           path: integration_tests/expected_records.jsonl
-  connection:
-    tests:
-      - config_path: secrets/config.json
-        status: succeed
-      - config_path: integration_tests/invalid_config.json
-        status: exception
-  discovery:
-    tests:
-      - config_path: secrets/config.json
-        backward_compatibility_tests_config:
-          disable_for_version: 3.4.3
   full_refresh:
     tests:
       - config_path: secrets/config.json
@@ -52,10 +75,3 @@ acceptance_tests:
         timeout_seconds: 3600
   incremental:
     bypass_reason: "can't populate stream because it requires real ad campaign"
-  spec:
-    tests:
-      - spec_path: integration_tests/spec.json
-        backward_compatibility_tests_config:
-          disable_for_version: 5.0.0
-connector_image: airbyte/source-amazon-ads:dev
-test_strictness_level: high

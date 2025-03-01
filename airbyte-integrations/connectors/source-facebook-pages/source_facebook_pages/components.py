@@ -9,12 +9,13 @@ from typing import Any, Mapping, MutableMapping, Optional, Union
 import dpath.util
 import pendulum
 import requests
+from requests import HTTPError
+
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from requests import HTTPError
 
 
 @dataclass

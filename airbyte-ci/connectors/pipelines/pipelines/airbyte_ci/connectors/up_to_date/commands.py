@@ -5,6 +5,7 @@
 from typing import List
 
 import asyncclick as click
+
 from pipelines.airbyte_ci.connectors.up_to_date.pipeline import run_connector_up_to_date_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.helpers.connectors.command import run_connector_pipeline
@@ -49,12 +50,6 @@ from pipelines.helpers.connectors.command import run_connector_pipeline
     default=False,
     help="Auto open reports in browser",
 )
-@click.option(
-    "--ignore-connector",
-    type=str,
-    multiple=True,
-    help="Connector technical name to ignore in the pipeline",
-)
 @click.pass_context
 async def up_to_date(
     ctx: click.Context,
@@ -63,16 +58,12 @@ async def up_to_date(
     auto_merge: bool,
     no_bump: bool,
     open_reports: bool,
-    ignore_connector: List[str],
 ) -> bool:
     if create_prs and not ctx.obj["ci_github_access_token"]:
         raise click.ClickException(
             "GitHub access token is required to create or simulate a pull request. Set the CI_GITHUB_ACCESS_TOKEN environment variable."
         )
 
-    ctx.obj["selected_connectors_with_modified_files"] = [
-        connector for connector in ctx.obj["selected_connectors_with_modified_files"] if connector.technical_name not in ignore_connector
-    ]
     return await run_connector_pipeline(
         ctx,
         "Get Python connector up to date",

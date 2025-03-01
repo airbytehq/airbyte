@@ -1,0 +1,3 @@
+[run]
+omit =
+    source_google_sheets/run.py

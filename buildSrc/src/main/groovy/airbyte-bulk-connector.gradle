@@ -152,10 +152,6 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                     resources {
                         srcDir 'src/test-integration/resources'
                     }
-                    resources {
-                        srcDir '.'
-                        include 'metadata.yaml'
-                    }
                 }
                 // This source set should only be used for tests based on the old CDK's test classes,
                 // in particular DestinationAcceptanceTest / BaseTypingDedupingTest.
@@ -178,6 +174,19 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
                 classpath = project.sourceSets.integrationTest.runtimeClasspath
                 useJUnitPlatform()
+
+                jvmArgs = project.test.jvmArgs
+                systemProperties = project.test.systemProperties
+                maxParallelForks = project.test.maxParallelForks
+                maxHeapSize = project.test.maxHeapSize
+
+                testLogging() {
+                    events 'skipped', 'started', 'passed', 'failed'
+                    exceptionFormat 'full'
+                }
+
+                // Always re-run integration tests no matter what.
+                outputs.upToDateWhen { false }
             }
 
             // For historical reasons (i.e. airbyte-ci), this task is called integrationTestJava.
@@ -193,7 +202,25 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 useJUnitPlatform()
                 // We need a docker image to run this task, so depend on assemble
                 dependsOn project.tasks.assemble
-                environment "MICRONAUT_ENVIRONMENTS", "DOCKERIZED_INTEGRATION_TEST"
+                environment "AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER", "docker"
+
+                jvmArgs = project.test.jvmArgs
+                systemProperties = project.test.systemProperties + [
+                        'junit.jupiter.execution.parallel.enabled': 'true',
+                        'junit.jupiter.execution.parallel.config.strategy': 'fixed',
+                        'junit.jupiter.execution.parallel.config.fixed.parallelism': Math.max((Runtime.runtime.availableProcessors() / 2).toInteger(), 1).toString()
+                ]
+                maxParallelForks = project.test.maxParallelForks
+                maxHeapSize = project.test.maxHeapSize
+
+                testLogging() {
+                    events 'skipped', 'started', 'passed', 'failed'
+                    exceptionFormat 'full'
+                    showStandardStreams = true
+                }
+
+                // Always re-run integration tests no matter what.
+                outputs.upToDateWhen { false }
             }
 
             project.dependencies {
@@ -217,6 +244,15 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
 
         project.tasks.named('check').configure {
             dependsOn project.tasks.matching { it.name ==~ /(compile|spotbugs)[a-zA-Z]*Java/ }
+        }
+
+        boolean withSlowTests = System.getProperty('skipSlowTests', 'false') == 'false'
+        project.tasks.matching {
+                it.name == 'test' ||
+                it.name == 'integrationTestNonDocker' ||
+                it.name == 'integrationTestJava'
+            }.configureEach {
+            onlyIf { withSlowTests }
         }
 
         project.configurations {

@@ -2,6 +2,7 @@
 
 import datetime
 import json
+import logging
 import os
 import re
 import uuid
@@ -12,7 +13,6 @@ from typing import Any, Dict, Iterable, List, Mapping
 import duckdb
 import pyarrow as pa
 
-import logging
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 

@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dc98a6ad-2dd1-47b6-9529-2ec35820f9c6
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.2
   dockerRepository: airbyte/source-callrail
   githubIssueLabel: source-callrail
   icon: callrail.svg
@@ -38,5 +38,5 @@ data:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:4.5.4@sha256:b07a521add11f987c63c0db68c1b57e90bec0c985f1cb6f3c5a1940cde628a70
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
 metadataSpecVersion: "1.0"

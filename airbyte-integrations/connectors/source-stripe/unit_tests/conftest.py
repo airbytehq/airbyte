@@ -5,9 +5,11 @@
 import os
 
 import pytest
+
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.test.state_builder import StateBuilder
+
 
 os.environ["CACHE_DISABLED"] = "true"
 os.environ["DEPLOYMENT_MODE"] = "testing"

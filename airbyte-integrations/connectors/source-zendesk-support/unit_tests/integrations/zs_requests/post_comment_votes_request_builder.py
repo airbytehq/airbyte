@@ -10,7 +10,9 @@ from .request_authenticators.authenticator import Authenticator
 
 class PostCommentVotesRequestBuilder(ZendeskSupportBaseRequestBuilder):
     @classmethod
-    def post_comment_votes_endpoint(cls, authenticator: Authenticator, post_id: int, post_comment_id: int) -> "PostCommentVotesRequestBuilder":
+    def post_comment_votes_endpoint(
+        cls, authenticator: Authenticator, post_id: int, post_comment_id: int
+    ) -> "PostCommentVotesRequestBuilder":
         return cls("d3v-airbyte", f"community/posts/{post_id}/comments/{post_comment_id}/votes").with_authenticator(authenticator)
 
     def __init__(self, subdomain: str, resource: str) -> None:

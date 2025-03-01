@@ -4,9 +4,17 @@
 
 package io.airbyte.cdk.load.task
 
-import io.airbyte.cdk.load.util.CloseableCoroutine
+sealed interface TerminalCondition
+
+data object OnEndOfSync : TerminalCondition
+
+data object OnSyncFailureOnly : TerminalCondition
+
+data object SelfTerminating : TerminalCondition
 
 interface Task {
+    val terminalCondition: TerminalCondition
+
     suspend fun execute()
 }
 
@@ -15,22 +23,9 @@ interface Task {
  * transitions between tasks.
  */
 interface TaskLauncher {
-    suspend fun start()
-}
-
-/**
- * Wraps tasks with exception handling. It should provide an exception handling workflow and take
- * responsibility for closing scopes, etc.
- */
-interface TaskExceptionHandler<T : Task, U : Task> {
-    fun withExceptionHandling(task: T): U
-}
-
-/** Provides the scope(s) in which tasks run. */
-interface TaskScopeProvider<T : Task> : CloseableCoroutine {
-    /** Launch a task in the correct scope. */
-    suspend fun launch(task: T)
-
-    /** Unliked close, may attempt to fail gracefully, but should guarantee return. */
-    suspend fun kill()
+    /**
+     * Execute the task workflow. Should dispatch tasks asynchronously and suspend until the
+     * workflow is complete.
+     */
+    suspend fun run()
 }
