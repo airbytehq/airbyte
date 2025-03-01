@@ -212,22 +212,23 @@ class TestFreshdeskTicketsIncrementalSync:
             ({}, {"partition_field_start": "2021-01-01"}, {"next_page_token": "2022-01-01"}, {"partition_field_start": "2022-01-01"}),
         ],
     )
-    def test_initialization_and_inheritance(self, components_module, mocker, stream_state, stream_slice, next_page_token, expected_params):
+    def test_initialization_and_inheritance(self, components_module, stream_state, stream_slice, next_page_token, expected_params):
         sync = components_module.FreshdeskTicketsIncrementalSync("2022-01-01", "updated_at", "%Y-%m-%d", {}, {})
 
         # Setup mock for start_time_option.field_name.eval
-        mock_field_name = mocker.MagicMock()
-        mock_field_name.eval.return_value = "partition_field_start"
+        with patch.object(sync, "start_time_option") as mock_start_time_option, \
+             patch.object(sync, "_partition_field_start") as mock_partition_field_start:
 
-        mock_start_time_option_field_name = mocker.patch.object(sync, "start_time_option")
-        mock_start_time_option_field_name.field_name = mock_field_name
-        mock_start_time_option_field_name.inject_into = RequestOptionType("request_parameter")
+            mock_field_name = MagicMock()
+            mock_field_name.eval.return_value = "partition_field_start"
 
-        mock_partition_field_start = mocker.patch.object(sync, "_partition_field_start")
-        mock_partition_field_start.eval.return_value = "partition_field_start"
+            mock_start_time_option.field_name = mock_field_name
+            mock_start_time_option.inject_into = RequestOptionType("request_parameter")
 
-        params = sync.get_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        assert params == expected_params
+            mock_partition_field_start.eval.return_value = "partition_field_start"
+
+            params = sync.get_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+            assert params == expected_params
 
 
 class TestFreshdeskTicketsPaginationStrategy:
@@ -269,7 +270,7 @@ class TestFreshdeskTicketsPaginationStrategy:
     ],
 )
 def test_sends_request_with_default_parameters_and_receives_response(
-    components_module, mocker, requests_per_minute, expected_call_credit_cost
+    components_module, requests_per_minute, expected_call_credit_cost
 ):
     config = {"requests_per_minute": requests_per_minute} if requests_per_minute is not None else {}
     parameters = {}
