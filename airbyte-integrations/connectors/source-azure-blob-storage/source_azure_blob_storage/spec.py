@@ -76,6 +76,9 @@ class SourceAzureBlobStorageSpec(AbstractFileBasedSpec):
     because it is responsible for converting legacy Azure Blob Storage v0 configs into v1 configs using the File-Based CDK.
     """
 
+    class Config:
+        arbitrary_types_allowed = True
+
     @classmethod
     def documentation_url(cls) -> AnyUrl:
         return AnyUrl("https://docs.airbyte.com/integrations/sources/azure-blob-storage", scheme="https")
