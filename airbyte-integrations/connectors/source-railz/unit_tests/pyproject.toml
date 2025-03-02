@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.0"
+version = "0.2.1"
 name = "source-railz"
 description = "Source implementation for Railz."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,6 @@ repository = "https://github.com/airbytehq/airbyte"
 python = "^3.10,<3.13"
 airbyte-cdk = "6.31.1"
 pytest = "^8"
-requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
 
 [tool.pytest.ini_options]

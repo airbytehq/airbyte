@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-ezofficeinventory
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.4@sha256:a612db8bc977a46d7d2e0442f5c6be26da6039ee83a8aceb7be545e4cbdd7040
   connectorSubtype: api
   connectorType: source
   definitionId: 7b6be0f6-4139-42f8-a89e-2ca25560979a
-  dockerImageTag: 0.0.15
+  dockerImageTag: 0.0.16
   dockerRepository: airbyte/source-ezofficeinventory
   githubIssueLabel: source-ezofficeinventory
   icon: icon.svg
