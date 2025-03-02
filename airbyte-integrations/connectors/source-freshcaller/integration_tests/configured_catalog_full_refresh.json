@@ -22,7 +22,7 @@
       "stream": {
         "name": "calls",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "destination_sync_mode": "overwrite",
       "sync_mode": "full_refresh"
