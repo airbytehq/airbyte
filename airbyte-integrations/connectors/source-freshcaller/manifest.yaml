@@ -159,7 +159,7 @@ definitions:
         cursor_field: created_time
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
@@ -177,7 +177,7 @@ definitions:
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1Y
-        cursor_granularity: PT1S
+        cursor_granularity: PT0.001S
       schema_loader:
         type: InlineSchemaLoader
         schema:
