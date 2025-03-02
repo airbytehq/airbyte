@@ -403,8 +403,8 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          # start date and end date should not be more than 180 days apart.
-          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P180D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P180D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          # start date and end date should not be more than 180 days apart. In practice, it can be as low as 14 days.
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P14D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P14D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
