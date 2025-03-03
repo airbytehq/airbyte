@@ -69,7 +69,7 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path:
-        - "{{ parameters['field_path'] }}"
+        - "{{ parameters['extractor_field_path'] }}"
 
   selector_empty_dpath:
     type: RecordSelector
@@ -127,7 +127,7 @@ definitions:
     $parameters:
       name: cohorts
       path: 2.0/cohorts/list
-      field_path: []
+      extractor_field_path: []
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -170,7 +170,7 @@ definitions:
     primary_key: distinct_id
     $parameters:
       name: engage
-      field_path: results
+      extractor_field_path: results
     retriever:
       type: SimpleRetriever
       requester:
@@ -218,7 +218,7 @@ definitions:
     $parameters:
       name: cohort_members
       path: 2.0/engage
-      field_path: results
+      extractor_field_path: results
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -261,7 +261,7 @@ definitions:
     $parameters:
       name: revenue
       path: 2.0/engage/revenue
-      field_path: results
+      extractor_field_path: results
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -269,7 +269,7 @@ definitions:
         extractor:
           class_name: "source_mixpanel.components.RevenueDpathExtractor"
           field_path:
-            - "{{ parameters['field_path'] }}"
+            - "{{ parameters['extractor_field_path'] }}"
     incremental_sync: "#/definitions/incremental_sync"
 
   # https://developer.mixpanel.com/reference/list-all-annotations-for-project
@@ -277,7 +277,7 @@ definitions:
     $ref: "#/definitions/stream_base"
     $parameters:
       name: annotations
-      field_path: results
+      extractor_field_path: results
       path: annotations
     primary_key: "id"
     retriever:

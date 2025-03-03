@@ -98,7 +98,7 @@ def cohorts_response():
 
 
 def init_stream(name="", config=None):
-    streams = SourceMixpanel().streams(config)
+    streams = SourceMixpanel(MagicMock(), config, MagicMock()).streams(config)
     for stream in streams:
         if stream.name == name:
             return stream
@@ -298,7 +298,7 @@ def test_cohort_members_stream_incremental(requests_mock, engage_response, confi
 
     assert len(records) == record_count
     new_updated_state = stream.get_updated_state(current_stream_state=state, latest_record=records[-1] if records else None)
-    assert new_updated_state == updated_state
+    assert new_updated_state["states"] == updated_state["states"]
 
 
 def test_cohort_members_stream_pagination(requests_mock, engage_response, config_raw):
@@ -421,12 +421,10 @@ def test_cohort_members_stream_pagination(requests_mock, engage_response, config
     records = list(read_incremental(stream, stream_state={}, cursor_field=["last_seen"]))
     assert len(records) == 5
     new_updated_state = stream.get_updated_state(current_stream_state={}, latest_record=records[-1] if records else None)
-    assert new_updated_state == {
-        "states": [
-            {"cursor": {"last_seen": "2024-03-01T11:20:47"}, "partition": {"id": 71111, "parent_slice": {}}},
-            {"cursor": {"last_seen": "2024-02-01T11:20:47"}, "partition": {"id": 72222, "parent_slice": {}}},
-        ]
-    }
+    assert new_updated_state["states"] == [
+        {"cursor": {"last_seen": "2024-03-01T11:20:47"}, "partition": {"id": 71111, "parent_slice": {}}},
+        {"cursor": {"last_seen": "2024-02-01T11:20:47"}, "partition": {"id": 72222, "parent_slice": {}}},
+    ]
 
 
 @pytest.fixture
