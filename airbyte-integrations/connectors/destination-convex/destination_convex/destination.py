@@ -2,8 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-# This is a dummy change to verify CI status
-
 
 from logging import Logger
 from typing import Any, Iterable, List, Mapping, Optional, cast
