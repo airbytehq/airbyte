@@ -7,6 +7,8 @@ data:
       enabled: false
       packageName: airbyte-source-serpstat
   registryOverrides:
+    cloud:
+      enabled: true
     oss:
       enabled: true
   connectorBuildOptions:

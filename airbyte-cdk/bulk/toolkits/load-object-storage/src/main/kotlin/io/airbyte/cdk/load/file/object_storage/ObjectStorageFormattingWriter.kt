@@ -17,8 +17,7 @@ import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
 import io.airbyte.cdk.load.data.csv.toCsvRecord
 import io.airbyte.cdk.load.data.dataWithAirbyteMeta
-import io.airbyte.cdk.load.data.json.toJson
-import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
+import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineTest
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.file.StreamProcessor
 import io.airbyte.cdk.load.file.avro.toAvroWriter
@@ -163,7 +162,7 @@ class ParquetFormattingWriter(
 ) : ObjectStorageFormattingWriter {
     private val log = KotlinLogging.logger {}
 
-    private val pipeline = ParquetMapperPipelineFactory().create(stream)
+    private val pipeline = ParquetMapperPipelineTest().create(stream)
     private val mappedSchema: ObjectType = pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening)
     private val avroSchema: Schema = mappedSchema.toAvroSchema(stream.descriptor)
     private val writer: ParquetWriter =

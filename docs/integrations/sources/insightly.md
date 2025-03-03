@@ -72,6 +72,8 @@ The connector is restricted by Insightly [requests limitation](https://api.na1.i
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.16 | 2025-03-01 | [54776](https://github.com/airbytehq/airbyte/pull/54776) | Update dependencies |
+| 0.3.15 | 2025-02-24 | [54663](https://github.com/airbytehq/airbyte/pull/54663) | Remove stream_state interpolation from source-insightly |
 | 0.3.14 | 2025-02-22 | [54312](https://github.com/airbytehq/airbyte/pull/54312) | Update dependencies |
 | 0.3.13 | 2025-02-15 | [53827](https://github.com/airbytehq/airbyte/pull/53827) | Update dependencies |
 | 0.3.12 | 2025-02-08 | [53246](https://github.com/airbytehq/airbyte/pull/53246) | Update dependencies |

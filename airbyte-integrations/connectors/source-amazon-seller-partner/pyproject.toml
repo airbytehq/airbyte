@@ -3,7 +3,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "4.5.3"
+version = "4.6.0"
 name = "source-amazon-seller-partner"
 description = "Source implementation for Amazon Seller Partner."
 authors = ["Airbyte <contact@airbyte.io>"]
@@ -26,7 +26,7 @@ pendulum = "<3.0.0"
 source-amazon-seller-partner = "source_amazon_seller_partner.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7"
+pytest = "^8.0.0"
 pytest-mock = "*"
 freezegun = "*"
 requests-mock = "*"
