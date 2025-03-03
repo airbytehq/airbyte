@@ -14,51 +14,62 @@ import javax.sql.DataSource
 @Factory
 class DataSourceFactory {
 
+    /**
+     * Produces a pooled HikariDataSource for SQL Server, based on the given [MSSQLConfiguration].
+     *
+     * Note: This bean is managed by Micronaut’s IoC container. Whenever you inject or create a
+     * [DataSource] in your code, Micronaut will provide an instance of this.
+     */
     @Singleton
     fun dataSource(config: MSSQLConfiguration): DataSource {
+        // Convert config to a “raw” SQLServerDataSource first
         val sqlServerDataSource = config.toSQLServerDataSource()
-        val dataSource = HikariDataSource()
-        dataSource.dataSource = sqlServerDataSource
-        dataSource.connectionTimeout = 60000
-        dataSource.connectionTestQuery = "SELECT 1"
-        dataSource.maximumPoolSize = 10
-        dataSource.minimumIdle = 0
-        dataSource.idleTimeout = 60000
-        dataSource.leakDetectionThreshold = 0
-        return dataSource
+
+        // Wrap it with HikariCP for pooling
+        return HikariDataSource().apply {
+            dataSource = sqlServerDataSource
+            connectionTimeout = 60_000
+            connectionTestQuery = "SELECT 1"
+            maximumPoolSize = 10
+            minimumIdle = 0
+            idleTimeout = 60_000
+            leakDetectionThreshold = 0
+        }
     }
 }
 
+/**
+ * Converts an [MSSQLConfiguration] into a raw [SQLServerDataSource] by building the appropriate
+ * JDBC URL and setting user credentials.
+ */
 fun MSSQLConfiguration.toSQLServerDataSource(): SQLServerDataSource {
-    val connectionString =
-        StringBuilder()
-            .apply {
-                append("jdbc:sqlserver://${host}:${port};databaseName=${database}")
+    val connectionString = buildString {
+        append("jdbc:sqlserver://$host:$port;databaseName=$database")
 
-                if (authenticationMethod is ActiveDirectoryPassword) {
-                    append(";authentication=${authenticationMethod.name}")
-                }
+        // If we are using AD password-based auth, add the parameter
+        if (authenticationMethod is ActiveDirectoryPassword) {
+            append(";authentication=${authenticationMethod.name}")
+        }
 
-                when (sslMethod) {
-                    is EncryptedVerify -> {
-                        append(";encrypt=true")
-                        sslMethod.trustStoreName?.let { append(";trustStoreName=$it") }
-                        sslMethod.trustStorePassword?.let { append(";trustStorePassword=$it") }
-                        sslMethod.hostNameInCertificate?.let {
-                            append(";hostNameInCertificate=$it")
-                        }
-                    }
-                    is EncryptedTrust -> {
-                        append(";encrypt=true;trustServerCertificate=true")
-                    }
-                    is Unencrypted -> {
-                        append(";encrypt=false")
-                    }
-                }
-
-                jdbcUrlParams?.let { append(";$it") }
+        // SSL settings
+        when (sslMethod) {
+            is EncryptedVerify -> {
+                append(";encrypt=true")
+                sslMethod.trustStoreName?.let { append(";trustStoreName=$it") }
+                sslMethod.trustStorePassword?.let { append(";trustStorePassword=$it") }
+                sslMethod.hostNameInCertificate?.let { append(";hostNameInCertificate=$it") }
             }
-            .toString()
+            is EncryptedTrust -> {
+                append(";encrypt=true;trustServerCertificate=true")
+            }
+            is Unencrypted -> {
+                append(";encrypt=false")
+            }
+        }
+
+        // Additional arbitrary JDBC parameters
+        jdbcUrlParams?.let { append(";$it") }
+    }
 
     return SQLServerDataSource().also {
         it.url = connectionString
