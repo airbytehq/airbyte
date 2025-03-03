@@ -1,6 +1,6 @@
 extends: existence
 message: "Use 'July 31, 2016' format, not '%s'."
-link: 'https://developers.google.com/style/dates-times'
+link: "https://developers.google.com/style/dates-times"
 ignorecase: true
 level: error
 nonword: true
