@@ -34,11 +34,11 @@
       "num_workers": {
         "type": "integer",
         "title": "Number of concurrent workers",
-        "minimum": 1,
+        "minimum": 2,
         "maximum": 40,
         "default": 15,
         "examples": [1, 2, 3],
-        "description": "The number of worker threads to use for the sync. The performance upper boundary is based on the limit of your Zendesk Support plan. More info about the rate limit plan tiers can be found on Zendesk's API <a href=\"https://developer.zendesk.com/api-reference/introduction/rate-limits/#zendesk-support-plan-limits\">docs</a>."
+        "description": "The number of worker threads to use for the sync."
       }
     },
     "required": ["access_token"]
