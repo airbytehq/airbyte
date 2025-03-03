@@ -116,9 +116,7 @@ class MSSQLBulkLoadStreamLoader(
     override suspend fun processBatch(batch: Batch): Batch {
         val processedBatch = objectAccumulator.processBatch(batch)
         if (processedBatch is LoadedObject<*> && !processedBatch.isEmpty) {
-            val dataFilePath =
-                processedBatch.groupId
-                    ?: error("The groupId (blob path) should not be null after a complete batch.")
+            val dataFilePath = processedBatch.groupId
 
             try {
                 if (stream.importType is Dedupe) {
