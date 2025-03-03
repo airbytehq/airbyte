@@ -12,7 +12,7 @@ Everyone interacting in Slack, codebases, mailing lists, events, or any other Ai
 ## Code Contributions
 
 Most of the issues that are open for contributions are tagged with [`good first issue`](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3A%22good%20first%20issue%22) or [`help-welcome`](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Ahelp-welcome).
-If you see an issue that isn't tagged that you're interested in, post a comment with your approach, and we'd be happy to assign it to you. If you submit a fix isn't linked to an issue you're assigned there is change it won't be accepted. You can ping `@marcosmarxm` who is responsible for Community Code Contributions.
+If you see an issue that isn't tagged that you're interested in, post a comment with your approach, and we'd be happy to assign it to you. If you submit a fix isn't linked to an issue you're assigned there is chance it won't be accepted. You can ping `@marcosmarxm` who is responsible for Community Code Contributions.
 
 #### Here are the areas that we love seeing contributions to:
 
