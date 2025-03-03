@@ -1,8 +1,8 @@
 # Iceberg
 
 :::info
-You may be interested in using the [S3 Data Lake](./s3-data-lake.md) destination instead,
-which has more robust implementations for core Airbyte features and better performance.
+You should switch to the [S3 Data Lake](./s3-data-lake.md) destination, which offers
+superior implementations of core Airbyte features and significantly better performance.
 :::
 
 <!-- env:cloud -->
