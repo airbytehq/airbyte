@@ -79,8 +79,6 @@ def main():
     repo = g.get_repo(repo_name)
     workflows = repo.get_workflows()
 
-    runs_to_delete = []
-
     for workflow in workflows:
         runs = workflow.get_runs()
         for run in runs:
@@ -101,7 +99,7 @@ def main():
                     client = WebClient(slack_token)
 
                     try:
-                        response = client.chat_postMessage(channel=SLACK_CHANNEL_FOR_NOTIFICATIONS, text=message)
+                        client.chat_postMessage(channel=SLACK_CHANNEL_FOR_NOTIFICATIONS, text=message)
                     except SlackApiError as e:
                         print(e, "\n\n")
                         raise Exception("Error calling the Slack API")

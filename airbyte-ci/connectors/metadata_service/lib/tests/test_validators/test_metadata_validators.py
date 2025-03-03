@@ -115,8 +115,6 @@ def incremented_version(current_version):
 
 
 def test_validation_fail_on_docker_image_tag_decrement(metadata_definition, decremented_version):
-    current_version = metadata_definition.data.dockerImageTag
-
     metadata_definition.data.dockerImageTag = decremented_version
     success, error_message = metadata_validator.validate_docker_image_tag_is_not_decremented(metadata_definition, None)
     assert not success
