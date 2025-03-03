@@ -24,7 +24,7 @@ pendulum = "==2.1.2"
 source-zendesk-chat = "source_zendesk_chat.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.1"
+pytest = "^8.0.0"
 pytest-mock = "^3.12.0"
 requests-mock = "^1.9.3"
 

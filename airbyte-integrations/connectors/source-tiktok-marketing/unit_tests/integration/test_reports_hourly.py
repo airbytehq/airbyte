@@ -161,7 +161,7 @@ class TestAdsReportHourly(TestCase):
         self.mock_response(http_mocker)
 
         output = read(
-            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=None),
+            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=self.state()),
             config=self.config(),
             catalog=self.catalog(sync_mode=SyncMode.incremental),
             state=self.state(),
@@ -345,7 +345,7 @@ class TestAdGroupsReportsHourly(TestCase):
         )
 
         output = read(
-            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=None),
+            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=self.state()),
             config=self.config(),
             catalog=self.catalog(sync_mode=SyncMode.incremental),
             state=self.state(),
@@ -506,7 +506,7 @@ class TestAdvertisersReportsHourly(TestCase):
         self.mock_response(http_mocker)
 
         output = read(
-            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=None),
+            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=self.state()),
             config=self.config(),
             catalog=self.catalog(sync_mode=SyncMode.incremental),
             state=self.state(),
@@ -624,7 +624,7 @@ class TestCampaignsReportsHourly(TestCase):
         self.mock_response(http_mocker)
 
         output = read(
-            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=None),
+            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=self.state()),
             config=self.config(),
             catalog=self.catalog(sync_mode=SyncMode.incremental),
             state=self.state(),
