@@ -7,8 +7,9 @@ from typing import List
 
 import requests  # type: ignore
 from connector_ops.utils import Connector, ConnectorLanguage  # type: ignore
-from connectors_qa.models import Check, CheckCategory, CheckResult
 from pydash.objects import get  # type: ignore
+
+from connectors_qa.models import Check, CheckCategory, CheckResult
 
 from .helpers import (
     generate_description,
@@ -127,7 +128,7 @@ class CheckDocumentationContent(DocumentationCheck):
 
 class CheckDocumentationLinks(CheckDocumentationContent):
     name = "Links used in connector documentation are valid"
-    description = f"The user facing connector documentation should update invalid links in connector documentation. For links that are used as example and return 404 status code, use `example: ` before link to skip it."
+    description = "The user facing connector documentation should update invalid links in connector documentation. For links that are used as example and return 404 status code, use `example: ` before link to skip it."
 
     def validate_links(self, connector: Connector) -> List[str]:
         errors = []
@@ -188,7 +189,7 @@ class CheckDocumentationHeadersOrder(CheckDocumentationContent):
     def description(self) -> str:
         ordered_headers = TemplateContent("CONNECTOR_NAME_FROM_METADATA").headers_with_tag()
         not_required_headers = [
-            f"Set up the CONNECTOR_NAME_FROM_METADATA connector in Airbyte",
+            "Set up the CONNECTOR_NAME_FROM_METADATA connector in Airbyte",
             "For Airbyte Cloud: (as subtitle of Set up CONNECTOR_NAME_FROM_METADATA)",
             "For Airbyte Open Source: (as subtitle of Set up CONNECTOR_NAME_FROM_METADATA)",
             self.CONNECTOR_SPECIFIC_HEADINGS + " (but this headers should be on a right place according to expected order)",
@@ -317,25 +318,27 @@ class CheckPrerequisitesSectionDescribesRequiredFieldsFromSpec(CheckDocumentatio
         if self.PREREQUISITES not in documentation.headers:
             return [f"Documentation does not have {self.PREREQUISITES} section."]
 
-        actual_contents = documentation.section(self.PREREQUISITES)
-        if len(actual_contents) > 1:
+        section_content = documentation.section(self.PREREQUISITES)
+        if section_content is None:
+            return [f"Documentation {self.PREREQUISITES} section is empty"]
+
+        if len(section_content) > 1:
             return [f"Documentation has more than one {self.PREREQUISITES} section. Please check it."]
 
-        missing_fields: List[str] = []
-        section_content = documentation.section(self.PREREQUISITES)[0].lower()
+        section_text = section_content[0].lower()
 
         spec = actual_connector_spec.get("connectionSpecification") or actual_connector_spec.get("connection_specification")
         required_titles, has_credentials = required_titles_from_spec(spec)  # type: ignore
 
+        missing_fields: List[str] = []
         for title in required_titles:
-            if title.lower() not in section_content:
+            if title.lower() not in section_text:
                 missing_fields.append(title)
 
         if has_credentials:
-            # credentials has specific check for keywords as we have a lot of ways how to describe this step
-            credentials_validation = [k in section_content for k in self.CREDENTIALS_KEYWORDS]
+            credentials_validation = [k in section_text for k in self.CREDENTIALS_KEYWORDS]
             if True not in credentials_validation:
-                missing_fields.append(f"credentials")
+                missing_fields.append("credentials")
 
         return missing_fields
 
@@ -380,7 +383,9 @@ class CheckSection(CheckDocumentationContent):
     @property
     def description(self) -> str:
         templates = TemplateContent("CONNECTOR_NAME_FROM_METADATA").section(self.header)
-        if len(templates) > 1:
+        if templates is None:
+            template = ""  # Provide default empty template if section is missing
+        elif len(templates) > 1:
             template = templates[1]
         else:
             template = templates[0]
@@ -402,8 +407,11 @@ class CheckSection(CheckDocumentationContent):
 
         errors = []
 
-        expected = TemplateContent(connector.name_from_metadata).section(self.header)[self.expected_section_index]
+        expected = TemplateContent(connector.name_from_metadata).section(self.header)[self.expected_section_index]  # type: ignore
         actual_contents = documentation.section(self.header)
+        if actual_contents is None:
+            return [f"Documentation {self.header} section is empty"]
+
         actual_contents = [c[: len(expected)] if len(c) > len(expected) else c for c in actual_contents]
 
         close_matches = get_close_matches(expected, actual_contents)
@@ -449,9 +457,15 @@ class CheckSourceSectionContent(CheckDocumentationContent):
 
     @property
     def description(self) -> str:
-        template = TemplateContent("CONNECTOR_NAME_FROM_METADATA").section("CONNECTOR_NAME_FROM_METADATA")[0]
+        template = TemplateContent("CONNECTOR_NAME_FROM_METADATA").section("CONNECTOR_NAME_FROM_METADATA")
+        if template is None:
+            template_content = ""  # Provide default empty template if section is missing
+        else:
+            template_content = template[0]  # type: ignore
 
-        return generate_description("section_content_description.md.j2", {"header": "CONNECTOR_NAME_FROM_METADATA", "template": template})
+        return generate_description(
+            "section_content_description.md.j2", {"header": "CONNECTOR_NAME_FROM_METADATA", "template": template_content}
+        )
 
     def check_source_follows_template(self, connector: Connector) -> List[str]:
         documentation = DocumentationContent(connector=connector)
@@ -464,16 +478,23 @@ class CheckSourceSectionContent(CheckDocumentationContent):
         header = connector.name_from_metadata
 
         expected_content = TemplateContent(header).section(header)
+        if expected_content is None:
+            return [f"Template {header} section is empty"]
+
         actual_contents = DocumentationContent(connector).section(header)
+        if actual_contents is None:
+            return [f"Documentation {header} section is empty"]
 
-        expected = expected_content[self.expected_section_index]
+        expected = expected_content[self.expected_section_index]  # type: ignore
 
-        if not actual_contents:
-            return [f"Please update your {header} section section content to follow our guidelines:\n{expected}"]
         if len(actual_contents) > 1:
             return [f"Expected only one header {header}. Please rename duplicate."]
 
         actual = replace_connector_specific_urls_from_section(actual_contents[0])
+
+        if actual is None:
+            return [f"Documentation {header} section is empty"]
+
         # actual connector doc can have imports etc. in this section
         if expected not in actual:
             errors = list(ndiff(actual.splitlines(keepends=True), expected.splitlines(keepends=True)))
@@ -538,8 +559,10 @@ class CheckChangelogSectionContent(CheckSection):
 
         errors = []
 
-        expected = TemplateContent(connector.name_from_metadata).section(self.header)[self.expected_section_index]
+        expected = TemplateContent(connector.name_from_metadata).section(self.header)[self.expected_section_index]  # type: ignore
         actual_contents = documentation.section(self.header)
+        if actual_contents is None:
+            return [f"Documentation {self.header} section is empty"]
 
         if len(actual_contents) > 1:
             return [f"Documentation has more than one {self.header} section. Please check it."]

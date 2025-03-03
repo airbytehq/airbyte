@@ -15,7 +15,7 @@ on:
 jobs:
   generate_matrix:
     name: Generate matrix
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       generated_matrix: ${{ steps.generate_matrix.outputs.generated_matrix }}
     steps:
@@ -41,7 +41,7 @@ jobs:
         id: generate_matrix
         run: |
           matrix=$(jq -c -r '{include: [.[] | "--name=" + .] | to_entries | group_by(.key / 100 | floor) | map(map(.value) | {"connector_names": join(" ")})}' selected_connectors.json)
-          echo "::set-output name=generated_matrix::$matrix"
+          echo "generated_matrix=$matrix" >> $GITHUB_OUTPUT
 
   run_connectors_up_to_date:
     needs: generate_matrix

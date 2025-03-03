@@ -4,10 +4,11 @@
 from typing import Any, Mapping
 
 import pytest
+from source_azure_blob_storage import SourceAzureBlobStorage, SourceAzureBlobStorageSpec, SourceAzureBlobStorageStreamReader
+
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
-from source_azure_blob_storage import SourceAzureBlobStorage, SourceAzureBlobStorageSpec, SourceAzureBlobStorageStreamReader
 
 
 @pytest.mark.parametrize(

@@ -1,10 +1,59 @@
+exclude: |
+  (?x)(
+    # Python/system files
+    ^.*/__init__\.py$|
+    ^.*?/\.venv/.*$|
+    ^.*?/node_modules/.*$|
+
+    ^.*?/charts/.*$|
+    ^airbyte-integrations/bases/base-normalization/.*$|
+    ^.*?/normalization_test_output/.*$|
+
+    ^.*?/pnpm-lock\.yaml$|
+    ^.*?/source-amplitude/unit_tests/api_data/zipped\.json$|
+
+    # Generated/test files
+    ^airbyte-ci/connectors/metadata_service/lib/metadata_service/models/generated/.*$|
+    ^.*?/airbyte-ci/connectors/metadata_service/lib/tests/fixtures/.*/invalid/.*$|
+    ^airbyte-ci/connectors/metadata_service/lib/tests/fixtures/.*/invalid/.*$|
+    ^.*?/airbyte-ci/connectors/pipelines/tests/test_format/non_formatted_code/.*$|
+    ^airbyte-ci/connectors/pipelines/tests/test_format/non_formatted_code/.*$|
+    ^.*?/airbyte-integrations/connectors/destination-.*/expected-spec\.json$
+  )
+
 repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.3
+    hooks:
+      # Run the linter.
+      - id: ruff
+        args:
+          - --fix
+          - --select=I
+
+      # Run the formatter.
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.0.3
+    hooks:
+      - id: prettier
+        types_or: [json, yaml]
+        additional_dependencies:
+          - prettier@3.0.3
+
   - repo: local
     hooks:
-      - id: format-fix-all-on-push
-        always_run: true
-        entry: airbyte-ci --disable-update-check format fix all
+      - id: addlicense
+        name: Add license headers
+        entry: addlicense -c "Airbyte, Inc." -l apache -v -f LICENSE_SHORT
+        language: golang
+        additional_dependencies: [github.com/google/addlicense@v1.1.1]
+        files: \.(java|kt|py)$
+
+      - id: spotless
+        name: Format Java files with Spotless
+        entry: bash -c 'command -v mvn >/dev/null 2>&1 || { echo "Maven not installed. Install with brew install maven" >&2; exit 1; }; mvn -f spotless-maven-pom.xml spotless:apply'
         language: system
-        name: Run airbyte-ci format fix on git push (~30s)
+        files: \.(java|kt|gradle)$
         pass_filenames: false
-        stages: [push]

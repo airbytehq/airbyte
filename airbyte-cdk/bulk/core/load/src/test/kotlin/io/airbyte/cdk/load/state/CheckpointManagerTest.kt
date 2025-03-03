@@ -73,8 +73,10 @@ class CheckpointManagerTest {
         override val catalog: DestinationCatalog,
         override val syncManager: SyncManager,
         override val outputConsumer: MockOutputConsumer,
-        override val timeProvider: TimeProvider
-    ) : StreamsCheckpointManager<MockCheckpoint>()
+        override val timeProvider: TimeProvider,
+    ) : StreamsCheckpointManager<MockCheckpoint>() {
+        override val checkpointById: Boolean = false
+    }
 
     sealed class TestEvent
     data class TestStreamMessage(val stream: DestinationStream, val index: Long, val message: Int) :
@@ -428,9 +430,9 @@ class CheckpointManagerTest {
                      * the index of the message.
                      */
                     val streamManager = syncManager.getStreamManager(it.stream.descriptor)
-                    val recordCount = streamManager.recordCount()
+                    val recordCount = streamManager.readCount()
                     (recordCount until it.index).forEach { _ ->
-                        syncManager.getStreamManager(it.stream.descriptor).countRecordIn()
+                        syncManager.getStreamManager(it.stream.descriptor).incrementReadCount()
                     }
                     checkpointManager.addStreamCheckpoint(
                         it.stream.descriptor,
@@ -446,7 +448,12 @@ class CheckpointManagerTest {
                     it.persistedRanges.forEach { (stream, ranges) ->
                         val mockBatch = SimpleBatch(state = Batch.State.PERSISTED)
                         val rangeSet = TreeRangeSet.create(ranges)
-                        val mockBatchEnvelope = BatchEnvelope(batch = mockBatch, ranges = rangeSet)
+                        val mockBatchEnvelope =
+                            BatchEnvelope(
+                                batch = mockBatch,
+                                ranges = rangeSet,
+                                streamDescriptor = stream.descriptor
+                            )
                         syncManager
                             .getStreamManager(stream.descriptor)
                             .updateBatchState(mockBatchEnvelope)

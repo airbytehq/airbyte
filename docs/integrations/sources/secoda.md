@@ -32,6 +32,16 @@ This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-ap
 
 | Version | Date       | Pull Request                                              | Subject                                  |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------- |
+| 0.2.18 | 2025-03-01 | [54996](https://github.com/airbytehq/airbyte/pull/54996) | Update dependencies |
+| 0.2.17 | 2025-02-23 | [54606](https://github.com/airbytehq/airbyte/pull/54606) | Update dependencies |
+| 0.2.16 | 2025-02-15 | [54017](https://github.com/airbytehq/airbyte/pull/54017) | Update dependencies |
+| 0.2.15 | 2025-02-08 | [53486](https://github.com/airbytehq/airbyte/pull/53486) | Update dependencies |
+| 0.2.14 | 2025-02-01 | [53024](https://github.com/airbytehq/airbyte/pull/53024) | Update dependencies |
+| 0.2.13 | 2025-01-25 | [52488](https://github.com/airbytehq/airbyte/pull/52488) | Update dependencies |
+| 0.2.12 | 2025-01-18 | [51870](https://github.com/airbytehq/airbyte/pull/51870) | Update dependencies |
+| 0.2.11 | 2025-01-11 | [51322](https://github.com/airbytehq/airbyte/pull/51322) | Update dependencies |
+| 0.2.10 | 2024-12-28 | [50692](https://github.com/airbytehq/airbyte/pull/50692) | Update dependencies |
+| 0.2.9 | 2024-12-21 | [50271](https://github.com/airbytehq/airbyte/pull/50271) | Update dependencies |
 | 0.2.8 | 2024-12-14 | [49691](https://github.com/airbytehq/airbyte/pull/49691) | Update dependencies |
 | 0.2.7 | 2024-12-12 | [49362](https://github.com/airbytehq/airbyte/pull/49362) | Update dependencies |
 | 0.2.6 | 2024-12-11 | [49076](https://github.com/airbytehq/airbyte/pull/49076) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

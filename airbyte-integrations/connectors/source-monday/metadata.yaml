@@ -6,11 +6,11 @@ data:
     hosts:
       - api.monday.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
   connectorSubtype: api
   connectorType: source
   definitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
-  dockerImageTag: 2.1.5
+  dockerImageTag: 2.1.13
   releases:
     breakingChanges:
       2.0.0:

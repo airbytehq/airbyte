@@ -850,10 +850,6 @@
             "description": "The date and time when the transaction was created",
             "type": ["null", "integer"]
           },
-          "updated": {
-            "description": "The date and time when the transaction was created",
-            "type": ["null", "integer"]
-          },
           "credit_note": {
             "description": "Credit note related to the balance transaction",
             "type": ["null", "string"]
@@ -893,7 +889,9 @@
           }
         }
       },
-      "supported_sync_modes": ["full_refresh"],
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["created"],
       "source_defined_primary_key": [["id"]],
       "is_resumable": true
     },

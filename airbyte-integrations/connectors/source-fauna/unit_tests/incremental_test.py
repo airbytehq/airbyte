@@ -6,6 +6,11 @@ from datetime import datetime, timezone
 from typing import Dict, Generator
 from unittest.mock import MagicMock, Mock
 
+from faunadb import _json
+from faunadb import query as q
+from source_fauna import SourceFauna
+from test_util import CollectionConfig, config, expand_columns_query, mock_logger, ref
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -17,10 +22,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from faunadb import _json
-from faunadb import query as q
-from source_fauna import SourceFauna
-from test_util import CollectionConfig, config, expand_columns_query, mock_logger, ref
+
 
 NOW = 1234512987
 

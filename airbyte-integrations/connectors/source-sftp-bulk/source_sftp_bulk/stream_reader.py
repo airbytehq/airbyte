@@ -9,17 +9,18 @@ from io import IOBase
 from typing import Dict, Iterable, List, Optional
 
 import psutil
+from typing_extensions import override
+
 from airbyte_cdk import FailureType
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_sftp_bulk.client import SFTPClient
 from source_sftp_bulk.spec import SourceSFTPBulkSpec
-from typing_extensions import override
 
 
 class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
-    FILE_SIZE_LIMIT = 1_000_000_000
+    FILE_SIZE_LIMIT = 1_500_000_000
 
     def __init__(self):
         super().__init__()

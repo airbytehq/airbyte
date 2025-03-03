@@ -24,7 +24,8 @@ from source_pinterest.reports.reports import (
 )
 from source_pinterest.utils import get_analytics_columns
 
-os.environ["REQUEST_CACHE_PATH"] = '/tmp'
+
+os.environ["REQUEST_CACHE_PATH"] = "/tmp"
 
 
 def test_request_body_json(analytics_report_stream, date_range):
@@ -79,18 +80,20 @@ def test_streams(test_config):
 
 def test_custom_streams(test_config):
     config = copy.deepcopy(test_config)
-    config['custom_reports'] = [{
-        "name": "vadim_report",
-        "level": "AD_GROUP",
-        "granularity": "MONTH",
-        "click_window_days": 30,
-        "engagement_window_days": 30,
-        "view_window_days": 30,
-        "conversion_report_time": "TIME_OF_CONVERSION",
-        "attribution_types": ["INDIVIDUAL", "HOUSEHOLD"],
-        "columns": ["ADVERTISER_ID", "AD_ACCOUNT_ID", "AD_GROUP_ID", "CTR", "IMPRESSION_2"],
-        "start_date": "2023-01-08"
-    }]
+    config["custom_reports"] = [
+        {
+            "name": "vadim_report",
+            "level": "AD_GROUP",
+            "granularity": "MONTH",
+            "click_window_days": 30,
+            "engagement_window_days": 30,
+            "view_window_days": 30,
+            "conversion_report_time": "TIME_OF_CONVERSION",
+            "attribution_types": ["INDIVIDUAL", "HOUSEHOLD"],
+            "columns": ["ADVERTISER_ID", "AD_ACCOUNT_ID", "AD_GROUP_ID", "CTR", "IMPRESSION_2"],
+            "start_date": "2023-01-08",
+        }
+    ]
     source = SourcePinterest()
     streams = source.streams(config)
     expected_streams_number = 33
@@ -100,18 +103,18 @@ def test_custom_streams(test_config):
 @pytest.mark.parametrize(
     ("report_name", "expected_level"),
     (
-        [CampaignAnalyticsReport, 'CAMPAIGN'],
-        [CampaignTargetingReport, 'CAMPAIGN_TARGETING'],
-        [AdvertiserReport, 'ADVERTISER'],
-        [AdvertiserTargetingReport, 'ADVERTISER_TARGETING'],
-        [AdGroupReport, 'AD_GROUP'],
-        [AdGroupTargetingReport, 'AD_GROUP_TARGETING'],
-        [PinPromotionReport, 'PIN_PROMOTION'],
-        [PinPromotionTargetingReport, 'PIN_PROMOTION_TARGETING'],
-        [ProductGroupReport, 'PRODUCT_GROUP'],
-        [ProductGroupTargetingReport, 'PRODUCT_GROUP_TARGETING'],
-        [ProductItemReport, 'PRODUCT_ITEM'],
-        [KeywordReport, 'KEYWORD']
+        [CampaignAnalyticsReport, "CAMPAIGN"],
+        [CampaignTargetingReport, "CAMPAIGN_TARGETING"],
+        [AdvertiserReport, "ADVERTISER"],
+        [AdvertiserTargetingReport, "ADVERTISER_TARGETING"],
+        [AdGroupReport, "AD_GROUP"],
+        [AdGroupTargetingReport, "AD_GROUP_TARGETING"],
+        [PinPromotionReport, "PIN_PROMOTION"],
+        [PinPromotionTargetingReport, "PIN_PROMOTION_TARGETING"],
+        [ProductGroupReport, "PRODUCT_GROUP"],
+        [ProductGroupTargetingReport, "PRODUCT_GROUP_TARGETING"],
+        [ProductItemReport, "PRODUCT_ITEM"],
+        [KeywordReport, "KEYWORD"],
     ),
 )
 def test_level(test_config, report_name, expected_level):

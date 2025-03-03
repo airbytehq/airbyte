@@ -68,7 +68,6 @@ Table "customer_balance_transactions" {
     "livemode" boolean
     "metadata" object
     "type" string
-    "updated" integer
 }
 
 Table "events" {

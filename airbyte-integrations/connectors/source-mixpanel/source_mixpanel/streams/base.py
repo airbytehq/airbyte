@@ -9,11 +9,12 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
+from pendulum import Date
+from requests.auth import AuthBase
+
 from airbyte_cdk import BackoffStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
-from pendulum import Date
-from requests.auth import AuthBase
 from source_mixpanel.backoff_strategy import MixpanelStreamBackoffStrategy
 from source_mixpanel.errors_handlers import MixpanelStreamErrorHandler
 from source_mixpanel.utils import fix_date_time

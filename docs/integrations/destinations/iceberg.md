@@ -75,11 +75,13 @@ specify the target size of compacted Iceberg data file.
 
 | Version | Date       | Pull Request                                              | Subject                                                        |
 |:--------|:-----------|:----------------------------------------------------------|:---------------------------------------------------------------|
-| 0.2.2   | 2024-09-23 | [45861](https://github.com/airbytehq/airbyte/pull/45861)  | Keeping only S3 with Glue Catalog as config option             |
-| 0.2.1   | 2024-09-20 | [45711](https://github.com/airbytehq/airbyte/pull/45711)  | Initial Cloud version for registry purpose [UNTESTED ON CLOUD] |
-| 0.2.0   | 2024-09-20 | [45707](https://github.com/airbytehq/airbyte/pull/45707)  | Add support for AWS Glue Catalog                               |
-| 0.1.8   | 2024-09-16 | [45206](https://github.com/airbytehq/airbyte/pull/45206)  | Fixing tests to work in airbyte-ci                             |
-| 0.1.7   | 2024-05-17 | [38283](https://github.com/airbytehq/airbyte/pull/38283)  | Bump Iceberg library to 1.5.2 and Spark to 3.5.1               |
+| 0.2.4 | 2025-01-10 | [51492](https://github.com/airbytehq/airbyte/pull/51492) | Use a non root base image |
+| 0.2.3 | 2024-12-17 | [49841](https://github.com/airbytehq/airbyte/pull/49841) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 0.2.2 | 2024-09-23 | [45861](https://github.com/airbytehq/airbyte/pull/45861) | Keeping only S3 with Glue Catalog as config option |
+| 0.2.1 | 2024-09-20 | [45711](https://github.com/airbytehq/airbyte/pull/45711) | Initial Cloud version for registry purpose [UNTESTED ON CLOUD] |
+| 0.2.0 | 2024-09-20 | [45707](https://github.com/airbytehq/airbyte/pull/45707) | Add support for AWS Glue Catalog |
+| 0.1.8 | 2024-09-16 | [45206](https://github.com/airbytehq/airbyte/pull/45206) | Fixing tests to work in airbyte-ci |
+| 0.1.7 | 2024-05-17 | [38283](https://github.com/airbytehq/airbyte/pull/38283) | Bump Iceberg library to 1.5.2 and Spark to 3.5.1 |
 | 0.1.6   | 2024-04-04 | [#36846](https://github.com/airbytehq/airbyte/pull/36846) | Remove duplicate S3 Region                                     |
 | 0.1.5   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region                              |
 | 0.1.4   | 2023-07-20 | [28506](https://github.com/airbytehq/airbyte/pull/28506)  | Support server-managed storage config                          |

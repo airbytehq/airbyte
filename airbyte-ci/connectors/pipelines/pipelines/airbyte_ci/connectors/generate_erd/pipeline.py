@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, List
 
 from dagger import Container, Directory
+
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
@@ -51,7 +52,7 @@ class GenerateDbml(Step):
             command.append("--skip-llm-relationships")
 
         erd_directory = self._build_erd_container(connector_directory, discovered_catalog).with_exec(command).directory("/source/erd")
-        await (erd_directory.export(str(_get_erd_folder(self.context.connector.code_directory))))
+        await erd_directory.export(str(_get_erd_folder(self.context.connector.code_directory)))
 
         return StepResult(step=self, status=StepStatus.SUCCESS, output=erd_directory)
 
@@ -99,9 +100,7 @@ class GenerateDbml(Step):
             .with_workdir("/app")
         )
 
-        return container.with_exec(["poetry", "lock", "--no-update"], use_entrypoint=True).with_exec(
-            ["poetry", "install"], use_entrypoint=True
-        )
+        return container.with_exec(["poetry", "lock"], use_entrypoint=True).with_exec(["poetry", "install"], use_entrypoint=True)
 
 
 class UploadDbmlSchema(Step):

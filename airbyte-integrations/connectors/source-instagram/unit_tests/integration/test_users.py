@@ -21,6 +21,7 @@ from .request_builder import RequestBuilder, get_account_request
 from .response_builder import get_account_response
 from .utils import config, read_output
 
+
 _FIELDS = [
     "id",
     "biography",
@@ -31,36 +32,32 @@ _FIELDS = [
     "name",
     "profile_picture_url",
     "username",
-    "website"
+    "website",
 ]
 
 _STREAM_NAME = "users"
 
 
 def _get_request() -> RequestBuilder:
-    return (
-        RequestBuilder.get_users_endpoint(item_id=BUSINESS_ACCOUNT_ID)
-        .with_fields(_FIELDS)
-    )
+    return RequestBuilder.get_users_endpoint(item_id=BUSINESS_ACCOUNT_ID).with_fields(_FIELDS)
 
 
 def _get_response() -> HttpResponseBuilder:
     return create_response_builder(
         response_template=find_template(_STREAM_NAME, __file__),
-        records_path=FieldPath('data'),
+        records_path=FieldPath("data"),
     )
 
 
 def _record() -> RecordBuilder:
     return create_record_builder(
         response_template=find_template(_STREAM_NAME, __file__),
-        records_path=FieldPath('data'),
+        records_path=FieldPath("data"),
         record_id_path=FieldPath("id"),
     )
 
 
 class TestFullRefresh(TestCase):
-
     @staticmethod
     def _read(config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
         return read_output(
@@ -83,4 +80,3 @@ class TestFullRefresh(TestCase):
 
         output = self._read(config_=config())
         assert len(output.records) == 1
-

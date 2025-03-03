@@ -11,15 +11,17 @@ from typing import Any, Dict, List, Optional, Set
 from unittest.mock import ANY, MagicMock, Mock, patch
 
 import pytest
-from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
-from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.stub import Stubber
 from moto import mock_sts
 from pydantic.v1 import AnyUrl
 from source_s3.v4.config import Config
 from source_s3.v4.stream_reader import SourceS3StreamReader
+
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
+from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
+from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+
 
 logger = logging.Logger("")
 
@@ -124,7 +126,7 @@ def test_get_matching_files(
     except Exception as exc:
         raise exc
 
-    with patch.object(SourceS3StreamReader, 's3_client', new_callable=MagicMock) as mock_s3_client:
+    with patch.object(SourceS3StreamReader, "s3_client", new_callable=MagicMock) as mock_s3_client:
         _setup_mock_s3_client(mock_s3_client, mocked_response, multiple_pages)
         files = list(reader.get_matching_files(globs, None, logger))
         assert set(f.uri for f in files) == expected_uris
@@ -134,27 +136,33 @@ def _setup_mock_s3_client(mock_s3_client, mocked_response, multiple_pages):
     responses = []
     if multiple_pages and len(mocked_response) > 1:
         # Split the mocked_response for pagination simulation
-        first_half = mocked_response[:len(mocked_response) // 2]
-        second_half = mocked_response[len(mocked_response) // 2:]
+        first_half = mocked_response[: len(mocked_response) // 2]
+        second_half = mocked_response[len(mocked_response) // 2 :]
 
-        responses.append({
-            "IsTruncated": True,
-            "Contents": first_half,
-            "KeyCount": len(first_half),
-            "NextContinuationToken": "token",
-        })
+        responses.append(
+            {
+                "IsTruncated": True,
+                "Contents": first_half,
+                "KeyCount": len(first_half),
+                "NextContinuationToken": "token",
+            }
+        )
 
-        responses.append({
-            "IsTruncated": False,
-            "Contents": second_half,
-            "KeyCount": len(second_half),
-        })
+        responses.append(
+            {
+                "IsTruncated": False,
+                "Contents": second_half,
+                "KeyCount": len(second_half),
+            }
+        )
     else:
-        responses.append({
-            "IsTruncated": False,
-            "Contents": mocked_response,
-            "KeyCount": len(mocked_response),
-        })
+        responses.append(
+            {
+                "IsTruncated": False,
+                "Contents": mocked_response,
+                "KeyCount": len(mocked_response),
+            }
+        )
 
     def list_objects_v2_side_effect(Bucket, Prefix=None, ContinuationToken=None, **kwargs):
         if ContinuationToken == "token":
@@ -252,7 +260,13 @@ def test_get_file(mock_boto_client, s3_reader_file_size_mock):
     mock_s3_client_instance.download_file.return_value = None
 
     reader = SourceS3StreamReader()
-    reader.config = Config(bucket="test", aws_access_key_id="test", aws_secret_access_key="test", streams=[], delivery_method= { "delivery_type": "use_file_transfer" })
+    reader.config = Config(
+        bucket="test",
+        aws_access_key_id="test",
+        aws_secret_access_key="test",
+        streams=[],
+        delivery_method={"delivery_type": "use_file_transfer"},
+    )
     try:
         reader.config = Config(
             bucket="test",
@@ -260,14 +274,14 @@ def test_get_file(mock_boto_client, s3_reader_file_size_mock):
             aws_secret_access_key="test",
             streams=[],
             endpoint=None,
-            delivery_method={"delivery_type": "use_file_transfer"}
+            delivery_method={"delivery_type": "use_file_transfer"},
         )
     except Exception as exc:
         raise exc
     test_file_path = "directory/file.txt"
     result = reader.get_file(RemoteFile(uri="", last_modified=datetime.now()), test_file_path, logger)
 
-    assert result == {'bytes': 100, 'file_relative_path': ANY, 'file_url': ANY}
+    assert result == {"bytes": 100, "file_relative_path": ANY, "file_url": ANY}
     assert result["file_url"].endswith(test_file_path)
 
 
@@ -317,27 +331,20 @@ def test_get_iam_s3_client(boto3_client_mock):
     # Assertions to validate the s3 client
     assert s3_client is not None
 
+
 @pytest.mark.parametrize(
     "start_date, last_modified_date, expected_result",
     (
         # True when file is new or modified after given start_date
-        (
-            datetime.now() - timedelta(days=180),
-            datetime.now(),
-            True
-        ),
+        (datetime.now() - timedelta(days=180), datetime.now(), True),
         (
             datetime.strptime("2024-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
             datetime.strptime("2024-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-            True
+            True,
         ),
         # False when file is older than given start_date
-        (
-            datetime.now(),
-            datetime.now() - timedelta(days=180),
-            False
-        )
-    )
+        (datetime.now(), datetime.now() - timedelta(days=180), False),
+    ),
 )
 def test_filter_file_by_start_date(start_date: datetime, last_modified_date: datetime, expected_result: bool) -> None:
     reader = SourceS3StreamReader()
@@ -347,7 +354,7 @@ def test_filter_file_by_start_date(start_date: datetime, last_modified_date: dat
         aws_access_key_id="test",
         aws_secret_access_key="test",
         streams=[],
-        start_date=start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+        start_date=start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
     )
 
     assert expected_result == reader.is_modified_after_start_date(last_modified_date)

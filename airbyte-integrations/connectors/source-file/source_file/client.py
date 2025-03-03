@@ -24,9 +24,6 @@ import numpy as np
 import pandas as pd
 import smart_open
 import smart_open.ssh
-from airbyte_cdk.entrypoint import logger
-from airbyte_cdk.models import AirbyteStream, FailureType, SyncMode
-from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
 from azure.storage.blob import BlobServiceClient
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
@@ -38,7 +35,12 @@ from paramiko import SSHException
 from urllib3.exceptions import ProtocolError
 from yaml import safe_load
 
+from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.models import AirbyteStream, FailureType, SyncMode
+from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
+
 from .utils import LOCAL_STORAGE_NAME, backoff_handler
+
 
 SSH_TIMEOUT = 60
 

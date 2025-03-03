@@ -7,6 +7,7 @@ from typing import Optional
 import requests
 from orchestrator.models.metadata import LatestMetadataEntry
 
+
 GROUP_NAME = "connector_cdk_versions"
 
 BASE_URL = "https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/"

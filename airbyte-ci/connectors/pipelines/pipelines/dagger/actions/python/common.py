@@ -8,6 +8,7 @@ from typing import List, Optional, Sequence
 
 from click import UsageError
 from dagger import Container, Directory
+
 from pipelines import hacks
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.consts import PATH_TO_LOCAL_CDK
@@ -285,6 +286,14 @@ def apply_python_development_overrides(context: ConnectorContext, connector_cont
         # Install the airbyte-cdk package from provided ref
         connector_container = (
             connector_container.with_user("root")
+            .with_exec(
+                [
+                    "apt-get",
+                    "install",
+                    "-y",
+                    "git",
+                ]
+            )
             .with_exec(
                 [
                     "pip",

@@ -8,6 +8,7 @@ from functools import wraps
 from typing import Any, Callable, Type, TypeVar
 
 import asyncclick as click
+
 from pipelines.models.ci_requirements import CIRequirements
 
 _AnyCallable = Callable[..., Any]

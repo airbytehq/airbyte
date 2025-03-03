@@ -1,13 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
+import os
 from datetime import datetime
-from unittest.mock import MagicMock, Mock, PropertyMock, call, patch
+from unittest.mock import ANY, MagicMock, Mock, PropertyMock, call, patch
 
 import pytest
-from airbyte_cdk import AirbyteTracedException
+from requests.exceptions import HTTPError
+from source_microsoft_sharepoint.exceptions import ErrorFetchingMetadata
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 from source_microsoft_sharepoint.stream_reader import (
     FileReadMode,
@@ -16,6 +16,11 @@ from source_microsoft_sharepoint.stream_reader import (
     SourceMicrosoftSharePointStreamReader,
 )
 from wcmatch.glob import GLOBSTAR, globmatch
+
+from airbyte_cdk import AirbyteTracedException
+
+
+TEST_LOCAL_DIRECTORY = "/tmp/airbyte-file-transfer"
 
 
 def create_mock_drive_item(is_file, name, children=None):
@@ -185,6 +190,105 @@ def test_open_file(mock_smart_open, file_extension, expected_compression):
 
     mock_smart_open.assert_called_once_with(mock_file.download_url, mode="r", encoding="utf-8", compression=expected_compression)
     assert result is not None
+
+
+@pytest.mark.parametrize(
+    "file_extension, expected_paths",
+    [
+        ("txt.gz", {"bytes": ANY, "file_relative_path": "file.txt.gz", "file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.gz"}),
+        ("txt.bz2", {"bytes": ANY, "file_relative_path": "file.txt.bz2", "file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.bz2"}),
+        ("txt", {"bytes": ANY, "file_relative_path": "file.txt", "file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt"}),
+    ],
+)
+@patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.get_access_token")
+@patch("source_microsoft_sharepoint.stream_reader.requests.get")
+@patch("source_microsoft_sharepoint.stream_reader.requests.head")
+def test_get_file(mock_requests_head, mock_requests_get, mock_get_access_token, file_extension, expected_paths):
+    """
+    Test the get_file method in SourceMicrosoftSharePointStreamReader.
+
+    This test verifies that the get_file method correctly "downloads" (mocked) a file from SharePoint
+    and saves it to the specified local directory. It mocks the necessary HTTP requests
+    and checks that the resulting file paths and sizes match the expected values.
+
+    Args:
+        mock_requests_head (MagicMock): Mock for the requests.head method.
+        mock_requests_get (MagicMock): Mock for the requests.get method.
+        mock_get_access_token (MagicMock): Mock for the get_access_token method.
+        file_extension (str): The file extension to test (e.g., 'txt.gz').
+        expected_paths (dict): The expected paths and file size in the result.
+    """
+    file_uri = f"https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file.{file_extension}"
+    mock_file = Mock(download_url=f"https://example.com/file.{file_extension}", uri=file_uri)
+    mock_logger = Mock()
+    mock_get_access_token.return_value = "dummy_access_token"
+
+    # Create a mock response for requests.head
+    mock_head_response = Mock()
+    mock_head_response.status_code = 200
+    mock_head_response.headers = {"Content-Length": "12345"}
+    mock_requests_head.return_value = mock_head_response
+
+    # Create a mock response for requests.get
+    mock_response = Mock()
+    mock_response.iter_content = Mock(return_value=[b"chunk1", b"chunk2"])
+    mock_response.status_code = 200
+    mock_requests_get.return_value = mock_response
+
+    stream_reader = SourceMicrosoftSharePointStreamReader()
+    stream_reader._config = Mock()  # Assuming _config is required
+
+    result = stream_reader.get_file(mock_file, TEST_LOCAL_DIRECTORY, mock_logger)
+
+    assert result == expected_paths
+
+    # Check if the file exists at the file_url path
+    assert os.path.exists(result["file_url"])
+
+
+@patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.get_access_token")
+@patch("source_microsoft_sharepoint.stream_reader.requests.head")
+def test_get_file_size_error_fetching_metadata_for_missing_header(mock_requests_head, mock_get_access_token):
+    file_uri = f"https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file.txt"
+    mock_file = Mock(download_url=f"https://example.com/file.txt", uri=file_uri)
+    mock_logger = Mock()
+    mock_get_access_token.return_value = "dummy_access_token"
+
+    # Create a mock response for requests.head
+    mock_head_response = Mock()
+    mock_head_response.status_code = 200
+    mock_head_response.headers = {"Other-header": "12345"}
+    mock_requests_head.return_value = mock_head_response
+
+    stream_reader = SourceMicrosoftSharePointStreamReader()
+    stream_reader._config = Mock()  # Assuming _config is required
+    with pytest.raises(ErrorFetchingMetadata, match="Size was expected in metadata response but was missing"):
+        stream_reader.get_file(mock_file, TEST_LOCAL_DIRECTORY, mock_logger)
+
+
+@patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.get_access_token")
+@patch("source_microsoft_sharepoint.stream_reader.requests.head")
+def test_get_file_size_error_fetching_metadata(mock_requests_head, mock_get_access_token):
+    """
+    Test that the get_file method raises an ErrorFetchingMetadata exception when the requests.head call fails.
+    """
+    file_uri = f"https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file.txt"
+    mock_file = Mock(download_url=f"https://example.com/file.txt", uri=file_uri)
+    mock_logger = Mock()
+    mock_get_access_token.return_value = "dummy_access_token"
+
+    # Create a mock response for requests.head
+    mock_head_response = Mock()
+    mock_head_response.status_code = 500
+    mock_head_response.headers = {"Content-Length": "12345"}
+    mock_head_response.raise_for_status.side_effect = HTTPError("500 Server Error")
+    mock_requests_head.return_value = mock_head_response
+
+    stream_reader = SourceMicrosoftSharePointStreamReader()
+    stream_reader._config = Mock()  # Assuming _config is required
+
+    with pytest.raises(ErrorFetchingMetadata, match="An error occurred while retrieving file size: 500 Server Error"):
+        stream_reader.get_file(mock_file, TEST_LOCAL_DIRECTORY, mock_logger)
 
 
 def test_microsoft_sharepoint_client_initialization(requests_mock):
@@ -465,9 +569,10 @@ def test_get_shared_drive_object(
     ],
 )
 def test_drives_property(auth_type, user_principal_name, has_refresh_token):
-    with patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query, patch(
-        "source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.one_drive_client"
-    ) as mock_one_drive_client:
+    with (
+        patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query,
+        patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.one_drive_client") as mock_one_drive_client,
+    ):
         refresh_token = "dummy_refresh_token" if has_refresh_token else None
         # Setup for different authentication types
         config_mock = MagicMock(

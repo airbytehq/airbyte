@@ -6,8 +6,9 @@
 from unittest.mock import MagicMock, Mock
 
 import pytest
-from airbyte_cdk.sources.streams import Stream
 from source_greenhouse.components import GreenHouseSlicer, GreenHouseSubstreamSlicer
+
+from airbyte_cdk.sources.streams import Stream
 
 
 def test_slicer(greenhouse_slicer):
@@ -53,17 +54,12 @@ def test_sub_slicer(last_record, expected, records):
 @pytest.mark.parametrize(
     "stream_state, cursor_field, expected_state",
     [
-        ({'cursor_field_1': '2022-09-05T10:10:10.000Z'}, 'cursor_field_1', {'cursor_field_1': '2022-09-05T10:10:10.000Z'}),
-        ({'cursor_field_2': '2022-09-05T10:10:100000Z'}, 'cursor_field_3', {}),
-        ({'cursor_field_4': None}, 'cursor_field_4', {}),
-        ({'cursor_field_5': ''}, 'cursor_field_5', {}),
+        ({"cursor_field_1": "2022-09-05T10:10:10.000Z"}, "cursor_field_1", {"cursor_field_1": "2022-09-05T10:10:10.000Z"}),
+        ({"cursor_field_2": "2022-09-05T10:10:100000Z"}, "cursor_field_3", {}),
+        ({"cursor_field_4": None}, "cursor_field_4", {}),
+        ({"cursor_field_5": ""}, "cursor_field_5", {}),
     ],
-    ids=[
-        "cursor_value_present",
-        "cursor_value_not_present",
-        "cursor_value_is_None",
-        "cursor_value_is_empty_string"
-    ]
+    ids=["cursor_value_present", "cursor_value_not_present", "cursor_value_is_None", "cursor_value_is_empty_string"],
 )
 def test_slicer_set_initial_state(stream_state, cursor_field, expected_state):
     slicer = GreenHouseSlicer(cursor_field=cursor_field, parameters={}, request_cursor_field=None)
@@ -71,36 +67,30 @@ def test_slicer_set_initial_state(stream_state, cursor_field, expected_state):
     slicer.set_initial_state(stream_state)
     assert slicer.get_stream_state() == expected_state
 
+
 @pytest.mark.parametrize(
     "stream_state, initial_state, expected_state",
     [
         (
-            {'id1': {'cursor_field': '2023-01-01T10:00:00.000Z'}},
-            {'id2': {'cursor_field': '2023-01-02T11:00:00.000Z'}},
-            {
-                'id1': {'cursor_field': '2023-01-01T10:00:00.000Z'},
-                'id2': {'cursor_field': '2023-01-02T11:00:00.000Z'}
-            }
+            {"id1": {"cursor_field": "2023-01-01T10:00:00.000Z"}},
+            {"id2": {"cursor_field": "2023-01-02T11:00:00.000Z"}},
+            {"id1": {"cursor_field": "2023-01-01T10:00:00.000Z"}, "id2": {"cursor_field": "2023-01-02T11:00:00.000Z"}},
         ),
         (
-            {'id1': {'cursor_field': '2023-01-01T10:00:00.000Z'}},
-            {'id1': {'cursor_field': '2023-01-01T09:00:00.000Z'}},
-            {'id1': {'cursor_field': '2023-01-01T10:00:00.000Z'}}
+            {"id1": {"cursor_field": "2023-01-01T10:00:00.000Z"}},
+            {"id1": {"cursor_field": "2023-01-01T09:00:00.000Z"}},
+            {"id1": {"cursor_field": "2023-01-01T10:00:00.000Z"}},
         ),
-        (
-            {},
-            {},
-            {}
-        ),
+        ({}, {}, {}),
     ],
     ids=[
         "stream_state and initial_state have different keys",
         "stream_state and initial_state have overlapping keys with different values",
-        "stream_state and initial_state are empty"
-    ]
+        "stream_state and initial_state are empty",
+    ],
 )
 def test_substream_set_initial_state(greenhouse_substream_slicer, stream_state, initial_state, expected_state):
-    slicer = greenhouse_substream_slicer    
+    slicer = greenhouse_substream_slicer
     # Set initial state
     slicer._state = initial_state
     slicer.set_initial_state(stream_state)
@@ -110,27 +100,11 @@ def test_substream_set_initial_state(greenhouse_substream_slicer, stream_state, 
 @pytest.mark.parametrize(
     "first_record, second_record, expected_result",
     [
-        (
-            {'cursor_field': '2023-01-01T00:00:00.000Z'},
-            {'cursor_field': '2023-01-02T00:00:00.000Z'},
-            False
-        ),
-        (
-            {'cursor_field': '2023-02-01T00:00:00.000Z'},
-            {'cursor_field': '2023-01-01T00:00:00.000Z'},
-            True
-        ),
-        (
-            {'cursor_field': '2023-01-02T00:00:00.000Z'},
-            {'cursor_field': ''},
-            True
-        ),
-        (
-            {'cursor_field': ''},
-            {'cursor_field': '2023-01-02T00:00:00.000Z'},
-            False
-        ),
-    ]
+        ({"cursor_field": "2023-01-01T00:00:00.000Z"}, {"cursor_field": "2023-01-02T00:00:00.000Z"}, False),
+        ({"cursor_field": "2023-02-01T00:00:00.000Z"}, {"cursor_field": "2023-01-01T00:00:00.000Z"}, True),
+        ({"cursor_field": "2023-01-02T00:00:00.000Z"}, {"cursor_field": ""}, True),
+        ({"cursor_field": ""}, {"cursor_field": "2023-01-02T00:00:00.000Z"}, False),
+    ],
 )
 def test_is_greater_than_or_equal(greenhouse_substream_slicer, first_record, second_record, expected_result):
     slicer = greenhouse_substream_slicer

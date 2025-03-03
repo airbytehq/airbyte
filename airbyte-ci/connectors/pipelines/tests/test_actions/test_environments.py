@@ -4,6 +4,7 @@
 
 import pytest
 from click import UsageError
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python import common
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
@@ -37,8 +38,11 @@ async def test_apply_python_development_overrides(
     mocker.patch.object(common, "PATH_TO_LOCAL_CDK", local_cdk_path)
     if local_cdk_is_available:
         local_cdk_path.mkdir()
-        await dagger_client.git("https://github.com/airbytehq/airbyte-python-cdk", keep_git_dir=False).branch("main").tree().export(
-            str(local_cdk_path)
+        await (
+            dagger_client.git("https://github.com/airbytehq/airbyte-python-cdk", keep_git_dir=False)
+            .branch("main")
+            .tree()
+            .export(str(local_cdk_path))
         )
     connector_context.use_local_cdk = use_local_cdk
     fake_connector_container = connector_context.dagger_client.container().from_("airbyte/python-connector-base:3.0.0")

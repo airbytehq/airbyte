@@ -10,9 +10,11 @@ from time import sleep
 from typing import Any, Callable, Dict, Final, List, Mapping, Optional
 
 import requests
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.utils import AirbyteTracedException
+
 
 # default logger instance
 LOGGER: Final[logging.Logger] = logging.getLogger("airbyte")
@@ -43,11 +45,6 @@ class ShopifyNonRetryableErrors:
                 failure_type=FailureType.config_error,
                 error_message=f"Stream `{stream}`. Not available or missing.",
             ),
-            500: ErrorResolution(
-                response_action=ResponseAction.IGNORE,
-                failure_type=FailureType.config_error,
-                error_message=f"Stream `{stream}`. Entity might not be available or missing.",
-            )
             # extend the mapping with more handable errors, if needed.
         }
 

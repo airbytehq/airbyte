@@ -2,10 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Optional
 
+from airbyte_protocol_dataclasses.models import ConfiguredAirbyteCatalog
+
+from airbyte_cdk import TState
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
+
 
 logger = logging.getLogger("airbyte")
 DOCUMENTATION_URL = "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
@@ -39,12 +43,11 @@ SANDBOX_STREAM_NAMES = [
     "creative_assets_portfolios",
     "creative_assets_videos",
 ]
-REPORT_GRANULARITY = {"DAY": "daily", "HOUR": "hourly", "LIFETIME": "lifetime"}
 
 
 class SourceTiktokMarketing(YamlDeclarativeSource):
-    def __init__(self):
-        super().__init__(**{"path_to_yaml": "manifest.yaml"})
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
     @staticmethod
     def _is_sandbox(config: Mapping[str, Any]) -> bool:
@@ -58,19 +61,9 @@ class SourceTiktokMarketing(YamlDeclarativeSource):
         return is_sandbox
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        granularity = config.get("report_granularity")
         streams = super().streams(config)
 
         if self._is_sandbox(config):
             streams = [stream for stream in streams if stream.name in SANDBOX_STREAM_NAMES]
-
-        if granularity:
-            granularity_streams = []
-            for stream in streams:
-                if "report" not in stream.name or REPORT_GRANULARITY[granularity] in stream.name:
-                    # old configs with provided report granularity don't have granularity in stream name
-                    stream.name = stream.name.replace(f"_{REPORT_GRANULARITY[granularity]}", "")
-                    granularity_streams.append(stream)
-            return granularity_streams
 
         return streams
