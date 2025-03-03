@@ -25,7 +25,7 @@ data:
   releaseStage: beta
   remoteRegistries:
     pypi:
-      enabled: false
+      enabled: true
       packageName: airbyte-source-prestashop
   supportLevel: community
   tags:
