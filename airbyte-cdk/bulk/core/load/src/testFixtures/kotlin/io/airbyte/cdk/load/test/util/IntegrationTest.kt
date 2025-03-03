@@ -236,6 +236,10 @@ abstract class IntegrationTest(
      *
      * A common pattern is to call [runSyncUntilStateAck], and then call `dumpAndDiffRecords(...,
      * allowUnexpectedRecord = true)` to verify that [records] were written to the destination.
+     *
+     * This forces the connector to run with microbatching enabled - without that option, tests
+     * using this method would take significantly longer, because they would need to push 100MB
+     * (ish) to the destination before it would ack a state message.
      */
     fun runSyncUntilStateAck(
         configContents: String,
