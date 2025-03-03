@@ -4,7 +4,6 @@
 from datetime import datetime, timedelta
 from http import HTTPStatus
 from unittest.mock import Mock, patch
-from urllib.parse import parse_qs, urlparse
 
 import pytest
 from source_microsoft_sharepoint.utils import PlaceholderUrlBuilder, execute_query_with_retry, filter_http_urls
