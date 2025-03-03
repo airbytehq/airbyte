@@ -3,19 +3,19 @@
 #
 
 from decimal import Decimal
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Optional, Type, ClassVar
 
-import pydantic
-from pydantic import BaseModel
-from pydantic.typing import resolve_annotations
+from pydantic import BaseModel, ConfigDict, create_model, field_serializer
+from pydantic.fields import FieldInfo
+from pydantic._internal._model_construction import ModelMetaclass
 
 from airbyte_cdk.sources.utils.schema_helpers import expand_refs
 
 
-class AllOptional(pydantic.main.ModelMetaclass):
+class AllOptional(ModelMetaclass):
     """
     Metaclass for marking all Pydantic model fields as Optional
-    Here is exmaple of declaring model using this metaclasslike:
+    Here is example of declaring model using this metaclass:
     '''
             class MyModel(BaseModel, metaclass=AllOptional):
                 a: str
@@ -32,9 +32,9 @@ class AllOptional(pydantic.main.ModelMetaclass):
 
     def __new__(self, name, bases, namespaces, **kwargs):
         """
-        Iterate through fields and wrap then with typing.Optional type.
+        Iterate through fields and wrap them with typing.Optional type.
         """
-        annotations = resolve_annotations(namespaces.get("__annotations__", {}), namespaces.get("__module__", None))
+        annotations = namespaces.get("__annotations__", {})
         for base in bases:
             annotations = {**annotations, **getattr(base, "__annotations__", {})}
         for field in annotations:
@@ -44,28 +44,30 @@ class AllOptional(pydantic.main.ModelMetaclass):
         return super().__new__(self, name, bases, namespaces, **kwargs)
 
 
-class CatalogModel(BaseModel, metaclass=AllOptional):
-    class Config:
-        arbitrary_types_allowed = True
+def _schema_extra(schema: Dict[str, Any], model: Type["BaseModel"]) -> None:
+    schema.pop("title", None)
+    schema.pop("description", None)
+    for name, prop in schema.get("properties", {}).items():
+        prop.pop("title", None)
+        prop.pop("description", None)
+        field_info = model.model_fields.get(name)
+        if field_info and not field_info.is_required:
+            if "type" in prop:
+                prop["type"] = ["null", prop["type"]]
+            elif "$ref" in prop:
+                ref = prop.pop("$ref")
+                prop["oneOf"] = [{"type": "null"}, {"$ref": ref}]
 
-        @classmethod
-        def schema_extra(cls, schema: Dict[str, Any], model: Type["BaseModel"]) -> None:
-            schema.pop("title", None)
-            schema.pop("description", None)
-            for name, prop in schema.get("properties", {}).items():
-                prop.pop("title", None)
-                prop.pop("description", None)
-                allow_none = model.__fields__[name].allow_none
-                if allow_none:
-                    if "type" in prop:
-                        prop["type"] = ["null", prop["type"]]
-                    elif "$ref" in prop:
-                        ref = prop.pop("$ref")
-                        prop["oneOf"] = [{"type": "null"}, {"$ref": ref}]
+
+class CatalogModel(BaseModel, metaclass=AllOptional):
+    model_config: ClassVar[ConfigDict] = ConfigDict(
+        arbitrary_types_allowed=True,
+        json_schema_extra=lambda schema, model: _schema_extra(schema, model),
+    )
 
     @classmethod
-    def schema(cls, **kwargs) -> Dict[str, Any]:
-        schema = super().schema(**kwargs)
+    def model_json_schema(cls, **kwargs) -> Dict[str, Any]:
+        schema = super().model_json_schema(**kwargs)
         expand_refs(schema)
         return schema
 
