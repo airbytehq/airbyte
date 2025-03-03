@@ -184,5 +184,5 @@ class DisputeExtractor(BraintreeExtractor):
 
 # Declarative Source
 class SourceBraintree(YamlDeclarativeSource):
-    def __init__(self):
-        super().__init__(**{"path_to_yaml": "manifest.yaml"})
+    def __init__(self, catalog=None, config=None, state=None):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})

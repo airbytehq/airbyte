@@ -25,7 +25,7 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
+    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:c45cf08d8b1a4c1e3d8d7c8a3e05d51c2c7d2b0b6d3bb8da8c01ea3a9b06c181
   releaseStage: alpha
   supportLevel: community
   tags:
