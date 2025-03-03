@@ -1,5 +1,5 @@
 -- create table --------------------------------
-CREATE  TABLE "no_raw_tables_experiment"."old_final_table_5mb" (
+CREATE  TABLE "PUBLIC"."old_final_table_5mb" (
   "_AIRBYTE_RAW_ID" TEXT NOT NULL COLLATE 'utf8',
   "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
   "_AIRBYTE_META" VARIANT NOT NULL,
@@ -29,7 +29,7 @@ CREATE  TABLE "no_raw_tables_experiment"."old_final_table_5mb" (
 
 
 -- "fast" T+D query -------------------------------
-INSERT INTO "no_raw_tables_experiment"."old_final_table_5mb"(
+INSERT INTO "PUBLIC"."old_final_table_5mb"(
   "primary_key", 
   "cursor", 
   "string", 
@@ -208,7 +208,7 @@ WITH intermediate_data AS (
       )
     ) as "_airbyte_cast_errors"
   FROM 
-    "no_raw_tables_experiment"."old_raw_table_5mb_part1"
+    "PUBLIC"."old_raw_table_5mb_part1"
   WHERE 
     ("_airbyte_loaded_at" IS NULL ) 
 ), new_records AS (
@@ -261,7 +261,7 @@ FROM
 WHERE row_number = 1;
 
 DELETE FROM 
-  "no_raw_tables_experiment"."old_final_table_5mb"
+  "PUBLIC"."old_final_table_5mb"
 WHERE 
   "_AIRBYTE_RAW_ID" IN (
     SELECT "_AIRBYTE_RAW_ID" FROM (
@@ -278,12 +278,12 @@ WHERE
 ) DESC) 
         as row_number 
       FROM 
-        "no_raw_tables_experiment"."old_final_table_5mb"
+        "PUBLIC"."old_final_table_5mb"
     )
     WHERE row_number != 1
   );
 
-UPDATE "no_raw_tables_experiment"."old_raw_table_5mb_part1" 
+UPDATE "PUBLIC"."old_raw_table_5mb_part1" 
 SET "_airbyte_loaded_at" = CURRENT_TIMESTAMP() 
 WHERE "_airbyte_loaded_at" IS NULL;
 
@@ -297,7 +297,7 @@ WHERE "_airbyte_loaded_at" IS NULL;
 
 
 -- "slow" T+D query -------------------------------
-INSERT INTO "no_raw_tables_experiment"."old_final_table_5mb"(
+INSERT INTO "PUBLIC"."old_final_table_5mb"(
   "primary_key", 
   "cursor", 
   "string", 
@@ -476,7 +476,7 @@ WITH intermediate_data AS (
       )
     ) as "_airbyte_cast_errors"
   FROM 
-    "no_raw_tables_experiment"."old_raw_table_5mb_part1"
+    "PUBLIC"."old_raw_table_5mb_part1"
   WHERE 
     ("_airbyte_loaded_at" IS NULL ) 
 ), new_records AS (
@@ -529,7 +529,7 @@ FROM
 WHERE row_number = 1;
 
 DELETE FROM 
-  "no_raw_tables_experiment"."old_final_table_5mb"
+  "PUBLIC"."old_final_table_5mb"
 WHERE 
   "_AIRBYTE_RAW_ID" IN (
     SELECT "_AIRBYTE_RAW_ID" FROM (
@@ -546,11 +546,11 @@ WHERE
 ) DESC) 
         as row_number 
       FROM 
-        "no_raw_tables_experiment"."old_final_table_5mb"
+        "PUBLIC"."old_final_table_5mb"
     )
     WHERE row_number != 1
   );
 
-UPDATE "no_raw_tables_experiment"."old_raw_table_5mb_part1" 
+UPDATE "PUBLIC"."old_raw_table_5mb_part1" 
 SET "_airbyte_loaded_at" = CURRENT_TIMESTAMP() 
 WHERE "_airbyte_loaded_at" IS NULL;

@@ -5,12 +5,14 @@ package io.airbyte.integrations.destination.snowflake.typing_deduping
 
 import com.fasterxml.jackson.databind.JsonNode
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcGenerationHandler
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler
+import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.json.Jsons.emptyObject
 import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
@@ -26,7 +28,14 @@ import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
+import io.airbyte.integrations.destination.snowflake.SnowflakeDestination
+import io.airbyte.integrations.destination.snowflake.SnowflakeSQLNameTransformer
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.FileOutputStream
+import java.io.PrintWriter
+import java.nio.file.Files
+import java.nio.file.Path
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -605,3 +614,248 @@ class SnowflakeDestinationHandler(
         }
     }
 }
+
+private val logger = KotlinLogging.logger {}
+/**
+ * Assumes that the old_raw_table_5mb_part1/part2 + new_input_table_5mb_part1/part2 tables already exist.
+ * Will drop+recreate the old_final_table_5mb / new_final_table_5mb tables as needed.
+ */
+fun main() {
+    val size = "5mb"
+    val runOldRawTablesFast = false
+    val runOldRawTablesSlow = false
+    val runNewTableNaive = true
+    val runNewTableOptimized = false
+
+    val config = Jsons.deserialize(Files.readString(Path.of("/Users/francis.genet/Desktop/snowflake_raw_tables_experiment.json")))
+    val generator = SnowflakeSqlGenerator(retentionPeriodDays = 2)
+    val destHandler = SnowflakeDestinationHandler(
+        databaseName = "NO_RAW_TABLE",
+        DefaultJdbcDatabase(SnowflakeDestination("CLOUD").getDataSource(config)),
+        rawTableSchema = "PUBLIC",
+    )
+
+    fun resetOldTypingDeduping() {
+        // reset the raw tables (i.e. unset loaded_at)
+        for (part in listOf(1, 2)) {
+            destHandler.execute(
+                Sql.separately(
+                    """
+                    UPDATE PUBLIC."old_raw_table_${size}_part${part}"
+                    SET "_airbyte_loaded_at" = null
+                    WHERE true
+                    """.trimIndent(),
+                ),
+            )
+        }
+        // drop+recreate `old_final_table_${size}`
+        // part=0 here b/c the part number doesn't matter (we don't need the raw tables yet)
+        destHandler.execute(generator.createTable(getStreamConfig(size, 0), suffix = "", force = true))
+    }
+
+    if (runOldRawTablesFast) {
+        resetOldTypingDeduping()
+        logger.info { "Executing old-style fast T+D for $size dataset, part 1 (upsert to empty table)" }
+        destHandler.execute(
+            generator.updateTable(
+                getStreamConfig(size, part = 1),
+                finalSuffix = "",
+                minRawTimestamp = Optional.empty(),
+                useExpensiveSaferCasting = false,
+            )
+        )
+        logger.info { "Executing old-style fast T+D for $size dataset, part 2 (upsert to populated table)" }
+        destHandler.execute(
+            generator.updateTable(
+                getStreamConfig(size, part = 2),
+                finalSuffix = "",
+                minRawTimestamp = Optional.empty(),
+                useExpensiveSaferCasting = false,
+            )
+        )
+    }
+
+    if (runOldRawTablesSlow) {
+        resetOldTypingDeduping()
+        logger.info { "Executing old-style slow T+D for $size dataset, part 1 (upsert to empty table)" }
+        destHandler.execute(
+            generator.updateTable(
+                getStreamConfig(size, part = 1),
+                finalSuffix = "",
+                minRawTimestamp = Optional.empty(),
+                useExpensiveSaferCasting = true,
+            )
+        )
+        logger.info { "Executing old-style slow T+D for $size dataset, part 2 (upsert to populated table)" }
+        destHandler.execute(
+            generator.updateTable(
+                getStreamConfig(size, part = 2),
+                finalSuffix = "",
+                minRawTimestamp = Optional.empty(),
+                useExpensiveSaferCasting = true,
+            )
+        )
+    }
+
+    PrintWriter(FileOutputStream("/Users/francis.genet/Documents/dev/airbyte/raw_table_experiments/generated_files/snowflake_newstyle.sql")).use { out ->
+        out.println("-- naive create table --------------------------------")
+        out.printSql(getNewStyleCreateFinalTableQuery(size, optimized = false))
+
+        repeat(10) { out.println() }
+        out.println("""-- "naive" dedup query -------------------------------""")
+        out.printSql(getNewStyleDedupingQuery(size, 1, optimized = false))
+
+//        repeat(10) { out.println() }
+//        out.println("-- optimized create table --------------------------------")
+//        out.printSql(getNewStyleCreateFinalTableQuery(size, optimized = true))
+//
+//        repeat(10) { out.println() }
+//        out.println("""-- "optimized" dedup query -------------------------------""")
+//        out.println(getNewStyleDedupingQuery(size, 1, optimized = true))
+    }
+
+    if (runNewTableNaive) {
+        destHandler.execute(getNewStyleCreateFinalTableQuery(size, optimized = false))
+        logger.info { "Executing new-style naive deduping for $size dataset, part 1 (upsert to empty table)" }
+        destHandler.execute(getNewStyleDedupingQuery(size, 1, optimized = false))
+        logger.info { "Executing new-style naive deduping for $size dataset, part 2 (upsert to populated table)" }
+        destHandler.execute(getNewStyleDedupingQuery(size, 2, optimized = false))
+    }
+
+//    if (runNewTableOptimized) {
+//        destHandler.execute(getNewStyleCreateFinalTableQuery(size, optimized = true))
+//        logger.info { "Executing new-style optimized deduping for $size dataset, part 1 (upsert to empty table)" }
+//        destHandler.execute(getNewStyleDedupingQuery(size, 1, optimized = true))
+//        logger.info { "Executing new-style optimized deduping for $size dataset, part 2 (upsert to populated table)" }
+//        destHandler.execute(getNewStyleDedupingQuery(size, 2, optimized = true))
+//    }
+}
+
+fun getNewStyleCreateFinalTableQuery(size: String, optimized: Boolean): Sql {
+    if (optimized) {
+        throw NotImplementedError("TODO do something")
+    }
+    return Sql.separately(
+        "DROP TABLE IF EXISTS PUBLIC.\"new_final_table_${size}\"",
+        """
+            create table PUBLIC."new_final_table_${size}" (
+              "_AIRBYTE_RAW_ID" TEXT NOT NULL COLLATE 'utf8',
+              "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
+              "_AIRBYTE_META" VARIANT NOT NULL,
+              "_AIRBYTE_GENERATION_ID" INTEGER
+              , "primary_key" NUMBER
+              , "cursor" TIMESTAMP_NTZ
+              , "string" TEXT
+              , "bool" BOOLEAN
+              , "integer" NUMBER
+              , "float" FLOAT
+              , "date" DATE
+              , "ts_with_tz" TIMESTAMP_TZ
+              , "ts_without_tz" TIMESTAMP_NTZ
+              , "time_with_tz" TEXT
+              , "time_no_tz" TIME
+              , "array" ARRAY
+              , "json_object" OBJECT
+              ) data_retention_time_in_days = 2;
+        """.trimIndent()
+    )
+}
+
+fun getNewStyleDedupingQuery(size: String, part: Int, optimized: Boolean): Sql {
+    if (optimized) {
+        throw NotImplementedError("TODO do something")
+    }
+    return Sql.transactionally(
+        """
+            INSERT INTO PUBLIC."new_final_table_${size}"(
+                "primary_key",
+                "cursor",
+                "string",
+                "bool",
+                "integer",
+                "float",
+                "date",
+                "ts_with_tz",
+                "ts_without_tz",
+                "time_with_tz",
+                "time_no_tz",
+                "array",
+                "json_object",
+                _AIRBYTE_RAW_ID,
+                _AIRBYTE_EXTRACTED_AT,
+                _AIRBYTE_GENERATION_ID,
+                "_AIRBYTE_META"
+            )
+            WITH new_records AS (
+              SELECT
+                "primary_key", 
+                "cursor", 
+                "string", 
+                "bool", 
+                "integer", 
+                "float", 
+                "date", 
+                "ts_with_tz", 
+                "ts_without_tz", 
+                "time_with_tz", 
+                "time_no_tz", 
+                "array", 
+                "json_object", 
+                "_AIRBYTE_RAW_ID",
+                "_AIRBYTE_EXTRACTED_AT", 
+                "_AIRBYTE_GENERATION_ID", 
+                "_AIRBYTE_META",
+                row_number() OVER (
+                  PARTITION BY "primary_key" ORDER BY "cursor" DESC NULLS LAST, "_AIRBYTE_EXTRACTED_AT" DESC
+                ) AS row_number
+              FROM PUBLIC."new_final_table_${size}"
+            )
+            SELECT
+                "primary_key",
+                "cursor",
+                "string",
+                "bool",
+                "integer",
+                "float",
+                "date",
+                "ts_with_tz",
+                "ts_without_tz",
+                "time_with_tz",
+                "time_no_tz",
+                "array",
+                "json_object",
+                _AIRBYTE_RAW_ID,
+                _AIRBYTE_EXTRACTED_AT,
+                _AIRBYTE_GENERATION_ID,
+                "_AIRBYTE_META"
+            FROM
+                new_records
+            WHERE row_number = 1;
+        """.trimIndent(),
+        """
+            DELETE FROM 
+              "PUBLIC"."new_final_table_${size}"
+            WHERE 
+              "_AIRBYTE_RAW_ID" IN (
+                SELECT "_AIRBYTE_RAW_ID" FROM (
+                  SELECT 
+                    "_AIRBYTE_RAW_ID", 
+                    row_number() OVER (PARTITION BY "primary_key" ORDER BY "cursor" DESC NULLS LAST, TIMESTAMPADD(
+              HOUR, 
+              EXTRACT(timezone_hour from "_AIRBYTE_EXTRACTED_AT"), 
+              TIMESTAMPADD(
+                MINUTE,
+                EXTRACT(timezone_minute from "_AIRBYTE_EXTRACTED_AT"),
+                CONVERT_TIMEZONE('UTC', "_AIRBYTE_EXTRACTED_AT")
+              )
+            ) DESC) 
+                    as row_number 
+                  FROM 
+                    "PUBLIC"."new_final_table_${size}"
+                )
+                WHERE row_number != 1
+              );
+        """.trimIndent(),
+    )
+}
+

@@ -688,50 +688,53 @@ class SnowflakeSqlGenerator(
     }
 }
 
-fun main() {
-    fun col(name: String) =
-        ColumnId(
-            name = name,
-            originalName = name,
-            canonicalName = name,
-        )
-    val streamConfig =
-        StreamConfig(
-            StreamId(
-                finalNamespace = "no_raw_tables_experiment",
-                finalName = "old_final_table_5mb",
-                rawNamespace = "no_raw_tables_experiment",
-                rawName = "old_raw_table_5mb_part1",
-                originalNamespace = "unused",
-                originalName = "unused",
+private fun col(name: String) =
+    ColumnId(
+        name = name,
+        originalName = name,
+        canonicalName = name,
+    )
+
+fun getStreamConfig(size: String, part: Int) =
+    StreamConfig(
+        StreamId(
+            finalNamespace = "PUBLIC",
+            finalName = "old_final_table_${size}",
+            rawNamespace = "PUBLIC",
+            rawName = "old_raw_table_${size}_part${part}",
+            originalNamespace = "unused",
+            originalName = "unused",
+        ),
+        postImportAction = ImportType.DEDUPE,
+        primaryKey = listOf(col("primary_key")),
+        cursor = Optional.of(col("cursor")),
+        columns =
+            linkedMapOf(
+                col("primary_key") to AirbyteProtocolType.INTEGER,
+                col("cursor") to AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE,
+                col("string") to AirbyteProtocolType.STRING,
+                col("bool") to AirbyteProtocolType.BOOLEAN,
+                col("integer") to AirbyteProtocolType.INTEGER,
+                col("float") to AirbyteProtocolType.NUMBER,
+                col("date") to AirbyteProtocolType.DATE,
+                col("ts_with_tz") to AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE,
+                col("ts_without_tz") to AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE,
+                col("time_with_tz") to AirbyteProtocolType.TIME_WITH_TIMEZONE,
+                col("time_no_tz") to AirbyteProtocolType.TIME_WITHOUT_TIMEZONE,
+                col("array") to Array(AirbyteProtocolType.UNKNOWN),
+                col("json_object") to Struct(linkedMapOf()),
             ),
-            postImportAction = ImportType.DEDUPE,
-            primaryKey = listOf(col("primary_key")),
-            cursor = Optional.of(col("cursor")),
-            columns =
-                linkedMapOf(
-                    col("primary_key") to AirbyteProtocolType.INTEGER,
-                    col("cursor") to AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE,
-                    col("string") to AirbyteProtocolType.STRING,
-                    col("bool") to AirbyteProtocolType.BOOLEAN,
-                    col("integer") to AirbyteProtocolType.INTEGER,
-                    col("float") to AirbyteProtocolType.NUMBER,
-                    col("date") to AirbyteProtocolType.DATE,
-                    col("ts_with_tz") to AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE,
-                    col("ts_without_tz") to AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE,
-                    col("time_with_tz") to AirbyteProtocolType.TIME_WITH_TIMEZONE,
-                    col("time_no_tz") to AirbyteProtocolType.TIME_WITHOUT_TIMEZONE,
-                    col("array") to Array(AirbyteProtocolType.UNKNOWN),
-                    col("json_object") to Struct(linkedMapOf()),
-                ),
-            generationId = 42,
-            minimumGenerationId = 0,
-            syncId = 21,
-        )
+        generationId = 42,
+        minimumGenerationId = 0,
+        syncId = 21,
+    )
+
+fun main() {
     val generator =
         SnowflakeSqlGenerator(
             retentionPeriodDays = 2
         )
+    val streamConfig = getStreamConfig("5mb", part = 1)
     val createTableSql = generator.createTable(streamConfig, suffix = "", force = false)
     val fastUpdateTableSql =
         generator.updateTable(
@@ -749,23 +752,23 @@ fun main() {
         )
 
     PrintWriter(FileOutputStream("/Users/francis.genet/Documents/dev/airbyte/raw_table_experiments/generated_files/snowflake.sql")).use { out ->
-        fun printSql(sql: Sql) {
-            sql.transactions.forEach { txn ->
-                txn.forEach { statement ->
-                    out.println(statement)
-                }
-            }
-        }
-
         out.println("-- create table --------------------------------")
-        printSql(createTableSql)
+        out.printSql(createTableSql)
 
         repeat(10) { out.println() }
         out.println("""-- "fast" T+D query -------------------------------""")
-        printSql(fastUpdateTableSql)
+        out.printSql(fastUpdateTableSql)
 
         repeat(10) { out.println() }
         out.println("""-- "slow" T+D query -------------------------------""")
-        printSql(slowUpdateTableSql)
+        out.printSql(slowUpdateTableSql)
+    }
+}
+
+fun PrintWriter.printSql(sql: Sql) {
+    sql.transactions.forEach { txn ->
+        txn.forEach { statement ->
+            this.println(statement)
+        }
     }
 }
