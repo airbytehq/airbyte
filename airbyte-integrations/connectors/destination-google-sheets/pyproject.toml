@@ -19,7 +19,7 @@ include = "destination_google_sheets"
 python = "^3.9,<3.12"
 google-auth-oauthlib = "==0.5.1"
 google-api-python-client = "==2.47.0"
-airbyte-cdk = "==0.51.21"
+airbyte-cdk = "==6.37.1"
 pygsheets = "==2.0.5"
 
 [tool.poetry.scripts]

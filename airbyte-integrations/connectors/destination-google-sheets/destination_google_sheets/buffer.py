@@ -3,15 +3,15 @@
 #
 
 
-from typing import Any, Mapping
+from typing import Any, Dict, Mapping
 
-from airbyte_cdk import AirbyteLogger
+import logging
 from airbyte_cdk.models import AirbyteStream
 
 
 class WriteBufferMixin:
-    # Default instance of AirbyteLogger
-    logger = AirbyteLogger()
+    # Default instance of Logger
+    logger = logging.getLogger("airbyte")
     # intervals after which the records_buffer should be cleaned up for selected stream
     flush_interval = 500  # records count
     flush_interval_size_in_kb = 10 ^ 8  # memory allocation ~ 97656 Kb or 95 Mb
@@ -44,7 +44,7 @@ class WriteBufferMixin:
             "is_set": False,
         }
 
-    def add_to_buffer(self, stream_name: str, record: Mapping):
+    def add_to_buffer(self, stream_name: str, record: Dict[str, Any]):
         """
         Populates input records to `records_buffer`.
 
@@ -63,7 +63,7 @@ class WriteBufferMixin:
         """
         self.records_buffer[stream_name].clear()
 
-    def _normalize_record(self, stream_name: str, record: Mapping) -> Mapping[str, Any]:
+    def _normalize_record(self, stream_name: str, record: Dict[str, Any]) -> Dict[str, Any]:
         """
         Updates the record keys up to the input configured_stream catalog keys.
 

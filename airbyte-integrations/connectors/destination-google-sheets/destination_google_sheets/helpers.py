@@ -9,25 +9,26 @@ from typing import List
 from pygsheets import Spreadsheet, Worksheet
 from pygsheets.exceptions import WorksheetNotFound
 
-from airbyte_cdk import AirbyteLogger
+import logging
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
 
 STREAMS_COUNT_LIMIT = 200
 
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 def get_spreadsheet_id(id_or_url: str) -> str:
     if re.match(r"(https://)", id_or_url):
         m = re.search(r"(/)([-\w]{40,})([/]?)", id_or_url)
-        if m.group(2):
+        if m and m.group(2):
             return m.group(2)
         else:
             logger.error(
                 "The provided URL doesn't match the requirements. See <a href='https://docs.airbyte.com/integrations/destinations/google-sheets#sheetlink'>this guide</a> for more details."
             )
+            return id_or_url
     else:
         return id_or_url
 
