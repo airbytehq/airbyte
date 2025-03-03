@@ -208,8 +208,7 @@ abstract class IntegrationTest(
                 configContents,
                 catalog.asProtocolObject(),
                 useFileTransfer = useFileTransfer,
-                micronautProperties =
-                    micronautProperties + fileTransferProperty + defaultMicronautProperties,
+                micronautProperties = micronautProperties + fileTransferProperty,
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }
@@ -252,7 +251,7 @@ abstract class IntegrationTest(
                 configContents,
                 DestinationCatalog(listOf(stream)).asProtocolObject(),
                 useFileTransfer,
-                micronautProperties = micronautProperties + defaultMicronautProperties,
+                micronautProperties = micronautProperties + micronautPropertyEnableMicrobatching,
             )
         return runBlocking(Dispatchers.IO) {
             launch {
@@ -302,7 +301,12 @@ abstract class IntegrationTest(
         val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}")
         val randomizedNamespaceDateFormatter: DateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyyMMdd")
-        val defaultMicronautProperties: Map<Property, String> =
+
+        /**
+         * When set, this property forces the CDK to invoke processRecords once per record. This
+         * allows tests which depend on state acks to run quickly.
+         */
+        val micronautPropertyEnableMicrobatching: Map<Property, String> =
             mapOf(EnvVarConstants.RECORD_BATCH_SIZE to "1")
 
         /**
