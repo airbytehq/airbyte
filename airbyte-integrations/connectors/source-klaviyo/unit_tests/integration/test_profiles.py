@@ -3,6 +3,7 @@ import datetime
 from typing import Any, Dict, Optional
 from unittest import TestCase
 
+from integration.config import KlaviyoConfigBuilder
 from source_klaviyo import SourceKlaviyo
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
@@ -18,7 +19,6 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
-from integration.config import KlaviyoConfigBuilder
 
 
 _ENDPOINT_TEMPLATE_NAME = "profiles"
