@@ -92,6 +92,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | 0.8.0 | 2025-02-28 | [54688](https://github.com/airbytehq/airbyte/pull/54688) | Add customers stream |
+| 0.7.1 | 2025-03-01 | [54842](https://github.com/airbytehq/airbyte/pull/54842) | Update dependencies |
 | 0.7.0 | 2025-02-27 | [54701](https://github.com/airbytehq/airbyte/pull/54701) | Add timesheet_entrees stream |
 | 0.6.2 | 2025-02-22 | [54238](https://github.com/airbytehq/airbyte/pull/54238) | Update dependencies |
 | 0.6.1 | 2025-02-15 | [53873](https://github.com/airbytehq/airbyte/pull/53873) | Update dependencies |

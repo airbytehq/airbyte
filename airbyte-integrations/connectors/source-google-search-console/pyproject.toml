@@ -27,7 +27,7 @@ source-google-search-console = "source_google_search_console.run:run"
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.11.0"
 pytest-lazy-fixture = "^0.6.3"
-pytest = "^6.1"
+pytest = "^8.0.0"
 pytest-mock = "^3.6.1"
 
 
