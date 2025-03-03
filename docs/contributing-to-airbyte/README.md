@@ -5,7 +5,7 @@ description: "We love contributions to Airbyte, big or small."
 # Contributing to Airbyte
 
 Thank you for your interest in contributing! Contributions are very welcome.
-We appreciate first time contributors and we are happy help you get started. Join our [community Slack](https://slack.airbyte.io) and feel free to reach out with questions in `#dev-and-contribuions` channel.
+We appreciate first time contributors and we are happy help you get started. Join our [community Slack](https://slack.airbyte.io) and feel free to reach out with questions in [`#dev-and-contribuions` channel](https://airbytehq.slack.com/archives/C054V9JFTC6).
 
 Everyone interacting in Slack, codebases, mailing lists, events, or any other Airbyte activities is expected to follow the [Code of Conduct](../community/code-of-conduct.md). Please review it before getting started.
 
