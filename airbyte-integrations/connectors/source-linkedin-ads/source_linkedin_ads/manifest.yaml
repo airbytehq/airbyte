@@ -24,9 +24,10 @@ definitions:
             q: search
           request_headers:
             Linkedin-Version: "202404"
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -74,9 +75,10 @@ definitions:
             accounts: urn:li:sponsoredAccount:{{stream_slice.get('account_id')}}
           request_headers:
             Linkedin-Version: "202404"
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -140,9 +142,10 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -212,9 +215,10 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -280,34 +284,32 @@ definitions:
           request_headers:
             Linkedin-Version: "202410"
             X-RestLi-Method: FINDER
-          error_handlers:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Stream {{self.name}}: LinkedIn API requests are rate
-                      limited. Rate limits specify the maximum number of API
-                      calls that can be made in a 24 hour period. These limits
-                      reset at midnight UTC every day. You can find more
-                      information here
-                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
-                      Also quotas and usage are here:
-                      https://www.linkedin.com/developers/apps.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 503
-              - type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+          error_handler:
+            type: CustomErrorHandler
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 429
+                error_message: >-
+                  Stream {{self.name}}: LinkedIn API requests are rate
+                  limited. Rate limits specify the maximum number of API
+                  calls that can be made in a 24 hour period. These limits
+                  reset at midnight UTC every day. You can find more
+                  information here
+                  https://docs.airbyte.com/integrations/sources/linkedin-ads.
+                  Also quotas and usage are here:
+                  https://www.linkedin.com/developers/apps.
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 500
+                  - 503
         record_selector:
           type: RecordSelector
           extractor:
@@ -371,9 +373,10 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -434,9 +437,10 @@ definitions:
           request_headers:
             LinkedIn-Version: "202406"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -485,9 +489,10 @@ definitions:
           request_headers:
             LinkedIn-Version: "202406"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -547,9 +552,10 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -628,9 +634,10 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -709,9 +716,10 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -790,9 +798,10 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -871,9 +880,10 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -952,9 +962,10 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -1033,9 +1044,10 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -1114,9 +1126,10 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -1195,9 +1208,10 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -1276,9 +1290,10 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -1357,9 +1372,10 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -1439,9 +1455,10 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
-            class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+            class_name: >-
+              source_linkedin_ads.components.LinkedInAdsErrorHandler
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -1497,13 +1514,14 @@ definitions:
     type: HttpRequester
     url_base: https://api.linkedin.com/rest/
     authenticator: "#/definitions/authenticator"
-    error_handlers:
+    error_handler:
       type: CustomErrorHandler
-      class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
+      class_name: >-
+        source_linkedin_ads.components.LinkedInAdsErrorHandler
       backoff_strategies:
         - type: ExponentialBackoffStrategy
           factor: 5
-  # Authenticators
+      # Authenticators
   bearer_authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['access_token'] }}"

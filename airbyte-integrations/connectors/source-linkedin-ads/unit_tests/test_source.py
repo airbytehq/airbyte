@@ -13,7 +13,7 @@ from source_linkedin_ads.source import SourceLinkedinAds
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 
 
@@ -105,7 +105,7 @@ class TestAllStreams:
             "GET", "https://api.linkedin.com/rest/adAccounts", [{"status_code": error_code, "json": {"elements": []}}]
         )
         stream.exit_on_rate_limit = True
-        with pytest.raises(DefaultBackoffException):
+        with pytest.raises(UserDefinedBackoffException):
             list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
     def test_custom_streams(self, requests_mock):
