@@ -17,7 +17,7 @@ from .writer import GoogleSheetsWriter
 
 
 class DestinationGoogleSheets(Destination):
-    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: Dict[str, Any]) -> AirbyteConnectionStatus:
         """
         Connection check method for Google Spreadsheets.
         Info:
@@ -39,7 +39,7 @@ class DestinationGoogleSheets(Destination):
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(err)}")
 
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Dict[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
         """
         Reads the input stream of messages, config, and catalog to write data to the destination.
