@@ -16,7 +16,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "destination_google_sheets"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "^3.10,<3.12"
 google-auth-oauthlib = "==0.5.1"
 google-api-python-client = "==2.47.0"
 airbyte-cdk = "==6.37.1"
