@@ -219,14 +219,10 @@ public class YellowbrickSqlGenerator extends JdbcSqlGenerator {
   }
 
   private Field<?> extractColumnAsJson(ColumnId column) {
-    String jsonKey = column.getOriginalName()
-        .replace("\"", "\"\"");
-
-    return field(
-        "{0}::JSONB:{1} NULL ON ERROR",
-        SQLDataType.JSONB,
-        field(name(JavaBaseConstants.COLUMN_NAME_DATA)),
-        field(jsonKey));
+    String jsonKey = column.getOriginalName();
+    String dataCol = JavaBaseConstants.COLUMN_NAME_DATA;
+    String rawSql = String.format("\"%s\"::JSONB:$.%s NULL ON ERROR", dataCol, jsonKey);
+    return field(rawSql, SQLDataType.JSONB);
   }
 
   private Field<String> jsonTypeof(Field<?> jsonField) {
