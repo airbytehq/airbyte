@@ -4,7 +4,6 @@
 
 from typing import Any, List, Mapping, Optional, Tuple
 
-import pendulum
 from airbyte_protocol_dataclasses.models import ConfiguredAirbyteCatalog
 
 from airbyte_cdk import TState

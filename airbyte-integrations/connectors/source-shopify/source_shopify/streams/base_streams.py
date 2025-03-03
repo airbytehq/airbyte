@@ -795,7 +795,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         if self.job_manager._supports_checkpointing:
             checkpointing_message = f" The BULK checkpoint after `{self.job_manager.job_checkpoint_interval}` lines."
         else:
-            checkpointing_message = f" The BULK checkpointing is not supported."
+            checkpointing_message = " The BULK checkpointing is not supported."
 
         self.logger.info(slice_message + checkpointing_message)
 

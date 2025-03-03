@@ -4,12 +4,9 @@
 
 
 import logging
-from unittest.mock import patch
 
-import freezegun
 import pytest
 from source_amazon_seller_partner import SourceAmazonSellerPartner
-from source_amazon_seller_partner.components import AmazonSPOauthAuthenticator
 from source_amazon_seller_partner.utils import AmazonConfigException
 
 from airbyte_cdk.sources.streams import Stream

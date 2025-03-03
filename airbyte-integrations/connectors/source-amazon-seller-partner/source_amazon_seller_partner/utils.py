@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-import time
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException

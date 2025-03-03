@@ -1,10 +1,10 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from dataclasses import InitVar, dataclass
+from dataclasses import dataclass
 from typing import Any, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import Config, FieldPointer, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 
 
 @dataclass

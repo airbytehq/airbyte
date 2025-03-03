@@ -21,7 +21,7 @@ class SponsoredDisplayReportRequestBuilder(AmazonAdsBaseRequestBuilder):
         report_date: Optional[str] = None,
     ) -> "SponsoredDisplayReportRequestBuilder":
         return (
-            cls(f"reporting/reports")
+            cls("reporting/reports")
             .with_client_id(client_id)
             .with_client_access_token(client_access_token)
             .with_profile_id(profile_id)

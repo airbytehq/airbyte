@@ -19,7 +19,6 @@ from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationT
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
-    AirbyteStateMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,

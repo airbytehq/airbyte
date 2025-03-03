@@ -11,7 +11,6 @@ from typing import List, Optional, Tuple, Union
 
 import orchestrator.hacks as HACKS
 import pandas as pd
-import semver
 import sentry_sdk
 from dagster import AutoMaterializePolicy, DynamicPartitionsDefinition, MetadataValue, OpExecutionContext, Output, asset
 from dagster_gcp.gcs.file_manager import GCSFileHandle, GCSFileManager

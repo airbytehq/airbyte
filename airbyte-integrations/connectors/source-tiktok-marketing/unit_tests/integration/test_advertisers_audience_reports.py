@@ -49,7 +49,7 @@ class TestAdvertiserAudienceReportsLifetime(TestCase):
             )
         http_mocker.get(
             HttpRequest(
-                url=f"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
+                url="https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
                 query_params=query_params,
             ),
             HttpResponse(body=json.dumps(find_template(self.stream_name, __file__)), status_code=200),

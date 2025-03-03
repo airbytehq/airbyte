@@ -7,7 +7,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Mapping, Optional, Tuple, Type
+from typing import Dict, List, Optional, Tuple, Type
 
 import dagger
 import semver

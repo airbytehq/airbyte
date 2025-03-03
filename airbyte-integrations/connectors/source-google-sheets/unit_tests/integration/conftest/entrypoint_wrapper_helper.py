@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from airbyte_cdk.sources import Source
-from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, _run_command, make_file, read
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, _run_command, make_file
 
 
 def check(

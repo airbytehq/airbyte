@@ -2,20 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
-import random
-from pathlib import Path
-from typing import List
 from unittest.mock import AsyncMock, MagicMock
 
-import anyio
-import asyncclick as click
 import pytest
-from connector_ops.utils import Connector, ConnectorLanguage
+from connector_ops.utils import Connector
 from dagger import Directory
 
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.connectors.publish import pipeline as publish_pipeline
 from pipelines.airbyte_ci.connectors.upgrade_cdk import pipeline as upgrade_cdk_pipeline
 from pipelines.models.steps import StepStatus
 

@@ -1,7 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 from __future__ import annotations
 
-import os
 import tempfile
 from unittest.mock import Mock, patch
 

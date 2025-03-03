@@ -8,7 +8,7 @@ import pytest
 import requests
 from source_shopify.run import run
 from source_shopify.source import ConnectionCheckTest, SourceShopify
-from source_shopify.streams.streams import BalanceTransactions, DiscountCodes, FulfillmentOrders, PriceRules
+from source_shopify.streams.streams import BalanceTransactions, DiscountCodes, PriceRules
 from source_shopify.utils import ShopifyNonRetryableErrors
 
 

@@ -92,7 +92,7 @@ def test_bulk_query_cancel() -> None:
             Query(
                 name="test_root",
                 arguments=[
-                    Argument(name="query", value=f"\"updated_at:>'2023-01-01' AND updated_at:<='2023-01-02'\""),
+                    Argument(name="query", value="\"updated_at:>'2023-01-01' AND updated_at:<='2023-01-02'\""),
                 ],
                 fields=[Field(name="edges", fields=[Field(name="node", fields=["test_field1", "test_field2"])])],
             ),
@@ -138,7 +138,7 @@ def test_base_build_query(basic_config, query_name, fields, filter_field, start,
                     Query(
                         name="customers",
                         arguments=[
-                            Argument(name="query", value=f"\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""),
+                            Argument(name="query", value="\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""),
                             Argument(name="sortKey", value="UPDATED_AT"),
                         ],
                         fields=[
@@ -196,7 +196,7 @@ def test_base_build_query(basic_config, query_name, fields, filter_field, start,
                     Query(
                         name="products",
                         arguments=[
-                            Argument(name="query", value=f"\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""),
+                            Argument(name="query", value="\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""),
                             Argument(name="sortKey", value="UPDATED_AT"),
                         ],
                         fields=[
@@ -295,7 +295,7 @@ def test_base_build_query(basic_config, query_name, fields, filter_field, start,
                                                 name="inventoryLevels",
                                                 arguments=[
                                                     Argument(
-                                                        name="query", value=f"\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""
+                                                        name="query", value="\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""
                                                     ),
                                                 ],
                                                 fields=[

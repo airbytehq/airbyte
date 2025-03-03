@@ -30,7 +30,7 @@ class TestCreativeAssetsPortfolios(TestCase):
 
         http_mocker.get(
             HttpRequest(
-                url=f"https://business-api.tiktok.com/open_api/v1.3/creative/portfolio/list/?page_size=100&advertiser_id=872746382648",
+                url="https://business-api.tiktok.com/open_api/v1.3/creative/portfolio/list/?page_size=100&advertiser_id=872746382648",
             ),
             HttpResponse(body=json.dumps(find_template(self.stream_name, __file__)), status_code=200),
         )

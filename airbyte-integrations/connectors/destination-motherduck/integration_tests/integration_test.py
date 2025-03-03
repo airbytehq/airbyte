@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Generator, Iterable
 from unittest.mock import MagicMock
 
-import duckdb
 import pytest
 from destination_motherduck import DestinationMotherDuck
 from destination_motherduck.destination import CONFIG_MOTHERDUCK_API_KEY

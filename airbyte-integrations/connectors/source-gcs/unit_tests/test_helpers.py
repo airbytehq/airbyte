@@ -1,6 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 from source_gcs.helpers import get_stream_name
 

@@ -6,8 +6,7 @@ from datetime import datetime, timedelta
 from typing import List
 
 from dagster import InitResourceContext, StringSource, resource
-from dateutil.parser import parse
-from github import ContentFile, Github, GitTreeElement, Repository
+from github import ContentFile, Github, Repository
 from metadata_service.constants import METADATA_FILE_NAME
 from orchestrator.config import CONNECTORS_PATH
 
@@ -64,7 +63,7 @@ def get_latest_commit_for_file(github_connector_repo: Repository, path: str) -> 
     config_schema={"connectors_path": StringSource},
 )
 def github_connectors_metadata_files(resource_context: InitResourceContext) -> List[dict]:
-    resource_context.log.info(f"retrieving github metadata files")
+    resource_context.log.info("retrieving github metadata files")
 
     github_connector_repo = resource_context.resources.github_connector_repo
     repo_file_tree = github_connector_repo.get_git_tree("master", recursive=True).tree
@@ -78,7 +77,7 @@ def github_connectors_metadata_files(resource_context: InitResourceContext) -> L
         if _valid_metadata_file_path(github_file.path)
     ]
 
-    resource_context.log.info(f"finished retrieving github metadata files")
+    resource_context.log.info("finished retrieving github metadata files")
     return metadata_file_paths
 
 

@@ -8,7 +8,7 @@ from typing import Any, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
 @dataclass

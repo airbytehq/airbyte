@@ -5,7 +5,6 @@ from difflib import get_close_matches
 from pathlib import Path
 from typing import Any
 
-from connector_ops.utils import Connector  # type: ignore
 from jinja2 import Environment, FileSystemLoader
 from markdown_it import MarkdownIt
 from markdown_it.tree import SyntaxTreeNode

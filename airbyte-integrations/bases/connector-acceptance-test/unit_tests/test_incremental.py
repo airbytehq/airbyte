@@ -3,7 +3,6 @@
 #
 
 import json
-import operator
 from contextlib import nullcontext as does_not_raise
 from logging import Logger
 from pathlib import Path

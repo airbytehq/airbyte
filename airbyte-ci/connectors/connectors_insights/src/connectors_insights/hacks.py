@@ -61,7 +61,7 @@ def get_ci_on_master_report(connector: Connector) -> Dict | None:
                 json_report = get_ci_json_report(json_report_url)
                 if json_report["connector_version"] == connector.version:
                     return json_report
-            except Exception as e:
+            except Exception:
                 continue
             return None
 

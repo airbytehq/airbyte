@@ -3,8 +3,6 @@
 from datetime import datetime, timedelta, timezone
 from unittest import TestCase
 
-import freezegun
-
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import SyncMode

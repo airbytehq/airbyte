@@ -26,7 +26,6 @@ import json
 import os
 import sys
 
-import genson.schema.strategies as strategies
 from genson import SchemaBuilder
 from genson.schema.strategies.object import Object
 

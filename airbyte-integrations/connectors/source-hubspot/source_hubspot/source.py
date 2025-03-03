@@ -3,10 +3,9 @@
 #
 
 import logging
-import traceback
 from http import HTTPStatus
 from itertools import chain
-from typing import Any, Generator, List, Mapping, Optional, Tuple, Union
+from typing import Any, Generator, List, Mapping, Optional, Tuple
 
 from requests import HTTPError
 

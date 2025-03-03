@@ -1768,7 +1768,7 @@ async def test_read_validate_stream_statuses_exceptions(mocker, output):
     configured_catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
-                stream=AirbyteStream.parse_obj({"name": f"test_stream_0", "json_schema": {}, "supported_sync_modes": ["full_refresh"]}),
+                stream=AirbyteStream.parse_obj({"name": "test_stream_0", "json_schema": {}, "supported_sync_modes": ["full_refresh"]}),
                 sync_mode="full_refresh",
                 destination_sync_mode="overwrite",
             )
@@ -1919,7 +1919,7 @@ async def test_read_validate_async_output_state_messages(mocker, state_message_p
     configured_catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
-                stream=AirbyteStream.parse_obj({"name": f"test_stream_0", "json_schema": {}, "supported_sync_modes": ["full_refresh"]}),
+                stream=AirbyteStream.parse_obj({"name": "test_stream_0", "json_schema": {}, "supported_sync_modes": ["full_refresh"]}),
                 sync_mode="full_refresh",
                 destination_sync_mode="overwrite",
             )

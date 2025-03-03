@@ -15,9 +15,9 @@ from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMod
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.checkpoint.substream_resumable_full_refresh_cursor import SubstreamResumableFullRefreshCursor
-from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream
+from airbyte_cdk.sources.streams.core import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType

@@ -10,7 +10,6 @@ from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
-    NestedPath,
     PaginationStrategy,
     RecordBuilder,
     create_record_builder,

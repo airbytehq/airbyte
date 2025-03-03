@@ -1130,13 +1130,13 @@ class TestStatefulTicketMetrics:
     )
     def test_stream_slices(self, requests_mock, stream_state, response, expected_slices):
         stream = get_stream_instance(StatefulTicketMetrics, STREAM_ARGS)
-        requests_mock.get(f"https://sandbox.zendesk.com/api/v2/incremental/tickets/cursor.json", json=response)
+        requests_mock.get("https://sandbox.zendesk.com/api/v2/incremental/tickets/cursor.json", json=response)
         assert list(stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=stream_state)) == expected_slices
 
     def test_read_with_error(self, requests_mock):
         stream = get_stream_instance(StatefulTicketMetrics, STREAM_ARGS)
         requests_mock.get(
-            f"https://sandbox.zendesk.com/api/v2/tickets/13/metrics", json={"error": "RecordNotFound", "description": "Not found"}
+            "https://sandbox.zendesk.com/api/v2/tickets/13/metrics", json={"error": "RecordNotFound", "description": "Not found"}
         )
 
         records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"ticket_id": "13"}))

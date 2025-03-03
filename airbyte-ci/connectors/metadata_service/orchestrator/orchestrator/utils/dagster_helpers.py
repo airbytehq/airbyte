@@ -3,7 +3,7 @@
 #
 
 import hashlib
-from typing import List, Optional
+from typing import List
 
 import pandas as pd
 from dagster import MetadataValue, Output

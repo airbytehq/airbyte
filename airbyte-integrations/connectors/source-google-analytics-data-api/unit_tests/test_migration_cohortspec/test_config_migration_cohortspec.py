@@ -7,7 +7,6 @@ import json
 import os
 from typing import Any, Mapping
 
-import dpath.util
 from source_google_analytics_data_api.config_migrations import MigrateCustomReportsCohortSpec
 from source_google_analytics_data_api.source import SourceGoogleAnalyticsDataApi
 

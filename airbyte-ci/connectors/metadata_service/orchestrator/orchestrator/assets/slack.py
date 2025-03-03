@@ -5,7 +5,7 @@
 import os
 
 import pandas as pd
-from dagster import AutoMaterializePolicy, FreshnessPolicy, OpExecutionContext, Output, asset
+from dagster import AutoMaterializePolicy, FreshnessPolicy, OpExecutionContext, asset
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 
 

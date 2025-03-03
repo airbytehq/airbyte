@@ -23,7 +23,7 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 
-from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
+from .exceptions import ErrorFetchingMetadata
 from .utils import FolderNotFoundException, MicrosoftSharePointRemoteFile, execute_query_with_retry, filter_http_urls
 
 
@@ -279,7 +279,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
         if not items_processed:
             raise AirbyteTracedException(
-                message=f"Drive is empty or does not exist.",
+                message="Drive is empty or does not exist.",
                 failure_type=FailureType.config_error,
             )
 
@@ -335,7 +335,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             response.raise_for_status()
             return int(response.headers["Content-Length"])
         except KeyError:
-            raise ErrorFetchingMetadata(f"Size was expected in metadata response but was missing")
+            raise ErrorFetchingMetadata("Size was expected in metadata response but was missing")
         except Exception as e:
             raise ErrorFetchingMetadata(f"An error occurred while retrieving file size: {str(e)}")
 

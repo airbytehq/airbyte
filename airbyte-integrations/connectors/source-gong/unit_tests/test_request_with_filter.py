@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import unittest
-from json import dumps, load
+from json import load
 from typing import Dict
 
 from components import IncrementalSingleBodyFilterCursor

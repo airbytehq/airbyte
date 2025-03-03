@@ -13,7 +13,7 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from integration.utils import create_base_url, given_authentication, given_stream
+from integration.utils import create_base_url, given_authentication
 
 
 _CLIENT_ID = "a_client_id"

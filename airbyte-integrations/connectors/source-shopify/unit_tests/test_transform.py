@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from decimal import Decimal
 
 import pytest
 from source_shopify.transform import DataTypeEnforcer

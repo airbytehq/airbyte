@@ -481,4 +481,4 @@ class TestCheckChangelogEntry:
 
         # Assert
         assert result.status == CheckStatus.PASSED
-        assert f"Changelog entry found for version 1.0.0" in result.message
+        assert "Changelog entry found for version 1.0.0" in result.message

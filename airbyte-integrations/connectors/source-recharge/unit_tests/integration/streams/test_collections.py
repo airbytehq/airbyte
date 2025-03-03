@@ -2,7 +2,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-from unittest import TestCase
 
 import freezegun
 
@@ -10,7 +9,7 @@ from airbyte_cdk.test.mock_http import HttpMocker
 
 from ..config import NOW
 from ..response_builder import NEXT_PAGE_TOKEN, get_stream_record, get_stream_response
-from ..utils import StreamTestCase, config, read_full_refresh
+from ..utils import StreamTestCase, read_full_refresh
 
 
 _STREAM_NAME = "collections"

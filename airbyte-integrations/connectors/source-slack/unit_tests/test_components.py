@@ -2,7 +2,6 @@
 
 from unittest.mock import MagicMock
 
-import pendulum
 import pytest
 from source_slack import SourceSlack
 from source_slack.components.channel_members_extractor import ChannelMembersExtractor

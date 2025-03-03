@@ -15,7 +15,7 @@ from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.utils import AirbyteTracedException
 
 from .exceptions import TypeSalesforceException
-from .rate_limiting import SalesforceErrorHandler, default_backoff_handler
+from .rate_limiting import SalesforceErrorHandler
 from .utils import filter_streams_by_criteria
 
 
