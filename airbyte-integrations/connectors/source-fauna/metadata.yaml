@@ -38,10 +38,6 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-fauna
   supportLevel: community
   tags:
     - language:python
