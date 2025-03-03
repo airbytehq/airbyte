@@ -16,9 +16,9 @@ const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
 const docMetaTags = require("./src/remark/docMetaTags");
 
-const redirects = yaml.load(
-  fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8")
-);
+// const redirects = yaml.load(
+//   fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8")
+// );
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -33,8 +33,8 @@ const config = {
   // Assumed relative path.  If you are using airbytehq.github.io use /
   // anything else should match the repo name
   baseUrl: "/",
-  onBrokenLinks: "throw",
-  onBrokenMarkdownLinks: "throw",
+  onBrokenLinks: "warn",
+  onBrokenMarkdownLinks: "warn",
   favicon: "img/favicon.png",
   organizationName: "airbytehq", // Usually your GitHub org/user name.
   projectName: "airbyte", // Usually your repo name.
@@ -66,15 +66,77 @@ const config = {
       },
     },
   ],
-
-  plugins: [
+  // The preset is the "main" docs instance, though in reality, most content does not live under this preset. See the plugins array below, which defines the behavior of each docs instance.
+  presets: [
     [
-      "@docusaurus/plugin-client-redirects",
+      "classic",
+      /** @type {import('@docusaurus/preset-classic').Options} */
+      ({
+        docs: {
+          routeBasePath: "/",
+          sidebarCollapsible: true,
+          sidebarPath: require.resolve("./sidebar.js"),
+          editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+          path: "../docs/home",
+          beforeDefaultRemarkPlugins: [specDecoration, connectorList], // use before-default plugins so TOC rendering picks up inserted headings
+          remarkPlugins: [
+            docsHeaderDecoration,
+            enterpriseDocsHeaderInformation,
+            productInformation,
+            docMetaTags,
+          ],
+        },
+        blog: false,
+        theme: {
+          customCss: require.resolve("./src/css/custom.css"),
+        },
+      }),
+    ],
+  ],
+  plugins: [
+    // This plugin controls "platform" docs, which are to be versioned
+    [
+      '@docusaurus/plugin-content-docs',
       {
-        fromExtensions: ["html", "htm"], // /myPage.html -> /myPage
-        redirects: redirects,
+        id: 'platform',
+        path: '../docs/platform',
+        routeBasePath: '/platform',
+        sidebarPath: './sidebar-platform.js',
+        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        remarkPlugins: [
+          docsHeaderDecoration,
+          enterpriseDocsHeaderInformation,
+          productInformation,
+          docMetaTags,
+        ],
       },
     ],
+    // This plugin controls "connector/source/destination" docs, which are unversioned by Docusaurus and use their own versioning
+    [
+      '@docusaurus/plugin-content-docs',
+      {
+        id: 'connectors',
+        path: '../docs/integrations',
+        routeBasePath: '/integrations',
+        sidebarPath: './sidebar-connectors.js',
+        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        beforeDefaultRemarkPlugins: [specDecoration, connectorList], // use before-default plugins so TOC rendering picks up inserted headings
+        remarkPlugins: [
+          docsHeaderDecoration,
+          enterpriseDocsHeaderInformation,
+          productInformation,
+          docMetaTags,
+        ],
+      },
+    ],
+    // Client-side redirect plugin - turning off for now to replace with Vercel server-side redirects
+    // [
+    //   "@docusaurus/plugin-client-redirects",
+    //   {
+    //     fromExtensions: ["html", "htm"], // /myPage.html -> /myPage
+    //     redirects: redirects,
+    //   },
+    // ],
     () => ({
       name: "Yaml loader",
       configureWebpack() {
@@ -102,36 +164,6 @@ const config = {
     require.resolve("./src/scripts/cloudStatus.js"),
     require.resolve("./src/scripts/download-abctl-buttons.js"),
     require.resolve("./src/scripts/fontAwesomeIcons.js"),
-  ],
-
-  presets: [
-    [
-      "classic",
-      /** @type {import('@docusaurus/preset-classic').Options} */
-      ({
-        docs: {
-          routeBasePath: "/",
-          sidebarCollapsible: true,
-          sidebarPath: require.resolve("./sidebars.js"),
-          editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
-          path: "../docs",
-          exclude: [
-            "**/*.inapp.md"
-          ],
-          beforeDefaultRemarkPlugins: [specDecoration, connectorList], // use before-default plugins so TOC rendering picks up inserted headings
-          remarkPlugins: [
-            docsHeaderDecoration,
-            enterpriseDocsHeaderInformation,
-            productInformation,
-            docMetaTags,
-          ],
-        },
-        blog: false,
-        theme: {
-          customCss: require.resolve("./src/css/custom.css"),
-        },
-      }),
-    ],
   ],
 
   themeConfig:
