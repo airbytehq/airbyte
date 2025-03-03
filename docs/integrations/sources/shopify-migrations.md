@@ -1,16 +1,29 @@
 # Shopify Migration Guide
 
+## Upgrading to 2.6.1
+
+This version completely deprecates the following streams, because Shopify no longer supports them after Shopify API version `2024-04`:
+
+- `Products Graph QL`
+- `Customer Saved Search`
+
+Please use `Products` to replace the old `Products Graph QL` stream.
+
 ## Upgrading to 2.2.0
+
 This version updates the schema for countries as our testing caught that `provinces.tax_percentage` is a number and not an integer.
 
 ### Action items required for 2.2.0
+
 - `Refresh Schema` + `Reset` is required for this stream after the upgrade from previous version.
 
 ## Upgrading to 2.1.0
+
 This version implements `Shopify GraphQL BULK Operations` to speed up the following streams:
- - `Products`
- - `Product Images`
- - `Product Variants`
+
+- `Products`
+- `Product Images`
+- `Product Variants`
 
 * In the `Products` stream, the `published_scope` property is no longer available.
 * In the `Products` stream, the `images` property now contains only the `id` of the image. Refer to the `Product Images` stream instead.
@@ -25,8 +38,8 @@ This version implements `Shopify GraphQL BULK Operations` to speed up the follow
 * Retrieving the `deleted` records for `Products`, `Product Images` and `Product Variants` streams are no longer available, due to the `GraphQL` limitations.
 
 ### Action items required for 2.1.0
-- `Refresh Schema` + `Reset` is required for this stream after the upgrade from previous version.
 
+- `Refresh Schema` + `Reset` is required for this stream after the upgrade from previous version.
 
 ## Upgrading to 2.0.0
 

@@ -108,7 +108,16 @@ The Close.com connector is subject to rate limits. For more information on this 
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                |
-| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
+| :------ |:-----------| :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
+| 0.6.6 | 2025-03-01 | [54454](https://github.com/airbytehq/airbyte/pull/54454) | Update dependencies |
+| 0.6.5 | 2025-02-15 | [53747](https://github.com/airbytehq/airbyte/pull/53747) | Update dependencies |
+| 0.6.4 | 2025-02-08 | [53329](https://github.com/airbytehq/airbyte/pull/53329) | Update dependencies |
+| 0.6.3 | 2025-02-01 | [52940](https://github.com/airbytehq/airbyte/pull/52940) | Update dependencies |
+| 0.6.2 | 2025-01-25 | [52306](https://github.com/airbytehq/airbyte/pull/52306) | Update dependencies |
+| 0.6.1 | 2025-01-18 | [51625](https://github.com/airbytehq/airbyte/pull/51625) | Update dependencies |
+| 0.6.0 | 2025-01-16 | [50431](https://github.com/airbytehq/airbyte/pull/50431) | Migrate to manifest-only |
+| 0.5.30 | 2025-01-11 | [51119](https://github.com/airbytehq/airbyte/pull/51119) | Update dependencies |
+| 0.5.29 | 2025-01-04 | [50920](https://github.com/airbytehq/airbyte/pull/50920) | Update dependencies |
 | 0.5.28 | 2024-12-28 | [50532](https://github.com/airbytehq/airbyte/pull/50532) | Update dependencies |
 | 0.5.27 | 2024-12-21 | [50065](https://github.com/airbytehq/airbyte/pull/50065) | Update dependencies |
 | 0.5.26 | 2024-12-14 | [48918](https://github.com/airbytehq/airbyte/pull/48918) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

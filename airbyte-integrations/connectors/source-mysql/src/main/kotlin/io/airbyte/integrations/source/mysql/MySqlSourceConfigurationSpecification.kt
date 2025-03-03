@@ -334,9 +334,9 @@ class Cdc : IncrementalConfigurationSpecification {
     var serverTimezone: String? = null
 
     @JsonProperty("invalid_cdc_cursor_position_behavior")
-    @JsonSchemaTitle("Configured server timezone for the MySQL source (Advanced)")
+    @JsonSchemaTitle("Invalid CDC Position Behavior (Advanced)")
     @JsonPropertyDescription(
-        "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard.",
+        "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value in the mined logs. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
     )
     @JsonSchemaDefault("Fail sync")
     @JsonSchemaInject(

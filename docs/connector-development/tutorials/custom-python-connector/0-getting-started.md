@@ -4,10 +4,11 @@ This tutorial will walk you through the creation of a custom Airbyte connector i
 Python CDK. It assumes you're already familiar with Airbyte concepts and you've already built a
 connector using the [Connector Builder](../../connector-builder-ui/tutorial.mdx).
 
-The Python CDK should be used to implement connectors that require features that are not yet
-available in the Connector Builder or in the low-code framework. You can use the
-[Connector Builder compatibility guide](../../connector-builder-ui/connector-builder-compatibility.md)
-to know whether it is suitable for your needs.
+:::tip
+We highly recommend using the Connector Builder for most use cases;
+while the Python CDK is more flexible, it requires a deeper understanding of underlying connector logic,
+as well as some experience programming in Python.
+:::
 
 We'll build an connector for the Survey Monkey API, focusing on the `surveys` and `survey responses`
 endpoints.

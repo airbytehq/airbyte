@@ -130,6 +130,7 @@ Now that you have set up the TiDB source connector, check out the following TiDB
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.3.4 | 2025-01-10 | [51499](https://github.com/airbytehq/airbyte/pull/51499) | Use a non root base image |
 | 0.3.3 | 2024-12-18 | [49896](https://github.com/airbytehq/airbyte/pull/49896) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.3.2 | 2024-02-13 | [35218](https://github.com/airbytehq/airbyte/pull/35218) | Adopt CDK 0.20.4 |
 | 0.3.1 | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |

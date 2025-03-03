@@ -61,6 +61,14 @@ class StripeRequestBuilder:
         return cls("payouts", account_id, client_secret)
 
     @classmethod
+    def setup_attempts_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls("setup_attempts", account_id, client_secret)
+
+    @classmethod
+    def setup_intents_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls("setup_intents", account_id, client_secret)
+
+    @classmethod
     def persons_endpoint(
         cls,
         parent_account_id: str,
@@ -91,6 +99,7 @@ class StripeRequestBuilder:
         self._limit: Optional[int] = None
         self._object: Optional[str] = None
         self._payout: Optional[str] = None
+        self._setup_intent: Optional[str] = None
         self._starting_after_id: Optional[str] = None
         self._types: List[str] = []
         self._expands: List[str] = []
@@ -131,6 +140,10 @@ class StripeRequestBuilder:
         self._payout = payout
         return self
 
+    def with_setup_intent(self, setup_intent: str) -> "StripeRequestBuilder":
+        self._setup_intent = setup_intent
+        return self
+
     def build(self) -> HttpRequest:
         query_params = {}
         if self._created_gte:
@@ -152,6 +165,8 @@ class StripeRequestBuilder:
             query_params["payout"] = self._payout
         if self._expands:
             query_params["expand[]"] = self._expands
+        if self._setup_intent:
+            query_params["setup_intent"] = self._setup_intent
 
         if self._any_query_params:
             if query_params:
