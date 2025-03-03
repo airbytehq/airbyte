@@ -1,9 +1,5 @@
 version: 0.50.0
 type: DeclarativeSource
-concurrency_level:
-  type: ConcurrencyLevel
-  default_concurrency: 10
-  max_concurrency: 20
 check:
   type: CheckStream
   stream_names:
