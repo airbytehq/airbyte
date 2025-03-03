@@ -20,7 +20,9 @@ from airbyte_cdk.models import (
 
 logger = logging.getLogger("airbyte")
 
-GRAPH_URL = resolve_manifest(source=SourceInstagram(config={}, catalog=None, state=None)).record.data["manifest"]["definitions"]["base_requester"]["url_base"]
+GRAPH_URL = resolve_manifest(source=SourceInstagram(config={}, catalog=None, state=None)).record.data["manifest"]["definitions"][
+    "base_requester"
+]["url_base"]
 
 account_url = f"{GRAPH_URL}/me/accounts?fields=id%2Cinstagram_business_account"
 
@@ -47,7 +49,9 @@ def test_check_connection_empty_config(api):
 
 
 def test_check_connection_invalid_config_future_date(api, some_config_future_date):
-    ok, error_msg = SourceInstagram(config=some_config_future_date, catalog=None, state=None).check_connection(logger, config=some_config_future_date)
+    ok, error_msg = SourceInstagram(config=some_config_future_date, catalog=None, state=None).check_connection(
+        logger, config=some_config_future_date
+    )
 
     assert not ok
     assert error_msg

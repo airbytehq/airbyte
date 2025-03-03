@@ -12,4 +12,3 @@ import pytest
 def config_fixture():
     with open("secrets/config.json", "r") as config_file:
         return json.load(config_file)
-
