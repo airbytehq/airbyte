@@ -571,7 +571,7 @@ def test_get_shared_drive_object(
 def test_drives_property(auth_type, user_principal_name, has_refresh_token):
     with (
         patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query,
-        patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.one_drive_client") as mock_one_drive_client,
+        patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.one_drive_client"),
     ):
         refresh_token = "dummy_refresh_token" if has_refresh_token else None
         # Setup for different authentication types
@@ -632,12 +632,12 @@ def test_retrieve_files_from_accessible_drives(mocker, refresh_token, auth_type,
     reader._config = config
 
     # Mock the necessary methods
-    with patch.object(SourceMicrosoftSharePointStreamReader, "drives", return_value=[]) as mock_drives:
+    with patch.object(SourceMicrosoftSharePointStreamReader, "drives", return_value=[]):
         mocker.patch.object(reader, "_get_files_by_drive_name")
         mocker.patch.object(reader, "_get_shared_files_from_all_drives")
 
         # Call the method under test
-        files = list(reader.get_all_files())
+        list(reader.get_all_files())
 
         # Assert that only the desired methods were called
         assert reader._get_files_by_drive_name.called == ("_get_files_by_drive_name" in expected_methods_called)

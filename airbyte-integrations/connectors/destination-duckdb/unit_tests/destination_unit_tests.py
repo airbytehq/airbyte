@@ -21,7 +21,7 @@ def test_validated_sql_name() -> None:
 def test_check(mock_connect, mock_makedirs) -> None:
     mock_connect.return_value.execute.return_value = True
     logger = Mock()
-    temp_dir = tempfile.mkdtemp()
+    tempfile.mkdtemp()
     config = {"destination_path": "/local/test"}
     # config = {"destination_path": f"{temp_dir}/testdb.db"}
     destination = DestinationDuckdb()

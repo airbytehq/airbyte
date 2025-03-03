@@ -1094,7 +1094,7 @@ class TestTicketMetrics:
     )
     def test_stream_slices(self, sync_mode, state, expected_implemented_stream):
         stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
-        slices = list(stream.stream_slices(sync_mode=sync_mode, stream_state=state))
+        list(stream.stream_slices(sync_mode=sync_mode, stream_state=state))
         assert isinstance(stream.implemented_stream, expected_implemented_stream)
 
 

@@ -27,7 +27,7 @@ class TestAirtableStream:
     def test_read_records_403_error(self, tables_requests_mock, airtable_streams_403_status_code_requests_mock):
         with pytest.raises(MessageRepresentationAirbyteTracedErrors) as exc_info:
             stream = SourceAirtable(catalog={}, config=self.config, state={}).streams(config=self.config)[0]
-            data = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+            list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
         assert exc_info.value.failure_type == FailureType.config_error
         assert exc_info.value.message == "Permission denied or entity is unprocessable."

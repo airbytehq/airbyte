@@ -503,8 +503,6 @@ def test_search_based_incremental_stream_should_sort_by_id(requests_mock, common
     def random_date(start, end):
         return pendulum.from_timestamp(random.randint(start, end) / 1000).to_iso8601_string()
 
-    after = 0
-
     # Custom callback to mock search endpoint filter and sort behavior, returns 100 records per request.
     # See _process_search in stream.py for details on the structure of the filter amd sort parameters.
     # The generated records will have an id that is the sum of the current id and the current "after" value
@@ -795,7 +793,7 @@ def test_get_granted_scopes_retry(requests_mock, mocker):
     ]
 
     requests_mock.register_uri("GET", mock_url, response)
-    actual_scopes = SourceHubspot().get_granted_scopes(authenticator)
+    SourceHubspot().get_granted_scopes(authenticator)
     assert len(requests_mock.request_history) > 1
 
 

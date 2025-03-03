@@ -86,7 +86,7 @@ class TestSourceCheck(GoogleSheetsBaseTest):
 
         error_message = "The following duplicate headers were found in the sheet. Please fix them to continue: ['header1']"
         output = self._check(self._config, expecting_exception=True)
-        trace_message = AirbyteTraceMessage(
+        AirbyteTraceMessage(
             type=TraceType.ERROR,
             emitted_at=ANY,
             error=AirbyteErrorTraceMessage(
