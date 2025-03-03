@@ -5,8 +5,7 @@
 from decimal import Decimal
 from typing import Any, Dict, Optional, Type, ClassVar
 
-from pydantic import BaseModel, ConfigDict, create_model, field_serializer
-from pydantic.fields import FieldInfo
+from pydantic import BaseModel, ConfigDict, create_model
 from pydantic._internal._model_construction import ModelMetaclass
 
 from airbyte_cdk.sources.utils.schema_helpers import expand_refs
@@ -45,6 +44,10 @@ class AllOptional(ModelMetaclass):
 
 
 def _schema_extra(schema: Dict[str, Any], model: Type["BaseModel"]) -> None:
+    """
+    Custom schema transformation function for Pydantic v2.
+    Removes titles and descriptions, and handles optional fields.
+    """
     schema.pop("title", None)
     schema.pop("description", None)
     for name, prop in schema.get("properties", {}).items():
@@ -60,7 +63,10 @@ def _schema_extra(schema: Dict[str, Any], model: Type["BaseModel"]) -> None:
 
 
 class CatalogModel(BaseModel, metaclass=AllOptional):
-    model_config: ClassVar[ConfigDict] = ConfigDict(
+    """
+    Base model for all catalog models with custom schema handling.
+    """
+    model_config = ConfigDict(
         arbitrary_types_allowed=True,
         json_schema_extra=lambda schema, model: _schema_extra(schema, model),
     )
