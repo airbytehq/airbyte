@@ -3,7 +3,7 @@
 #
 
 from decimal import Decimal
-from typing import Any, Dict, Optional, Type, ClassVar
+from typing import Any, ClassVar, Dict, Optional, Type
 
 from pydantic import BaseModel, ConfigDict, create_model
 from pydantic._internal._model_construction import ModelMetaclass
@@ -66,6 +66,7 @@ class CatalogModel(BaseModel, metaclass=AllOptional):
     """
     Base model for all catalog models with custom schema handling.
     """
+
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
         json_schema_extra=lambda schema, model: _schema_extra(schema, model),
