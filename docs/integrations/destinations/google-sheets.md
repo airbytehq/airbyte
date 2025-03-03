@@ -155,6 +155,7 @@ EXAMPLE:
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 |---------| ---------- | -------------------------------------------------------- | ---------------------------------------------------------- |
+| 0.3.0 | 2025-03-03 | [55177](https://github.com/airbytehq/airbyte/pull/55177) | Update destination-google-sheets to CDK 6.37.1 |
 | 0.2.40 | 2025-03-01 | [54847](https://github.com/airbytehq/airbyte/pull/54847) | Update dependencies |
 | 0.2.39 | 2025-02-22 | [54248](https://github.com/airbytehq/airbyte/pull/54248) | Update dependencies |
 | 0.2.38 | 2025-02-15 | [53892](https://github.com/airbytehq/airbyte/pull/53892) | Update dependencies |
