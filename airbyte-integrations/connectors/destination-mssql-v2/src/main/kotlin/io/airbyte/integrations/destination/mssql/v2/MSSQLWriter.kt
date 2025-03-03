@@ -13,13 +13,16 @@ import io.airbyte.integrations.destination.mssql.v2.config.BulkLoadConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.InsertLoadTypeConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLDataSourceFactory
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import javax.sql.DataSource
 
 @Singleton
 class MSSQLWriter(
     private val config: MSSQLConfiguration,
-    private val dataSourceFactory: MSSQLDataSourceFactory
+    private val dataSourceFactory: MSSQLDataSourceFactory,
+    @Value("\${airbyte.destination.core.record-batch-size-override:null}")
+    private val recordBatchSizeOverride: Long? = null
 ) : DestinationWriter {
 
     /** Lazily initialized when [setup] is called. */
@@ -46,7 +49,8 @@ class MSSQLWriter(
                     defaultSchema = config.schema,
                     azureBlobClient =
                         AzureBlobStorageClientCreator.createAzureBlobClient(loadConfig),
-                    validateValuesPreLoad = loadConfig.validateValuesPreLoad ?: false
+                    validateValuesPreLoad = loadConfig.validateValuesPreLoad ?: false,
+                    recordBatchSizeOverride = recordBatchSizeOverride
                 )
             }
             is InsertLoadTypeConfiguration -> {

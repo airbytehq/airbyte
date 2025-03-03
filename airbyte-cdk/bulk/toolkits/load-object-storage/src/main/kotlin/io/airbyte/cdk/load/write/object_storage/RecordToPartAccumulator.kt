@@ -72,7 +72,7 @@ class RecordToPartAccumulator<U : OutputStream>(
         val bufferSize = partialUpload.writer.bufferSize
         val newSize = partialUpload.partFactory.totalSize + bufferSize
         // TODO (Fix this) : Hack fix to make integration tests work
-        if (newSize >= fileSizeBytes || true) {
+        if (newSize >= fileSizeBytes || endOfStream) {
 
             // If we have reached target file size, clear the object and yield a final part.
             val bytes = partialUpload.writer.finish()
