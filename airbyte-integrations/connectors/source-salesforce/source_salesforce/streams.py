@@ -581,7 +581,7 @@ class BulkSalesforceStream(SalesforceStream):
             decoder=decoder,
             stream_response=False,
         )
-        polling_id_interpolation = "{{stream_slice['create_job_response'].json()['id'] }}"
+        polling_id_interpolation = "{{creation_response['id']}}"
         polling_requester = HttpRequester(
             name=f"{self.name} - polling requester",
             url_base=url_base,
@@ -703,7 +703,7 @@ class BulkSalesforceStream(SalesforceStream):
             stream_response=False,
         )
         status_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["state"], config={}, parameters={})
-        urls_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["id"], config={}, parameters={})
+        download_target_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["id"], config={}, parameters={})
         job_repository = AsyncHttpJobRepository(
             creation_requester=creation_requester,
             polling_requester=polling_requester,
@@ -718,7 +718,7 @@ class BulkSalesforceStream(SalesforceStream):
                 "Aborted": AsyncJobStatus.FAILED,
                 "Failed": AsyncJobStatus.FAILED,
             },
-            urls_extractor=urls_extractor,
+            download_target_extractor=download_target_extractor,
             job_timeout=self.DEFAULT_WAIT_TIMEOUT,
         )
         record_selector = RecordSelector(
