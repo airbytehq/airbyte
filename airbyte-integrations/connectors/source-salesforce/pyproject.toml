@@ -24,7 +24,7 @@ source-salesforce = "source_salesforce.run:run"
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.6"
-pytest = "^6.1"
+pytest = "^8.0.0"
 pytest-timeout = "^2.2.0"
 requests-mock = "^1.9.3"
 freezegun = "^1.4.0"

@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.state.Reserved
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
+import kotlinx.coroutines.channels.Channel
 
 interface Sized {
     val sizeBytes: Long
@@ -52,7 +53,8 @@ data class StreamFlushEvent(
     override val sizeBytes: Long = 0L
 }
 
-class DestinationStreamEventQueue : ChannelMessageQueue<Reserved<DestinationStreamEvent>>()
+class DestinationStreamEventQueue :
+    ChannelMessageQueue<Reserved<DestinationStreamEvent>>(Channel(Channel.UNLIMITED))
 
 /**
  * A supplier of message queues to which ([ReservationManager.reserve]'d) @ [DestinationStreamEvent]
@@ -97,4 +99,5 @@ data class GlobalCheckpointWrapped(
  */
 @Singleton
 @Secondary
-class CheckpointMessageQueue : ChannelMessageQueue<Reserved<CheckpointMessageWrapped>>()
+class CheckpointMessageQueue :
+    ChannelMessageQueue<Reserved<CheckpointMessageWrapped>>(Channel(Channel.UNLIMITED))
