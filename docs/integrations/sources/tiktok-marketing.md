@@ -138,7 +138,7 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version   | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.4.0-rc3 | 2025-03-04 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Resolve state format issue |
+| 4.4.0-rc3 | 2025-03-04 | [55194](https://github.com/airbytehq/airbyte/pull/55194) | Resolve state format issue |
 | 4.4.0-rc2 | 2025-02-20 | [53645)](https://github.com/airbytehq/airbyte/pull/53645) | Remove stream_state interpolation and custom cursors |
 | 4.4.0-rc1 | 2025-01-29 | [51584](https://github.com/airbytehq/airbyte/pull/51584) | Update to concurrent CDK                                                                                                                                               |
 | 4.3.7     | 2025-01-11 | [47118](https://github.com/airbytehq/airbyte/pull/47118) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
