@@ -1,300 +1,300 @@
 {
-    "title": "Vendor Orders Status",
-    "description": "All vendor purchase orders status that were created after a specified date",
-    "type": "object",
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "properties": {
-      "purchaseOrderNumber": {
-        "description": "Purchase order number",
-        "type": ["null", "string"]
-      },
-      "purchaseOrderStatus": {
-        "description": "Purchase order status",
-        "type": ["null", "string"]
-      },
-      "purchaseOrderDate": {
-        "description": "Purchase order creation date and time",
-        "type": ["null", "string"],
-        "format": "date-time"
-      },
-      "lastUpdatedDate": {
-        "description": "Purchase order last updated date and time",
-        "type": ["null", "string"],
-        "format": "date-time"
-      },
-      "sellingParty": {
-        "description": "Information about the party selling the products",
-        "type": ["null", "object"],
-        "properties": {
-          "partyId": {
-            "description": "ID of the selling party",
-            "type": ["null", "string"]
-          },
-          "address": {
-            "description": "The address details of the selling party",
-            "type": ["null", "object"],
-            "properties": {
-              "name": {
-                "description": "Name of the party",
-                "type": ["null", "string"]
-              },
-              "addressLine1": {
-                "description": "Address Line 1",
-                "type": ["null", "string"]
-              },
-              "addressLine2": {
-                "description": "Address Line 2",
-                "type": ["null", "string"]
-              },
-              "addressLine3": {
-                "description": "Address Line 3",
-                "type": ["null", "string"]
-              },
-              "city": {
-                "description": "City name",
-                "type": ["null", "string"]
-              },
-              "county": {
-                "description": "County name",
-                "type": ["null", "string"]
-              },
-              "district": {
-                "description": "District name",
-                "type": ["null", "string"]
-              },
-              "stateOrRegion": {
-                "description": "State or region",
-                "type": ["null", "string"]
-              },
-              "postalCode": {
-                "description": "Postal code",
-                "type": ["null", "string"]
-              },
-              "countryCode": {
-                "description": "Country code",
-                "type": ["null", "string"]
-              },
-              "phone": {
-                "description": "Phone number",
-                "type": ["null", "string"]
-              }
+  "title": "Vendor Orders Status",
+  "description": "All vendor purchase orders status that were changed after a specified date",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "purchaseOrderNumber": {
+      "description": "Purchase order number",
+      "type": ["null", "string"]
+    },
+    "purchaseOrderStatus": {
+      "description": "Purchase order status",
+      "type": ["null", "string"]
+    },
+    "purchaseOrderDate": {
+      "description": "Purchase order creation date and time",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "lastUpdatedDate": {
+      "description": "Purchase order last updated date and time",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "sellingParty": {
+      "description": "Information about the party selling the products",
+      "type": ["null", "object"],
+      "properties": {
+        "partyId": {
+          "description": "ID of the selling party",
+          "type": ["null", "string"]
+        },
+        "address": {
+          "description": "The address details of the selling party",
+          "type": ["null", "object"],
+          "properties": {
+            "name": {
+              "description": "Name of the party",
+              "type": ["null", "string"]
+            },
+            "addressLine1": {
+              "description": "Address Line 1",
+              "type": ["null", "string"]
+            },
+            "addressLine2": {
+              "description": "Address Line 2",
+              "type": ["null", "string"]
+            },
+            "addressLine3": {
+              "description": "Address Line 3",
+              "type": ["null", "string"]
+            },
+            "city": {
+              "description": "City name",
+              "type": ["null", "string"]
+            },
+            "county": {
+              "description": "County name",
+              "type": ["null", "string"]
+            },
+            "district": {
+              "description": "District name",
+              "type": ["null", "string"]
+            },
+            "stateOrRegion": {
+              "description": "State or region",
+              "type": ["null", "string"]
+            },
+            "postalCode": {
+              "description": "Postal code",
+              "type": ["null", "string"]
+            },
+            "countryCode": {
+              "description": "Country code",
+              "type": ["null", "string"]
+            },
+            "phone": {
+              "description": "Phone number",
+              "type": ["null", "string"]
             }
-          },
-          "taxInfo": {
-            "description": "Tax information of the selling party",
-            "type": ["null", "object"],
-            "properties": {
-              "taxType": {
-                "description": "Type of tax",
-                "type": ["null", "string"]
-              },
-              "taxRegistrationNumber": {
-                "description": "Tax registration number",
-                "type": ["null", "string"]
-              }
+          }
+        },
+        "taxInfo": {
+          "description": "Tax information of the selling party",
+          "type": ["null", "object"],
+          "properties": {
+            "taxType": {
+              "description": "Type of tax",
+              "type": ["null", "string"]
+            },
+            "taxRegistrationNumber": {
+              "description": "Tax registration number",
+              "type": ["null", "string"]
             }
           }
         }
-      },
-      "shipToParty": {
-        "description": "Information about the party to which the order is shipped",
-        "type": ["null", "object"],
-        "properties": {
-          "partyId": {
-            "description": "ID of the ship-to party",
-            "type": ["null", "string"]
-          },
-          "address": {
-            "description": "The address details of the ship-to party",
-            "type": ["null", "object"],
-            "properties": {
-              "name": {
-                "description": "Name of the party",
-                "type": ["null", "string"]
-              },
-              "addressLine1": {
-                "description": "Address Line 1",
-                "type": ["null", "string"]
-              },
-              "addressLine2": {
-                "description": "Address Line 2",
-                "type": ["null", "string"]
-              },
-              "addressLine3": {
-                "description": "Address Line 3",
-                "type": ["null", "string"]
-              },
-              "city": {
-                "description": "City name",
-                "type": ["null", "string"]
-              },
-              "county": {
-                "description": "County name",
-                "type": ["null", "string"]
-              },
-              "district": {
-                "description": "District name",
-                "type": ["null", "string"]
-              },
-              "stateOrRegion": {
-                "description": "State or region",
-                "type": ["null", "string"]
-              },
-              "postalCode": {
-                "description": "Postal code",
-                "type": ["null", "string"]
-              },
-              "countryCode": {
-                "description": "Country code",
-                "type": ["null", "string"]
-              },
-              "phone": {
-                "description": "Phone number",
-                "type": ["null", "string"]
-              }
+      }
+    },
+    "shipToParty": {
+      "description": "Information about the party to which the order is shipped",
+      "type": ["null", "object"],
+      "properties": {
+        "partyId": {
+          "description": "ID of the ship-to party",
+          "type": ["null", "string"]
+        },
+        "address": {
+          "description": "The address details of the ship-to party",
+          "type": ["null", "object"],
+          "properties": {
+            "name": {
+              "description": "Name of the party",
+              "type": ["null", "string"]
+            },
+            "addressLine1": {
+              "description": "Address Line 1",
+              "type": ["null", "string"]
+            },
+            "addressLine2": {
+              "description": "Address Line 2",
+              "type": ["null", "string"]
+            },
+            "addressLine3": {
+              "description": "Address Line 3",
+              "type": ["null", "string"]
+            },
+            "city": {
+              "description": "City name",
+              "type": ["null", "string"]
+            },
+            "county": {
+              "description": "County name",
+              "type": ["null", "string"]
+            },
+            "district": {
+              "description": "District name",
+              "type": ["null", "string"]
+            },
+            "stateOrRegion": {
+              "description": "State or region",
+              "type": ["null", "string"]
+            },
+            "postalCode": {
+              "description": "Postal code",
+              "type": ["null", "string"]
+            },
+            "countryCode": {
+              "description": "Country code",
+              "type": ["null", "string"]
+            },
+            "phone": {
+              "description": "Phone number",
+              "type": ["null", "string"]
             }
-          },
-          "taxInfo": {
-            "description": "Tax information of the ship-to party",
-            "type": ["null", "object"],
-            "properties": {
-              "taxType": {
-                "description": "Type of tax",
-                "type": ["null", "string"]
-              },
-              "taxRegistrationNumber": {
-                "description": "Tax registration number",
-                "type": ["null", "string"]
-              }
+          }
+        },
+        "taxInfo": {
+          "description": "Tax information of the ship-to party",
+          "type": ["null", "object"],
+          "properties": {
+            "taxType": {
+              "description": "Type of tax",
+              "type": ["null", "string"]
+            },
+            "taxRegistrationNumber": {
+              "description": "Tax registration number",
+              "type": ["null", "string"]
             }
           }
         }
-      },
-      "itemStatus": {
-        "description": "Detailed description of items order status",
-        "type": ["null", "object"],
-        "properties": {
-          "itemSequenceNumber": {
-            "description": "Numbering of the item on the purchase order. The first item will be 1, the second 2, and so on.",
-            "type": ["null", "string"]
-          },
-          "buyerProductIdentifier": {
-            "description": "Buyer's Standard Identification Number (ASIN) of an item.",
-            "type": ["null", "string"]
-          },
-          "vendorProductIdentifier": {
-            "description": "The vendor selected product identification of the item.",
-            "type": ["null", "string"]
-          },
-          "netCost": {
-            "description": "The net cost of an item per each or weight unit.",
-            "type": ["null", "object"],
-            "properties": {
-              "amount": {
-                "description": "Cost amount",
-                "type": ["null", "string"]
-              },
-              "currencyCode": {
-                "description": "Currency code",
-                "type": ["null", "string"]
-              },
-              "unitOfMeasure": {
-                "description": "Unit of measure",
-                "type": ["null", "string"]
-              }
+      }
+    },
+    "itemStatus": {
+      "description": "Detailed description of items order status",
+      "type": ["null", "object"],
+      "properties": {
+        "itemSequenceNumber": {
+          "description": "Numbering of the item on the purchase order. The first item will be 1, the second 2, and so on.",
+          "type": ["null", "string"]
+        },
+        "buyerProductIdentifier": {
+          "description": "Buyer's Standard Identification Number (ASIN) of an item.",
+          "type": ["null", "string"]
+        },
+        "vendorProductIdentifier": {
+          "description": "The vendor selected product identification of the item.",
+          "type": ["null", "string"]
+        },
+        "netCost": {
+          "description": "The net cost of an item per each or weight unit.",
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "description": "Cost amount",
+              "type": ["null", "string"]
+            },
+            "currencyCode": {
+              "description": "Currency code",
+              "type": ["null", "string"]
+            },
+            "unitOfMeasure": {
+              "description": "Unit of measure",
+              "type": ["null", "string"]
             }
-          },
-          "listPrice": {
-            "description": "The list price of an item per each or weight unit.",
-            "type": ["null", "object"],
-            "properties": {
-              "amount": {
-                "description": "Cost amount",
-                "type": ["null", "string"]
-              },
-              "currencyCode": {
-                "description": "Currency code",
-                "type": ["null", "string"]
-              },
-              "unitOfMeasure": {
-                "description": "Unit of measure",
-                "type": ["null", "string"]
-              }
+          }
+        },
+        "listPrice": {
+          "description": "The list price of an item per each or weight unit.",
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "description": "Cost amount",
+              "type": ["null", "string"]
+            },
+            "currencyCode": {
+              "description": "Currency code",
+              "type": ["null", "string"]
+            },
+            "unitOfMeasure": {
+              "description": "Unit of measure",
+              "type": ["null", "string"]
             }
-          },
-          "orderedQuantity": {
-            "description": "Ordered quantity information.",
-            "type": ["null", "object"],
-            "properties": {
-              "orderedQuantity": {
-                "description": "Item quantity ordered.",
+          }
+        },
+        "orderedQuantity": {
+          "description": "Ordered quantity information.",
+          "type": ["null", "object"],
+          "properties": {
+            "orderedQuantity": {
+              "description": "Item quantity ordered.",
+              "type": ["null", "object"],
+              "properties": {
+                "amount": {
+                  "description": "Quantity amount",
+                  "type": ["null", "integer"]
+                },
+                "unitOfMeasure": {
+                  "description": "Unit of measurement",
+                  "type": ["null", "string"]
+                },
+                "unitSize": {
+                  "description": "Size of the unit",
+                  "type": ["null", "integer"]
+                }
+              }
+            },
+            "orderedQuantityDetails": {
+              "description": "Details of item quantity ordered.",
+              "type": ["null", "array"],
+              "items": {
                 "type": ["null", "object"],
                 "properties": {
-                  "amount": {
-                    "description": "Quantity amount",
-                    "type": ["null", "integer"]
+                  "updatedDate": {
+                    "description": "The date when the line item quantity was updated by buyer.",
+                    "type": ["null", "string"],
+                    "format": "date-time"
                   },
-                  "unitOfMeasure": {
-                    "description": "Unit of measurement",
-                    "type": ["null", "string"]
+                  "orderedQuantity": {
+                    "amount": {
+                      "description": "Quantity amount",
+                      "type": ["null", "integer"]
+                    },
+                    "unitOfMeasure": {
+                      "description": "Unit of measurement",
+                      "type": ["null", "string"]
+                    },
+                    "unitSize": {
+                      "description": "Size of the unit",
+                      "type": ["null", "integer"]
+                    }
                   },
-                  "unitSize": {
-                    "description": "Size of the unit",
-                    "type": ["null", "integer"]
-                  }
-                }
-              },
-              "orderedQuantityDetails": {
-                "description": "Details of item quantity ordered.",
-                "type": ["null", "array"],
-                "items": {
-                  "type": ["null", "object"],
-                  "properties": {
-                    "updatedDate": {
-                      "description": "The date when the line item quantity was updated by buyer.",
-                      "type": ["null", "string"],
-                      "format": "date-time"
+                  "cancelledQuantity": {
+                    "amount": {
+                      "description": "Quantity amount",
+                      "type": ["null", "integer"]
                     },
-                    "orderedQuantity": {
-                      "amount": {
-                        "description": "Quantity amount",
-                        "type": ["null", "integer"]
-                      },
-                      "unitOfMeasure": {
-                        "description": "Unit of measurement",
-                        "type": ["null", "string"]
-                      },
-                      "unitSize": {
-                        "description": "Size of the unit",
-                        "type": ["null", "integer"]
-                      }
+                    "unitOfMeasure": {
+                      "description": "Unit of measurement",
+                      "type": ["null", "string"]
                     },
-                    "cancelledQuantity": {
-                      "amount": {
-                        "description": "Quantity amount",
-                        "type": ["null", "integer"]
-                      },
-                      "unitOfMeasure": {
-                        "description": "Unit of measurement",
-                        "type": ["null", "string"]
-                      },
-                      "unitSize": {
-                        "description": "Size of the unit",
-                        "type": ["null", "integer"]
-                      }
+                    "unitSize": {
+                      "description": "Size of the unit",
+                      "type": ["null", "integer"]
                     }
                   }
                 }
               }
             }
-          },
-          "acknowledgementStatus": {
-            "description": "Acknowledgement status information."
-          },
-          "receivingStatus": {
-            "description": "Item receive status at the buyer's warehouse."
           }
+        },
+        "acknowledgementStatus": {
+          "description": "Acknowledgement status information."
+        },
+        "receivingStatus": {
+          "description": "Item receive status at the buyer's warehouse."
         }
       }
     }
+  }
 }
