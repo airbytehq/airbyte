@@ -718,7 +718,7 @@ class BulkSalesforceStream(SalesforceStream):
                 "Aborted": AsyncJobStatus.FAILED,
                 "Failed": AsyncJobStatus.FAILED,
             },
-            download_target_extractor=download_target_extractor,
+            urls_extractor=download_target_extractor,
             job_timeout=self.DEFAULT_WAIT_TIMEOUT,
         )
         record_selector = RecordSelector(
