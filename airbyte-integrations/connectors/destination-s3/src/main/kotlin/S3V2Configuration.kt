@@ -24,6 +24,7 @@ import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.io.OutputStream
 
+/* Nominal change. */
 data class S3V2Configuration<T : OutputStream>(
     // Client-facing configuration
     override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration,
