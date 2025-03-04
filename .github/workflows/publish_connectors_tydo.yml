@@ -5,12 +5,12 @@ on:
     branches:
       - master
     paths:
-      - "airbyte-integrations/connectors/**/metadata.yaml"
+      - "airbyte-integrations/connectors/source-klaviyo/**"
   workflow_dispatch:
     inputs:
       connectors-options:
         description: "Options to pass to the 'airbyte-ci connectors' command group."
-        default: "--name=source-pokeapi"
+        default: "--name=source-klaviyo"
       publish-options:
         description: "Options to pass to the 'airbyte-ci connectors publish' command. Use --pre-release or --main-release depending on whether you want to publish a dev image or not. "
         default: "--pre-release"
@@ -117,28 +117,3 @@ jobs:
           summary: "Publish workflow failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} merged by ${{ github.actor }}"
           severity: "critical"
           source: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-
-  # This job notifies Tydo (external partner) about Klaviyo connector updates
-  # IMPORTANT: This webhook sends messages to an EXTERNAL Slack channel
-  # DO NOT modify without consulting the technical success team
-
-  notify-tydo-klaviyo-update:
-    name: "Notify Tydo about Klaviyo Connector Update"
-    runs-on: ubuntu-20.04
-    needs:
-      - publish_connectors
-    if: |
-      success() && 
-      (contains(github.event.head_commit.modified, 'airbyte-integrations/connectors/source-klaviyo/metadata.yaml') || 
-      github.event.inputs.connectors-options == '--name=source-klaviyo')
-    steps:
-      - name: Send Tydo notification about Klaviyo connector update
-        id: tydo-slack
-        uses: slackapi/slack-github-action@v1.26.0
-        with:
-          payload: |
-            {
-              "text": "🔔 *New Klaviyo Connector Version Available*\n\nA new version of the Airbyte Klaviyo source connector has been published.\n\nDetails:\n• Published by: ${{ github.actor }}\n• Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n• Date: ${{ format(github.event.head_commit.timestamp || github.event.repository.updated_at, 'MMMM DD, YYYY') }}"
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.TYDO_EXTERNAL_WEBHOOK }}
