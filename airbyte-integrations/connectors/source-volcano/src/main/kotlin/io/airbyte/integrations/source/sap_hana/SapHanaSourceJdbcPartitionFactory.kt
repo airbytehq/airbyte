@@ -205,11 +205,13 @@ class SapHanaSourceJdbcPartitionFactory(
                 cursorChosenFromCatalog
             )
         }
+        val triggerCdcPartitionState =
+            if (configuration.isCdc()) TriggerCdcPartitionState.SNAPSHOT else null
         return SapHanaJdbcSplittableSnapshotWithCursorPartition(
             selectQueryGenerator,
             streamState,
             pkChosenFromCatalog,
-            TriggerCdcPartitionState.SNAPSHOT,
+            triggerCdcPartitionState,
             lowerBound = null,
             upperBound = null,
             cursorChosenFromCatalog,
