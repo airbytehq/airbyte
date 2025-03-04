@@ -37,7 +37,6 @@ abstract class S3V2WriteTest(
     schematizedArrayBehavior: SchematizedNestedValueBehavior,
     unionBehavior: UnionBehavior,
     preserveUndeclaredFields: Boolean,
-    /** This is false for staging mode, and true for non-staging mode. */
     commitDataIncrementally: Boolean = true,
     allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,

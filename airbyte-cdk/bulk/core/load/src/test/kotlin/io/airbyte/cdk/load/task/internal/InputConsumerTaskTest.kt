@@ -100,6 +100,10 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(),
                     fileTransferQueue = mockk(relaxed = true),
+                    recordQueueForPipeline = mockk(relaxed = true),
+                    loadPipeline = null,
+                    partitioner = mockk(relaxed = true),
+                    openStreamQueue = mockk(relaxed = true),
                 )
         task.execute()
 
@@ -157,6 +161,10 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(),
                     fileTransferQueue = mockk(relaxed = true),
+                    recordQueueForPipeline = mockk(relaxed = true),
+                    loadPipeline = null,
+                    partitioner = mockk(relaxed = true),
+                    openStreamQueue = mockk(relaxed = true),
                 )
         task.execute()
         coVerifySequence {
@@ -195,6 +203,10 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(),
                     fileTransferQueue = mockk(relaxed = true),
+                    recordQueueForPipeline = mockk(relaxed = true),
+                    loadPipeline = null,
+                    partitioner = mockk(relaxed = true),
+                    openStreamQueue = mockk(relaxed = true),
                 )
         coEvery { inputFlow.collect(any()) } coAnswers
             {
@@ -251,6 +263,10 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(),
                     fileTransferQueue = mockk(relaxed = true),
+                    recordQueueForPipeline = mockk(relaxed = true),
+                    loadPipeline = null,
+                    partitioner = mockk(relaxed = true),
+                    openStreamQueue = mockk(relaxed = true),
                 )
 
         coEvery { inputFlow.collect(any()) } coAnswers
@@ -324,6 +340,10 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(relaxed = true),
                     fileTransferQueue = mockk(relaxed = true),
+                    recordQueueForPipeline = mockk(relaxed = true),
+                    loadPipeline = null,
+                    partitioner = mockk(relaxed = true),
+                    openStreamQueue = mockk(relaxed = true),
                 )
 
         assertThrows(IllegalStateException::class) { task.execute() }
