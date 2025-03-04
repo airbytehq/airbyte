@@ -777,7 +777,6 @@ module.exports = {
         description: "We release new self-managed versions of Airbyte regularly. Airbyte Cloud customers always have the latest enhancements.",
       },
       items: [
-        "release_notes/v-1.5.1",
         "release_notes/v-1.5",
         "release_notes/v-1.4",
         "release_notes/v-1.3",
