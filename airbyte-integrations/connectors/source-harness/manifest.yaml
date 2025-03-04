@@ -1,0 +1,130 @@
+version: 5.10.2
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - organizations
+
+definitions:
+  streams:
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /ng/api/organizations
+          http_method: GET
+          request_parameters:
+            accountIdentifier: "{{ config['account_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - content
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config['api_url'] }}"
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: x-api-key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/organizations"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - account_id
+    properties:
+      api_key:
+        type: string
+        title: API key
+        airbyte_secret: true
+        order: 0
+      api_url:
+        type: string
+        description: The API URL for fetching data from Harness
+        title: API URL
+        default: https://app.harness.io
+        examples:
+          - https://my-harness-server.example.com
+        order: 1
+      account_id:
+        type: string
+        description: Harness Account ID
+        title: Account ID
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    organizations: false
+  testedStreams:
+    organizations:
+      streamHash: bae6712300ea469634950aa91730036c13f96e6a
+  assist: {}
+
+schemas:
+  organizations:
+    type:
+      - object
+      - "null"
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - number
+          - "null"
+      harnessManaged:
+        type:
+          - boolean
+          - "null"
+      lastModifiedAt:
+        type:
+          - number
+          - "null"
+      organization:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          identifier:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - object
+              - "null"
+            properties:
+              identifier:
+                type:
+                  - string
+                  - "null"
