@@ -391,3 +391,25 @@ check:
   type: CheckStream
   stream_names:
     - cohorts
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    # -The Query API has a rate limit of 60 queries per hour and a maximum of 5 concurrent queries
+    # https://developer.mixpanel.com/reference/raw-event-export#api-export-endpoint-rate-limits
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 60 # rate limit of 60 queries per hour
+          interval: PT1H
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/2.0/.+"
+
+# concurrent streams: cohorts, engage, revenue, annotations, cohort_members, funnels
+# synchronous streams: export
+# https://developer.mixpanel.com/reference/rate-limits
+# A maximum of 5 concurrent queries and 60 queries per hour.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  max_concurrency: 25

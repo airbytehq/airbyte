@@ -127,6 +127,16 @@
         "type": "integer",
         "minimum": 1,
         "default": 1000
+      },
+      "num_workers":{
+        "order": 10,
+        "type": "integer",
+        "title": "Number of concurrent workers",
+        "minimum": 1,
+        "maximum": 25,
+        "default": 5,
+        "examples": [1, 2, 3],
+        "description": "The number of worker threads to use for the sync. The performance upper boundary is based on the limit of your Mixpanel pricing plan. More info about the rate limit tiers can be found on Mixpanel's API <a href=\"https://developer.mixpanel.com/reference/raw-event-e xport#api-export-endpoint-rate-limits\">docs</a>."
       }
     }
   }
