@@ -2,19 +2,20 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.37.0.dev0"
+version = "6.38.0.dev0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 groups = ["main"]
 markers = "python_version <= \"3.11\""
 files = [
-    {file = "airbyte_cdk-6.37.0.dev0-py3-none-any.whl", hash = "sha256:46f4c52ed8903d09ad0001e158d8a13b110a98430ea67e83902efe0713ffb486"},
-    {file = "airbyte_cdk-6.37.0.dev0.tar.gz", hash = "sha256:70e2c33f8ef8cb4a8adc86272b96c8816c24e748c2f51e39d5ba90211b2a7be1"},
+    {file = "airbyte_cdk-6.38.0.dev0-py3-none-any.whl", hash = "sha256:80aa29416055118aeb5baa8c5146ce2ba1148f8fc01d9c61d0d9db1f9a80f611"},
+    {file = "airbyte_cdk-6.38.0.dev0.tar.gz", hash = "sha256:43d286999d40ef26c4ddfb39a73bbcce2c29bd9dccc77125246dcbc4162c11e9"},
 ]
 
 [package.dependencies]
 airbyte-protocol-models-dataclasses = ">=0.14,<0.15"
+anyascii = ">=0.3.2,<0.4.0"
 backoff = "*"
 cachetools = "*"
 cryptography = ">=42.0.5,<44.0.0"
@@ -42,7 +43,6 @@ rapidfuzz = ">=3.10.1,<4.0.0"
 requests = "*"
 requests_cache = "*"
 serpyco-rs = ">=1.10.2,<2.0.0"
-Unidecode = ">=1.3,<2.0"
 wcmatch = "10.0"
 whenever = ">=0.6.16,<0.7.0"
 xmltodict = ">=0.13,<0.15"
@@ -76,6 +76,19 @@ markers = "python_version <= \"3.11\""
 files = [
     {file = "annotated_types-0.7.0-py3-none-any.whl", hash = "sha256:1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53"},
     {file = "annotated_types-0.7.0.tar.gz", hash = "sha256:aff07c09a53a08bc8cfccb9c85b05f1aa9a2a6f23728d790723543408344ce89"},
+]
+
+[[package]]
+name = "anyascii"
+version = "0.3.2"
+description = "Unicode to ASCII transliteration"
+optional = false
+python-versions = ">=3.3"
+groups = ["main"]
+markers = "python_version <= \"3.11\""
+files = [
+    {file = "anyascii-0.3.2-py3-none-any.whl", hash = "sha256:3b3beef6fc43d9036d3b0529050b0c48bfad8bc960e9e562d7223cfb94fe45d4"},
+    {file = "anyascii-0.3.2.tar.gz", hash = "sha256:9d5d32ef844fe225b8bc7cba7f950534fae4da27a9bf3a6bea2cb0ea46ce4730"},
 ]
 
 [[package]]
@@ -2111,19 +2124,6 @@ files = [
 ]
 
 [[package]]
-name = "unidecode"
-version = "1.3.8"
-description = "ASCII transliterations of Unicode text"
-optional = false
-python-versions = ">=3.5"
-groups = ["main"]
-markers = "python_version <= \"3.11\""
-files = [
-    {file = "Unidecode-1.3.8-py3-none-any.whl", hash = "sha256:d130a61ce6696f8148a3bd8fe779c99adeb4b870584eeb9526584e9aa091fd39"},
-    {file = "Unidecode-1.3.8.tar.gz", hash = "sha256:cfdb349d46ed3873ece4586b96aa75258726e2fa8ec21d6f00a591d98806c2f4"},
-]
-
-[[package]]
 name = "url-normalize"
 version = "1.4.3"
 description = "URL normalization for Python"
@@ -2275,4 +2275,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.12"
-content-hash = "533bf774d3246b4f305e2759ce574164e0a837c5e02c76a9b2a2d9b06be23205"
+content-hash = "f8f9b7217602989d3bb22ac9cba2626fb0e5154589f51354f244ea761f51a364"
