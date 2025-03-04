@@ -4,18 +4,17 @@
 
 import json
 from typing import Any
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from requests import Response
 
-from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
+from airbyte_cdk.models import AirbyteMessage, SyncMode, Type, AirbyteRecordMessage
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.streams import Stream
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
-from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 
 
 def _create_response(content: Any) -> Response:
@@ -136,11 +135,11 @@ def mock_parent_stream():
             [
                 AirbyteMessage(
                     type=Type.RECORD,
-                    record={
-                        "data": {"id": 123, "name": "Sample Record", "updated_at": "2023-01-01T00:00:00Z"},
-                        "stream": "projects",
-                        "emitted_at": 1632095449,
-                    },
+                    record=AirbyteRecordMessage(
+                        data= {"id": 123, "name": "Sample Record", "updated_at": "2023-01-01T00:00:00Z"},
+                        stream= "projects",
+                        emitted_at= 1632095449
+                    )
                 )
             ],
             [{"parent_stream_id": [123]}],
@@ -249,30 +248,30 @@ nested_array_schema = {
         ),
     ],
 )
-def test_get_request_params(components_module, mocker, input_schema, graphql_query, stream_name, config, next_page_token):
+def test_get_request_params(components_module, input_schema, graphql_query, stream_name, config, next_page_token):
     MondayGraphqlRequester = components_module.MondayGraphqlRequester
-    mocker.patch.object(MondayGraphqlRequester, "_get_schema_root_properties", return_value=input_schema)
-    requester = MondayGraphqlRequester(
-        name="a name",
-        url_base="https://api.monday.com/v2",
-        path="a-path",
-        http_method=HttpMethod.GET,
-        request_options_provider=MagicMock(),
-        authenticator=MagicMock(),
-        error_handler=MagicMock(),
-        limit="{{ parameters['items_per_page'] }}",
-        nested_limit="{{ parameters.get('nested_items_per_page', 1) }}",
-        parameters={"name": stream_name, "items_per_page": 100, "nested_items_per_page": 100},
-        config=config,
-    )
-    assert requester.get_request_params(stream_state={}, stream_slice={}, next_page_token=next_page_token) == graphql_query
+    with patch.object(MondayGraphqlRequester, "_get_schema_root_properties", return_value=input_schema):
+        requester = MondayGraphqlRequester(
+            name=stream_name,
+            url_base="https://api.monday.com/v2",
+            path="a-path",
+            http_method=HttpMethod.GET,
+            request_options_provider=MagicMock(),
+            authenticator=MagicMock(),
+            error_handler=MagicMock(),
+            limit="{{ parameters['items_per_page'] }}",
+            nested_limit="{{ parameters.get('nested_items_per_page', 1) }}",
+            parameters={"name": stream_name, "items_per_page": 100, "nested_items_per_page": 100},
+            config=config,
+        )
+        assert requester.get_request_params(stream_state={}, stream_slice={}, next_page_token=next_page_token) == graphql_query
 
 
 @pytest.fixture
 def monday_requester(components_module):
     MondayGraphqlRequester = components_module.MondayGraphqlRequester
     return MondayGraphqlRequester(
-        name="a name",
+        name="activity_logs",
         url_base="https://api.monday.com/v2",
         path="a-path",
         config={},
@@ -282,7 +281,7 @@ def monday_requester(components_module):
     )
 
 
-def test_get_schema_root_properties(mocker, monday_requester):
+def test_get_schema_root_properties(components_module, monday_requester):
     mock_schema = {
         "properties": {
             "updated_at_int": {"type": "integer"},
@@ -294,25 +293,25 @@ def test_get_schema_root_properties(mocker, monday_requester):
         }
     }
 
-    mocker.patch.object(JsonFileSchemaLoader, "get_json_schema", return_value=mock_schema)
-    requester = monday_requester
-    result_schema = requester._get_schema_root_properties()
+    with patch.object(components_module.ManifestSchemaLoader, "get_json_schema", return_value=mock_schema):
+        requester = monday_requester
+        result_schema = requester._get_schema_root_properties()
 
-    assert result_schema == {"other_field": {"type": "string"}, "yet_another_field": {"type": "boolean"}}
+        assert result_schema == {"other_field": {"type": "string"}, "yet_another_field": {"type": "boolean"}}
 
 
-def test_build_activity_query(components_module, mocker, monday_requester):
+def test_build_activity_query(components_module, monday_requester):
     MondayGraphqlRequester = components_module.MondayGraphqlRequester
     mock_stream_state = {"updated_at_int": 1636738688}
     object_arguments = {"stream_state": mock_stream_state}
-    mocker.patch.object(MondayGraphqlRequester, "_get_object_arguments", return_value="stream_state:{{ stream_state['updated_at_int'] }}")
-    requester = monday_requester
+    with patch.object(MondayGraphqlRequester, "_get_object_arguments", return_value="stream_state:{{ stream_state['updated_at_int'] }}"):
+        requester = monday_requester
 
-    result = requester._build_activity_query(object_name="activity_logs", field_schema={}, sub_page=None, **object_arguments)
-    assert (
-        result
-        == "boards(stream_state:{{ stream_state['updated_at_int'] }}){activity_logs(stream_state:{{ stream_state['updated_at_int'] }}){}}"
-    )
+        result = requester._build_activity_query(object_name="activity_logs", field_schema={}, sub_page=None, **object_arguments)
+        assert (
+            result
+            == "boards(stream_state:{{ stream_state['updated_at_int'] }}){activity_logs(stream_state:{{ stream_state['updated_at_int'] }}){}}"
+        )
 
 
 def test_build_items_incremental_query(monday_requester):

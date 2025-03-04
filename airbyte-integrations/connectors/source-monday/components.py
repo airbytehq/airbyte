@@ -2,7 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import sys
 import json
+import yaml
 import logging
 from dataclasses import InitVar, dataclass, field
 from datetime import datetime
@@ -30,6 +32,21 @@ from airbyte_cdk.sources.streams.core import Stream
 
 RequestInput = Union[str, Mapping[str, str]]
 logger = logging.getLogger("airbyte")
+
+
+def _get_manifest_file_path() -> str:
+    # Manifest files are always in "source_<connector_name>/manifest.yaml" or "source_declarative_manifest/manifest.yaml"
+    # The connector's module name can be inferred by looking at the modules loaded and look for the one starting with source_
+    source_modules = [
+        k for k, v in sys.modules.items() if "source_" in k and "airbyte_cdk" not in k
+    ]
+    if source_modules:
+        module = source_modules[0].split(".")[0]
+        return f"./{module}/manifest.yaml"
+
+    # If we are not in a source_declarative_manifest module, the most likely scenario is we're processing a manifest locally 
+    # or from the connector builder server which does not require a json schema to be defined.
+    return "./manifest.yaml"
 
 
 class ItemPaginationStrategy(PageIncrement):
@@ -123,6 +140,21 @@ class ItemCursorPaginationStrategy(PageIncrement):
 
 
 @dataclass
+class ManifestSchemaLoader(JsonFileSchemaLoader):
+    """Retrieves the schema from manifest.yaml"""
+    
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self.file_path = _get_manifest_file_path()
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        with open(self.file_path, "r", encoding="utf-8") as f:
+            schemas = yaml.safe_load(f).get("schemas", {})  # Extract only the "schemas"
+        if not schemas:
+            raise IOError(f"Cannot find file {self.file_path}")
+        return schemas
+
+
+@dataclass
 class MondayGraphqlRequester(HttpRequester):
     NEXT_PAGE_TOKEN_FIELD_NAME = "next_page_token"
 
@@ -143,7 +175,7 @@ class MondayGraphqlRequester(HttpRequester):
             raise TypeError(f"{type(o)} {o} is not of type {t}")
 
     def _get_schema_root_properties(self):
-        schema_loader = JsonFileSchemaLoader(config=self.config, parameters={"name": self.name})
+        schema_loader = ManifestSchemaLoader(config=self.config, parameters={"name": self.name})
         schema = schema_loader.get_json_schema()["properties"]
 
         # delete fields that will be created by extractor
@@ -288,7 +320,7 @@ class MondayGraphqlRequester(HttpRequester):
         """
         Combines queries to a single GraphQL query.
         """
-        limit = self.limit
+        limit = self.limit.eval(self.config)
 
         page = next_page_token and next_page_token[self.NEXT_PAGE_TOKEN_FIELD_NAME]
         if self.name == "boards" and stream_slice:
@@ -339,6 +371,7 @@ class MondayActivityExtractor(RecordExtractor):
 
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_body = self.decoder.decode(response)
+        response_body = next(response_body)
         result = []
         if not response_body["data"]["boards"]:
             return result
@@ -386,6 +419,7 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
 
     def try_extract_records(self, response: requests.Response, field_path: List[Union[InterpolatedString, str]]) -> List[Record]:
         response_body = self.decoder.decode(response)
+        response_body = next(response_body)
 
         path = [path.eval(self.config) for path in field_path]
         extracted = dpath.values(response_body, path) if path else response_body
@@ -585,9 +619,12 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
         empty_parent_slice = True
 
         for parent_slice in self.parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
-            for parent_record in self.parent_stream.read_records(
+            read_records = self.parent_stream.read_records(
                 sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=parent_slice, stream_state=stream_state
-            ):
+            )
+            if not isinstance(read_records, Iterable):
+                read_records = [read_records]
+            for parent_record in read_records:
                 # Skip non-records (eg AirbyteLogMessage)
                 if isinstance(parent_record, AirbyteMessage):
                     if parent_record.type == Type.RECORD:
