@@ -207,6 +207,7 @@ definitions:
           path: events
           http_method: GET
           request_parameters:
+            fields[event]: event_properties,timestamp,uuid,datetime
             fields[metric]: name,created,updated,integration
             include: metric,attributions
             filter: >-
