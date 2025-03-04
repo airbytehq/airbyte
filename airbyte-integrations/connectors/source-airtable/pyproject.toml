@@ -25,7 +25,7 @@ source-airtable = "source_airtable.run:run"
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
-pytest = "^6.1"
+pytest = "^8.0.0"
 
 
 [tool.poe]

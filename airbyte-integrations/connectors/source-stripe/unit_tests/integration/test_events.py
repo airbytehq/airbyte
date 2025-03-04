@@ -120,7 +120,11 @@ class FullRefreshTest(TestCase):
         slice_range = timedelta(days=30)
         slice_datetime = start_date + slice_range
         http_mocker.get(  # this first request has both gte and lte before 30 days even though we know there should not be records returned
-            _a_request().with_created_gte(start_date).with_created_lte(slice_datetime - _AVOIDING_INCLUSIVE_BOUNDARIES).with_limit(100).build(),
+            _a_request()
+            .with_created_gte(start_date)
+            .with_created_lte(slice_datetime - _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_limit(100)
+            .build(),
             _a_response().build(),
         )
         http_mocker.get(
@@ -159,7 +163,11 @@ class FullRefreshTest(TestCase):
         slice_range = timedelta(days=20)
         slice_datetime = start_date + slice_range
         http_mocker.get(
-            _a_request().with_created_gte(start_date).with_created_lte(slice_datetime - _AVOIDING_INCLUSIVE_BOUNDARIES).with_limit(100).build(),
+            _a_request()
+            .with_created_gte(start_date)
+            .with_created_lte(slice_datetime - _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_limit(100)
+            .build(),
             _a_response().build(),
         )
         http_mocker.get(
