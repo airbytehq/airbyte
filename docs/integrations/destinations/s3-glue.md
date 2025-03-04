@@ -2,6 +2,9 @@
 
 This page guides you through the process of setting up the S3 destination connector with Glue.
 
+You should switch to the [S3 Data Lake](./s3-data-lake.md) destination, which offers
+superior implementations of core Airbyte features and significantly better performance.
+
 ## Prerequisites
 
 List of required fields:
