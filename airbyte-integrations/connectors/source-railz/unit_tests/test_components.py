@@ -9,6 +9,7 @@ def test_get_tokens(components_module):
     url = "https://auth.railz.ai/getAccess"
     responses = [
         {"access_token": "access_token1"},
+        {"access_token": "access_token1"},
         {"access_token": "access_token2"},
     ]
 
@@ -31,11 +32,10 @@ def test_get_tokens(components_module):
 
     def mock_requests_get(*args, **kwargs):
         mock_response = MagicMock()
-        mock_response.json.return_value = responses.pop(0)
+        mock_response.json.return_value = responses[0]
         return mock_response
 
     # Mock requests.get and time.time
-    with patch("requests.get", side_effect=mock_requests_get), patch("time.time", side_effect=timestamps):
-        assert authenticator.token == "Bearer access_token1"
-        assert authenticator.token == "Bearer access_token1"
-        assert authenticator.token == "Bearer access_token2"
+    for _ in range(3):
+        with patch("requests.Session.get", side_effect=mock_requests_get), patch("time.time", return_value=timestamps.pop(0)):
+            assert authenticator.token == f"Bearer {responses.pop(0)['access_token']}"
