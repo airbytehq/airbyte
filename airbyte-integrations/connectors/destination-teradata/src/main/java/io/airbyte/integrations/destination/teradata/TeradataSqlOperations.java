@@ -47,9 +47,6 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
           final String uuid = UUID.randomUUID().toString();
           final String jsonData = Jsons.serialize(formatData(record.getData()));
           final Timestamp emittedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
-          LOGGER.info("uuid: " + uuid);
-          LOGGER.info("jsonData: " + jsonData);
-          LOGGER.info("emittedAt: " + emittedAt);
           pstmt.setString(1, uuid);
           pstmt.setObject(2, new JSONStruct("JSON", new Object[] {jsonData}));
           pstmt.setTimestamp(3, emittedAt);
@@ -138,7 +135,7 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
 
   private String dropTableIfExistsQueryInternal(final String schemaName, final String tableName) {
     try {
-      return String.format("DROP TABLE  %s.%s;\n", schemaName, tableName);
+      return String.format("DROP TABLE %s.%s;\n", schemaName, tableName);
     } catch (final Exception e) {
       AirbyteTraceMessageUtility.emitSystemErrorTrace(e,
           "Connector failed while dropping table " + schemaName + "." + tableName);
