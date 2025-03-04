@@ -73,7 +73,7 @@ definitions:
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     start_datetime:
       type: MinMaxDatetime
-      datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
+      datetime: "{{ format_datetime(config.get('start_date', '2017-01-25T00:00:00Z'), '%Y-%m-%dT%H:%M:%S%z') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     end_datetime:
       type: MinMaxDatetime

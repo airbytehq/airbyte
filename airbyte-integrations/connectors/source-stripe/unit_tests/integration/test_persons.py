@@ -36,8 +36,7 @@ _STREAM_NAME = "persons"
 _ACCOUNT_ID = "acct_1G9HZLIEn49ers"
 _CLIENT_SECRET = "ConfigBuilder default client secret"
 _NOW = datetime.now(timezone.utc)
-_START_DATE = "2020-05-01T00:00:00Z"
-_CONFIG = {"client_secret": _CLIENT_SECRET, "account_id": _ACCOUNT_ID, "start_date": _START_DATE}
+_CONFIG = {"client_secret": _CLIENT_SECRET, "account_id": _ACCOUNT_ID}
 _NO_STATE = StateBuilder().build()
 _AVOIDING_INCLUSIVE_BOUNDARIES = timedelta(seconds=1)
 
