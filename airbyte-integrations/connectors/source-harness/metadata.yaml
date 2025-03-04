@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b0e46f61-e143-47cc-a595-4bb73bfa8a15
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-harness
   githubIssueLabel: source-harness
   icon: harness.svg
@@ -86,5 +86,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.10.2@sha256:81db4f78a92d199f33c38c17f5b63fc87c56739f14dc10276ddec86c7b707b7a
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.4@sha256:a612db8bc977a46d7d2e0442f5c6be26da6039ee83a8aceb7be545e4cbdd7040
 metadataSpecVersion: "1.0"
