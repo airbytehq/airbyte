@@ -11,25 +11,35 @@ definitions:
   streams:
     events:
       type: DeclarativeStream
+      name: events
       path: projects/{{ config['organization'] }}/{{ config['project'] }}/events/
-      cursor_field: dateCreated
       retriever:
         type: SimpleRetriever
         name: events
-        primary_key: id
         path: projects/{{ config['organization'] }}/{{ config['project'] }}/events/
-        cursor_field: dateCreated
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
+            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
         requester:
-          name: events
-          primary_key: id
-          cursor_field: dateCreated
           $ref: "#/definitions/base_requester"
+          name: events
           path: >-
             projects/{{ config['organization'] }}/{{ config['project']
             }}/events/
           http_method: GET
+          primary_key: id
+          cursor_field: dateCreated
           request_parameters:
             full: "true"
+        primary_key: id
+        cursor_field: dateCreated
         record_selector:
           type: RecordSelector
           extractor:
@@ -39,43 +49,41 @@ definitions:
           record_filter:
             type: RecordFilter
             condition: "{{ record[dateCreated] > stream_interval.get('start_time', '') }}"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: cursor
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
-            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
-      name: events
       primary_key:
         - id
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: dateCreated
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%SZ"
-          - "%Y-%m-%dT%H:%M:%S.%f%z"
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "1900-01-01T00:00:00.0Z"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        is_data_feed: true
+      cursor_field: dateCreated
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/events"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dateCreated
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1900-01-01T00:00:00.0Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
     issues:
       type: DeclarativeStream
       name: issues
-      primary_key:
-        - id
       retriever:
         type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
+            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
@@ -92,40 +100,40 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: cursor
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
-            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: lastSeen
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%SZ"
-          - "%Y-%m-%dT%H:%M:%S.%f%z"
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "1900-01-01T00:00:00.0Z"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        is_data_feed: true
+      primary_key:
+        - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/issues"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastSeen
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1900-01-01T00:00:00.0Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
     projects:
       type: DeclarativeStream
       name: projects
-      primary_key:
-        - id
       retriever:
         type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
+            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
         requester:
           $ref: "#/definitions/base_requester"
           path: projects/
@@ -137,71 +145,43 @@ definitions:
             field_path: []
           record_filter:
             type: RecordFilter
-            condition: "{{ record[dateCreated] > stream_interval.get('start_time', '') }}"
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: cursor
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
-            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: dateCreated
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%SZ"
-          - "%Y-%m-%dT%H:%M:%S.%f%z"
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "1900-01-01T00:00:00.0Z"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        is_data_feed: true
+            condition: >-
+              {{ record['dateCreated'] > stream_interval.get('start_time', '')
+              }}
+      primary_key:
+        - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/projects"
-    project_detail:
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dateCreated
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1900-01-01T00:00:00.0Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+    releases:
       type: DeclarativeStream
-      name: project_detail
-      primary_key:
-        - id
+      name: releases
       retriever:
         type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: projects/{{ config['organization'] }}/{{ config['project'] }}/
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: cursor
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
             stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/project_detail"
-    releases:
-      type: DeclarativeStream
-      name: releases
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: organizations/{{ config['organization'] }}/releases/
@@ -211,33 +191,55 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: cursor
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
-            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: dateCreated
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%SZ"
-          - "%Y-%m-%dT%H:%M:%S.%f%z"
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "1900-01-01T00:00:00.0Z"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        is_data_feed: true
+      primary_key:
+        - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/releases"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dateCreated
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1900-01-01T00:00:00.0Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+    project_detail:
+      type: DeclarativeStream
+      name: project_detail
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ headers[\"link\"].get(\"next\", {}).get(\"cursor\", {}) }}"
+            stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: projects/{{ config['organization'] }}/{{ config['project'] }}/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/project_detail"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['hostname'] }}/api/0/
@@ -262,6 +264,19 @@ spec:
       - organization
       - project
     properties:
+      project:
+        type: string
+        description: The name (slug) of the Project you want to sync.
+        order: 3
+        title: Project
+      hostname:
+        type: string
+        description: >-
+          Host name of Sentry API server.For self-hosted, specify your host name
+          here. Otherwise, leave it empty.
+        order: 1
+        title: Host Name
+        default: sentry.io
       auth_token:
         type: string
         description: >-
@@ -270,91 +285,71 @@ spec:
           authentication tokens</a>.For self-hosted, you can find or create
           authentication tokens by visiting
           "{instance_url_prefix}/settings/account/api/auth-tokens/"
+        order: 0
         title: Authentication Tokens
         airbyte_secret: true
-        order: 0
-      hostname:
-        type: string
-        description: >-
-          Host name of Sentry API server.For self-hosted, specify your host name
-          here. Otherwise, leave it empty.
-        title: Host Name
-        default: sentry.io
-        order: 1
       organization:
         type: string
         description: The slug of the organization the groups belong to.
-        title: Organization
         order: 2
-      project:
-        type: string
-        description: The name (slug) of the Project you want to sync.
-        title: Project
-        order: 3
+        title: Organization
       discover_fields:
         type: array
         description: Fields to retrieve when fetching discover events
         item: string
-        title: Discover Event Fields
         order: 4
+        title: Discover Event Fields
     additionalProperties: true
 
-# Sentry currently supports 5 streams and each operates as descending data feed that can only run in
-# parallel with each other. This number can increase if we add more streams
-concurrency_level:
-  type: ConcurrencyLevel
-  default_concurrency: 5
-
 metadata:
+  assist: {}
+  testedStreams:
+    events:
+      hasRecords: false
+      streamHash: dbb6fab7b0273c25a570de7caf744ee5cf87100a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    issues:
+      hasRecords: false
+      streamHash: c1c91e2068b9cd3b143606f00866e1cec7cb870a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    projects:
+      hasRecords: true
+      streamHash: c7aea997d759623400c28516f67533f3243712d2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    releases:
+      hasRecords: false
+      streamHash: 2feadb1649f5f2ff3452cbdebf00868ce182114d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    project_detail:
+      hasRecords: true
+      streamHash: d7e9cc70ebff2bff2856b08f9d4255f724edc476
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   autoImportSchema:
     events: false
     issues: false
     projects: false
-    project_detail: false
     releases: false
-  testedStreams:
-    events:
-      streamHash: 3d14b6a4cdc2b36ae29f9821e21dea33b2b29ad9
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: false
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    issues:
-      streamHash: c1c91e2068b9cd3b143606f00866e1cec7cb870a
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: false
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    projects:
-      streamHash: af579ef4e8adc27e860865dd20fa25631a133e16
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    project_detail:
-      streamHash: d7e9cc70ebff2bff2856b08f9d4255f724edc476
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    releases:
-      streamHash: 2feadb1649f5f2ff3452cbdebf00868ce182114d
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: false
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-  assist: {}
+    project_detail: false
 
 schemas:
   events:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
     properties:
       type:
         type:
@@ -365,11 +360,78 @@ schemas:
           - "null"
           - object
         properties:
+          title:
+            type:
+              - "null"
+              - string
           in_app_frame_mix:
             type:
               - "null"
               - string
-          title:
+      id:
+        type:
+          - string
+          - "null"
+      sdk:
+        type:
+          - "null"
+          - string
+      dist:
+        type:
+          - "null"
+          - string
+      size:
+        type:
+          - "null"
+          - integer
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            key:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      user:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          data:
+            type:
+              - "null"
+              - object
+            properties:
+              isStaff:
+                type:
+                  - boolean
+                  - "null"
+          name:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          username:
+            type:
+              - "null"
+              - string
+          ip_address:
             type:
               - "null"
               - string
@@ -378,26 +440,6 @@ schemas:
           - "null"
           - object
         properties:
-          context:
-            type:
-              - "null"
-              - string
-          contexts:
-            type:
-              - "null"
-              - string
-          entries:
-            type:
-              - "null"
-              - object
-          message:
-            type:
-              - "null"
-              - string
-          packages:
-            type:
-              - "null"
-              - string
           sdk:
             type:
               - "null"
@@ -410,19 +452,47 @@ schemas:
             type:
               - "null"
               - string
+          context:
+            type:
+              - "null"
+              - string
+          entries:
+            type:
+              - "null"
+              - object
+          message:
+            type:
+              - "null"
+              - string
+          contexts:
+            type:
+              - "null"
+              - string
+          packages:
+            type:
+              - "null"
+              - string
+      title:
+        type:
+          - string
+          - "null"
+      errors:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
       context:
         type:
           - "null"
           - object
         properties:
-          emptyList:
+          url:
             type:
               - "null"
-              - array
-          emptyMap:
-            type:
-              - "null"
-              - object
+              - string
           length:
             type:
               - "null"
@@ -444,14 +514,125 @@ schemas:
                 type:
                   - "null"
                   - string
+          emptyMap:
+            type:
+              - "null"
+              - object
+          emptyList:
+            type:
+              - "null"
+              - array
           unauthorized:
             type:
               - "null"
               - boolean
-          url:
+      culprit:
+        type:
+          - "null"
+          - string
+      entries:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+        properties:
+          type:
             type:
               - "null"
               - string
+          data:
+            type:
+              - "null"
+              - object
+            properties:
+              frames:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  lock:
+                    type:
+                      - "null"
+                      - integer
+                  colNo:
+                    type:
+                      - "null"
+                      - string
+                  inApp:
+                    type:
+                      - "null"
+                      - boolean
+                  trust:
+                    type:
+                      - "null"
+                      - string
+                  lineNo:
+                    type:
+                      - "null"
+                      - integer
+                  module:
+                    type:
+                      - "null"
+                      - string
+                  symbol:
+                    type:
+                      - "null"
+                      - string
+                  absPath:
+                    type:
+                      - "null"
+                      - string
+                  context:
+                    type:
+                      - "null"
+                      - array
+                  package:
+                    type:
+                      - "null"
+                      - string
+                  filename:
+                    type:
+                      - "null"
+                      - string
+                  function:
+                    type:
+                      - "null"
+                      - string
+                  platform:
+                    type:
+                      - "null"
+                      - string
+                  sourceLink:
+                    type:
+                      - "null"
+                      - string
+                  symbolAddr:
+                    type:
+                      - "null"
+                      - string
+                  rawFunction:
+                    type:
+                      - "null"
+                      - string
+              formatted:
+                type:
+                  - "null"
+                  - string
+      eventID:
+        type:
+          - string
+          - "null"
+      groupID:
+        type:
+          - string
+          - "null"
+      message:
+        type:
+          - string
+          - "null"
       contexts:
         type:
           - "null"
@@ -491,11 +672,31 @@ schemas:
                 type:
                   - "null"
                   - string
+      location:
+        type:
+          - "null"
+          - string
+      packages:
+        type:
+          - "null"
+          - object
+      platform:
+        type:
+          - string
+          - "null"
       crashFile:
         type:
           - "null"
           - string
-      culprit:
+      projectID:
+        type:
+          - "null"
+          - string
+      event.type:
+        type:
+          - string
+          - "null"
+      occurrence:
         type:
           - "null"
           - string
@@ -509,117 +710,6 @@ schemas:
           - "null"
           - string
         format: date-time
-      dist:
-        type:
-          - "null"
-          - string
-      entries:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - object
-        properties:
-          type:
-            type:
-              - "null"
-              - string
-          data:
-            type:
-              - "null"
-              - object
-            properties:
-              formatted:
-                type:
-                  - "null"
-                  - string
-              frames:
-                type:
-                  - "null"
-                  - object
-                properties:
-                  absPath:
-                    type:
-                      - "null"
-                      - string
-                  colNo:
-                    type:
-                      - "null"
-                      - string
-                  context:
-                    type:
-                      - "null"
-                      - array
-                  filename:
-                    type:
-                      - "null"
-                      - string
-                  function:
-                    type:
-                      - "null"
-                      - string
-                  inApp:
-                    type:
-                      - "null"
-                      - boolean
-                  lineNo:
-                    type:
-                      - "null"
-                      - integer
-                  lock:
-                    type:
-                      - "null"
-                      - integer
-                  module:
-                    type:
-                      - "null"
-                      - string
-                  package:
-                    type:
-                      - "null"
-                      - string
-                  platform:
-                    type:
-                      - "null"
-                      - string
-                  rawFunction:
-                    type:
-                      - "null"
-                      - string
-                  sourceLink:
-                    type:
-                      - "null"
-                      - string
-                  symbol:
-                    type:
-                      - "null"
-                      - string
-                  symbolAddr:
-                    type:
-                      - "null"
-                      - string
-                  trust:
-                    type:
-                      - "null"
-                      - string
-      errors:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - string
-      event.type:
-        type:
-          - string
-          - "null"
-      eventID:
-        type:
-          - string
-          - "null"
       fingerprints:
         type:
           - "null"
@@ -628,118 +718,23 @@ schemas:
           type:
             - "null"
             - string
-      groupID:
-        type:
-          - string
-          - "null"
       groupingConfig:
         type:
           - "null"
           - object
         properties:
+          id:
+            type:
+              - "null"
+              - string
           enhancements:
             type:
               - "null"
               - string
-          id:
-            type:
-              - "null"
-              - string
-      id:
-        type:
-          - string
-          - "null"
-      location:
-        type:
-          - "null"
-          - string
-      message:
-        type:
-          - string
-          - "null"
-      occurrence:
-        type:
-          - "null"
-          - string
-      packages:
-        type:
-          - "null"
-          - object
-      platform:
-        type:
-          - string
-          - "null"
-      projectID:
-        type:
-          - "null"
-          - string
-      sdk:
-        type:
-          - "null"
-          - string
-      size:
-        type:
-          - "null"
-          - integer
-      tags:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            key:
-              type:
-                - string
-                - "null"
-            value:
-              type:
-                - string
-                - "null"
-      title:
-        type:
-          - string
-          - "null"
-      user:
-        type:
-          - "null"
-          - object
-        properties:
-          data:
-            type:
-              - "null"
-              - object
-            properties:
-              isStaff:
-                type:
-                  - boolean
-                  - "null"
-          email:
-            type:
-              - "null"
-              - string
-          id:
-            type:
-              - string
-              - "null"
-          ip_address:
-            type:
-              - "null"
-              - string
-          name:
-            type:
-              - "null"
-              - string
-          username:
-            type:
-              - "null"
-              - string
+    additionalProperties: true
   issues:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
     properties:
       type:
         type:
@@ -763,71 +758,19 @@ schemas:
                 type:
                   - string
                   - "null"
-              filename:
-                type:
-                  - string
-                  - "null"
               value:
                 type:
                   - string
                   - "null"
-      annotations:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      assignedTo:
-        type:
-          - "null"
-          - object
-      count:
-        type:
-          - string
-          - "null"
-      culprit:
-        type:
-          - string
-          - "null"
-      firstSeen:
-        type:
-          - string
-          - "null"
-      hasSeen:
-        type:
-          - boolean
-          - "null"
+              filename:
+                type:
+                  - string
+                  - "null"
       id:
         type:
           - string
           - "null"
-      isBookmarked:
-        type:
-          - boolean
-          - "null"
-      isPublic:
-        type:
-          - boolean
-          - "null"
-      isSubscribed:
-        type:
-          - boolean
-          - "null"
-      isUnhandled:
-        type:
-          - "null"
-          - boolean
-      issueCategory:
-        type:
-          - "null"
-          - string
-      issueType:
-        type:
-          - "null"
-          - string
-      lastSeen:
+      count:
         type:
           - string
           - "null"
@@ -835,22 +778,47 @@ schemas:
         type:
           - string
           - "null"
+      stats:
+        type:
+          - object
+          - "null"
+        properties:
+          24h:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - number
+                  - "null"
+      title:
+        type:
+          - string
+          - "null"
       logger:
         type:
           - "null"
           - string
-      numComments:
-        type:
-          - integer
-          - "null"
-      permalink:
+      status:
         type:
           - string
           - "null"
-      platform:
+        enum:
+          - resolved
+          - unresolved
+          - ignored
+      culprit:
         type:
-          - "null"
           - string
+          - "null"
+      hasSeen:
+        type:
+          - boolean
+          - "null"
       project:
         type:
           - object
@@ -876,31 +844,70 @@ schemas:
         type:
           - string
           - "null"
-      stats:
+      isPublic:
         type:
-          - object
+          - boolean
           - "null"
-        properties:
-          24h:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - array
-                - "null"
-              items:
-                type:
-                  - number
-                  - "null"
-      status:
+      lastSeen:
         type:
           - string
           - "null"
-        enum:
-          - resolved
-          - unresolved
-          - ignored
+      platform:
+        type:
+          - "null"
+          - string
+      firstSeen:
+        type:
+          - string
+          - "null"
+      issueType:
+        type:
+          - "null"
+          - string
+      permalink:
+        type:
+          - string
+          - "null"
+      substatus:
+        type:
+          - "null"
+          - string
+      userCount:
+        type:
+          - integer
+          - "null"
+      assignedTo:
+        type:
+          - "null"
+          - object
+      annotations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      isUnhandled:
+        type:
+          - "null"
+          - boolean
+      numComments:
+        type:
+          - integer
+          - "null"
+      isBookmarked:
+        type:
+          - boolean
+          - "null"
+      isSubscribed:
+        type:
+          - boolean
+          - "null"
+      issueCategory:
+        type:
+          - "null"
+          - string
       statusDetails:
         type:
           - object
@@ -909,23 +916,27 @@ schemas:
         type:
           - "null"
           - object
-      substatus:
-        type:
-          - "null"
-          - string
-      title:
-        type:
-          - string
-          - "null"
-      userCount:
-        type:
-          - integer
-          - "null"
+    additionalProperties: true
   projects:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
     properties:
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
       access:
         type:
           - "null"
@@ -939,200 +950,18 @@ schemas:
           - object
           - "null"
         properties:
-          avatarType:
-            type:
-              - string
-              - "null"
           avatarUrl:
             type:
               - "null"
               - string
+          avatarType:
+            type:
+              - string
+              - "null"
           avatarUuid:
             type:
               - "null"
               - string
-      color:
-        type:
-          - string
-          - "null"
-      dateCreated:
-        type:
-          - string
-          - "null"
-        format: date-time
-      features:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      firstEvent:
-        type:
-          - "null"
-          - string
-      firstTransactionEvent:
-        type:
-          - "null"
-          - boolean
-      hasAccess:
-        type:
-          - boolean
-          - "null"
-      hasCustomMetrics:
-        type:
-          - "null"
-          - boolean
-      hasFeedbacks:
-        type:
-          - "null"
-          - boolean
-      hasMinifiedStackTrace:
-        type:
-          - "null"
-          - boolean
-      hasMonitors:
-        type:
-          - "null"
-          - boolean
-      hasNewFeedbacks:
-        type:
-          - "null"
-          - boolean
-      hasProfiles:
-        type:
-          - "null"
-          - boolean
-      hasReplays:
-        type:
-          - "null"
-          - boolean
-      hasSessions:
-        type:
-          - "null"
-          - boolean
-      id:
-        type:
-          - string
-          - "null"
-      isBookmarked:
-        type:
-          - boolean
-          - "null"
-      isInternal:
-        type:
-          - boolean
-          - "null"
-      isMember:
-        type:
-          - boolean
-          - "null"
-      isPublic:
-        type:
-          - boolean
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      organization:
-        type:
-          - object
-          - "null"
-        properties:
-          avatar:
-            type:
-              - object
-              - "null"
-            properties:
-              avatarType:
-                type:
-                  - string
-                  - "null"
-              avatarUrl:
-                type:
-                  - string
-                  - "null"
-              avatarUuid:
-                type:
-                  - "null"
-                  - string
-          dateCreated:
-            type:
-              - string
-              - "null"
-            format: date-time
-          features:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
-          hasAuthProvider:
-            type:
-              - boolean
-              - "null"
-          id:
-            type:
-              - string
-              - "null"
-          isEarlyAdopter:
-            type:
-              - boolean
-              - "null"
-          links:
-            type:
-              - object
-              - "null"
-            properties:
-              organizationUrl:
-                type:
-                  - string
-                  - "null"
-              regionUrl:
-                type:
-                  - string
-                  - "null"
-          name:
-            type:
-              - string
-              - "null"
-          require2FA:
-            type:
-              - boolean
-              - "null"
-          requireEmailVerification:
-            type:
-              - boolean
-              - "null"
-          slug:
-            type:
-              - string
-              - "null"
-          status:
-            type:
-              - object
-              - "null"
-            properties:
-              id:
-                type:
-                  - string
-                  - "null"
-              name:
-                type:
-                  - string
-                  - "null"
-      platform:
-        type:
-          - "null"
-          - string
-      slug:
-        type:
-          - string
-          - "null"
       status:
         type:
           - string
@@ -1142,106 +971,6 @@ schemas:
           - disabled
           - pending_deletion
           - deletion_in_progress
-  project_detail:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      access:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - string
-      allowedDomains:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      avatar:
-        type:
-          - object
-          - "null"
-        properties:
-          avatarType:
-            type:
-              - string
-              - "null"
-          avatarUrl:
-            type:
-              - "null"
-              - string
-          avatarUuid:
-            type:
-              - "null"
-              - string
-      builtinSymbolSources:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - string
-      color:
-        type:
-          - string
-          - "null"
-      dataScrubber:
-        type:
-          - boolean
-          - "null"
-      dataScrubberDefaults:
-        type:
-          - boolean
-          - "null"
-      dateCreated:
-        type:
-          - string
-          - "null"
-      defaultEnvironment:
-        type:
-          - "null"
-          - string
-      digestsMaxDelay:
-        type:
-          - integer
-          - "null"
-      digestsMinDelay:
-        type:
-          - integer
-          - "null"
-      dynamicSamplingBiases:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - object
-          properties:
-            active:
-              type:
-                - "null"
-                - boolean
-            id:
-              type:
-                - "null"
-                - string
-      eventProcessing:
-        type:
-          - "null"
-          - object
-        properties:
-          symbolicationDegraded:
-            type:
-              - "null"
-              - boolean
       features:
         type:
           - array
@@ -1250,82 +979,6 @@ schemas:
           type:
             - string
             - "null"
-      fingerprintingRules:
-        type:
-          - "null"
-          - string
-      firstEvent:
-        type:
-          - "null"
-          - string
-      firstTransactionEvent:
-        type:
-          - "null"
-          - boolean
-      groupingAutoUpdate:
-        type:
-          - "null"
-          - boolean
-      groupingConfig:
-        type:
-          - "null"
-          - string
-      groupingEnhancements:
-        type:
-          - "null"
-          - string
-      groupingEnhancementsBase:
-        type:
-          - "null"
-          - string
-      hasAccess:
-        type:
-          - boolean
-          - "null"
-      hasCustomMetrics:
-        type:
-          - "null"
-          - boolean
-      hasFeedbacks:
-        type:
-          - "null"
-          - boolean
-      hasMinifiedStackTrace:
-        type:
-          - "null"
-          - boolean
-      hasMonitors:
-        type:
-          - "null"
-          - boolean
-      hasNewFeedbacks:
-        type:
-          - "null"
-          - boolean
-      hasProfiles:
-        type:
-          - "null"
-          - boolean
-      hasReplays:
-        type:
-          - "null"
-          - boolean
-      hasSessions:
-        type:
-          - "null"
-          - boolean
-      id:
-        type:
-          - string
-          - "null"
-      isBookmarked:
-        type:
-          - boolean
-          - "null"
-      isInternal:
-        type:
-          - boolean
-          - "null"
       isMember:
         type:
           - boolean
@@ -1334,238 +987,98 @@ schemas:
         type:
           - boolean
           - "null"
-      latestRelease:
+      platform:
         type:
           - "null"
-          - object
-        properties:
-          version:
-            type:
-              - string
-              - "null"
-          authors:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                email:
-                  type:
-                    - string
-                    - "null"
-                name:
-                  type:
-                    - string
-                    - "null"
-          commitCount:
-            type:
-              - integer
-              - "null"
-          data:
-            type:
-              - object
-              - "null"
-          dateCreated:
-            type:
-              - string
-              - "null"
-          dateReleased:
-            type:
-              - "null"
-              - string
-          deployCount:
-            type:
-              - integer
-              - "null"
-          firstEvent:
-            type:
-              - "null"
-              - string
-          lastCommit:
-            type:
-              - "null"
-              - object
-          lastDeploy:
-            type:
-              - "null"
-              - object
-          lastEvent:
-            type:
-              - "null"
-              - string
-          newGroups:
-            type:
-              - integer
-              - "null"
-          owner:
-            type:
-              - "null"
-              - string
-          projects:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                name:
-                  type:
-                    - string
-                    - "null"
-                slug:
-                  type:
-                    - string
-                    - "null"
-          ref:
-            type:
-              - "null"
-              - string
-          shortVersion:
-            type:
-              - string
-              - "null"
-          url:
-            type:
-              - "null"
-              - string
-      name:
+          - string
+      hasAccess:
+        type:
+          - boolean
+          - "null"
+      firstEvent:
+        type:
+          - "null"
+          - string
+      hasReplays:
+        type:
+          - "null"
+          - boolean
+      isInternal:
+        type:
+          - boolean
+          - "null"
+      dateCreated:
         type:
           - string
           - "null"
-      options:
+        format: date-time
+      hasMonitors:
         type:
-          - object
           - "null"
-        properties:
-          feedback:branding:
-            type:
-              - boolean
-              - "null"
-          filters:blacklisted_ips:
-            type:
-              - string
-              - "null"
-          filters:chunk-load-error:
-            type:
-              - boolean
-              - "null"
-          filters:error_messages:
-            type:
-              - string
-              - "null"
-          filters:react-hydration-errors:
-            type:
-              - boolean
-              - "null"
-          filters:releases:
-            type:
-              - string
-              - "null"
-          quotas:spike-protection-disabled:
-            type:
-              - boolean
-              - "null"
-          sentry:csp_ignored_sources:
-            type:
-              - string
-              - "null"
-          sentry:csp_ignored_sources_defaults:
-            type:
-              - boolean
-              - "null"
-          sentry:feedback_user_report_notification:
-            type:
-              - boolean
-              - "null"
-          sentry:replay_rage_click_issues:
-            type:
-              - integer
-              - "null"
-          sentry:reprocessing_active:
-            type:
-              - boolean
-              - "null"
+          - boolean
+      hasProfiles:
+        type:
+          - "null"
+          - boolean
+      hasSessions:
+        type:
+          - "null"
+          - boolean
+      hasFeedbacks:
+        type:
+          - "null"
+          - boolean
+      isBookmarked:
+        type:
+          - boolean
+          - "null"
       organization:
         type:
           - object
           - "null"
         properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          links:
+            type:
+              - object
+              - "null"
+            properties:
+              regionUrl:
+                type:
+                  - string
+                  - "null"
+              organizationUrl:
+                type:
+                  - string
+                  - "null"
           avatar:
             type:
               - object
               - "null"
             properties:
+              avatarUrl:
+                type:
+                  - string
+                  - "null"
               avatarType:
                 type:
                   - string
                   - "null"
-              avatarUrl:
-                type:
-                  - "null"
-                  - string
               avatarUuid:
                 type:
                   - "null"
                   - string
-          dateCreated:
-            type:
-              - string
-              - "null"
-            format: date-time
-          features:
-            type:
-              - "null"
-              - array
-            items:
-              type:
-                - "null"
-                - string
-          hasAuthProvider:
-            type:
-              - "null"
-              - boolean
-          id:
-            type:
-              - string
-              - "null"
-          isEarlyAdopter:
-            type:
-              - boolean
-              - "null"
-          links:
-            type:
-              - "null"
-              - object
-            properties:
-              organizationUrl:
-                type:
-                  - "null"
-                  - string
-              regionUrl:
-                type:
-                  - "null"
-                  - string
-          name:
-            type:
-              - string
-              - "null"
-          require2FA:
-            type:
-              - boolean
-              - "null"
-          requireEmailVerification:
-            type:
-              - "null"
-              - boolean
-          slug:
-            type:
-              - string
-              - "null"
           status:
             type:
               - object
@@ -1579,18 +1092,387 @@ schemas:
                 type:
                   - string
                   - "null"
-      platform:
+          features:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          require2FA:
+            type:
+              - boolean
+              - "null"
+          dateCreated:
+            type:
+              - string
+              - "null"
+            format: date-time
+          isEarlyAdopter:
+            type:
+              - boolean
+              - "null"
+          hasAuthProvider:
+            type:
+              - boolean
+              - "null"
+          requireEmailVerification:
+            type:
+              - boolean
+              - "null"
+      hasNewFeedbacks:
+        type:
+          - "null"
+          - boolean
+      hasCustomMetrics:
+        type:
+          - "null"
+          - boolean
+      firstTransactionEvent:
+        type:
+          - "null"
+          - boolean
+      hasMinifiedStackTrace:
+        type:
+          - "null"
+          - boolean
+    additionalProperties: true
+  releases:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      version:
         type:
           - "null"
           - string
-      platforms:
+      id:
+        type:
+          - "null"
+          - integer
+      ref:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      data:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      owner:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      authors:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            name:
+              type:
+                - "null"
+                - string
+            email:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      projects:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            id:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+            slug:
+              type:
+                - "null"
+                - string
+            platform:
+              type:
+                - "null"
+                - string
+            newGroups:
+              type:
+                - "null"
+                - integer
+            platforms:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - string
+            hasHealthData:
+              type:
+                - "null"
+                - boolean
+      lastEvent:
+        type:
+          - "null"
+          - string
+      newGroups:
+        type:
+          - "null"
+          - integer
+      userAgent:
+        type:
+          - "null"
+          - string
+      firstEvent:
+        type:
+          - "null"
+          - string
+      lastCommit:
+        type:
+          - "null"
+          - object
+      lastDeploy:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      commitCount:
+        type:
+          - "null"
+          - integer
+      dateCreated:
+        type:
+          - "null"
+          - string
+        format: date-time
+      deployCount:
+        type:
+          - "null"
+          - integer
+      versionInfo:
+        type:
+          - "null"
+          - object
+        properties:
+          version:
+            type:
+              - "null"
+              - object
+            properties:
+              pre:
+                type:
+                  - "null"
+                  - string
+              raw:
+                type:
+                  - "null"
+                  - string
+              major:
+                type:
+                  - "null"
+                  - integer
+              minor:
+                type:
+                  - "null"
+                  - integer
+              patch:
+                type:
+                  - "null"
+                  - integer
+              buildCode:
+                type:
+                  - "null"
+                  - string
+              components:
+                type:
+                  - "null"
+                  - integer
+          description:
+            type:
+              - "null"
+              - string
+          package:
+            type:
+              - "null"
+              - string
+          buildHash:
+            type:
+              - "null"
+              - string
+      dateReleased:
+        type:
+          - "null"
+          - string
+        format: date-time
+      shortVersion:
+        type:
+          - "null"
+          - string
+      currentProjectMeta:
+        type:
+          - "null"
+          - object
+    additionalProperties: true
+  project_detail:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      team:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+      color:
+        type:
+          - string
+          - "null"
+      stats: {}
+      teams:
         type:
           - array
           - "null"
         items:
           type:
-            - string
+            - object
             - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            slug:
+              type:
+                - string
+                - "null"
+      access:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      avatar:
+        type:
+          - object
+          - "null"
+        properties:
+          avatarUrl:
+            type:
+              - "null"
+              - string
+          avatarType:
+            type:
+              - string
+              - "null"
+          avatarUuid:
+            type:
+              - "null"
+              - string
+      status:
+        type:
+          - string
+          - "null"
+      options:
+        type:
+          - object
+          - "null"
+        properties:
+          filters:releases:
+            type:
+              - string
+              - "null"
+          feedback:branding:
+            type:
+              - boolean
+              - "null"
+          filters:error_messages:
+            type:
+              - string
+              - "null"
+          filters:blacklisted_ips:
+            type:
+              - string
+              - "null"
+          filters:chunk-load-error:
+            type:
+              - boolean
+              - "null"
+          sentry:csp_ignored_sources:
+            type:
+              - string
+              - "null"
+          sentry:reprocessing_active:
+            type:
+              - boolean
+              - "null"
+          filters:react-hydration-errors:
+            type:
+              - boolean
+              - "null"
+          sentry:replay_rage_click_issues:
+            type:
+              - integer
+              - "null"
+          quotas:spike-protection-disabled:
+            type:
+              - boolean
+              - "null"
+          sentry:csp_ignored_sources_defaults:
+            type:
+              - boolean
+              - "null"
+          sentry:feedback_user_report_notification:
+            type:
+              - boolean
+              - "null"
       plugins:
         type:
           - array
@@ -1617,7 +1499,22 @@ schemas:
                 - object
                 - "null"
               additionalProperties: true
-            altIsSentryApp: {}
+            id:
+              type:
+                - string
+                - "null"
+            doc:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            slug:
+              type:
+                - string
+                - "null"
             assets:
               type:
                 - array
@@ -1630,17 +1527,21 @@ schemas:
               type:
                 - "null"
                 - object
-              additionalProperties: true
               properties:
-                name:
-                  type:
-                    - string
-                    - "null"
                 url:
                   type:
                     - string
                     - "null"
-            canDisable:
+                name:
+                  type:
+                    - string
+                    - "null"
+              additionalProperties: true
+            status:
+              type:
+                - string
+                - "null"
+            enabled:
               type:
                 - boolean
                 - "null"
@@ -1652,12 +1553,55 @@ schemas:
                 type:
                   - string
                   - "null"
-            deprecationDate: {}
-            doc:
+            features:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            isHidden:
+              type:
+                - boolean
+                - "null"
+            shortName:
               type:
                 - string
                 - "null"
-            enabled:
+            canDisable:
+              type:
+                - boolean
+                - "null"
+            isTestable:
+              type:
+                - boolean
+                - "null"
+            isDeprecated:
+              type:
+                - boolean
+                - "null"
+            resourceLinks:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  title:
+                    type:
+                      - string
+                      - "null"
+                additionalProperties: true
+            altIsSentryApp: {}
+            deprecationDate: {}
+            hasConfiguration:
               type:
                 - boolean
                 - "null"
@@ -1670,81 +1614,55 @@ schemas:
                   - object
                   - "null"
                 additionalProperties: true
-            features:
-              type:
-                - array
-                - "null"
-              items:
-                type:
-                  - string
-                  - "null"
             firstPartyAlternative: {}
-            hasConfiguration:
-              type:
-                - boolean
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            isDeprecated:
-              type:
-                - boolean
-                - "null"
-            isHidden:
-              type:
-                - boolean
-                - "null"
-            isTestable:
-              type:
-                - boolean
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-            resourceLinks:
-              type:
-                - "null"
-                - array
-              items:
-                type:
-                  - object
-                  - "null"
-                additionalProperties: true
-                properties:
-                  title:
-                    type:
-                      - string
-                      - "null"
-                  url:
-                    type:
-                      - string
-                      - "null"
-            shortName:
-              type:
-                - string
-                - "null"
-            slug:
-              type:
-                - string
-                - "null"
-            status:
-              type:
-                - string
-                - "null"
-      processingIssues:
+      features:
         type:
-          - integer
+          - array
           - "null"
-      recapServerUrl:
+        items:
+          type:
+            - string
+            - "null"
+      isMember:
+        type:
+          - boolean
+          - "null"
+      isPublic:
+        type:
+          - boolean
+          - "null"
+      platform:
         type:
           - "null"
           - string
-      relayPiiConfig:
+      hasAccess:
+        type:
+          - boolean
+          - "null"
+      platforms:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      verifySSL:
+        type:
+          - boolean
+          - "null"
+      firstEvent:
         type:
           - "null"
           - string
+      hasReplays:
+        type:
+          - "null"
+          - boolean
+      isInternal:
+        type:
+          - boolean
+          - "null"
       resolveAge:
         type:
           - integer
@@ -1757,65 +1675,35 @@ schemas:
           type:
             - string
             - "null"
-      scrapeJavaScript:
-        type:
-          - boolean
-          - "null"
-      scrubIPAddresses:
-        type:
-          - boolean
-          - "null"
-      secondaryGroupingConfig:
-        type:
-          - "null"
-          - string
-      secondaryGroupingExpiry:
-        type:
-          - "null"
-          - integer
-      securityToken:
+      dateCreated:
         type:
           - string
           - "null"
-      securityTokenHeader:
-        type:
-          - "null"
-          - string
-      sensitiveFields:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      sessionStats: {}
-      slug:
-        type:
-          - string
-          - "null"
-      stats: {}
-      status:
-        type:
-          - string
-          - "null"
-      storeCrashReports:
+      hasMonitors:
         type:
           - "null"
           - boolean
-      subjectPrefix:
-        type:
-          - string
-          - "null"
-      subjectTemplate:
-        type:
-          - string
-          - "null"
-      symbolSources:
+      hasProfiles:
         type:
           - "null"
-          - string
-      team:
+          - boolean
+      hasSessions:
+        type:
+          - "null"
+          - boolean
+      dataScrubber:
+        type:
+          - boolean
+          - "null"
+      hasFeedbacks:
+        type:
+          - "null"
+          - boolean
+      isBookmarked:
+        type:
+          - boolean
+          - "null"
+      organization:
         type:
           - object
           - "null"
@@ -1832,223 +1720,331 @@ schemas:
             type:
               - string
               - "null"
-      teams:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            id:
-              type:
-                - string
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-            slug:
-              type:
-                - string
-                - "null"
-      transactionStats: {}
-      verifySSL:
-        type:
-          - boolean
-          - "null"
-  releases:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      version:
-        type:
-          - "null"
-          - string
-      authors:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - object
-          additionalProperties: true
-          properties:
-            email:
-              type:
-                - "null"
-                - string
-            name:
-              type:
-                - "null"
-                - string
-      commitCount:
-        type:
-          - "null"
-          - integer
-      currentProjectMeta:
-        type:
-          - "null"
-          - object
-      data:
-        type:
-          - "null"
-          - object
-        additionalProperties: true
-      dateCreated:
-        type:
-          - "null"
-          - string
-        format: date-time
-      dateReleased:
-        type:
-          - "null"
-          - string
-        format: date-time
-      deployCount:
-        type:
-          - "null"
-          - integer
-      firstEvent:
-        type:
-          - "null"
-          - string
-      id:
-        type:
-          - "null"
-          - integer
-      lastCommit:
-        type:
-          - "null"
-          - object
-      lastDeploy:
-        type:
-          - "null"
-          - object
-        additionalProperties: true
-      lastEvent:
-        type:
-          - "null"
-          - string
-      newGroups:
-        type:
-          - "null"
-          - integer
-      owner:
-        type:
-          - "null"
-          - string
-      projects:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - object
-          properties:
-            hasHealthData:
-              type:
-                - "null"
-                - boolean
-            id:
-              type:
-                - "null"
-                - integer
-            name:
-              type:
-                - "null"
-                - string
-            newGroups:
-              type:
-                - "null"
-                - integer
-            platform:
-              type:
-                - "null"
-                - string
-            platforms:
-              type:
-                - "null"
-                - array
-              items:
+          links:
+            type:
+              - "null"
+              - object
+            properties:
+              regionUrl:
                 type:
                   - "null"
                   - string
-            slug:
+              organizationUrl:
+                type:
+                  - "null"
+                  - string
+          avatar:
+            type:
+              - object
+              - "null"
+            properties:
+              avatarUrl:
+                type:
+                  - "null"
+                  - string
+              avatarType:
+                type:
+                  - string
+                  - "null"
+              avatarUuid:
+                type:
+                  - "null"
+                  - string
+          status:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          features:
+            type:
+              - "null"
+              - array
+            items:
               type:
                 - "null"
                 - string
-      ref:
-        type:
-          - "null"
-          - string
-      shortVersion:
-        type:
-          - "null"
-          - string
-      status:
-        type:
-          - "null"
-          - string
-      url:
-        type:
-          - "null"
-          - string
-      userAgent:
-        type:
-          - "null"
-          - string
-      versionInfo:
+          require2FA:
+            type:
+              - boolean
+              - "null"
+          dateCreated:
+            type:
+              - string
+              - "null"
+            format: date-time
+          isEarlyAdopter:
+            type:
+              - boolean
+              - "null"
+          hasAuthProvider:
+            type:
+              - "null"
+              - boolean
+          requireEmailVerification:
+            type:
+              - "null"
+              - boolean
+      sessionStats: {}
+      latestRelease:
         type:
           - "null"
           - object
         properties:
           version:
             type:
+              - string
+              - "null"
+          ref:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+          data:
+            type:
+              - object
+              - "null"
+          owner:
+            type:
+              - "null"
+              - string
+          authors:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                email:
+                  type:
+                    - string
+                    - "null"
+          projects:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                slug:
+                  type:
+                    - string
+                    - "null"
+          lastEvent:
+            type:
+              - "null"
+              - string
+          newGroups:
+            type:
+              - integer
+              - "null"
+          firstEvent:
+            type:
+              - "null"
+              - string
+          lastCommit:
+            type:
               - "null"
               - object
-            properties:
-              buildCode:
-                type:
-                  - "null"
-                  - string
-              components:
-                type:
-                  - "null"
-                  - integer
-              major:
-                type:
-                  - "null"
-                  - integer
-              minor:
-                type:
-                  - "null"
-                  - integer
-              patch:
-                type:
-                  - "null"
-                  - integer
-              pre:
-                type:
-                  - "null"
-                  - string
-              raw:
-                type:
-                  - "null"
-                  - string
-          description:
+          lastDeploy:
+            type:
+              - "null"
+              - object
+          commitCount:
+            type:
+              - integer
+              - "null"
+          dateCreated:
+            type:
+              - string
+              - "null"
+          deployCount:
+            type:
+              - integer
+              - "null"
+          dateReleased:
             type:
               - "null"
               - string
-          buildHash:
+          shortVersion:
+            type:
+              - string
+              - "null"
+      securityToken:
+        type:
+          - string
+          - "null"
+      subjectPrefix:
+        type:
+          - string
+          - "null"
+      symbolSources:
+        type:
+          - "null"
+          - string
+      allowedDomains:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      groupingConfig:
+        type:
+          - "null"
+          - string
+      recapServerUrl:
+        type:
+          - "null"
+          - string
+      relayPiiConfig:
+        type:
+          - "null"
+          - string
+      digestsMaxDelay:
+        type:
+          - integer
+          - "null"
+      digestsMinDelay:
+        type:
+          - integer
+          - "null"
+      eventProcessing:
+        type:
+          - "null"
+          - object
+        properties:
+          symbolicationDegraded:
             type:
               - "null"
-              - string
-          package:
-            type:
-              - "null"
-              - string
+              - boolean
+      hasNewFeedbacks:
+        type:
+          - "null"
+          - boolean
+      sensitiveFields:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      subjectTemplate:
+        type:
+          - string
+          - "null"
+      hasCustomMetrics:
+        type:
+          - "null"
+          - boolean
+      processingIssues:
+        type:
+          - integer
+          - "null"
+      scrapeJavaScript:
+        type:
+          - boolean
+          - "null"
+      scrubIPAddresses:
+        type:
+          - boolean
+          - "null"
+      transactionStats: {}
+      storeCrashReports:
+        type:
+          - "null"
+          - boolean
+      defaultEnvironment:
+        type:
+          - "null"
+          - string
+      groupingAutoUpdate:
+        type:
+          - "null"
+          - boolean
+      fingerprintingRules:
+        type:
+          - "null"
+          - string
+      securityTokenHeader:
+        type:
+          - "null"
+          - string
+      builtinSymbolSources:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      dataScrubberDefaults:
+        type:
+          - boolean
+          - "null"
+      groupingEnhancements:
+        type:
+          - "null"
+          - string
+      dynamicSamplingBiases:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+            active:
+              type:
+                - "null"
+                - boolean
+      firstTransactionEvent:
+        type:
+          - "null"
+          - boolean
+      hasMinifiedStackTrace:
+        type:
+          - "null"
+          - boolean
+      secondaryGroupingConfig:
+        type:
+          - "null"
+          - string
+      secondaryGroupingExpiry:
+        type:
+          - "null"
+          - integer
+      groupingEnhancementsBase:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
