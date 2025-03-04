@@ -25,7 +25,7 @@ def mock_authenticator(components_module):
 @patch("requests.request")
 def test_get_refresh_access_token_response(mock_request, mock_authenticator):
     expected_response_json = {"access_token": "test_access_token", "expires_in": 3600}
-    
+
     mock_response = MagicMock()
     mock_response.json.return_value = expected_response_json
     mock_response.status_code = 200
