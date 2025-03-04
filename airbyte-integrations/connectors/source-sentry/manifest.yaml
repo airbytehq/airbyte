@@ -301,6 +301,10 @@ spec:
         title: Discover Event Fields
     additionalProperties: true
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 5
+
 metadata:
   assist: {}
   testedStreams:
