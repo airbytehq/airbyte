@@ -2,10 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import sys
 import json
-import yaml
 import logging
+import sys
 from dataclasses import InitVar, dataclass, field
 from datetime import datetime
 from functools import partial
@@ -13,6 +12,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import dpath
 import requests
+import yaml
 
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
@@ -37,14 +37,12 @@ logger = logging.getLogger("airbyte")
 def _get_manifest_file_path() -> str:
     # Manifest files are always in "source_<connector_name>/manifest.yaml" or "source_declarative_manifest/manifest.yaml"
     # The connector's module name can be inferred by looking at the modules loaded and look for the one starting with source_
-    source_modules = [
-        k for k, v in sys.modules.items() if "source_" in k and "airbyte_cdk" not in k
-    ]
+    source_modules = [k for k, v in sys.modules.items() if "source_" in k and "airbyte_cdk" not in k]
     if source_modules:
         module = source_modules[0].split(".")[0]
         return f"./{module}/manifest.yaml"
 
-    # If we are not in a source_declarative_manifest module, the most likely scenario is we're processing a manifest locally 
+    # If we are not in a source_declarative_manifest module, the most likely scenario is we're processing a manifest locally
     # or from the connector builder server which does not require a json schema to be defined.
     return "./manifest.yaml"
 
@@ -142,7 +140,7 @@ class ItemCursorPaginationStrategy(PageIncrement):
 @dataclass
 class ManifestSchemaLoader(JsonFileSchemaLoader):
     """Retrieves the schema from manifest.yaml"""
-    
+
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self.file_path = _get_manifest_file_path()
 

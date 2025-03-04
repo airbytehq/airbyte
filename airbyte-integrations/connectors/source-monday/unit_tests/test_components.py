@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 from requests import Response
 
-from airbyte_cdk.models import AirbyteMessage, SyncMode, Type, AirbyteRecordMessage
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
@@ -135,10 +135,10 @@ def mock_parent_stream():
                 AirbyteMessage(
                     type=Type.RECORD,
                     record=AirbyteRecordMessage(
-                        data= {"id": 123, "name": "Sample Record", "updated_at": "2023-01-01T00:00:00Z"},
-                        stream= "projects",
-                        emitted_at= 1632095449
-                    )
+                        data={"id": 123, "name": "Sample Record", "updated_at": "2023-01-01T00:00:00Z"},
+                        stream="projects",
+                        emitted_at=1632095449,
+                    ),
                 )
             ],
             [{"parent_stream_id": [123]}],
