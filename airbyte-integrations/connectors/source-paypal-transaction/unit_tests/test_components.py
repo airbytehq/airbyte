@@ -3,11 +3,10 @@
 import logging
 import time
 from datetime import datetime
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
-import requests_mock
 
 
 @pytest.fixture
@@ -23,49 +22,71 @@ def mock_authenticator(components_module):
     )
 
 
-def test_get_refresh_access_token_response(mock_authenticator):
+@patch("requests.request")
+def test_get_refresh_access_token_response(mock_request, mock_authenticator):
     expected_response_json = {"access_token": "test_access_token", "expires_in": 3600}
-    with requests_mock.Mocker() as mock_request:
-        mock_request.post("https://test.token.endpoint", json=expected_response_json, status_code=200)
-        # Call _get_refresh method
-        mock_authenticator._get_refresh_access_token_response()
+    
+    mock_response = MagicMock()
+    mock_response.json.return_value = expected_response_json
+    mock_response.status_code = 200
+    mock_request.return_value = mock_response
 
-        assert mock_authenticator.access_token == expected_response_json["access_token"]
+    # Call _get_refresh method
+    mock_authenticator._get_refresh_access_token_response()
+
+    assert mock_authenticator.access_token == expected_response_json["access_token"]
 
 
-def test_token_expiration(mock_authenticator):
+@patch("requests.request")
+def test_token_expiration(mock_request, mock_authenticator):
     # Mock response for initial token request
     initial_response_json = {"access_token": "initial_access_token", "expires_in": 1}
     # Mock response for token refresh request
     refresh_response_json = {"access_token": "refreshed_access_token", "expires_in": 3600}
-    with requests_mock.Mocker() as mock_request:
-        mock_request.post("https://test.token.endpoint", json=initial_response_json, status_code=200)
-        mock_authenticator._get_refresh_access_token_response()
 
-        # Assert that the initial access token is set correctly
-        assert mock_authenticator.access_token == initial_response_json["access_token"]
-        time.sleep(2)
+    mock_response_initial = MagicMock()
+    mock_response_initial.json.return_value = initial_response_json
+    mock_response_initial.status_code = 200
 
-        mock_request.post("https://test.token.endpoint", json=refresh_response_json, status_code=200)
-        mock_authenticator._get_refresh_access_token_response()
+    mock_response_refresh = MagicMock()
+    mock_response_refresh.json.return_value = refresh_response_json
+    mock_response_refresh.status_code = 200
 
-        # Assert that the access token is refreshed
-        assert mock_authenticator.access_token == refresh_response_json["access_token"]
+    mock_request.side_effect = [mock_response_initial, mock_response_refresh]
+    mock_authenticator._get_refresh_access_token_response()
+
+    # Assert that the initial access token is set correctly
+    assert mock_authenticator.access_token == initial_response_json["access_token"]
+    time.sleep(2)
+
+    mock_authenticator._get_refresh_access_token_response()
+
+    # Assert that the access token is refreshed
+    assert mock_authenticator.access_token == refresh_response_json["access_token"]
 
 
-def test_backoff_retry(mock_authenticator, caplog):
+@patch("requests.request")
+def test_backoff_retry(mock_request, mock_authenticator, caplog):
     mock_response = {"access_token": "test_access_token", "expires_in": 3600}
     mock_reason = "Too Many Requests"
 
-    with requests_mock.Mocker() as mock_request:
-        mock_request.post("https://test.token.endpoint", json=mock_response, status_code=429, reason=mock_reason)
-        with caplog.at_level(logging.INFO):
-            try:
-                mock_authenticator._get_refresh_access_token_response()
-            except requests.exceptions.HTTPError:
-                pass  # Ignore the HTTPError
-            else:
-                pytest.fail("Expected DefaultBackoffException to be raised")
+    mock_response_429 = MagicMock()
+    mock_response_429.status_code = 429
+    mock_response_429.reason = mock_reason
+    mock_response_429.raise_for_status.side_effect = requests.exceptions.HTTPError()
+
+    mock_response_success = MagicMock()
+    mock_response_success.json.return_value = mock_response
+    mock_response_success.status_code = 200
+
+    mock_request.side_effect = [mock_response_429, mock_response_success]
+    with caplog.at_level(logging.INFO):
+        try:
+            mock_authenticator._get_refresh_access_token_response()
+        except requests.exceptions.HTTPError:
+            pass  # Ignore the HTTPError
+        else:
+            pytest.fail("Expected DefaultBackoffException to be raised")
 
 
 @pytest.fixture
