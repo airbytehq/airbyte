@@ -1,4 +1,4 @@
-version: 6.33.0
+version: 6.36.3
 
 type: DeclarativeSource
 
@@ -266,32 +266,47 @@ metadata:
       - authenticator
   testedStreams:
     incidents:
+      hasRecords: false
       streamHash: 08fe3a8aba322658daeaaa9f7e9e63db8f8f1f2a
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: false
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     incident_logs:
+      hasRecords: false
       streamHash: 4b5e866022358f49e706d38788c75cd0a54ac2b8
       hasResponse: false
-      responsesAreSuccessful: false
-      hasRecords: false
-      primaryKeysArePresent: false
       primaryKeysAreUnique: false
+      primaryKeysArePresent: false
+      responsesAreSuccessful: false
     teams:
+      hasRecords: true
       streamHash: 2dd000bcce6172e4dfa5c51f13d90aa956abecb2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    services:
+      streamHash: 3c5591edbb7254a4eec6630405a59f17e006e305
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    services:
-      streamHash: 3c5591edbb7254a4eec6630405a59f17e006e305
     users:
       streamHash: e4c86fe962b0dee31bb818118ee26a449b25cf84
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     priorities:
       streamHash: 4d9fd505f2189b36fc37998ae7a22b9db95c5f9a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist: {}
 
 schemas:
