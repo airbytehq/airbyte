@@ -7,17 +7,18 @@ package io.airbyte.integrations.source.mssql.initialsync;
 import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcCursorInvalidMessage;
 import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcResyncMessage;
 import static io.airbyte.cdk.db.DbAnalyticsUtils.wassOccurrenceMessage;
+import static io.airbyte.cdk.db.jdbc.JdbcUtils.getFullyQualifiedTableName;
 import static io.airbyte.integrations.source.mssql.MsSqlSpecConstants.FAIL_SYNC_OPTION;
 import static io.airbyte.integrations.source.mssql.MsSqlSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
 import static io.airbyte.integrations.source.mssql.MsSqlSpecConstants.RESYNC_DATA_OPTION;
 import static io.airbyte.integrations.source.mssql.MssqlCdcHelper.getDebeziumProperties;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mssql.cdc.MssqlCdcStateConstants.MSSQL_CDC_OFFSET;
-import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadHandler.discoverClusteredIndexForStream;
 import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadStateManager.ORDERED_COL_STATE_TYPE;
 import static io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadStateManager.STATE_TYPE_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
@@ -420,24 +421,45 @@ public class MssqlInitialReadUtil {
     // if (stream.getStream().getSourceDefinedPrimaryKey().size() > 1) {
     // LOGGER.info("Composite primary key detected for {namespace, stream} : {}, {}",
     // stream.getStream().getNamespace(), stream.getStream().getName());
-    // } // TODO: validate the seleted column rather than primary key
-    final String clusterdIndexField = discoverClusteredIndexForStream(database, stream.getStream());
-    final String ocFieldName;
-    if (clusterdIndexField != null) {
-      ocFieldName = clusterdIndexField;
-    } else {
-      if (stream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
-        return Optional.empty();
-      }
-      ocFieldName = stream.getStream().getSourceDefinedPrimaryKey().getFirst().getFirst();
+    // }
+    Optional<String> ocFieldNameOpt = selectOcFieldName(database, stream);
+    if (ocFieldNameOpt.isEmpty()) {
+      LOGGER.info("No primary key or clustered index found for stream: " + stream.getStream().getName());
+      return Optional.empty();
     }
 
+    String ocFieldName = ocFieldNameOpt.get();
     LOGGER.info("selected ordered column field name: " + ocFieldName);
     final JDBCType ocFieldType = table.getFields().stream()
         .filter(field -> field.getName().equals(ocFieldName))
         .findFirst().get().getType();
     final String ocMaxValue = MssqlQueryUtils.getMaxOcValueForStream(database, stream, ocFieldName, quoteString);
     return Optional.of(new OrderedColumnInfo(ocFieldName, ocFieldType, ocMaxValue));
+  }
+
+  @VisibleForTesting
+  public static Optional<String> selectOcFieldName(final JdbcDatabase database,
+                                                   final ConfiguredAirbyteStream stream) {
+
+    final Map<String, List<String>> clusterdIndexField = MssqlInitialLoadHandler.discoverClusteredIndexForStream(database, stream.getStream());
+    final String streamName = getFullyQualifiedTableName(stream.getStream().getNamespace(), stream.getStream().getName());
+    final List<List<String>> primaryKey = stream.getStream().getSourceDefinedPrimaryKey();
+    final String ocFieldName;
+
+    final List<String> clusterColumns = Optional.ofNullable(clusterdIndexField)
+        .map(map -> map.get(streamName))
+        .orElse(new ArrayList<>());
+
+    // Use the clustered index unless it is composite. Otherwise, default to the primary key.
+    if (clusterColumns.size() == 1) {
+      ocFieldName = clusterColumns.getFirst();
+    } else if (!primaryKey.isEmpty()) {
+      LOGGER.info("Clustered index is empty or composite. Defaulting to primary key.");
+      ocFieldName = primaryKey.getFirst().getFirst();
+    } else {
+      return Optional.empty();
+    }
+    return Optional.of(ocFieldName);
   }
 
   public static List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog,

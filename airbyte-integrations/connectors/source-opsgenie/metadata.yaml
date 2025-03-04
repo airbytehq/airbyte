@@ -3,11 +3,11 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.33.6@sha256:81af934a2136edf0521a71697938cea20d1c6eb36c944566b9455bdd2a47d2bd
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
   connectorSubtype: api
   connectorType: source
   definitionId: 06bdb480-2598-40b8-8b0f-fc2e2d2abdda
-  dockerImageTag: 0.5.1
+  dockerImageTag: 0.5.2
   dockerRepository: airbyte/source-opsgenie
   documentationUrl: https://docs.airbyte.com/integrations/sources/opsgenie
   githubIssueLabel: source-opsgenie
