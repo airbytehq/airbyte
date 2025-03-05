@@ -1370,6 +1370,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
+          type: CustomRequester
           class_name: source_declarative_manifest.components.FreshdeskTicketsIncrementalRequester
           path: tickets
           http_method: GET
@@ -1482,8 +1483,7 @@ definitions:
           $ref: "#/schemas/time_entries"
   base_requester:
     # This requester is used to count call credits used for requests to Freshdesk
-    type: CustomRequester
-    class_name: source_declarative_manifest.components.FreshdeskRequester
+    type: HttpRequester
     url_base: https://{{ config['domain'] }}/api/v2/
     authenticator:
       type: BasicHttpAuthenticator
@@ -3609,3 +3609,16 @@ schemas:
           - string
           - "null"
     additionalProperties: true
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: FixedWindowCallRatePolicy
+      period: PT1M
+      call_limit: "{{ config.get('requests_per_minute')}}"
+      matchers:
+        - method: GET
+          url_base: "https://{{ config['domain'] }}/api/v2/"
+  ratelimit_reset_header: Retry-After
+  ratelimit_remaining_header: X-RateLimit-Remaining
+  status_codes_for_ratelimit_hit: [429]
