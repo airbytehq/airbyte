@@ -306,4 +306,5 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                 raise AirbyteStopSync()  # if got 403 rate limit response, finish the sync with success.
             raise error
 
+
 # Dummy change to verify CI status
