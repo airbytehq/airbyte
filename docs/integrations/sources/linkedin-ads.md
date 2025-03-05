@@ -202,7 +202,7 @@ No workaround has been identified to manage this issue as of 2025, February.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| 5.3.1 | 2025-03-05 | [XXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Update dependencies |
+| 5.3.1 | 2025-03-05 | [55211](https://github.com/airbytehq/airbyte/pull/55211) | Update dependencies |
 | 5.3.0 | 2025-03-02 | [55171](https://github.com/airbytehq/airbyte/pull/55171) | Migrate API to v202502 |
 | 5.2.3 | 2025-03-01 | [54813](https://github.com/airbytehq/airbyte/pull/54813) | Update dependencies |
 | 5.2.2 | 2025-02-22 | [53308](https://github.com/airbytehq/airbyte/pull/53308) | Update dependencies |
