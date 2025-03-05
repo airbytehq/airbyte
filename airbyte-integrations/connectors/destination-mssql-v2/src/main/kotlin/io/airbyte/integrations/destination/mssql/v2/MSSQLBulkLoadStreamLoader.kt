@@ -153,6 +153,7 @@ class MSSQLBulkLoadStreamLoader(
 
         mssqlBulkLoadHandler.bulkLoadAndUpsertForDedup(
             primaryKeyColumns = primaryKey,
+            cursorColumns = importType.cursor,
             nonPkColumns = nonPkColumns,
             dataFilePath = dataFilePath,
             formatFilePath = formatFilePath

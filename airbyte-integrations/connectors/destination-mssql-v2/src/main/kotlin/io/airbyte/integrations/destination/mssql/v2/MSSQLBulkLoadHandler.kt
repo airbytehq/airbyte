@@ -82,6 +82,7 @@ class MSSQLBulkLoadHandler(
      */
     fun bulkLoadAndUpsertForDedup(
         primaryKeyColumns: List<String>,
+        cursorColumns: List<String>,
         nonPkColumns: List<String>,
         dataFilePath: String,
         formatFilePath: String,
@@ -112,6 +113,9 @@ class MSSQLBulkLoadHandler(
                 conn.prepareStatement(bulkInsertSql).use { stmt -> stmt.executeUpdate() }
                 logger.info { "Bulk insert completed successfully for temp table: $tempTableName" }
 
+                // Deduplicate temp table
+                deduplicateTempTable(conn, tempTableName, primaryKeyColumns, cursorColumns)
+
                 // Merge into the main table
                 val mergeSql = buildMergeSql(tempTableName, primaryKeyColumns, nonPkColumns)
                 logger.info { "Starting MERGE into: $schemaName.$mainTableName" }
@@ -130,6 +134,45 @@ class MSSQLBulkLoadHandler(
                 throw ex
             }
         }
+    }
+
+    private fun deduplicateTempTable(
+        conn: Connection,
+        tempTableName: String,
+        primaryKeyColumns: List<String>,
+        cursorColumns: List<String>
+    ) {
+        // Build the partition clause for primary keys, e.g. T.[id1], T.[id2]
+        val pkPartition = primaryKeyColumns.joinToString(", ") { "T.[$it]" }
+
+        // Build the ORDER BY clause using cursor columns in descending order
+        val orderByClause =
+            if (cursorColumns.isNotEmpty()) {
+                cursorColumns.joinToString(", ") { "T.[$it] DESC" }
+            } else {
+                // If no cursor columns are provided, you can either choose no ordering (SELECT
+                // NULL).
+                "(SELECT NULL)"
+            }
+
+        val dedupSql =
+            """
+        ;WITH Dedup_CTE AS (
+            SELECT T.*,
+                ROW_NUMBER() OVER (
+                    PARTITION BY $pkPartition
+                    ORDER BY $orderByClause
+                ) AS row_num
+            FROM [$tempTableName] T
+        )
+        DELETE
+        FROM Dedup_CTE
+        WHERE row_num > 1;
+    """.trimIndent()
+
+        logger.info { "Starting deduplication for temp table: $tempTableName" }
+        conn.prepareStatement(dedupSql).use { stmt -> stmt.executeUpdate() }
+        logger.info { "Deduplication completed for temp table: $tempTableName" }
     }
 
     private fun handleCdcDeletes(conn: Connection) {
