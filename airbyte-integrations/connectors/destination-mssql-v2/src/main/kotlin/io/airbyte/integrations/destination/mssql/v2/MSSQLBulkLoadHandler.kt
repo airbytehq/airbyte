@@ -43,7 +43,8 @@ class MSSQLBulkLoadHandler(
     ) {
         val bulkInsertSql =
             buildBulkInsertSql(
-                fullyQualifiedTableName = "${schemaName}.${mainTableName}",
+                quotedTableName =
+                    quoteIdentifier(schemaName = schemaName, tableName = mainTableName),
                 dataFilePath = dataFilePath,
                 formatFilePath = formatFilePath,
                 rowsPerBatch = rowsPerBatch,
@@ -100,7 +101,7 @@ class MSSQLBulkLoadHandler(
                 // Bulk load the CSV data into the temp table
                 val bulkInsertSql =
                     buildBulkInsertSql(
-                        fullyQualifiedTableName = tempTableName,
+                        quotedTableName = "[$tempTableName]",
                         dataFilePath = dataFilePath,
                         formatFilePath = formatFilePath,
                         rowsPerBatch = rowsPerBatch,
@@ -143,23 +144,17 @@ class MSSQLBulkLoadHandler(
         }
     }
 
-    private fun quoteIdentifier(identifier: String): String {
-        // Split on '.', then bracket each piece (like database.schema.table ->
-        // [database].[schema].[table])
-        return identifier.split(".").joinToString(".") { segment ->
-            // Escape closing bracket if present:   a]b -> a]]b
-            "[${segment.replace("]", "]]")}]"
-        }
+    private fun quoteIdentifier(schemaName: String, tableName: String): String {
+        return "[$schemaName].[$tableName]"
     }
 
     /** Builds the BULK INSERT SQL statement with optional rowsPerBatch. */
     private fun buildBulkInsertSql(
-        fullyQualifiedTableName: String,
+        quotedTableName: String,
         dataFilePath: String,
         formatFilePath: String,
         rowsPerBatch: Long? = null
     ): String {
-        val quotedTableName = quoteIdentifier(fullyQualifiedTableName)
         // The ROWS_PER_BATCH hint can help optimize the bulk load.
         // If not provided, it won't be included in the statement.
         val rowBatchClause = rowsPerBatch?.let { "ROWS_PER_BATCH = $it," } ?: ""
@@ -187,8 +182,8 @@ class MSSQLBulkLoadHandler(
         val createTempTableSql =
             """
             SELECT TOP 0 *
-            INTO $tempTableName
-            FROM $schemaName.$mainTableName
+            INTO ${quoteIdentifier(schemaName, tempTableName)}
+            FROM ${quoteIdentifier(schemaName, mainTableName)}
         """.trimIndent()
 
         conn.prepareStatement(createTempTableSql).use { stmt -> stmt.executeUpdate() }
@@ -204,7 +199,7 @@ class MSSQLBulkLoadHandler(
         primaryKeyColumns: List<String>,
         nonPkColumns: List<String>
     ): String {
-        val quotedTableName = quoteIdentifier("$schemaName.$mainTableName")
+        val quotedTableName = quoteIdentifier(schemaName = schemaName, tableName = mainTableName)
         // 1. ON condition:
         //    e.g. Target.[Pk1] = Source.[Pk1] AND Target.[Pk2] = Source.[Pk2]
         val onCondition = primaryKeyColumns.joinToString(" AND ") { "Target.[$it] = Source.[$it]" }
@@ -223,7 +218,7 @@ class MSSQLBulkLoadHandler(
 
         return """
         MERGE INTO $quotedTableName AS Target
-        USING $tempTableName AS Source
+        USING [$tempTableName] AS Source
             ON $onCondition
         WHEN MATCHED THEN
             UPDATE SET

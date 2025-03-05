@@ -63,59 +63,66 @@ class MSSQLChecker(private val dataSourceFactory: MSSQLDataSourceFactory) :
                 if (
                     config.mssqlLoadTypeConfiguration.loadTypeConfiguration is BulkLoadConfiguration
                 ) {
-                    val bulkLoadConfig = config.mssqlLoadTypeConfiguration.loadTypeConfiguration
-                    val azureBlobClient =
-                        AzureBlobStorageClientCreator.createAzureBlobClient(
-                            bulkLoadConfiguration = bulkLoadConfig
-                        )
-
-                    val mssqlFormatFileCreator =
-                        MSSQLFormatFileCreator(
-                            dataSource,
-                            stream = testStream,
-                            azureBlobClient = azureBlobClient
-                        )
-
-                    val mssqlBulkLoadHandler =
-                        MSSQLBulkLoadHandler(
-                            dataSource,
-                            config.schema,
-                            testStream.descriptor.name,
-                            bulkLoadConfig.bulkLoadDataSource,
-                            sqlBuilder
-                        )
-
-                    // Create and upload test CSV file
-                    val csvData = createTestCsvData(stream = testStream)
-                    val csvFilePath = "${testStream.descriptor.name}/$TEST_CSV_FILENAME"
-
-                    runBlocking {
-                        // Upload the CSV file to Azure Blob Storage
-                        val csvBlob = azureBlobClient.put(csvFilePath, csvData)
-
-                        // Create and upload format file
-                        val formatFileBlob =
-                            mssqlFormatFileCreator.createAndUploadFormatFile(config.schema)
-
-                        try {
-                            // Execute bulk load operation
-                            mssqlBulkLoadHandler.bulkLoadForAppendOverwrite(
-                                csvBlob.key,
-                                formatFileBlob.key
-                            )
-
-                            // Verify data was loaded by querying the table
-                            verifyDataLoaded(connection, config.schema, testStream.descriptor.name)
-                        } finally {
-                            // Clean up by deleting the files
-                            azureBlobClient.delete(formatFileBlob)
-                            azureBlobClient.delete(csvBlob)
-                        }
-                    }
+                    doBulkLoadTest(connection, config, dataSource, sqlBuilder)
                 }
             } finally {
                 // Drop the test table
                 sqlBuilder.dropTable(connection)
+            }
+        }
+    }
+
+    private fun doBulkLoadTest(
+        connection: Connection,
+        config: MSSQLConfiguration,
+        dataSource: DataSource,
+        sqlBuilder: MSSQLQueryBuilder
+    ) {
+        val bulkLoadConfig =
+            config.mssqlLoadTypeConfiguration.loadTypeConfiguration as BulkLoadConfiguration
+
+        // Create necessary helpers
+        val azureBlobClient =
+            AzureBlobStorageClientCreator.createAzureBlobClient(
+                bulkLoadConfiguration = bulkLoadConfig
+            )
+        val mssqlFormatFileCreator =
+            MSSQLFormatFileCreator(
+                dataSource,
+                stream = testStream,
+                azureBlobClient = azureBlobClient
+            )
+        val mssqlBulkLoadHandler =
+            MSSQLBulkLoadHandler(
+                dataSource,
+                config.schema,
+                testStream.descriptor.name,
+                bulkLoadConfig.bulkLoadDataSource,
+                sqlBuilder
+            )
+
+        // Prepare test CSV data
+        val csvData = createTestCsvData(testStream)
+        val csvFilePath = "${testStream.descriptor.name}/$TEST_CSV_FILENAME"
+
+        // Upload files & perform bulk load
+        runBlocking {
+            // 1) Upload CSV
+            val csvBlob = azureBlobClient.put(csvFilePath, csvData)
+
+            // 2) Create and upload format file
+            val formatFileBlob = mssqlFormatFileCreator.createAndUploadFormatFile(config.schema)
+
+            try {
+                // 3) Perform the actual bulk load
+                mssqlBulkLoadHandler.bulkLoadForAppendOverwrite(csvBlob.key, formatFileBlob.key)
+
+                // 4) Verify the data loaded successfully
+                verifyDataLoaded(connection, config.schema, testStream.descriptor.name)
+            } finally {
+                // 5) Clean up remote files
+                azureBlobClient.delete(formatFileBlob)
+                azureBlobClient.delete(csvBlob)
             }
         }
     }
@@ -127,7 +134,9 @@ class MSSQLChecker(private val dataSourceFactory: MSSQLDataSourceFactory) :
                 val destinationRecord =
                     DestinationRecordAirbyteValue(
                         stream.descriptor,
-                        ObjectValue(linkedMapOf(COLUMN_NAME to IntegerValue(1))),
+                        ObjectValue(
+                            linkedMapOf(COLUMN_NAME to IntegerValue(TEST_ID_VALUE.toBigInteger()))
+                        ),
                         0L,
                         null,
                     )
