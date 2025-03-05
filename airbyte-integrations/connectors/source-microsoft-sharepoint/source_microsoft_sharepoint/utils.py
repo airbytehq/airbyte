@@ -23,7 +23,16 @@ class FolderNotFoundException(Exception):
 
 
 class MicrosoftSharePointRemoteFile(RemoteFile):
+    """ "
+    id: str - The unique identifier of the DriveItem.
+    drive_id: str - The unique identifier of the Drive that contains the DriveItem.
+    from_shared_drive: bool - Indicates whether the DriveItem is from a shared drive.
+    """
+
     download_url: str
+    id: str
+    drive_id: str
+    from_shared_drive: bool
 
 
 def filter_http_urls(files, logger):

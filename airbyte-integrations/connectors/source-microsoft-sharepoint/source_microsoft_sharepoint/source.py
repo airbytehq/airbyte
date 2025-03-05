@@ -16,6 +16,7 @@ from source_microsoft_sharepoint.utils import PlaceholderUrlBuilder
 
 class SourceMicrosoftSharePoint(FileBasedSource):
     SCOPES = ["offline_access", "Files.Read.All"]
+    IDENTITIES_SCOPES = ["User.Read.All", "Group.Read.All", "Sites.Read.All", "Application.Read.All", "Device.Read.All"]
 
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: Optional[TState]):
         super().__init__(
@@ -51,7 +52,7 @@ class SourceMicrosoftSharePoint(FileBasedSource):
             .set_path("/{{tenant_id}}/oauth2/v2.0/token")
             .build()
         )
-        scopes = " ".join(SourceMicrosoftSharePoint.SCOPES)
+        scopes = " ".join(SourceMicrosoftSharePoint.SCOPES + SourceMicrosoftSharePoint.IDENTITIES_SCOPES)
 
         oauth_connector_input_specification = OauthConnectorInputSpecification(
             consent_url=consent_url,
