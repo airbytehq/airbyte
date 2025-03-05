@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.FakeConfigurationUpdater
+import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
@@ -34,7 +35,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.sql.Connection
 import java.time.Instant
-import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -186,7 +186,6 @@ class MSSQLDataCleaner(
         dataSource.connection.use { conn ->
             try {
                 val query = "SELECT name FROM sys.schemas WHERE name LIKE 'test%'"
-                val todayMinusOne = LocalDate.now().minusDays(1)
 
                 conn.createStatement().use { stmt ->
                     val rs = stmt.executeQuery(query)
@@ -197,12 +196,11 @@ class MSSQLDataCleaner(
 
                         // Ensure the schema name can contain "test" + 8-digit date => length >= 12
                         if (schemaName.length >= 12) {
-                            val datePart = schemaName.substring(4, 12)
-                            if (datePart.matches(Regex("\\d{8}"))) {
-                                val schemaDate = LocalDate.parse(datePart, dateFormatter)
-                                if (schemaDate == todayMinusOne) {
-                                    schemasToDelete.add(schemaName)
-                                }
+                            if (
+                                IntegrationTest.randomizedNamespaceRegex.matches(schemaName) &&
+                                    IntegrationTest.isNamespaceOld(schemaName, 1)
+                            ) {
+                                schemasToDelete.add(schemaName)
                             }
                         }
                     }
