@@ -235,7 +235,9 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         # Create a mutable copy of the config
         mutable_config = dict(config)
         if not mutable_config.get("start_date"):
-            mutable_config["start_date"] = (datetime.now() - relativedelta(years=self.START_DATE_OFFSET_IN_YEARS)).strftime(self.DATETIME_FORMAT)
+            mutable_config["start_date"] = (datetime.now() - relativedelta(years=self.START_DATE_OFFSET_IN_YEARS)).strftime(
+                self.DATETIME_FORMAT
+            )
         sf = self._get_sf_object(mutable_config)
         stream_objects = sf.get_validated_streams(config=mutable_config, catalog=self.catalog)
         streams = self.generate_streams(mutable_config, stream_objects, sf)
