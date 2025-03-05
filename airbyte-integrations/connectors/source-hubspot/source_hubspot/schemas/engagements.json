@@ -48,7 +48,7 @@
     },
     "ownerId": {
       "description": "ID of the owner of the engagement.",
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "type": {
       "description": "Type of the engagement.",
