@@ -106,6 +106,10 @@ abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessag
                 .withAnalytics(analytics),
         )
     }
+
+    open fun getNextFreeSocketConsumer(part: Int): UnixDomainSocketOutputConsumer {
+        throw UnsupportedOperationException("Not implemented")
+    }
 }
 
 /** Configuration properties prefix for [StdoutOutputConsumer]. */
@@ -114,9 +118,9 @@ const val CONNECTOR_OUTPUT_PREFIX = "airbyte.connector.output"
 /** Default implementation of [OutputConsumer]. */
 @Singleton
 @Secondary
-private class StdoutOutputConsumer(
+open class StdoutOutputConsumer(
     val stdout: PrintStream,
-    private val clock: Clock,
+    val clock: Clock,
     /**
      * [bufferByteSizeThresholdForFlush] triggers flushing the record buffer to stdout once the
      * buffer's size (in bytes) grows past this value.
@@ -142,7 +146,7 @@ private class StdoutOutputConsumer(
     @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush:4096}")
     val bufferByteSizeThresholdForFlush: Int,
 ) : OutputConsumer(clock) {
-    private val buffer = ByteArrayOutputStream() // TODO: replace this with a StringWriter?
+    protected val buffer = ByteArrayOutputStream() // TODO: replace this with a StringWriter?
     private val jsonGenerator: JsonGenerator = Jsons.createGenerator(buffer)
     private val sequenceWriter: SequenceWriter = Jsons.writer().writeValues(jsonGenerator)
 
@@ -170,7 +174,7 @@ private class StdoutOutputConsumer(
         }
     }
 
-    private fun withLockMaybeWriteNewline() {
+    protected fun withLockMaybeWriteNewline() {
         if (buffer.size() > 0) {
             buffer.write('\n'.code)
         }
@@ -191,6 +195,9 @@ private class StdoutOutputConsumer(
         }
     }
 
+    open fun withLockFlushRecord() {
+        withLockFlush()
+    }
     override fun accept(record: AirbyteRecordMessage) {
         // The serialization of RECORD messages can become a performance bottleneck for source
         // connectors because they can come in much higher volumes than other message types.
@@ -203,36 +210,36 @@ private class StdoutOutputConsumer(
         // For this reason, this method builds and reuses a JSON template for each stream.
         // Then, for each record, it serializes just "data" and "meta" to populate the template.
         val template: RecordTemplate = getOrCreateRecordTemplate(record.stream, record.namespace)
-        synchronized(this) {
-            // Write a newline character to the buffer if it's not empty.
-            withLockMaybeWriteNewline()
-            // Write '{"type":"RECORD","record":{"namespace":"...","stream":"...","data":'.
-            buffer.write(template.prefix)
-            // Serialize the record data ObjectNode to JSON, writing it to the buffer.
-            Jsons.writeTree(jsonGenerator, record.data)
-            jsonGenerator.flush()
-            // If the record has a AirbyteRecordMessageMeta instance set,
-            // write ',"meta":' followed by the serialized meta.
-            val meta: AirbyteRecordMessageMeta? = record.meta
-            if (meta != null) {
-                buffer.write(metaPrefixBytes)
-                sequenceWriter.write(meta)
-                sequenceWriter.flush()
-            }
-            // Write ',"emitted_at":...}}'.
-            buffer.write(template.suffix)
-            // Flush the buffer to stdout only once it has reached a certain size.
-            // Flushing to stdout incurs some overhead (mutex, syscall, etc.)
-            // which otherwise becomes very apparent when lots of tiny records are involved.
-            if (buffer.size() >= bufferByteSizeThresholdForFlush) {
-                withLockFlush()
-            }
+        //        synchronized(this) {
+        // Write a newline character to the buffer if it's not empty.
+        withLockMaybeWriteNewline()
+        // Write '{"type":"RECORD","record":{"namespace":"...","stream":"...","data":'.
+        buffer.write(template.prefix)
+        // Serialize the record data ObjectNode to JSON, writing it to the buffer.
+        Jsons.writeTree(jsonGenerator, record.data)
+        jsonGenerator.flush()
+        // If the record has a AirbyteRecordMessageMeta instance set,
+        // write ',"meta":' followed by the serialized meta.
+        val meta: AirbyteRecordMessageMeta? = record.meta
+        if (meta != null) {
+            buffer.write(metaPrefixBytes)
+            sequenceWriter.write(meta)
+            sequenceWriter.flush()
         }
+        // Write ',"emitted_at":...}}'.
+        buffer.write(template.suffix)
+        // Flush the buffer to stdout only once it has reached a certain size.
+        // Flushing to stdout incurs some overhead (mutex, syscall, etc.)
+        // which otherwise becomes very apparent when lots of tiny records are involved.
+        if (buffer.size() >= bufferByteSizeThresholdForFlush) {
+            withLockFlushRecord()
+        }
+        //        }
     }
 
-    private val metaPrefixBytes: ByteArray = META_PREFIX.toByteArray()
+    protected val metaPrefixBytes: ByteArray = META_PREFIX.toByteArray()
 
-    private fun getOrCreateRecordTemplate(stream: String, namespace: String?): RecordTemplate {
+    protected fun getOrCreateRecordTemplate(stream: String, namespace: String?): RecordTemplate {
         val streamToTemplateMap: StreamToTemplateMap =
             if (namespace == null) {
                 unNamespacedTemplates
@@ -254,7 +261,7 @@ private class StdoutOutputConsumer(
 
 private typealias StreamToTemplateMap = ConcurrentHashMap<String, RecordTemplate>
 
-private class RecordTemplate(
+class RecordTemplate(
     /** [prefix] is '{"type":"RECORD","record":{"namespace":"...","stream":"...","data":' */
     val prefix: ByteArray,
     /** [suffix] is ',"emitted_at":...}}' */

@@ -14,8 +14,12 @@ import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import java.io.InputStream
 import java.time.OffsetDateTime
+import java.util.concurrent.Executors
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.runInterruptible
+import kotlinx.coroutines.withContext
 
 /**
  * Azure requires blob metadata keys to be alphanumeric+underscores, so replace the dashes with
@@ -33,6 +37,8 @@ class AzureBlobClient(
     private val serviceClient: BlobServiceClient,
     private val blobConfig: AzureBlobStorageClientConfiguration
 ) : ObjectStorageClient<AzureBlob> {
+    private val azurePool = Executors.newFixedThreadPool(128).asCoroutineDispatcher()
+    suspend fun <T> azureCall(block: () -> T): T = withContext(azurePool) { runInterruptible { block() } }
 
     /** List all blobs that start with [prefix]. We emit them as a Flow. */
     override suspend fun list(prefix: String): Flow<AzureBlob> = flow {
@@ -131,12 +137,13 @@ class AzureBlobClient(
         key: String,
         metadata: Map<String, String>
     ): StreamingUpload<AzureBlob> {
-        val blobClient =
-            serviceClient
-                .getBlobContainerClient(blobConfig.containerName)
-                .getBlobClient(key)
-                .getBlockBlobClient()
+        val blobClient = azureCall {
+                serviceClient
+                    .getBlobContainerClient(blobConfig.containerName)
+                    .getBlobClient(key)
+                    .getBlockBlobClient()
+            }
 
-        return AzureBlobStreamingUpload(blobClient, blobConfig, metadata)
+        return AzureBlobStreamingUpload(blobClient, blobConfig, metadata, this)
     }
 }

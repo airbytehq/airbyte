@@ -31,3 +31,4 @@ if [[ $A = --write ]]; then
 else
   /airbyte/bin/"$APPLICATION" "$@"
 fi
+

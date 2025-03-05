@@ -13,8 +13,11 @@ import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LocalDateTimeCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
+import io.airbyte.cdk.output.CatalogValidationFailureHandler
+import io.airbyte.cdk.output.InvalidPrimaryKey
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.DefaultJdbcStreamState
@@ -25,6 +28,7 @@ import io.airbyte.cdk.read.SelectQuerySpec
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
@@ -41,6 +45,7 @@ import java.util.concurrent.ConcurrentHashMap
 @Singleton
 class MySqlSourceJdbcPartitionFactory(
     override val sharedState: DefaultJdbcSharedState,
+    val handler: CatalogValidationFailureHandler,
     val selectQueryGenerator: MySqlSourceOperations,
     val config: MySqlSourceConfiguration,
 ) :
@@ -126,7 +131,8 @@ class MySqlSourceJdbcPartitionFactory(
             return MySqlSourceJdbcNonResumableSnapshotWithCursorPartition(
                 selectQueryGenerator,
                 streamState,
-                cursorChosenFromCatalog
+                cursorChosenFromCatalog,
+                skipSynchronizedCounts = config.skipSynchronizedCounts
             )
         }
         return MySqlSourceJdbcSnapshotWithCursorPartition(
@@ -397,11 +403,73 @@ class MySqlSourceJdbcPartitionFactory(
         }
     }
 
+    private val log = KotlinLogging.logger {}
+
     override fun split(
         unsplitPartition: MySqlSourceJdbcPartition,
         opaqueStateValues: List<OpaqueStateValue>
     ): List<MySqlSourceJdbcPartition> {
-        // At this moment we don't support split on within mysql stream in any mode.
-        return listOf(unsplitPartition)
+        log.info { "Splitting partition $unsplitPartition" }
+        val splitPartitionBoundries: List<MySqlSourceJdbcStreamStateValue> by lazy {
+            opaqueStateValues.map {
+                Jsons.treeToValue(it, MySqlSourceJdbcStreamStateValue::class.java)
+            }
+        }
+
+        return when (unsplitPartition) {
+            is MySqlSourceJdbcSnapshotWithCursorPartition ->
+                unsplitPartition.split(splitPartitionBoundries)
+            else -> listOf(unsplitPartition) // TEMP
+        }
     }
+
+    private fun MySqlSourceJdbcSnapshotWithCursorPartition.split(
+        splitPointValues: List<MySqlSourceJdbcStreamStateValue>
+    ): List<MySqlSourceJdbcResumablePartition> {
+        var inners: List<List<JsonNode>> =
+            splitPointValues.mapNotNull { it.pkMap(streamState.stream)?.values?.toList() }
+        inners = redoInners(inners, 6658729623L /*50827485*/)
+        val lbs: List<List<JsonNode>?> = listOf(lowerBound) + inners
+        val ubs: List<List<JsonNode>?> = inners + listOf(upperBound)
+        return lbs.zip(ubs).map { (lBound, uBound) ->
+            log.info { "lowerBound: $lBound, upperBound: $uBound" }
+            MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
+                selectQueryGenerator,
+                streamState,
+                checkpointColumns,
+                lBound,
+                uBound,
+                cursor,
+                null,
+                skipSynchronizedCounts = config.skipSynchronizedCounts
+            )
+        }
+    }
+
+    private fun redoInners(inners: List<List<JsonNode>>, upperBound: Long): List<List<JsonNode>> {
+        var queryPlan: MutableList<Long> = mutableListOf()
+        val eachStep: Long = upperBound / inners.size
+        for (i in 1..inners.size) {
+            queryPlan.add((i) * eachStep)
+        }
+        return inners.mapIndexed { index, inner ->
+            listOf(
+                stateValueToJsonNode(Field("id", BigIntegerFieldType), queryPlan[index].toString())
+            )
+        }
+    }
+
+    private fun MySqlSourceJdbcStreamStateValue.pkMap(stream: Stream): Map<Field, JsonNode>? =
+        pkName?.let { pkName ->
+            val fields = stream.configuredPrimaryKey ?: listOf()
+            if (!fields.map { it.id }.toSet().contains(pkName)) {
+                handler.accept(InvalidPrimaryKey(stream.id, listOf(pkName)))
+                null
+            }
+
+            fields.associateWith {
+                stateValueToJsonNode(fields.first(), pkValue)
+            } // TODO: check here
+        }
+            ?: mapOf()
 }

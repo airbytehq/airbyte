@@ -1,3 +1,133 @@
+import io.netifi.flatbuffers.plugin.tasks.FlatBuffers
+
+plugins {
+    id 'com.google.protobuf' version '0.9.4'
+    id 'io.netifi.flatbuffers' version '1.0.7'
+}
+
+// Protobuf source sets
+kotlin {
+    sourceSets {
+        main {
+            kotlin.srcDir "${project.layout.buildDirectory.get()}/generated/source/proto/main/grpc"
+            kotlin.srcDir "${project.layout.buildDirectory.get()}/generated/source/proto/main/grpckt"
+            kotlin.srcDir "${project.layout.buildDirectory.get()}/generated/source/proto/main/kotlin"
+            kotlin.srcDir "${project.layout.buildDirectory.get()}/generated/source/proto/main/java"
+        }
+    }
+}
+
+sourceSets {
+    main {
+        proto {
+            srcDir "${project.projectDir}/src/main/proto"
+        }
+    }
+}
+
+// Protobuf tasks
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:4.30.0"
+    }
+    plugins {
+        create("grpc") {
+            artifact = "io.grpc:protoc-gen-grpc-java:1.71.0"
+        }
+        create("grpckt") {
+            artifact = "io.grpc:protoc-gen-grpc-kotlin:1.4.1:jdk8@jar"
+        }
+    }
+    generateProtoTasks {
+        all().forEach { task ->
+            task.builtins {
+                create("kotlin")
+            }
+            task.plugins {
+                create("grpc")
+                create("grpckt")
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------
+ * 1.  pick a flatc version and the right OS classifier
+ * ---------------------------------------------------------- */
+ext.flatcVersion = '2.0.8'                          // last release on Central&#8203;:contentReference[oaicite:0]{index=0}
+
+def os  = org.gradle.internal.os.OperatingSystem.current()
+def cls = os.isMacOsX()   ? 'distribution-osx' :
+        os.isWindows()  ? 'distribution-windows' :
+                'distribution-linux'     // default → Linux
+
+/* ------------------------------------------------------------
+ * 2.  declare a detached configuration that holds the tar.gz
+ * ---------------------------------------------------------- */
+configurations {
+    flatc
+}
+
+dependencies {
+    // artifact = group : name           : version : classifier    @ extension
+    flatc "com.github.davidmoten:flatbuffers-compiler:${flatcVersion}:${cls}@tar.gz"
+}
+
+/* ------------------------------------------------------------
+ * 3.  unpack the compiler into build/flatc and make it executable
+ * ---------------------------------------------------------- */
+def flatcDir = "build/flatc"
+
+def unpackFlatc = tasks.register('unpackFlatc', Copy) {
+    from { tarTree(resources.gzip(configurations.flatc.singleFile)) }
+    into flatcDir
+    doLast {
+        if (!os.isWindows()) {
+            file("$flatcDir/bin/flatc").setExecutable(true)
+        }
+    }
+}
+
+/* ------------------------------------------------------------
+ * 4.  plug the downloaded binary into the FlatBuffers plugin
+ * ---------------------------------------------------------- */
+flatbuffers {
+    flatcPath = file("$flatcDir/bin/flatc").absolutePath
+    language  = 'java'            // or 'kotlin' if you prefer
+}
+
+/* ------------------------------------------------------------
+ * 5.  make your code‑gen task wait for the download
+ * ---------------------------------------------------------- */
+
+//flatbuffers {
+//    flatcPath = '/opt/homebrew/bin/flatc'
+//    language = 'java'
+//}
+
+def generateFbs = tasks.register('generateFbs', FlatBuffers) {
+    inputDir  = file('src/main/fbs')
+    outputDir = file("build/generated/fbs")
+    language  = 'java'                // or 'kotlin'
+}
+
+tasks.named('generateFbs') { dependsOn unpackFlatc }
+
+kotlin {
+    sourceSets {
+        main {
+            kotlin.srcDir generateFbs.map { it.outputDir }   // provider‑safe
+        }
+    }
+}
+
+tasks.named('compileJava') {
+    dependsOn generateFbs
+}
+
+tasks.withType(Copy).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
 
 dependencies {
 
@@ -18,11 +148,16 @@ dependencies {
     api 'org.apache.mina:mina-core:2.0.27' // for fixing vulnerability of sshd-mina
     api 'org.apache.sshd:sshd-mina:2.13.2'
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-core'
+    api platform('com.fasterxml.jackson:jackson-bom:2.18.3')
 
+    implementation "io.grpc:grpc-kotlin-stub:1.4.1"
+    implementation "io.grpc:grpc-protobuf:1.71.0"
+    api "com.google.protobuf:protobuf-kotlin:4.30.0"
     implementation 'com.datadoghq:dd-trace-api:1.39.0'
     implementation 'com.datadoghq:dd-trace-ot:1.39.0'
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
     implementation 'com.fasterxml.jackson.module:jackson-module-afterburner'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-smile'
     implementation 'info.picocli:picocli:4.7.6'
     implementation 'io.micronaut.picocli:micronaut-picocli:5.5.0'
     implementation 'jakarta.validation:jakarta.validation-api:3.1.0'
@@ -35,6 +170,9 @@ dependencies {
     implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'
     implementation 'net.i2p.crypto:eddsa:0.3.0'
     implementation 'org.openapi4j:openapi-schema-validator:1.0.7'
+    api 'org.xerial.snappy:snappy-java:1.1.10.7'
+    implementation 'org.lz4:lz4-java:1.8.0'
+    api 'com.google.flatbuffers:flatbuffers-java:2.0.8'
 
     // this is only needed because of exclusions in airbyte-protocol
     runtimeOnly 'com.google.guava:guava:33.3.0-jre'

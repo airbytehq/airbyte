@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.message
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
@@ -30,6 +31,16 @@ import io.airbyte.cdk.load.data.toAirbyteValues
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.load.message.CheckpointMessage.Stats
 import io.airbyte.cdk.load.util.deserializeToNode
+import io.airbyte.protocol.Protocol
+import io.airbyte.protocol.Protocol.AirbyteMessage as AirbyteMessageProto
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.google.flatbuffers.UnionVector
+import io.airbyte.cdk.load.data.AirbyteValueFlatbufferView
+import io.airbyte.cdk.load.data.AirbyteValueJsonNodeView
+import io.airbyte.cdk.load.data.AirbyteValueProtoView
+import io.airbyte.cdk.load.data.AirbyteValueView
+import io.airbyte.cdk.load.data.AirbyteValueViewMapper
+import io.airbyte.protocol.AirbyteRecord
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -183,28 +194,49 @@ data class Meta(
 
 data class DestinationRecord(
     override val stream: DestinationStream,
-    val message: AirbyteMessage,
+    val data: JsonNode,
+    val emittedAtMs: Long,
+    val message: AirbyteMessage?,
     val serialized: String,
-    val schema: AirbyteType
+    val schema: AirbyteType,
+    val meta: Meta?,
+    val airbyteValueView: AirbyteValueView = AirbyteValueJsonNodeView(data as ObjectNode),
 ) : DestinationRecordDomainMessage {
-    override fun asProtocolMessage(): AirbyteMessage = message
+    constructor(
+        stream: DestinationStream,
+        message: AirbyteMessage,
+        serialized: String,
+        schema: AirbyteType
+    ) : this(
+        stream,
+        message.record.data,
+        message.record.emittedAt,
+        message,
+        serialized,
+        schema,
+        message.record.meta?.let { meta ->
+            Meta(meta.changes.map { Meta.Change(it.field, it.change, it.reason) })
+        }
+    )
+
+    override fun asProtocolMessage(): AirbyteMessage =
+        message
+            ?: throw IllegalStateException("This record was not sourced from a protocol message.")
 
     fun asRecordSerialized(): DestinationRecordSerialized =
         DestinationRecordSerialized(stream, serialized)
+
     fun asRecordMarshaledToAirbyteValue(): DestinationRecordAirbyteValue {
         return DestinationRecordAirbyteValue(
             stream,
-            message.record.data.toAirbyteValue(),
-            message.record.emittedAt,
-            Meta(
-                message.record.meta?.changes?.map { Meta.Change(it.field, it.change, it.reason) }
-                    ?: emptyList(),
-            ),
-            serialized.length.toLong(),
+            data.toAirbyteValue(),
+            emittedAtMs,
+            meta,
+            serialized.length.toLong()
         )
     }
     fun asDestinationRecordRaw(): DestinationRecordRaw {
-        return DestinationRecordRaw(stream, message, serialized, schema)
+        return DestinationRecordRaw(stream, data, emittedAtMs, meta, serialized, schema, null, airbyteValueView)
     }
 }
 
@@ -307,27 +339,44 @@ data class FileReference(
 
 data class DestinationRecordRaw(
     val stream: DestinationStream,
-    private val rawData: AirbyteMessage,
+    private val data: JsonNode,
+    val emittedAtMs: Long,
+    private val meta: Meta?,
     private val serialized: String,
     private val schema: AirbyteType,
+    val fileReference: FileReference? = null,
+    val airbyteValueView: AirbyteValueView
 ) {
-    val fileReference: FileReference? =
-        rawData.record?.fileReference?.let { FileReference.fromProtocol(it) }
+
+    constructor(
+        stream: DestinationStream,
+        rawData: AirbyteMessage,
+        serialized: String,
+        schema: AirbyteType
+    ) : this(
+        stream,
+        rawData.record.data,
+        rawData.record.emittedAt,
+        rawData.record.meta?.let { meta ->
+            Meta(meta.changes.map { Meta.Change(it.field, it.change, it.reason) })
+        },
+        serialized,
+        schema,
+        rawData.record?.fileReference?.let { FileReference.fromProtocol(it) },
+        AirbyteValueJsonNodeView(rawData.record.data as ObjectNode)
+    )
 
     fun asRawJson(): JsonNode {
-        return rawData.record.data
+        return data
     }
 
     fun asDestinationRecordAirbyteValue(): DestinationRecordAirbyteValue {
         return DestinationRecordAirbyteValue(
             stream,
-            rawData.record.data.toAirbyteValue(),
-            rawData.record.emittedAt,
-            Meta(
-                rawData.record.meta?.changes?.map { Meta.Change(it.field, it.change, it.reason) }
-                    ?: emptyList(),
-            ),
-            serialized.length.toLong(),
+            data.toAirbyteValue(),
+            emittedAtMs,
+            meta,
+            serialized.length.toLong()
         )
     }
 
@@ -384,14 +433,8 @@ data class DestinationRecordRaw(
             stream = stream,
             declaredFields = declaredFields,
             undeclaredFields = undeclaredFields,
-            emittedAtMs = rawData.record.emittedAt,
-            meta =
-                Meta(
-                    rawData.record.meta?.changes?.map {
-                        Meta.Change(it.field, it.change, it.reason)
-                    }
-                        ?: emptyList()
-                ),
+            emittedAtMs = emittedAtMs,
+            meta = meta,
             serializedSizeBytes = serialized.length.toLong()
         )
     }
@@ -688,8 +731,8 @@ class DestinationMessageFactory(
                                     fileRelativePath = fileMessage["file_relative_path"] as String?,
                                     modified =
                                         toLong(fileMessage["modified"], "message.record.modified"),
-                                    sourceFileUrl = fileMessage["source_file_url"] as String?,
-                                ),
+                                    sourceFileUrl = fileMessage["source_file_url"] as String?
+                                )
                         )
                     } catch (e: Exception) {
                         throw IllegalArgumentException(
@@ -697,7 +740,17 @@ class DestinationMessageFactory(
                         )
                     }
                 } else {
-                    DestinationRecord(stream, message, serialized, stream.schema)
+                    DestinationRecord(
+                        stream,
+                        message.record.data,
+                        message.record.emittedAt,
+                        message,
+                        serialized,
+                        stream.schema,
+                        message.record.meta?.let { meta ->
+                            Meta(meta.changes.map { Meta.Change(it.field, it.change, it.reason) })
+                        }
+                    )
                 }
             }
             AirbyteMessage.Type.TRACE -> {
@@ -774,6 +827,88 @@ class DestinationMessageFactory(
             }
             else -> Undefined
         }
+    }
+
+    private val fakeJsonNode =
+        """{"id":1,"age":50,"name":"Tomoko","email":"corrections1854+2@live.com","title":"Prof.","gender":"Female","height":1.53,"weight":61,"language":"Czech","global_id":13679213,"telephone":"357-652-0612","blood_type":"O+","created_at":"2009-02-27T13:44:37z","occupation":"MachineSetter","updated_at":"2009-07-12T16:12:23z","nationality":"Cameroonian","academic_degree":"Bachelor"}""".deserializeToNode()
+
+    fun fromProtobufAirbyteMessage(
+        airbyteMessage: AirbyteMessageProto,
+        vararg mappers: AirbyteValueViewMapper
+    ): DestinationMessage {
+        return when (airbyteMessage.type) {
+            Protocol.AirbyteMessageType.RECORD -> {
+                val stream =
+                    catalog.getStream(
+                        namespace = airbyteMessage.record.namespace,
+                        name = airbyteMessage.record.stream,
+                    )
+                var mapper = AirbyteValueProtoView(airbyteMessage.record.dataList) as AirbyteValueView
+                for (m in mappers) {
+                    mapper = m.wrap(mapper)
+                }
+                return DestinationRecord(
+                    stream = stream,
+                    message = null,
+                    serialized = "",
+                    schema = stream.schema,
+                    emittedAtMs = airbyteMessage.record.emittedAt,
+                    data = fakeJsonNode,
+                    airbyteValueView = mapper,
+                    meta =
+                        airbyteMessage.record.meta?.let { meta ->
+                            Meta(
+                                meta.itemsList.map {
+                                    Meta.Change(
+                                        it.field,
+                                        Change.valueOf(it.change.name),
+                                        Reason.valueOf(it.reason.name)
+                                    )
+                                }
+                            )
+                        }
+                )
+            }
+            Protocol.AirbyteMessageType.TRACE_MESSAGE -> {
+                val stream =
+                    catalog.getStream(
+                        namespace = airbyteMessage.trace.streamStatus.streamDescriptor.namespace,
+                        name = airbyteMessage.trace.streamStatus.streamDescriptor.name,
+                    )
+                return DestinationRecordStreamComplete(
+                    stream,
+                    emittedAtMs = airbyteMessage.trace.emittedAt
+                )
+            }
+            else -> Undefined
+        }
+    }
+
+    fun fromFlatbufferAirbyteMessage(message: io.airbyte.protocol.AirbyteRecordMessage, vararg mappers: AirbyteValueViewMapper): DestinationMessage {
+        val stream =
+            catalog.getStream(
+                namespace = message.streamNamespace(),
+                name = message.streamName(),
+            )
+        if (message.dataVector() == null) {
+            throw IllegalArgumentException(
+                "Flatbuffer message data vector is null. This is not expected."
+            )
+        }
+        var mapper = AirbyteValueFlatbufferView(message.dataTypeVector(), message.dataVector()) as AirbyteValueView
+        for (m in mappers) {
+            mapper = m.wrap(mapper)
+        }
+        return DestinationRecord(
+            stream = stream,
+            message = null,
+            serialized = "",
+            schema = stream.schema,
+            emittedAtMs = message.emittedAt(),
+            data = fakeJsonNode,
+            meta = null,
+            airbyteValueView = mapper
+        )
     }
 
     private fun fromAirbyteStreamState(streamState: AirbyteStreamState): Checkpoint {

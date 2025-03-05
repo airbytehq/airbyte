@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
+import io.airbyte.cdk.load.command.SocketTestConfig
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
@@ -28,12 +29,28 @@ data class S3DataLakeConfiguration(
     // This will likely not show performance improvements in the cloud without additional
     // resources. In the future, if enterprise or oss users need more flexibility, we can
     // expose this in their configurations.
-    override val numProcessRecordsWorkers: Int = 2
+    override val numProcessRecordsWorkers: Int = 2,
+
+    override val numSockets: Int,
+    override val inputSerializationFormat: InputSerializationFormat,
+    override val inputBufferByteSizePerSocket: Long,
+    override val socketPrefix: String,
+    override val socketWaitTimeoutSeconds: Int,
+    override val devNullAfterDeserialization: Boolean,
+    val skipUpload: Boolean,
+    val useGarbagePart: Boolean,
+    override val skipJsonOnProto: Boolean,
+    override val disableUUID: Boolean,
+    override val disableMapper: Boolean,
+    override val useCodedInputStream: Boolean = false,
+    override val useSnappy: Boolean = false,
+    override val runSetup: Boolean = true
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
     IcebergCatalogConfigurationProvider,
-    S3BucketConfigurationProvider {}
+    S3BucketConfigurationProvider,
+    SocketTestConfig
 
 @Singleton
 class S3DataLakeConfigurationFactory :
@@ -46,6 +63,22 @@ class S3DataLakeConfigurationFactory :
             awsAccessKeyConfiguration = pojo.toAWSAccessKeyConfiguration(),
             s3BucketConfiguration = pojo.toS3BucketConfiguration(),
             icebergCatalogConfiguration = pojo.toIcebergCatalogConfiguration(),
+            numSockets = pojo.numSockets ?: 2,
+            numProcessRecordsWorkers = pojo.numInputPartitions ?: 1,
+            inputSerializationFormat = pojo.inputSerializationFormat
+                ?: DestinationConfiguration.InputSerializationFormat.FLATBUFFERS,
+            inputBufferByteSizePerSocket = pojo.inputBufferByteSizePerSocket ?: (16384),
+            socketPrefix = pojo.socketPrefix
+                ?: "/Users/jschmidt/.sockets/ab_socket_", // "/var/run/sockets/ab_socket_",
+            socketWaitTimeoutSeconds = pojo.socketWaitTimeoutSeconds ?: 60,
+            devNullAfterDeserialization = pojo.devNullAfterDeserialization ?: false,
+            skipUpload = pojo.skipUpload ?: false,
+            useGarbagePart = pojo.useGarbagePart ?: false,
+            skipJsonOnProto = pojo.skipJsonOnProto ?: true,
+            disableUUID = pojo.disableUUID ?: false,
+            disableMapper = pojo.disableMapper ?: false,
+            useCodedInputStream = pojo.useCodedInputStream ?: true,
+            useSnappy = pojo.useSnappy ?: false,
         )
     }
 }

@@ -241,9 +241,5 @@ static def isInCi() {
 }
 
 static def getJavaCompilerArgs() {
-    if (isInCi()) {
-        return ["-Werror"]
-    } else {
-        return []
-    }
+    return ["-Werror"]
 }

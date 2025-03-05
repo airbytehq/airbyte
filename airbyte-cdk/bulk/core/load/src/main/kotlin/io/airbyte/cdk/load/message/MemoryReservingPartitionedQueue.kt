@@ -20,14 +20,14 @@ class ResourceReservingPartitionedQueue<T>(
 
     private val requestedResourceAmount =
         (ratioOfTotalMemoryToReserve * reservationManager.totalCapacityBytes).toLong()
-    private val reservation = runBlocking {
-        reservationManager.reserveOrThrow(requestedResourceAmount, this)
-    }
+//    private val reservation = runBlocking {
+//        reservationManager.reserveOrThrow(requestedResourceAmount, this)
+//    }
     private val minNumUnits: Int = numProducers + numConsumers * 2
-    private val maxMessageSize = reservation.bytesReserved / minNumUnits
+    private val maxMessageSize = requestedResourceAmount / minNumUnits
 
     val clampedMessageSize = expectedResourceUsagePerUnit.coerceAtMost(maxMessageSize)
-    private val maxNumUnits = (reservation.bytesReserved / clampedMessageSize).toInt()
+    private val maxNumUnits = (requestedResourceAmount / clampedMessageSize).toInt()
 
     private val totalQueueCapacity: Int = (maxNumUnits - (numProducers + numConsumers))
 
@@ -49,7 +49,7 @@ class ResourceReservingPartitionedQueue<T>(
 
     override suspend fun close() {
         underlying.close()
-        reservation.release()
+        //reservation.release()
     }
 
     override suspend fun broadcast(value: T) = underlying.broadcast(value)

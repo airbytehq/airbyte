@@ -5,7 +5,10 @@
 package io.airbyte.cdk.load.task.internal
 
 import com.google.common.annotations.VisibleForTesting
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.SocketTestConfig
+import io.airbyte.cdk.load.file.SocketInputFlow
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineContext
@@ -34,8 +37,13 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.fold
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.shareIn
 
 /**
  * Accumulator state with the checkpoint counts (Checkpoint Id -> Records Seen) seen since the state
@@ -89,11 +97,14 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
             try {
                 when (input) {
                     is PipelineMessage -> {
-                        if (stateStore.streamsEnded.contains(input.key.stream)) {
-                            throw IllegalStateException(
-                                "$stepId[$part] received input for complete stream ${input.key.stream}. This indicates data was processed out of order and future bookkeeping might be corrupt. Failing hard."
-                            )
-                        }
+                        //                        if
+                        // (stateStore.streamsEnded.contains(input.key.stream)) {
+                        //                            throw IllegalStateException(
+                        //                                "$taskName[$part] received input for
+                        // complete stream ${input.key.stream}. This indicates data was processed
+                        // out of order and future bookkeeping might be corrupt. Failing hard."
+                        //                            )
+                        //                        }
                         // Get or create the accumulator state associated w/ the input key.
                         val stateWithCounts =
                             stateStore.stateWithCounts
@@ -295,12 +306,38 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
 @Singleton
 @Requires(bean = LoadStrategy::class)
 class LoadPipelineStepTaskFactory(
+    val config: SocketTestConfig,
     @Named("batchStateUpdateQueue") val batchUpdateQueue: QueueWriter<BatchUpdate>,
-    @Named("pipelineInputQueue")
-    val recordQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+    // TEMPORARY FOR SOCKET TEST
+    // @Named("recordQueue")
+    // val recordQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+    @Named("socketInputFlows") val socketInputFlows: Array<SocketInputFlow>,
     private val flushStrategy: PipelineFlushStrategy,
+    private val loadStrategy: LoadStrategy
 ) {
-    // A map of (TaskId, Stream) ->  streams to ensure eos is not forwarded from
+    private val log = KotlinLogging.logger {}
+
+    val partToSocket: List<Flow<PipelineEvent<StreamKey, DestinationRecordRaw>>>
+    init {
+        if (config.numSockets < loadStrategy.inputPartitions) {
+            val sharedFlows =
+                socketInputFlows
+                    .map {
+                        it.shareIn(CoroutineScope(Dispatchers.IO), SharingStarted.Eagerly, 1024)
+                    }
+                    .toTypedArray()
+            val assignments =
+                (0 until loadStrategy.inputPartitions).map { it % socketInputFlows.size }.toList()
+            log.info {
+                "${config.numSockets} < ${loadStrategy.inputPartitions} workers, constructing fan-out assignments $assignments"
+            }
+            partToSocket = assignments.map { sharedFlows[it] }
+        } else {
+            partToSocket = emptyList()
+        }
+    }
+
+    // A map of (TaskIndex, Stream) ->  streams to ensure eos is not forwarded from
     // task N to N+1 until all workers have seen eos.
     private val streamCompletions =
         ConcurrentHashMap<Pair<String, DestinationStream.Descriptor>, AtomicInteger>()
@@ -336,9 +373,30 @@ class LoadPipelineStepTaskFactory(
         part: Int,
         numWorkers: Int,
     ): LoadPipelineStepTask<S, StreamKey, DestinationRecordRaw, K2, U> {
+        val flow =
+            if (config.numSockets == numWorkers) {
+                log.info { "${config.numSockets} == $numWorkers workers, so using 1<->1" }
+                // 1<->1 socket to worker
+                socketInputFlows[part]
+            } else if (config.numSockets > numWorkers) {
+                val socketsToUse = (part until config.numSockets step numWorkers).toList()
+                log.info {
+                    "${config.numSockets} > $numWorkers workers, so using fan-in (worker $part using sockets $socketsToUse)"
+                }
+                // Fan-in by merging socket flows
+                val sockets = socketsToUse.map { socketInputFlows[it] }.toTypedArray()
+                merge(*sockets)
+            } else {
+                // Fan-out by using previously started shared flows
+                log.info {
+                    "${config.numSockets} < $numWorkers workers, so using fan-out on shared flow $part"
+                }
+                partToSocket[part]
+            }
+
         return create(
             batchAccumulator,
-            recordQueue.consume(part),
+            flow,
             outputPartitioner,
             outputQueue,
             flushStrategy,

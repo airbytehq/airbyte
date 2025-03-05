@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.azure_blob_storage
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
+import io.airbyte.cdk.load.command.SocketTestConfig
 import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
 import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
@@ -42,13 +43,29 @@ class AzureBlobStorageConfiguration<T : OutputStream>(
     val maxMemoryRatioReservedForParts: Double = 0.4,
     val objectSizeBytes: Long = 200L * 1024 * 1024,
     val partSizeBytes: Long = 10L * 1024 * 1024,
+
+    // Temporary for socket
+    override val numSockets: Int,
+    override val inputSerializationFormat: InputSerializationFormat,
+    override val inputBufferByteSizePerSocket: Long,
+    override val socketPrefix: String,
+    override val socketWaitTimeoutSeconds: Int,
+    override val devNullAfterDeserialization: Boolean,
+    val skipUpload: Boolean,
+    val useGarbagePart: Boolean,
+    override val skipJsonOnProto: Boolean,
+    override val disableUUID: Boolean,
+    override val disableMapper: Boolean,
+    override val useCodedInputStream: Boolean = false,
+    override val useSnappy: Boolean = false,
 ) :
     DestinationConfiguration(),
     AzureBlobStorageClientConfigurationProvider,
     ObjectStoragePathConfigurationProvider,
     ObjectStorageFormatConfigurationProvider,
     ObjectStorageUploadConfigurationProvider,
-    ObjectStorageCompressionConfigurationProvider<T> {
+    ObjectStorageCompressionConfigurationProvider<T>,
+    SocketTestConfig {
     // for now, we're not exposing this as a user-configurable option
     // so just return a hardcoded default path config
     override val objectStoragePathConfiguration =
@@ -82,6 +99,25 @@ class AzureBlobStorageConfigurationFactory :
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration =
                 ObjectStorageCompressionConfiguration(NoopProcessor),
+            numSockets = pojo.numSockets ?: 2,
+            numUploadWorkers = pojo.numPartLoaders ?: 10,
+            numPartWorkers = pojo.numPartFormatters ?: pojo.numSockets ?: 2,
+            inputSerializationFormat = pojo.inputSerializationFormat
+                ?: DestinationConfiguration.InputSerializationFormat.FLATBUFFERS,
+            partSizeBytes = (pojo.partSizeMb ?: 10) * 1024L * 1024L,
+            maxMemoryRatioReservedForParts = pojo.maxMemoryRatioReservedForParts ?: 1.0,
+            inputBufferByteSizePerSocket = pojo.inputBufferByteSizePerSocket ?: (16384),
+            socketPrefix = pojo.socketPrefix
+                ?: "/Users/jschmidt/.sockets/ab_socket_", // "/var/run/sockets/ab_socket_",
+            socketWaitTimeoutSeconds = pojo.socketWaitTimeoutSeconds ?: 60,
+            devNullAfterDeserialization = pojo.devNullAfterDeserialization ?: false,
+            skipUpload = pojo.skipUpload ?: false,
+            useGarbagePart = pojo.useGarbagePart ?: false,
+            skipJsonOnProto = pojo.skipJsonOnProto ?: true,
+            disableUUID = pojo.disableUUID ?: false,
+            disableMapper = pojo.disableMapper ?: false,
+            useCodedInputStream = pojo.useCodedInputStream ?: true,
+            useSnappy = pojo.useSnappy ?: false,
         )
     }
 }
