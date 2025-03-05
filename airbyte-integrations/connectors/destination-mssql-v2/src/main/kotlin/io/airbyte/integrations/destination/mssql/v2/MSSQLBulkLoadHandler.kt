@@ -182,7 +182,7 @@ class MSSQLBulkLoadHandler(
         val createTempTableSql =
             """
             SELECT TOP 0 *
-            INTO ${quoteIdentifier(schemaName, tempTableName)}
+            INTO [${tempTableName}]
             FROM ${quoteIdentifier(schemaName, mainTableName)}
         """.trimIndent()
 

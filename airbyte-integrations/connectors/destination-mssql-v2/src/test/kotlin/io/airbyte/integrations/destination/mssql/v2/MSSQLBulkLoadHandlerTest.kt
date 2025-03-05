@@ -151,8 +151,8 @@ class MSSQLBulkLoadHandlerTest {
 
         // 1) The first statement should create temp table
         assertTrue(
-            sqlStatements.any { it.contains("SELECT TOP 0 *\nINTO ##TempTable_") },
-            "Expected a statement containing SELECT TOP 0 * INTO ##TempTable_"
+            sqlStatements.any { it.contains("SELECT TOP 0 *\nINTO [##TempTable_") },
+            "Expected a statement containing SELECT TOP 0 * INTO [##TempTable_"
         )
 
         // 2) The second statement should do the bulk insert into temp table
@@ -287,7 +287,7 @@ class MSSQLBulkLoadHandlerTest {
         verify(atLeast = 1) { connection.prepareStatement(capture(sqlSlot)) }
 
         assertTrue(
-            sqlSlot.any { it.contains("SELECT TOP 0 *\nINTO ##TempTable_") },
+            sqlSlot.any { it.contains("SELECT TOP 0 *\nINTO [##TempTable_") },
             "Expected creation of temp table via SELECT TOP 0 * INTO"
         )
     }
