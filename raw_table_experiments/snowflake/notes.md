@@ -194,3 +194,92 @@ SELECT
   42
 FROM NO_RAW_TABLE.PUBLIC.input_typed_data_part2 AS t;
 ```
+
+And finally, to create the new style input tables:
+
+```sql
+CREATE OR REPLACE TABLE no_raw_table.public."new_input_table_50gb_part1" (
+    "_AIRBYTE_RAW_ID"         VARCHAR,
+    "_AIRBYTE_EXTRACTED_AT"   TIMESTAMP_TZ,
+    "_AIRBYTE_META"           VARIANT,
+    "_AIRBYTE_GENERATION_ID"  NUMBER(38, 0),
+    "primary_key"             NUMBER(38, 0),
+    "cursor"                  TIMESTAMP_NTZ,
+    "string"                  VARCHAR,
+    "bool"                    BOOLEAN,
+    "integer"                 NUMBER(38, 0),
+    "float"                   NUMBER(38, 9),
+    "date"                    DATE,
+    "ts_with_tz"              TIMESTAMP_TZ,
+    "ts_no_tz"                TIMESTAMP_NTZ,
+    "time_with_tz"            STRING,
+    "time_no_tz"              TIME,
+    "array"                   VARIANT,
+    "json_object"             VARIANT
+);
+
+-- Insert into the new table from part1
+INSERT INTO no_raw_table.public."new_input_table_50gb_part1"
+SELECT
+    UUID_STRING()                                 AS "_AIRBYTE_RAW_ID",
+    t.ts_with_tz                                  AS "_AIRBYTE_EXTRACTED_AT",
+    PARSE_JSON('{"changes":[],"sync_id":42}')     AS "_AIRBYTE_META",
+    42                                            AS "_AIRBYTE_GENERATION_ID",
+    t.primary_key         AS "primary_key",
+    t.cursor              AS "cursor",
+    t.string              AS "string",
+    t.bool                AS "bool",
+    t.integer             AS "integer",
+    t.float               AS "float",
+    t.date                AS "date",
+    t.ts_with_tz          AS "ts_with_tz",
+    t.ts_no_tz            AS "ts_no_tz",
+    t.time_with_tz        AS "time_with_tz",
+    t.time_no_tz          AS "time_no_tz",
+    t.array               AS "array",
+    t.json_object         AS "json_object"
+FROM no_raw_table.public.input_typed_data_50gb_part1 AS t;
+
+
+CREATE OR REPLACE TABLE no_raw_table.public."new_input_table_50gb_part2" (
+    "_AIRBYTE_RAW_ID"         VARCHAR,
+    "_AIRBYTE_EXTRACTED_AT"   TIMESTAMP_TZ,
+    "_AIRBYTE_META"           VARIANT,
+    "_AIRBYTE_GENERATION_ID"  NUMBER(38, 0),
+    "primary_key"             NUMBER(38, 0),
+    "cursor"                  TIMESTAMP_NTZ,
+    "string"                  VARCHAR,
+    "bool"                    BOOLEAN,
+    "integer"                 NUMBER(38, 0),
+    "float"                   NUMBER(38, 9),
+    "date"                    DATE,
+    "ts_with_tz"              TIMESTAMP_TZ,
+    "ts_no_tz"                TIMESTAMP_NTZ,
+    "time_with_tz"            STRING,
+    "time_no_tz"              TIME,
+    "array"                   VARIANT,
+    "json_object"             VARIANT
+);
+
+-- Insert into the new table from part2
+INSERT INTO no_raw_table.public."new_input_table_50gb_part2"
+SELECT
+    UUID_STRING()                                 AS "_AIRBYTE_RAW_ID",
+    t.ts_with_tz                                  AS "_AIRBYTE_EXTRACTED_AT",
+    PARSE_JSON('{"changes":[],"sync_id":42}')     AS "_AIRBYTE_META",
+    42                                            AS "_AIRBYTE_GENERATION_ID",
+    t.primary_key         AS "primary_key",
+    t.cursor              AS "cursor",
+    t.string              AS "string",
+    t.bool                AS "bool",
+    t.integer             AS "integer",
+    t.float               AS "float",
+    t.date                AS "date",
+    t.ts_with_tz          AS "ts_with_tz",
+    t.ts_no_tz            AS "ts_no_tz",
+    t.time_with_tz        AS "time_with_tz",
+    t.time_no_tz          AS "time_no_tz",
+    t.array               AS "array",
+    t.json_object         AS "json_object"
+FROM no_raw_table.public.input_typed_data_50gb_part2 AS t;
+```

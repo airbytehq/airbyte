@@ -1,6 +1,6 @@
 -- naive create table --------------------------------
-DROP TABLE IF EXISTS PUBLIC."new_final_table_5mb";
-create table PUBLIC."new_final_table_5mb" (
+DROP TABLE IF EXISTS PUBLIC."new_final_table_50gb";
+create table PUBLIC."new_final_table_50gb" (
   "_AIRBYTE_RAW_ID" TEXT NOT NULL COLLATE 'utf8',
   "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
   "_AIRBYTE_META" VARIANT NOT NULL,
@@ -13,7 +13,7 @@ create table PUBLIC."new_final_table_5mb" (
   , "float" FLOAT
   , "date" DATE
   , "ts_with_tz" TIMESTAMP_TZ
-  , "ts_without_tz" TIMESTAMP_NTZ
+  , "ts_no_tz" TIMESTAMP_NTZ
   , "time_with_tz" TEXT
   , "time_no_tz" TIME
   , "array" ARRAY
@@ -30,7 +30,7 @@ create table PUBLIC."new_final_table_5mb" (
 
 
 -- "naive" dedup query -------------------------------
-INSERT INTO PUBLIC."new_final_table_5mb"(
+INSERT INTO PUBLIC."new_final_table_50gb"(
     "primary_key",
     "cursor",
     "string",
@@ -39,7 +39,7 @@ INSERT INTO PUBLIC."new_final_table_5mb"(
     "float",
     "date",
     "ts_with_tz",
-    "ts_without_tz",
+    "ts_no_tz",
     "time_with_tz",
     "time_no_tz",
     "array",
@@ -59,7 +59,7 @@ WITH new_records AS (
     "float", 
     "date", 
     "ts_with_tz", 
-    "ts_without_tz", 
+    "ts_no_tz", 
     "time_with_tz", 
     "time_no_tz", 
     "array", 
@@ -71,7 +71,7 @@ WITH new_records AS (
     row_number() OVER (
       PARTITION BY "primary_key" ORDER BY "cursor" DESC NULLS LAST, "_AIRBYTE_EXTRACTED_AT" DESC
     ) AS row_number
-  FROM PUBLIC."new_final_table_5mb"
+  FROM PUBLIC."new_input_table_50gb_part1"
 )
 SELECT
     "primary_key",
@@ -82,7 +82,7 @@ SELECT
     "float",
     "date",
     "ts_with_tz",
-    "ts_without_tz",
+    "ts_no_tz",
     "time_with_tz",
     "time_no_tz",
     "array",
@@ -95,7 +95,7 @@ FROM
     new_records
 WHERE row_number = 1;
 DELETE FROM 
-  "PUBLIC"."new_final_table_5mb"
+  "PUBLIC"."new_final_table_50gb"
 WHERE 
   "_AIRBYTE_RAW_ID" IN (
     SELECT "_AIRBYTE_RAW_ID" FROM (
@@ -112,7 +112,7 @@ WHERE
 ) DESC) 
         as row_number 
       FROM 
-        "PUBLIC"."new_final_table_5mb"
+        "PUBLIC"."new_final_table_50gb"
     )
     WHERE row_number != 1
   );

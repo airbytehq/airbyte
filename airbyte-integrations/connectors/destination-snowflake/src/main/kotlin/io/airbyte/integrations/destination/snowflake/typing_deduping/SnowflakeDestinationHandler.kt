@@ -621,7 +621,7 @@ private val logger = KotlinLogging.logger {}
  * Will drop+recreate the old_final_table_5mb / new_final_table_5mb tables as needed.
  */
 fun main() {
-    val size = "5mb"
+    val size = "50gb"
     val runOldRawTablesFast = false
     val runOldRawTablesSlow = false
     val runNewTableNaive = true
@@ -751,7 +751,7 @@ fun getNewStyleCreateFinalTableQuery(size: String, optimized: Boolean): Sql {
               , "float" FLOAT
               , "date" DATE
               , "ts_with_tz" TIMESTAMP_TZ
-              , "ts_without_tz" TIMESTAMP_NTZ
+              , "ts_no_tz" TIMESTAMP_NTZ
               , "time_with_tz" TEXT
               , "time_no_tz" TIME
               , "array" ARRAY
@@ -776,7 +776,7 @@ fun getNewStyleDedupingQuery(size: String, part: Int, optimized: Boolean): Sql {
                 "float",
                 "date",
                 "ts_with_tz",
-                "ts_without_tz",
+                "ts_no_tz",
                 "time_with_tz",
                 "time_no_tz",
                 "array",
@@ -796,7 +796,7 @@ fun getNewStyleDedupingQuery(size: String, part: Int, optimized: Boolean): Sql {
                 "float", 
                 "date", 
                 "ts_with_tz", 
-                "ts_without_tz", 
+                "ts_no_tz", 
                 "time_with_tz", 
                 "time_no_tz", 
                 "array", 
@@ -808,7 +808,7 @@ fun getNewStyleDedupingQuery(size: String, part: Int, optimized: Boolean): Sql {
                 row_number() OVER (
                   PARTITION BY "primary_key" ORDER BY "cursor" DESC NULLS LAST, "_AIRBYTE_EXTRACTED_AT" DESC
                 ) AS row_number
-              FROM PUBLIC."new_final_table_${size}"
+              FROM PUBLIC."new_input_table_${size}_part${part}"
             )
             SELECT
                 "primary_key",
@@ -819,7 +819,7 @@ fun getNewStyleDedupingQuery(size: String, part: Int, optimized: Boolean): Sql {
                 "float",
                 "date",
                 "ts_with_tz",
-                "ts_without_tz",
+                "ts_no_tz",
                 "time_with_tz",
                 "time_no_tz",
                 "array",
