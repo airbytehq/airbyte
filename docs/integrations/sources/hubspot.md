@@ -338,6 +338,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.4.10 | 2024-12-14 | [48480](https://github.com/airbytehq/airbyte/pull/4914) | Improves Forms stream by adding the formTypes query parameter to support all form types. This enhancement also propagates to the FormSubmission stream. |
 | 4.4.9 | 2025-02-01 | [52729](https://github.com/airbytehq/airbyte/pull/52729) | Update dependencies |
 | 4.4.8 | 2025-01-25 | [52295](https://github.com/airbytehq/airbyte/pull/52295) | Update dependencies |
 | 4.4.7 | 2025-01-11 | [51146](https://github.com/airbytehq/airbyte/pull/51146) | Update dependencies |
