@@ -1,6 +1,5 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-import time
 from dataclasses import dataclass
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
@@ -12,19 +11,25 @@ from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ConstantBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import _default_file_path
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from source_mixpanel.backoff_strategy import DEFAULT_API_BUDGET
 
 from .source import SourceMixpanel
 from .streams.engage import EngageSchema
 
 
 class MixpanelHttpRequester(HttpRequester):
-    reqs_per_hour_limit = 60
-    is_first_request = True
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self.api_budget = DEFAULT_API_BUDGET
+        self.error_handler.backoff_strategies = ConstantBackoffStrategy(
+            backoff_time_in_seconds=60 * 2, config=self.config, parameters=parameters
+        )
+        super().__post_init__(parameters)
 
     def get_request_headers(
         self,
@@ -60,21 +65,6 @@ class MixpanelHttpRequester(HttpRequester):
             page = extra_params.pop("page", {})
             extra_params.update(page)
         return super()._request_params(stream_state, stream_slice, next_page_token, extra_params)
-
-    def send_request(self, **kwargs) -> Optional[requests.Response]:
-        if self.reqs_per_hour_limit:
-            if self.is_first_request:
-                self.is_first_request = False
-            else:
-                # we skip this block, if self.reqs_per_hour_limit = 0,
-                # in all other cases wait for X seconds to match API limitations
-                # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
-                self.logger.info(
-                    f"Sleep for {3600 / self.reqs_per_hour_limit} seconds to match API limitations after reading from {self.name}"
-                )
-                time.sleep(3600 / self.reqs_per_hour_limit)
-
-        return super().send_request(**kwargs)
 
 
 class AnnotationsHttpRequester(MixpanelHttpRequester):

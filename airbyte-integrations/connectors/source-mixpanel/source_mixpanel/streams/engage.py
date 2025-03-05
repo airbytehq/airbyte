@@ -12,14 +12,10 @@ from .base import MixpanelStream
 class EngageSchema(MixpanelStream):
     """
     Engage helper stream for dynamic schema extraction.
-    :: reqs_per_hour_limit: int - property is set to the value of 1 million,
-       to get the sleep time close to the zero, while generating dynamic schema.
-       When `reqs_per_hour_limit = 0` - it means we skip this limits.
     """
 
     primary_key: str = None
     data_field: str = "results"
-    reqs_per_hour_limit: int = 0  # see the docstring
 
     def path(self, **kwargs) -> str:
         return "engage/properties"

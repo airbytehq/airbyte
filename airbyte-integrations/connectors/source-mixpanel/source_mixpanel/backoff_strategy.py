@@ -2,12 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import timedelta
 from typing import Any, Optional, Union
 
 import requests
 
 from airbyte_cdk import BackoffStrategy
+from airbyte_cdk.sources.streams.call_rate import APIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate
 from airbyte_cdk.sources.streams.http import HttpStream
+
+
+DEFAULT_API_BUDGET = APIBudget(
+    policies=[MovingWindowCallRatePolicy(rates=[Rate(limit=60, interval=timedelta(hours=1.0))], matchers=[HttpRequestMatcher()])]
+)
 
 
 class MixpanelStreamBackoffStrategy(BackoffStrategy):

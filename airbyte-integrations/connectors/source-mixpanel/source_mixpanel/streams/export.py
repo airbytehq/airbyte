@@ -21,14 +21,10 @@ from .base import DateSlicesMixin, IncrementalMixpanelStream, MixpanelStream
 class ExportSchema(MixpanelStream):
     """
     Export helper stream for dynamic schema extraction.
-    :: reqs_per_hour_limit: int - property is set to the value of 1 million,
-       to get the sleep time close to the zero, while generating dynamic schema.
-       When `reqs_per_hour_limit = 0` - it means we skip this limits.
     """
 
     primary_key: str = None
     data_field: str = None
-    reqs_per_hour_limit: int = 0  # see the docstring
 
     def path(self, **kwargs) -> str:
         return "events/properties/top"
