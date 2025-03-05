@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonSerializer
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.node.NullNode
+import io.airbyte.cdk.load.message.Meta
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
@@ -153,3 +154,17 @@ private class ObjectValueSerializer : JsonSerializer<ObjectValue>() {
 }
 
 @JvmInline value class UnknownValue(val value: JsonNode) : AirbyteValue
+
+data class EnrichedAirbyteValue(
+    val value: AirbyteValue,
+    val changes: List<Meta.Change>,
+    // If this is null then the field is "undeclared" and should probably be ignored.
+    // It could mean for example that there is a bug in the destination and some values
+    // are being added that are not currently in the schema.
+    val field: DeclaredField? = null
+)
+
+data class DeclaredField(
+    val type: AirbyteType,
+    val name: String
+)
