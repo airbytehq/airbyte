@@ -1034,6 +1034,27 @@ class UserFields(FullRefreshZendeskSupportStream):
         return "user_fields"
 
 
+class UserIdentities(Users):
+    """
+    User Identities Stream: https://developer.zendesk.com/api-reference/ticketing/users/user_identities/
+
+    Side-loading (https://developer.zendesk.com/documentation/ticketing/using-the-zendesk-api/side_loading/) the users stream
+    (https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export)
+    """
+
+    response_list_name = "identities"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        req_params = super().request_params(stream_state, stream_slice, next_page_token)
+        req_params["include"] = "identities"
+        return req_params
+
+
 class PostComments(CursorPaginationZendeskSupportStream, HttpSubStream):
     """Post Comments Stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/"""
 

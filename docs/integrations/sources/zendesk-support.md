@@ -144,6 +144,7 @@ The Zendesk Support source connector supports the following streams:
 - [Triggers](https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-ticket-triggers) \(Incremental\)
 - [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/) \(Incremental\)
 - [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
+- [UserIdentities](https://developer.zendesk.com/api-reference/ticketing/users/user_identities/) \(Incremental\)
 - [UserFields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
 - [Categories](https://developer.zendesk.com/api-reference/help_center/help-center-api/categories/#list-categories)
 - [Sections](https://developer.zendesk.com/api-reference/help_center/help-center-api/sections/#list-sections)
@@ -188,7 +189,11 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.5.0   | 2024-12-02 | [48761](https://github.com/airbytehq/airbyte/pull/48761) | Add `Categories` and `Sections` stream |
+| 4.7.1 | 2025-02-26 | [54696](https://github.com/airbytehq/airbyte/pull/54696) | Update requests-mock dependency versionb |
+| 4.7.0 | 2025-02-24 | [54656](https://github.com/airbytehq/airbyte/pull/54656) | Promoting release candidate 4.7.0-rc.1 to a main version. |
+| 4.7.0-rc.1 | 2025-02-13 | [53620](https://github.com/airbytehq/airbyte/pull/53620) | Replace ZendeskSupportAuditLogsIncrementalSync with low-code DatetimeBasedCursor |
+| 4.6.0 | 2024-12-09 | [47939](https://github.com/airbytehq/airbyte/pull/47939) | Add `User Identities` stream                                                                                                                                                                                                         |
+| 4.5.0 | 2024-12-02 | [48761](https://github.com/airbytehq/airbyte/pull/48761) | Add `Categories` and `Sections` stream |
 | 4.4.4 | 2025-02-08 | [51943](https://github.com/airbytehq/airbyte/pull/51943) | Update dependencies |
 | 4.4.3 | 2025-02-03 | [52625](https://github.com/airbytehq/airbyte/pull/52625) | Update error message during check for `organization_access_enabled` |
 | 4.4.2 | 2025-01-11 | [48309](https://github.com/airbytehq/airbyte/pull/48309) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

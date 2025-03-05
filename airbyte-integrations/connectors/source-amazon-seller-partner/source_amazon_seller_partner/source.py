@@ -14,12 +14,6 @@ from source_amazon_seller_partner.constants import get_marketplaces
 from source_amazon_seller_partner.utils import AmazonConfigException
 
 
-# given the retention period: 730
-DEFAULT_RETENTION_PERIOD_IN_DAYS = 730
-
-from source_amazon_seller_partner.components.auth import AmazonSPOauthAuthenticator
-
-
 class SourceAmazonSellerPartner(YamlDeclarativeSource):
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
         super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
@@ -28,41 +22,6 @@ class SourceAmazonSellerPartner(YamlDeclarativeSource):
     def get_aws_config_settings(config: Mapping[str, Any]) -> Mapping[str, Any]:
         endpoint, marketplace_id, _ = get_marketplaces(config.get("aws_environment"))[config.get("region")]
         return {"endpoint": endpoint, "marketplace_id": marketplace_id}
-
-    @staticmethod
-    def _get_stream_kwargs(config: Mapping[str, Any]) -> Mapping[str, Any]:
-        endpoint, marketplace_id, _ = get_marketplaces(config.get("aws_environment"))[config.get("region")]
-        auth = AmazonSPOauthAuthenticator(
-            config=config,
-            parameters={},
-            token_refresh_endpoint="https://api.amazon.com/auth/o2/token",
-            client_id=config.get("lwa_app_id"),
-            client_secret=config.get("lwa_client_secret"),
-            refresh_token=config.get("refresh_token"),
-            host=endpoint.replace("https://", ""),
-        )
-
-        start_date = config.get("replication_start_date")
-        use_default_start_date = (
-            not start_date or (pendulum.now("utc") - pendulum.parse(start_date)).days > DEFAULT_RETENTION_PERIOD_IN_DAYS
-        )
-        if use_default_start_date:
-            start_date = pendulum.now("utc").subtract(days=DEFAULT_RETENTION_PERIOD_IN_DAYS).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-        end_date = config.get("replication_end_date")
-        use_default_end_date = not end_date or end_date < start_date
-        if use_default_end_date:
-            end_date = None  # None to sync all data
-
-        stream_kwargs = {
-            "url_base": endpoint,
-            "authenticator": auth,
-            "replication_start_date": start_date,
-            "marketplace_id": marketplace_id,
-            "period_in_days": config.get("period_in_days", 365),
-            "replication_end_date": end_date,
-        }
-        return stream_kwargs
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
