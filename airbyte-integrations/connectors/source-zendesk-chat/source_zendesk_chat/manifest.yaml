@@ -334,3 +334,16 @@ concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: 10
   max_concurrency: 10
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        #        Chat API has limit of 200 requests/minute for all plans: https://developer.zendesk.com/api-reference/introduction/rate-limits/#zendesk-suite-plan-limits
+        - limit: 200
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: ".*" # matches 'any request'
+  status_codes_for_ratelimit_hit: [429]
