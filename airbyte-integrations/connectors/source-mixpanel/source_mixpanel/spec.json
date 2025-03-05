@@ -128,7 +128,7 @@
         "minimum": 1,
         "default": 1000
       },
-      "num_workers":{
+      "num_workers": {
         "order": 10,
         "type": "integer",
         "title": "Number of concurrent workers",
