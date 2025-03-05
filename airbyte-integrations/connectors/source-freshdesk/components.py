@@ -31,7 +31,6 @@ class FreshdeskTicketsIncrementalRequester(HttpRequester):
     request_body_data: Optional[RequestInput] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-
         self.request_options_provider = InterpolatedRequestOptionsProvider(
             request_body_data=self.request_body_data,
             request_body_json=self.request_body_json,
