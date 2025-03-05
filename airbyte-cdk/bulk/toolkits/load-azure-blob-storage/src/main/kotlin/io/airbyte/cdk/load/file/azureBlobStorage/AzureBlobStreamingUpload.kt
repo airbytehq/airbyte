@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentSkipListMap
 import java.util.concurrent.atomic.AtomicBoolean
 
 private const val BLOB_ID_PREFIX = "block"
+private const val RESERVED_PREFIX = "x-ms-"
 
 class AzureBlobStreamingUpload(
     private val blockBlobClient: BlockBlobClient,
@@ -26,6 +27,7 @@ class AzureBlobStreamingUpload(
     private val log = KotlinLogging.logger {}
     private val isComplete = AtomicBoolean(false)
     private val blockIds = ConcurrentSkipListMap<Int, String>()
+    private val invalidCharsRegex = Regex("[<>:\"/\\\\?#*\\-]")
 
     /**
      * Each part that arrives is treated as a new block. We must generate unique block IDs for each
@@ -70,7 +72,10 @@ class AzureBlobStreamingUpload(
 
             // Set any metadata
             if (metadata.isNotEmpty()) {
-                blockBlobClient.setMetadata(metadata)
+                val filteredMetadata = filterInvalidMetadata(metadata)
+                if (filteredMetadata.isNotEmpty()) {
+                    blockBlobClient.setMetadata(filteredMetadata)
+                }
             }
         }
 
@@ -93,5 +98,44 @@ class AzureBlobStreamingUpload(
 
         // Encode the entire fixed-length buffer to Base64
         return Base64.getEncoder().encodeToString(buffer.array())
+    }
+    /**
+     * Return a new map containing only valid key/value pairs according to Azure metadata
+     * constraints.
+     */
+    private fun filterInvalidMetadata(metadata: Map<String, String>): Map<String, String> {
+        return metadata.filter { (key, value) -> isValidKey(key) && isValidValue(value) }
+    }
+    /**
+     * Validates if the provided key string meets the required criteria.
+     *
+     * @param key The string to validate as a key
+     * @return Boolean indicating whether the key is valid
+     */
+    private fun isValidKey(key: String): Boolean {
+        // Reject empty keys or keys that start with reserved prefix
+        if (key.isBlank() || key.startsWith(RESERVED_PREFIX)) return false
+
+        // Reject keys containing any characters matching the invalid pattern
+        if (invalidCharsRegex.containsMatchIn(key)) return false
+
+        // Ensure all characters are within the printable ASCII range (32-126)
+        // This includes letters, numbers, and common symbols
+        return key.all { it.code in 32..126 }
+    }
+
+    /**
+     * Validates if the provided value string meets the required criteria.
+     *
+     * @param value The string to validate as a value
+     * @return Boolean indicating whether the value is valid
+     */
+    private fun isValidValue(value: String): Boolean {
+        // Reject values containing any characters matching the invalid pattern
+        if (invalidCharsRegex.containsMatchIn(value)) return false
+
+        // Ensure all characters are within the printable ASCII range (32-126)
+        // This includes letters, numbers, and common symbols
+        return value.all { it.code in 32..126 }
     }
 }

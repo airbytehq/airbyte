@@ -2,19 +2,20 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.36.1"
+version = "6.38.0.dev0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 groups = ["main"]
 markers = "python_version <= \"3.11\""
 files = [
-    {file = "airbyte_cdk-6.36.1-py3-none-any.whl", hash = "sha256:b5a3ad83a551087b2c5a75607c07455615e330d12eebd7bad75e0e31fda7016d"},
-    {file = "airbyte_cdk-6.36.1.tar.gz", hash = "sha256:d1d58ae82494bdc066d452645241c8b76e0b2525bdd0ff86a95b3292885c9cab"},
+    {file = "airbyte_cdk-6.38.0.dev0-py3-none-any.whl", hash = "sha256:80aa29416055118aeb5baa8c5146ce2ba1148f8fc01d9c61d0d9db1f9a80f611"},
+    {file = "airbyte_cdk-6.38.0.dev0.tar.gz", hash = "sha256:43d286999d40ef26c4ddfb39a73bbcce2c29bd9dccc77125246dcbc4162c11e9"},
 ]
 
 [package.dependencies]
 airbyte-protocol-models-dataclasses = ">=0.14,<0.15"
+anyascii = ">=0.3.2,<0.4.0"
 backoff = "*"
 cachetools = "*"
 cryptography = ">=42.0.5,<44.0.0"
@@ -42,7 +43,6 @@ rapidfuzz = ">=3.10.1,<4.0.0"
 requests = "*"
 requests_cache = "*"
 serpyco-rs = ">=1.10.2,<2.0.0"
-Unidecode = ">=1.3,<2.0"
 wcmatch = "10.0"
 whenever = ">=0.6.16,<0.7.0"
 xmltodict = ">=0.13,<0.15"
@@ -76,6 +76,19 @@ markers = "python_version <= \"3.11\""
 files = [
     {file = "annotated_types-0.7.0-py3-none-any.whl", hash = "sha256:1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53"},
     {file = "annotated_types-0.7.0.tar.gz", hash = "sha256:aff07c09a53a08bc8cfccb9c85b05f1aa9a2a6f23728d790723543408344ce89"},
+]
+
+[[package]]
+name = "anyascii"
+version = "0.3.2"
+description = "Unicode to ASCII transliteration"
+optional = false
+python-versions = ">=3.3"
+groups = ["main"]
+markers = "python_version <= \"3.11\""
+files = [
+    {file = "anyascii-0.3.2-py3-none-any.whl", hash = "sha256:3b3beef6fc43d9036d3b0529050b0c48bfad8bc960e9e562d7223cfb94fe45d4"},
+    {file = "anyascii-0.3.2.tar.gz", hash = "sha256:9d5d32ef844fe225b8bc7cba7f950534fae4da27a9bf3a6bea2cb0ea46ce4730"},
 ]
 
 [[package]]
@@ -164,15 +177,15 @@ files = [
 
 [[package]]
 name = "cachetools"
-version = "5.5.2"
+version = "5.5.1"
 description = "Extensible memoizing collections and decorators"
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
 markers = "python_version <= \"3.11\""
 files = [
-    {file = "cachetools-5.5.2-py3-none-any.whl", hash = "sha256:d26a22bcc62eb95c3beabd9f1ee5e820d3d2704fe2967cbe350e20c8ffcd3f0a"},
-    {file = "cachetools-5.5.2.tar.gz", hash = "sha256:1a661caa9175d26759571b2e19580f9d6393969e5dfca11fdb1f947a23e640d4"},
+    {file = "cachetools-5.5.1-py3-none-any.whl", hash = "sha256:b76651fdc3b24ead3c648bbdeeb940c1b04d365b38b4af66788f9ec4a81d42bb"},
+    {file = "cachetools-5.5.1.tar.gz", hash = "sha256:70f238fbba50383ef62e55c6aff6d9673175fe59f7c6782c7a0b9e38f4a9df95"},
 ]
 
 [[package]]
@@ -1459,15 +1472,15 @@ files = [
 
 [[package]]
 name = "pytest"
-version = "8.3.4"
+version = "8.3.5"
 description = "pytest: simple powerful testing with Python"
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
 markers = "python_version <= \"3.11\""
 files = [
-    {file = "pytest-8.3.4-py3-none-any.whl", hash = "sha256:50e16d954148559c9a74109af1eaf0c945ba2d8f30f0a3d3335edde19788b6f6"},
-    {file = "pytest-8.3.4.tar.gz", hash = "sha256:965370d062bce11e73868e0335abac31b4d3de0e82f4007408d242b4f8610761"},
+    {file = "pytest-8.3.5-py3-none-any.whl", hash = "sha256:c69214aa47deac29fad6c2a4f590b9c4a9fdb16a403176fe154b79c0b4d4d820"},
+    {file = "pytest-8.3.5.tar.gz", hash = "sha256:f4efe70cc14e511565ac476b57c279e12a855b11f48f212af1080ef2263d3845"},
 ]
 
 [package.dependencies]
@@ -2111,19 +2124,6 @@ files = [
 ]
 
 [[package]]
-name = "unidecode"
-version = "1.3.8"
-description = "ASCII transliterations of Unicode text"
-optional = false
-python-versions = ">=3.5"
-groups = ["main"]
-markers = "python_version <= \"3.11\""
-files = [
-    {file = "Unidecode-1.3.8-py3-none-any.whl", hash = "sha256:d130a61ce6696f8148a3bd8fe779c99adeb4b870584eeb9526584e9aa091fd39"},
-    {file = "Unidecode-1.3.8.tar.gz", hash = "sha256:cfdb349d46ed3873ece4586b96aa75258726e2fa8ec21d6f00a591d98806c2f4"},
-]
-
-[[package]]
 name = "url-normalize"
 version = "1.4.3"
 description = "URL normalization for Python"
@@ -2275,4 +2275,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.12"
-content-hash = "32c7d63f90e8c6453cb810362965213dd072aa0bcdab027572eedc3c8a392a0e"
+content-hash = "325f8748976f5bc4416fa5cf5b8a9eda5109d1224c008d6dff8f8ee97b3a73b0"
