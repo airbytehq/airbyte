@@ -11,9 +11,14 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.integrations.destination.teradata.util.TeradataConstants;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class TeradataDestinationTest {
 
@@ -69,14 +74,14 @@ public class TeradataDestinationTest {
     switch (sslMethod) {
       case "verify-ca", "verify-full" -> {
         additionalParameters = ImmutableMap.of(
-            TeradataDestination.PARAM_SSL_MODE, Jsons.jsonNode(ImmutableMap.of(
-                TeradataDestination.PARAM_MODE, sslMethod,
-                TeradataDestination.CA_CERT_KEY, "dummycertificatecontent")));
+                TeradataConstants.PARAM_SSL_MODE, Jsons.jsonNode(ImmutableMap.of(
+                        TeradataConstants.PARAM_MODE, sslMethod,
+                        TeradataConstants.CA_CERT_KEY, "dummycertificatecontent")));
       }
       default -> {
         additionalParameters = ImmutableMap.of(
-            TeradataDestination.PARAM_SSL_MODE, Jsons.jsonNode(ImmutableMap.of(
-                TeradataDestination.PARAM_MODE, sslMethod)));
+                TeradataConstants.PARAM_SSL_MODE, Jsons.jsonNode(ImmutableMap.of(
+                        TeradataConstants.PARAM_MODE, sslMethod)));
       }
     }
     return additionalParameters;
@@ -84,21 +89,21 @@ public class TeradataDestinationTest {
 
   private Map<String, Object> baseParameters() {
     return ImmutableMap.<String, Object>builder()
-        .put(JdbcUtils.HOST_KEY, "localhost")
-        .put(JdbcUtils.SCHEMA_KEY, "db")
-        .put(JdbcUtils.USERNAME_KEY, "username")
-        .put(JdbcUtils.PASSWORD_KEY, "verysecure")
-        .build();
+            .put(JdbcUtils.HOST_KEY, "localhost")
+            .put(JdbcUtils.SCHEMA_KEY, "db")
+            .put(JdbcUtils.USERNAME_KEY, "username")
+            .put(JdbcUtils.PASSWORD_KEY, "verysecure")
+            .build();
   }
 
   private Map<String, Object> sslBaseParameters() {
     return ImmutableMap.<String, Object>builder()
-        .put(TeradataDestination.PARAM_SSL, "true")
-        .put(JdbcUtils.HOST_KEY, getHostName())
-        .put(JdbcUtils.SCHEMA_KEY, getSchemaName())
-        .put(JdbcUtils.USERNAME_KEY, getUserName())
-        .put(JdbcUtils.PASSWORD_KEY, getPassword())
-        .build();
+            .put(TeradataConstants.PARAM_SSL, "true")
+            .put(JdbcUtils.HOST_KEY, getHostName())
+            .put(JdbcUtils.SCHEMA_KEY, getSchemaName())
+            .put(JdbcUtils.USERNAME_KEY, getUserName())
+            .put(JdbcUtils.PASSWORD_KEY, getPassword())
+            .build();
   }
 
   private JsonNode buildConfigNoJdbcParameters() {
@@ -107,20 +112,19 @@ public class TeradataDestinationTest {
 
   private JsonNode buildConfigDefaultSchema() {
     return Jsons.jsonNode(ImmutableMap.of(
-        JdbcUtils.HOST_KEY, getHostName(),
-        JdbcUtils.USERNAME_KEY, getUserName(),
-        JdbcUtils.PASSWORD_KEY,
-        getPassword()));
+            JdbcUtils.HOST_KEY, getHostName(),
+            JdbcUtils.USERNAME_KEY, getUserName(),
+            JdbcUtils.PASSWORD_KEY, getPassword()));
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
     return Jsons.jsonNode(ImmutableMap.of(
-        JdbcUtils.HOST_KEY, getHostName(),
-        JdbcUtils.USERNAME_KEY, getUserName(),
-        JdbcUtils.SCHEMA_KEY, getSchemaName(),
-        JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
+            JdbcUtils.HOST_KEY, getHostName(),
+            JdbcUtils.USERNAME_KEY, getUserName(),
+            JdbcUtils.PASSWORD_KEY, getPassword(),
+            JdbcUtils.SCHEMA_KEY, getSchemaName(),
+            JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
   }
-
   @Test
   void testJdbcUrlAndConfigNoExtraParams() {
     final JsonNode jdbcConfig = destination.toJdbcConfig(buildConfigNoJdbcParameters());
@@ -153,44 +157,44 @@ public class TeradataDestinationTest {
   void testDefaultSchemaName() {
     final JsonNode jdbcConfig = destination.toJdbcConfig(buildConfigDefaultSchema());
     assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
-    assertEquals(TeradataDestination.DEFAULT_SCHEMA_NAME, jdbcConfig.get(JdbcUtils.SCHEMA_KEY).asText());
+    assertEquals(TeradataConstants.DEFAULT_SCHEMA_NAME, jdbcConfig.get(JdbcUtils.SCHEMA_KEY).asText());
   }
 
   @Test
   void testSSLDisable() {
     final JsonNode jdbcConfig = createConfig(false);
     final Map<String, String> properties = destination.getDefaultConnectionProperties(jdbcConfig);
-    assertNull(properties.get(TeradataDestination.PARAM_SSLMODE));
+    assertNull(properties.get(TeradataConstants.PARAM_SSLMODE));
   }
 
   @Test
   void testSSLDefaultMode() {
     final JsonNode jdbcConfig = createConfig(true);
     final Map<String, String> properties = destination.getDefaultConnectionProperties(jdbcConfig);
-    assertEquals(TeradataDestination.REQUIRE, properties.get(TeradataDestination.PARAM_SSLMODE).toString());
+    assertEquals(TeradataConstants.REQUIRE, properties.get(TeradataConstants.PARAM_SSLMODE).toString());
   }
 
   @Test
   void testSSLAllowMode() {
-    final JsonNode jdbcConfig = createConfig(TeradataDestination.ALLOW);
+    final JsonNode jdbcConfig = createConfig(TeradataConstants.ALLOW);
     final Map<String, String> properties = destination.getDefaultConnectionProperties(jdbcConfig);
-    assertEquals(TeradataDestination.ALLOW, properties.get(TeradataDestination.PARAM_SSLMODE).toString());
+    assertEquals(TeradataConstants.ALLOW, properties.get(TeradataConstants.PARAM_SSLMODE).toString());
   }
 
   @Test
   void testSSLVerfifyCAMode() {
-    final JsonNode jdbcConfig = createConfig(TeradataDestination.VERIFY_CA);
+    final JsonNode jdbcConfig = createConfig(TeradataConstants.VERIFY_CA);
     final Map<String, String> properties = destination.getDefaultConnectionProperties(jdbcConfig);
-    assertEquals(TeradataDestination.VERIFY_CA, properties.get(TeradataDestination.PARAM_SSLMODE).toString());
-    assertNotNull(properties.get(TeradataDestination.PARAM_SSLCA).toString());
+    assertEquals(TeradataConstants.VERIFY_CA, properties.get(TeradataConstants.PARAM_SSLMODE).toString());
+    assertNotNull(properties.get(TeradataConstants.PARAM_SSLCA).toString());
   }
 
   @Test
   void testSSLVerfifyFullMode() {
-    final JsonNode jdbcConfig = createConfig(TeradataDestination.VERIFY_FULL);
+    final JsonNode jdbcConfig = createConfig(TeradataConstants.VERIFY_FULL);
     final Map<String, String> properties = destination.getDefaultConnectionProperties(jdbcConfig);
-    assertEquals(TeradataDestination.VERIFY_FULL, properties.get(TeradataDestination.PARAM_SSLMODE).toString());
-    assertNotNull(properties.get(TeradataDestination.PARAM_SSLCA).toString());
+    assertEquals(TeradataConstants.VERIFY_FULL, properties.get(TeradataConstants.PARAM_SSLMODE).toString());
+    assertNotNull(properties.get(TeradataConstants.PARAM_SSLCA).toString());
   }
 
 }

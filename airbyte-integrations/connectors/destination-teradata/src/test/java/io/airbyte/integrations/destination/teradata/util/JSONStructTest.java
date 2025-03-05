@@ -20,9 +20,9 @@ public class JSONStructTest {
 
   private JSONStruct struct;
   private final String json = "{\n" +
-      "\t\"id\":123,\n" +
-      "\t\"name\":\"Pankaj Kumar\",\n" +
-      "}";
+          "\t\"id\":123,\n" +
+          "\t\"name\":\"Pankaj Kumar\",\n" +
+          "}";
 
   /**
    * Setup method to initialize objects before each test.
@@ -48,8 +48,8 @@ public class JSONStructTest {
   @Test
   void testGetAttributesException() {
     SQLException exception = assertThrows(SQLException.class, () -> {
-      Map<Integer, String> map = new HashMap<>();
-      struct.getAttributes(map);
+      Map<String, Class<?>> inputMap = new HashMap<>();
+      struct.getAttributes(inputMap);
     });
     String expectedMessage = "getAttributes (Map) NOT SUPPORTED";
     String actualMessage = exception.getMessage();
