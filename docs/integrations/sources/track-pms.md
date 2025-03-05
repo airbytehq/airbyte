@@ -15,86 +15,84 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 | `api_secret` | `string` | API Secret.  |  |
 
 ## Streams
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| accounting_accounts | id | DefaultPaginator | ✅ |  ❌  |
-| accounting_bills | id | DefaultPaginator | ✅ |  ❌  |
-| accounting_charges | id | DefaultPaginator | ✅ |  ❌  |
-| accounting_deposits | id | DefaultPaginator | ✅ |  ❌  |
-| accounting_deposits_payments | id | DefaultPaginator | ✅ |  ❌  |
-| accounting_items | id | DefaultPaginator | ✅ |  ❌  |
-| accounting_transactions | id | DefaultPaginator | ✅ |  ❌  |
-| charges | id | DefaultPaginator | ✅ |  ❌  |
-| companies | id | DefaultPaginator | ✅ |  ✅  |
-| contacts | id | DefaultPaginator | ✅ |  ✅  |
-| contacts_companies | contactId.companyId | DefaultPaginator | ✅ |  ❌  |
-| contacts_pii_redacted | id | DefaultPaginator | ✅ |  ✅  |
-| contracts | id | DefaultPaginator | ✅ |  ❌  |
-| crm_company_attachment | company_id.id | DefaultPaginator | ✅ |  ❌  |
-| crm_tasks | id | DefaultPaginator | ✅ |  ❌  |
-| custom_fields | id | DefaultPaginator | ✅ |  ❌  |
-| date_groups | id | DefaultPaginator | ✅ |  ❌  |
-| documents | id | DefaultPaginator | ✅ |  ❌  |
-| folios | id | DefaultPaginator | ✅ |  ❌  |
-| folios_logs | folio_id.id | DefaultPaginator | ✅ |  ❌  |
-| folios_master_rules | id | DefaultPaginator | ✅ |  ❌  |
-| folios_rules | id | DefaultPaginator | ✅ |  ❌  |
-| fractionals | id | DefaultPaginator | ✅ |  ❌  |
-| fractionals_inventory | fraction_id.id | DefaultPaginator | ✅ |  ❌  |
-| fractionals_owners | fraction_id.id | DefaultPaginator | ✅ |  ❌  |
-| groups | id | DefaultPaginator | ✅ |  ❌  |
-| groups_blocks | group_id.id | DefaultPaginator | ✅ |  ❌  |
-| groups_breakdown | group_id | DefaultPaginator | ✅ |  ❌  |
-| groups_tags | group_id.id | DefaultPaginator | ✅ |  ❌  |
-| housekeeping_clean_types | id | DefaultPaginator | ✅ |  ❌  |
-| housekeeping_task_list | id | DefaultPaginator | ✅ |  ❌  |
-| housekeeping_work_orders | id | DefaultPaginator | ✅ |  ✅  |
-| lodging_types | id | DefaultPaginator | ✅ |  ❌  |
-| maintenance_problems | id | DefaultPaginator | ✅ |  ❌  |
-| maintenance_work_orders | id | DefaultPaginator | ✅ |  ✅  |
-| nodes | id | DefaultPaginator | ✅ |  ❌  |
-| nodes_types | id | DefaultPaginator | ✅ |  ❌  |
-| owners | id | DefaultPaginator | ✅ |  ✅  |
-| owners_contracts | id | DefaultPaginator | ✅ |  ❌  |
-| owners_pii_redacted | id | DefaultPaginator | ✅ |  ✅  |
-| owners_statements | id | DefaultPaginator | ✅ |  ❌  |
-| owners_statements_transactions | statement_id.id | DefaultPaginator | ✅ |  ❌  |
-| owners_statements_transactions_pii_redacted | statement_id.id | DefaultPaginator | ✅ |  ❌  |
-| owners_units | ownerId.id | DefaultPaginator | ✅ |  ❌  |
-| promo_codes | id | DefaultPaginator | ✅ |  ❌  |
-| quotes | id | DefaultPaginator | ✅ |  ❌  |
-| rate_types | id | DefaultPaginator | ✅ |  ❌  |
-| reservations | id | DefaultPaginator | ✅ |  ✅  |
-| reservations_cancellation_policies | id | DefaultPaginator | ✅ |  ❌  |
-| reservations_cancellation_reasons | id | DefaultPaginator | ✅ |  ❌  |
-| reservations_discount_reasons | id | DefaultPaginator | ✅ |  ❌  |
-| reservations_guarantee_policies | id | DefaultPaginator | ✅ |  ❌  |
-| reservations_types | id | DefaultPaginator | ✅ |  ❌  |
-| reservations_v2 | id | DefaultPaginator | ✅ |  ✅  |
-| reviews | id | DefaultPaginator | ✅ |  ❌  |
-| roles | id | DefaultPaginator | ✅ |  ❌  |
-| suspend_code_reasons | id | DefaultPaginator | ✅ |  ❌  |
-| tags | id | DefaultPaginator | ✅ |  ❌  |
-| tax_districts | id | DefaultPaginator | ✅ |  ❌  |
-| tax_policies | id | DefaultPaginator | ✅ |  ❌  |
-| taxes | id | DefaultPaginator | ✅ |  ❌  |
-| travel_insurance_products | id | DefaultPaginator | ✅ |  ❌  |
-| units | id | DefaultPaginator | ✅ |  ✅  |
-| units_amenities | id | DefaultPaginator | ✅ |  ❌  |
-| units_amenity_groups | id | DefaultPaginator | ✅ |  ❌  |
-| units_bed_types | id | DefaultPaginator | ✅ |  ❌  |
-| units_blocks | id | DefaultPaginator | ✅ |  ❌  |
-| units_channel | unit_id.id | DefaultPaginator | ✅ |  ❌  |
-| units_charge_pricing_parent | id | DefaultPaginator | ✅ |  ❌  |
-| units_daily_pricing_v2 | unit_id.rateTypeId | DefaultPaginator | ✅ |  ❌  |
-| units_pricing_parent | id | DefaultPaginator | ✅ |  ✅  |
-| units_taxes | unit_id.id | DefaultPaginator | ✅ |  ❌  |
-| units_taxes_parent | id | DefaultPaginator | ✅ |  ✅  |
-| units_type_daily_pricing_v2 | unit_type_id.rateTypeId | DefaultPaginator | ✅ |  ❌  |
-| units_types | id | DefaultPaginator | ✅ |  ❌  |
-| units_types_pricing_parent | id | DefaultPaginator | ✅ |  ❌  |
-| users | id | DefaultPaginator | ✅ |  ❌  |
-| users_pii_redacted | id | DefaultPaginator | ✅ |  ❌  |
+| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental | API Docs |
+|-------------|-------------|------------|---------------------|----------------------|----------------------|
+| accounting_accounts | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getledgeraccounts) |
+| accounting_bills | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getbillscollection) |
+| accounting_charges | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getaccountingchargescollection) |
+| accounting_deposits | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
+| accounting_deposits_payments | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getdepositpayments) |
+| accounting_items | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getitemscollection) |
+| accounting_transactions | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getowneridtransactionscollection) |
+| charges | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getchargescollection) |
+| companies | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getcompanies) |
+| contacts | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getcontacts) |
+| contacts_companies | contactId.companyId | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getcontactcompanies) |
+| contacts_pii_redacted | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getcontacts) |
+| contracts | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getownercontractcollection) |
+| crm_company_attachment | company_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getcompanyattachments) |
+| crm_tasks | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/gettasks) |
+| custom_fields | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getcustomfields) |
+| date_groups | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getdategroupcollection) |
+| documents | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getalldocuments) |
+| folios | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getfolioscollection) |
+| folios_logs | folio_id.id | DefaultPaginator | ✅ |  ❌  | Undocumented |
+| folios_rules | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getfoliorulescollection) |
+| fractionals | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/get-pms-fractionals) |
+| fractionals_inventory | fraction_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/get-pms-fractionals-fractionalid-invetories) |
+| fractionals_owners | fraction_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/get-pms-fractionals-owners) |
+| groups | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getgroupscollection) |
+| groups_blocks | group_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getgroupblockmappingcollection) |
+| groups_breakdown | group_id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getgroupbreakdown) |
+| groups_tags | group_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getgrouptagmappingcollection) |
+| housekeeping_clean_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getcleantypes) |
+| housekeeping_task_list | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
+| housekeeping_work_orders | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getworkorders) |
+| lodging_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getlodgingtypescollection) |
+| maintenance_problems | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getmaintenanceproblemscollection) |
+| maintenance_work_orders | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getmaintworkorders) |
+| nodes | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getnodes) |
+| nodes_types | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
+| owners | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getownercollection) |
+| owners_contracts | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getownercontractcollection) |
+| owners_pii_redacted | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getownercollection) |
+| owners_statements | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/get-pms-statements) |
+| owners_statements_transactions | statement_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getstatementtransactionscollection) |
+| owners_units | ownerId.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getownerunitscollection) |
+| promo_codes | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getpromocodes) |
+| quotes | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getquotescollectionv2) |
+| rate_types | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
+| reservations | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getreservations) |
+| reservations_cancellation_policies | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getcancellationpolicies) |
+| reservations_cancellation_reasons | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getcancellationreasons) |
+| reservations_discount_reasons | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getdiscountreasons) |
+| reservations_guarantee_policies | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/get-pms-reservations-policies-guaranties) |
+| reservations_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getreservationtypes) |
+| reservations_v2 | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getreservations-1) |
+| reviews | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getreviewscollection) |
+| roles | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitrolescollection) |
+| suspend_code_reasons | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getsuspendcodereasons) |
+| tags | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/gettagscollection) |
+| tax_districts | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/gettaxdistrictscollection) |
+| tax_policies | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/gettaxpolicycollection) |
+| taxes | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/gettaxcollection) |
+| travel_insurance_products | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/gettravelinsuranceproducts) |
+| units | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getchannelunits) |
+| units_amenities | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitamenities) |
+| units_amenity_groups | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitamenitygroups) |
+| units_bed_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getbedtypescollection) |
+| units_blocks | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitblockscollection) |
+| units_channel | unit_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitchannelunitcollection) |
+| units_charge_pricing_parent | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getchargescollection) |
+| units_daily_pricing_v2 | unit_id.rateTypeId | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunittypedailypricing) |
+| units_pricing_parent | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getchannelunits) |
+| units_taxes | unit_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitchanneltaxcollection) |
+| units_taxes_parent | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getchannelunits) |
+| units_type_daily_pricing_v2 | unit_type_id.rateTypeId | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getv2unittypedailypricing) |
+| units_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunittypes-2) |
+| units_types_pricing_parent | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunittypes-2) |
+| users | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
+| users_pii_redacted | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
 
 ## Changelog
 
@@ -103,6 +101,7 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 
 | Version          | Date       | Subject        |
 |------------------|------------|----------------|
+| 3.0.0 | 2025-02-26 | Drop redundant streams & omit unneeded sensitive fields from accounting_* streams |
 | 2.0.0 | 2025-02-13 | Rename and alphabetize folio_id stream |
 | 1.0.0 | 2025-01-16 | Fix housekeeping_work_orders incremental field; add reservations endpoint |
 | 0.1.0 | 2025-01-16 | Move kebab case streams to snake case; alphabetize streams |
