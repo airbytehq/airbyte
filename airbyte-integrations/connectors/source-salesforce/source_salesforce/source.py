@@ -101,7 +101,9 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                 raise AirbyteTracedException(failure_type=FailureType.config_error, internal_message=internal_message, message=e.args[0])
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
-        self._validate_stream_slice_step(config.get("stream_slice_step"))
+        stream_slice_step = config.get("stream_slice_step")
+        if stream_slice_step is not None:
+            self._validate_stream_slice_step(stream_slice_step)
         salesforce = self._get_sf_object(config)
         salesforce.describe()
         return True, None
@@ -230,11 +232,13 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         return StreamFacade.create_from_stream(stream, self, logger, state, cursor)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        if not config.get("start_date"):
-            config["start_date"] = (datetime.now() - relativedelta(years=self.START_DATE_OFFSET_IN_YEARS)).strftime(self.DATETIME_FORMAT)
-        sf = self._get_sf_object(config)
-        stream_objects = sf.get_validated_streams(config=config, catalog=self.catalog)
-        streams = self.generate_streams(config, stream_objects, sf)
+        # Create a mutable copy of the config
+        mutable_config = dict(config)
+        if not mutable_config.get("start_date"):
+            mutable_config["start_date"] = (datetime.now() - relativedelta(years=self.START_DATE_OFFSET_IN_YEARS)).strftime(self.DATETIME_FORMAT)
+        sf = self._get_sf_object(mutable_config)
+        stream_objects = sf.get_validated_streams(config=mutable_config, catalog=self.catalog)
+        streams = self.generate_streams(mutable_config, stream_objects, sf)
         return streams
 
     def _create_stream_slicer_cursor(
@@ -278,7 +282,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = {},
     ) -> Iterator[AirbyteMessage]:
         # save for use inside streams method
         self.catalog = catalog
