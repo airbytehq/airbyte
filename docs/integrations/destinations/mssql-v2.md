@@ -99,8 +99,9 @@ You’ll need to supply:
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                              | Subject                                                |
-|:--------|:-----------|:----------------------------------------------------------|:-------------------------------------------------------|
+| Version | Date       | Pull Request                                               | Subject                                              |
+|:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------|
+| 0.1.15  | 2025-03-05 | [54657](https://github.com/airbytehq/airbyte/pull/54657)  | Add support for Active Directory based Auth            |
 | 0.1.14  | 2025-03-05 | [54159](https://github.com/airbytehq/airbyte/pull/54159)  | RC12: Support For Bulk Insert Using Azure Blob Storage |
 | 0.1.13  | 2025-03-04 | [55193](https://github.com/airbytehq/airbyte/pull/55193)  | RC11: Increase decimal precision                       |
 | 0.1.12  | 2025-02-24 | [54648](https://github.com/airbytehq/airbyte/pull/54648)  | RC10: Fix index column names with hyphens              |
@@ -116,5 +117,6 @@ You’ll need to supply:
 | 0.1.2   | 2025-01-10 | [51508](https://github.com/airbytehq/airbyte/pull/51508)  | Use a non-root base image                              |
 | 0.1.1   | 2024-12-18 | [49870](https://github.com/airbytehq/airbyte/pull/49870)  | Use a base image: airbyte/java-connector-base:1.0.0    |
 | 0.1.0   | 2024-12-16 | [\#49460](https://github.com/airbytehq/airbyte/pull/49460)| Initial commit                                         |
+
 
 </details>
