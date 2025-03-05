@@ -17,7 +17,8 @@ include = "source_salesforce"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "^5.10.2"
+airbyte-cdk = "^6.37.2"
+pendulum = "^2.1.2"
 
 [tool.poetry.scripts]
 source-salesforce = "source_salesforce.run:run"
