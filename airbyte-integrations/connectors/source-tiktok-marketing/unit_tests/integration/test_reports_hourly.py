@@ -169,7 +169,7 @@ class TestAdsReportHourly(TestCase):
         )
 
         assert len(output.records) == 2
-        assert output.state_messages[0].state.stream.stream_state.states == [
+        assert output.state_messages[1].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.legacy_cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
 
@@ -186,7 +186,7 @@ class TestAdsReportHourly(TestCase):
         )
 
         assert len(output.records) == 1
-        assert output.state_messages[0].state.stream.stream_state.states == [
+        assert output.state_messages[1].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.legacy_cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
 
@@ -370,7 +370,7 @@ class TestAdGroupsReportsHourly(TestCase):
         )
 
         assert len(output.records) == 1
-        assert output.state_messages[0].state.stream.stream_state.states == [
+        assert output.state_messages[1].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
 
@@ -531,7 +531,7 @@ class TestAdvertisersReportsHourly(TestCase):
         )
 
         assert len(output.records) == 1
-        assert output.state_messages[0].state.stream.stream_state.states == [
+        assert output.state_messages[1].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
 
@@ -649,7 +649,7 @@ class TestCampaignsReportsHourly(TestCase):
         )
 
         assert len(output.records) == 1
-        assert output.state_messages[0].state.stream.stream_state.states == [
+        assert output.state_messages[1].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
 
