@@ -1,228 +1,285 @@
 
 #
-# Airbyte Destination Connectors
-# Airbyte Source Connectors
-# Common Terms and Trade Names
 # Company vocabulary
-# Database Technologies
-# DevOps and Infrastructure
-# Frameworks and Libraries
-# Major Cloud Providers
-# Major Technology Companies
-# Operating Systems
-# Other Technology Terms
-# Programming Languages
-7shifts
-API
-AWS
-Activecampaign
-Adjust
-Adobe
-Agilecrm
-Aha
+#
+
 Airbyte
 Airbyte's
+Self-Managed Community
+Self-Managed Enterprise
+[Cc]loud
+Cloud Teams
+Cloud Enterprise
+abctl
+PyAirbyte
+
+#
+# Common Terms and Trade Names
+#
+
+repo
+Vercel
+Docusaurus
+Kubernetes
+Helm
+kind
+Vale
+
+#
+# Major Cloud Providers
+#
+
+Amazon
+AWS
+Microsoft
+Azure
+Google
+GCP
+IBM
+Oracle
+Alibaba
+Tencent
+
+#
+# Major Technology Companies
+#
+
+Adobe
+Apple
+Cisco
+Dell
+EMC
+Facebook
+Meta
+HP
+HPE
+Intel
+LinkedIn
+Netflix
+NVIDIA
+PayPal
+Salesforce
+Samsung
+SAP
+Slack
+Sony
+Spotify
+Tesla
+Twitter
+Uber
+VMware
+Zoom
+
+#
+# Database Technologies
+#
+
+Cassandra
+Couchbase
+CouchDB
+DynamoDB
+Elasticsearch
+Firestore
+InfluxDB
+MariaDB
+MongoDB
+MySQL
+Neo4j
+PostgreSQL
+Postgres
+Redis
+Redshift
+Snowflake
+SQLite
+SQL Server
+Teradata
+
+#
+# Programming Languages
+#
+
+C
+C++
+C#
+Dart
+Go
+Golang
+Haskell
+Java
+JavaScript
+Julia
+Kotlin
+MATLAB
+Objective-C
+Perl
+PHP
+Python
+R
+Ruby
+Rust
+Scala
+Swift
+TypeScript
+
+#
+# Frameworks and Libraries
+#
+
+Angular
+Django
+Express
+Flask
+Laravel
+Next.js
+Node.js
+NumPy
+Pandas
+PyTorch
+React
+React Native
+Spring
+TensorFlow
+Vue.js
+
+#
+# DevOps and Infrastructure
+#
+
+Ansible
+Chef
+CircleCI
+Docker
+GitHub
+GitLab
+Jenkins
+Puppet
+Terraform
+Travis CI
+
+#
+# Operating Systems
+#
+
+Android
+Chrome OS
+iOS
+Linux
+macOS
+Ubuntu
+Windows
+
+#
+# Other Technology Terms
+#
+
+API
+Blockchain
+CDN
+CI/CD
+DNS
+GraphQL
+IoT
+JSON
+OAuth
+REST
+SaaS
+SDK
+SQL
+SSL
+TLS
+UI
+UX
+XML
+YAML
+
+#
+# Airbyte Source Connectors
+#
+
+7shifts
+Activecampaign
+Adjust
+Agilecrm
+Aha
 Aircall
 Airtable
 Akeneo
 Algolia
-Alibaba
 Alpha Vantage
-Amazon
 Amazon Ads
-Amazon SQS
 Amazon Seller Partner
+Amazon SQS
 Amplitude
-Android
-Angular
-Ansible
 Apify Dataset
 Appcues
 Appfigures
 Appfollow
-Apple
 Apple Search Ads
 Asana
 Auth0
-Azure
 Azure Blob Storage
 BigCommerce
 BigQuery
 Bing Ads
-Blockchain
 Braintree
 Braze
-C
-C#
-C++
-CDN
-CI/CD
-Cassandra
 Chargebee
-Chef
-Chrome OS
-CircleCI
-Cisco
 ClickHouse
-Clickhouse
-Cloud Enterprise
-Cloud Teams
 Confluence
-CouchDB
-Couchbase
-DNS
-Dart
 Databricks
 Delighted
-Dell
-Django
-Docker
-Docusaurus
 Drift
 Dropbox
-DuckDB
-DynamoDB
-EMC
-Elasticsearch
-Express
-Facebook
-Firebolt
-Firestore
-Flask
 Freshdesk
-GCP
-GitHub
-GitLab
-Go
-Golang
-Google
 Google Ads
 Google Analytics
-Google Cloud Storage
 Google Sheets
-GraphQL
-HP
-HPE
-Haskell
-Helm
 HubSpot
-IBM
-InfluxDB
 Instagram
-Intel
 Intercom
-IoT
-JSON
-Java
-JavaScript
-Jenkins
 Jira
-Julia
-Kafka
-Kinesis
-Kotlin
-Kubernetes
-Laravel
-LinkedIn
-Linux
-MATLAB
-MQTT
 Mailchimp
-MariaDB
 Marketo
-Meta
-Microsoft
-MongoDB
-MySQL
-NVIDIA
-Neo4j
-Netflix
-Next.js
-Node.js
 Notion
-NumPy
-OAuth
-Objective-C
 Okta
-Oracle
 Outreach
-PHP
-Pandas
-PayPal
-Perl
 Pinterest
 Pipedrive
-PostgreSQL
-Postgres
-Pulsar
-Puppet
-PyAirbyte
-PyTorch
-Python
 Quickbooks
-R
-REST
-React
-React Native
 Reddit
-Redis
-Redshift
-Ruby
-Rust
-S3
-SAP
-SDK
-SQL
-SQL Server
-SQLite
-SSL
-SaaS
-Salesforce
-Samsung
-Scala
-Self-Managed Community
-Self-Managed Enterprise
 Sendgrid
 Shopify
-Slack
-Snowflake
-Sony
-Spotify
-Spring
 Square
 Stripe
 SurveyMonkey
-Swift
-TLS
-Tencent
-TensorFlow
-Teradata
-Terraform
-Tesla
 TikTok
-Travis CI
 Trello
 Twilio
-Twitter
-TypeScript
 Typeform
-UI
-UX
-Uber
-Ubuntu
-VMware
-Vale
-Vercel
-Vue.js
-Windows
 WordPress
-XML
-YAML
 Zendesk
-Zoom
-[Cc]loud
-abctl
-iOS
-kind
-macOS
-repo
+
+#
+# Airbyte Destination Connectors
+#
+
+BigQuery
+Cassandra
+Clickhouse
+Databricks
+DuckDB
+Elasticsearch
+Firebolt
+Google Cloud Storage
+Kafka
+Kinesis
+MongoDB
+MQTT
+MySQL
+Oracle
+Postgres
+Pulsar
+Redis
+Redshift
+S3
+Snowflake
