@@ -38,7 +38,6 @@ def export_response():
 def test_export_stream_conflict_names(requests_mock, export_response, config):
     stream = Export(authenticator=MagicMock(), **config)
     # Remove requests limit for test
-    stream.reqs_per_hour_limit = 0
     requests_mock.register_uri("GET", get_url_to_mock(stream), export_response)
 
     stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}

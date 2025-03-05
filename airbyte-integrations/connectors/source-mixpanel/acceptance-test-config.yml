@@ -3,7 +3,6 @@
 connector_image: airbyte/source-mixpanel:dev
 # custom configuration is used for tests to speed up testing and avoid hitting rate limits
 custom_environment_variables:
-  REQS_PER_HOUR_LIMIT: 0
   AVAILABLE_TESTING_RANGE_DAYS: 10
   PATCH_FUNNEL_SLICES: yes
 test_strictness_level: "high"
