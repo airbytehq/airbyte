@@ -372,16 +372,16 @@ def test_file_permissions_and_identity_methods():
         aws_secret_access_key="test",
         streams=[],
     )
-    
+
     # Test file_permissions_schema returns an empty dict
     assert reader.file_permissions_schema() == {}
-    
+
     # Test get_file_acl_permissions returns an empty dict
     file = RemoteFile(uri="test.csv", last_modified=datetime.now())
     assert reader.get_file_acl_permissions(file) == {}
-    
+
     # Test identities_schema returns an empty dict
     assert reader.identities_schema() == {}
-    
+
     # Test load_identity_groups returns an empty dict
     assert reader.load_identity_groups() == {}
