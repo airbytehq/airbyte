@@ -24,6 +24,7 @@ import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.object_storage.LoadedObject
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.BatchAccumulator
 import io.airbyte.cdk.load.write.object_storage.PartToObjectAccumulator
@@ -42,6 +43,7 @@ class MSSQLBulkLoadStreamLoader(
     private val defaultSchema: String,
     private val azureBlobClient: AzureBlobClient,
     private val validateValuesPreLoad: Boolean,
+    private val recordBatchSizeOverride: Long? = null
 ) : AbstractMSSQLStreamLoader(dataSource, stream, sqlBuilder) {
 
     // Bulk-load related collaborators
@@ -98,7 +100,8 @@ class MSSQLBulkLoadStreamLoader(
             objectStoragePathFactory,
             writerFactory,
             partSizeBytes = ObjectStorageUploadConfiguration.DEFAULT_PART_SIZE_BYTES,
-            fileSizeBytes = ObjectStorageUploadConfiguration.DEFAULT_FILE_SIZE_BYTES,
+            fileSizeBytes = recordBatchSizeOverride
+                    ?: ObjectStorageUploadConfiguration.DEFAULT_FILE_SIZE_BYTES,
             stream = stream,
             fileNumber = AtomicLong(0),
             fileNameMapper = { it }
@@ -112,10 +115,8 @@ class MSSQLBulkLoadStreamLoader(
      */
     override suspend fun processBatch(batch: Batch): Batch {
         val processedBatch = objectAccumulator.processBatch(batch)
-        if (processedBatch.state == Batch.State.COMPLETE) {
-            val dataFilePath =
-                processedBatch.groupId
-                    ?: error("The groupId (blob path) should not be null after a complete batch.")
+        if (processedBatch is LoadedObject<*> && !processedBatch.isEmpty) {
+            val dataFilePath = processedBatch.groupId
 
             try {
                 if (stream.importType is Dedupe) {
