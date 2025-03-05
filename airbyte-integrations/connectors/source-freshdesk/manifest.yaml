@@ -3614,7 +3614,7 @@ api_budget:
   type: HTTPAPIBudget
   policies:
     - type: FixedWindowCallRatePolicy
-      period: PT1M
+      period: "60"
       call_limit: "{{ config.get('requests_per_minute')}}"
       matchers:
         - method: GET
