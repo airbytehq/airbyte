@@ -100,7 +100,6 @@ public class TeradataSqlOperationsTest {
     assertTrue(stringCaptor.getValue().contains("SELECT COUNT(1) FROM DBC.TABLES"));
   }
 
-
   @Test
   void testCreateTableQuery() {
     String query = teradataSqlOperations.createTableQuery(database, "schema", "table");

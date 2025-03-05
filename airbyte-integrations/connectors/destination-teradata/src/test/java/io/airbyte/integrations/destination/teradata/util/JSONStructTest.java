@@ -20,9 +20,9 @@ public class JSONStructTest {
 
   private JSONStruct struct;
   private final String json = "{\n" +
-          "\t\"id\":123,\n" +
-          "\t\"name\":\"Pankaj Kumar\",\n" +
-          "}";
+      "\t\"id\":123,\n" +
+      "\t\"name\":\"Pankaj Kumar\",\n" +
+      "}";
 
   /**
    * Setup method to initialize objects before each test.

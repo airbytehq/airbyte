@@ -77,9 +77,9 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
     }
     if (response == null || response.ip() == null) {
       var request = new CreateEnvironmentRequest(
-              name,
-              configJson.get("env_region").asText(),
-              configJson.get("env_password").asText());
+          name,
+          configJson.get("env_region").asText(),
+          configJson.get("env_password").asText());
       response = teradataHttpClient.createEnvironment(request, token).get();
       LOGGER.info("Environemnt " + configJson.get("env_name").asText() + " is created successfully ");
     } else if (response.state() == EnvironmentResponse.State.STOPPED) {
@@ -120,21 +120,21 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
                                            final String streamName,
                                            final String namespace,
                                            final JsonNode streamSchema)
-          throws Exception {
+      throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace);
 
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
-          throws SQLException {
+      throws SQLException {
     return database.bufferedResultSetQuery(
-            connection -> {
-              var statement = connection.createStatement();
-              return statement.executeQuery(
-                      String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                              JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
-            },
-            rs -> Jsons.deserialize(rs.getString(JavaBaseConstants.COLUMN_NAME_DATA)));
+        connection -> {
+          var statement = connection.createStatement();
+          return statement.executeQuery(
+              String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
+                  JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
+        },
+        rs -> Jsons.deserialize(rs.getString(JavaBaseConstants.COLUMN_NAME_DATA)));
   }
 
   @Override
@@ -185,14 +185,14 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
   protected DataSource getDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = destination.toJdbcConfig(config);
     return DataSourceFactory.create(jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-            jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-            TeradataConstants.DRIVER_CLASS, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-            getConnectionProperties(config));
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+        TeradataConstants.DRIVER_CLASS, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        getConnectionProperties(config));
   }
 
   protected Map<String, String> getConnectionProperties(final JsonNode config) {
     final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(config,
-            JdbcUtils.JDBC_URL_PARAMS_KEY);
+        JdbcUtils.JDBC_URL_PARAMS_KEY);
     final Map<String, String> defaultProperties = getDefaultConnectionProperties(config);
     assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
     return MoreMaps.merge(customProperties, defaultProperties);
@@ -206,7 +206,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
                                                                     final Map<String, String> defaultParameters) {
     for (final String key : defaultParameters.keySet()) {
       if (customParameters.containsKey(key)
-              && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
+          && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
         throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);
       }
     }

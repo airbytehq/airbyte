@@ -13,12 +13,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.integrations.destination.teradata.util.TeradataConstants;
 import java.util.Map;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 public class TeradataDestinationTest {
 
@@ -74,14 +70,14 @@ public class TeradataDestinationTest {
     switch (sslMethod) {
       case "verify-ca", "verify-full" -> {
         additionalParameters = ImmutableMap.of(
-                TeradataConstants.PARAM_SSL_MODE, Jsons.jsonNode(ImmutableMap.of(
-                        TeradataConstants.PARAM_MODE, sslMethod,
-                        TeradataConstants.CA_CERT_KEY, "dummycertificatecontent")));
+            TeradataConstants.PARAM_SSL_MODE, Jsons.jsonNode(ImmutableMap.of(
+                TeradataConstants.PARAM_MODE, sslMethod,
+                TeradataConstants.CA_CERT_KEY, "dummycertificatecontent")));
       }
       default -> {
         additionalParameters = ImmutableMap.of(
-                TeradataConstants.PARAM_SSL_MODE, Jsons.jsonNode(ImmutableMap.of(
-                        TeradataConstants.PARAM_MODE, sslMethod)));
+            TeradataConstants.PARAM_SSL_MODE, Jsons.jsonNode(ImmutableMap.of(
+                TeradataConstants.PARAM_MODE, sslMethod)));
       }
     }
     return additionalParameters;
@@ -89,21 +85,21 @@ public class TeradataDestinationTest {
 
   private Map<String, Object> baseParameters() {
     return ImmutableMap.<String, Object>builder()
-            .put(JdbcUtils.HOST_KEY, "localhost")
-            .put(JdbcUtils.SCHEMA_KEY, "db")
-            .put(JdbcUtils.USERNAME_KEY, "username")
-            .put(JdbcUtils.PASSWORD_KEY, "verysecure")
-            .build();
+        .put(JdbcUtils.HOST_KEY, "localhost")
+        .put(JdbcUtils.SCHEMA_KEY, "db")
+        .put(JdbcUtils.USERNAME_KEY, "username")
+        .put(JdbcUtils.PASSWORD_KEY, "verysecure")
+        .build();
   }
 
   private Map<String, Object> sslBaseParameters() {
     return ImmutableMap.<String, Object>builder()
-            .put(TeradataConstants.PARAM_SSL, "true")
-            .put(JdbcUtils.HOST_KEY, getHostName())
-            .put(JdbcUtils.SCHEMA_KEY, getSchemaName())
-            .put(JdbcUtils.USERNAME_KEY, getUserName())
-            .put(JdbcUtils.PASSWORD_KEY, getPassword())
-            .build();
+        .put(TeradataConstants.PARAM_SSL, "true")
+        .put(JdbcUtils.HOST_KEY, getHostName())
+        .put(JdbcUtils.SCHEMA_KEY, getSchemaName())
+        .put(JdbcUtils.USERNAME_KEY, getUserName())
+        .put(JdbcUtils.PASSWORD_KEY, getPassword())
+        .build();
   }
 
   private JsonNode buildConfigNoJdbcParameters() {
@@ -112,19 +108,20 @@ public class TeradataDestinationTest {
 
   private JsonNode buildConfigDefaultSchema() {
     return Jsons.jsonNode(ImmutableMap.of(
-            JdbcUtils.HOST_KEY, getHostName(),
-            JdbcUtils.USERNAME_KEY, getUserName(),
-            JdbcUtils.PASSWORD_KEY, getPassword()));
+        JdbcUtils.HOST_KEY, getHostName(),
+        JdbcUtils.USERNAME_KEY, getUserName(),
+        JdbcUtils.PASSWORD_KEY, getPassword()));
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
     return Jsons.jsonNode(ImmutableMap.of(
-            JdbcUtils.HOST_KEY, getHostName(),
-            JdbcUtils.USERNAME_KEY, getUserName(),
-            JdbcUtils.PASSWORD_KEY, getPassword(),
-            JdbcUtils.SCHEMA_KEY, getSchemaName(),
-            JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
+        JdbcUtils.HOST_KEY, getHostName(),
+        JdbcUtils.USERNAME_KEY, getUserName(),
+        JdbcUtils.PASSWORD_KEY, getPassword(),
+        JdbcUtils.SCHEMA_KEY, getSchemaName(),
+        JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
   }
+
   @Test
   void testJdbcUrlAndConfigNoExtraParams() {
     final JsonNode jdbcConfig = destination.toJdbcConfig(buildConfigNoJdbcParameters());
