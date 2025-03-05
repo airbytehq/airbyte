@@ -134,11 +134,13 @@ class MSSQLBulkLoadHandlerTest {
         val dataFilePath = "azure://container/path/to/file.csv"
         val formatFilePath = "azure://container/path/to/format.fmt"
         val pkColumns = listOf("Id")
+        val cursorColumns = listOf("Id")
         val nonPkColumns = listOf("Name", "Value")
 
         // When
         bulkLoadHandler.bulkLoadAndUpsertForDedup(
             primaryKeyColumns = pkColumns,
+            cursorColumns = cursorColumns,
             nonPkColumns = nonPkColumns,
             dataFilePath = dataFilePath,
             formatFilePath = formatFilePath
@@ -182,6 +184,7 @@ class MSSQLBulkLoadHandlerTest {
         val dataFilePath = "azure://container/path/to/file.csv"
         val formatFilePath = "azure://container/path/to/format.fmt"
         val pkColumns = listOf("Id")
+        val cursorColumns = listOf("Id")
         val nonPkColumns = listOf("Name", "Value")
 
         // Simulate exception during the bulk insert
@@ -191,6 +194,7 @@ class MSSQLBulkLoadHandlerTest {
         assertThrows(SQLException::class.java) {
             bulkLoadHandler.bulkLoadAndUpsertForDedup(
                 primaryKeyColumns = pkColumns,
+                cursorColumns = cursorColumns,
                 nonPkColumns = nonPkColumns,
                 dataFilePath = dataFilePath,
                 formatFilePath = formatFilePath
@@ -209,12 +213,14 @@ class MSSQLBulkLoadHandlerTest {
         val dataFilePath = "azure://container/path/to/file.csv"
         val formatFilePath = "azure://container/path/to/format.fmt"
         val pkColumns = emptyList<String>() // no PK
+        val cursorColumns = emptyList<String>() // no PK
         val nonPkColumns = listOf("Name", "Value")
 
         // When & Then
         assertThrows(IllegalArgumentException::class.java) {
             bulkLoadHandler.bulkLoadAndUpsertForDedup(
                 primaryKeyColumns = pkColumns,
+                cursorColumns = cursorColumns,
                 nonPkColumns = nonPkColumns,
                 dataFilePath = dataFilePath,
                 formatFilePath = formatFilePath
@@ -274,10 +280,12 @@ class MSSQLBulkLoadHandlerTest {
         val dataFilePath = "azure://container/path/to/file.csv"
         val formatFilePath = "azure://container/path/to/format.fmt"
         val pkColumns = listOf("Id")
+        val cursorColumns = listOf("Id")
         val nonPkColumns = listOf("Name")
 
         bulkLoadHandler.bulkLoadAndUpsertForDedup(
             primaryKeyColumns = pkColumns,
+            cursorColumns = cursorColumns,
             nonPkColumns = nonPkColumns,
             dataFilePath = dataFilePath,
             formatFilePath = formatFilePath
@@ -296,12 +304,14 @@ class MSSQLBulkLoadHandlerTest {
     fun `test buildMergeSql includes PK columns and non-PK columns`() {
         // Force the MERGE by calling bulkLoadAndUpsertForDedup
         val pkColumns = listOf("Id", "TenantId")
+        val cursorColumns = listOf("Id", "TenantId")
         val nonPkColumns = listOf("Name", "Description")
         val dataFilePath = "azure://container/path/to/file.csv"
         val formatFilePath = "azure://container/path/to/format.fmt"
 
         bulkLoadHandler.bulkLoadAndUpsertForDedup(
             primaryKeyColumns = pkColumns,
+            cursorColumns = cursorColumns,
             nonPkColumns = nonPkColumns,
             dataFilePath = dataFilePath,
             formatFilePath = formatFilePath
@@ -354,5 +364,75 @@ class MSSQLBulkLoadHandlerTest {
             tempTableName.length > "##TempTable_".length,
             "Temp table name should contain a timestamp suffix"
         )
+    }
+
+    @Test
+    fun `test bulkLoadAndUpsertForDedup with cursor columns performs dedup`() {
+        // Given
+        every { mssqlQueryBuilder.hasCdc } returns false
+        val dataFilePath = "azure://container/path/to/file.csv"
+        val formatFilePath = "azure://container/path/to/format.fmt"
+
+        // Suppose our primary key is "Id", and we also have a cursor column "updated_at".
+        val pkColumns = listOf("Id")
+        val nonPkColumns = listOf("Name", "Value")
+        val cursorColumns = listOf("updated_at")
+
+        // We will capture all SQL statements that are executed.
+        val sqlStatements = mutableListOf<String>()
+        every { connection.prepareStatement(capture(sqlStatements)) } returns preparedStatement
+
+        // When
+        bulkLoadHandler.bulkLoadAndUpsertForDedup(
+            primaryKeyColumns = pkColumns,
+            cursorColumns = cursorColumns,
+            nonPkColumns = nonPkColumns,
+            dataFilePath = dataFilePath,
+            formatFilePath = formatFilePath
+        )
+
+        // Then
+        // 1. We expect at least these 4 statements in order:
+        //    (a) Create temp table
+        //    (b) Bulk insert into temp table
+        //    (c) Deduplicate rows in the temp table (using a CTE, row_number > 1)
+        //    (d) MERGE from temp table -> main table
+
+        // Ensure CREATE TABLE statement is present:
+        assertTrue(
+            sqlStatements.any { it.contains("SELECT TOP 0 *\nINTO [##TempTable_") },
+            "Expected the temp table creation statement (SELECT TOP 0 * INTO [##TempTable_...)"
+        )
+
+        // Ensure the bulk insert statement is present:
+        assertTrue(
+            sqlStatements.any { it.contains("BULK INSERT [##TempTable_") },
+            "Expected a BULK INSERT statement into the temp table"
+        )
+
+        // **Ensure we have a CTE-based deduplication statement:**
+        // For example, looking for "WITH Dedup_CTE" or "ROW_NUMBER() OVER"
+        val dedupStatement =
+            sqlStatements.find { it.contains("ROW_NUMBER() OVER") && it.contains("DELETE") }
+        assertTrue(dedupStatement != null, "Expected a dedup statement using ROW_NUMBER() in a CTE")
+
+        assertTrue(
+            dedupStatement!!.contains(
+                ";WITH Dedup_CTE AS (\n    SELECT T.*,\n        ROW_NUMBER() OVER (\n            PARTITION BY T.[Id]\n            ORDER BY T.[updated_at] DESC\n        ) AS row_num\n    FROM ["
+            )
+        )
+        assertTrue(dedupStatement.contains("DELETE\n" + "FROM Dedup_CTE\n" + "WHERE row_num > 1;"))
+
+        // Ensure we have a MERGE statement referencing the main table
+        val mergeStatement =
+            sqlStatements.find { it.contains("MERGE INTO [dbo].[MyMainTable] AS Target") }
+        assertTrue(mergeStatement != null, "Expected a MERGE statement into main table")
+
+        // Verify no rollback, one commit, and the connection was closed
+        verify(exactly = 2) {
+            connection.commit()
+        } // Temp table creation + final commit after MERGE
+        verify(exactly = 1) { connection.close() }
+        verify(exactly = 0) { connection.rollback() }
     }
 }
