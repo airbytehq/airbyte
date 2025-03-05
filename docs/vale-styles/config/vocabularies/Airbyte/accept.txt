@@ -23,3 +23,275 @@ Kubernetes
 Helm
 kind
 Vale
+
+#
+# Major Cloud Providers
+#
+
+Amazon
+AWS
+Microsoft
+Azure
+Google
+GCP
+IBM
+Oracle
+Alibaba
+Tencent
+
+#
+# Major Technology Companies
+#
+
+Adobe
+Apple
+Cisco
+Dell
+EMC
+Facebook
+Meta
+HP
+HPE
+Intel
+LinkedIn
+Netflix
+NVIDIA
+PayPal
+Salesforce
+Samsung
+SAP
+Slack
+Sony
+Spotify
+Tesla
+Twitter
+Uber
+VMware
+Zoom
+
+#
+# Database Technologies
+#
+
+Cassandra
+Couchbase
+CouchDB
+DynamoDB
+Elasticsearch
+Firestore
+InfluxDB
+MariaDB
+MongoDB
+MySQL
+Neo4j
+PostgreSQL
+Redis
+Redshift
+Snowflake
+SQLite
+SQL Server
+Teradata
+
+#
+# Programming Languages
+#
+
+C
+C++
+C#
+Dart
+Go
+Golang
+Haskell
+Java
+JavaScript
+Julia
+Kotlin
+MATLAB
+Objective-C
+Perl
+PHP
+Python
+R
+Ruby
+Rust
+Scala
+Swift
+TypeScript
+
+#
+# Frameworks and Libraries
+#
+
+Angular
+Django
+Express
+Flask
+Laravel
+Next.js
+Node.js
+NumPy
+Pandas
+PyTorch
+React
+React Native
+Spring
+TensorFlow
+Vue.js
+
+#
+# DevOps and Infrastructure
+#
+
+Ansible
+Chef
+CircleCI
+Docker
+GitHub
+GitLab
+Jenkins
+Puppet
+Terraform
+Travis CI
+
+#
+# Operating Systems
+#
+
+Android
+Chrome OS
+iOS
+Linux
+macOS
+Ubuntu
+Windows
+
+#
+# Other Technology Terms
+#
+
+API
+Blockchain
+CDN
+CI/CD
+DNS
+GraphQL
+IoT
+JSON
+OAuth
+REST
+SaaS
+SDK
+SQL
+SSL
+TLS
+UI
+UX
+XML
+YAML
+
+#
+# Airbyte Source Connectors
+#
+
+7shifts
+Activecampaign
+Adjust
+Agilecrm
+Aha
+Aircall
+Airtable
+Akeneo
+Algolia
+Alpha Vantage
+Amazon Ads
+Amazon Seller Partner
+Amazon SQS
+Amplitude
+Apify Dataset
+Appcues
+Appfigures
+Appfollow
+Apple Search Ads
+Asana
+Auth0
+Azure Blob Storage
+BigCommerce
+BigQuery
+Bing Ads
+Braintree
+Braze
+Chargebee
+ClickHouse
+Confluence
+Databricks
+Delighted
+Drift
+Dropbox
+Facebook
+Freshdesk
+GitHub
+GitLab
+Google Ads
+Google Analytics
+Google Sheets
+HubSpot
+Instagram
+Intercom
+Jira
+LinkedIn
+Mailchimp
+Marketo
+MongoDB
+MySQL
+Notion
+Okta
+Oracle
+Outreach
+PayPal
+Pinterest
+Pipedrive
+Postgres
+Quickbooks
+Reddit
+Salesforce
+Sendgrid
+Shopify
+Slack
+Snowflake
+Square
+Stripe
+SurveyMonkey
+TikTok
+Trello
+Twilio
+Twitter
+Typeform
+WordPress
+Zendesk
+Zoom
+
+#
+# Airbyte Destination Connectors
+#
+
+BigQuery
+Cassandra
+Clickhouse
+Databricks
+DuckDB
+Elasticsearch
+Firebolt
+Google Cloud Storage
+Kafka
+Kinesis
+MongoDB
+MQTT
+MySQL
+Oracle
+Postgres
+Pulsar
+Redis
+Redshift
+S3
+Snowflake
