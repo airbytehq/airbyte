@@ -13,6 +13,7 @@ import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 @Singleton
@@ -22,7 +23,7 @@ class CheckOperation<T : ConfigurationSpecification>(
     val configJsonObjectSupplier: ConfigurationSpecificationSupplier<T>,
     val configFactory: SourceConfigurationFactory<T, out SourceConfiguration>,
     val metadataQuerierFactory: MetadataQuerier.Factory<SourceConfiguration>,
-    val outputConsumer: OutputConsumer,
+    @Named("stdoutOutputConsumer") val outputConsumer: OutputConsumer,
     val exceptionHandler: ExceptionHandler,
 ) : Operation {
     private val log = KotlinLogging.logger {}

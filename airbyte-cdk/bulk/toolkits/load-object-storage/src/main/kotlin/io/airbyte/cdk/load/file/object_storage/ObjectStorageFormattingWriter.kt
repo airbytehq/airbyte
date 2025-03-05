@@ -4,6 +4,9 @@
 
 package io.airbyte.cdk.load.file.object_storage
 
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.core.util.MinimalPrettyPrinter
+import com.fasterxml.jackson.databind.SequenceWriter
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.AvroFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
@@ -11,6 +14,7 @@ import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
+import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
@@ -23,7 +27,7 @@ import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.parquet.ParquetWriter
 import io.airbyte.cdk.load.file.parquet.toParquetWriter
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
@@ -83,16 +87,18 @@ class JsonFormattingWriter(
     private val outputStream: OutputStream,
     private val rootLevelFlattening: Boolean,
 ) : ObjectStorageFormattingWriter {
+    private val writer: SequenceWriter =
+        Jsons.writerFor(object : TypeReference<LinkedHashMap<String, AirbyteValue>>() {})
+            .with(MinimalPrettyPrinter(System.lineSeparator()))
+            .writeValues(outputStream)
 
     override fun accept(record: DestinationRecordRaw) {
-        val data =
+        val data: LinkedHashMap<String, AirbyteValue> =
             record
                 .asDestinationRecordAirbyteValue()
                 .dataWithAirbyteMeta(stream, rootLevelFlattening)
                 .toJson()
-                .serializeToString()
-        outputStream.write(data)
-        outputStream.write("\n")
+        writer.write(data)
     }
 
     override fun flush() {
@@ -100,6 +106,7 @@ class JsonFormattingWriter(
     }
 
     override fun close() {
+        writer.close()
         outputStream.close()
     }
 }

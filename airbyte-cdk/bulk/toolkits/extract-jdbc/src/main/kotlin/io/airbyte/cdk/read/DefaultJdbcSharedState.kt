@@ -6,7 +6,13 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import java.io.File
+import java.nio.file.FileSystem
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.Instant
 
 /** Default implementation of [JdbcSharedState]. */
@@ -30,8 +36,8 @@ class DefaultJdbcSharedState(
     val maxPartitionThroughputBytesPerSecond: Long =
         constants.expectedThroughputBytesPerSecond / configuration.maxConcurrency
 
-    override val targetPartitionByteSize: Long =
-        maxPartitionThroughputBytesPerSecond * configuration.checkpointTargetInterval.seconds
+    override val targetPartitionByteSize: Long = 400L shl 20 // TEMP: hardcode partition size to 1GB
+//        maxPartitionThroughputBytesPerSecond * configuration.checkpointTargetInterval.seconds
 
     override fun jdbcFetchSizeEstimator(): JdbcSharedState.JdbcFetchSizeEstimator =
         DefaultJdbcFetchSizeEstimator(
@@ -55,7 +61,11 @@ class DefaultJdbcSharedState(
         return JdbcPartitionsCreator.AcquiredResources { acquiredThread.close() }
     }
 
+    private val log = KotlinLogging.logger {}
     override fun tryAcquireResourcesForReader(): JdbcPartitionReader.AcquiredResources? {
+
+//        log.info { "Skipping staging area inspection" }
+
         val acquiredThread: ConcurrencyResource.AcquiredThread =
             concurrencyResource.tryAcquire() ?: return null
         return JdbcPartitionReader.AcquiredResources { acquiredThread.close() }

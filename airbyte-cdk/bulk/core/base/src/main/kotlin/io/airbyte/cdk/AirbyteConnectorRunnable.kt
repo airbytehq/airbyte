@@ -7,6 +7,7 @@ import io.airbyte.cdk.output.OutputConsumer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Inject
+import jakarta.inject.Named
 import jakarta.inject.Provider
 
 private val log = KotlinLogging.logger {}
@@ -18,7 +19,7 @@ class AirbyteConnectorRunnable : Runnable {
 
     @Inject lateinit var operationProvider: Provider<Operation>
 
-    @Inject lateinit var outputConsumer: OutputConsumer
+    @Inject @Named("stdoutOutputConsumer") lateinit var outputConsumer: OutputConsumer
 
     @Inject lateinit var exceptionHandler: ExceptionHandler
 

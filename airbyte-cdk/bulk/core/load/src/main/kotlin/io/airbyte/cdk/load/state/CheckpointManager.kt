@@ -306,7 +306,9 @@ class DefaultCheckpointManager(
 )
 @Singleton
 @Secondary
-class FreeingCheckpointConsumer(private val consumer: Consumer<AirbyteMessage>) :
+class FreeingCheckpointConsumer(
+    @Named("stdoutOutputConsumer") private val consumer: Consumer<AirbyteMessage>
+) :
     suspend (Reserved<CheckpointMessage>) -> Unit {
     override suspend fun invoke(message: Reserved<CheckpointMessage>) {
         message.use {

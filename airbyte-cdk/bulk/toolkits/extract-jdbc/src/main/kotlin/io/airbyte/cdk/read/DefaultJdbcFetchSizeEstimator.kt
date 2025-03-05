@@ -26,7 +26,7 @@ class DefaultJdbcFetchSizeEstimator(
         if (listOf(maxRowBytes, targetMemoryUse, maxConcurrency.toLong()).any { it <= 0L }) {
             return defaultFetchSize
         }
-        val targetMemoryUsePerQuery: Long = targetMemoryUse / maxConcurrency
+        val targetMemoryUsePerQuery: Long = targetMemoryUse / maxConcurrency * 2
         log.info {
             "Targeting a maximum of $targetMemoryUsePerQuery bytes " +
                 "for each of up to $maxConcurrency queries."

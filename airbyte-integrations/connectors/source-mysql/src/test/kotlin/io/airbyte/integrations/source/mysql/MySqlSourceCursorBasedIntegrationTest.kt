@@ -225,7 +225,7 @@ class MySqlSourceCursorBasedIntegrationTest {
             targetConnectionFactory.get().use { connection: Connection ->
                 connection.isReadOnly = false
                 connection.createStatement().use { stmt: Statement ->
-                    stmt.execute("CREATE TABLE test.$tableName(k INT PRIMARY KEY, v VARCHAR(80))")
+                    stmt.execute("CREATE TABLE test.$tableName(k BIGINT PRIMARY KEY, v VARCHAR(80))")
                 }
             }
         }

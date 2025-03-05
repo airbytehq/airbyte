@@ -1,0 +1,21 @@
+/*
+  * Copyright (c) 2020-2025 Airbyte, Inc., all rights reserved.
+  */
+
+syntax = "proto3";
+package io.airbyte.protocol;
+
+enum AirbyteLogLevel {
+  FATAL = 0;
+  ERROR = 1;
+  WARN = 2;
+  INFO = 3;
+  DEBUG = 4;
+  TRACE = 5;
+}
+
+message AirbyteLogMessage {
+  AirbyteLogLevel level = 1;
+  string message = 2;
+  optional string stack_trace = 3;
+};
