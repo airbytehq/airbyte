@@ -1,6 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-import time
 from dataclasses import dataclass
 from typing import Any, List, Mapping, MutableMapping, Optional
 
@@ -18,37 +17,12 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
-class CallCredit:
-    """Class to manage call credit balance"""
-
-    def __init__(self, balance: int, reload_period: int = 60):
-        self._max_balance = balance
-        self._balance_reload_period = reload_period
-        self._current_period_start = time.time()
-        self._credits_consumed = 0
-
-    def reset_period(self):
-        self._current_period_start = time.time()
-        self._credits_consumed = 0
-
-    def consume(self, credit: int):
-        # Reset time window if it has elapsed
-        if time.time() > self._current_period_start + self._balance_reload_period:
-            self.reset_period()
-
-        if self._credits_consumed + credit >= self._max_balance:
-            sleep_time = self._balance_reload_period - (time.time() - self._current_period_start)
-            logger.info(f"Reached call limit for this minute, wait for {sleep_time:.2f} seconds")
-            time.sleep(max(1.0, sleep_time))
-            self.reset_period()
-
-        self._credits_consumed += credit
-
-
 @dataclass
-class FreshdeskRequester(HttpRequester):
+class FreshdeskTicketsIncrementalRequester(HttpRequester):
     """
-    This class is created to add call throttling using the optional requests_per_minute parameter
+    This class is created for the Tickets stream to modify parameters produced by stream slicer and paginator
+    When the paginator hit the page limit it will return the latest record cursor for the next_page_token
+    next_page_token will be used in the stream slicer to get updated cursor filter
     """
 
     request_body_json: Optional[RequestInput] = None
@@ -57,8 +31,6 @@ class FreshdeskRequester(HttpRequester):
     request_body_data: Optional[RequestInput] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        requests_per_minute = self.config.get("requests_per_minute")
-        self._call_credit = CallCredit(balance=requests_per_minute) if requests_per_minute else None
 
         self.request_options_provider = InterpolatedRequestOptionsProvider(
             request_body_data=self.request_body_data,
@@ -70,28 +42,6 @@ class FreshdeskRequester(HttpRequester):
         )
         super().__post_init__(parameters)
 
-    def _consume_credit(self, credit):
-        """Consume call credit, if there is no credit left within current window will sleep til next period"""
-        if self._call_credit:
-            self._call_credit.consume(credit)
-
-    def send_request(
-        self,
-        **kwargs,
-    ) -> Optional[requests.Response]:
-        call_credit_cost = kwargs.pop("call_credit_cost", 1)
-        self._consume_credit(call_credit_cost)
-        return super().send_request(**kwargs)
-
-
-@dataclass
-class FreshdeskTicketsIncrementalRequester(FreshdeskRequester):
-    """
-    This class is created for the Tickets stream to modify parameters produced by stream slicer and paginator
-    When the paginator hit the page limit it will return the latest record cursor for the next_page_token
-    next_page_token will be used in the stream slicer to get updated cursor filter
-    """
-
     def send_request(
         self,
         **kwargs,
@@ -99,8 +49,6 @@ class FreshdeskTicketsIncrementalRequester(FreshdeskRequester):
         # pagination strategy returns cursor_filter based on the latest record instead of page when the page limit is hit
         if type(kwargs["request_params"].get("page")) == str:
             kwargs["request_params"].pop("page")
-        # set correct call credit cost for Tickets stream
-        kwargs["call_credit_cost"] = 3
         return super().send_request(**kwargs)
 
 
