@@ -6,7 +6,6 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-import requests
 import responses
 from source_convex.source import ConvexStream
 

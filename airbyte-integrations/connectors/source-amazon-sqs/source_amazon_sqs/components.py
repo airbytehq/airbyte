@@ -57,7 +57,7 @@ class CustomAuthenticator(NoAuth):
 
         try:
             body_json = json.loads(request.body.decode("utf-8")) if request.body else {}
-        except json.JSONDecodeError as e:
+        except json.JSONDecodeError:
             body_json = {}
         body_json["QueueUrl"] = payload["QueueUrl"]
         body_json["AttributeNames"] = payload["AttributeNames"]

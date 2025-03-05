@@ -4,8 +4,6 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
-import pytest
-
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse

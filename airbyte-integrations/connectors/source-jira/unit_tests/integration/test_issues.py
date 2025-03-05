@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 import json
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Any, Dict
 from unittest import TestCase
 
@@ -18,7 +18,6 @@ from airbyte_cdk.test.mock_http.response_builder import (
     RecordBuilder,
     create_record_builder,
     create_response_builder,
-    find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder

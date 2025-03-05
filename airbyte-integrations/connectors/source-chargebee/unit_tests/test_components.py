@@ -3,8 +3,6 @@
 #
 import pytest
 
-from airbyte_cdk.sources.types import Record, StreamSlice
-
 
 @pytest.mark.parametrize(
     "record, expected_record",

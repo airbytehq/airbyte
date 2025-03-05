@@ -5,15 +5,12 @@
 import os
 from typing import List
 
-import numpy as np
-import pandas as pd
 import yaml
 from dagster import OpExecutionContext, Output, asset
 from metadata_service.constants import ICON_FILE_NAME, METADATA_FILE_NAME
-from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from orchestrator.config import get_public_url_for_gcs_file
 from orchestrator.logging import sentry
-from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition, PartialMetadataDefinition
+from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
 from orchestrator.utils.object_helpers import are_values_equal, merge_values
 
 

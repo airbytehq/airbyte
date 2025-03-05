@@ -29,7 +29,6 @@ from source_stripe.streams import (
     IncrementalStripeStream,
     ParentIncrementalStripeSubStream,
     SetupAttempts,
-    StripeLazySubStream,
     StripeStream,
     StripeSubStream,
     UpdatedCursorIncrementalStripeLazySubStream,

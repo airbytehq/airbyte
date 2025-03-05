@@ -6,7 +6,7 @@ import datetime
 import hashlib
 import hmac
 import json
-from dataclasses import InitVar, dataclass
+from dataclasses import dataclass
 from typing import Any, Mapping, Union
 
 import requests

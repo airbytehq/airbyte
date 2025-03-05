@@ -10,7 +10,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import pendulum
 import requests
 
-from airbyte_cdk import AirbyteTracedException, BackoffStrategy
+from airbyte_cdk import BackoffStrategy
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import WaitTimeFromHeaderBackoffStrategy
 from airbyte_cdk.sources.streams import Stream
@@ -285,7 +285,7 @@ class PinterestAnalyticsErrorHandler(ErrorHandler):
             return ErrorResolution(
                 ResponseAction.RETRY,
                 FailureType.transient_error,
-                f"Analytics API returns bad request error when under load. This error should be retried after a second. If this error message appears, it means the Analytics API did not recover or there might be a bigger issue so please contact the support team.",
+                "Analytics API returns bad request error when under load. This error should be retried after a second. If this error message appears, it means the Analytics API did not recover or there might be a bigger issue so please contact the support team.",
             )
 
         return self._decorated.interpret_response(response)

@@ -964,7 +964,7 @@ def test_project_versions_stream(config, mock_non_deleted_projects_responses, pr
     )
 
     authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
-    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+    {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = find_stream("project_versions", config)
     records = list(read_full_refresh(stream))
 

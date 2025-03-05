@@ -48,7 +48,7 @@ def config():
 
 @pytest.fixture(scope="module")
 def streams(config):
-    catalog = (
+    (
         CatalogBuilder()
         .with_stream("annotations_stream", sync_mode=SyncMode.full_refresh)
         .with_stream("cohorts_stream", sync_mode=SyncMode.full_refresh)

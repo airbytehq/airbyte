@@ -15,9 +15,9 @@ from airbyte_cdk.test.mock_http.response_builder import (
 )
 from airbyte_protocol.models import SyncMode
 
-from .config import BUSINESS_ACCOUNT_ID, ConfigBuilder
+from .config import ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, InstagramPaginationStrategy
-from .request_builder import RequestBuilder, get_account_request
+from .request_builder import get_account_request
 from .response_builder import get_account_response
 from .utils import config, read_output
 

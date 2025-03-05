@@ -5,7 +5,7 @@
 
 from typing import Any, List, Mapping
 
-from airbyte_cdk.config_observation import create_connector_config_control_message, emit_configuration_as_airbyte_control_message
+from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import Source

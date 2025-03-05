@@ -2,14 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import date, timedelta
+from datetime import date
 
 import pendulum
 from source_mixpanel.streams import Export
 
 
 def test_date_slices():
-    now = pendulum.today(tz="US/Pacific").date()
+    pendulum.today(tz="US/Pacific").date()
 
     # test with stream_state
     stream_slices = Export(

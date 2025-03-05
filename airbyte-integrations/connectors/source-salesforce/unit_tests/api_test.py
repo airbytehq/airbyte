@@ -22,7 +22,6 @@ from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
     BulkIncrementalSalesforceStream,
     BulkSalesforceStream,
-    BulkSalesforceSubStream,
     IncrementalRestSalesforceStream,
     RestSalesforceStream,
 )
@@ -554,7 +553,7 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     source.streams.return_value = [generate_stream("Account", stream_config_date_format, stream_api, state=state, legacy=False)]
 
     # using legacy state to configure HTTP requests
-    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config_date_format, stream_api, state=state, legacy=True)
+    generate_stream("Account", stream_config_date_format, stream_api, state=state, legacy=True)
 
     job_id_1 = "fake_job_1"
     requests_mock.register_uri(

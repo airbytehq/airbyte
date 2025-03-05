@@ -34,7 +34,7 @@ class TestGroupsStreamFullRefresh(TestCase):
         return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
 
     @HttpMocker()
-    def test_given_incoming_state_semi_incremental_groups_does_not_emit_earlier_record(self, http_mocker):
+    def test_no_state_semi_incremental_groups_does_not_emit_earlier_record(self, http_mocker):
         """
         Perform a semi-incremental sync where records that came before the current state are not included in the set
         of records emitted

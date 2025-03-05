@@ -42,5 +42,5 @@ class AstraIntegrationTest(BaseIntegrationTest):
         message1 = self._record("mystream", "text data 1", 1)
         message2 = self._record("mystream", "text data 2", 2)
 
-        outcome = list(DestinationAstra().write(self.config, catalog, [message1, message2]))
+        list(DestinationAstra().write(self.config, catalog, [message1, message2]))
         assert astra_client.count_documents(db_creds.collection) == 2

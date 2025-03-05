@@ -2,7 +2,7 @@
 
 import json
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from airbyte_cdk.test.mock_http import HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template

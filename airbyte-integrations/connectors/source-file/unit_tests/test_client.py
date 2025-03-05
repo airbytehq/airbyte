@@ -8,7 +8,7 @@ from unittest.mock import patch, sentinel
 
 import pandas as pd
 import pytest
-from pandas import read_csv, read_excel, testing
+from pandas import read_csv, read_excel
 from paramiko import SSHException
 from source_file.client import Client, URLFile
 from source_file.utils import backoff_handler

@@ -8,14 +8,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import anyio
-from dagger import File, QueryError
-
 from pipelines.airbyte_ci.connectors.build_image.steps.common import LoadContainerToLocalDockerHost
 from pipelines.airbyte_ci.connectors.build_image.steps.java_connectors import (
     BuildConnectorDistributionTar,
     BuildConnectorImages,
-    dist_tar_directory_path,
 )
 from pipelines.airbyte_ci.connectors.build_image.steps.normalization import BuildOrPullNormalization
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
@@ -23,15 +19,13 @@ from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests
 from pipelines.airbyte_ci.steps.gradle import GradleTask
 from pipelines.consts import LOCAL_BUILD_PLATFORM
-from pipelines.dagger.actions.system import docker
 from pipelines.helpers.execution.run_steps import StepToRun
-from pipelines.helpers.utils import export_container_to_tarball
-from pipelines.models.steps import STEP_PARAMS, StepResult, StepStatus
+from pipelines.models.steps import STEP_PARAMS
 
 if TYPE_CHECKING:
-    from typing import Callable, Dict, List, Optional
+    from typing import List
 
-    from pipelines.helpers.execution.run_steps import RESULTS_DICT, STEP_TREE
+    from pipelines.helpers.execution.run_steps import STEP_TREE
 
 
 class IntegrationTests(GradleTask):

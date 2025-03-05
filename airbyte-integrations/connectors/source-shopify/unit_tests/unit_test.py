@@ -8,7 +8,7 @@ import pytest
 import requests
 from source_shopify.run import run
 from source_shopify.source import ConnectionCheckTest, SourceShopify
-from source_shopify.streams.streams import BalanceTransactions, DiscountCodes, FulfillmentOrders, PriceRules
+from source_shopify.streams.streams import BalanceTransactions, DiscountCodes, PriceRules
 from source_shopify.utils import ShopifyNonRetryableErrors
 
 
@@ -82,7 +82,7 @@ def test_privileges_validation(requests_mock, fetch_transactions_user_id, basic_
     )
     basic_config["fetch_transactions_user_id"] = fetch_transactions_user_id
     # mock the get_shop_id method
-    with patch.object(ConnectionCheckTest, "get_shop_id", return_value=123) as mock:
+    with patch.object(ConnectionCheckTest, "get_shop_id", return_value=123):
         source = SourceShopify()
         streams = source.streams(basic_config)
     assert [stream.name for stream in streams] == expected

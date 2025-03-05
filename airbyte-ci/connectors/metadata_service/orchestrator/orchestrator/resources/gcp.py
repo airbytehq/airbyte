@@ -8,7 +8,7 @@ import uuid
 from typing import List, Optional, Union
 
 import dagster._check as check
-from dagster import BoolSource, Field, InitResourceContext, Noneable, StringSource, resource
+from dagster import Field, InitResourceContext, Noneable, StringSource, resource
 from dagster._core.storage.file_manager import check_file_like_obj
 from dagster_gcp.gcs.file_manager import GCSFileHandle, GCSFileManager
 from google.cloud import storage

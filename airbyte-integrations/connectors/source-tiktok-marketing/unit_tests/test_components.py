@@ -10,9 +10,7 @@ from source_tiktok_marketing.components.advertiser_ids_partition_router import (
 )
 from source_tiktok_marketing.components.transformations import TransformEmptyMetrics
 
-from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
-from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
 @pytest.mark.parametrize(

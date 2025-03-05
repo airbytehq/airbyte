@@ -8,7 +8,7 @@ import pendulum
 import pytest
 from requests import Response
 from source_slack import SourceSlack
-from source_slack.streams import Channels, JoinChannelsStream, Threads
+from source_slack.streams import Channels, Threads
 
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator

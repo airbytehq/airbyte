@@ -139,7 +139,7 @@ def get_connection_objects(
         get_configured_catalog_from_path(custom_configured_catalog_path, selected_streams) if custom_configured_catalog_path else None
     )
     custom_state = get_state_from_path(custom_state_path) if custom_state_path else None
-    is_ci = os.getenv("CI", False)
+    os.getenv("CI", False)
 
     if connection_id:
         if not retrieval_reason:

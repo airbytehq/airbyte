@@ -7,7 +7,6 @@ import random
 import string
 import tempfile
 import time
-from functools import partial
 from pathlib import Path
 from typing import Iterable
 from unittest.mock import Mock

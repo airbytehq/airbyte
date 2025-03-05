@@ -12,7 +12,7 @@ from urllib.parse import urlencode
 
 import pendulum
 import requests
-from isodate import Duration, parse_duration
+from isodate import Duration
 from requests.exceptions import InvalidURL
 
 from airbyte_cdk.models import FailureType
@@ -31,11 +31,11 @@ from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 
 from .utils import ANALYTICS_FIELDS_V2, FIELDS_CHUNK_SIZE, transform_data

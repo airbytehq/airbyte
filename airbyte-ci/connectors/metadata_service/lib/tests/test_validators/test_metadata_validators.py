@@ -1,11 +1,8 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import pytest
-import requests
 import semver
-import yaml
 
-from metadata_service.docker_hub import get_latest_version_on_dockerhub
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.validators import metadata_validator
 
@@ -118,8 +115,6 @@ def incremented_version(current_version):
 
 
 def test_validation_fail_on_docker_image_tag_decrement(metadata_definition, decremented_version):
-    current_version = metadata_definition.data.dockerImageTag
-
     metadata_definition.data.dockerImageTag = decremented_version
     success, error_message = metadata_validator.validate_docker_image_tag_is_not_decremented(metadata_definition, None)
     assert not success

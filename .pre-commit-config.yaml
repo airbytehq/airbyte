@@ -29,7 +29,7 @@ repos:
       - id: ruff
         args:
           - --fix
-          - --select=I
+          - --select=I,F
 
       # Run the formatter.
       - id: ruff-format

@@ -108,7 +108,7 @@ def test_get_access_token(setup_client_class, has_refresh_token, token_response,
     if raises_exception:
         with pytest.raises(AirbyteTracedException) as exception:
             instance._get_access_token()
-        assert exception.value.message == f"Failed to acquire access token. Error: test_error. Error description: test_error_description."
+        assert exception.value.message == "Failed to acquire access token. Error: test_error. Error description: test_error_description."
     else:
         assert instance._get_access_token() == expected_result
 
@@ -249,8 +249,8 @@ def test_get_file(mock_requests_head, mock_requests_get, mock_get_access_token, 
 @patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.get_access_token")
 @patch("source_microsoft_sharepoint.stream_reader.requests.head")
 def test_get_file_size_error_fetching_metadata_for_missing_header(mock_requests_head, mock_get_access_token):
-    file_uri = f"https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file.txt"
-    mock_file = Mock(download_url=f"https://example.com/file.txt", uri=file_uri)
+    file_uri = "https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file.txt"
+    mock_file = Mock(download_url="https://example.com/file.txt", uri=file_uri)
     mock_logger = Mock()
     mock_get_access_token.return_value = "dummy_access_token"
 
@@ -272,8 +272,8 @@ def test_get_file_size_error_fetching_metadata(mock_requests_head, mock_get_acce
     """
     Test that the get_file method raises an ErrorFetchingMetadata exception when the requests.head call fails.
     """
-    file_uri = f"https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file.txt"
-    mock_file = Mock(download_url=f"https://example.com/file.txt", uri=file_uri)
+    file_uri = "https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file.txt"
+    mock_file = Mock(download_url="https://example.com/file.txt", uri=file_uri)
     mock_logger = Mock()
     mock_get_access_token.return_value = "dummy_access_token"
 
@@ -571,7 +571,7 @@ def test_get_shared_drive_object(
 def test_drives_property(auth_type, user_principal_name, has_refresh_token):
     with (
         patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query,
-        patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.one_drive_client") as mock_one_drive_client,
+        patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.one_drive_client"),
     ):
         refresh_token = "dummy_refresh_token" if has_refresh_token else None
         # Setup for different authentication types
@@ -632,12 +632,12 @@ def test_retrieve_files_from_accessible_drives(mocker, refresh_token, auth_type,
     reader._config = config
 
     # Mock the necessary methods
-    with patch.object(SourceMicrosoftSharePointStreamReader, "drives", return_value=[]) as mock_drives:
+    with patch.object(SourceMicrosoftSharePointStreamReader, "drives", return_value=[]):
         mocker.patch.object(reader, "_get_files_by_drive_name")
         mocker.patch.object(reader, "_get_shared_files_from_all_drives")
 
         # Call the method under test
-        files = list(reader.get_all_files())
+        list(reader.get_all_files())
 
         # Assert that only the desired methods were called
         assert reader._get_files_by_drive_name.called == ("_get_files_by_drive_name" in expected_methods_called)

@@ -4,9 +4,7 @@
 
 import os
 
-from dagster import OpExecutionContext, op
-from dagster_slack import SlackResource
-from slack_sdk import WebhookClient
+from dagster import OpExecutionContext
 
 
 def chunk_messages(report):

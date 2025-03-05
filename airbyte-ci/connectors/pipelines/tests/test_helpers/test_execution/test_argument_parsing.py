@@ -1,10 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import enum
-import time
-
-import anyio
-import pytest
 
 from pipelines.helpers.execution import argument_parsing
 

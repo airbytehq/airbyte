@@ -11,7 +11,6 @@ from destination_pinecone.config import PineconeIndexingModel
 from destination_pinecone.indexer import PineconeIndexer
 from pinecone import IndexDescription, exceptions
 from pinecone.grpc import PineconeGRPC
-from pinecone.models import IndexList
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
@@ -19,7 +18,7 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog
 def create_pinecone_indexer(embedding_dimensions=3, side_effect=None):
     config = PineconeIndexingModel(mode="pinecone", pinecone_environment="myenv", pinecone_key="mykey", index="myindex")
 
-    with patch.object(PineconeGRPC, "Index") as mock_index:
+    with patch.object(PineconeGRPC, "Index"):
         indexer = PineconeIndexer(config, 3)
 
         indexer.pc.list_indexes = MagicMock()

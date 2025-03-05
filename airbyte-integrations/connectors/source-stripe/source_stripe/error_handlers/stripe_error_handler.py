@@ -2,7 +2,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import logging
 from typing import Optional, Union
 
 import requests
@@ -22,7 +21,7 @@ STRIPE_ERROR_CODES = {
     "oauth_not_supported": "Please use a different authentication method.",
 }
 
-DOCS_URL = f"https://docs.airbyte.com/integrations/sources/stripe"
+DOCS_URL = "https://docs.airbyte.com/integrations/sources/stripe"
 DOCUMENTATION_MESSAGE = f"Please visit {DOCS_URL} to learn more. "
 
 
