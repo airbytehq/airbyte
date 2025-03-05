@@ -305,3 +305,4 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                 logger.warning(f"API Call {url} limit is exceeded. Error message: '{error_data.get('message')}'")
                 raise AirbyteStopSync()  # if got 403 rate limit response, finish the sync with success.
             raise error
+# Dummy change to verify CI status
