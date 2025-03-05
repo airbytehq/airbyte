@@ -23,7 +23,14 @@ from airbyte_cdk.test.mock_http.response_builder import (
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
-_SOURCE_FOLDER_PATH = Path(__file__).parent.parent.parent
+def _get_manifest_path() -> Path:
+    source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")
+    if source_declarative_manifest_path.exists():
+        return source_declarative_manifest_path
+    return Path(__file__).parent.parent.parent
+
+
+_SOURCE_FOLDER_PATH = _get_manifest_path()
 _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 
 sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
