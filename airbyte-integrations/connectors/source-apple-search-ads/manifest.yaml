@@ -3,12 +3,7 @@ version: 6.36.3
 type: DeclarativeSource
 
 description: |
-  The fix to resolve Github issue:
-  https://github.com/airbytehq/airbyte/issues/55173.
-  Removed source-defined primary keys in the report streams:
-  - campaigns_report_daily
-  - adgroups_report_daily
-  - keywords_report_daily
+  Connector for Apple Search Ads.
 
 check:
   type: CheckStream
