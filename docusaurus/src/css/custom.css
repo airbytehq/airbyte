@@ -285,3 +285,26 @@ svg.inline-svg {
   max-height: 1em;
   max-width: 1em;
 }
+
+ul.MarkpromptSearchResults {
+  margin: 0 !important;
+  padding-left: 0 !important;
+}
+
+:where(.MarkpromptSearchResult a) {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+:where([aria-selected='true'] .MarkpromptSearchResultLink) {
+  background-color: var(--markprompt-primary) !important;
+  color: var(--markprompt-primaryForeground) !important;
+}
+
+p.MarkpromptBranding {
+  display: none !important;
+}
+
+div.MarkpromptContentDialog {
+  top: 90px !important;
+}
