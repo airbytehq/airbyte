@@ -22,6 +22,7 @@ import io.airbyte.protocol.models.v0.SyncMode
 import java.sql.SQLException
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -82,6 +83,68 @@ class SapHanaSourceCursorBasedIntegrationTest {
             CliRunner.source("read", config, getConfiguredCatalog(), run2InputState).run()
         val recordMessageFromRun2: List<AirbyteRecordMessage> = run2.records()
         assertEquals(2, recordMessageFromRun2.size)
+    }
+
+    @Test
+    fun testWithFullRefresh() {
+        val fullRefreshCatalog =
+            getConfiguredCatalog().apply { streams[0].syncMode = SyncMode.FULL_REFRESH }
+        val run1: BufferingOutputConsumer =
+            CliRunner.source("read", config, fullRefreshCatalog).run()
+        val recordMessageFromRun1: List<AirbyteRecordMessage> = run1.records()
+        assertEquals(2, recordMessageFromRun1.size)
+        val lastStateMessageFromRun1 = run1.states().last()
+
+        val run2: BufferingOutputConsumer =
+            CliRunner.source("read", config, fullRefreshCatalog, listOf(lastStateMessageFromRun1))
+                .run()
+        val recordMessageFromRun2: List<AirbyteRecordMessage> = run2.records()
+        assertEquals(0, recordMessageFromRun2.size)
+    }
+
+    @Test
+    fun testWithFullRefreshWithEmptyTable() {
+        db.execute("DELETE FROM ${schemaNames[0]}.${tableNames[0]}")
+
+        val fullRefreshCatalog =
+            getConfiguredCatalog().apply { streams[0].syncMode = SyncMode.FULL_REFRESH }
+        val run1: BufferingOutputConsumer =
+            CliRunner.source("read", config, fullRefreshCatalog).run()
+
+        assertTrue(run1.records().isEmpty())
+    }
+
+    @Test
+    fun testCursorBasedReadWithEmptyTable() {
+        db.execute("DELETE FROM ${schemaNames[0]}.${tableNames[0]}")
+
+        val run1: BufferingOutputConsumer =
+            CliRunner.source("read", config, getConfiguredCatalog()).run()
+
+        assertTrue(run1.records().isEmpty())
+    }
+
+    @Test
+    fun testCursorBasedViewRead() {
+        try {
+            val viewName = "${tableNames[0]}_VIEW"
+            db.execute(
+                "CREATE VIEW ${schemaNames[0]}.${viewName} AS SELECT * FROM ${schemaNames[0]}.${tableNames[0]}"
+            )
+
+            val catalog = getConfiguredCatalog()
+            catalog.streams[0].stream.name = viewName
+            val run1: BufferingOutputConsumer = CliRunner.source("read", config, catalog).run()
+            val lastStateMessageFromRun1 = run1.states().last()
+            val lastStreamStateFromRun1 = lastStateMessageFromRun1.stream.streamState
+
+            assertEquals("20", lastStreamStateFromRun1.get("cursors").get("ID").toString())
+            assertEquals(viewName, lastStateMessageFromRun1.stream.streamDescriptor.name)
+            assertEquals(schemaNames[0], lastStateMessageFromRun1.stream.streamDescriptor.namespace)
+        } finally {
+            // Clean up the view
+            db.execute("DROP VIEW ${schemaNames[0]}.${tableNames[0]}_VIEW")
+        }
     }
 
     companion object {
