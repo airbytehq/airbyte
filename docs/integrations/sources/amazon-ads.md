@@ -131,6 +131,10 @@ Campaign reports may sometimes have no data or may not be presenting in records.
 
 Report data synchronization only covers the last 60 days - [details](https://advertising.amazon.com/API/docs/en-us/reference/1/reports#parameters).
 
+:::note
+The 'Reports' stream(s) by default will have `timeUnit` set to `SUMMARY`. If you would like more granularity, use the `_daily` versions of the report streams, which have
+ `timeUnit` set to `DAILY`. More info about this can be found [here](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#timeunit-and-supported-columns).
+:::
 ## Performance considerations
 
 Information about expected report generation waiting time can be found [here](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
@@ -153,6 +157,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.1.2 | 2025-05-06 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add `daily` versions of `reports` streams |
 | 7.1.1 | 2025-03-01 | [54895](https://github.com/airbytehq/airbyte/pull/54895) | Update dependencies |
 | 7.1.0 | 2025-02-24 | [53692](https://github.com/airbytehq/airbyte/pull/53692) | Migrate stream `Portfolios` to Portfolios API v3 |
 | 7.0.1 | 2025-02-22 | [52918](https://github.com/airbytehq/airbyte/pull/52918) | Update dependencies |
