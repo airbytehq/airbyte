@@ -23,6 +23,8 @@ data class MSSQLConfiguration(
     override val mssqlLoadTypeConfiguration: MSSQLLoadTypeConfiguration,
 ) : DestinationConfiguration(), MSSQLLoadTypeConfigurationProvider {
     override val numProcessRecordsWorkers = 1
+    override val numProcessBatchWorkers: Int = 1
+    override val processEmptyFiles: Boolean = true
 }
 
 @Singleton
