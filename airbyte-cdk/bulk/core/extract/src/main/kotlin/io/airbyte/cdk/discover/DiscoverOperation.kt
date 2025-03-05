@@ -41,6 +41,7 @@ class DiscoverOperation(
                         airbyteStreamFactory.create(config, discoveredStream)
                     airbyteStreams.add(airbyteStream)
                 }
+
             }
         }
         outputConsumer.accept(AirbyteCatalog().withStreams(airbyteStreams))
