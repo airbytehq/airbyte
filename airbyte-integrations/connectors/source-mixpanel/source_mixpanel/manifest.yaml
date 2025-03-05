@@ -28,6 +28,10 @@ definitions:
 
   default_error_handler:
     type: DefaultErrorHandler
+    max_retries: 10
+    backoff_strategies:
+      - type: ConstantBackoffStrategy
+        backoff_time_in_seconds: 120
     response_filters:
       - http_codes: [400]
         action: FAIL
@@ -401,9 +405,7 @@ api_budget:
       rates:
         - limit: 60 # rate limit of 60 queries per hour
           interval: PT1H
-      matchers:
-        - method: GET
-          url_path_pattern: "^/api/2.0/.+"
+      matchers: []
 
 # concurrent streams: cohorts, engage, revenue, annotations, cohort_members, funnels
 # synchronous streams: export
