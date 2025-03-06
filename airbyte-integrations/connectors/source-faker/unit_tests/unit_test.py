@@ -6,7 +6,9 @@ import jsonschema
 import pytest
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.models import AirbyteStream, AirbyteStateType, StreamDescriptor, AirbyteStateBlob, AirbyteStateMessage, AirbyteMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Type
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Type, AirbyteStateMessage, AirbyteStreamState
+from airbyte_cdk.models.airbyte_protocol_serializers import AirbyteMessageSerializer
 
 
 class MockLogger:
@@ -25,13 +27,14 @@ class MockLogger:
 
 
 logger = MockLogger()
+serializer = AirbyteMessageSerializer
 
 
 def schemas_are_valid():
     source = SourceFaker()
     config = {"count": 1, "parallelism": 1}
     catalog = source.discover(None, config)
-    catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog).dict(exclude_unset=True)
+    catalog = serializer.dump(AirbyteMessage(type=Type.CATALOG, catalog=catalog))
     schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
 
     for schema in schemas:
@@ -42,7 +45,7 @@ def test_source_streams():
     source = SourceFaker()
     config = {"count": 1, "parallelism": 1}
     catalog = source.discover(None, config)
-    catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog).dict(exclude_unset=True)
+    catalog = serializer.dump(AirbyteMessage(type=Type.CATALOG, catalog=catalog))
     schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
 
     assert len(schemas) == 3
@@ -83,11 +86,11 @@ def test_read_small_random_data():
     config = {"count": 10, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
-            {
-                "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            }
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="users", json_schema={}, supported_sync_modes=["incremental"]),
+                sync_mode="incremental",
+                destination_sync_mode="overwrite",
+            )
         ]
     )
     state = {}
@@ -114,14 +117,14 @@ def test_read_always_updated():
     config = {"count": 10, "parallelism": 1, "always_updated": False}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
-            {
-                "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            }
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="users", json_schema={}, supported_sync_modes=["incremental"]),
+                sync_mode="incremental",
+                destination_sync_mode="overwrite",
+            )
         ]
     )
-    state = {}
+    state = None
     iterator = source.read(logger, config, catalog, state)
 
     record_rows_count = 0
@@ -131,7 +134,15 @@ def test_read_always_updated():
 
     assert record_rows_count == 10
 
-    state = {"users": {"updated_at": "something"}}
+    state = [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="users"),
+                stream_state=AirbyteStateBlob({"updated_at": "something"}),
+            ),
+        )
+    ]
     iterator = source.read(logger, config, catalog, state)
 
     record_rows_count = 0
@@ -147,11 +158,11 @@ def test_read_products():
     config = {"count": 999, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
-            {
-                "stream": {"name": "products", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            }
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="products", json_schema={}, supported_sync_modes=["full_refresh"]),
+                sync_mode="incremental",
+                destination_sync_mode="overwrite",
+            )
         ]
     )
     state = {}
@@ -161,6 +172,7 @@ def test_read_products():
     record_rows_count = 0
     state_rows_count = 0
     for row in iterator:
+        print(f"row: {row}")
         if row.type is Type.TRACE:
             estimate_row_count = estimate_row_count + 1
         if row.type is Type.RECORD:
@@ -178,16 +190,16 @@ def test_read_big_random_data():
     config = {"count": 1000, "records_per_slice": 100, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
-            {
-                "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            },
-            {
-                "stream": {"name": "products", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            },
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="users", json_schema={}, supported_sync_modes=["incremental"]),
+                sync_mode="incremental",
+                destination_sync_mode="overwrite",
+            ),
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="products", json_schema={}, supported_sync_modes=["full_refresh"]),
+                sync_mode="incremental",
+                destination_sync_mode="overwrite",
+            ),
         ]
     )
     state = {}
@@ -210,21 +222,21 @@ def test_with_purchases():
     config = {"count": 1000, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
-            {
-                "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            },
-            {
-                "stream": {"name": "products", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            },
-            {
-                "stream": {"name": "purchases", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            },
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="users", json_schema={}, supported_sync_modes=["incremental"]),
+                sync_mode="incremental",
+                destination_sync_mode="overwrite",
+            ),
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="products", json_schema={}, supported_sync_modes=["full_refresh"]),
+                sync_mode="incremental",
+                destination_sync_mode="overwrite",
+            ),
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="purchases", json_schema={}, supported_sync_modes=["incremental"]),
+                sync_mode="incremental",
+                destination_sync_mode="overwrite",
+            ),
         ]
     )
     state = {}
@@ -251,19 +263,19 @@ def test_read_with_seed():
     config = {"count": 1, "seed": 100, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
-            {
-                "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["incremental"]},
-                "sync_mode": "incremental",
-                "destination_sync_mode": "overwrite",
-            }
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="users", json_schema={}, supported_sync_modes=["incremental"]),
+                sync_mode="incremental",
+                destination_sync_mode="overwrite",
+            )
         ]
     )
     state = {}
     iterator = source.read(logger, config, catalog, state)
 
     records = [row for row in iterator if row.type is Type.RECORD]
-    assert records[0].record.data["occupation"] == "Sheriff Principal"
-    assert records[0].record.data["email"] == "alleged2069+1@example.com"
+    assert records[0].record.data["occupation"] == "Wheel Clamper"
+    assert records[0].record.data["email"] == "see1889+1@yandex.com"
 
 
 def test_ensure_no_purchases_without_users():

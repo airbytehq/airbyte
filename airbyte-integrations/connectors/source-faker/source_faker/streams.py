@@ -3,10 +3,12 @@
 #
 
 import datetime
+import math
 import os
 from multiprocessing import Pool
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
+from airbyte_cdk import AirbyteMessage, MessageRepository
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 
 from .purchase_generator import PurchaseGenerator
@@ -18,8 +20,9 @@ class Products(Stream, IncrementalMixin):
     primary_key = "id"
     cursor_field = "updated_at"
 
-    def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
+    def __init__(self, message_repository: MessageRepository, count: int, seed: int | None, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
         super().__init__(**kwargs)
+        self._message_repository = message_repository
         self.count = count
         self.seed = seed
         self.records_per_slice = records_per_slice
@@ -53,7 +56,7 @@ class Products(Stream, IncrementalMixin):
 
         median_record_byte_size = 180
         rows_to_emit = len(products)
-        yield generate_estimate(self.name, rows_to_emit, median_record_byte_size)
+        self._message_repository.emit_message(generate_estimate(self.name, rows_to_emit, median_record_byte_size))
 
         for product in products:
             if product["id"] <= self.count:
@@ -68,8 +71,9 @@ class Users(Stream, IncrementalMixin):
     primary_key = "id"
     cursor_field = "updated_at"
 
-    def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
+    def __init__(self, message_repository: MessageRepository, count: int, seed: int | None, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
         super().__init__(**kwargs)
+        self._message_repository = message_repository
         self.count = count
         self.seed = seed
         self.records_per_slice = records_per_slice
@@ -92,7 +96,7 @@ class Users(Stream, IncrementalMixin):
     def state(self, value: Mapping[str, Any]):
         self._state = value
 
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, **kwargs) -> Iterable[AirbyteMessage]:
         """
         This is a multi-process implementation of read_records.
         We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON
@@ -104,7 +108,7 @@ class Users(Stream, IncrementalMixin):
         updated_at = ""
 
         median_record_byte_size = 450
-        yield generate_estimate(self.name, self.count, median_record_byte_size)
+        self._message_repository.emit_message(generate_estimate(self.name, self.count, median_record_byte_size))
 
         loop_offset = 0
         with Pool(initializer=self.generator.prepare, processes=self.parallelism) as pool:
@@ -112,9 +116,10 @@ class Users(Stream, IncrementalMixin):
                 records_remaining_this_loop = min(self.records_per_slice, (self.count - loop_offset))
                 users = pool.map(self.generator.generate, range(loop_offset, loop_offset + records_remaining_this_loop))
                 for user in users:
-                    updated_at = user.record.data["updated_at"]
-                    loop_offset += 1
-                    yield user
+                    if user.record is not None and user.record.data is not None:
+                        updated_at = user.record.data["updated_at"]
+                        loop_offset += 1
+                        yield user
 
                 if records_remaining_this_loop == 0:
                     break
@@ -128,8 +133,9 @@ class Purchases(Stream, IncrementalMixin):
     primary_key = "id"
     cursor_field = "updated_at"
 
-    def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
+    def __init__(self, message_repository: MessageRepository, count: int, seed: int | None, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
         super().__init__(**kwargs)
+        self._message_repository = message_repository
         self.count = count
         self.seed = seed
         self.records_per_slice = records_per_slice
@@ -152,7 +158,7 @@ class Purchases(Stream, IncrementalMixin):
     def state(self, value: Mapping[str, Any]):
         self._state = value
 
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, **kwargs) -> Iterable[AirbyteMessage]:
         """
         This is a multi-process implementation of read_records.
         We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON
@@ -165,7 +171,7 @@ class Purchases(Stream, IncrementalMixin):
 
         # a fuzzy guess, some users have purchases, some don't
         median_record_byte_size = 230
-        yield generate_estimate(self.name, (self.count) * 1.3, median_record_byte_size)
+        self._message_repository.emit_message(generate_estimate(self.name, math.ceil(self.count * 1.3), median_record_byte_size))
 
         loop_offset = 0
         with Pool(initializer=self.generator.prepare, processes=self.parallelism) as pool:
@@ -175,8 +181,9 @@ class Purchases(Stream, IncrementalMixin):
                 for purchases in carts:
                     loop_offset += 1
                     for purchase in purchases:
-                        updated_at = purchase.record.data["updated_at"]
-                        yield purchase
+                        if purchase.record is not None and purchase.record.data is not None:
+                            updated_at = purchase.record.data["updated_at"]
+                            yield purchase
                 if records_remaining_this_loop == 0:
                     break
 

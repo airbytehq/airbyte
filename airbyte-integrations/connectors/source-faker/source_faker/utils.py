@@ -5,6 +5,7 @@
 import datetime
 import json
 
+from airbyte_cdk import AirbyteMessage, Type
 from airbyte_cdk.models import AirbyteEstimateTraceMessage, AirbyteTraceMessage, EstimateType, TraceType
 
 
@@ -13,7 +14,7 @@ def read_json(filepath):
         return json.loads(f.read())
 
 
-def format_airbyte_time(d: datetime):
+def format_airbyte_time(d: datetime.datetime):
     s = f"{d}"
     s = s.split(".")[0]
     s = s.replace(" ", "T")
@@ -30,4 +31,4 @@ def generate_estimate(stream_name: str, total: int, bytes_per_row: int):
     estimate_message = AirbyteEstimateTraceMessage(
         type=EstimateType.STREAM, name=stream_name, row_estimate=round(total), byte_estimate=round(total * bytes_per_row)
     )
-    return AirbyteTraceMessage(type=TraceType.ESTIMATE, emitted_at=emitted_at, estimate=estimate_message)
+    return AirbyteMessage(type=Type.TRACE, trace=AirbyteTraceMessage(type=TraceType.ESTIMATE, estimate=estimate_message, emitted_at=emitted_at))
