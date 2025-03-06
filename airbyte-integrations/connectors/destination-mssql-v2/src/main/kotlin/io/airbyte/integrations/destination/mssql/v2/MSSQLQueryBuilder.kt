@@ -22,7 +22,6 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
-import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteTypeToMssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setAsNullValue
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setValue
@@ -181,7 +180,7 @@ const val COUNT_FROM = """
     """
 
 class MSSQLQueryBuilder(
-    config: MSSQLConfiguration,
+    defaultSchema: String,
     private val stream: DestinationStream,
 ) {
     companion object {
@@ -218,7 +217,7 @@ class MSSQLQueryBuilder(
     data class NamedValue(val name: String, val value: AirbyteValue)
     data class NamedSqlField(val name: String, val type: MssqlType)
 
-    val outputSchema: String = stream.descriptor.namespace ?: config.schema
+    val outputSchema: String = stream.descriptor.namespace ?: defaultSchema
     val tableName: String = stream.descriptor.name
     val uniquenessKey: List<String> =
         when (stream.importType) {
@@ -347,7 +346,7 @@ class MSSQLQueryBuilder(
                 changes =
                     record.meta?.changes?.map { it.asProtocolObject() }?.toMutableList()
                         ?: mutableListOf()
-                setAdditionalProperty("syncId", stream.syncId)
+                setAdditionalProperty("sync_id", stream.syncId)
             }
 
         schema.forEachIndexed { index, field ->
