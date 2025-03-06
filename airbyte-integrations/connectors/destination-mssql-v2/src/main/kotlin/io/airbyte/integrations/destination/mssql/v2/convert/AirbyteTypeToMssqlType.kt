@@ -28,7 +28,7 @@ enum class MssqlType(val sqlType: Int, val sqlStringOverride: String? = null) {
     BIT(Types.BOOLEAN),
     DATE(Types.DATE),
     BIGINT(Types.BIGINT),
-    DECIMAL(Types.DECIMAL, sqlStringOverride = "DECIMAL(18, 8)"),
+    DECIMAL(Types.DECIMAL, sqlStringOverride = "DECIMAL(38, 8)"),
     VARCHAR(Types.VARCHAR, sqlStringOverride = "VARCHAR(MAX)"),
     VARCHAR_INDEX(Types.VARCHAR, sqlStringOverride = "VARCHAR(200)"),
     DATETIMEOFFSET(Types.TIMESTAMP_WITH_TIMEZONE),
