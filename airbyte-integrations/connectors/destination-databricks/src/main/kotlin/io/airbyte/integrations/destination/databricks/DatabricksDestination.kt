@@ -79,8 +79,8 @@ class DatabricksDestination : BaseConnector(), Destination {
                     connectorConfig.purgeStagingData
                 )
             val rawTableNamespace = connectorConfig.rawSchemaOverride
-            // Add UUID to check table name in case multiple connections 
-            // write to the same destination schema. 
+            // Add UUID to check table name in case multiple connections
+            // write to the same destination schema.
             val uuid = UUID.randomUUID()
             val final_table_uuid = uuid.toString()
             val finalTableName = "airbyte_check_test_table_" + final_table_uuid
