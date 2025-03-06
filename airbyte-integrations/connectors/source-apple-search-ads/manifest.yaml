@@ -234,6 +234,25 @@ definitions:
               - data
               - reportingDataResponse
               - row
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_path:
+              - selector
+              - pagination
+              - offset
+          page_size_option:
+            type: RequestOption
+            inject_into: body_json
+            field_path:
+              - selector
+              - pagination
+              - limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
@@ -317,6 +336,25 @@ definitions:
               - data
               - reportingDataResponse
               - row
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_path:
+              - selector
+              - pagination
+              - offset
+          page_size_option:
+            type: RequestOption
+            inject_into: body_json
+            field_path:
+              - selector
+              - pagination
+              - limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -411,6 +449,25 @@ definitions:
               - data
               - reportingDataResponse
               - row
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_path:
+              - selector
+              - pagination
+              - offset
+          page_size_option:
+            type: RequestOption
+            inject_into: body_json
+            field_path:
+              - selector
+              - pagination
+              - limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -571,7 +628,7 @@ metadata:
       streamHash: 5982b7f631f8bfc624b467b8e4b442f3beec34e6
     keywords_report_daily:
       streamHash: 642ee63980cc78adbe63e1008199574b282d846f
-  assist: {}
+  assist: { }
 
 schemas:
   campaigns:
