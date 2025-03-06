@@ -25,7 +25,7 @@ const config = {
   markdown: {
     mermaid: true,
   },
-  themes: ["@docusaurus/theme-mermaid"],
+  themes: ["@docusaurus/theme-mermaid", "@markprompt/docusaurus-theme-search"],
   title: "Airbyte Documentation",
   tagline:
     "Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.",
@@ -145,10 +145,32 @@ const config = {
           autoCollapseCategories: true,
         },
       },
-      algolia: {
-        appId: "OYKDBC51MU",
-        apiKey: "15c487fd9f7722282efd8fcb76746fce", // Public API key: it is safe to commit it
-        indexName: "airbyte",
+      markprompt: { // Our AI chat bot
+        projectKey: "pk_c87ydSnE4o1tX9txQReh3vDvVnKDnbje", // Public project key. Safe to commit.
+        chat: {
+          assistantId: "d1399022-d7e2-4404-bd16-8b3ad2b5465b",
+          enabled: true,
+          defaultView: {
+            message: "Hi! I'm Octavia, an AI. **I'm still learning and might make mistakes**. How can I help?",
+            prompts: [
+              "What's Airbyte?",
+              "Can I try Airbyte quickly?",
+              "How do I use Terraform with Airbyte?",
+              "Is there an enterprise version?"
+            ]
+          },
+        },
+        // By setting `floating` to false, use the standard navbar search component.
+        trigger: { floating: false },
+        search: {
+          enabled: true,
+          provider: {
+            name: "algolia",
+            apiKey: "15c487fd9f7722282efd8fcb76746fce", // Public API key. Safe to commit.
+            appId: "OYKDBC51MU",
+            indexName: "airbyte",
+          },
+        },
       },
       navbar: {
         title: "",
