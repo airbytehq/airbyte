@@ -283,8 +283,10 @@ class MySqlSourceDebeziumOperations(
         }
     }
 
-    private fun parseBinaryLogStatus(stmt: Statement, query: String):
-            Pair<MySqlSourceCdcPosition, String?> {
+    private fun parseBinaryLogStatus(
+        stmt: Statement,
+        query: String
+    ): Pair<MySqlSourceCdcPosition, String?> {
         stmt.executeQuery(query).use { rs: ResultSet ->
             if (!rs.next()) throw ConfigErrorException("No results for query: {{$query}}")
             val file = Field("File", StringFieldType)
@@ -293,13 +295,13 @@ class MySqlSourceDebeziumOperations(
             val mySqlSourceCdcPosition =
                 MySqlSourceCdcPosition(
                     fileName = rs.getString(file.id)?.takeUnless { rs.wasNull() }
-                        ?: throw ConfigErrorException(
-                            "No value for ${file.id} in: {{$query}}",
-                        ),
+                            ?: throw ConfigErrorException(
+                                "No value for ${file.id} in: {{$query}}",
+                            ),
                     position = rs.getLong(pos.id).takeUnless { rs.wasNull() || it <= 0 }
-                        ?: throw ConfigErrorException(
-                            "No value for ${pos.id} in: {{$query}}",
-                        ),
+                            ?: throw ConfigErrorException(
+                                "No value for ${pos.id} in: {{$query}}",
+                            ),
                 )
             if (rs.metaData.columnCount <= 4) {
                 // This value exists only in MySQL 5.6.5 or later.
