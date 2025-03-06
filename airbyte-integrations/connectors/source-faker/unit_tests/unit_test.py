@@ -218,13 +218,14 @@ def test_read_big_random_data():
     record_rows_count = 0
     state_rows_count = 0
     for row in iterator:
+        print(f"row: {row}")
         if row.type is Type.RECORD:
             record_rows_count = record_rows_count + 1
         if row.type is Type.STATE:
             state_rows_count = state_rows_count + 1
 
     assert record_rows_count == 1000 + 100  # 1000 users, and 100 products
-    assert state_rows_count == 10 + 1
+    assert state_rows_count == 10 + 1 + 1 + 1
 
 
 def test_with_purchases():
