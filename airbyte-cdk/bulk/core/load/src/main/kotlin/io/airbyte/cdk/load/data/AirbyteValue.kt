@@ -171,7 +171,6 @@ data class EnrichedAirbyteValue(
                 field =
                     field!!
                         .name, // in the case of an undeclared field We would probably not need to
-                // null the value out
                 change = AirbyteRecordMessageMetaChange.Change.NULLED,
                 reason = reason
             )
@@ -189,7 +188,6 @@ data class EnrichedAirbyteValue(
                 field =
                     field!!
                         .name, // in the case of an undeclared field We would probably not need to
-                // truncate the value out
                 change = AirbyteRecordMessageMetaChange.Change.TRUNCATED,
                 reason = reason
             )
