@@ -1,14 +1,47 @@
-#
-# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
-#
+"""
+Google Campaign Manager API Source Connector for Airbyte
 
+This module contains the implementation of a custom source connector for the Google Campaign Manager API using the Airbyte CDK.
+It consists of three main stream classes: CreateReport for creating reports, RunReport for executing reports, and ReportData for
+fetching and processing the report data.
 
-from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+Classes:
+    CreateReport: Handles the creation of reports via the Google Campaign Manager API.
+    RunReport: Executes the created reports.
+    ReportData: Fetches and processes the data from executed reports.
 
+Usage:
+    This connector is designed to be used with the Airbyte platform to sync data from the Google Campaign Manager API
+    to various destinations.
+
+Configuration:
+    The connector requires the following configuration parameters:
+    - client_id: Your Google OAuth 2.0 client ID
+    - client_secret: Your Google OAuth 2.0 client secret
+    - refresh_token: Your Google OAuth 2.0 refresh token
+    - profile_id: The Google Campaign Manager profile ID
+
+Note:
+    This connector implements a hierarchical stream structure where CreateReport is the parent of RunReport,
+    and RunReport is the parent of ReportData. It handles authentication using OAuth 2.0 and manages rate limiting
+    as per Google Campaign Manager API specifications. The connector also includes logic for retrying failed requests
+    and polling for report completion.
+
+Dependencies:
+    - airbyte_cdk
+    - requests
+
+For more information on developing custom source connectors for Airbyte, please refer to:
+https://docs.airbyte.com/connector-development/
+"""
+import csv
+import datetime
 import requests
+from io import StringIO
+
+from typing import Any, List, Mapping, Tuple, Iterable, Optional
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import Stream, IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from airbyte_cdk.models import SyncMode
@@ -108,7 +141,7 @@ class RunReport(DFAReportingStream):
 
 class ReportData(DFAReportingStream):
     """
-    TODO: Change class name to match the table/data source this stream corresponds to.
+    Stream for fetching the data of a run report.
     """
     primary_key = None
     parent = RunReport
