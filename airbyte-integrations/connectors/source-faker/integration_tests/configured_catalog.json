@@ -110,6 +110,32 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "crm_contacts",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "created_at": { "type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone" },
+            "updated_at": { "type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone" },
+            "deleted_at": { "type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone" },
+            "first_name": { "type": "string" },
+            "last_name": { "type": "string" },
+            "addresses": { "type": "array", "items": { "type": "object" } },
+            "emails": { "type": "array", "items": { "type": "object" } },
+            "phones": { "type": "array", "items": { "type": "object" } },
+            "account_id": { "type": "string" }
+          }
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created_at"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

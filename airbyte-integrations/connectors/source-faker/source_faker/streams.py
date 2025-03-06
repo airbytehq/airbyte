@@ -71,6 +71,7 @@ class Products(Stream, IncrementalMixin):
             if product["id"] <= self.count:
                 updated_at = format_airbyte_time(datetime.datetime.now())
                 product["updated_at"] = updated_at
+                product["loop_offset"] = product["id"]
                 yield product
 
         self.state = {"seed": self.seed, "updated_at": updated_at}
@@ -137,6 +138,7 @@ class Users(Stream, IncrementalMixin):
                     if user.record is not None and user.record.data is not None:
                         updated_at = user.record.data["updated_at"]
                         loop_offset += 1
+                        user.record.data["loop_offset"] = loop_offset
                         yield user
 
                 if records_remaining_this_loop == 0:
@@ -210,6 +212,7 @@ class Purchases(Stream, IncrementalMixin):
                     for purchase in purchases:
                         if purchase.record is not None and purchase.record.data is not None:
                             updated_at = purchase.record.data["updated_at"]
+                            purchase.record.data["loop_offset"] = loop_offset
                             yield purchase
                 if records_remaining_this_loop == 0:
                     break
