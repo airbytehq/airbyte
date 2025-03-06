@@ -65,7 +65,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated": 10000000000 },
+      "stream_state": { "updated": 1577836800 },
       "stream_descriptor": { "name": "customers" }
     }
   },
@@ -282,7 +282,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated": 10000000000 },
+      "stream_state": { "updated": 1720010734 },
       "stream_descriptor": { "name": "payment_methods" }
     }
   },
@@ -296,14 +296,14 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 10000000000 },
+      "stream_state": { "created": 1646998902 },
       "stream_descriptor": { "name": "customer_balance_transactions" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated": 10000000000 },
+      "stream_state": { "updated": 1588291200 },
       "stream_descriptor": { "name": "accounts" }
     }
   },

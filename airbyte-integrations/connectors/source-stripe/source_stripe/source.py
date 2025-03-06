@@ -302,27 +302,7 @@ class SourceStripe(YamlDeclarativeSource):
                 response_filter=lambda record: record["object"] == "bank_account",
                 **args,
             ),
-            UpdatedCursorIncrementalStripeSubStream(
-                name="persons",
-                path=lambda self, stream_slice, *args, **kwargs: f"accounts/{stream_slice['parent']['id']}/persons",
-                parent=StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args),
-                event_types=["person.created", "person.updated", "person.deleted"],
-                **args,
-            ),
             SetupAttempts(**incremental_args),
-            UpdatedCursorIncrementalStripeStream(
-                name="accounts",
-                path="accounts",
-                legacy_cursor_field="created",
-                event_types=[
-                    "account.updated",
-                    "account.external_account.created",
-                    "account.external_account.updated",
-                    "account.external_account.deleted",
-                ],
-                use_cache=USE_CACHE,
-                **args,
-            ),
             IncrementalStripeStream(
                 name="refunds",
                 path="refunds",
@@ -391,7 +371,7 @@ class SourceStripe(YamlDeclarativeSource):
                 **args,
             ),
             application_fees,
-            invoices,
+
             IncrementalStripeStream(
                 name="invoice_items",
                 path="invoiceitems",
@@ -404,19 +384,7 @@ class SourceStripe(YamlDeclarativeSource):
                 **args,
             ),
             payouts,
-            ParentIncrementalStripeSubStream(
-                name="payout_balance_transactions",
-                path=lambda self, stream_slice, *args, **kwargs: "balance_transactions",
-                parent=payouts,
-                cursor_field="updated",
-                slice_data_retriever=lambda record, stream_slice: {
-                    "payout": stream_slice["parent"]["id"],
-                    "updated": stream_slice["parent"]["updated"],
-                    **record,
-                },
-                extra_request_params=lambda self, stream_slice, *args, **kwargs: {"payout": f"{stream_slice['parent']['id']}"},
-                **args,
-            ),
+
             IncrementalStripeStream(
                 name="plans",
                 path="plans",
@@ -506,13 +474,6 @@ class SourceStripe(YamlDeclarativeSource):
                 parent=application_fees,
                 event_types=["application_fee.refund.updated"],
                 sub_items_attr="refunds",
-                **args,
-            ),
-            UpdatedCursorIncrementalStripeSubStream(
-                name="payment_methods",
-                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/payment_methods",
-                parent=self.customers(**args),
-                event_types=["payment_method.*"],
                 **args,
             ),
             UpdatedCursorIncrementalStripeLazySubStream(
