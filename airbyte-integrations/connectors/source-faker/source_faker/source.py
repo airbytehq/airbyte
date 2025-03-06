@@ -41,7 +41,6 @@ class SourceFaker(ConcurrentSourceAdapter):
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: Optional[Any], **kwargs):
         concurrency_level = 1
         logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
-        print(f"creating source faker with state: {state}")
         concurrent_source = ConcurrentSource.create(concurrency_level, 1, logger, self._slice_logger, self.message_repository)
         super().__init__(concurrent_source)
         self.catalog = catalog
@@ -59,7 +58,6 @@ class SourceFaker(ConcurrentSourceAdapter):
         records_per_slice: int = config["records_per_slice"] if "records_per_slice" in config else 100
         always_updated: bool = config["always_updated"] if "always_updated" in config else True
         parallelism: int = config["parallelism"] if "parallelism" in config else 4
-        print(f"during streams: message repository: {self.message_repository}")
 
         state_manager = ConnectorStateManager(state=self._state)
 
@@ -137,7 +135,6 @@ class FakerCursor(Cursor):
         self._stream_name = stream_name
         self._stream_namespace = stream_namespace
         self._message_repository = message_repository
-        print(f"fakercursor message repository: {self._message_repository}")
         # Normally the connector state manager operates at the source-level. However, we only need it to write the sentinel
         # state message rather than manage overall source state. This is also only temporary as we move to the resumable
         # full refresh world where every stream uses a FileBasedConcurrentCursor with incremental state.
