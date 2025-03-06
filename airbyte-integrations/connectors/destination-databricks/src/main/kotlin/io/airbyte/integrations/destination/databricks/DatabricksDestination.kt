@@ -83,8 +83,8 @@ class DatabricksDestination : BaseConnector(), Destination {
             // write to the same destination schema. 
             // Provide int range of 1,000,000 to provide sufficient randomness buffer.
             Random rand = new Random();
-            test_table_rand = rand.nextInt(1000000)
-            val finalTableName = "airbyte_check_test_table" + test_table_rand
+            test_table_rand = rand.nextInt(1000000);
+            val finalTableName = "airbyte_check_test_table" + test_table_rand;
 
             // Both raw & final Namespaces are same for dummy sync since we don't do any final table
             // operations
