@@ -12,6 +12,8 @@ import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.node.NullNode
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
@@ -162,9 +164,58 @@ data class EnrichedAirbyteValue(
     // It could mean for example that there is a bug in the destination and some values
     // are being added that are not currently in the schema.
     val field: DeclaredField? = null
-)
+) {
+    fun nulled(reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR): EnrichedAirbyteValue {
+        val nullChange =
+            Meta.Change(
+                field =
+                    field!!
+                        .name, // in the case of an undeclared field We would probably not need to
+                // null the value out
+                change = AirbyteRecordMessageMetaChange.Change.NULLED,
+                reason = reason
+            )
 
-data class DeclaredField(
-    val type: AirbyteType,
-    val name: String
-)
+        // Return a copy with null value and the new change added to the changes list
+        return copy(value = NullValue, changes = changes + nullChange)
+    }
+
+    fun truncated(
+        reason: Reason = Reason.DESTINATION_RECORD_SIZE_LIMITATION,
+        newValue: AirbyteValue
+    ): EnrichedAirbyteValue {
+        val truncateChange =
+            Meta.Change(
+                field =
+                    field!!
+                        .name, // in the case of an undeclared field We would probably not need to
+                // truncate the value out
+                change = AirbyteRecordMessageMetaChange.Change.TRUNCATED,
+                reason = reason
+            )
+
+        // Return a copy with null value and the new change added to the changes list
+        return copy(value = newValue, changes = changes + truncateChange)
+    }
+}
+
+data class DeclaredField(val type: AirbyteType, val name: String, val fieldCategory: FieldCategory)
+
+/**
+ * The DeclaredField category allows us to quickly understand if the field is an Airbyte controlled
+ * field or if it is declared by the source.
+ */
+enum class FieldCategory(val columnName: String) {
+    AB_RAW_ID(Meta.COLUMN_NAME_AB_RAW_ID),
+    AB_EXTRACTED_AT(Meta.COLUMN_NAME_AB_EXTRACTED_AT),
+    AB_META(Meta.COLUMN_NAME_AB_META),
+    AB_GENERATION_ID(Meta.COLUMN_NAME_AB_GENERATION_ID),
+    // For fields that don't match any of the predefined Airbyte columns
+    CLIENT_DATA("");
+
+    companion object {
+        fun fromColumnName(columnName: String): FieldCategory {
+            return entries.find { it.columnName == columnName } ?: CLIENT_DATA
+        }
+    }
+}
