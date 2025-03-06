@@ -841,6 +841,18 @@ definitions:
           request_parameters:
             sort_direction: ASC
             scoped_fields[]: "[\"subject\",\"body\"]"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    error_message_contains: required scope access not included
+                    error_message: >-
+                      Scoped Fields require a Premier Salesloft Plan - Requested
+                      scoped field(s) could not be returned, required scope
+                      access not included
         record_selector:
           type: RecordSelector
           extractor:
