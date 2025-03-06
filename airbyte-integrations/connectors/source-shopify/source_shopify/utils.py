@@ -45,11 +45,6 @@ class ShopifyNonRetryableErrors:
                 failure_type=FailureType.config_error,
                 error_message=f"Stream `{stream}`. Not available or missing.",
             ),
-            500: ErrorResolution(
-                response_action=ResponseAction.IGNORE,
-                failure_type=FailureType.config_error,
-                error_message=f"Stream `{stream}`. Entity might not be available or missing.",
-            ),
             # extend the mapping with more handable errors, if needed.
         }
 

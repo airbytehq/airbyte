@@ -4,16 +4,18 @@
 
 package io.airbyte.cdk.load.message
 
+import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
 import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.load.message.CheckpointMessage.Stats
 import io.airbyte.cdk.load.util.deserializeToNode
+import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.airbyte.protocol.models.v0.AirbyteStateMessage
 
 sealed interface InputMessage {
     fun asProtocolMessage(): AirbyteMessage
@@ -35,7 +37,7 @@ data class InputRecord(
         changes: MutableList<Meta.Change> = mutableListOf(),
     ) : this(
         stream = DestinationStream.Descriptor(namespace, name),
-        data = JsonToAirbyteValue().convert(data.deserializeToNode(), ObjectTypeWithoutSchema),
+        data = JsonToAirbyteValue().convert(data.deserializeToNode()),
         emittedAtMs = emittedAtMs,
         meta = Meta(changes),
         serialized = "",
@@ -98,4 +100,15 @@ data class InputStreamCheckpoint(val checkpoint: StreamCheckpoint) : InputCheckp
         )
     )
     override fun asProtocolMessage(): AirbyteMessage = checkpoint.asProtocolMessage()
+}
+
+data class InputGlobalCheckpoint(val sharedState: JsonNode?) : InputCheckpoint {
+    override fun asProtocolMessage(): AirbyteMessage =
+        AirbyteMessage()
+            .withType(AirbyteMessage.Type.STATE)
+            .withState(
+                AirbyteStateMessage()
+                    .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                    .withGlobal(AirbyteGlobalState().withSharedState(sharedState))
+            )
 }

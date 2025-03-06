@@ -34,10 +34,6 @@ class TestGradleTask:
             ),
         )
 
-    async def test_build_include(self, test_context):
-        step = self.DummyStep(test_context)
-        assert step.build_include
-
     def test_params(self, test_context):
         step = self.DummyStep(test_context)
         step.extra_params = {"-x": ["dummyTask", "dummyTask2"]}

@@ -68,6 +68,16 @@ MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_refere
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ |:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------|
+| 0.3.13 | 2025-03-01 | [54810](https://github.com/airbytehq/airbyte/pull/54810) | Update dependencies |
+| 0.3.12 | 2025-02-22 | [54297](https://github.com/airbytehq/airbyte/pull/54297) | Update dependencies |
+| 0.3.11 | 2025-02-15 | [53823](https://github.com/airbytehq/airbyte/pull/53823) | Update dependencies |
+| 0.3.10 | 2025-02-08 | [53258](https://github.com/airbytehq/airbyte/pull/53258) | Update dependencies |
+| 0.3.9 | 2025-02-01 | [52786](https://github.com/airbytehq/airbyte/pull/52786) | Update dependencies |
+| 0.3.8 | 2025-01-25 | [52284](https://github.com/airbytehq/airbyte/pull/52284) | Update dependencies |
+| 0.3.7 | 2025-01-18 | [51815](https://github.com/airbytehq/airbyte/pull/51815) | Update dependencies |
+| 0.3.6 | 2025-01-11 | [51144](https://github.com/airbytehq/airbyte/pull/51144) | Update dependencies |
+| 0.3.5 | 2024-12-28 | [50592](https://github.com/airbytehq/airbyte/pull/50592) | Update dependencies |
+| 0.3.4 | 2024-12-21 | [50128](https://github.com/airbytehq/airbyte/pull/50128) | Update dependencies |
 | 0.3.3 | 2024-12-14 | [49613](https://github.com/airbytehq/airbyte/pull/49613) | Update dependencies |
 | 0.3.2 | 2024-12-12 | [47680](https://github.com/airbytehq/airbyte/pull/47680) | Update dependencies |
 | 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |

@@ -12,7 +12,7 @@ from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optio
 import pendulum
 import requests
 
-from airbyte_cdk import BackoffStrategy
+from airbyte_cdk import BackoffStrategy, StreamSlice
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ExponentialBackoffStrategy
 from airbyte_cdk.sources.streams.checkpoint import Cursor
@@ -294,7 +294,7 @@ class CreatedCursorIncrementalStripeStream(StripeStream):
         if start_ts >= pendulum.now().int_timestamp:
             return []
         for start, end in self.chunk_dates(start_ts):
-            yield {"created[gte]": start, "created[lte]": end}
+            yield StreamSlice(partition={}, cursor_slice={"created[gte]": start, "created[lte]": end})
 
     def get_start_timestamp(self, stream_state) -> int:
         start_point = self.start_date
@@ -418,7 +418,7 @@ class UpdatedCursorIncrementalStripeStream(StripeStream):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         # When reading from a stream, a `read_records` is called once per slice.
         # We yield a single slice here because we don't want to make duplicate calls for event based incremental syncs.
-        yield {}
+        yield StreamSlice(partition={}, cursor_slice={})
 
     def read_event_increments(
         self, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
@@ -562,7 +562,11 @@ class SetupAttempts(CreatedCursorIncrementalStripeStream, HttpSubStream):
         )
         if incremental_slices:
             parent_records = HttpSubStream.stream_slices(self, sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
-            yield from (slice | rec for rec in parent_records for slice in incremental_slices)
+            yield from (
+                StreamSlice(partition=parent_record, cursor_slice=_slice)
+                for parent_record in parent_records
+                for _slice in incremental_slices
+            )
         else:
             yield from []
 
@@ -778,7 +782,7 @@ class ParentIncrementalStripeSubStream(StripeSubStream):
                 sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
             for record in parent_records:
-                yield {"parent": record}
+                yield StreamSlice(partition={"parent": record}, cursor_slice={})
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(current_stream_state.get(self.cursor_field, 0), latest_record[self.cursor_field])}
@@ -798,6 +802,9 @@ class UpdatedCursorIncrementalStripeSubStream(UpdatedCursorIncrementalStripeStre
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         if not stream_state:
-            yield from HttpSubStream.stream_slices(self, sync_mode, cursor_field, stream_state)
+            yield from map(
+                lambda stream_slice: StreamSlice(partition=stream_slice, cursor_slice={}),
+                HttpSubStream.stream_slices(self, sync_mode, cursor_field, stream_state),
+            )
         else:
             yield from UpdatedCursorIncrementalStripeStream.stream_slices(self, sync_mode, cursor_field, stream_state)

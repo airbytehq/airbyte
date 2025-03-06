@@ -23,6 +23,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -47,7 +48,7 @@ class DestinationMessageTest {
 
     private fun convert(
         factory: DestinationMessageFactory,
-        message: AirbyteMessage
+        message: AirbyteMessage,
     ): DestinationMessage {
         val serialized = message.serializeToString()
         return factory.fromAirbyteMessage(
@@ -282,5 +283,22 @@ class DestinationMessageTest {
                 )
                 .map { Arguments.of(it) }
         }
+    }
+
+    @Test
+    fun testNullStreamState() {
+        val inputMessage =
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.STATE)
+                .withState(
+                    AirbyteStateMessage()
+                        .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                        .withStream(
+                            AirbyteStreamState().withStreamDescriptor(descriptor.asProtocolObject())
+                        )
+                        .withSourceStats(AirbyteStateStats().withRecordCount(2.0))
+                )
+
+        assertDoesNotThrow { convert(factory(false), inputMessage) as StreamCheckpoint }
     }
 }

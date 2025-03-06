@@ -20,7 +20,16 @@
             console.log("Report is fully generated");
             {% endif %}
         }
-
+        function toggleContent(element) {
+            const contentDiv = element.querySelector('.section_content');
+            if (contentDiv.style.display === "none") {
+                contentDiv.style.display = "block";
+                element.classList.add('active');
+            } else {
+                contentDiv.style.display = "none";
+                element.classList.remove('active');
+            }
+        }
         setInterval(refreshPage, 10000);
     </script>
     <style>
@@ -217,7 +226,23 @@
         .testDescription {
             color: #9c9c9c;
         }
-
+        .collapsible {
+            cursor: pointer;
+            position: relative;
+        }
+        .collapsible::before {
+            content: '▼'; /* Down arrow */
+            position: absolute;
+            right: 10px;
+            top: 13px;
+            transform: rotate(-90deg); /* Rotate arrow to the right */
+            transition: transform 0.3s;
+            font-size: 1rem;
+            
+        }
+        .collapsible.active::before {
+            transform: rotate(0deg); /* Rotate arrow to the right */
+        }          
         .secondaryButton {
             font-size: 0.75rem;
             padding: 2px 10px;
@@ -240,19 +265,17 @@
             <h2>Context</h2>
             <div class="section_content">
                 <ul>
-                    <li><b><a href="{{connection_url}}" target="_blank">Connection</a></b></li>
                     <li>Tester: <span class="monospace">{{ user }}</span></li>
                     <li>Test date: <span class="monospace">{{ test_date }}</span></li>
-                    <li>Workspace ID: <span class="monospace">{{ workspace_id }}</span></li>
-                    <li>Connection ID: <span class="monospace">{{ connection_id }}</span></li>
                     <li>Connector image: <span class="monospace">{{ connector_image }}</span></li>
                     <li>Control version: <span class="monospace">{{ control_version }}</span></li>
                     <li>Target version: <span class="monospace">{{ target_version }}</span></li>
+                    <li><a href="{{ private_details_url}}" target="_blank">Private details</a></li>
                 </ul>
             </div>
         </section>
         <section>
-            <h2>Connection coverage metadata</h2>
+            <h2>Coverage metadata</h2>
             <div class="section_content">
                 <h3>Stream coverage</h3>
                 <table>
@@ -309,27 +332,28 @@
                 {% endif %}
             </div>
         </section>
-        <section>
-            <h2>Connection objects</h2>
-            <div class="section_content">
+        {% for connection_objects in all_connection_objects %}
+
+        <section class="collapsible" onclick="toggleContent(this)">
+            <h2>Connection objects - Connection {{ connection_objects.hashed_connection_id }} </h2>
+            <div class="section_content" style="display: none">
                 <p class="testDescription">Each object below relates to an "argument" passed to one (or many) of the Connectors standard commands (spec/check/discover/read). The source of these arguments is either the connector itself (catalog), the connection (config/state) or both (configured catalog). To learn more checkout the <a href="https://docs.airbyte.com/understanding-airbyte/airbyte-protocol" target="_blank">Airbyte Protocol Documentation</a></p>
-                <h3>Source configuration <button class="monospace secondaryButton" onclick="copyToClipboard('config')">📋 copy</button></h3>
-                <p class="testDescription">The configuration object taken from the given connection that was passed to each version of the connector during the test.</p>
-                <pre><code class="language-json" id="config">{{ source_config }}</code></pre>
-                {% if state %}
+                {% if connection_objects['state'] %}
                 <h3>State <button class="monospace secondaryButton" onclick="copyToClipboard('state')">📋 copy</button></h3>
                 <p class="testDescription">The state object taken from the given connection that was passed to each version of the connector during the test.</p>
-                <pre><code class="language-json" id="state">{{ state }}</code>
+                <pre><code class="language-json" id="state">{{  connection_objects['state'] }}</code>
                 </pre>
                 {% endif %}
                 <h3>Configured catalog <button class="monospace secondaryButton" onclick="copyToClipboard('configured-catalog')">📋 copy</button></h3>
                 <p class="testDescription">The configured catalog object taken returned by the connector given the connection config.</p>
-                <pre><code class="language-json" id="configured-catalog">{{ configured_catalog }}</code></pre>
+                <pre><code class="language-json" id="configured-catalog">{{  connection_objects['configured_catalog'] }}</code></pre>
                 <h3>Catalog <button class="monospace secondaryButton" onclick="copyToClipboard('catalog')">📋 copy</button></h3>
                 <p class="testDescription">The catalog object returned by the connector.</p>
-                <pre><code class="language-json" id="catalog">{{ catalog }}</code></pre>
+                <pre><code class="language-json" id="catalog">{{ connection_objects['catalog'] }}</code></pre>
             </div>
         </section>
+        {% endfor %}
+
         <section>
             {% if not fully_generated %}
             <h2><span class="loader"></span>Command execution metrics</h2>
@@ -441,42 +465,7 @@
                 {% endif %}
             </div>
         </section>
-        <section>
-            {% if not fully_generated %}
-            <h2><span class="loader"></span>Requested URLs</h2>
-            {% else%}
-             <h2>Requested URLs</h2>
-            {% endif %}
-            <div class="section_content">
-                {% for command, flows in requested_urls_per_command.items() %}
-                <h3>{{ command.value.upper() }}</h3>
-                {% if flows %}
-                <div class="clipped">
-                    <table class="full-width">
-                        <thead>
-                            <tr>
-                                <th class="no-border"></th>
-                                <th>Control URL</th>
-                                <th>Target URL</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for index, control_url, target_url in flows %}
-                            <tr>
-                                <td class="monospace highlighted metric">{{ index }}</td>
-                                <td class="monospace">{{ control_url }}</td>
-                                <td class="monospace">{{ target_url }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <p>No URLs requested</p>
-                {% endif %}
-                {% endfor%}
-            </div>
-        </section>
+        
         <section>
         {% if not fully_generated %}
         <h2><span class="loader"></span>Test results</h2>

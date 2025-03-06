@@ -119,6 +119,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                             |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
+| 1.0.3 | 2025-01-10 | [51497](https://github.com/airbytehq/airbyte/pull/51497) | Use a non root base image |
 | 1.0.2 | 2024-12-18 | [49891](https://github.com/airbytehq/airbyte/pull/49891) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 1.0.1   | 2024-11-04 | [\#48134](https://github.com/airbytehq/airbyte/pull/48134) | Fix supported sync modes (destination-mssql 1.x.y does not support dedup)                           |
 | 1.0.0   | 2024-04-11 | [\#36050](https://github.com/airbytehq/airbyte/pull/36050) | Update to Dv2 Table Format and Remove normalization                                                 |

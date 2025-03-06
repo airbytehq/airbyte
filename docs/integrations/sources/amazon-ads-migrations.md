@@ -1,5 +1,51 @@
 # Amazon Ads Migration Guide
 
+## Upgrading to 7.0.0
+
+- The stream SponsoredDisplayReportStream is split into five:
+
+  - sponsored_display_campaigns_report_stream
+  - sponsored_display_adgroups_report_stream
+  - sponsored_display_productads_report_stream
+  - sponsored_display_targets_report_stream
+  - sponsored_display_asins_report_stream
+
+- The stream SponsoredProductsReportStream is split into seven:
+
+  - sponsored_products_campaigns_report_stream
+  - sponsored_products_adgroups_report_stream
+  - sponsored_products_keywords_report_stream
+  - sponsored_products_targets_report_stream
+  - sponsored_products_productads_report_stream
+  - sponsored_products_asins_keywords_report_stream
+  - sponsored_products_asins_targets_report_stream
+
+- Changes for all *-report streams:
+
+  - They have new primary keys (see the following table).
+  - metrics have been moved to the root of the schema.
+  - metrics have been reset to the proper field type (previously, they were all stored as strings).
+
+### Primary Key changes
+
+| Stream Name                                       | Old Primary Key                                       | New Primary key                               |
+|---------------------------------------------------|-------------------------------------------------------|-----------------------------------------------|
+| sponsored_brands_v3_report_stream                 | ["profileId", "recordType", "reportDate", "recordId"] | ["profileId", "reportDate", "purchasedAsin"]  |
+| SponsoredDisplayReportStream (deprecated)         | ["profileId", "recordType", "reportDate", "recordId"] |                                               |
+| - sponsored_display_campaigns_report_stream       |                                                       | ["profileId", "reportDate", "campaignId"]     |
+| - sponsored_display_adgroups_report_stream        |                                                       | ["profileId", "reportDate", "adGroupId"]      |
+| - sponsored_display_productads_report_stream      |                                                       | ["profileId", "reportDate", "adId"]           |
+| - sponsored_display_targets_report_stream         |                                                       | ["profileId", "reportDate", "targetingId"]    |
+| - sponsored_display_asins_report_stream           |                                                       | ["profileId", "reportDate", "promotedAsin"]   |
+| SponsoredProductsReportStream (deprecated)        | ["profileId", "recordType", "reportDate", "recordId"] |                                               |
+| - sponsored_products_campaigns_report_stream      |                                                       | ["profileId", "reportDate", "campaignId"]     |
+| - sponsored_products_adgroups_report_stream       |                                                       | ["profileId", "reportDate", "adGroupId"]      |
+| - sponsored_products_keywords_report_stream       |                                                       | ["profileId", "reportDate", "keywordId"]      |
+| - sponsored_products_targets_report_stream        |                                                       | ["profileId", "reportDate", "keywordId"]      |
+| - sponsored_products_productads_report_stream     |                                                       | ["profileId", "reportDate", "adId"]           |
+| - sponsored_products_asins_keywords_report_stream |                                                       | ["profileId", "reportDate", "advertisedAsin"] |
+| - sponsored_products_asins_targets_report_stream  |                                                       | ["profileId", "reportDate", "advertisedAsin"] |
+
 
 ## Upgrading to 6.0.0
 
@@ -51,7 +97,7 @@ The following streams have updated schemas due to a change with the Amazon Ads A
 ### Schema Changes - Removed/Added Fields
 
 | Stream Name                                  | Removed Fields                                                                                                               | Added Fields                                                                                |
-| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+|----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
 | `SponsoredBrandsCampaigns`                   | `serviceStatus`, `bidOptimization`, `bidMultiplier`, `adFormat`, `bidAdjustments`, `creative`, `landingPage`, `supplySource` | `ruleBasedBudget`, `bidding`, `productLocation`, `costType`, `smartDefault`, `extendedData` |
 | `SponsoredBrandsAdGroups`                    | `bid`, `keywordId`, `keywordText`, `nativeLanuageKeyword`, `matchType`                                                       | `extendedData`                                                                              |
 | `SponsoredProductsCampaigns`                 | `campaignType`, `dailyBudget`, `ruleBasedBudget`, `premiumBidAdjustment`, `networks`                                         | `dynamicBidding`, `budget`, `extendedData`                                                  |
