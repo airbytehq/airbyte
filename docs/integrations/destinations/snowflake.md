@@ -280,6 +280,7 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                          |
 | :-------------- | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.15.5 | 2025-03-05 | [55201](https://github.com/airbytehq/airbyte/pull/55201) | fix(destination-snowflake): Upgrade to java-connector-base image 2.0.1 |
 | 3.15.4 | 2025-01-10 | [51503](https://github.com/airbytehq/airbyte/pull/51503) | Use a non root base image |
 | 3.15.3 | 2024-12-18 | [49913](https://github.com/airbytehq/airbyte/pull/49913) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 3.15.2          | 2024-10-31 | [\#48070](https://github.com/airbytehq/airbyte/pull/48070) | upgrade JDBC driver to 3.20.0                                                                                                                                                    |
