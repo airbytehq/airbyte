@@ -17,6 +17,9 @@ You'll need the following information to configure the Teradata destination:
 - **Password**
 - **Default Schema Name** - Specify the schema (or several schemas separated by commas) to be set in the search-path. These schemas will be used to resolve unqualified object names used in statements executed over this connection.
 - **JDBC URL Params** (optional)
+- **Query Band** (optional) - The [query band ](https://teradata-docs.s3.amazonaws.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html#BGEGBBAA)is a set of name-value pairs that can be assigned to a Teradata database session. It helps identify the source of SQL requests originating from Airbyte. You can customize the query band to include relevant information such as application name, organization, and user identifiers.
+  Each entry should be formatted as key=value, separated by semicolons (;). 
+  Example: `appname=myApp;org=myOrganization;`
 
 [Refer to this guide for more details](https://downloads.teradata.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html#BGBHDDGB)
 
