@@ -167,25 +167,30 @@ class ReportData(DFAReportingStream):
             yield row
 
 class SourceCampaignManager(AbstractSource):
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
-
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
-        for an example.
-
-        :param config:  the user-input config object conforming to the connector's spec.yaml
-        :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
-        """
-        return True, None
+        try:
+            authenticator = Oauth2Authenticator(
+                token_refresh_endpoint="https://oauth2.googleapis.com/token",
+                client_id=config["client_id"],
+                client_secret=config["client_secret"],
+                refresh_token=config["refresh_token"],
+            )
+            create_report = CreateReport(config["profile_id"], authenticator)
+            next(create_report.read_records(sync_mode=SyncMode.full_refresh))
+            return True, None
+        except Exception as e:
+            return False, f"Unable to connect to DFA Reporting API: {str(e)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        TODO: Replace the streams below with your own streams.
-
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
-        # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
-        return [Customers(authenticator=auth), Employees(authenticator=auth)]
+        authenticator = Oauth2Authenticator(
+            token_refresh_endpoint="https://oauth2.googleapis.com/token",
+            client_id=config["client_id"],
+            client_secret=config["client_secret"],
+            refresh_token=config["refresh_token"],
+        )
+        return [
+            # CreateReport(config["profile_id"], authenticator),
+            # RunReport(config["profile_id"], authenticator),
+            ReportData(config["profile_id"], authenticator),
+        ]
