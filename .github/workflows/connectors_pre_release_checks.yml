@@ -30,11 +30,11 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
-      - name: Fetch last commit id from remote branch [PULL REQUESTS]
+      - name: Fetch last commit id from remote branch
         if: github.event_name == 'pull_request'
         id: fetch_last_commit_id_pr
         run: echo "commit_id=$(git ls-remote --heads origin refs/heads/${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
-      - name: Test connectors [PULL REQUESTS]
+      - name: Run Connector Pre-Release Checks
         if: github.event_name == 'pull_request'
         uses: ./.github/actions/run-airbyte-ci
         with:
@@ -46,7 +46,14 @@ jobs:
           # sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           git_branch: ${{ github.head_ref }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
-          # github_token: ${{ env.PAT }}
+          github_token: ${{ github.token }}
           # s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           # s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors --modified test --only-step=version_inc_check --only-step=qa_checks --global-status-check-context='Connectors Pre-Release Check' --global-status-check-description='Checking if connectors modified in this PR are ready for release'"
+      - name: Upload pipeline reports
+        id: upload-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: early-ci-pipeline-reports
+          path: /home/runner/work/airbyte/airbyte/airbyte-ci/connectors/pipelines/pipeline_reports/airbyte-ci/connectors/test/pull_request/**/output.html
+          retention-days: 7
