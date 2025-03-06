@@ -64,9 +64,13 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 6. Log in and Authorize to your Amazon Seller Partner account.
 7. For `Start Date`, enter the date in `YYYY-MM-DD` format. The data added on and after this date will be replicated. This field is optional - if not provided or older than 2 years ago from today, the date 2 years ago from today will be used.
 8. For `End Date`, enter the date in `YYYY-MM-DD` format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
-9. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
-10. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use wating time between requests to avoid fatal statuses in report based streams.
-11. Click `Set up source`.
+9. **Financial Events Step Size**: Select the time window size for fetching financial events data. Options include:
+   - `P1D` (1 day)
+   - `P7D` (7 days)
+   - `P14D` (14 days, default)
+10. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
+11. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use wating time between requests to avoid fatal statuses in report based streams.
+12. Click `Set up source`.
 
 <!-- /env:cloud -->
 
@@ -80,9 +84,13 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 4. Using developer application from Step 1, [generate](https://developer-docs.amazon.com/sp-api/docs/self-authorization) refresh token.
 5. For Start Date, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, the date 2 years ago from today will be used.
 6. For End Date, enter the date in YYYY-MM-DD format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
-7. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
-8. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use wating time between requests to avoid fatal statuses in report based streams.
-9. Click `Set up source`.
+7. **Financial Events Step Size**: Select the time window size for fetching financial events data. Options include:
+   - `P1D` (1 day)
+   - `P7D` (7 days)
+   - `P14D` (14 days, default)
+8. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
+9. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use wating time between requests to avoid fatal statuses in report based streams.
+10. Click `Set up source`.
 
 <!-- /env:oss -->
 
@@ -172,6 +180,10 @@ but with different options for the `sellingProgram` parameter - `FRESH` and `RET
 
 Information about rate limits you may find [here](https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits-in-the-sp-api).
 
+- Use the **Financial Events Step Size** configuration:
+  - **Smaller step sizes** (e.g., `P1D` or 1 day) are ideal for large data volumes to avoid timeouts and reduce the risk of hitting rate limits.
+  - **Larger step sizes** (e.g., `P14D` or 14 days) are more efficient for smaller data volumes, reducing the number of API calls.
+
 ## Data type map
 
 | Integration Type         | Airbyte Type |
@@ -228,6 +240,7 @@ Create a separate connection for streams which usually fail with error above "Fa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.6.1 | 2024-10-01 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)     |Fix daterange in `DatetimeBasedCursor` and Added configurable step size for financial events streams (`list_financial_event_groups`, `list_financial_events`)|
 | 4.6.0 | 2025-02-24 | [53225](https://github.com/airbytehq/airbyte/pull/53225) | Add API Budget |
 | 4.5.3 | 2025-02-22 | [53928](https://github.com/airbytehq/airbyte/pull/53928) | Update dependencies |
 | 4.5.2 | 2025-02-17 | [53693](https://github.com/airbytehq/airbyte/pull/53693) | Add app_id to server configuration (OAuth) |
