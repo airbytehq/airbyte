@@ -162,6 +162,7 @@ def test_read_products():
                 stream=AirbyteStream(name="products", json_schema={}, supported_sync_modes=["full_refresh"]),
                 sync_mode="incremental",
                 destination_sync_mode="overwrite",
+            )
         ]
     )
     state = {}
