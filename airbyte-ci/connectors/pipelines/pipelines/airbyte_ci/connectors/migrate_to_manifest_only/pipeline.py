@@ -121,7 +121,7 @@ class StripConnector(Step):
     """
 
     context: ConnectorContext
-    title = "Strip Out Unnecessary Files"
+    title: str = "Strip Out Unnecessary Files"
 
     def _delete_directory_item(self, file: Path) -> None:
         """
@@ -162,12 +162,16 @@ class StripConnector(Step):
 
             documentation_url = spec.get("documentationUrl") or spec.get("documentation_url")
             connection_specification = spec.get("connection_specification") or spec.get("connectionSpecification")
-            advanced_auth = spec.get("advanced_auth")
-            return {
+            result = {
                 "documentation_url": documentation_url,
                 "connection_specification": connection_specification,
-                "advanced_auth": advanced_auth,
             }
+
+            # Only include advanced_auth if it exists in the original spec
+            if "advanced_auth" in spec:
+                result["advanced_auth"] = spec.get("advanced_auth")
+
+            return result
 
         except Exception as e:
             raise ValueError(f"Failed to read data in spec file: {e}")
@@ -214,12 +218,17 @@ class StripConnector(Step):
                 if "spec" in manifest:
                     return StepResult(step=self, status=StepStatus.FAILURE, stdout="Connector has both inline and non-inline specs.")
 
-                manifest["spec"] = {
+                spec_dict = {
                     "type": "Spec",
                     "documentation_url": spec_data.get("documentation_url"),
                     "connection_specification": spec_data.get("connection_specification"),
-                    "advanced_auth": spec_data.get("advanced_auth"),
                 }
+
+                # Only include advanced_auth if it exists in the spec data
+                if "advanced_auth" in spec_data:
+                    spec_dict["advanced_auth"] = spec_data.get("advanced_auth")
+
+                manifest["spec"] = spec_dict
                 write_yaml(manifest, root_manifest_path)
             except Exception as e:
                 return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to add spec data to manifest.yaml: {e}")
@@ -243,7 +252,7 @@ class UpdateManifestOnlyFiles(Step):
     """
 
     context: ConnectorContext
-    title = "Update Connector Metadata"
+    title: str = "Update Connector Metadata"
 
     async def _run(self) -> StepResult:
         connector = self.context.connector
