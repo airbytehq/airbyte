@@ -45,7 +45,8 @@ Please follow the [Chargify documentation for generating an API key](https://dev
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
-| 0.5.0 | 2024-08-23 | [44602](https://github.com/airbytehq/airbyte/pull/44602) | Refactor connector to manifest-only format |
+| 0.6.0   | 2025-03-06 | [54669](https://github.com/airbytehq/airbyte/pull/54669) | Incremental for customer, subscriptions, invoices, coupons, transactions and products streams |
+| 0.5.0   | 2024-08-23 | [44602](https://github.com/airbytehq/airbyte/pull/44602) | Refactor connector to manifest-only format |
 | 0.4.15 | 2024-08-17 | [44230](https://github.com/airbytehq/airbyte/pull/44230) | Update dependencies |
 | 0.4.14 | 2024-08-12 | [43775](https://github.com/airbytehq/airbyte/pull/43775) | Update dependencies |
 | 0.4.13 | 2024-08-10 | [43612](https://github.com/airbytehq/airbyte/pull/43612) | Update dependencies |
