@@ -1,5 +1,5 @@
 const visit = require("unist-util-visit").visit;
-const { catalog, isPypiConnector } = require("../connector_registry");
+const { catalog } = require("../connector_registry");
 const { isDocsPage, getRegistryEntry } = require("./utils");
 
 const plugin = () => {
@@ -36,25 +36,18 @@ async function injectDefaultPyAirbyteSection(vfile, ast) {
   if (
     !docsPageInfo.isTrueDocsPage ||
     !registryEntry ||
-    !isPypiConnector(registryEntry) ||
     vfile.value.includes("## Usage with PyAirbyte")
   ) {
     return;
   }
   const connectorName = registryEntry.dockerRepository_oss.split("/").pop();
+  const hasValidSpec = registryEntry.spec_oss && registryEntry.spec_oss.connectionSpecification;
 
   let added = false;
   visit(ast, "heading", (node, index, parent) => {
     if (!added && isChangelogHeading(node)) {
       added = true;
-      parent.children.splice(
-        index,
-        0,
-        {
-          type: "heading",
-          depth: 2,
-          children: [{ type: "text", value: "Reference" }],
-        },
+      const referenceContent = hasValidSpec ? [
         {
           type: "mdxJsxFlowElement",
           name: "SpecSchema",
@@ -66,13 +59,117 @@ async function injectDefaultPyAirbyteSection(vfile, ast) {
             },
           ],
         }
+      ] : [
+        {
+          type: "paragraph",
+          children: [
+            {
+              type: "text",
+              value: "No configuration specification is available for this connector."
+            }
+          ]
+        }
+      ];
+
+      parent.children.splice(
+        index,
+        0,
+        {
+          type: "heading",
+          depth: 2,
+          children: [{ type: "text", value: "Reference" }],
+        },
+        ...referenceContent
       );
     }
   });
   if (!added) {
-    throw new Error(
-      `Could not find a changelog heading in ${vfile.path} to add the default PyAirbyte section. This connector won't have a reference section. Make sure there is either a ## Changelog section or add a manual reference section.`
-    );
+    // If no Changelog heading found, try to find first h2 heading
+    let firstH2Index = -1;
+    visit(ast, "heading", (node, index) => {
+      if (!added && node.depth === 2 && firstH2Index === -1) {
+        firstH2Index = index;
+      }
+    });
+
+    // Insert after first h2 if found
+    if (firstH2Index >= 0) {
+      visit(ast, "heading", (node, index, parent) => {
+        if (index === firstH2Index) {
+          added = true;
+          const referenceContent = hasValidSpec ? [
+            {
+              type: "mdxJsxFlowElement",
+              name: "SpecSchema",
+              attributes: [
+                {
+                  type: "mdxJsxAttribute",
+                  name: "connector",
+                  value: connectorName,
+                },
+              ],
+            }
+          ] : [
+            {
+              type: "paragraph",
+              children: [
+                {
+                  type: "text",
+                  value: "No configuration specification is available for this connector."
+                }
+              ]
+            }
+          ];
+
+          parent.children.splice(
+            index + 1,
+            0,
+            {
+              type: "heading",
+              depth: 2,
+              children: [{ type: "text", value: "Reference" }],
+            },
+            ...referenceContent
+          );
+        }
+      });
+    }
+
+    // If still not added, append to end of document
+    if (!added) {
+      const referenceContent = hasValidSpec ? [
+        {
+          type: "mdxJsxFlowElement",
+          name: "SpecSchema",
+          attributes: [
+            {
+              type: "mdxJsxAttribute",
+              name: "connector",
+              value: connectorName,
+            },
+          ],
+        }
+      ] : [
+        {
+          type: "paragraph",
+          children: [
+            {
+              type: "text",
+              value: "No configuration specification is available for this connector."
+            }
+          ]
+        }
+      ];
+
+      ast.children.push(
+        {
+          type: "heading",
+          depth: 2,
+          children: [{ type: "text", value: "Reference" }],
+        },
+        ...referenceContent
+      );
+    }
   }
 }
 

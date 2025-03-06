@@ -5,6 +5,7 @@
 from typing import List, Optional
 
 from dagger import Container
+
 from pipelines.airbyte_ci.connectors.context import PipelineContext
 from pipelines.dagger.actions.python.common import with_pip_packages, with_python_package
 from pipelines.dagger.actions.python.poetry import find_local_dependencies_in_pyproject_toml
@@ -48,6 +49,6 @@ async def with_installed_pipx_package(
     for dependency_directory in local_dependencies:
         container = container.with_mounted_directory("/" + dependency_directory, context.get_repo_dir(dependency_directory))
 
-    container = container.with_exec(["pipx", "install", f"/{package_source_code_path}"])
+    container = container.with_exec(["pipx", "install", f"/{package_source_code_path}"], use_entrypoint=True)
 
     return container

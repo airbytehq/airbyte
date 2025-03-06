@@ -4,6 +4,7 @@ import os
 from typing import Optional
 
 from dagger import Client, Container
+
 from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL
 from pipelines.helpers.utils import sh_dash_c
 
@@ -38,14 +39,14 @@ async def checked_out_git_container(
         dagger_client.container()
         .from_("alpine/git:latest")
         .with_workdir("/repo")
-        .with_exec(["init"])
+        .with_exec(["init"], use_entrypoint=True)
         .with_env_variable("CACHEBUSTER", current_git_revision)
         .with_secret_variable("ORIGIN_REPO_URL", origin_repo_url_secret)
         .with_secret_variable("TARGET_REPO_URL", target_repo_url_secret)
-        .with_exec(sh_dash_c(["git remote add origin ${ORIGIN_REPO_URL}"]), skip_entrypoint=True)
-        .with_exec(sh_dash_c(["git remote add target ${TARGET_REPO_URL}"]), skip_entrypoint=True)
-        .with_exec(["fetch", "origin", diffed_branch])
+        .with_exec(sh_dash_c(["git remote add origin ${ORIGIN_REPO_URL}"]))
+        .with_exec(sh_dash_c(["git remote add target ${TARGET_REPO_URL}"]))
+        .with_exec(["fetch", "origin", diffed_branch], use_entrypoint=True)
     )
     if diffed_branch != current_git_branch:
-        git_container = git_container.with_exec(["fetch", "target", current_git_branch])
-    return await git_container.with_exec(["checkout", current_git_branch])
+        git_container = git_container.with_exec(["fetch", "target", current_git_branch], use_entrypoint=True)
+    return await git_container.with_exec(["checkout", current_git_branch], use_entrypoint=True)

@@ -79,6 +79,24 @@ OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere 
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                      |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.40 | 2025-03-01 | [54861](https://github.com/airbytehq/airbyte/pull/54861) | Update dependencies |
+| 0.1.39 | 2025-02-22 | [54255](https://github.com/airbytehq/airbyte/pull/54255) | Update dependencies |
+| 0.1.38 | 2025-02-15 | [53879](https://github.com/airbytehq/airbyte/pull/53879) | Update dependencies |
+| 0.1.37 | 2025-02-08 | [53434](https://github.com/airbytehq/airbyte/pull/53434) | Update dependencies |
+| 0.1.36 | 2025-02-01 | [52908](https://github.com/airbytehq/airbyte/pull/52908) | Update dependencies |
+| 0.1.35 | 2025-01-25 | [51762](https://github.com/airbytehq/airbyte/pull/51762) | Update dependencies |
+| 0.1.34 | 2025-01-11 | [51245](https://github.com/airbytehq/airbyte/pull/51245) | Update dependencies |
+| 0.1.33 | 2025-01-04 | [50904](https://github.com/airbytehq/airbyte/pull/50904) | Update dependencies |
+| 0.1.32 | 2024-12-28 | [50480](https://github.com/airbytehq/airbyte/pull/50480) | Update dependencies |
+| 0.1.31 | 2024-12-21 | [50203](https://github.com/airbytehq/airbyte/pull/50203) | Update dependencies |
+| 0.1.30 | 2024-12-14 | [49303](https://github.com/airbytehq/airbyte/pull/49303) | Update dependencies |
+| 0.1.29 | 2024-11-25 | [48654](https://github.com/airbytehq/airbyte/pull/48654) | Update dependencies |
+| 0.1.28 | 2024-11-05 | [48323](https://github.com/airbytehq/airbyte/pull/48323) | Update dependencies |
+| 0.1.27 | 2024-10-29 | [47106](https://github.com/airbytehq/airbyte/pull/47106) | Update dependencies |
+| 0.1.26 | 2024-10-12 | [46782](https://github.com/airbytehq/airbyte/pull/46782) | Update dependencies |
+| 0.1.25 | 2024-10-05 | [46474](https://github.com/airbytehq/airbyte/pull/46474) | Update dependencies |
+| 0.1.24 | 2024-09-28 | [46127](https://github.com/airbytehq/airbyte/pull/46127) | Update dependencies |
+| 0.1.23 | 2024-09-21 | [45791](https://github.com/airbytehq/airbyte/pull/45791) | Update dependencies |
 | 0.1.22 | 2024-09-14 | [45490](https://github.com/airbytehq/airbyte/pull/45490) | Update dependencies |
 | 0.1.21 | 2024-09-07 | [45247](https://github.com/airbytehq/airbyte/pull/45247) | Update dependencies |
 | 0.1.20 | 2024-08-31 | [45063](https://github.com/airbytehq/airbyte/pull/45063) | Update dependencies |

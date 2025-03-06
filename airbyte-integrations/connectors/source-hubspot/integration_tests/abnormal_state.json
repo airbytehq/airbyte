@@ -153,6 +153,17 @@
   {
     "type": "STREAM",
     "stream": {
+      "stream_descriptor": {
+        "name": "leads"
+      },
+      "stream_state": {
+        "updatedAt": "2200-01-01T00:00:00.000000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
       "stream_descriptor": { "name": "line_items" },
       "stream_state": { "updatedAt": "2200-01-01T00:00:00.000000Z" }
     }

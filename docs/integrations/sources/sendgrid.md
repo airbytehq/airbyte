@@ -89,6 +89,20 @@ The connector is restricted by normal Sendgrid [requests limitation](https://doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.9 | 2025-02-23 | [54625](https://github.com/airbytehq/airbyte/pull/54625) | Update dependencies |
+| 1.2.8 | 2025-02-15 | [54013](https://github.com/airbytehq/airbyte/pull/54013) | Update dependencies |
+| 1.2.7 | 2025-02-08 | [53508](https://github.com/airbytehq/airbyte/pull/53508) | Update dependencies |
+| 1.2.6 | 2025-02-01 | [52995](https://github.com/airbytehq/airbyte/pull/52995) | Update dependencies |
+| 1.2.5 | 2025-01-25 | [52535](https://github.com/airbytehq/airbyte/pull/52535) | Update dependencies |
+| 1.2.4 | 2025-01-18 | [51892](https://github.com/airbytehq/airbyte/pull/51892) | Update dependencies |
+| 1.2.3 | 2025-01-11 | [48238](https://github.com/airbytehq/airbyte/pull/48238) | Update dependencies |
+| 1.2.2 | 2024-10-29 | [47836](https://github.com/airbytehq/airbyte/pull/47836) | Update dependencies |
+| 1.2.1 | 2024-10-28 | [47588](https://github.com/airbytehq/airbyte/pull/47588) | Update dependencies |
+| 1.2.0 | 2024-10-13 | [46870](https://github.com/airbytehq/airbyte/pull/46870) | Migrate to Manifest-only |
+| 1.1.5 | 2024-10-12 | [46781](https://github.com/airbytehq/airbyte/pull/46781) | Update dependencies |
+| 1.1.4 | 2024-10-05 | [46460](https://github.com/airbytehq/airbyte/pull/46460) | Update dependencies |
+| 1.1.3 | 2024-09-28 | [46105](https://github.com/airbytehq/airbyte/pull/46105) | Update dependencies |
+| 1.1.2 | 2024-09-21 | [45782](https://github.com/airbytehq/airbyte/pull/45782) | Update dependencies |
 | 1.1.1 | 2024-09-14 | [45525](https://github.com/airbytehq/airbyte/pull/45525) | Update dependencies |
 | 1.1.0 | 2024-09-11 | [45191](https://github.com/airbytehq/airbyte/pull/45191) | Move Contacts stream to declarative async job |
 | 1.0.18 | 2024-09-07 | [45239](https://github.com/airbytehq/airbyte/pull/45239) | Update dependencies |

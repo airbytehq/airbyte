@@ -8,7 +8,6 @@ from unittest.mock import patch
 import pendulum
 import pytest
 import requests
-from airbyte_cdk.sources.streams.http import HttpStream
 from freezegun import freeze_time
 from source_twilio.auth import HttpBasicAuthenticator
 from source_twilio.source import SourceTwilio
@@ -27,6 +26,9 @@ from source_twilio.streams import (
     UsageTriggers,
 )
 
+from airbyte_cdk.sources.streams.http import HttpStream
+
+
 TEST_CONFIG = {
     "account_sid": "airbyte.io",
     "auth_token": "secret",
@@ -43,7 +45,6 @@ TEST_INSTANCE = SourceTwilio()
 
 
 class TestTwilioStream:
-
     CONFIG = {"authenticator": TEST_CONFIG.get("authenticator")}
 
     @pytest.mark.parametrize(
@@ -60,14 +61,14 @@ class TestTwilioStream:
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
-            (Accounts, ['name']),
+            (Accounts, ["name"]),
         ],
     )
     def test_changeable_fields(self, stream_cls, expected):
-        with patch.object(Accounts, "changeable_fields", ['name']):
-          stream = stream_cls(**self.CONFIG)
-          result = stream.changeable_fields
-          assert result == expected
+        with patch.object(Accounts, "changeable_fields", ["name"]):
+            stream = stream_cls(**self.CONFIG)
+            result = stream.changeable_fields
+            assert result == expected
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
@@ -108,12 +109,12 @@ class TestTwilioStream:
     )
     def test_parse_response(self, requests_mock, stream_cls, test_response, expected):
         with patch.object(TwilioStream, "changeable_fields", ["name"]):
-          stream = stream_cls(**self.CONFIG)
-          url = f"{stream.url_base}{stream.path()}"
-          requests_mock.get(url, json=test_response)
-          response = requests.get(url)
-          result = list(stream.parse_response(response))
-          assert result[0]['id'] == expected[0]['id']
+            stream = stream_cls(**self.CONFIG)
+            url = f"{stream.url_base}{stream.path()}"
+            requests_mock.get(url, json=test_response)
+            response = requests.get(url)
+            result = list(stream.parse_response(response))
+            assert result[0]["id"] == expected[0]["id"]
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
@@ -151,14 +152,13 @@ class TestTwilioStream:
             ("Fri, 11 Dec 2020 04:28:40 +0000", {"format": "date-time"}, "2020-12-11T04:28:40Z"),
             ("2020-12-11T04:28:40Z", {"format": "date-time"}, "2020-12-11T04:28:40Z"),
             ("some_string", {}, "some_string"),
-        ]
+        ],
     )
     def test_transform_function(self, original_value, field_schema, expected_value):
         assert Accounts.custom_transform_function(original_value, field_schema) == expected_value
 
 
 class TestIncrementalTwilioStream:
-
     CONFIG = TEST_CONFIG
     CONFIG.pop("account_sid")
     CONFIG.pop("auth_token")
@@ -256,7 +256,6 @@ class TestIncrementalTwilioStream:
 
 
 class TestTwilioNestedStream:
-
     CONFIG = {"authenticator": TEST_CONFIG.get("authenticator")}
 
     @pytest.mark.parametrize(
@@ -299,7 +298,6 @@ class TestTwilioNestedStream:
 
 
 class TestUsageNestedStream:
-
     CONFIG = {"authenticator": TEST_CONFIG.get("authenticator")}
 
     @pytest.mark.parametrize(

@@ -10,10 +10,11 @@ from typing import Any, Mapping
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
 from freezegun import freeze_time
 from requests.models import Response
 from source_google_analytics_data_api.source import GoogleAnalyticsDataApiBaseStream, SourceGoogleAnalyticsDataApi
+
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
 
 from .utils import read_incremental
 
@@ -64,7 +65,8 @@ def test_request_params(patch_base_class):
 
 
 def test_request_body_json(patch_base_class):
-    request_body_params = {"stream_state": MagicMock(), "stream_slice": MagicMock(), "next_page_token": None}
+    stream_slice = {"startDate": "2024-01-01", "endDate": "2024-01-31"}
+    request_body_params = {"stream_state": MagicMock(), "stream_slice": stream_slice, "next_page_token": None}
 
     expected_body_json = {
         "metrics": [
@@ -84,7 +86,9 @@ def test_request_body_json(patch_base_class):
             {"name": "browser"},
         ],
         "keepEmptyRows": True,
-        "dateRanges": [request_body_params["stream_slice"]],
+        "dateRanges": [
+            {"startDate": request_body_params["stream_slice"]["startDate"], "endDate": request_body_params["stream_slice"]["endDate"]}
+        ],
         "returnPropertyQuota": True,
         "offset": str(0),
         "limit": "100000",
@@ -265,8 +269,8 @@ def test_should_retry(patch_base_class, http_status, response_action_expected, r
     if response_body:
         json_data = response_body
         response_mock._content = str.encode(json.dumps(json_data))
-        response_mock.headers = {'Content-Type': 'application/json'}
-        response_mock.encoding = 'utf-8'
+        response_mock.headers = {"Content-Type": "application/json"}
+        response_mock.encoding = "utf-8"
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
     assert stream.get_error_handler().interpret_response(response_mock).response_action == response_action_expected
 
@@ -308,6 +312,7 @@ def test_stream_slices():
         {"startDate": "2022-12-30", "endDate": "2023-01-01"},
     ]
 
+
 @freeze_time("2023-01-01 00:00:00")
 def test_full_refresh():
     """
@@ -315,9 +320,7 @@ def test_full_refresh():
     """
     config = {"date_ranges_start_date": datetime.date(2022, 12, 29), "window_in_days": 1, "dimensions": ["browser", "country", "language"]}
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=None, config=config)
-    full_refresh_state = {
-      "__ab_full_refresh_state_message": True
-    }
+    full_refresh_state = {"__ab_full_refresh_state_message": True}
     slices = list(stream.stream_slices(sync_mode=None, stream_state=full_refresh_state))
     assert slices == [
         {"startDate": "2022-12-29", "endDate": "2022-12-29"},
@@ -419,47 +422,37 @@ def test_read_incremental(requests_mock):
         {"property_id": 123, "yearWeek": "202202", "totalUsers": 140, "startDate": "2022-01-10", "endDate": "2022-01-10"},
     ]
 
+
 @pytest.mark.parametrize(
     "config_dimensions, expected_state",
     [
         pytest.param(["browser", "country", "language", "date"], {"date": "20240320"}, id="test_date_no_cursor_field_dimension"),
         pytest.param(["browser", "country", "language"], {}, id="test_date_cursor_field_dimension"),
-    ]
+    ],
 )
 def test_get_updated_state(config_dimensions, expected_state):
     config = {
-      "credentials": {
-        "auth_type": "Service",
-        "credentials_json": "{ \"client_email\": \"a@gmail.com\", \"client_id\": \"1234\", \"client_secret\": \"5678\", \"private_key\": \"5678\"}"
-      },
-      "date_ranges_start_date": "2023-04-01",
-      "window_in_days": 30,
-      "property_ids": ["123"],
-      "custom_reports_array": [
-        {
-          "name": "pivot_report",
-          "dateRanges": [{"startDate": "2020-09-01", "endDate": "2020-09-15"}],
-          "dimensions": config_dimensions,
-          "metrics": ["sessions"],
-          "pivots": [
+        "credentials": {
+            "auth_type": "Service",
+            "credentials_json": '{ "client_email": "a@gmail.com", "client_id": "1234", "client_secret": "5678", "private_key": "5678"}',
+        },
+        "date_ranges_start_date": "2023-04-01",
+        "window_in_days": 30,
+        "property_ids": ["123"],
+        "custom_reports_array": [
             {
-              "fieldNames": ["browser"],
-              "limit": 5
-            },
-            {
-              "fieldNames": ["country"],
-              "limit": 250
-            },
-            {
-              "fieldNames": ["language"],
-              "limit": 15
+                "name": "pivot_report",
+                "dateRanges": [{"startDate": "2020-09-01", "endDate": "2020-09-15"}],
+                "dimensions": config_dimensions,
+                "metrics": ["sessions"],
+                "pivots": [
+                    {"fieldNames": ["browser"], "limit": 5},
+                    {"fieldNames": ["country"], "limit": 250},
+                    {"fieldNames": ["language"], "limit": 15},
+                ],
+                "cohortSpec": {"enabled": "false"},
             }
-          ],
-          "cohortSpec": {
-            "enabled": "false"
-          }
-        }
-      ]
+        ],
     }
     source = SourceGoogleAnalyticsDataApi()
     config = source._validate_and_transform(config, report_names=set())

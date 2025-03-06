@@ -75,7 +75,20 @@ The SpaceX API has both v4 and v5 for [launches](https://github.com/r-spacex/Spa
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
-| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.14 | 2025-03-01 | [55114](https://github.com/airbytehq/airbyte/pull/55114) | Update dependencies |
+| 0.2.13 | 2025-02-22 | [54522](https://github.com/airbytehq/airbyte/pull/54522) | Update dependencies |
+| 0.2.12 | 2025-02-15 | [54037](https://github.com/airbytehq/airbyte/pull/54037) | Update dependencies |
+| 0.2.11 | 2025-02-08 | [53552](https://github.com/airbytehq/airbyte/pull/53552) | Update dependencies |
+| 0.2.10 | 2025-02-01 | [53062](https://github.com/airbytehq/airbyte/pull/53062) | Update dependencies |
+| 0.2.9 | 2025-01-25 | [52399](https://github.com/airbytehq/airbyte/pull/52399) | Update dependencies |
+| 0.2.8 | 2025-01-18 | [51946](https://github.com/airbytehq/airbyte/pull/51946) | Update dependencies |
+| 0.2.7 | 2025-01-11 | [51423](https://github.com/airbytehq/airbyte/pull/51423) | Update dependencies |
+| 0.2.6 | 2024-12-28 | [50819](https://github.com/airbytehq/airbyte/pull/50819) | Update dependencies |
+| 0.2.5 | 2024-12-21 | [50354](https://github.com/airbytehq/airbyte/pull/50354) | Update dependencies |
+| 0.2.4 | 2024-12-14 | [49752](https://github.com/airbytehq/airbyte/pull/49752) | Update dependencies |
+| 0.2.3 | 2024-12-12 | [48197](https://github.com/airbytehq/airbyte/pull/48197) | Update dependencies |
+| 0.2.2 | 2024-10-28 | [47561](https://github.com/airbytehq/airbyte/pull/47561) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-09 | [43431](https://github.com/airbytehq/airbyte/pull/43431) | Refactor connector to manifest-only format |
 | 0.1.13 | 2024-08-03 | [43176](https://github.com/airbytehq/airbyte/pull/43176) | Update dependencies |
 | 0.1.12 | 2024-07-27 | [42792](https://github.com/airbytehq/airbyte/pull/42792) | Update dependencies |

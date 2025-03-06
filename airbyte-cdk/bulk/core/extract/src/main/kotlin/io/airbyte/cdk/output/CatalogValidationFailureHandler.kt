@@ -1,7 +1,8 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.output
 
-import io.airbyte.cdk.data.AirbyteType
+import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.data.AirbyteSchemaType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.DefaultImplementation
 import jakarta.inject.Singleton
@@ -19,59 +20,49 @@ interface CatalogValidationFailureHandler : Consumer<CatalogValidationFailure>
 
 /** Union type for all validation failures. */
 sealed interface CatalogValidationFailure {
-    val streamName: String
-    val streamNamespace: String?
+    val streamID: StreamIdentifier
 }
 
 data class StreamNotFound(
-    override val streamName: String,
-    override val streamNamespace: String?,
+    override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure
 
 data class MultipleStreamsFound(
-    override val streamName: String,
-    override val streamNamespace: String?,
+    override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure
 
 data class StreamHasNoFields(
-    override val streamName: String,
-    override val streamNamespace: String?,
+    override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure
 
 data class FieldNotFound(
-    override val streamName: String,
-    override val streamNamespace: String?,
+    override val streamID: StreamIdentifier,
     val fieldName: String,
 ) : CatalogValidationFailure
 
 data class FieldTypeMismatch(
-    override val streamName: String,
-    override val streamNamespace: String?,
+    override val streamID: StreamIdentifier,
     val fieldName: String,
-    val expected: AirbyteType,
-    val actual: AirbyteType,
+    val expected: AirbyteSchemaType,
+    val actual: AirbyteSchemaType,
 ) : CatalogValidationFailure
 
 data class InvalidPrimaryKey(
-    override val streamName: String,
-    override val streamNamespace: String?,
+    override val streamID: StreamIdentifier,
     val primaryKey: List<String>,
 ) : CatalogValidationFailure
 
 data class InvalidCursor(
-    override val streamName: String,
-    override val streamNamespace: String?,
+    override val streamID: StreamIdentifier,
     val cursor: String,
 ) : CatalogValidationFailure
 
 data class InvalidIncrementalSyncMode(
-    override val streamName: String,
-    override val streamNamespace: String?,
+    override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure
 
 data class ResetStream(
-    override val streamName: String,
-    override val streamNamespace: String?,
+    override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure
 
 private val log = KotlinLogging.logger {}
@@ -102,9 +93,9 @@ private class LoggingCatalogValidationFailureHandler : CatalogValidationFailureH
     }
 
     private fun CatalogValidationFailure.prettyName(): String =
-        if (streamNamespace == null) {
-            "'$streamName' in unspecified namespace"
+        if (streamID.namespace == null) {
+            "'${streamID.name}' in unspecified namespace"
         } else {
-            "'$streamName' in namespace '$streamNamespace'"
+            "'${streamID.name}' in namespace '${streamID.namespace}'"
         }
 }

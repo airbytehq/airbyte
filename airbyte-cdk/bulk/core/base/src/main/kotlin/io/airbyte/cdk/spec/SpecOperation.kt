@@ -2,7 +2,7 @@
 package io.airbyte.cdk.spec
 
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.command.ConfigurationJsonObjectSupplier
+import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.protocol.models.v0.ConnectorSpecification
 import io.micronaut.context.annotation.DefaultImplementation
@@ -15,7 +15,7 @@ import java.net.URI
 @Requires(property = Operation.PROPERTY, value = "spec")
 class SpecOperation(
     @Value("\${airbyte.connector.metadata.documentation-url}") val documentationUrl: String,
-    val configJsonObjectSupplier: ConfigurationJsonObjectSupplier<*>,
+    val configJsonObjectSupplier: ConfigurationSpecificationSupplier<*>,
     val extendSpecification: SpecificationExtender,
     val outputConsumer: OutputConsumer,
 ) : Operation {

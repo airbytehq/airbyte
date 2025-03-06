@@ -14,6 +14,10 @@ If you are using `abctl` to manage your deployment, a nginx ingress is automatic
 To access the Airbyte UI, you will need to manually attach an ingress configuration to your deployment. These guides assume that you have already deployed an Ingress Controller.
 The following is a simplified definition of an ingress resource you could use for your Airbyte instance:
 
+:::tip
+Set appropriate backend timeout values for the Airbyte webapp ingress. Timeout values that are too short can lead to 504 errors in the webapp when creating new sources or destinations.
+:::
+
 <Tabs>
 <TabItem value="NGINX" label="NGINX">
 

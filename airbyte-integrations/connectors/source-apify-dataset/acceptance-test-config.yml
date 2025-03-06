@@ -2,7 +2,7 @@ connector_image: airbyte/source-apify-dataset:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_apify_dataset/spec.yaml"
+      - spec_path: "manifest.yaml"
         backward_compatibility_tests_config:
           disable_for_version: 2.0.0
   connection:

@@ -3,6 +3,9 @@
 connector_image: airbyte/source-zendesk-sunshine:dev
 test_strictness_level: low
 acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config_oauth.json"

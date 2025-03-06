@@ -345,7 +345,8 @@
             "description": "Enter the name of the default schema",
             "order": 3,
             "examples": ["AIRBYTE_SCHEMA"],
-            "type": "string"
+            "type": "string",
+            "default": "public"
           },
           "username": {
             "title": "Username",

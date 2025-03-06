@@ -17,6 +17,10 @@ used to identify it in the timeline.
 
 The `get_updated_state` method is used to update the stream's state. We'll set its value to the
 maximum between the current state's value and the value extracted from the record.
+```python
+# import the following library
+import datetime
+```
 
 ```python
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:

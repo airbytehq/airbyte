@@ -3,7 +3,7 @@
     "type": "LOG",
     "log": {
       "level": "WARN",
-      "message": "StreamNotFound(streamName=FOO, streamNamespace=PUBLIC)"
+      "message": "StreamNotFound(streamID=PUBLIC.FOO)"
     }
   },
   {
@@ -16,7 +16,7 @@
           "name": "FOO",
           "namespace": "PUBLIC"
         },
-        "message": "Stream 'PUBLIC_FOO' not found or not accessible in source.",
+        "message": "Stream 'PUBLIC.FOO' not found or not accessible in source.",
         "failure_type": "config_error"
       }
     }

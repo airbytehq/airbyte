@@ -2,12 +2,14 @@
 package io.airbyte.cdk
 
 import io.airbyte.cdk.command.ConnectorCommandLinePropertySource
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.MetadataYamlPropertySource
 import io.micronaut.configuration.picocli.MicronautFactory
 import io.micronaut.context.ApplicationContext
 import io.micronaut.context.RuntimeBeanDefinition
 import io.micronaut.context.env.CommandLinePropertySource
 import io.micronaut.context.env.Environment
+import io.micronaut.context.env.MapPropertySource
 import io.micronaut.core.cli.CommandLine as MicronautCommandLine
 import java.nio.file.Path
 import kotlin.system.exitProcess
@@ -16,17 +18,35 @@ import picocli.CommandLine.Model.ArgGroupSpec
 import picocli.CommandLine.Model.OptionSpec
 import picocli.CommandLine.Model.UsageMessageSpec
 
+// A micronaut environment, so that connectors can override micronaut properties
+// without needing to copy an entire application.yaml out of the core CDK.
+// Intended usage is for connectors to create
+// `destination-foo/src/main/resources/application-connector.yaml` with the
+// specific properties to override.
+const val CONNECTOR_OVERRIDE_ENV = "connector"
+
 /** Source connector entry point. */
 class AirbyteSourceRunner(
     /** CLI args. */
     args: Array<out String>,
+    additionalMicronautEnvs: List<String> = emptyList(),
+    /** Environment variables. */
+    systemEnv: Map<String, String> = System.getenv(),
     /** Micronaut bean definition overrides, used only for tests. */
     vararg testBeanDefinitions: RuntimeBeanDefinition<*>,
-) : AirbyteConnectorRunner("source", args, testBeanDefinitions) {
+) :
+    AirbyteConnectorRunner(
+        "source",
+        args,
+        additionalMicronautEnvs,
+        systemEnv,
+        micronautProperties = emptyMap(),
+        testBeanDefinitions
+    ) {
     companion object {
         @JvmStatic
-        fun run(vararg args: String) {
-            AirbyteSourceRunner(args).run<AirbyteConnectorRunnable>()
+        fun run(vararg args: String, additionalMicronautEnvs: List<String> = emptyList()) {
+            AirbyteSourceRunner(args, additionalMicronautEnvs).run<AirbyteConnectorRunnable>()
         }
     }
 }
@@ -35,13 +55,25 @@ class AirbyteSourceRunner(
 class AirbyteDestinationRunner(
     /** CLI args. */
     args: Array<out String>,
+    additionalMicronautEnvs: List<String> = emptyList(),
+    /** Environment variables. */
+    systemEnv: Map<String, String> = System.getenv(),
+    micronautProperties: Map<String, String> = emptyMap(),
     /** Micronaut bean definition overrides, used only for tests. */
     vararg testBeanDefinitions: RuntimeBeanDefinition<*>,
-) : AirbyteConnectorRunner("destination", args, testBeanDefinitions) {
+) :
+    AirbyteConnectorRunner(
+        "destination",
+        args,
+        additionalMicronautEnvs,
+        systemEnv,
+        micronautProperties,
+        testBeanDefinitions
+    ) {
     companion object {
         @JvmStatic
-        fun run(vararg args: String) {
-            AirbyteDestinationRunner(args).run<AirbyteConnectorRunnable>()
+        fun run(vararg args: String, additionalMicronautEnvs: List<String> = emptyList()) {
+            AirbyteDestinationRunner(args, additionalMicronautEnvs).run<AirbyteConnectorRunnable>()
         }
     }
 }
@@ -53,9 +85,21 @@ class AirbyteDestinationRunner(
 sealed class AirbyteConnectorRunner(
     val connectorType: String,
     val args: Array<out String>,
+    additionalMicronautEnvs: List<String> = emptyList(),
+    systemEnv: Map<String, String>,
+    val micronautProperties: Map<String, String> = emptyMap(),
     val testBeanDefinitions: Array<out RuntimeBeanDefinition<*>>,
 ) {
-    val envs: Array<String> = arrayOf(Environment.CLI, connectorType)
+    val envs: Array<String> =
+        arrayOf(Environment.CLI, connectorType) +
+            // Set feature flag environments.
+            FeatureFlag.active(systemEnv).map { it.micronautEnvironmentName } +
+            // Micronaut's TEST env detection relies on inspecting the stacktrace and checking for
+            // any junit calls. This doesn't work if we launch the connector from a different
+            // thread, e.g. `Dispatchers.IO`. Force the test env if needed. Some tests launch the
+            // connector from the IO context to avoid blocking themselves.
+            listOfNotNull(Environment.TEST.takeIf { testBeanDefinitions.isNotEmpty() }) +
+            additionalMicronautEnvs
 
     inline fun <reified R : Runnable> run() {
         val picocliCommandLineFactory = PicocliCommandLineFactory(this)
@@ -66,12 +110,21 @@ sealed class AirbyteConnectorRunner(
                 picocliCommandLineFactory.commands.options().map { it.longestName() },
             )
         val commandLinePropertySource = CommandLinePropertySource(micronautCommandLine)
+        val additionalPropertiesSource =
+            MapPropertySource("additional_properties", micronautProperties)
         val ctx: ApplicationContext =
-            ApplicationContext.builder(R::class.java, *envs)
+        // note that we put the override envs last.
+        // This ensures that micronaut gives those environments precedence
+        // (because the last environment's application-XYZ.yaml wins).
+        ApplicationContext.builder(R::class.java, *envs, CONNECTOR_OVERRIDE_ENV)
                 .propertySources(
-                    airbytePropertySource,
-                    commandLinePropertySource,
-                    MetadataYamlPropertySource(),
+                    *listOfNotNull(
+                            airbytePropertySource,
+                            commandLinePropertySource,
+                            MetadataYamlPropertySource(),
+                            additionalPropertiesSource,
+                        )
+                        .toTypedArray(),
                 )
                 .beanDefinitions(*testBeanDefinitions)
                 .start()
@@ -83,6 +136,11 @@ sealed class AirbyteConnectorRunner(
         if (!isTest) {
             // Required by the platform, otherwise syncs may hang.
             exitProcess(exitCode)
+        }
+        // At this point, we're in a test.
+        if (exitCode != 0) {
+            // Propagate failure to test callers.
+            throw ConnectorUncleanExitException(exitCode)
         }
     }
 }

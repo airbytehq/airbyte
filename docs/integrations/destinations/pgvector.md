@@ -6,19 +6,25 @@ This page guides you through the process of setting up the PGVector destination 
 
 There are three parts to this:
 * Processing - split up individual records in chunks so they will fit the context window and decide which fields to use as context and which are supplementary metadata.
-* Embedding - convert the text into a vector representation using a pre-trained model (Currently, OpenAI's `text-embedding-ada-002` and Cohere's `embed-english-light-v2.0` are supported. Coming soon: Hugging Face's `e5-base-v2`).
+* Embedding - convert the text into a vector representation using a pre-trained model. Currently supported:
+  * OpenAI's `text-embedding-ada-002`
+  * Cohere's `embed-english-light-v2.0` 
+  * Azure OpenAI 
+  * Fake `random vectors with 1536 embedding dimensions`
+  * OpenAI-compatible
+  * Coming soon: Hugging Face's `e5-base-v2`.
 * Postgres Connection - where to store the vectors. This configures a vector store using Postgres tables having the `VECTOR` data type which is achieved installing pgvector.
 
 ## Prerequisites
 
 To use the PGVector destination, you'll need:
 
-- An account with API access for OpenAI or Cohere (depending on which embedding method you want to use)
+- An account with API access depending on which embedding method you want to use.
 - A Postgres DB with support for [pgvector](https://github.com/pgvector/pgvector).
 
 You'll need the following information to configure the destination:
 
-- **Embedding service API Key** - The API key for your OpenAI or Cohere account
+- **Embedding service API Key** - The API key for your embedding account and other params depending on your model.
 - **Port** - The port number the server is listening on. Defaults to the PostgreSQL™ standard port
   number (5432).
 - **Username**
@@ -34,7 +40,7 @@ You'll need the following information to configure the destination:
 Make sure your Postgres database can be accessed by Airbyte. If your database is within a VPC, you
 may need to allow access from the IP you're using to expose Airbyte.
 
-## Set up Postgres
+## Step 1: Set up Postgres
 
 #### **Permissions**
 
@@ -52,7 +58,11 @@ GRANT CREATE, TEMPORARY ON DATABASE <database> TO airbyte_user;
 
 You can also use a pre-existing user but we highly recommend creating a dedicated user for Airbyte.
 
-## Set up the PGVector connector in Airbyte
+Enable the extension. Here you can find the [official documentation](https://github.com/pgvector/pgvector).
+```
+CREATE EXTENSION vector;
+```
+## Step 2: Set up the PGVector connector in Airbyte
 
 #### Target Database
 
@@ -95,10 +105,22 @@ tables are replaced with underscores.
 
 :::
 
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. In the left navigation bar, click **Destinations**. In the top-right corner, click **new
+   destination**.
+3. On the Set up the destination page, enter the name for the PGVector connector and select
+   **Postgres** from the Destination type dropdown.
+4. Enter a name for your source.
+5. Enter processing information.
+6. Enter embedding information.
+7. For the **Host**, **Port**, and **DB Name**, enter the hostname, port number, and name for your
+   Postgres database.
+8. Enter the **Default Schemas**.
+
 :::note
 
-The schema names are case sensitive. The 'public' schema is set by default. Multiple schemas may be
-used at one time. No schemas set explicitly - will sync all of existing.
+The schema names are case sensitive. The 'public' schema is set by default.
 
 :::
 
@@ -167,6 +189,8 @@ All streams will be indexed/stored into a table with the same name. The table wi
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.2 | 2025-01-11 | [45767](https://github.com/airbytehq/airbyte/pull/45767) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.1.1   | 2024-09-23 | [#45636](https://github.com/airbytehq/airbyte/pull/45636)     | Add default values for default_schema and port.
 | 0.1.0   | 2024-09-16 | [#45428](https://github.com/airbytehq/airbyte/pull/45428)     | Add support for PGVector as a Vector destination.
 
 </details>

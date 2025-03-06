@@ -1,0 +1,21 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ab_glob"
+      },
+      "stream_state": {
+        "history": {
+          "https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_data_2.csv": "2224-07-20T14:25:09.016000Z",
+          "https://storage.googleapis.com/airbyte-integration-test-source-gcs/level_1/level_2/test_data_2.csv": "2224-07-20T15:43:39.382000Z",
+          "https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/example_1.csv": "2224-02-27T10:34:32.664000Z",
+          "https://storage.googleapis.com/airbyte-integration-test-source-gcs/test_folder/example_2.csv": "2224-02-27T10:34:32.680000Z",
+          "https://storage.googleapis.com/airbyte-integration-test-source-gcs/a/a.csv": "2224-08-27T21:57:29.858000Z",
+          "https://storage.googleapis.com/airbyte-integration-test-source-gcs/b/b.csv": "2224-08-27T21:57:36.977000Z"
+        },
+        "_ab_source_file_last_modified": "2224-08-27T21:57:36.977000Z_https://storage.googleapis.com/airbyte-integration-test-source-gcs/b/b.csv"
+      }
+    }
+  }
+]

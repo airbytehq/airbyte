@@ -6,6 +6,9 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "source_microsoft_sharepoint/spec.yaml"
+        # changed from "Document File Type Format (Experimental)" to "Unstructured Document Format".
+        backward_compatibility_tests_config:
+          disable_for_version: "0.6.0"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -27,9 +30,11 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 3600
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 3600

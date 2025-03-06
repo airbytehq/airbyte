@@ -4,21 +4,27 @@
 
 
 import logging
+import re
 from datetime import datetime
 from functools import lru_cache
 from io import IOBase
-from typing import Iterable, List, Optional, Tuple
+from os import makedirs, path
+from os.path import getsize
+from typing import Dict, Iterable, List, Optional, Tuple
 
 import requests
 import smart_open
-from airbyte_cdk import AirbyteTracedException, FailureType
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from msal import ConfidentialClientApplication
 from office365.graph_client import GraphClient
+
+from airbyte_cdk import AirbyteTracedException, FailureType
+from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 
-from .utils import MicrosoftSharePointRemoteFile, execute_query_with_retry, filter_http_urls
+from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
+from .utils import FolderNotFoundException, MicrosoftSharePointRemoteFile, execute_query_with_retry, filter_http_urls
 
 
 class SourceMicrosoftSharePointClient:
@@ -68,6 +74,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
     """
 
     ROOT_PATH = [".", "/"]
+    FILE_SIZE_LIMIT = 1_500_000_000
 
     def __init__(self):
         super().__init__()
@@ -187,7 +194,10 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                     folder = drive.root
                     folder_path_url = drive.web_url
                 else:
-                    folder = execute_query_with_retry(drive.root.get_by_path(folder_path).get())
+                    try:
+                        folder = execute_query_with_retry(drive.root.get_by_path(folder_path).get())
+                    except FolderNotFoundException:
+                        continue
                     folder_path_url = drive.web_url + "/" + folder_path
 
                 yield from self._list_directories_and_files(folder, folder_path_url)
@@ -285,3 +295,104 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             return smart_open.open(file.download_url, mode=mode.value, compression=compression, encoding=encoding)
         except Exception as e:
             logger.exception(f"Error opening file {file.uri}: {e}")
+
+    def _get_file_transfer_paths(self, file: RemoteFile, local_directory: str) -> List[str]:
+        preserve_directory_structure = self.preserve_directory_structure()
+        file_path = file.uri
+        match = re.search(r"sharepoint\.com/Shared%20Documents(.*)", file_path)
+        if match:
+            file_path = match.group(1)
+
+        if preserve_directory_structure:
+            # Remove left slashes from source path format to make relative path for writing locally
+            file_relative_path = file_path.lstrip("/")
+        else:
+            file_relative_path = path.basename(file_path)
+        local_file_path = path.join(local_directory, file_relative_path)
+
+        # Ensure the local directory exists
+        makedirs(path.dirname(local_file_path), exist_ok=True)
+        absolute_file_path = path.abspath(local_file_path)
+        return [file_relative_path, local_file_path, absolute_file_path]
+
+    def _get_headers(self) -> Dict[str, str]:
+        access_token = self.get_access_token()
+        return {"Authorization": f"Bearer {access_token}"}
+
+    def file_size(self, file: MicrosoftSharePointRemoteFile) -> int:
+        """
+        Retrieves the size of a file in Microsoft SharePoint.
+
+        Args:
+            file (RemoteFile): The file to get the size for.
+
+        Returns:
+            int: The file size in bytes.
+        """
+        try:
+            headers = self._get_headers()
+            response = requests.head(file.download_url, headers=headers)
+            response.raise_for_status()
+            return int(response.headers["Content-Length"])
+        except KeyError:
+            raise ErrorFetchingMetadata(f"Size was expected in metadata response but was missing")
+        except Exception as e:
+            raise ErrorFetchingMetadata(f"An error occurred while retrieving file size: {str(e)}")
+
+    def get_file(self, file: MicrosoftSharePointRemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, str | int]:
+        """
+        Downloads a file from Microsoft SharePoint to a specified local directory.
+
+        Args:
+            file (RemoteFile): The file to download, containing its SharePoint URL.
+            local_directory (str): The local directory to save the file.
+            logger (logging.Logger): Logger for debugging and information.
+
+        Returns:
+            Dict[str, str | int]: Contains the local file path and file size in bytes.
+        """
+        file_size = self.file_size(file)
+        if file_size > self.FILE_SIZE_LIMIT:
+            message = "File size exceeds the size limit."
+            raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
+
+        try:
+            file_relative_path, local_file_path, absolute_file_path = self._get_file_transfer_paths(file, local_directory)
+
+            headers = self._get_headers()
+
+            # Download the file
+            #  By using stream=True, the file content is streamed in chunks, which allows to process each chunk individually.
+            #  https://docs.python-requests.org/en/latest/user/quickstart/#raw-response-content
+            response = requests.get(file.download_url, headers=headers, stream=True)
+            response.raise_for_status()
+
+            # Write the file to the local directory
+            with open(local_file_path, "wb") as local_file:
+                for chunk in response.iter_content(chunk_size=10_485_760):
+                    if chunk:
+                        local_file.write(chunk)
+
+            # Get the file size
+            file_size = getsize(local_file_path)
+
+            return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": file_relative_path}
+
+        except Exception as e:
+            raise AirbyteTracedException(
+                f"There was an error while trying to download the file {file.uri}: {str(e)}", failure_type=FailureType.config_error
+            )
+
+    def get_file_acl_permissions(self):
+        return None
+
+    def load_identity_groups(self):
+        return None
+
+    @property
+    def identities_schema(self):
+        return None
+
+    @property
+    def file_permissions_schema(self):
+        return None

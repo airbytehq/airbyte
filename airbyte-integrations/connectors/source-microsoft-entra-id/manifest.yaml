@@ -1,0 +1,1475 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  The Microsoft Entra ID Connector for Airbyte allows seamless integration with
+  Microsoft Entra ID, enabling secure and automated data synchronization of
+  identity and access management information. With this connector, users can
+  efficiently retrieve and manage user, group, and directory data to streamline
+  identity workflows and ensure up-to-date access control within their
+  applications.
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: $skiptoken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("@odata.nextLink") |
+              regex_search('\$skiptoken=([^&]+)') }}
+            stop_condition: "{{ response.get(\"@odata.nextLink\") is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    groups:
+      type: DeclarativeStream
+      name: groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /groups
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: $skiptoken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("@odata.nextLink") |
+              regex_search('\$skiptoken=([^&]+)') }}
+            stop_condition: "{{ response.get(\"@odata.nextLink\") is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups"
+    applications:
+      type: DeclarativeStream
+      name: applications
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /applications
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: $skiptoken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("@odata.nextLink") |
+              regex_search('\$skiptoken=([^&]+)') }}
+            stop_condition: "{{ response.get(\"@odata.nextLink\") is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/applications"
+    user_owned_deleted_items:
+      type: DeclarativeStream
+      name: user_owned_deleted_items
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /directory/deletedItems/getUserOwnedObjects
+          http_method: POST
+          request_body_json:
+            userId: "{{ config['user_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: $skiptoken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("@odata.nextLink") |
+              regex_search('\$skiptoken=([^&]+)') }}
+            stop_condition: "{{ response.get(\"@odata.nextLink\") is none }}"
+        partition_router:
+          type: ListPartitionRouter
+          values:
+            - Group
+            - Application
+          cursor_field: type
+          request_option:
+            type: RequestOption
+            field_name: type
+            inject_into: body_json
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_owned_deleted_items"
+    directoryroles:
+      type: DeclarativeStream
+      name: directoryroles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /directoryroles
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/directoryroles"
+    directoryroletemplates:
+      type: DeclarativeStream
+      name: directoryroletemplates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /directoryRoleTemplates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/directoryroletemplates"
+    directoryaudits:
+      type: DeclarativeStream
+      name: directoryaudits
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /auditLogs/directoryaudits
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: $skiptoken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("@odata.nextLink") |
+              regex_search('\$skiptoken=([^&]+)') }}
+            stop_condition: "{{ response.get(\"@odata.nextLink\") is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/directoryaudits"
+    serviceprincipals:
+      type: DeclarativeStream
+      name: serviceprincipals
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /servicePrincipals
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: $skiptoken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("@odata.nextLink") |
+              regex_search('\$skiptoken=([^&]+)') }}
+            stop_condition: "{{ response.get(\"@odata.nextLink\") is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/serviceprincipals"
+    identityproviders:
+      type: DeclarativeStream
+      name: identityproviders
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /identity/identityProviders/availableProviderTypes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: $skiptoken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("@odata.nextLink") |
+              regex_search('\$skiptoken=([^&]+)') }}
+            stop_condition: "{{ response.get(\"@odata.nextLink\") is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/identityproviders"
+    adminconsentrequestpolicy:
+      type: DeclarativeStream
+      name: adminconsentrequestpolicy
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /policies/adminConsentRequestPolicy
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: $skiptoken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("@odata.nextLink") |
+              regex_search('\$skiptoken=([^&]+)') }}
+            stop_condition: "{{ response.get(\"@odata.nextLink\") is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/adminconsentrequestpolicy"
+  base_requester:
+    type: HttpRequester
+    url_base: https://graph.microsoft.com/v1.0
+    authenticator:
+      type: OAuthAuthenticator
+      scopes: []
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: client_credentials
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_request_body:
+        scope: https://graph.microsoft.com/.default
+      token_refresh_endpoint: >-
+        https://login.microsoftonline.com/{{ config['tenant_id']
+        }}/oauth2/v2.0/token
+
+streams:
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/applications"
+  - $ref: "#/definitions/streams/user_owned_deleted_items"
+  - $ref: "#/definitions/streams/directoryroles"
+  - $ref: "#/definitions/streams/directoryroletemplates"
+  - $ref: "#/definitions/streams/directoryaudits"
+  - $ref: "#/definitions/streams/serviceprincipals"
+  - $ref: "#/definitions/streams/identityproviders"
+  - $ref: "#/definitions/streams/adminconsentrequestpolicy"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - tenant_id
+      - user_id
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      tenant_id:
+        type: string
+        order: 2
+        title: Tenant Id
+        airbyte_secret: true
+      user_id:
+        type: string
+        order: 3
+        title: User Id
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    users: true
+    groups: true
+    applications: true
+    user_owned_deleted_items: true
+    directoryroles: true
+    directoryroletemplates: true
+    directoryaudits: true
+    serviceprincipals: true
+    identityproviders: true
+    adminconsentrequestpolicy: true
+  testedStreams:
+    users:
+      streamHash: a3a8dbf864ffb336f197dcd7b5dc94276ac3804c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    groups:
+      streamHash: f4d8c25569bc03e4282b8ab0e2206fe801f7abb4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    applications:
+      streamHash: aec5be1d8ca55d7d6d329969a469413a2799d204
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    user_owned_deleted_items:
+      streamHash: f58339e36ff71c6055a1279d2ccc551a2280fa3f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    directoryroles:
+      streamHash: 1e2973d7b724fe91d182c756dd1b4bb2b1d4d81b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    directoryroletemplates:
+      streamHash: 4ae0addeaa79492f472e034533b850b557b08fc1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    directoryaudits:
+      streamHash: dee13f722e03affc089a46bfc8be8ecd910074a8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    serviceprincipals:
+      hasRecords: true
+      streamHash: 1a75792a5cb5d162fc0aaeda12e27a876fe42470
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    identityproviders:
+      hasRecords: true
+      streamHash: 2a6f02761e0744572579767de223c98b35d89890
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    adminconsentrequestpolicy:
+      hasRecords: true
+      streamHash: c65392dbc76dd3c1700fc307a0cec08113d18deb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: >-
+      https://learn.microsoft.com/en-us/graph/api/resources/identity-network-access-overview?view=graph-rest-1.0
+
+schemas:
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      businessPhones:
+        type:
+          - array
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      givenName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      preferredLanguage:
+        type:
+          - string
+          - "null"
+      surname:
+        type:
+          - string
+          - "null"
+      userPrincipalName:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      createdDateTime:
+        type:
+          - string
+          - "null"
+      creationOptions:
+        type:
+          - array
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      groupTypes:
+        type:
+          - array
+          - "null"
+      id:
+        type: string
+      mailEnabled:
+        type:
+          - boolean
+          - "null"
+      mailNickname:
+        type:
+          - string
+          - "null"
+      onPremisesProvisioningErrors:
+        type:
+          - array
+          - "null"
+      proxyAddresses:
+        type:
+          - array
+          - "null"
+      renewedDateTime:
+        type:
+          - string
+          - "null"
+      resourceBehaviorOptions:
+        type:
+          - array
+          - "null"
+      resourceProvisioningOptions:
+        type:
+          - array
+          - "null"
+      securityEnabled:
+        type:
+          - boolean
+          - "null"
+      securityIdentifier:
+        type:
+          - string
+          - "null"
+      serviceProvisioningErrors:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+  applications:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      addIns:
+        type:
+          - array
+          - "null"
+      api:
+        type:
+          - object
+          - "null"
+        properties:
+          knownClientApplications:
+            type:
+              - array
+              - "null"
+          oauth2PermissionScopes:
+            type:
+              - array
+              - "null"
+          preAuthorizedApplications:
+            type:
+              - array
+              - "null"
+      appId:
+        type:
+          - string
+          - "null"
+      appRoles:
+        type:
+          - array
+          - "null"
+      createdDateTime:
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      identifierUris:
+        type:
+          - array
+          - "null"
+      info:
+        type:
+          - object
+          - "null"
+        properties: {}
+      keyCredentials:
+        type:
+          - array
+          - "null"
+      parentalControlSettings:
+        type:
+          - object
+          - "null"
+        properties:
+          countriesBlockedForMinors:
+            type:
+              - array
+              - "null"
+          legalAgeGroupRule:
+            type:
+              - string
+              - "null"
+      passwordCredentials:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            displayName:
+              type:
+                - string
+                - "null"
+            endDateTime:
+              type:
+                - string
+                - "null"
+            hint:
+              type:
+                - string
+                - "null"
+            keyId:
+              type:
+                - string
+                - "null"
+            startDateTime:
+              type:
+                - string
+                - "null"
+      publicClient:
+        type:
+          - object
+          - "null"
+        properties:
+          redirectUris:
+            type:
+              - array
+              - "null"
+      publisherDomain:
+        type:
+          - string
+          - "null"
+      requiredResourceAccess:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            resourceAccess:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+            resourceAppId:
+              type:
+                - string
+                - "null"
+      servicePrincipalLockConfiguration:
+        type:
+          - object
+          - "null"
+        properties:
+          allProperties:
+            type:
+              - boolean
+              - "null"
+          credentialsWithUsageSign:
+            type:
+              - boolean
+              - "null"
+          credentialsWithUsageVerify:
+            type:
+              - boolean
+              - "null"
+          identifierUris:
+            type:
+              - boolean
+              - "null"
+          isEnabled:
+            type:
+              - boolean
+              - "null"
+          tokenEncryptionKeyId:
+            type:
+              - boolean
+              - "null"
+      signInAudience:
+        type:
+          - string
+          - "null"
+      spa:
+        type:
+          - object
+          - "null"
+        properties:
+          redirectUris:
+            type:
+              - array
+              - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      verifiedPublisher:
+        type:
+          - object
+          - "null"
+        properties: {}
+      web:
+        type:
+          - object
+          - "null"
+        properties:
+          implicitGrantSettings:
+            type:
+              - object
+              - "null"
+            properties:
+              enableAccessTokenIssuance:
+                type:
+                  - boolean
+                  - "null"
+              enableIdTokenIssuance:
+                type:
+                  - boolean
+                  - "null"
+          redirectUriSettings:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                uri:
+                  type:
+                    - string
+                    - "null"
+          redirectUris:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+    required:
+      - id
+  user_owned_deleted_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      "@odata.type":
+        type:
+          - string
+          - "null"
+      addIns:
+        type:
+          - array
+          - "null"
+      api:
+        type:
+          - object
+          - "null"
+        properties:
+          knownClientApplications:
+            type:
+              - array
+              - "null"
+          oauth2PermissionScopes:
+            type:
+              - array
+              - "null"
+          preAuthorizedApplications:
+            type:
+              - array
+              - "null"
+          resourceSpecificApplicationPermissions:
+            type:
+              - array
+              - "null"
+      appId:
+        type:
+          - string
+          - "null"
+      appRoles:
+        type:
+          - array
+          - "null"
+      createdDateTime:
+        type:
+          - string
+          - "null"
+      deletedDateTime:
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      identifierUris:
+        type:
+          - array
+          - "null"
+      info:
+        type:
+          - object
+          - "null"
+        properties: {}
+      keyCredentials:
+        type:
+          - array
+          - "null"
+      logo@odata.mediaContentType:
+        type:
+          - string
+          - "null"
+      logo@odata.mediaEditLink:
+        type:
+          - string
+          - "null"
+      parentalControlSettings:
+        type:
+          - object
+          - "null"
+        properties:
+          countriesBlockedForMinors:
+            type:
+              - array
+              - "null"
+          legalAgeGroupRule:
+            type:
+              - string
+              - "null"
+      passwordCredentials:
+        type:
+          - array
+          - "null"
+      publicClient:
+        type:
+          - object
+          - "null"
+        properties:
+          redirectUris:
+            type:
+              - array
+              - "null"
+      publisherDomain:
+        type:
+          - string
+          - "null"
+      requiredResourceAccess:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            resourceAccess:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+            resourceAppId:
+              type:
+                - string
+                - "null"
+      servicePrincipalLockConfiguration:
+        type:
+          - object
+          - "null"
+        properties:
+          allProperties:
+            type:
+              - boolean
+              - "null"
+          credentialsWithUsageSign:
+            type:
+              - boolean
+              - "null"
+          credentialsWithUsageVerify:
+            type:
+              - boolean
+              - "null"
+          identifierUris:
+            type:
+              - boolean
+              - "null"
+          isEnabled:
+            type:
+              - boolean
+              - "null"
+          tokenEncryptionKeyId:
+            type:
+              - boolean
+              - "null"
+      signInAudience:
+        type:
+          - string
+          - "null"
+      spa:
+        type:
+          - object
+          - "null"
+        properties:
+          redirectUris:
+            type:
+              - array
+              - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      verifiedPublisher:
+        type:
+          - object
+          - "null"
+        properties: {}
+      web:
+        type:
+          - object
+          - "null"
+        properties:
+          implicitGrantSettings:
+            type:
+              - object
+              - "null"
+            properties:
+              enableAccessTokenIssuance:
+                type:
+                  - boolean
+                  - "null"
+              enableIdTokenIssuance:
+                type:
+                  - boolean
+                  - "null"
+          redirectUriSettings:
+            type:
+              - array
+              - "null"
+          redirectUris:
+            type:
+              - array
+              - "null"
+    required:
+      - id
+  directoryroles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      roleTemplateId:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  directoryroletemplates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+    required:
+      - id
+  directoryaudits:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      activityDateTime:
+        type:
+          - string
+          - "null"
+      activityDisplayName:
+        type:
+          - string
+          - "null"
+      additionalDetails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            key:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      category:
+        type:
+          - string
+          - "null"
+      correlationId:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      initiatedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          user:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              ipAddress:
+                type:
+                  - string
+                  - "null"
+              userPrincipalName:
+                type:
+                  - string
+                  - "null"
+      loggedByService:
+        type:
+          - string
+          - "null"
+      operationType:
+        type:
+          - string
+          - "null"
+      result:
+        type:
+          - string
+          - "null"
+      resultReason:
+        type:
+          - string
+          - "null"
+      targetResources:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            displayName:
+              type:
+                - string
+                - "null"
+            groupType:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            modifiedProperties:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  displayName:
+                    type:
+                      - string
+                      - "null"
+                  newValue:
+                    type:
+                      - string
+                      - "null"
+                  oldValue:
+                    type:
+                      - string
+                      - "null"
+            userPrincipalName:
+              type:
+                - string
+                - "null"
+    required:
+      - id
+  serviceprincipals:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accountEnabled:
+        type:
+          - boolean
+          - "null"
+      addIns:
+        type:
+          - array
+          - "null"
+      alternativeNames:
+        type:
+          - array
+          - "null"
+      appDisplayName:
+        type:
+          - string
+          - "null"
+      appId:
+        type:
+          - string
+          - "null"
+      appOwnerOrganizationId:
+        type:
+          - string
+          - "null"
+      appRoleAssignmentRequired:
+        type:
+          - boolean
+          - "null"
+      appRoles:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            allowedMemberTypes:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            displayName:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            isEnabled:
+              type:
+                - boolean
+                - "null"
+            origin:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      createdDateTime:
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      info:
+        type:
+          - object
+          - "null"
+        properties: {}
+      keyCredentials:
+        type:
+          - array
+          - "null"
+      logoutUrl:
+        type:
+          - string
+          - "null"
+      notificationEmailAddresses:
+        type:
+          - array
+          - "null"
+      oauth2PermissionScopes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            adminConsentDescription:
+              type:
+                - string
+                - "null"
+            adminConsentDisplayName:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            isEnabled:
+              type:
+                - boolean
+                - "null"
+            userConsentDescription:
+              type:
+                - string
+                - "null"
+            userConsentDisplayName:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      passwordCredentials:
+        type:
+          - array
+          - "null"
+      replyUrls:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      resourceSpecificApplicationPermissions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            displayName:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            isEnabled:
+              type:
+                - boolean
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      servicePrincipalNames:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      servicePrincipalType:
+        type:
+          - string
+          - "null"
+      signInAudience:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      verifiedPublisher:
+        type:
+          - object
+          - "null"
+        properties:
+          addedDateTime:
+            type:
+              - string
+              - "null"
+          displayName:
+            type:
+              - string
+              - "null"
+          verifiedPublisherId:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+  identityproviders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      "@odata.context":
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+  adminconsentrequestpolicy:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      "@odata.context":
+        type:
+          - string
+          - "null"
+      isEnabled:
+        type:
+          - boolean
+          - "null"
+      notifyReviewers:
+        type:
+          - boolean
+          - "null"
+      remindersEnabled:
+        type:
+          - boolean
+          - "null"
+      requestDurationInDays:
+        type:
+          - number
+          - "null"
+      reviewers:
+        type:
+          - array
+          - "null"

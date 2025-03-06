@@ -68,7 +68,8 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
     this.currentState = existingState;
     this.isEnforceSchema = isEnforceSchema;
     this.chunkSize = chunkSize;
-    this.currentIterator = buildNewQueryIterator();
+    // lazy init mongo cursor, otherwise it will risk time out (10 minutes).
+    this.currentIterator = null;
     this.startInstant = startInstant;
     this.cdcInitialLoadTimeout = cdcInitialLoadTimeout;
   }
@@ -170,6 +171,9 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
 
   private boolean shouldBuildNextQuery() {
     // The next sub-query should be built if the previous subquery has finished.
+    if (currentIterator == null) {
+      currentIterator = buildNewQueryIterator();
+    }
     return !currentIterator.hasNext();
   }
 

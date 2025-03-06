@@ -1,0 +1,1748 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  This is the Shippo source for ingesting data using the Shippo API.
+
+
+  Shippo is your one-stop solution for shipping labels. Whether you use our app
+  to ship or API to power your logistics workflow, Shippo gives you scalable
+  shipping tools, the best rates, and world-class support https://goshippo.com/
+
+
+  In order to use this source, you must first create a Shippo account. Once
+  logged in, head over to Settings -> Advanced -> API and click on generate new
+  token. You can learn more about the API here
+  https://docs.goshippo.com/shippoapi/public-api/#tag/Overview 
+
+check:
+  type: CheckStream
+  stream_names:
+    - addresses
+
+definitions:
+  streams:
+    addresses:
+      type: DeclarativeStream
+      name: addresses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/addresses
+          http_method: GET
+          request_headers:
+            Authorization: ShippoToken {{ config["shippo_token"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/addresses"
+    parcels:
+      type: DeclarativeStream
+      name: parcels
+      primary_key:
+        - object_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /parcels
+          http_method: GET
+          request_headers:
+            Authorization: ShippoToken {{ config["shippo_token"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: results
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/parcels"
+    custom_items:
+      type: DeclarativeStream
+      name: custom_items
+      primary_key:
+        - object_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customs/items
+          http_method: GET
+          request_headers:
+            Authorization: ShippoToken {{ config["shippo_token"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: results
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_items"
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - object_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /shippo-accounts
+          http_method: GET
+          request_headers:
+            Authorization: ShippoToken {{ config["shippo_token"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: results
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    carrier_acounts:
+      type: DeclarativeStream
+      name: carrier_acounts
+      primary_key:
+        - object_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /carrier_accounts
+          http_method: GET
+          request_headers:
+            Authorization: ShippoToken {{ config["shippo_token"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: results
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/carrier_acounts"
+    shipments:
+      type: DeclarativeStream
+      name: shipments
+      primary_key:
+        - object_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /shipments
+          http_method: GET
+          request_headers:
+            Authorization: ShippoToken {{ config["shippo_token"] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: results
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: object_updated
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: object_created_gt
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/shipments"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.goshippo.com
+
+streams:
+  - $ref: "#/definitions/streams/addresses"
+  - $ref: "#/definitions/streams/parcels"
+  - $ref: "#/definitions/streams/custom_items"
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/carrier_acounts"
+  - $ref: "#/definitions/streams/shipments"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - shippo_token
+      - start_date
+    properties:
+      shippo_token:
+        type: string
+        description: The bearer token used for making requests
+        title: Shippo Token
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    addresses: true
+    parcels: true
+    custom_items: true
+    accounts: true
+    carrier_acounts: true
+    shipments: true
+  testedStreams:
+    addresses:
+      streamHash: c2a5943c1cc3c14e6f43ea454bdff5b2627cfc4b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    parcels:
+      streamHash: 9d088b7ef340fbe88c91a131f51eb872a5348cd1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    custom_items:
+      streamHash: 21c2e781324ebf7429927cedb992834eb107142a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    accounts:
+      streamHash: ff3113723dffb561047ec7348ba6e637c7068376
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    carrier_acounts:
+      streamHash: 17b1fc52b7f21c14dc6587530013aea90327a886
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    shipments:
+      streamHash: 4e50c91f3910aeb19cb1bb3270663c88d7efb3bd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  addresses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address:
+        type:
+          - object
+          - "null"
+        properties:
+          address_line_1:
+            type:
+              - string
+              - "null"
+          address_line_2:
+            type:
+              - string
+              - "null"
+          address_type:
+            type:
+              - string
+              - "null"
+          city_locality:
+            type:
+              - string
+              - "null"
+          country_code:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          organization:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          state_province:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  parcels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - string
+          - "null"
+      distance_unit:
+        type:
+          - string
+          - "null"
+      extra:
+        type:
+          - object
+          - "null"
+        properties:
+          COD:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+              payment_method:
+                type:
+                  - string
+                  - "null"
+          insurance:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              content:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+              provider:
+                type:
+                  - string
+                  - "null"
+          reference_1:
+            type:
+              - string
+              - "null"
+          reference_2:
+            type:
+              - string
+              - "null"
+      height:
+        type:
+          - string
+          - "null"
+      length:
+        type:
+          - string
+          - "null"
+      line_items:
+        type:
+          - array
+          - "null"
+      mass_unit:
+        type:
+          - string
+          - "null"
+      object_created:
+        type:
+          - string
+          - "null"
+      object_id:
+        type: string
+      object_owner:
+        type:
+          - string
+          - "null"
+      object_state:
+        type:
+          - string
+          - "null"
+      object_updated:
+        type:
+          - string
+          - "null"
+      test:
+        type:
+          - boolean
+          - "null"
+      weight:
+        type:
+          - string
+          - "null"
+      width:
+        type:
+          - string
+          - "null"
+    required:
+      - object_id
+  custom_items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - string
+          - "null"
+      eccn_ear99:
+        type:
+          - string
+          - "null"
+      hs_code:
+        type:
+          - string
+          - "null"
+      mass_unit:
+        type:
+          - string
+          - "null"
+      net_weight:
+        type:
+          - string
+          - "null"
+      object_created:
+        type:
+          - string
+          - "null"
+      object_id:
+        type: string
+      object_owner:
+        type:
+          - string
+          - "null"
+      object_state:
+        type:
+          - string
+          - "null"
+      object_updated:
+        type:
+          - string
+          - "null"
+      origin_country:
+        type:
+          - string
+          - "null"
+      quantity:
+        type:
+          - number
+          - "null"
+      sku_code:
+        type:
+          - string
+          - "null"
+      tariff_number:
+        type:
+          - string
+          - "null"
+      test:
+        type:
+          - boolean
+          - "null"
+      value_amount:
+        type:
+          - string
+          - "null"
+      value_currency:
+        type:
+          - string
+          - "null"
+    required:
+      - object_id
+  accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      object_created:
+        type:
+          - string
+          - "null"
+      object_id:
+        type: string
+      object_updated:
+        type:
+          - string
+          - "null"
+    required:
+      - object_id
+  carrier_acounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - string
+          - "null"
+      account_id:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      carrier:
+        type:
+          - string
+          - "null"
+      carrier_images:
+        type:
+          - object
+          - "null"
+        properties:
+          "75":
+            type:
+              - string
+              - "null"
+          "200":
+            type:
+              - string
+              - "null"
+      carrier_name:
+        type:
+          - string
+          - "null"
+      is_shippo_account:
+        type:
+          - boolean
+          - "null"
+      object_id:
+        type: string
+      object_info:
+        type:
+          - object
+          - "null"
+        properties:
+          authentication:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+      object_owner:
+        type:
+          - string
+          - "null"
+      parameters:
+        type:
+          - object
+          - "null"
+        properties:
+          expresslink_password:
+            type:
+              - string
+              - "null"
+          is_commercial:
+            type:
+              - string
+              - "null"
+      test:
+        type:
+          - boolean
+          - "null"
+    required:
+      - object_id
+  shipments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - string
+          - "null"
+      address_from:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          company:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          is_complete:
+            type:
+              - boolean
+              - "null"
+          is_residential:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          object_id:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          street1:
+            type:
+              - string
+              - "null"
+          street2:
+            type:
+              - string
+              - "null"
+          street3:
+            type:
+              - string
+              - "null"
+          street_no:
+            type:
+              - string
+              - "null"
+          test:
+            type:
+              - boolean
+              - "null"
+          validation_results:
+            type:
+              - object
+              - "null"
+            properties:
+              is_valid:
+                type:
+                  - boolean
+                  - "null"
+              messages:
+                type:
+                  - array
+                  - "null"
+          zip:
+            type:
+              - string
+              - "null"
+      address_return:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          company:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          is_complete:
+            type:
+              - boolean
+              - "null"
+          is_residential:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          object_id:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          street1:
+            type:
+              - string
+              - "null"
+          street2:
+            type:
+              - string
+              - "null"
+          street3:
+            type:
+              - string
+              - "null"
+          street_no:
+            type:
+              - string
+              - "null"
+          test:
+            type:
+              - boolean
+              - "null"
+          validation_results:
+            type:
+              - object
+              - "null"
+            properties:
+              is_valid:
+                type:
+                  - boolean
+                  - "null"
+              messages:
+                type:
+                  - array
+                  - "null"
+          zip:
+            type:
+              - string
+              - "null"
+      address_to:
+        type:
+          - object
+          - "null"
+        properties:
+          city:
+            type:
+              - string
+              - "null"
+          company:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          is_complete:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          object_id:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          street1:
+            type:
+              - string
+              - "null"
+          street2:
+            type:
+              - string
+              - "null"
+          street3:
+            type:
+              - string
+              - "null"
+          street_no:
+            type:
+              - string
+              - "null"
+          test:
+            type:
+              - boolean
+              - "null"
+          validation_results:
+            type:
+              - object
+              - "null"
+            properties:
+              is_valid:
+                type:
+                  - boolean
+                  - "null"
+              messages:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    code:
+                      type:
+                        - string
+                        - "null"
+                    source:
+                      type:
+                        - string
+                        - "null"
+                    text:
+                      type:
+                        - string
+                        - "null"
+          zip:
+            type:
+              - string
+              - "null"
+      carrier_accounts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      customs_declaration:
+        type:
+          - object
+          - "null"
+        properties:
+          metadata:
+            type:
+              - string
+              - "null"
+          address_importer:
+            type:
+              - string
+              - "null"
+          aes_itn:
+            type:
+              - string
+              - "null"
+          b13a_filing_option:
+            type:
+              - string
+              - "null"
+          b13a_number:
+            type:
+              - string
+              - "null"
+          certificate:
+            type:
+              - string
+              - "null"
+          certify:
+            type:
+              - boolean
+              - "null"
+          certify_signer:
+            type:
+              - string
+              - "null"
+          commercial_invoice:
+            type:
+              - boolean
+              - "null"
+          contents_explanation:
+            type:
+              - string
+              - "null"
+          contents_type:
+            type:
+              - string
+              - "null"
+          disclaimer:
+            type:
+              - string
+              - "null"
+          duties_payor:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              account:
+                type:
+                  - string
+                  - "null"
+              address:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  country:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  zip:
+                    type:
+                      - string
+                      - "null"
+              object_created:
+                type:
+                  - string
+                  - "null"
+              object_updated:
+                type:
+                  - string
+                  - "null"
+          eel_pfc:
+            type:
+              - string
+              - "null"
+          exporter_identification:
+            type:
+              - object
+              - "null"
+            properties:
+              eori_number:
+                type:
+                  - string
+                  - "null"
+              tax_id:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  number:
+                    type:
+                      - string
+                      - "null"
+          exporter_reference:
+            type:
+              - string
+              - "null"
+          importer_reference:
+            type:
+              - string
+              - "null"
+          incoterm:
+            type:
+              - string
+              - "null"
+          invoice:
+            type:
+              - string
+              - "null"
+          is_vat_collected:
+            type:
+              - boolean
+              - "null"
+          items:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          license:
+            type:
+              - string
+              - "null"
+          non_delivery_option:
+            type:
+              - string
+              - "null"
+          notes:
+            type:
+              - string
+              - "null"
+          object_created:
+            type:
+              - string
+              - "null"
+          object_id:
+            type:
+              - string
+              - "null"
+          object_owner:
+            type:
+              - string
+              - "null"
+          object_state:
+            type:
+              - string
+              - "null"
+          object_updated:
+            type:
+              - string
+              - "null"
+          test:
+            type:
+              - boolean
+              - "null"
+      extra:
+        type:
+          - object
+          - "null"
+        properties:
+          COD:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+              payment_method:
+                type:
+                  - string
+                  - "null"
+          accounts_receivable_customer_account:
+            type:
+              - object
+              - "null"
+            properties:
+              prefix:
+                type:
+                  - string
+                  - "null"
+              ref_sort:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          billing:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              account:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              participation_code:
+                type:
+                  - string
+                  - "null"
+              zip:
+                type:
+                  - string
+                  - "null"
+          bypass_address_validation:
+            type:
+              - boolean
+              - "null"
+          carbon_neutral:
+            type:
+              - boolean
+              - "null"
+          carrier_hub_id:
+            type:
+              - string
+              - "null"
+          carrier_hub_travel_time:
+            type:
+              - number
+              - "null"
+          cod_number:
+            type:
+              - object
+              - "null"
+            properties:
+              prefix:
+                type:
+                  - string
+                  - "null"
+              ref_sort:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          delivery_instructions:
+            type:
+              - string
+              - "null"
+          dept_number:
+            type:
+              - object
+              - "null"
+            properties:
+              prefix:
+                type:
+                  - string
+                  - "null"
+              ref_sort:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          dry_ice:
+            type:
+              - object
+              - "null"
+            properties:
+              contains_dry_ice:
+                type:
+                  - boolean
+                  - "null"
+              weight:
+                type:
+                  - string
+                  - "null"
+          fda_product_code:
+            type:
+              - object
+              - "null"
+            properties:
+              prefix:
+                type:
+                  - string
+                  - "null"
+              ref_sort:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          fulfillment_center:
+            type:
+              - string
+              - "null"
+          insurance:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - string
+                  - "null"
+              content:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+              provider:
+                type:
+                  - string
+                  - "null"
+          invoice_number:
+            type:
+              - object
+              - "null"
+            properties:
+              prefix:
+                type:
+                  - string
+                  - "null"
+              ref_sort:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          is_return:
+            type:
+              - boolean
+              - "null"
+          lasership_attrs:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          lasership_declared_value:
+            type:
+              - string
+              - "null"
+          manifest_number:
+            type:
+              - object
+              - "null"
+            properties:
+              prefix:
+                type:
+                  - string
+                  - "null"
+              ref_sort:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          model_number:
+            type:
+              - object
+              - "null"
+            properties:
+              prefix:
+                type:
+                  - string
+                  - "null"
+              ref_sort:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          part_number:
+            type:
+              - object
+              - "null"
+            properties:
+              prefix:
+                type:
+                  - string
+                  - "null"
+              ref_sort:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          po_number:
+            type:
+              - object
+              - "null"
+            properties:
+              prefix:
+                type:
+                  - string
+                  - "null"
+              ref_sort:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          preferred_delivery_timeframe:
+            type:
+              - string
+              - "null"
+          premium:
+            type:
+              - boolean
+              - "null"
+          production_code:
+            type:
+              - object
+              - "null"
+            properties:
+              prefix:
+                type:
+                  - string
+                  - "null"
+              ref_sort:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          purchase_request_number:
+            type:
+              - object
+              - "null"
+            properties:
+              prefix:
+                type:
+                  - string
+                  - "null"
+              ref_sort:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          qr_code_requested:
+            type:
+              - boolean
+              - "null"
+          reference_1:
+            type:
+              - string
+              - "null"
+          reference_2:
+            type:
+              - string
+              - "null"
+          request_retail_rates:
+            type:
+              - boolean
+              - "null"
+          return_service_type:
+            type:
+              - string
+              - "null"
+          rma_number:
+            type:
+              - object
+              - "null"
+            properties:
+              prefix:
+                type:
+                  - string
+                  - "null"
+              ref_sort:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          salesperson_number:
+            type:
+              - object
+              - "null"
+            properties:
+              prefix:
+                type:
+                  - string
+                  - "null"
+              ref_sort:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          saturday_delivery:
+            type:
+              - boolean
+              - "null"
+          serial_number:
+            type:
+              - object
+              - "null"
+            properties:
+              prefix:
+                type:
+                  - string
+                  - "null"
+              ref_sort:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          signature_confirmation:
+            type:
+              - string
+              - "null"
+          store_number:
+            type:
+              - object
+              - "null"
+            properties:
+              prefix:
+                type:
+                  - string
+                  - "null"
+              ref_sort:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+          transaction_reference_number:
+            type:
+              - object
+              - "null"
+            properties:
+              prefix:
+                type:
+                  - string
+                  - "null"
+              ref_sort:
+                type:
+                  - number
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+      messages:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            code:
+              type:
+                - string
+                - "null"
+            source:
+              type:
+                - string
+                - "null"
+            text:
+              type:
+                - string
+                - "null"
+      object_created:
+        type:
+          - string
+          - "null"
+      object_id:
+        type: string
+      object_owner:
+        type:
+          - string
+          - "null"
+      object_updated:
+        type: string
+      parcels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            metadata:
+              type:
+                - string
+                - "null"
+            distance_unit:
+              type:
+                - string
+                - "null"
+            extra:
+              type:
+                - object
+                - "null"
+              properties:
+                COD:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                    payment_method:
+                      type:
+                        - string
+                        - "null"
+            height:
+              type:
+                - string
+                - "null"
+            length:
+              type:
+                - string
+                - "null"
+            line_items:
+              type:
+                - array
+                - "null"
+            mass_unit:
+              type:
+                - string
+                - "null"
+            object_created:
+              type:
+                - string
+                - "null"
+            object_id:
+              type:
+                - string
+                - "null"
+            object_owner:
+              type:
+                - string
+                - "null"
+            object_state:
+              type:
+                - string
+                - "null"
+            object_updated:
+              type:
+                - string
+                - "null"
+            test:
+              type:
+                - boolean
+                - "null"
+            weight:
+              type:
+                - string
+                - "null"
+            width:
+              type:
+                - string
+                - "null"
+      rates:
+        type:
+          - array
+          - "null"
+      shipment_date:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      test:
+        type:
+          - boolean
+          - "null"
+    required:
+      - object_id
+      - object_updated

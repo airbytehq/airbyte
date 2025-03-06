@@ -19,7 +19,7 @@ jobs:
   fail_on_protected_path_changes:
     name: "Check fork do not change protected paths"
     if: github.event.pull_request.head.repo.fork == true
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       pull-requests: read
     steps:
@@ -37,45 +37,6 @@ jobs:
           echo "The fork has changes in protected paths. This is not allowed."
           exit 1
 
-  format_check:
-    # IMPORTANT: This name must match the require check name on the branch protection settings
-    name: "Check for formatting errors"
-    if: github.event.pull_request.head.repo.fork == true
-    environment: community-ci-auto
-    runs-on: community-tooling-test-small
-    needs: fail_on_protected_path_changes
-    timeout-minutes: 30
-    env:
-      MAIN_BRANCH_NAME: "master"
-    steps:
-      # This checkouts a fork which can contain untrusted code
-      # It's deemed safe as the formatter are not executing any checked out code
-      - name: Checkout fork
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 1
-
-      # This will sync the .github folder of the main repo with the fork
-      # This allows us to use up to date actions and CI logic from the main repo
-      - name: Pull .github folder and internal packages from main repository
-        id: pull_github_folder
-        run: |
-          git remote add main https://github.com/airbytehq/airbyte.git
-          git fetch main ${MAIN_BRANCH_NAME}
-          git checkout main/${MAIN_BRANCH_NAME} -- .github
-          git checkout main/${MAIN_BRANCH_NAME} -- airbyte-ci
-
-      - name: Run airbyte-ci format check all
-        # This path refers to the fork .github folder.
-        # We make sure its content is in sync with the main repo .github folder by pulling it in the previous step
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          context: "pull_request"
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          subcommand: "format check all"
-          is_fork: "true"
   connectors_early_ci:
     name: Run connectors early CI on fork
     if: github.event.pull_request.head.repo.fork == true
@@ -172,7 +133,6 @@ jobs:
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "pull_request"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -237,7 +197,6 @@ jobs:
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "pull_request"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}

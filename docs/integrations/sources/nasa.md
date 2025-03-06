@@ -43,7 +43,22 @@ The NASA connector should not run into NASA API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                             | Subject                                    |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------- |
-| 0.3.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.3.16 | 2025-03-01 | [54783](https://github.com/airbytehq/airbyte/pull/54783) | Update dependencies |
+| 0.3.15 | 2025-02-22 | [54341](https://github.com/airbytehq/airbyte/pull/54341) | Update dependencies |
+| 0.3.14 | 2025-02-15 | [53803](https://github.com/airbytehq/airbyte/pull/53803) | Update dependencies |
+| 0.3.13 | 2025-02-08 | [53303](https://github.com/airbytehq/airbyte/pull/53303) | Update dependencies |
+| 0.3.12 | 2025-02-01 | [52778](https://github.com/airbytehq/airbyte/pull/52778) | Update dependencies |
+| 0.3.11 | 2025-01-25 | [52275](https://github.com/airbytehq/airbyte/pull/52275) | Update dependencies |
+| 0.3.10 | 2025-01-18 | [51793](https://github.com/airbytehq/airbyte/pull/51793) | Update dependencies |
+| 0.3.9 | 2025-01-11 | [51178](https://github.com/airbytehq/airbyte/pull/51178) | Update dependencies |
+| 0.3.8 | 2024-12-28 | [50595](https://github.com/airbytehq/airbyte/pull/50595) | Update dependencies |
+| 0.3.7 | 2024-12-21 | [50083](https://github.com/airbytehq/airbyte/pull/50083) | Update dependencies |
+| 0.3.6 | 2024-12-14 | [49637](https://github.com/airbytehq/airbyte/pull/49637) | Update dependencies |
+| 0.3.5 | 2024-12-12 | [49231](https://github.com/airbytehq/airbyte/pull/49231) | Update dependencies |
+| 0.3.4 | 2024-12-11 | [48990](https://github.com/airbytehq/airbyte/pull/48990) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.3.3 | 2024-10-29 | [47740](https://github.com/airbytehq/airbyte/pull/47740) | Update dependencies |
+| 0.3.2 | 2024-10-28 | [47491](https://github.com/airbytehq/airbyte/pull/47491) | Update dependencies |
+| 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.3.0 | 2024-08-15 | [44115](https://github.com/airbytehq/airbyte/pull/44115) | Refactor connector to manifest-only format |
 | 0.2.14 | 2024-08-12 | [43907](https://github.com/airbytehq/airbyte/pull/43907) | Update dependencies |
 | 0.2.13 | 2024-08-10 | [43625](https://github.com/airbytehq/airbyte/pull/43625) | Update dependencies |

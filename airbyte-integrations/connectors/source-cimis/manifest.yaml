@@ -1,0 +1,677 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: >-
+  The California Irrigation Management Information System (CIMIS) is a program
+  unit in the Water Use and Efficiency Branch, Division of Regional Assistance,
+  California Department of Water Resources (DWR) that manages a network of over
+  145 automated weather stations in California. CIMIS was developed in 1982 by
+  DWR and the University of California, Davis (UC Davis). It was designed to
+  assist irrigators in managing their water resources more efficiently.
+  Efficient use of water resources benefits Californians by saving water,
+  energy, and money.
+
+check:
+  type: CheckStream
+  stream_names:
+    - stations
+
+definitions:
+  streams:
+    data:
+      type: DeclarativeStream
+      name: data
+      primary_key:
+        - Julian
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/data
+          http_method: GET
+          request_parameters:
+            targets: >-
+              {{ ';'.join(config['targets']) if config['targets_type'] in
+              ['decimal-degree coordinates', 'street addresses'] else
+              ','.join(config['targets']) }}
+            unitOfMeasure: "{{ config['unit_of_measure'] }}"
+            dataItems: "{{ config['daily_data_items'] + config['hourly_data_items'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Data
+              - Providers
+              - "*"
+              - Records
+              - "*"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: Date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: startDate
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: endDate
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/data"
+    stations:
+      type: DeclarativeStream
+      name: stations
+      primary_key:
+        - StationNbr
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/station
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Stations
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stations"
+    spatial_zipcodes:
+      type: DeclarativeStream
+      name: spatial_zipcodes
+      primary_key:
+        - ZipCode
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/spatialzipcode
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - ZipCodes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/spatial_zipcodes"
+    station_zipcodes:
+      type: DeclarativeStream
+      name: station_zipcodes
+      primary_key:
+        - StationNbr
+        - ZipCode
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/stationzipcode
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - ZipCodes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/station_zipcodes"
+  base_requester:
+    type: HttpRequester
+    url_base: https://et.water.ca.gov
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: '{{ config["api_key"] }}'
+      inject_into:
+        type: RequestOption
+        field_name: appKey
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/data"
+  - $ref: "#/definitions/streams/stations"
+  - $ref: "#/definitions/streams/spatial_zipcodes"
+  - $ref: "#/definitions/streams/station_zipcodes"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - targets_type
+      - targets
+      - start_date
+      - end_date
+    properties:
+      api_key:
+        type: string
+        name: api_key
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      targets_type:
+        type: string
+        title: Targets Type
+        enum:
+          - WSN station numbers
+          - California zip codes
+          - decimal-degree coordinates
+          - street addresses
+        order: 1
+      targets:
+        type: array
+        title: Targets
+        order: 2
+      daily_data_items:
+        type: array
+        title: Daily Data Items
+        enum:
+          - day-air-tmp-avg
+          - day-air-tmp-min
+          - day-dew-pnt
+          - day-eto
+          - day-asce-eto
+          - day-asce-etr
+          - day-precip
+          - day-rel-hum-avg
+          - day-rel-hum-max
+          - day-rel-hum-min
+          - day-soil-tmp-avg
+          - day-soil-tmp-max
+          - day-soil-tmp-min
+          - day-sol-rad-avg
+          - day-sol-rad-net
+          - day-vap-pres-max
+          - day-vap-pres-avg
+          - day-wind-ene
+          - day-wind-ese
+          - day-wind-nne
+          - day-wind-nnw
+          - day-wind-run
+          - day-wind-spd-avg
+          - day-wind-ssw
+          - day-wind-wnw
+          - day-wind-wsw
+        order: 3
+      hourly_data_items:
+        type: array
+        title: Hourly Data Items
+        enum:
+          - hly-air-tmp
+          - hly-dew-pnt
+          - hly-eto
+          - hly-net-rad
+          - hly-asce-eto
+          - hly-asce-etr
+          - hly-precip
+          - hly-rel-hum
+          - hly-res-wind
+          - hly-soil-tmp
+          - hly-sol-rad
+          - hly-vap-pres
+          - hly-wind-dir
+          - hly-wind-spd
+        order: 4
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 5
+      end_date:
+        type: string
+        title: End date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 6
+      unit_of_measure:
+        type: string
+        title: Unit of Measure
+        enum:
+          - E
+          - M
+        order: 7
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    data: true
+    stations: true
+    spatial_zipcodes: true
+    station_zipcodes: true
+  testedStreams:
+    data:
+      streamHash: 1bee7bc78a9649aa07763f6ab96d77235d91226b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    stations:
+      streamHash: 4c44b213088d37f65908ed1e8f6304cd72d9fe9b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    spatial_zipcodes:
+      streamHash: 024890da8cd999e9b454642bac6541be18f92efd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    station_zipcodes:
+      streamHash: 94f7a8ed2b0a6a6772061879a6a12c9df84a4a3c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://et.water.ca.gov/Rest/Index
+
+schemas:
+  data:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Date:
+        type: string
+      DayAirTmpAvg:
+        type:
+          - object
+          - "null"
+        properties:
+          Qc:
+            type:
+              - string
+              - "null"
+          Unit:
+            type:
+              - string
+              - "null"
+          Value:
+            type:
+              - string
+              - "null"
+      DayAirTmpMax:
+        type:
+          - object
+          - "null"
+        properties:
+          Qc:
+            type:
+              - string
+              - "null"
+          Unit:
+            type:
+              - string
+              - "null"
+          Value:
+            type:
+              - string
+              - "null"
+      DayAirTmpMin:
+        type:
+          - object
+          - "null"
+        properties:
+          Qc:
+            type:
+              - string
+              - "null"
+          Unit:
+            type:
+              - string
+              - "null"
+          Value:
+            type:
+              - string
+              - "null"
+      DayAsceEto:
+        type:
+          - object
+          - "null"
+        properties:
+          Qc:
+            type:
+              - string
+              - "null"
+          Unit:
+            type:
+              - string
+              - "null"
+          Value:
+            type:
+              - string
+              - "null"
+      DayDewPnt:
+        type:
+          - object
+          - "null"
+        properties:
+          Qc:
+            type:
+              - string
+              - "null"
+          Unit:
+            type:
+              - string
+              - "null"
+          Value:
+            type:
+              - string
+              - "null"
+      DayPrecip:
+        type:
+          - object
+          - "null"
+        properties:
+          Qc:
+            type:
+              - string
+              - "null"
+          Unit:
+            type:
+              - string
+              - "null"
+          Value:
+            type:
+              - string
+              - "null"
+      DayRelHumAvg:
+        type:
+          - object
+          - "null"
+        properties:
+          Qc:
+            type:
+              - string
+              - "null"
+          Unit:
+            type:
+              - string
+              - "null"
+          Value:
+            type:
+              - string
+              - "null"
+      DayRelHumMax:
+        type:
+          - object
+          - "null"
+        properties:
+          Qc:
+            type:
+              - string
+              - "null"
+          Unit:
+            type:
+              - string
+              - "null"
+          Value:
+            type:
+              - string
+              - "null"
+      DayRelHumMin:
+        type:
+          - object
+          - "null"
+        properties:
+          Qc:
+            type:
+              - string
+              - "null"
+          Unit:
+            type:
+              - string
+              - "null"
+          Value:
+            type:
+              - string
+              - "null"
+      DaySoilTmpAvg:
+        type:
+          - object
+          - "null"
+        properties:
+          Qc:
+            type:
+              - string
+              - "null"
+          Unit:
+            type:
+              - string
+              - "null"
+          Value:
+            type:
+              - string
+              - "null"
+      DaySolRadAvg:
+        type:
+          - object
+          - "null"
+        properties:
+          Qc:
+            type:
+              - string
+              - "null"
+          Unit:
+            type:
+              - string
+              - "null"
+          Value:
+            type:
+              - string
+              - "null"
+      DayVapPresAvg:
+        type:
+          - object
+          - "null"
+        properties:
+          Qc:
+            type:
+              - string
+              - "null"
+          Unit:
+            type:
+              - string
+              - "null"
+          Value:
+            type:
+              - string
+              - "null"
+      DayWindRun:
+        type:
+          - object
+          - "null"
+        properties:
+          Qc:
+            type:
+              - string
+              - "null"
+          Unit:
+            type:
+              - string
+              - "null"
+          Value:
+            type:
+              - string
+              - "null"
+      DayWindSpdAvg:
+        type:
+          - object
+          - "null"
+        properties:
+          Qc:
+            type:
+              - string
+              - "null"
+          Unit:
+            type:
+              - string
+              - "null"
+          Value:
+            type:
+              - string
+              - "null"
+      Julian:
+        type: string
+      Scope:
+        type:
+          - string
+          - "null"
+      Standard:
+        type:
+          - string
+          - "null"
+      Station:
+        type:
+          - string
+          - "null"
+      ZipCodes:
+        type:
+          - string
+          - "null"
+    required:
+      - Julian
+      - Date
+  stations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      City:
+        type:
+          - string
+          - "null"
+      ConnectDate:
+        type:
+          - string
+          - "null"
+      County:
+        type:
+          - string
+          - "null"
+      DisconnectDate:
+        type:
+          - string
+          - "null"
+      Elevation:
+        type:
+          - string
+          - "null"
+      GroundCover:
+        type:
+          - string
+          - "null"
+      HmsLatitude:
+        type:
+          - string
+          - "null"
+      HmsLongitude:
+        type:
+          - string
+          - "null"
+      IsActive:
+        type:
+          - string
+          - "null"
+      IsEtoStation:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      RegionalOffice:
+        type:
+          - string
+          - "null"
+      SitingDesc:
+        type:
+          - string
+          - "null"
+      StationNbr:
+        type: string
+      ZipCodes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - StationNbr
+  spatial_zipcodes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ConnectDate:
+        type:
+          - string
+          - "null"
+      DisconnectDate:
+        type:
+          - string
+          - "null"
+      IsActive:
+        type:
+          - string
+          - "null"
+      ZipCode:
+        type: string
+    required:
+      - ZipCode
+  station_zipcodes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ConnectDate:
+        type:
+          - string
+          - "null"
+      DisconnectDate:
+        type:
+          - string
+          - "null"
+      IsActive:
+        type:
+          - string
+          - "null"
+      StationNbr:
+        type: number
+      ZipCode:
+        type: string
+    required:
+      - StationNbr
+      - ZipCode

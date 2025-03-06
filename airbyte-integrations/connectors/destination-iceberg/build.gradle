@@ -19,7 +19,7 @@ java {
 airbyteJavaConnector.addCdkDependencies()
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.iceberg.IcebergDestination'
+    mainClass = 'io.airbyte.integrations.destination.iceberg.IcebergDestinationRunner'
 }
 
 dependencies {

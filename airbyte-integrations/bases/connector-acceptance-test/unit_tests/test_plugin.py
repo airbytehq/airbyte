@@ -5,6 +5,7 @@
 import pytest
 from connector_acceptance_test import config, plugin
 
+
 HIGH_TEST_STRICTNESS_LEVEL = config.Config.TestStrictnessLevel.high
 LOW_TEST_STRICTNESS_LEVEL = config.Config.TestStrictnessLevel.low
 
@@ -55,7 +56,7 @@ def test_pytest_generate_tests(mocker, parametrize_skip_or_fail_return):
             HIGH_TEST_STRICTNESS_LEVEL,
             None,
             FAIL_ACTION,
-            "MyTestClass.dumb_test_function failed: it was not configured but must be according to the current high test strictness level.",
+            f"MyTestClass.dumb_test_function failed: it was not configured but must be according to the current TestStrictnessLevel.high test strictness level.",
             id="Discovered test is mandatory in high test strictness level, we're in high test strictness level, it was not configured: FAIL",
         ),
         pytest.param(

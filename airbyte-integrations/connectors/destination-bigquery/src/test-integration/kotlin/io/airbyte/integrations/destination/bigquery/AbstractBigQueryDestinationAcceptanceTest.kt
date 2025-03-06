@@ -160,7 +160,7 @@ abstract class AbstractBigQueryDestinationAcceptanceTest : DestinationAcceptance
                 .build()
 
         val queryResults = executeQuery(bigquery!!, queryConfig).getLeft().getQueryResults()
-        val fields = queryResults.schema.fields
+        val fields = queryResults.schema!!.fields
         val sourceOperations = BigQuerySourceOperations()
 
         return Streams.stream(queryResults.iterateAll())

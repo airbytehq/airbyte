@@ -7,6 +7,7 @@ import pendulum
 import pytest
 from source_facebook_marketing.utils import DATA_RETENTION_PERIOD, validate_end_date, validate_start_date
 
+
 TODAY = pendulum.datetime(2023, 3, 31)
 
 

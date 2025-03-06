@@ -1,0 +1,4734 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: >-
+  Download all your data from FreeAgent, a friendly and easy to use cloud based
+  accounting service
+
+check:
+  type: CheckStream
+  stream_names:
+    - Users
+
+definitions:
+  streams:
+    Users:
+      type: DeclarativeStream
+      name: Users
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Users"
+    Admin Expenses Categories:
+      type: DeclarativeStream
+      name: Admin Expenses Categories
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /categories
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - admin_expenses_categories
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Admin Expenses Categories"
+    Cost of Sales Categories:
+      type: DeclarativeStream
+      name: Cost of Sales Categories
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /categories
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - cost_of_sales_categories
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Cost of Sales Categories"
+    Income Categories:
+      type: DeclarativeStream
+      name: Income Categories
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /categories
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - income_categories
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Income Categories"
+    General Categories:
+      type: DeclarativeStream
+      name: General Categories
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /categories
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - general_categories
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/General Categories"
+    Balance Sheet:
+      type: DeclarativeStream
+      name: Balance Sheet
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounting/balance_sheet
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - balance_sheet
+          schema_normalization: Default
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Balance Sheet"
+    Bank Accounts:
+      type: DeclarativeStream
+      name: Bank Accounts
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /bank_accounts
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - bank_accounts
+          schema_normalization: Default
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Bank Accounts"
+    Bank Transaction Explanations:
+      type: DeclarativeStream
+      name: Bank Transaction Explanations
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /bank_transaction_explanations
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - bank_transaction_explanations
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: url
+              request_option:
+                type: RequestOption
+                field_name: bank_account
+                inject_into: request_parameter
+              partition_field: bank_account
+              stream:
+                $ref: "#/definitions/streams/Bank Accounts"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dated_on
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config["updated_since"] | default(day_delta(-7,
+            format='%Y-%m-%dT%H:%M:%SZ'),true) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Bank Transaction Explanations"
+    Bank Transactions:
+      type: DeclarativeStream
+      name: Bank Transactions
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /bank_transactions
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - bank_transactions
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: url
+              request_option:
+                type: RequestOption
+                field_name: bank_account
+                inject_into: request_parameter
+              partition_field: bank_account
+              stream:
+                $ref: "#/definitions/streams/Bank Accounts"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config["updated_since"] | default(day_delta(-7,
+            format='%Y-%m-%dT%H:%M:%SZ'),true) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Bank Transactions"
+    Bills:
+      type: DeclarativeStream
+      name: Bills
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /bills
+          http_method: GET
+          request_parameters:
+            nested_bill_items: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - bills
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config["updated_since"] | default(day_delta(-7,
+            format='%Y-%m-%dT%H:%M:%SZ'),true) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Bills"
+    Company Tax Timeline:
+      type: DeclarativeStream
+      name: Company Tax Timeline
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /company/tax_timeline
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - timeline_items
+          schema_normalization: Default
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Company Tax Timeline"
+    Contacts:
+      type: DeclarativeStream
+      name: Contacts
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /contacts
+          http_method: GET
+          request_parameters:
+            view: all
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - contacts
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Contacts"
+    Corporation Tax Returns:
+      type: DeclarativeStream
+      name: Corporation Tax Returns
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /corporation_tax_returns
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - corporation_tax_returns
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Corporation Tax Returns"
+    Credit Note Reconciliations:
+      type: DeclarativeStream
+      name: Credit Note Reconciliations
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /credit_note_reconciliations
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - credit_note_reconciliations
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config["updated_since"] | default(day_delta(-365,
+            format='%Y-%m-%dT%H:%M:%SZ'),true) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Credit Note Reconciliations"
+    Credit Notes:
+      type: DeclarativeStream
+      name: Credit Notes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /credit_notes
+          http_method: GET
+          request_parameters:
+            sort: "-updated_at"
+            nested_credit_note_items: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - credit_notes
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config["updated_since"] | default(day_delta(-365,
+            format='%Y-%m-%dT%H:%M:%SZ'),true) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Credit Notes"
+    Estimates:
+      type: DeclarativeStream
+      name: Estimates
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /estimates
+          http_method: GET
+          request_parameters:
+            nested_estimate_items: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - estimates
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config["updated_since"] | default(day_delta(-7,
+            format='%Y-%m-%dT%H:%M:%SZ'),true) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Estimates"
+    Expenses:
+      type: DeclarativeStream
+      name: Expenses
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /expenses
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - expenses
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config["updated_since"] | default(day_delta(-7,
+            format='%Y-%m-%dT%H:%M:%SZ'),true) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Expenses"
+    Final Accounts Reports:
+      type: DeclarativeStream
+      name: Final Accounts Reports
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /final_accounts_reports
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - final_accounts_reports
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Final Accounts Reports"
+    Hire Purchases:
+      type: DeclarativeStream
+      name: Hire Purchases
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /hire_purchases
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - hire_purchases
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Hire Purchases"
+    Invoices:
+      type: DeclarativeStream
+      name: Invoices
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /invoices
+          http_method: GET
+          request_parameters:
+            sort: "-updated_at"
+            nested_invoice_items: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - invoices
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config["updated_since"] | default(day_delta(-7,
+            format='%Y-%m-%dT%H:%M:%SZ'),true) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Invoices"
+    Journal Sets:
+      type: DeclarativeStream
+      name: Journal Sets
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /journal_sets
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - journal_sets
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Journal Sets"
+    Contact Notes:
+      type: DeclarativeStream
+      name: Contact Notes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /notes
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - notes
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: url
+              request_option:
+                type: RequestOption
+                field_name: contact
+                inject_into: request_parameter
+              partition_field: parent_url
+              stream:
+                $ref: "#/definitions/streams/Contacts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Contact Notes"
+    Payroll Periods:
+      type: DeclarativeStream
+      name: Payroll Periods
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /payroll/{{ format_datetime(stream_partition.accounting_ends_on,
+            '%Y') }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - periods
+          schema_normalization: Default
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ends_on
+              partition_field: accounting_ends_on
+              stream:
+                $ref: "#/definitions/streams/Annual Accounting Periods"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Payroll Periods"
+    Company:
+      type: DeclarativeStream
+      name: Company
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /company
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - company
+          schema_normalization: Default
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Company"
+    Annual Accounting Periods:
+      type: DeclarativeStream
+      name: Annual Accounting Periods
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /company
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - company
+              - annual_accounting_periods
+          schema_normalization: Default
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Annual Accounting Periods"
+    Payslips:
+      type: DeclarativeStream
+      name: Payslips
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /payroll/{{ format_datetime(stream_partition.accounting_ends_on,
+            '%Y') }}/{{ stream_partition.accounting_period }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - period
+              - payslips
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: ends_on
+                partition_field: accounting_ends_on
+                stream:
+                  $ref: "#/definitions/streams/Annual Accounting Periods"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: period
+                partition_field: accounting_period
+                stream:
+                  $ref: "#/definitions/streams/Payroll Periods"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Payslips"
+    Price List Items:
+      type: DeclarativeStream
+      name: Price List Items
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /price_list_items
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - price_list_items
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Price List Items"
+    Profit & Loss Summary:
+      type: DeclarativeStream
+      name: Profit & Loss Summary
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounting/profit_and_loss/summary
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - profit_and_loss_summary
+          schema_normalization: Default
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Profit & Loss Summary"
+    Projects:
+      type: DeclarativeStream
+      name: Projects
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects
+          http_method: GET
+          request_parameters:
+            sort: "-updated_at"
+            nested: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - projects
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config["updated_since"] | default(day_delta(-7,
+            format='%Y-%m-%dT%H:%M:%SZ'),true) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Projects"
+    Tasks:
+      type: DeclarativeStream
+      name: Tasks
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tasks
+          http_method: GET
+          request_parameters:
+            sort: "-updated_at"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tasks
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config["updated_since"] | default(day_delta(-7,
+            format='%Y-%m-%dT%H:%M:%SZ'),true) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Tasks"
+    Timeslips:
+      type: DeclarativeStream
+      name: Timeslips
+      primary_key:
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /timeslips
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - timeslips
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config["updated_since"] | default(day_delta(-7,
+            format='%Y-%m-%dT%H:%M:%SZ'),true) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Timeslips"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.freeagent.com/v2
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: '{{ config["client_id"] }}'
+      grant_type: refresh_token
+      client_secret: '{{ config["client_secret"] }}'
+      refresh_token: '{{ config["client_refresh_token_2"] }}'
+      refresh_request_body: {}
+      token_refresh_endpoint: https://api.freeagent.com/v2/token_endpoint
+
+streams:
+  - $ref: "#/definitions/streams/Users"
+  - $ref: "#/definitions/streams/Admin Expenses Categories"
+  - $ref: "#/definitions/streams/Cost of Sales Categories"
+  - $ref: "#/definitions/streams/Income Categories"
+  - $ref: "#/definitions/streams/General Categories"
+  - $ref: "#/definitions/streams/Balance Sheet"
+  - $ref: "#/definitions/streams/Bank Accounts"
+  - $ref: "#/definitions/streams/Bank Transaction Explanations"
+  - $ref: "#/definitions/streams/Bank Transactions"
+  - $ref: "#/definitions/streams/Bills"
+  - $ref: "#/definitions/streams/Company Tax Timeline"
+  - $ref: "#/definitions/streams/Contacts"
+  - $ref: "#/definitions/streams/Corporation Tax Returns"
+  - $ref: "#/definitions/streams/Credit Note Reconciliations"
+  - $ref: "#/definitions/streams/Credit Notes"
+  - $ref: "#/definitions/streams/Estimates"
+  - $ref: "#/definitions/streams/Expenses"
+  - $ref: "#/definitions/streams/Final Accounts Reports"
+  - $ref: "#/definitions/streams/Hire Purchases"
+  - $ref: "#/definitions/streams/Invoices"
+  - $ref: "#/definitions/streams/Journal Sets"
+  - $ref: "#/definitions/streams/Contact Notes"
+  - $ref: "#/definitions/streams/Payroll Periods"
+  - $ref: "#/definitions/streams/Company"
+  - $ref: "#/definitions/streams/Annual Accounting Periods"
+  - $ref: "#/definitions/streams/Payslips"
+  - $ref: "#/definitions/streams/Price List Items"
+  - $ref: "#/definitions/streams/Profit & Loss Summary"
+  - $ref: "#/definitions/streams/Projects"
+  - $ref: "#/definitions/streams/Tasks"
+  - $ref: "#/definitions/streams/Timeslips"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - client_refresh_token_2
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      client_refresh_token_2:
+        type: string
+        order: 2
+        title: Refresh token
+        airbyte_secret: true
+      updated_since:
+        type: string
+        order: 3
+        title: Updated Since
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      payroll_year:
+        type: number
+        order: 4
+        title: Payroll Year
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Users: false
+    Admin Expenses Categories: false
+    Cost of Sales Categories: false
+    Income Categories: false
+    General Categories: false
+    Balance Sheet: false
+    Bank Accounts: false
+    Bank Transaction Explanations: false
+    Bank Transactions: false
+    Bills: false
+    Company Tax Timeline: false
+    Contacts: false
+    Corporation Tax Returns: false
+    Credit Note Reconciliations: false
+    Credit Notes: false
+    Estimates: false
+    Expenses: false
+    Final Accounts Reports: false
+    Hire Purchases: false
+    Invoices: false
+    Journal Sets: false
+    Contact Notes: false
+    Payroll Periods: false
+    Company: false
+    Annual Accounting Periods: false
+    Payslips: false
+    Price List Items: false
+    Profit & Loss Summary: false
+    Projects: false
+    Tasks: false
+    Timeslips: false
+  testedStreams:
+    Users:
+      streamHash: b2ed01bc81d7aa703aecd15b7c9df54e128891a3
+    Admin Expenses Categories:
+      streamHash: a4bd7b54e20336786c17e2a2bf44f749fd003d72
+    Cost of Sales Categories:
+      streamHash: ce2cbce0e81a89e746d51e533721cc12d2ec6b88
+    Income Categories:
+      streamHash: 2dc5364888bab653cddd1a4c96fa8adf2b6cdff1
+    General Categories:
+      streamHash: 517dc45bdba59a7390f09374a57ea15dc14904e3
+    Balance Sheet:
+      streamHash: 19b32df6adcb2469dc9b637519fa36269d1c3c5f
+    Bank Accounts:
+      streamHash: e668888465cb8477abd1ea53a3816958bce3185b
+    Bank Transaction Explanations:
+      streamHash: 8ad05c2dbee21144a91a6598ef5cd0c5babaef3e
+    Bank Transactions:
+      streamHash: 414533633fd2c077edc89877b06dbba5c408a8b4
+    Bills:
+      streamHash: 3f7e6218b9aec08e5ea6ccb8e6073724ef9ca43e
+    Company Tax Timeline:
+      streamHash: e613d37e9e9d4db6c098cf3ee5b0bba604b9db04
+    Contacts:
+      streamHash: ae776aa6fd28dd348301c5c85dcd2c6c72e3a669
+    Corporation Tax Returns:
+      streamHash: c9251747790e2d3ae1debabb31ed5fda41c5d2ad
+    Credit Note Reconciliations:
+      streamHash: 056d33b5530c358d60c200d187cd2ed37106a013
+    Credit Notes:
+      streamHash: 3cbb25b17c7b292ce5d4d31333115f91eb3bae73
+    Estimates:
+      streamHash: 212ba1d75b45a0f180fbee6c2527bdef2d0385da
+    Expenses:
+      streamHash: ab6ebc059a315018165d3e30165db2908811b9f1
+    Final Accounts Reports:
+      streamHash: 5a067b5a1d8008015e7fba55c44ae3db4980f17d
+    Hire Purchases:
+      streamHash: 7c8e60adca6908a2ed724f0e142571853fb303e4
+    Invoices:
+      streamHash: c5ff855332ac6a3b659610b67e943d3aea9e8c42
+    Journal Sets:
+      streamHash: 75e26d0a59cb4871cc22b2d212aeb978c6ff2177
+    Contact Notes:
+      streamHash: 02c182777f3f672cdf937f6a531d08788c2e91c6
+    Payroll Periods:
+      streamHash: a0a01d10c7c69cd662d66f0d502fb4c6c9b37366
+    Company:
+      streamHash: d621e493532ea8938d8205479c3bcb2a7409da20
+    Annual Accounting Periods:
+      streamHash: 834619423f4fdbc049457e0746bf6b36213c458f
+    Payslips:
+      streamHash: 9b279d254bb4b302c33cf8f03d24cc5fce8cb4a2
+    Price List Items:
+      streamHash: 3c8faf7c3ca33482a2ff8455e06332d4cd706175
+    Profit & Loss Summary:
+      streamHash: f1f4463c3f78a3c1aa630b313b38c7763edd8657
+    Projects:
+      streamHash: 042996fbff5c878d50e99777d6079b6b7397eb44
+    Tasks:
+      streamHash: e8e21deacfe632c8db7a91e0d32ac22e60da87e7
+    Timeslips:
+      streamHash: 08669163af414ccd388486d887bc684a53269f85
+  assist: {}
+
+schemas:
+  Users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: string
+        format: date-time
+      current_payroll_profile:
+        type:
+          - object
+          - "null"
+        properties:
+          total_pay_in_previous_employment:
+            type:
+              - number
+              - "null"
+          total_tax_in_previous_employment:
+            type:
+              - number
+              - "null"
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      hidden:
+        type:
+          - boolean
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      ni_number:
+        type:
+          - string
+          - "null"
+      opening_mileage:
+        type:
+          - number
+          - "null"
+      permission_level:
+        type:
+          - integer
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+      unique_tax_reference:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+        format: date-time
+      url:
+        type: string
+    required:
+      - url
+  Admin Expenses Categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      allowable_for_tax:
+        type:
+          - boolean
+          - "null"
+      auto_sales_tax_rate:
+        type:
+          - string
+          - "null"
+      group_description:
+        type:
+          - string
+          - "null"
+      nominal_code:
+        type:
+          - string
+          - "null"
+      tax_reporting_name:
+        type:
+          - string
+          - "null"
+      url:
+        type: string
+    required:
+      - url
+  Cost of Sales Categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      allowable_for_tax:
+        type:
+          - boolean
+          - "null"
+      auto_sales_tax_rate:
+        type:
+          - string
+          - "null"
+      group_description:
+        type:
+          - string
+          - "null"
+      nominal_code:
+        type:
+          - string
+          - "null"
+      tax_reporting_name:
+        type:
+          - string
+          - "null"
+      url:
+        type: string
+    required:
+      - url
+  Income Categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      auto_sales_tax_rate:
+        type:
+          - string
+          - "null"
+      group_description:
+        type:
+          - string
+          - "null"
+      nominal_code:
+        type:
+          - string
+          - "null"
+      url:
+        type: string
+    required:
+      - url
+  General Categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      nominal_code:
+        type:
+          - string
+          - "null"
+      tax_reporting_name:
+        type:
+          - string
+          - "null"
+      url:
+        type: string
+    required:
+      - url
+  Balance Sheet:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accounting_period_start_date:
+        type:
+          - string
+          - "null"
+      as_at_date:
+        type: string
+        format: date
+      capital_assets:
+        type:
+          - object
+          - "null"
+        properties:
+          accounts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                nominal_code:
+                  type:
+                    - string
+                    - "null"
+                total_debit_value:
+                  type:
+                    - number
+                    - "null"
+          net_book_value:
+            type:
+              - number
+              - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      current_assets:
+        type:
+          - object
+          - "null"
+        properties:
+          accounts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                nominal_code:
+                  type:
+                    - string
+                    - "null"
+                total_debit_value:
+                  type:
+                    - number
+                    - "null"
+      current_liabilities:
+        type:
+          - object
+          - "null"
+        properties:
+          accounts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                nominal_code:
+                  type:
+                    - string
+                    - "null"
+                total_debit_value:
+                  type:
+                    - number
+                    - "null"
+      net_current_assets:
+        type:
+          - number
+          - "null"
+      owners_equity:
+        type:
+          - object
+          - "null"
+        properties:
+          accounts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                nominal_code:
+                  type:
+                    - string
+                    - "null"
+                total_debit_value:
+                  type:
+                    - number
+                    - "null"
+          retained_profit:
+            type:
+              - number
+              - "null"
+      total_assets:
+        type:
+          - number
+          - "null"
+      total_owners_equity:
+        type:
+          - number
+          - "null"
+  Bank Accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      account_number:
+        type:
+          - string
+          - "null"
+      bank_code:
+        type:
+          - string
+          - "null"
+      bank_name:
+        type:
+          - string
+          - "null"
+      bic:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+        format: date-time
+      currency:
+        type:
+          - string
+          - "null"
+      current_balance:
+        type: number
+      iban:
+        type:
+          - string
+          - "null"
+      is_personal:
+        type:
+          - boolean
+          - "null"
+      is_primary:
+        type:
+          - boolean
+          - "null"
+      latest_activity_date:
+        type:
+          - string
+          - "null"
+        format: date
+      manually_added_transaction_count:
+        type:
+          - integer
+          - "null"
+      marked_for_review_count:
+        type:
+          - integer
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      opening_balance:
+        type:
+          - number
+          - "null"
+      sort_code:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      total_count:
+        type:
+          - integer
+          - "null"
+      unexplained_transaction_count:
+        type:
+          - integer
+          - "null"
+      updated_at:
+        type: string
+        format: date-time
+      url:
+        type: string
+    required:
+      - url
+  Bank Transaction Explanations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      attachment:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          content_src:
+            type:
+              - string
+              - "null"
+          content_src_medium:
+            type:
+              - string
+              - "null"
+          content_src_small:
+            type:
+              - string
+              - "null"
+          content_type:
+            type:
+              - string
+              - "null"
+          expires_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          file_name:
+            type:
+              - string
+              - "null"
+          file_size:
+            type:
+              - integer
+              - number
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      bank_account:
+        type:
+          - string
+          - "null"
+      bank_transaction:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      dated_on:
+        type: string
+        format: date
+      detail:
+        type:
+          - string
+          - "null"
+      ec_status:
+        type:
+          - string
+          - "null"
+      foreign_currency:
+        type:
+          - string
+          - "null"
+      foreign_currency_value:
+        type:
+          - number
+          - "null"
+      gross_value:
+        type:
+          - number
+          - "null"
+      has_pending_operation:
+        type:
+          - boolean
+          - "null"
+      is_deletable:
+        type:
+          - boolean
+          - "null"
+      is_locked:
+        type:
+          - boolean
+          - "null"
+      is_money_in:
+        type:
+          - boolean
+          - "null"
+      is_money_out:
+        type:
+          - boolean
+          - "null"
+      is_money_paid_to_user:
+        type:
+          - boolean
+          - "null"
+      linked_transfer_account:
+        type:
+          - string
+          - "null"
+      linked_transfer_explanation:
+        type:
+          - string
+          - "null"
+      locked_attributes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      locked_reason:
+        type:
+          - string
+          - "null"
+      marked_for_review:
+        type:
+          - boolean
+          - "null"
+      paid_bill:
+        type:
+          - string
+          - "null"
+      paid_invoice:
+        type:
+          - string
+          - "null"
+      paid_user:
+        type:
+          - string
+          - "null"
+      sales_tax_rate:
+        type:
+          - number
+          - "null"
+      sales_tax_status:
+        type:
+          - string
+          - "null"
+      sales_tax_value:
+        type:
+          - number
+          - "null"
+      transaction_description:
+        type:
+          - string
+          - "null"
+      transfer_value:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type: string
+        format: date-time
+      url:
+        type: string
+    required:
+      - url
+      - dated_on
+  Bank Transactions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - number
+          - "null"
+      bank_account:
+        type:
+          - string
+          - "null"
+      bank_transaction_explanations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            attachment:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                content_src:
+                  type:
+                    - string
+                    - "null"
+                content_src_medium:
+                  type:
+                    - string
+                    - "null"
+                content_src_small:
+                  type:
+                    - string
+                    - "null"
+                content_type:
+                  type:
+                    - string
+                    - "null"
+                expires_at:
+                  type:
+                    - string
+                    - "null"
+                  format: date-time
+                file_name:
+                  type:
+                    - string
+                    - "null"
+                file_size:
+                  type:
+                    - number
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+            bank_account:
+              type:
+                - string
+                - "null"
+            bank_transaction:
+              type:
+                - string
+                - "null"
+            category:
+              type:
+                - string
+                - "null"
+            dated_on:
+              type:
+                - string
+                - "null"
+              format: date
+            detail:
+              type:
+                - string
+                - "null"
+            ec_status:
+              type:
+                - string
+                - "null"
+            foreign_currency:
+              type:
+                - string
+                - "null"
+            foreign_currency_value:
+              type:
+                - number
+                - "null"
+            gross_value:
+              type:
+                - number
+                - "null"
+            has_pending_operation:
+              type:
+                - boolean
+                - "null"
+            is_deletable:
+              type:
+                - boolean
+                - "null"
+            is_locked:
+              type:
+                - boolean
+                - "null"
+            is_money_in:
+              type:
+                - boolean
+                - "null"
+            is_money_out:
+              type:
+                - boolean
+                - "null"
+            is_money_paid_to_user:
+              type:
+                - boolean
+                - "null"
+            linked_transfer_account:
+              type:
+                - string
+                - "null"
+            linked_transfer_explanation:
+              type:
+                - string
+                - "null"
+            locked_attributes:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            locked_reason:
+              type:
+                - string
+                - "null"
+            marked_for_review:
+              type:
+                - boolean
+                - "null"
+            paid_bill:
+              type:
+                - string
+                - "null"
+            paid_invoice:
+              type:
+                - string
+                - "null"
+            paid_user:
+              type:
+                - string
+                - "null"
+            sales_tax_rate:
+              type:
+                - number
+                - "null"
+            sales_tax_status:
+              type:
+                - string
+                - "null"
+            sales_tax_value:
+              type:
+                - number
+                - "null"
+            transaction_description:
+              type:
+                - string
+                - "null"
+            transfer_value:
+              type:
+                - number
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+              format: date-time
+            url:
+              type:
+                - string
+                - "null"
+      created_at:
+        type: string
+        format: date-time
+      dated_on:
+        type:
+          - string
+          - "null"
+        format: date
+      full_description:
+        type:
+          - string
+          - "null"
+      is_manual:
+        type:
+          - boolean
+          - "null"
+      matching_transactions_count:
+        type:
+          - integer
+          - "null"
+      transaction_id:
+        type:
+          - string
+          - "null"
+      unexplained_amount:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      url:
+        type: string
+    required:
+      - url
+      - created_at
+  Bills:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attachment:
+        type:
+          - object
+          - "null"
+        properties:
+          content_src:
+            type:
+              - string
+              - "null"
+          content_src_medium:
+            type:
+              - string
+              - "null"
+          content_src_small:
+            type:
+              - string
+              - "null"
+          content_type:
+            type:
+              - string
+              - "null"
+          expires_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          file_name:
+            type:
+              - string
+              - "null"
+          file_size:
+            type:
+              - number
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      bill_items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            bill:
+              type:
+                - string
+                - "null"
+            category:
+              type:
+                - string
+                - "null"
+            locked_attributes:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            locked_reason:
+              type:
+                - string
+                - "null"
+            manual_sales_tax_amount:
+              type:
+                - number
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            sales_tax_rate:
+              type:
+                - number
+                - "null"
+            sales_tax_status:
+              type:
+                - string
+                - "null"
+            sales_tax_value:
+              type:
+                - number
+                - "null"
+            total_value:
+              type:
+                - number
+                - "null"
+            total_value_ex_tax:
+              type:
+                - number
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+      comments:
+        type:
+          - string
+          - "null"
+      contact:
+        type:
+          - string
+          - "null"
+      contact_name:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+        format: date-time
+      currency:
+        type:
+          - string
+          - "null"
+      dated_on:
+        type:
+          - string
+          - "null"
+        format: date
+      due_on:
+        type:
+          - string
+          - "null"
+        format: date
+      due_value:
+        type:
+          - number
+          - "null"
+      exchange_rate:
+        type:
+          - number
+          - "null"
+      input_total_values_inc_tax:
+        type:
+          - boolean
+          - "null"
+      is_paid_by_hire_purchase:
+        type:
+          - boolean
+          - "null"
+      locked_attributes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      locked_reason:
+        type:
+          - string
+          - "null"
+      long_status:
+        type:
+          - string
+          - "null"
+      native_due_value:
+        type:
+          - number
+          - "null"
+      net_value:
+        type:
+          - number
+          - "null"
+      paid_on:
+        type:
+          - string
+          - "null"
+        format: date
+      paid_value:
+        type:
+          - number
+          - "null"
+      project:
+        type:
+          - string
+          - "null"
+      reference:
+        type:
+          - string
+          - "null"
+      sales_tax_value:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      total_value:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      url:
+        type: string
+    required:
+      - url
+      - created_at
+  Company Tax Timeline:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      amount_due:
+        type:
+          - number
+          - "null"
+      dated_on:
+        type:
+          - string
+          - "null"
+        format: date
+      is_personal:
+        type:
+          - boolean
+          - "null"
+      nature:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+  Contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_balance:
+        type:
+          - number
+          - "null"
+      active_projects_count:
+        type:
+          - integer
+          - "null"
+      address1:
+        type:
+          - string
+          - "null"
+      address2:
+        type:
+          - string
+          - "null"
+      address3:
+        type:
+          - string
+          - "null"
+      billing_email:
+        type:
+          - string
+          - "null"
+      charge_sales_tax:
+        type:
+          - string
+          - "null"
+      contact_name_on_invoices:
+        type:
+          - boolean
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      default_payment_terms_in_days:
+        type:
+          - integer
+          - number
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      emails_invoices_automatically:
+        type:
+          - boolean
+          - "null"
+      emails_payment_reminders:
+        type:
+          - boolean
+          - "null"
+      emails_thank_you_notes:
+        type:
+          - boolean
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      locale:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      organisation_name:
+        type:
+          - string
+          - "null"
+      phone_number:
+        type:
+          - string
+          - "null"
+      postcode:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - string
+          - "null"
+      sales_tax_registration_number:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      town:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      url:
+        type: string
+      uses_contact_invoice_sequence:
+        type:
+          - boolean
+          - "null"
+      uses_contact_level_email_settings:
+        type:
+          - boolean
+          - "null"
+    required:
+      - url
+  Corporation Tax Returns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      amount_due:
+        type:
+          - number
+          - "null"
+      filing_due_on:
+        type:
+          - string
+          - "null"
+        format: date
+      filing_status:
+        type:
+          - string
+          - "null"
+      payment_due_on:
+        type:
+          - string
+          - "null"
+        format: date
+      payment_status:
+        type:
+          - string
+          - "null"
+      period_ends_on:
+        type:
+          - string
+          - "null"
+        format: date
+      period_starts_on:
+        type:
+          - string
+          - "null"
+        format: date
+      url:
+        type: string
+    required:
+      - url
+  Credit Note Reconciliations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      credit_note:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      dated_on:
+        type:
+          - string
+          - "null"
+        format: date
+      exchange_rate:
+        type:
+          - number
+          - "null"
+      gross_value:
+        type:
+          - number
+          - "null"
+      invoice:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      url:
+        type:
+          - string
+          - "null"
+  Credit Notes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bank_account:
+        type:
+          - string
+          - "null"
+      client_contact_name:
+        type:
+          - string
+          - "null"
+      comments:
+        type:
+          - string
+          - "null"
+      contact:
+        type:
+          - string
+          - "null"
+      contact_name:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      credit_note_items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            category:
+              type:
+                - string
+                - "null"
+            item_type:
+              type:
+                - string
+                - "null"
+            position:
+              type:
+                - integer
+                - "null"
+            price:
+              type:
+                - number
+                - "null"
+            project:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            sales_tax_rate:
+              type:
+                - number
+                - "null"
+            sales_tax_status:
+              type:
+                - string
+                - "null"
+            suffers_cis_deduction:
+              type:
+                - boolean
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      dated_on:
+        type:
+          - string
+          - "null"
+        format: date
+      discount_percent:
+        type:
+          - number
+          - "null"
+      discount_value:
+        type:
+          - number
+          - "null"
+      due_on:
+        type:
+          - string
+          - "null"
+        format: date
+      due_value:
+        type:
+          - number
+          - "null"
+      exchange_rate:
+        type:
+          - number
+          - "null"
+      involves_sales_tax:
+        type:
+          - boolean
+          - "null"
+      is_interim_uk_vat:
+        type:
+          - boolean
+          - "null"
+      long_status:
+        type:
+          - string
+          - "null"
+      net_value:
+        type:
+          - number
+          - "null"
+      omit_header:
+        type:
+          - boolean
+          - "null"
+      payment_terms:
+        type:
+          - string
+          - "null"
+      payment_terms_in_days:
+        type:
+          - number
+          - "null"
+      po_reference:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - string
+          - "null"
+      reference:
+        type:
+          - string
+          - "null"
+      refunded_on:
+        type:
+          - string
+          - "null"
+        format: date
+      refunded_value:
+        type:
+          - number
+          - "null"
+      sales_tax_value:
+        type:
+          - number
+          - "null"
+      show_project_name:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      total_value:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+        format: date-tim
+      url:
+        type:
+          - string
+          - "null"
+  Estimates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      client_contact_name:
+        type:
+          - string
+          - "null"
+      contact:
+        type:
+          - string
+          - "null"
+      contact_name:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+        format: date-time
+      currency:
+        type:
+          - string
+          - "null"
+      dated_on:
+        type:
+          - string
+          - "null"
+        format: date
+      discount_percent:
+        type:
+          - number
+          - "null"
+      discount_value:
+        type:
+          - number
+          - "null"
+      estimate_items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            category:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+              format: date-time
+            item_type:
+              type:
+                - string
+                - "null"
+            position:
+              type:
+                - integer
+                - "null"
+            price:
+              type:
+                - number
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            sales_tax_rate:
+              type:
+                - number
+                - "null"
+            sales_tax_status:
+              type:
+                - string
+                - "null"
+            sales_tax_value:
+              type:
+                - number
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+              format: date-time
+            url:
+              type:
+                - string
+                - "null"
+      estimate_type:
+        type:
+          - string
+          - "null"
+      include_sales_tax_on_total_value:
+        type:
+          - boolean
+          - "null"
+      invoice:
+        type:
+          - string
+          - "null"
+      involves_sales_tax:
+        type:
+          - boolean
+          - "null"
+      is_interim_uk_vat:
+        type:
+          - boolean
+          - "null"
+      net_value:
+        type:
+          - number
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - string
+          - "null"
+      reference:
+        type:
+          - string
+          - "null"
+      sales_tax_value:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      total_value:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      url:
+        type: string
+    required:
+      - url
+      - created_at
+  Expenses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      attachment:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          content_src:
+            type:
+              - string
+              - "null"
+          content_src_medium:
+            type:
+              - string
+              - "null"
+          content_src_small:
+            type:
+              - string
+              - "null"
+          content_type:
+            type:
+              - string
+              - "null"
+          expires_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          file_name:
+            type:
+              - string
+              - "null"
+          file_size:
+            type:
+              - number
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      category:
+        type:
+          - string
+          - "null"
+      contact_name:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+        format: date-time
+      currency:
+        type:
+          - string
+          - "null"
+      dated_on:
+        type:
+          - string
+          - "null"
+        format: date
+      engine_size:
+        type:
+          - string
+          - "null"
+      engine_size_index:
+        type:
+          - integer
+          - "null"
+      engine_type:
+        type:
+          - string
+          - "null"
+      engine_type_index:
+        type:
+          - integer
+          - "null"
+      gross_value:
+        type:
+          - number
+          - "null"
+      have_vat_receipt:
+        type:
+          - boolean
+          - "null"
+      initial_rate_mileage:
+        type:
+          - number
+          - "null"
+      locked_attributes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      locked_reason:
+        type:
+          - string
+          - "null"
+      mileage:
+        type:
+          - number
+          - "null"
+      native_gross_value:
+        type:
+          - number
+          - "null"
+      native_sales_tax_value:
+        type:
+          - number
+          - "null"
+      next_recurs_on:
+        type:
+          - string
+          - "null"
+        format: date
+      project:
+        type:
+          - string
+          - "null"
+      project_name:
+        type:
+          - string
+          - "null"
+      rebill_factor:
+        type:
+          - string
+          - "null"
+      rebill_mileage_rate:
+        type:
+          - number
+          - "null"
+      rebill_to_project:
+        type:
+          - string
+          - "null"
+      rebill_type:
+        type:
+          - string
+          - "null"
+      rebilled_on_invoice:
+        type:
+          - string
+          - "null"
+      rebilled_on_invoice_item:
+        type:
+          - string
+          - "null"
+      receipt_reference:
+        type:
+          - string
+          - "null"
+      reclaim_mileage:
+        type:
+          - number
+          - "null"
+      reclaim_mileage_rate:
+        type:
+          - number
+          - "null"
+      recurring:
+        type:
+          - string
+          - "null"
+      recurring_end_date:
+        type:
+          - string
+          - "null"
+        format: date
+      sales_tax_rate:
+        type:
+          - number
+          - "null"
+      sales_tax_status:
+        type:
+          - string
+          - "null"
+      sales_tax_value:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      url:
+        type: string
+      user:
+        type:
+          - string
+          - "null"
+      vehicle_type:
+        type:
+          - string
+          - "null"
+    required:
+      - url
+      - created_at
+  Final Accounts Reports:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      filing_due_on:
+        type:
+          - string
+          - "null"
+        format: date
+      filing_status:
+        type:
+          - string
+          - "null"
+      period_ends_on:
+        type:
+          - string
+          - "null"
+        format: date
+      period_starts_on:
+        type:
+          - string
+          - "null"
+        format: date
+      url:
+        type: string
+    required:
+      - url
+  Hire Purchases:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      bill:
+        type:
+          - string
+          - "null"
+      liabilities_over_one_year_category:
+        type:
+          - string
+          - "null"
+      liabilities_under_one_year_category:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+  Invoices:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      always_show_bic_and_iban:
+        type:
+          - boolean
+          - "null"
+      bank_account:
+        type:
+          - string
+          - "null"
+      client_contact_name:
+        type:
+          - string
+          - "null"
+      comments:
+        type:
+          - string
+          - "null"
+      contact:
+        type:
+          - string
+          - "null"
+      contact_name:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      currency:
+        type:
+          - string
+          - "null"
+      dated_on:
+        type:
+          - string
+          - "null"
+        format: date
+      discount_percent:
+        type:
+          - number
+          - "null"
+      discount_value:
+        type:
+          - number
+          - "null"
+      due_on:
+        type:
+          - string
+          - "null"
+        format: date
+      due_value:
+        type:
+          - number
+          - "null"
+      exchange_rate:
+        type:
+          - number
+          - "null"
+      include_estimates:
+        type:
+          - string
+          - "null"
+      include_expenses:
+        type:
+          - string
+          - "null"
+      include_timeslips:
+        type:
+          - string
+          - "null"
+      invoice_items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            category:
+              type:
+                - string
+                - "null"
+            item_type:
+              type:
+                - string
+                - "null"
+            position:
+              type:
+                - integer
+                - "null"
+            price:
+              type:
+                - number
+                - "null"
+            project:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            sales_tax_rate:
+              type:
+                - number
+                - "null"
+            sales_tax_status:
+              type:
+                - string
+                - "null"
+            suffers_cis_deduction:
+              type:
+                - boolean
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+      involves_sales_tax:
+        type:
+          - boolean
+          - "null"
+      is_interim_uk_vat:
+        type:
+          - boolean
+          - "null"
+      long_status:
+        type:
+          - string
+          - "null"
+      net_value:
+        type:
+          - number
+          - "null"
+      omit_header:
+        type:
+          - boolean
+          - "null"
+      paid_on:
+        type:
+          - string
+          - "null"
+        format: date
+      paid_value:
+        type:
+          - number
+          - "null"
+      payment_methods:
+        type:
+          - object
+          - "null"
+        properties:
+          stripe:
+            type:
+              - boolean
+              - "null"
+      payment_terms:
+        type:
+          - string
+          - "null"
+      payment_terms_in_days:
+        type:
+          - number
+          - "null"
+      payment_url:
+        type:
+          - string
+          - "null"
+      po_reference:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - string
+          - "null"
+      reference:
+        type:
+          - string
+          - "null"
+      sales_tax_value:
+        type:
+          - number
+          - "null"
+      send_new_invoice_emails:
+        type:
+          - boolean
+          - "null"
+      send_reminder_emails:
+        type:
+          - boolean
+          - "null"
+      send_thank_you_emails:
+        type:
+          - boolean
+          - "null"
+      show_project_name:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      total_value:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type: string
+        format: date-time
+      url:
+        type: string
+    required:
+      - url
+      - updated_at
+  Journal Sets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      dated_on:
+        type:
+          - string
+          - "null"
+        format: date
+      journal_entries:
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          category:
+            type:
+              - string
+              - "null"
+          debit_value:
+            type:
+              - number
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      tag:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      url:
+        type: string
+    required:
+      - url
+  Contact Notes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      author:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      note:
+        type:
+          - string
+          - "null"
+      parent_url:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      url:
+        type:
+          - string
+          - "null"
+  Payroll Periods:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      construction_industry_scheme_deduction:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      dated_on:
+        type:
+          - string
+          - "null"
+        format: date
+      employment_allowance_amount:
+        type:
+          - number
+          - "null"
+      employment_allowance_claimed:
+        type:
+          - boolean
+          - "null"
+      frequency:
+        type:
+          - string
+          - "null"
+      period:
+        type:
+          - integer
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      url:
+        type: string
+    required:
+      - url
+  Company:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      address1:
+        type:
+          - string
+          - "null"
+      annual_accounting_periods:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            ends_on:
+              type:
+                - string
+                - "null"
+              format: date
+            starts_on:
+              type:
+                - string
+                - "null"
+              format: date
+      cis_enabled:
+        type:
+          - boolean
+          - "null"
+      company_registration_number:
+        type:
+          - string
+          - "null"
+      company_start_date:
+        type:
+          - string
+          - "null"
+        format: date
+      contact_email:
+        type:
+          - string
+          - "null"
+      contact_phone:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      currency:
+        type:
+          - string
+          - "null"
+      ec_vat_reporting_enabled:
+        type:
+          - boolean
+          - "null"
+      first_accounting_year_end:
+        type:
+          - string
+          - "null"
+        format: date
+      freeagent_start_date:
+        type:
+          - string
+          - "null"
+        format: date
+      id:
+        type:
+          - number
+          - "null"
+      initial_vat_basis:
+        type:
+          - string
+          - "null"
+      initial_vat_frs_type:
+        type:
+          - string
+          - "null"
+      initially_on_frs:
+        type:
+          - boolean
+          - "null"
+      locale:
+        type:
+          - string
+          - "null"
+      locked_attributes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      logo:
+        type:
+          - object
+          - "null"
+        properties:
+          content_src:
+            type:
+              - string
+              - "null"
+          content_src_medium:
+            type:
+              - string
+              - "null"
+          content_src_small:
+            type:
+              - string
+              - "null"
+          content_type:
+            type:
+              - string
+              - "null"
+          expires_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          file_name:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      mileage_units:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      postcode:
+        type:
+          - string
+          - "null"
+      sales_tax_effective_date:
+        type:
+          - string
+          - "null"
+        format: date
+      sales_tax_is_value_added:
+        type:
+          - boolean
+          - "null"
+      sales_tax_name:
+        type:
+          - string
+          - "null"
+      sales_tax_rates:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      sales_tax_registration_number:
+        type:
+          - string
+          - "null"
+      sales_tax_registration_status:
+        type:
+          - string
+          - "null"
+      short_date_format:
+        type:
+          - string
+          - "null"
+      subdomain:
+        type:
+          - string
+          - "null"
+      supports_auto_sales_tax_on_purchases:
+        type:
+          - boolean
+          - "null"
+      town:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      url:
+        type: string
+      vat_first_return_period_ends_on:
+        type:
+          - string
+          - "null"
+        format: date
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - url
+  Annual Accounting Periods:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ends_on:
+        type:
+          - string
+          - "null"
+        format: date
+      starts_on:
+        type:
+          - string
+          - "null"
+        format: date
+  Payslips:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      absence_payments:
+        type:
+          - number
+          - "null"
+      additional_statutory_paternity_pay:
+        type:
+          - number
+          - "null"
+      allowance:
+        type:
+          - number
+          - "null"
+      attachments:
+        type:
+          - number
+          - "null"
+      basic_pay:
+        type:
+          - number
+          - "null"
+      bonus:
+        type:
+          - number
+          - "null"
+      commission:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      dated_on:
+        type:
+          - string
+          - "null"
+        format: date
+      deduct_postgrad_loan:
+        type:
+          - boolean
+          - "null"
+      deduct_student_loan:
+        type:
+          - boolean
+          - "null"
+      deduction_free_pay:
+        type:
+          - number
+          - "null"
+      deductions_subject_to_nic_but_not_paye:
+        type:
+          - number
+          - "null"
+      employee_ni:
+        type:
+          - number
+          - "null"
+      employee_pension:
+        type:
+          - number
+          - "null"
+      employee_pension_not_under_net_pay:
+        type:
+          - number
+          - "null"
+      employer_ni:
+        type:
+          - number
+          - "null"
+      employer_pension:
+        type:
+          - number
+          - "null"
+      frequency:
+        type:
+          - string
+          - "null"
+      ni_calc_type:
+        type:
+          - string
+          - "null"
+      ni_letter:
+        type:
+          - string
+          - "null"
+      other_deductions:
+        type:
+          - number
+          - "null"
+      other_deductions_from_net_pay:
+        type:
+          - number
+          - "null"
+      other_payments:
+        type:
+          - number
+          - "null"
+      overtime:
+        type:
+          - number
+          - "null"
+      payroll_giving:
+        type:
+          - number
+          - "null"
+      postgrad_loan_deduction:
+        type:
+          - number
+          - "null"
+      statutory_adoption_pay:
+        type:
+          - number
+          - "null"
+      statutory_maternity_pay:
+        type:
+          - number
+          - "null"
+      statutory_parental_bereavement_pay:
+        type:
+          - number
+          - "null"
+      statutory_paternity_pay:
+        type:
+          - number
+          - "null"
+      statutory_sick_pay:
+        type:
+          - number
+          - "null"
+      student_loan_deduction:
+        type:
+          - number
+          - "null"
+      student_loan_deductions_plan:
+        type:
+          - string
+          - "null"
+      tax_code:
+        type:
+          - string
+          - "null"
+      tax_deducted:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      user:
+        type:
+          - string
+          - "null"
+      week_1_month_1_basis:
+        type:
+          - boolean
+          - "null"
+  Price List Items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      item_type:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - number
+          - "null"
+      quantity:
+        type:
+          - number
+          - "null"
+      sales_tax_rate:
+        type:
+          - number
+          - "null"
+      second_sales_tax_rate:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      url:
+        type: string
+      vat_status:
+        type:
+          - string
+          - "null"
+    required:
+      - url
+  Profit & Loss Summary:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      expenses:
+        type:
+          - number
+          - "null"
+      from:
+        type:
+          - string
+          - "null"
+        format: date
+      income:
+        type:
+          - number
+          - "null"
+      less:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            title:
+              type:
+                - string
+                - "null"
+            total:
+              type:
+                - number
+                - "null"
+      operating_profit:
+        type:
+          - number
+          - "null"
+      retained_profit:
+        type:
+          - number
+          - "null"
+      retained_profit_brought_forward:
+        type:
+          - number
+          - "null"
+      retained_profit_carried_forward:
+        type:
+          - number
+          - "null"
+      to:
+        type:
+          - string
+          - "null"
+        format: date
+  Projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      billing_period:
+        type:
+          - string
+          - "null"
+      budget:
+        type:
+          - number
+          - "null"
+      budget_units:
+        type:
+          - string
+          - "null"
+      contact:
+        type:
+          - object
+          - "null"
+        properties:
+          account_balance:
+            type:
+              - number
+              - "null"
+          active_projects_count:
+            type:
+              - integer
+              - "null"
+          address1:
+            type:
+              - string
+              - "null"
+          address2:
+            type:
+              - string
+              - "null"
+          address3:
+            type:
+              - string
+              - "null"
+          billing_email:
+            type:
+              - string
+              - "null"
+          charge_sales_tax:
+            type:
+              - string
+              - "null"
+          contact_name_on_invoices:
+            type:
+              - boolean
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          default_payment_terms_in_days:
+            type:
+              - integer
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          emails_invoices_automatically:
+            type:
+              - boolean
+              - "null"
+          emails_payment_reminders:
+            type:
+              - boolean
+              - "null"
+          emails_thank_you_notes:
+            type:
+              - boolean
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          locale:
+            type:
+              - string
+              - "null"
+          mobile:
+            type:
+              - string
+              - "null"
+          organisation_name:
+            type:
+              - string
+              - "null"
+          phone_number:
+            type:
+              - string
+              - "null"
+          postcode:
+            type:
+              - string
+              - "null"
+          region:
+            type:
+              - string
+              - "null"
+          sales_tax_registration_number:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          town:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+            format: date-time
+          url:
+            type:
+              - string
+              - "null"
+          uses_contact_invoice_sequence:
+            type:
+              - boolean
+              - "null"
+          uses_contact_level_email_settings:
+            type:
+              - boolean
+              - "null"
+      contract_po_reference:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      currency:
+        type:
+          - string
+          - "null"
+      ends_on:
+        type:
+          - string
+          - "null"
+        format: date
+      hours_per_day:
+        type:
+          - number
+          - "null"
+      include_unbilled_time_in_profitability:
+        type:
+          - boolean
+          - "null"
+      is_ir35:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      normal_billing_rate:
+        type:
+          - string
+          - "null"
+      starts_on:
+        type:
+          - string
+          - "null"
+        format: date
+      status:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+        format: date-time
+      url:
+        type: string
+      uses_project_invoice_sequence:
+        type:
+          - boolean
+          - "null"
+    required:
+      - url
+      - updated_at
+  Tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      billing_period:
+        type:
+          - string
+          - "null"
+      billing_rate:
+        type:
+          - number
+          - "null"
+      created_at:
+        type: string
+        format: date-time
+      is_billable:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+        format: date-time
+      url:
+        type: string
+    required:
+      - url
+      - updated_at
+  Timeslips:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      billed_on_invoice:
+        type:
+          - string
+          - "null"
+      comment:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: string
+        format: date-time
+      dated_on:
+        type:
+          - string
+          - "null"
+        format: date
+      hours:
+        type:
+          - number
+          - "null"
+      project:
+        type:
+          - string
+          - "null"
+      task:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+        format: date-time
+      url:
+        type: string
+      user:
+        type:
+          - string
+          - "null"
+    required:
+      - url
+      - created_at

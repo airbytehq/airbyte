@@ -6,10 +6,10 @@ data:
     hosts:
       - api.trello.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.10.0@sha256:58722e84dbd06bb2af9250e37d24d1c448e247fc3a84d75ee4407d52771b6f03
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-trello
   registryOverrides:
     oss:
@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 8da67652-004c-11ec-9a03-0242ac130003
-  dockerImageTag: 1.1.0
+  dockerImageTag: 1.3.0
   dockerRepository: airbyte/source-trello
   documentationUrl: https://docs.airbyte.com/integrations/sources/trello
   githubIssueLabel: source-trello
@@ -35,7 +35,7 @@ data:
   releaseStage: beta
   supportLevel: community
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests

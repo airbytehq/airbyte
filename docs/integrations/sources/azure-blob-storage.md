@@ -2,7 +2,7 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the [Azure Blob Storage](https://learn.microsoft.com/en-us/azure/?product=popular) source connector.
+This page contains the setup guide and reference information for the [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs/) source connector.
 
 </HideInUI>
 
@@ -41,10 +41,10 @@ Minimum permissions (role [Storage Blob Data Reader](https://learn.microsoft.com
 
 ### Step 1: Set up Azure Blob Storage
 
-- Create a storage account with the permissions [details](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal)
+- Create a storage account and grant roles [details](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal)
 
 :::warning
-To use Oauth 2.0 Authentication method, Access Control (IAM) should be setup.
+To use Oauth2 or Client Credentials Authentication methods, Access Control (IAM) should be setup.
 It is recommended
 to use role [Storage Blob Data Reader](https://learn.microsoft.com/en-gb/azure/storage/blobs/assign-azure-role-data-access?tabs=portal)
 
@@ -61,6 +61,20 @@ Follow these steps to set up an IAM role:
 6. Click `Review + Assign`
 </details>
 :::
+
+<details>
+<summary>
+Follow these steps to set up a Service Principal to use the Client Credentials authentication method.
+</summary>
+
+In the Azure portal, navigate to your Service Principal's App Registration.
+
+Note the `Directory (tenant) ID` and `Application (client) ID` in the Overview panel.
+
+In the `Manage / Certificates & secrets` panel, click `Client Secrets` and create a new secret. Note the `Value` of the secret.
+
+</details>
+
 
 ### Step 2: Set up the Azure Blob Storage connector in Airbyte
 
@@ -93,10 +107,14 @@ Follow these steps to set up an IAM role:
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Azure Blob Storage from the Source type dropdown.
 4. Enter a name for the Azure Blob Storage connector.
-5. Enter the name of your Azure **Account**.
-6. Enter your Tenant ID and Click **Authenticate your Azure Blob Storage account**.
-7. Log in and authorize the Azure Blob Storage account.
-8. Enter the name of the **Container** containing your files to replicate.
+5. Enter the name of your Azure **Storage Account** and **container**.
+6. Choose the Authentication method.
+   1. If you are accessing through a Storage Account Key, choose `Authenticate via Storage Account Key` and enter the key.
+   1. If you are accessing through a Service Principal, choose the `Authenticate via Client Credentials`.
+     0. See [above](#step-1-set-up-azure-blob-storage) regarding setting IAM role bindings for the Service Principal and getting detail of the app registration
+     1. Enter the `Directory (tenant) ID` value from app registration in Azure Portal into the `Tenant ID` field.
+     2. Enter the `Application (client) ID` from Azure Portal into the `Tenant ID` field. Note this is **not** the secret ID
+     3. Enter the Secret `Value` from Azure Portal into the `Client Secret` field.
 9. Add a stream
    1. Write the **File Type**
    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
@@ -283,6 +301,7 @@ The Azure Blob Storage connector should not encounter any [Microsoft API limitat
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.5.0 | 2025-01-02 | [50398](https://github.com/airbytehq/airbyte/pull/50398) | Add client_credentials auth for Azure Service Principals |
 | 0.4.4 | 2024-06-06 | [39275](https://github.com/airbytehq/airbyte/pull/39275) | [autopull] Upgrade base image to v1.2.2 |
 | 0.4.3 | 2024-05-29 | [38701](https://github.com/airbytehq/airbyte/pull/38701) | Avoid error on empty stream when running discover |
 | 0.4.2 | 2024-04-23 | [37504](https://github.com/airbytehq/airbyte/pull/37504) | Update specification |

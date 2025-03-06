@@ -7,6 +7,7 @@ import copy
 from typing import Any, List, Mapping, MutableMapping, Optional
 
 import pendulum
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream

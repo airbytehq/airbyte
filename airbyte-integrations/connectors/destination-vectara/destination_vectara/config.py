@@ -4,8 +4,9 @@
 
 from typing import List, Optional
 
-from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
 from pydantic import BaseModel, Field
+
+from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
 
 
 class OAuth2(BaseModel):

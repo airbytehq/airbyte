@@ -49,7 +49,13 @@ class DetectStreamToFlushTest {
             )
 
         val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+            DetectStreamToFlush(
+                bufferDequeue,
+                runningFlushWorkers,
+                AtomicBoolean(false),
+                flusher,
+                flushOnEveryMessage = false
+            )
         Assertions.assertEquals(Optional.empty<Any>(), detect.getNextStreamToFlush(0))
     }
 
@@ -66,7 +72,13 @@ class DetectStreamToFlushTest {
                 RunningFlushWorkers::class.java,
             )
         val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+            DetectStreamToFlush(
+                bufferDequeue,
+                runningFlushWorkers,
+                AtomicBoolean(false),
+                flusher,
+                flushOnEveryMessage = false
+            )
         // if above threshold, triggers
         Assertions.assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0))
         // if below threshold, no trigger
@@ -94,8 +106,39 @@ class DetectStreamToFlushTest {
                 ),
             )
         val detect =
-            DetectStreamToFlush(bufferDequeue, runningFlushWorkers, AtomicBoolean(false), flusher)
+            DetectStreamToFlush(
+                bufferDequeue,
+                runningFlushWorkers,
+                AtomicBoolean(false),
+                flusher,
+                flushOnEveryMessage = false
+            )
         Assertions.assertEquals(Optional.empty<Any>(), detect.getNextStreamToFlush(0))
+    }
+
+    @Test
+    internal fun testFileTransfer() {
+        val bufferDequeue =
+            Mockito.mock(
+                BufferDequeue::class.java,
+            )
+        Mockito.`when`(bufferDequeue.bufferedStreams).thenReturn(setOf(DESC1))
+        Mockito.`when`(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(0L))
+        val runningFlushWorkers =
+            Mockito.mock(
+                RunningFlushWorkers::class.java,
+            )
+
+        val detect =
+            DetectStreamToFlush(
+                bufferDequeue,
+                runningFlushWorkers,
+                AtomicBoolean(false),
+                flusher,
+                flushOnEveryMessage = true
+            )
+        Assertions.assertEquals(0, detect.computeQueueThreshold())
+        Assertions.assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0))
     }
 
     @Test
@@ -127,6 +170,7 @@ class DetectStreamToFlushTest {
                 AtomicBoolean(false),
                 flusher,
                 mockedNowProvider,
+                flushOnEveryMessage = false
             )
 
         // initialize flush time

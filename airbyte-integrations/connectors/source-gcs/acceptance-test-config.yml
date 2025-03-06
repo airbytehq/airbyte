@@ -1,6 +1,7 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-gcs:dev
+test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
@@ -15,6 +16,8 @@ acceptance_tests:
         status: exception
       - config_path: "secrets/config_glob.json"
         status: succeed
+      - config_path: "secrets/config_oauth.json"
+        status: succeed
   discovery:
     tests:
       - config_path: "secrets/config.json"
@@ -25,11 +28,14 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        expect_trace_message_on_failure: false
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
       - config_path: "secrets/config_jsonl.json"
-        expect_trace_message_on_failure: false
+        expect_records:
+          path: "integration_tests/expected_records_jsonl.jsonl"
       - config_path: "secrets/config_glob.json"
-        expect_trace_message_on_failure: false
+        expect_records:
+          path: "integration_tests/expected_records_glob.jsonl"
   incremental:
     tests:
       - config_path: "secrets/config.json"
@@ -42,6 +48,8 @@ acceptance_tests:
           future_state_path: "integration_tests/abnormal_state_jsonl.json"
       - config_path: "secrets/config_glob.json"
         configured_catalog_path: "integration_tests/configured_catalog_glob.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state_glob.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

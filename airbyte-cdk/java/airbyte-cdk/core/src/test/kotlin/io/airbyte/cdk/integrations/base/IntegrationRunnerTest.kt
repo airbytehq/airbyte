@@ -442,11 +442,12 @@ ${Jsons.serialize(message2)}""".toByteArray(
         } catch (e: Exception) {
             throw RuntimeException(e)
         }
-        val runningThreads =
-            ThreadUtils.getAllThreads().filter(IntegrationRunner::filterOrphanedThread)
+        val runningThreadInfos =
+            IntegrationRunner.OrphanedThreadInfo.getAll()
+                .filter(IntegrationRunner::filterOrphanedThread)
 
         // all threads should be interrupted
-        Assertions.assertEquals(listOf<Any>(), runningThreads)
+        Assertions.assertEquals(listOf<Any>(), runningThreadInfos)
         Assertions.assertEquals(1, caughtExceptions.size)
     }
 
@@ -468,11 +469,12 @@ ${Jsons.serialize(message2)}""".toByteArray(
             throw RuntimeException(e)
         }
 
-        val runningThreads =
-            ThreadUtils.getAllThreads().filter(IntegrationRunner::filterOrphanedThread)
+        val runningThreadInfos =
+            IntegrationRunner.OrphanedThreadInfo.getAll()
+                .filter(IntegrationRunner::filterOrphanedThread)
 
         // a thread that refuses to be interrupted should remain
-        Assertions.assertEquals(1, runningThreads.size)
+        Assertions.assertEquals(1, runningThreadInfos.size)
         Assertions.assertEquals(1, caughtExceptions.size)
         Assertions.assertTrue(exitCalled.get())
     }

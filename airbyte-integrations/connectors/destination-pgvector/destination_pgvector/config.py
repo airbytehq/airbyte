@@ -22,7 +22,6 @@ class PasswordBasedAuthorizationModel(BaseModel):
 
 
 class PGVectorIndexingModel(BaseModel):
-
     host: str = Field(
         ...,
         title="Host",
@@ -31,7 +30,7 @@ class PGVectorIndexingModel(BaseModel):
         examples=["AIRBYTE_ACCOUNT"],
     )
     port: int = Field(
-        ...,
+        default=5432,
         title="Port",
         order=2,
         description="Enter the port you want to use to access the database",
@@ -45,7 +44,7 @@ class PGVectorIndexingModel(BaseModel):
         examples=["AIRBYTE_DATABASE"],
     )
     default_schema: str = Field(
-        ...,
+        default="public",
         title="Default Schema",
         order=5,
         description="Enter the name of the default schema",

@@ -6,6 +6,8 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import freezegun
+from source_stripe import SourceStripe
+
 from airbyte_cdk.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
@@ -26,7 +28,7 @@ from integration.helpers import assert_stream_did_not_run
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
 from integration.response_builder import a_response_with_status
-from source_stripe import SourceStripe
+
 
 _STREAM_NAME = "events"
 _NOW = datetime.now(timezone.utc)
@@ -242,7 +244,7 @@ class IncrementalTest(TestCase):
         output = self._read(_config().with_start_date(_A_START_DATE), _NO_STATE)
         most_recent_state = output.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert most_recent_state.stream_state == AirbyteStateBlob(created=int(_NOW.timestamp()))
+        assert most_recent_state.stream_state == AirbyteStateBlob(created=int(cursor_value))
 
     @HttpMocker()
     def test_given_state_when_read_then_use_state_for_query_params(self, http_mocker: HttpMocker) -> None:
