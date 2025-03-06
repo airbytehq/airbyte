@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - hchiao1_tydo_klaviyo_workflow
     paths:
       - "airbyte-integrations/connectors/**/metadata.yaml"
   workflow_dispatch:
