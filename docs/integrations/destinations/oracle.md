@@ -85,7 +85,7 @@ Airbyte has the ability to connect to the Oracle source with 3 network connectiv
 1. `Unencrypted` the connection will be made using the TCP protocol. In this case, all data over the network will be transmitted in unencrypted form.
 2. `Native network encryption` gives you the ability to encrypt database connections, without the configuration overhead of TCP / IP and SSL / TLS and without the need to open and listen on different ports. In this case, the _SQLNET.ENCRYPTION_CLIENT_
    option will always be set as _REQUIRED_ by default: The client or server will only accept encrypted traffic, but the user has the opportunity to choose an `Encryption algorithm` according to the security policies he needs.
-3. `TLS Encrypted` (verify certificate) - if this option is selected, data transfer will be transfered using the TLS protocol, taking into account the handshake procedure and certificate verification. To use this option, insert the content of the certificate issued by the server into the `SSL PEM file` field
+3. `TLS Encrypted` (verify certificate) - if this option is selected, data transfer will be transferred using the TLS protocol, taking into account the handshake procedure and certificate verification. To use this option, insert the content of the certificate issued by the server into the `SSL PEM file` field
 
 ## Changelog
 

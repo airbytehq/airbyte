@@ -89,7 +89,7 @@ Firebolt. Each table will contain 3 columns:
 - `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
   The column type in Firebolt is `TIMESTAMP`.
 - `_airbyte_data`: a json blob representing the event data. The column type in Firebolt is `VARCHAR`
-  but can be be parsed with JSON functions.
+  but can be parsed with JSON functions.
 
 ## Changelog
 

@@ -51,6 +51,6 @@ flowchart LR
 The diagram shows the steady-state operation of Airbyte, there are components not described you'll see in your deployment:
 
 - **Cron** [`airbyte-cron`]: Clean the server and sync logs (when using local logs). Regularly updates connector definitions and sweeps old workloads ensuring eventual consenus.
-- **Bootloader** [`airbyte-bootloader`]: Upgrade and Migrate the Database tables and confirm the enviroment is ready to work.
+- **Bootloader** [`airbyte-bootloader`]: Upgrade and Migrate the Database tables and confirm the environment is ready to work.
 
 This is a holistic high-level description of each component. For Airbyte deployed in Kubernetes the structure is very similar with a few changes.
