@@ -16,7 +16,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_faker"
 
 [tool.poetry.dependencies]
-python = "==3.10.16"
+python = ">=3.10,<4.0"
 airbyte-cdk = "^6.37.0"
 mimesis = "==6.1.1"
 
