@@ -4,9 +4,23 @@ connectionSpecification:
   title: Campaign Manager Spec
   type: object
   required:
-    - TODO
+    - client_id
+    - client_secret
+    - refresh_token
+    - profile_id
+    
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    client_id:
+      title: Client ID
       type: string
-      description: describe me
+    client_secret:
+      title: Client Secret
+      type: string
+      airbyte_secret: true
+    refresh_token:
+      title: Refresh Token
+      type: string
+      airbyte_secret: true
+    profile_id:
+      title: Profile ID
+      type: string
