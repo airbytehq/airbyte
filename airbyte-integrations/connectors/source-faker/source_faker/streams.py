@@ -125,8 +125,6 @@ class Users(Stream, IncrementalMixin):
         We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON
         """
 
-        print(f"state: {self.state} and {self.always_updated}")
-
         if "updated_at" in self.state and not self.always_updated:
             return iter([])
 

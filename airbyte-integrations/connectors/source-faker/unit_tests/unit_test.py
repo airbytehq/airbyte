@@ -218,7 +218,6 @@ def test_read_big_random_data():
     record_rows_count = 0
     state_rows_count = 0
     for row in iterator:
-        print(f"row: {row}")
         if row.type is Type.RECORD:
             record_rows_count = record_rows_count + 1
         if row.type is Type.STATE:
@@ -290,7 +289,5 @@ def test_read_with_seed():
 
 
 def _create_source(*, catalog, config, state):
-    if state:
-        print(f"creating source with state: {vars(state[0].stream.stream_state)}")
     source = SourceFaker(catalog=catalog, config=config, state=state)
     return source
