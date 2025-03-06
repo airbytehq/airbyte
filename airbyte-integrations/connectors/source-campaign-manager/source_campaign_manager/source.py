@@ -57,6 +57,9 @@ class DFAReportingStream(HttpStream):
         super().__init__(authenticator=authenticator)
         self.profile_id = profile_id
     
+    def next_page_token(self, response: requests.Response) -> Mapping[str, Any]:
+        return None
+
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, *kwargs) -> Iterable[Mapping]:
         # Implement response parsing
         yield response.json()
