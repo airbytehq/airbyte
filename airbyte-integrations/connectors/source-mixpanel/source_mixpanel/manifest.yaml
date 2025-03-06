@@ -288,7 +288,7 @@ definitions:
         url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/"
         path: |
           {% set project_id = config.credentials.project_id %}
-          {% if project_id %}app/projects/{{project_id}}{% else %}2.0{% endif %}/annotations
+          {% if project_id %}app/projects/{{project_id}}{% else %}query{% endif %}/annotations
         authenticator: "#/definitions/authenticator"
         error_handler:
           $ref: "#/definitions/default_error_handler"
