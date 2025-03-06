@@ -213,7 +213,7 @@ def test_read_big_random_data():
             state_rows_count = state_rows_count + 1
 
     assert record_rows_count == 1000 + 100  # 1000 users, and 100 products
-    assert state_rows_count == 10 + 1 + 1 + 1
+    assert state_rows_count == 10 + 1
 
 
 def test_with_purchases():
@@ -283,7 +283,11 @@ def test_ensure_no_purchases_without_users():
         config = {"count": 100, "parallelism": 1}
         catalog = ConfiguredAirbyteCatalog(
             streams=[
-                {"stream": {"name": "purchases", "json_schema": {}}, "sync_mode": "incremental", "destination_sync_mode": "overwrite"},
+                ConfiguredAirbyteStream(
+                    stream=AirbyteStream(name="purchases", json_schema={}, supported_sync_modes=["incremental"]),
+                    sync_mode="incremental",
+                    destination_sync_mode="overwrite",
+                )
             ]
         )
         state = {}
