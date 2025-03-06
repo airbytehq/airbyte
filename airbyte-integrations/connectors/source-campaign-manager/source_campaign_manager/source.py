@@ -61,7 +61,6 @@ class DFAReportingStream(HttpStream):
         return None
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, *kwargs) -> Iterable[Mapping]:
-        # Implement response parsing
         yield response.json()
 
 class CreateReport(DFAReportingStream):
@@ -111,9 +110,9 @@ class CreateReport(DFAReportingStream):
                 ]
             }
         }
+
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping[str, Any]]:
-        print(response.json())
         yield response.json()
 
 class RunReport(DFAReportingStream):
@@ -127,9 +126,8 @@ class RunReport(DFAReportingStream):
     def __init__(self, profile_id: str, authenticator: Oauth2Authenticator, **kwargs):
         super().__init__(profile_id, authenticator, **kwargs)
         self.parent_stream = CreateReport(profile_id, authenticator)
-
+    
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        print(stream_slice)
         report_id = stream_slice.get("report_id") if stream_slice else None
         if not report_id:
             raise ValueError("No report ID found in stream slice")
@@ -186,7 +184,6 @@ class ReportData(DFAReportingStream):
         return super().backoff_time(response)
     
     def parse_response(self, response, stream_state = None, stream_slice = None, *kwargs):
-        print("response hereee")
         csv_string = StringIO(response.text)
 
         # Skip lines until we find "Report Fields"
@@ -199,7 +196,6 @@ class ReportData(DFAReportingStream):
         csv_reader = csv.DictReader(csv_string, fieldnames=headers)
         
         for row in csv_reader:
-            print(row)
             yield row
 
 class SourceCampaignManager(AbstractSource):
