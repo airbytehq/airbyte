@@ -88,5 +88,3 @@ AVRO - deserialize Using confluent API. Please refer (https://docs.confluent.io/
 | 0.1.1   | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524)                                             | Update connector fields title/description                            |
 
 </details>
-
-[subject-name-strategy]: https://docs.confluent.io/cloud/current/sr/fundamentals/serdes-develop/index.html#subject-name-strategy
