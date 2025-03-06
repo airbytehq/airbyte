@@ -71,53 +71,53 @@ jobs:
           airbyte_ci_binary_url: ${{ github.event.inputs.airbyte_ci_binary_url }}
           max_attempts: 2
 
-  notify-failure-slack-channel:
-    name: "Notify Slack Channel on Publish Failures"
-    runs-on: ubuntu-24.04
-    needs:
-      - publish_connectors
-    if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v4
-      - name: Match GitHub User to Slack User
-        id: match-github-to-slack-user
-        uses: ./.github/actions/match-github-to-slack-user
-        env:
-          AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
-          GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Send publish failures to connector-publish-failures channel
-        id: slack
-        uses: slackapi/slack-github-action@v1.26.0
-        with:
-          # This data can be any valid JSON from a previous step in the GitHub Action
-          payload: |
-            {
-              "channel": "#connector-publish-failures",
-              "username": "Connectors CI/CD Bot",
-              "text": "🚨 Publish workflow failed:\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} \n merged by ${{ github.actor }} (<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}>). "
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+  # notify-failure-slack-channel:
+  #   name: "Notify Slack Channel on Publish Failures"
+  #   runs-on: ubuntu-24.04
+  #   needs:
+  #     - publish_connectors
+  #   if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
+  #   steps:
+  #     - name: Checkout Airbyte
+  #       uses: actions/checkout@v4
+  #     - name: Match GitHub User to Slack User
+  #       id: match-github-to-slack-user
+  #       uses: ./.github/actions/match-github-to-slack-user
+  #       env:
+  #         AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
+  #         GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Send publish failures to connector-publish-failures channel
+  #       id: slack
+  #       uses: slackapi/slack-github-action@v1.26.0
+  #       with:
+  #         # This data can be any valid JSON from a previous step in the GitHub Action
+  #         payload: |
+  #           {
+  #             "channel": "#connector-publish-failures",
+  #             "username": "Connectors CI/CD Bot",
+  #             "text": "🚨 Publish workflow failed:\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} \n merged by ${{ github.actor }} (<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}>). "
+  #           }
+  #       env:
+  #         SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
 
-  notify-failure-pager-duty:
-    name: "Notify PagerDuty on Publish Failures"
-    runs-on: ubuntu-24.04
-    needs:
-      - publish_connectors
-    if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v4
-      - name: Notify PagerDuty
-        id: pager-duty
-        uses: ./.github/actions/send-pager-duty-event
-        with:
-          # Integration URL: https://airbyte.pagerduty.com/services/P5GNI5T/integrations/PGKH9JV
-          integration_key: ${{ secrets.PAGER_DUTY_PUBLISH_FAILURES_INTEGRATION_KEY }}
-          summary: "Publish workflow failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} merged by ${{ github.actor }}"
-          severity: "critical"
-          source: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+  # notify-failure-pager-duty:
+  #   name: "Notify PagerDuty on Publish Failures"
+  #   runs-on: ubuntu-24.04
+  #   needs:
+  #     - publish_connectors
+  #   if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
+  #   steps:
+  #     - name: Checkout Airbyte
+  #       uses: actions/checkout@v4
+  #     - name: Notify PagerDuty
+  #       id: pager-duty
+  #       uses: ./.github/actions/send-pager-duty-event
+  #       with:
+  #         # Integration URL: https://airbyte.pagerduty.com/services/P5GNI5T/integrations/PGKH9JV
+  #         integration_key: ${{ secrets.PAGER_DUTY_PUBLISH_FAILURES_INTEGRATION_KEY }}
+  #         summary: "Publish workflow failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} merged by ${{ github.actor }}"
+  #         severity: "critical"
+  #         source: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
   # This job notifies Tydo (external partner) about Klaviyo connector updates
   # IMPORTANT: This webhook sends messages to an EXTERNAL Slack channel
