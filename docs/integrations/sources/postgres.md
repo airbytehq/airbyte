@@ -343,7 +343,8 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                    |
-| ------- | ---------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|---------| ---------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.6.29  | 2025-02-13 | [53649](https://github.com/airbytehq/airbyte/pull/53649) | Fix issue that column default value did not get converted |
 | 3.6.28  | 2024-12-23 | [50870](https://github.com/airbytehq/airbyte/pull/50870)   | Use airbyte/java-connector-base:2.0.0                                                                                                                                      |
 | 3.6.27  | 2024-12-23 | [50410](https://github.com/airbytehq/airbyte/pull/50410)   | Use a non root base image.                                                                                                                                                 |
 | 3.6.26  | 2024-12-20 | [48495](https://github.com/airbytehq/airbyte/pull/48495)   | Increase MAX_FIRST_RECORD_WAIT_TIME and use Debezium 3.0.1                                                                                                                 |
