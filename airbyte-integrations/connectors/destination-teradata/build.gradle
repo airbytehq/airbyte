@@ -1,6 +1,7 @@
 plugins {
     id 'application'
     id 'airbyte-java-connector'
+    id 'jacoco'
 }
 
 airbyteJavaConnector {
@@ -16,6 +17,14 @@ java {
     }
 }
 
+test {
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+}
+
 airbyteJavaConnector.addCdkDependencies()
 
 application {
@@ -24,5 +33,5 @@ application {
 }
 
 dependencies {
-	implementation 'com.teradata.jdbc:terajdbc4:17.20.00.12'
+    implementation 'com.teradata.jdbc:terajdbc:20.00.00.43'
 }
