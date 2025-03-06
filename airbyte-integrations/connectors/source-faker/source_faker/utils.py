@@ -31,4 +31,6 @@ def generate_estimate(stream_name: str, total: int, bytes_per_row: int):
     estimate_message = AirbyteEstimateTraceMessage(
         type=EstimateType.STREAM, name=stream_name, row_estimate=round(total), byte_estimate=round(total * bytes_per_row)
     )
-    return AirbyteMessage(type=Type.TRACE, trace=AirbyteTraceMessage(type=TraceType.ESTIMATE, estimate=estimate_message, emitted_at=emitted_at))
+    return AirbyteMessage(
+        type=Type.TRACE, trace=AirbyteTraceMessage(type=TraceType.ESTIMATE, estimate=estimate_message, emitted_at=emitted_at)
+    )

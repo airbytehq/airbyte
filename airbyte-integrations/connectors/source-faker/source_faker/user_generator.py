@@ -3,8 +3,8 @@
 #
 
 import datetime
-from multiprocessing import current_process
 import os
+from multiprocessing import current_process
 
 from mimesis import Address, Datetime, Person
 from mimesis.locales import Locale

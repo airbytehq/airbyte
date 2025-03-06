@@ -20,7 +20,16 @@ class Products(Stream, IncrementalMixin):
     primary_key = "id"
     cursor_field = "updated_at"
 
-    def __init__(self, message_repository: MessageRepository, count: int, seed: int | None, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
+    def __init__(
+        self,
+        message_repository: MessageRepository,
+        count: int,
+        seed: int | None,
+        parallelism: int,
+        records_per_slice: int,
+        always_updated: bool,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self._message_repository = message_repository
         self.count = count
@@ -71,7 +80,16 @@ class Users(Stream, IncrementalMixin):
     primary_key = "id"
     cursor_field = "updated_at"
 
-    def __init__(self, message_repository: MessageRepository, count: int, seed: int | None, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
+    def __init__(
+        self,
+        message_repository: MessageRepository,
+        count: int,
+        seed: int | None,
+        parallelism: int,
+        records_per_slice: int,
+        always_updated: bool,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self._message_repository = message_repository
         self.count = count
@@ -133,7 +151,16 @@ class Purchases(Stream, IncrementalMixin):
     primary_key = "id"
     cursor_field = "updated_at"
 
-    def __init__(self, message_repository: MessageRepository, count: int, seed: int | None, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
+    def __init__(
+        self,
+        message_repository: MessageRepository,
+        count: int,
+        seed: int | None,
+        parallelism: int,
+        records_per_slice: int,
+        always_updated: bool,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self._message_repository = message_repository
         self.count = count

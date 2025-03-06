@@ -6,8 +6,18 @@ import jsonschema
 import pytest
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteStream, AirbyteStateType, StreamDescriptor, AirbyteStateBlob, AirbyteStateMessage, AirbyteMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Type
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Type, AirbyteStateMessage, AirbyteStreamState
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteStateBlob,
+    AirbyteStateMessage,
+    AirbyteStateType,
+    AirbyteStream,
+    AirbyteStreamState,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    StreamDescriptor,
+    Type,
+)
 from airbyte_cdk.models.airbyte_protocol_serializers import AirbyteMessageSerializer
 
 
