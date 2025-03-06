@@ -118,13 +118,23 @@ sealed class FeedBootstrap<T : Feed>(
                 .filter { it.streams.contains(stream) }
                 .firstOrNull()
 
+        // Ideally we should check if sync is trigger-based CDC by checking source connector
+        // configuration. But we don't have that information here. So this is just a hacky solution
+        private val isTriggerBasedCdc: Boolean =
+            precedingGlobalFeed == null &&
+                metaFieldDecorator.globalCursor != null &&
+                metaFieldDecorator.globalCursor !in stream.schema
+
         private val defaultRecordData: ObjectNode =
             Jsons.objectNode().also { recordData: ObjectNode ->
                 stream.schema.forEach { recordData.putNull(it.id) }
-                if (feed is Stream && precedingGlobalFeed != null) {
+                if (feed is Stream && precedingGlobalFeed != null || isTriggerBasedCdc) {
                     metaFieldDecorator.decorateRecordData(
                         timestamp = outputConsumer.recordEmittedAt.atOffset(ZoneOffset.UTC),
-                        globalStateValue = stateManager.scoped(precedingGlobalFeed).current(),
+                        globalStateValue =
+                            if (precedingGlobalFeed != null)
+                                stateManager.scoped(precedingGlobalFeed).current()
+                            else null,
                         stream,
                         recordData,
                     )
