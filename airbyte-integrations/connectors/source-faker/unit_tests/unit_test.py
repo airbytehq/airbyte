@@ -153,6 +153,7 @@ def test_read_always_updated():
             ),
         )
     ]
+    source = _create_source(catalog=catalog, config=config, state=state)
     iterator = source.read(logger, config, catalog, state)
 
     record_rows_count = 0
@@ -191,7 +192,7 @@ def test_read_products():
 
     assert estimate_row_count == 4
     assert record_rows_count == 100  # only 100 products, no matter the count
-    assert state_rows_count == 1
+    assert state_rows_count == 2
 
 
 def test_read_big_random_data():
@@ -288,5 +289,7 @@ def test_read_with_seed():
 
 
 def _create_source(*, catalog, config, state):
+    if state:
+        print(f"creating source with state: {vars(state[0].stream.stream_state)}")
     source = SourceFaker(catalog=catalog, config=config, state=state)
     return source

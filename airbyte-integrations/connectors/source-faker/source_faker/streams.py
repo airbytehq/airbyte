@@ -28,6 +28,7 @@ class Products(Stream, IncrementalMixin):
         parallelism: int,
         records_per_slice: int,
         always_updated: bool,
+        state: Mapping[str, Any],
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -36,6 +37,7 @@ class Products(Stream, IncrementalMixin):
         self.seed = seed
         self.records_per_slice = records_per_slice
         self.always_updated = always_updated
+        self._state = state
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
@@ -89,6 +91,7 @@ class Users(Stream, IncrementalMixin):
         parallelism: int,
         records_per_slice: int,
         always_updated: bool,
+        state: Mapping[str, Any],
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -99,6 +102,7 @@ class Users(Stream, IncrementalMixin):
         self.parallelism = parallelism
         self.always_updated = always_updated
         self.generator = UserGenerator(self.name, self.seed)
+        self._state = state
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
@@ -120,6 +124,8 @@ class Users(Stream, IncrementalMixin):
         This is a multi-process implementation of read_records.
         We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON
         """
+
+        print(f"state: {self.state} and {self.always_updated}")
 
         if "updated_at" in self.state and not self.always_updated:
             return iter([])
@@ -161,6 +167,7 @@ class Purchases(Stream, IncrementalMixin):
         parallelism: int,
         records_per_slice: int,
         always_updated: bool,
+        state: Mapping[str, Any],
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -171,7 +178,7 @@ class Purchases(Stream, IncrementalMixin):
         self.parallelism = parallelism
         self.always_updated = always_updated
         self.generator = PurchaseGenerator(self.name, self.seed)
-
+        self._state = state
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
         return self.records_per_slice
