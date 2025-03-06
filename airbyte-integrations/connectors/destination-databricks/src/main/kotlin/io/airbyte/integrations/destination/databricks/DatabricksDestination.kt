@@ -79,7 +79,12 @@ class DatabricksDestination : BaseConnector(), Destination {
                     connectorConfig.purgeStagingData
                 )
             val rawTableNamespace = connectorConfig.rawSchemaOverride
-            val finalTableName = "airbyte_check_test_table"
+            // Add random integer value to check table in case multiple connections 
+            // write to the same destination schema. 
+            // Provide int range of 1,000,000 to provide sufficient randomness buffer.
+            Random rand = new Random();
+            test_table_rand = rand.nextInt(1000000)
+            val finalTableName = "airbyte_check_test_table" + test_table_rand
 
             // Both raw & final Namespaces are same for dummy sync since we don't do any final table
             // operations
