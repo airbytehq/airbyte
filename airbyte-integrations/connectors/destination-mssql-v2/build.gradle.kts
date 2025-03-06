@@ -9,7 +9,7 @@ plugins {
 
 airbyteBulkConnector {
     core = "load"
-    toolkits = listOf()
+    toolkits = listOf("load-azure-blob-storage")
     cdk = "local"
 }
 
@@ -23,6 +23,7 @@ application {
 }
 
 val junitVersion = "5.11.4"
+val testContainersVersion = "1.20.5"
 
 configurations.configureEach {
     // Exclude additional SLF4J providers from all classpaths
@@ -41,13 +42,14 @@ dependencies {
     implementation("com.github.spotbugs:spotbugs-annotations:4.9.0")
     implementation("io.micronaut:micronaut-inject:4.7.12")
     implementation("com.zaxxer:HikariCP:6.2.1")
+    implementation("org.apache.commons:commons-lang3:3.17.0")
 
     testImplementation("io.mockk:mockk:1.13.16")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
-    integrationTestImplementation("org.testcontainers:mssqlserver:1.20.4")
+    integrationTestImplementation("org.testcontainers:mssqlserver:$testContainersVersion")
 }
 
 tasks.named<Test>("test") {
