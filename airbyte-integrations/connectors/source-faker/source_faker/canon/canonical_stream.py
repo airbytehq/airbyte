@@ -193,7 +193,6 @@ class CanonicalStreamFacade(AbstractStreamFacade[CanonicalStream], Stream):
 
     @state.setter
     def state(self, value: Mapping[str, Any]) -> None:
-        # FIXME: this will be needed to set the initial state
         pass
 
     def read(
