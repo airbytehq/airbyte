@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
 
+set -e
 which schema_generator > /dev/null
 if [ $? != 0 ];then
   echo "schema_generator is not installed.  See https://github.com/airbytehq/airbyte/tree/master/tools/schema_generator/ for installation instructions"
+  exit 1
 fi
+script_folder=$(dirname $0)
+pushd $PWD > /dev/null
+cd $script_folder
 root=$(git rev-parse --show-toplevel 2>> /dev/null)
+popd > /dev/null
 source=$1
 airbyte_config=$2
 source_root="${root}/airbyte-integrations/connectors/source-${source}"
-if [ ! --d "${source_root}" ];then
+if [ ! -d "${source_root}" ];then
   echo "Invalid source specified . Source folder not found at ${source_root}"
   exit 1
 fi
