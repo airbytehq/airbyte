@@ -151,7 +151,7 @@ const config = {
           assistantId: "d1399022-d7e2-4404-bd16-8b3ad2b5465b",
           enabled: true,
           defaultView: {
-            message: "Hi! I'm Octavia, an AI. **I'm still learning and might make mistakes**. How can I help?",
+            message: "Hi! I'm Octavia. How can I help? **I'm an AI, but I'm still learning and might make mistakes**. ",
             prompts: [
               "What's Airbyte?",
               "Can I try Airbyte quickly?",
@@ -159,6 +159,9 @@ const config = {
               "Is there an enterprise version?"
             ]
           },
+          avatars: {
+            assistant: 'img/octavia-talking.png',
+          }
         },
         // By setting `floating` to false, use the standard navbar search component.
         trigger: { floating: false },
