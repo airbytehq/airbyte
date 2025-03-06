@@ -3,6 +3,28 @@
 This is the closed-source equivalent to [airbytehq/airbyte](https://github.com/airbytehq/airbyte).
 Tools like gradle, airbyte-ci, etc. are expected to behave in exactly the same way.
 
+## Development Setup
+
+### Code Formatting
+
+To format the code in this repository, run:
+
+```shell
+pre-commit run --all-files
+```
+
+#### Prerequisites
+
+1. Install pre-commit (e.g., through Homebrew):
+   ```shell
+   brew install pre-commit
+   ```
+
+2. For Java code formatting, Maven is required:
+   ```shell
+   brew install maven
+   ```
+
 ## Git Submodule Setup
 
 This repo has `airbytehq/airbyte` as a submodule, located in `airbyte-submodule`,
