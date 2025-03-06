@@ -110,44 +110,62 @@ class ReportData(DFAReportingStream):
     """
     TODO: Change class name to match the table/data source this stream corresponds to.
     """
+    primary_key = None
+    parent = RunReport
 
-    # TODO: Fill in the cursor_field. Required.
-    cursor_field = "start_date"
+    def __init__(self, profile_id: str, authenticator: Oauth2Authenticator, **kwargs):
+        super().__init__(profile_id, authenticator, **kwargs)
+        self.parent_stream = RunReport(profile_id, authenticator)
 
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "employee_id"
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        report_id = stream_slice.get("report_id") if stream_slice else None
+        file_id = stream_slice.get("file_id") if stream_slice else None
+        if not report_id or not file_id:
+            raise ValueError("Missing report_id or file_id in stream slice")
+        return f"/dfareporting/v4/reports/{report_id}/files/{file_id}"
+    
+    def request_params(self, **kwargs) -> Mapping[str, Any]:
+        return {"alt": "media"}
+    
+    def stream_slices(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        for slice_run_report in self.parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
+            for record_run_report in self.parent_stream.read_records(sync_mode=sync_mode, stream_slice=slice_run_report):
+                yield {
+                    "report_id": slice_run_report["report_id"],
+                    "file_id": record_run_report["id"]
+                }
 
-    def path(self, **kwargs) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
-        return "single". Required.
-        """
-        return "employees"
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 404:
+            return True
+        return super().should_retry(response)
+    
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        if isinstance(response, Exception):
+            self.logger.warning(f"Back off due to {type(response)}.")
+            return POLLING_IN_SECONDS
+        elif response.status_code == 404:
+            self.logger.warning("Report file not ready yet.")
+            return POLLING_IN_SECONDS
+        return super().backoff_time(response)
+    
+    def parse_response(self, response, stream_state = None, stream_slice = None, *kwargs):
+        print("response hereee")
+        csv_string = StringIO(response.text)
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        """
-        TODO: Optionally override this method to define this stream's slices. If slicing is not needed, delete this method.
+        # Skip lines until we find "Report Fields"
+        for line in csv_string:
+            if "Report Fields" in line:
+                break
+        headers = next(csv.reader(csv_string))
 
-        Slices control when state is saved. Specifically, state is saved after a slice has been fully read.
-        This is useful if the API offers reads by groups or filters, and can be paired with the state object to make reads efficient. See the "concepts"
-        section of the docs for more information.
+        # Now we can use DictReader with the correct headers
+        csv_reader = csv.DictReader(csv_string, fieldnames=headers)
+        
+        for row in csv_reader:
+            print(row)
+            yield row
 
-        The function is called before reading any records in a stream. It returns an Iterable of dicts, each containing the
-        necessary data to craft a request for a slice. The stream state is usually referenced to determine what slices need to be created.
-        This means that data in a slice is usually closely related to a stream's cursor_field and stream_state.
-
-        An HTTP request is made for each returned slice. The same slice can be accessed in the path, request_params and request_header functions to help
-        craft that specific request.
-
-        For example, if https://example-api.com/v1/employees offers a date query params that returns data for that particular day, one way to implement
-        this would be to consult the stream state object for the last synced date, then return a slice containing each date from the last synced date
-        till now. The request_params function would then grab the date from the stream_slice and make it part of the request by injecting it into
-        the date query param.
-        """
-        raise NotImplementedError("Implement stream slices or delete this method!")
-
-
-# Source
 class SourceCampaignManager(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
