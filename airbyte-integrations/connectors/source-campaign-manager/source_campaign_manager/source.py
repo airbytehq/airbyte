@@ -23,76 +23,90 @@ class DFAReportingStream(HttpStream):
     def __init__(self, profile_id: str, authenticator: Oauth2Authenticator, **kwargs):
         super().__init__(authenticator=authenticator)
         self.profile_id = profile_id
+    
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, *kwargs) -> Iterable[Mapping]:
+        # Implement response parsing
+        yield response.json()
 
-    def next_page_token(self, response: requests.Response) -> Mapping[str, Any]:
-        # Implement pagination if needed
-        return None
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
-        """
-        return {}
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
-        yield {}
-
-
-class Customers(CampaignManagerStream):
+class CreateReport(DFAReportingStream):
     """
-    TODO: Change class name to match the table/data source this stream corresponds to.
+    Stream for creating a report in DFA Reporting.
     """
+    primary_key = "id"
+    http_method = "POST"
 
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "customer_id"
+    def path(self, **kwargs) -> str:
+        return f"/dfareporting/v4/userprofiles/{self.profile_id}/reports"
+    
+    def request_body_json(self, **kwargs) -> Mapping[str, Any]:
+        today = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d')
+        two_years_ago = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=730)).strftime('%Y-%m-%d')
+        return {
+            "type": "STANDARD",
+            "name": f"report_{today}",
+            "criteria": {
+                "dateRange": {
+                    "kind": "dfareporting#dateRange",
+                    "endDate": today,
+                    "startDate": two_years_ago
+                },
+                "dimensions": [
+                    {"kind": "dfareporting#sortedDimension", "name": "activity"},
+                    {"kind": "dfareporting#sortedDimension", "name": "ad"},
+                    {"kind": "dfareporting#sortedDimension", "name": "advertiser"},
+                    {"kind": "dfareporting#sortedDimension", "name": "advertiserID"},
+                    {"kind": "dfareporting#sortedDimension", "name": "campaign"},
+                    {"kind": "dfareporting#sortedDimension", "name": "campaignEndDate"},
+                    {"kind": "dfareporting#sortedDimension", "name": "campaignStartDate"},
+                    {"kind": "dfareporting#sortedDimension", "name": "date"},
+                    {"kind": "dfareporting#sortedDimension", "name": "dmaRegion"}
+                ],
+                "metricNames": [
+                    "clicks",
+                    "costPerClick",
+                    "totalConversionsRevenue",
+                    "costPerRevenue",
+                    "impressions",
+                    "mediaCost",
+                    "effectiveCpm",
+                    "revenuePerClick",
+                    "revenuePerThousandImpressions",
+                    "socialTotalEngagements"
+                ]
+            }
+        }
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping[str, Any]]:
+        print(response.json())
+        yield response.json()
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
-        return "customers"
-
-
-# Basic incremental stream
-class IncrementalCampaignManagerStream(CampaignManagerStream, ABC):
+class RunReport(DFAReportingStream):
     """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
+    Stream for running a created report.
     """
+    primary_key = "id"
+    http_method = "POST"
+    parent = CreateReport
 
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
-    state_checkpoint_interval = None
+    def __init__(self, profile_id: str, authenticator: Oauth2Authenticator, **kwargs):
+        super().__init__(profile_id, authenticator, **kwargs)
+        self.parent_stream = CreateReport(profile_id, authenticator)
 
-    @property
-    def cursor_field(self) -> str:
-        """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        print(stream_slice)
+        report_id = stream_slice.get("report_id") if stream_slice else None
+        if not report_id:
+            raise ValueError("No report ID found in stream slice")
+        return f"/dfareporting/v4/userprofiles/{self.profile_id}/reports/{report_id}/run"
 
-        :return str: The name of the cursor field.
-        """
-        return []
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        create_report_record = next(self.parent_stream.read_records(sync_mode=SyncMode.full_refresh))
+        yield {"report_id": create_report_record["id"]}
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
-        return {}
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping[str, Any]]:
+        yield response.json()
 
-
-class Employees(IncrementalCampaignManagerStream):
+class ReportData(DFAReportingStream):
     """
     TODO: Change class name to match the table/data source this stream corresponds to.
     """
