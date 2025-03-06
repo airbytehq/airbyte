@@ -56,7 +56,9 @@ def test_streams(requests_mock, config_raw):
     requests_mock.register_uri("GET", "https://mixpanel.com/api/query/cohorts/list", setup_response(200, {"id": 123}))
     requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/revenue", setup_response(200, {}))
     requests_mock.register_uri("GET", "https://mixpanel.com/api/query/funnels", setup_response(200, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/funnels/list", setup_response(200, {"funnel_id": 123, "name": "name"}))
+    requests_mock.register_uri(
+        "GET", "https://mixpanel.com/api/query/funnels/list", setup_response(200, {"funnel_id": 123, "name": "name"})
+    )
     requests_mock.register_uri(
         "GET",
         "https://data.mixpanel.com/api/2.0/export",
