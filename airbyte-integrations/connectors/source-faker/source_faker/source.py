@@ -64,23 +64,59 @@ class SourceFaker(ConcurrentSourceAdapter):
         state_manager = ConnectorStateManager(state=self._state)
 
         users_stream = self._wrap_for_concurrency(
-            Users(self.message_repository, count, seed, parallelism, records_per_slice, always_updated, state_manager.get_stream_state("users", None)), state_manager.get_stream_state("users", None), seed
+            Users(
+                self.message_repository,
+                count,
+                seed,
+                parallelism,
+                records_per_slice,
+                always_updated,
+                state_manager.get_stream_state("users", None),
+            ),
+            state_manager.get_stream_state("users", None),
+            seed,
         )
         contacts_stream = create_canonical_stream_facade(
             users_stream._abstract_stream,
             Contact,
             UserToContact(),
-            CanonicalFakerCursor(stream_name=users_stream.name, stream_namespace=users_stream.namespace, message_repository=self.message_repository, state=state_manager.get_stream_state("users", None), seed=seed),
+            CanonicalFakerCursor(
+                stream_name=users_stream.name,
+                stream_namespace=users_stream.namespace,
+                message_repository=self.message_repository,
+                state=state_manager.get_stream_state("users", None),
+                seed=seed,
+            ),
             logger,
             self._slice_logger,
         )
         streams: List[Stream] = [
             self._wrap_for_concurrency(
-                Products(self.message_repository, count, seed, parallelism, records_per_slice, always_updated, state_manager.get_stream_state("products", None)), state_manager.get_stream_state("products", None), seed
+                Products(
+                    self.message_repository,
+                    count,
+                    seed,
+                    parallelism,
+                    records_per_slice,
+                    always_updated,
+                    state_manager.get_stream_state("products", None),
+                ),
+                state_manager.get_stream_state("products", None),
+                seed,
             ),
             users_stream,
             self._wrap_for_concurrency(
-                Purchases(self.message_repository, count, seed, parallelism, records_per_slice, always_updated, state_manager.get_stream_state("purchases", None)), state_manager.get_stream_state("purchases", None), seed
+                Purchases(
+                    self.message_repository,
+                    count,
+                    seed,
+                    parallelism,
+                    records_per_slice,
+                    always_updated,
+                    state_manager.get_stream_state("purchases", None),
+                ),
+                state_manager.get_stream_state("purchases", None),
+                seed,
             ),
             contacts_stream,
         ]
@@ -88,12 +124,16 @@ class SourceFaker(ConcurrentSourceAdapter):
         return streams
 
     def _wrap_for_concurrency(self, stream: Stream, state: Any, seed: int | None):
-        cursor = FakerCursor(stream_name=stream.name, stream_namespace=stream.namespace, message_repository=self.message_repository, state=state, seed=seed)
+        cursor = FakerCursor(
+            stream_name=stream.name, stream_namespace=stream.namespace, message_repository=self.message_repository, state=state, seed=seed
+        )
         return StreamFacade.create_from_stream(stream, self, logger, {}, cursor)
 
 
 class FakerCursor(Cursor):
-    def __init__(self, stream_name: str, stream_namespace: Optional[str], message_repository: MessageRepository, state: Any, seed: int | None) -> None:
+    def __init__(
+        self, stream_name: str, stream_namespace: Optional[str], message_repository: MessageRepository, state: Any, seed: int | None
+    ) -> None:
         self._stream_name = stream_name
         self._stream_namespace = stream_namespace
         self._message_repository = message_repository
@@ -132,9 +172,10 @@ class FakerCursor(Cursor):
 
 
 class CanonicalFakerCursor(FakerCursor):
-    def __init__(self, stream_name: str, stream_namespace: Optional[str], message_repository: MessageRepository, state: Any, seed: int | None) -> None:
+    def __init__(
+        self, stream_name: str, stream_namespace: Optional[str], message_repository: MessageRepository, state: Any, seed: int | None
+    ) -> None:
         super().__init__(stream_name, stream_namespace, message_repository, state, seed)
-
 
     def observe(self, record: Record) -> None:
         updated_at = record.data["updated_at"]

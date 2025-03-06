@@ -119,9 +119,21 @@
           "type": "object",
           "properties": {
             "id": { "type": "string" },
-            "created_at": { "type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone" },
-            "updated_at": { "type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone" },
-            "deleted_at": { "type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone" },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "deleted_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
             "first_name": { "type": "string" },
             "last_name": { "type": "string" },
             "addresses": { "type": "array", "items": { "type": "object" } },

@@ -1,16 +1,25 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
 from functools import lru_cache
-import logging
 from typing import Any, Callable, Generic, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, TypeVar, Union
-from airbyte_cdk import AirbyteMessage, AirbyteStream, ConfiguredAirbyteStream, ConnectorStateManager, Cursor, InternalConfig, Record, Stream, StreamFacade, SyncMode
-from airbyte_cdk.sources import AbstractSource, Source
-from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
-from airbyte_cdk.sources.utils.slice_logger import SliceLogger
-from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.types import Record
-from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
-from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
+
+from source_faker.canon.canonical_model import CanonicalModel
+
+from airbyte_cdk import (
+    AirbyteMessage,
+    AirbyteStream,
+    ConfiguredAirbyteStream,
+    ConnectorStateManager,
+    Cursor,
+    InternalConfig,
+    Record,
+    Stream,
+    StreamFacade,
+    SyncMode,
+)
 from airbyte_cdk.models import (
     AirbyteLogMessage,
     AirbyteMessage,
@@ -18,20 +27,29 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteStream,
     Level,
     SyncMode,
+)
+from airbyte_cdk.models import (
     Type as MessageType,
 )
-
-from source_faker.canon.canonical_model import CanonicalModel
-from airbyte_cdk.sources.streams.concurrent.availability_strategy import StreamAvailability
+from airbyte_cdk.sources import AbstractSource, Source
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import StreamAvailability
+from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
+from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
+from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.types import Record
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
+
 
 T = TypeVar("T", bound=CanonicalModel)
 
+
 # This is also a callable...
 class TransformFunction(Generic[T], ABC):
-  @abstractmethod
-  def __call__(self, record: Record) -> Record:
-    pass
+    @abstractmethod
+    def __call__(self, record: Record) -> Record:
+        pass
 
 
 class CanonicalPartition(Partition):
@@ -48,63 +66,72 @@ class CanonicalPartition(Partition):
             yield canonical_record
 
     def to_slice(self) -> Optional[Mapping[str, Any]]:
-      return self._partition.to_slice()
+        return self._partition.to_slice()
 
     def stream_name(self) -> str:
-      return self._canonical_model_type.stream_name()
+        return self._canonical_model_type.stream_name()
 
     def cursor_field(self) -> Optional[str]:
-      return "updated_at"
+        return "updated_at"
 
     def __hash__(self) -> int:
-      return hash(self._partition)
+        return hash(self._partition)
 
     def _datetime_to_string(self, data: Any) -> Any:
-      if isinstance(data, dict):
-        for key, value in data.items():
-          data[key] = self._datetime_to_string(value)
-      elif isinstance(data, list):
-        for item in data:
-          item = self._datetime_to_string(item)
-      elif isinstance(data, datetime):
-        return data.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-      return data
+        if isinstance(data, dict):
+            for key, value in data.items():
+                data[key] = self._datetime_to_string(value)
+        elif isinstance(data, list):
+            for item in data:
+                item = self._datetime_to_string(item)
+        elif isinstance(data, datetime):
+            return data.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        return data
 
 
 class CanonicalStream(AbstractStream):
-  def __init__(self, stream: AbstractStream, canonical_model_type: Type[T], transform_function: TransformFunction[T], cursor_override: Optional[Cursor] = None, namespace: Optional[str] = None, logger: logging.Logger = logging.getLogger("airbyte")):
-    self._stream = stream
-    self._canonical_model_type = canonical_model_type
-    self._transform_function = transform_function
-    self._namespace = namespace
-    self._logger = logger
-    self._cursor = cursor_override
-  def generate_partitions(self) -> Iterable[Partition]:
-    for partition in self._stream.generate_partitions():
-      yield CanonicalPartition(self._canonical_model_type, self._transform_function, partition)
+    def __init__(
+        self,
+        stream: AbstractStream,
+        canonical_model_type: Type[T],
+        transform_function: TransformFunction[T],
+        cursor_override: Optional[Cursor] = None,
+        namespace: Optional[str] = None,
+        logger: logging.Logger = logging.getLogger("airbyte"),
+    ):
+        self._stream = stream
+        self._canonical_model_type = canonical_model_type
+        self._transform_function = transform_function
+        self._namespace = namespace
+        self._logger = logger
+        self._cursor = cursor_override
 
-  @property
-  def cursor(self) -> Cursor:
-    if self._cursor is not None:
-      return self._cursor
-    else:
-      return self._stream.cursor
+    def generate_partitions(self) -> Iterable[Partition]:
+        for partition in self._stream.generate_partitions():
+            yield CanonicalPartition(self._canonical_model_type, self._transform_function, partition)
 
-  @property
-  def name(self) -> str:
-    return self._canonical_model_type.stream_name()
+    @property
+    def cursor(self) -> Cursor:
+        if self._cursor is not None:
+            return self._cursor
+        else:
+            return self._stream.cursor
 
-  @property
-  def cursor_field(self) -> Optional[str]:
-    return "updated_at"
+    @property
+    def name(self) -> str:
+        return self._canonical_model_type.stream_name()
 
-  def check_availability(self) -> StreamAvailability:
-    return self._stream.check_availability()
+    @property
+    def cursor_field(self) -> Optional[str]:
+        return "updated_at"
 
-  def get_json_schema(self) -> Mapping[str, Any]:
-    return self._canonical_model_type.model_json_schema()
+    def check_availability(self) -> StreamAvailability:
+        return self._stream.check_availability()
 
-  def as_airbyte_stream(self) -> AirbyteStream:
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return self._canonical_model_type.model_json_schema()
+
+    def as_airbyte_stream(self) -> AirbyteStream:
         stream = AirbyteStream(
             name=self.name,
             json_schema=dict(self._canonical_model_type.model_json_schema()),
@@ -127,42 +154,47 @@ class CanonicalStream(AbstractStream):
 
         return stream
 
-  def log_stream_sync_configuration(self) -> None:
-      self._logger.debug(
-          f"Syncing stream instance: {self.name}",
-          extra={
-              "primary_key": ["id"],
-              "cursor_field": self.cursor_field,
-          },
-      )
+    def log_stream_sync_configuration(self) -> None:
+        self._logger.debug(
+            f"Syncing stream instance: {self.name}",
+            extra={
+                "primary_key": ["id"],
+                "cursor_field": self.cursor_field,
+            },
+        )
 
 
+def create_canonical_stream(
+    stream: AbstractStream,
+    canonical_model_type: Type[T],
+    transform_function: TransformFunction[T],
+    cursor_override: Optional[Cursor],
+    namespace: Optional[str] = None,
+) -> CanonicalStream:
+    return CanonicalStream(stream, canonical_model_type, transform_function, cursor_override, namespace)
 
-def create_canonical_stream(stream: AbstractStream, canonical_model_type: Type[T], transform_function: TransformFunction[T], cursor_override: Optional[Cursor], namespace: Optional[str] = None) -> CanonicalStream:
-  return CanonicalStream(stream, canonical_model_type, transform_function, cursor_override, namespace)
 
 class CanonicalStreamFacade(AbstractStreamFacade[CanonicalStream], Stream):
-
-    def __init__(self, stream: CanonicalStream,
-                 cursor: Cursor,
-                 slice_logger: SliceLogger,
-                 logger: logging.Logger,
-                 ):
-      self._stream = stream
-      self._cursor = cursor
-      self._slice_logger = slice_logger
-      self._logger = logger
+    def __init__(
+        self,
+        stream: CanonicalStream,
+        cursor: Cursor,
+        slice_logger: SliceLogger,
+        logger: logging.Logger,
+    ):
+        self._stream = stream
+        self._cursor = cursor
+        self._slice_logger = slice_logger
+        self._logger = logger
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        raise NotImplementedError(
-            "This should not be called as part of the Concurrent CDK code. Please report the problem to Airbyte"
-        )
+        raise NotImplementedError("This should not be called as part of the Concurrent CDK code. Please report the problem to Airbyte")
 
     @state.setter
     def state(self, value: Mapping[str, Any]) -> None:
-      # FIXME: this will be needed to set the initial state
-      pass
+        # FIXME: this will be needed to set the initial state
+        pass
 
     def read(
         self,
@@ -192,9 +224,7 @@ class CanonicalStreamFacade(AbstractStreamFacade[CanonicalStream], Stream):
                 state = "unknown; no state attribute was available on the cursor"
             yield AirbyteMessage(
                 type=MessageType.LOG,
-                log=AirbyteLogMessage(
-                    level=Level.ERROR, message=f"Cursor State at time of exception: {state}"
-                ),
+                log=AirbyteLogMessage(level=Level.ERROR, message=f"Cursor State at time of exception: {state}"),
             )
             raise exc
 
@@ -227,15 +257,13 @@ class CanonicalStreamFacade(AbstractStreamFacade[CanonicalStream], Stream):
 
     @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
-        return {} # FIXME
+        return {}  # FIXME
 
     @property
     def supports_incremental(self) -> bool:
-        return True # FIXME
+        return True  # FIXME
 
-    def check_availability(
-        self, logger: logging.Logger, source: Optional["Source"] = None
-    ) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
         """
         Verifies the stream is available. Delegates to the underlying AbstractStream and ignores the parameters
         :param logger: (ignored)
@@ -254,6 +282,15 @@ class CanonicalStreamFacade(AbstractStreamFacade[CanonicalStream], Stream):
     def get_underlying_stream(self) -> CanonicalStream:
         return self._stream
 
-def create_canonical_stream_facade(stream: AbstractStream, canonical_model_type: Type[T], transform_function: TransformFunction[T], cursor_override: Optional[Cursor], logger: logging.Logger, slice_logger: SliceLogger, namespace: Optional[str] = None) -> CanonicalStreamFacade:
-     canonical_stream = create_canonical_stream(stream, canonical_model_type, transform_function, cursor_override, namespace)
-     return CanonicalStreamFacade(canonical_stream, canonical_stream.cursor, slice_logger, logger)
+
+def create_canonical_stream_facade(
+    stream: AbstractStream,
+    canonical_model_type: Type[T],
+    transform_function: TransformFunction[T],
+    cursor_override: Optional[Cursor],
+    logger: logging.Logger,
+    slice_logger: SliceLogger,
+    namespace: Optional[str] = None,
+) -> CanonicalStreamFacade:
+    canonical_stream = create_canonical_stream(stream, canonical_model_type, transform_function, cursor_override, namespace)
+    return CanonicalStreamFacade(canonical_stream, canonical_stream.cursor, slice_logger, logger)

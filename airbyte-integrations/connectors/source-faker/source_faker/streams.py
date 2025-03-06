@@ -179,6 +179,7 @@ class Purchases(Stream, IncrementalMixin):
         self.always_updated = always_updated
         self.generator = PurchaseGenerator(self.name, self.seed)
         self._state = state
+
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
         return self.records_per_slice
