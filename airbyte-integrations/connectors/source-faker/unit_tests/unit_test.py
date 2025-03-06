@@ -41,8 +41,8 @@ serializer = AirbyteMessageSerializer
 
 
 def schemas_are_valid():
-    source = SourceFaker()
     config = {"count": 1, "parallelism": 1}
+    source = _create_source(catalog=None, config=config, state=None)
     catalog = source.discover(None, config)
     catalog = serializer.dump(AirbyteMessage(type=Type.CATALOG, catalog=catalog))
     schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
@@ -52,8 +52,8 @@ def schemas_are_valid():
 
 
 def test_source_streams():
-    source = SourceFaker()
     config = {"count": 1, "parallelism": 1}
+    source = _create_source(catalog=None, config=config, state=None)
     catalog = source.discover(None, config)
     catalog = serializer.dump(AirbyteMessage(type=Type.CATALOG, catalog=catalog))
     schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
@@ -92,8 +92,8 @@ def test_source_streams():
 
 
 def test_read_small_random_data():
-    source = SourceFaker()
     config = {"count": 10, "parallelism": 1}
+    source = _create_source(catalog=None, config=config, state=None)
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -123,7 +123,6 @@ def test_read_small_random_data():
 
 
 def test_read_always_updated():
-    source = SourceFaker()
     config = {"count": 10, "parallelism": 1, "always_updated": False}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
@@ -134,6 +133,7 @@ def test_read_always_updated():
             )
         ]
     )
+    source = _create_source(catalog=catalog, config=config, state=None)
     state = None
     iterator = source.read(logger, config, catalog, state)
 
@@ -164,7 +164,6 @@ def test_read_always_updated():
 
 
 def test_read_products():
-    source = SourceFaker()
     config = {"count": 999, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
@@ -176,6 +175,7 @@ def test_read_products():
         ]
     )
     state = {}
+    source = _create_source(catalog=catalog, config=config, state=state)
     iterator = source.read(logger, config, catalog, state)
 
     estimate_row_count = 0
@@ -195,7 +195,6 @@ def test_read_products():
 
 
 def test_read_big_random_data():
-    source = SourceFaker()
     config = {"count": 1000, "records_per_slice": 100, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
@@ -212,6 +211,7 @@ def test_read_big_random_data():
         ]
     )
     state = {}
+    source = _create_source(catalog=catalog, config=config, state=state)
     iterator = source.read(logger, config, catalog, state)
 
     record_rows_count = 0
@@ -227,7 +227,6 @@ def test_read_big_random_data():
 
 
 def test_with_purchases():
-    source = SourceFaker()
     config = {"count": 1000, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
@@ -249,6 +248,7 @@ def test_with_purchases():
         ]
     )
     state = {}
+    source = _create_source(catalog=catalog, config=config, state=state)
     iterator = source.read(logger, config, catalog, state)
 
     record_rows_count = 0
@@ -268,7 +268,6 @@ def test_read_with_seed():
     This test asserts that setting a seed always returns the same values
     """
 
-    source = SourceFaker()
     config = {"count": 1, "seed": 100, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
@@ -280,8 +279,14 @@ def test_read_with_seed():
         ]
     )
     state = {}
+    source = _create_source(catalog=catalog, config=config, state=state)
     iterator = source.read(logger, config, catalog, state)
 
     records = [row for row in iterator if row.type is Type.RECORD]
     assert records[0].record.data["occupation"] == "Wheel Clamper"
     assert records[0].record.data["email"] == "see1889+1@yandex.com"
+
+
+def _create_source(*, catalog, config, state):
+    source = SourceFaker(catalog=catalog, config=config, state=state)
+    return source
