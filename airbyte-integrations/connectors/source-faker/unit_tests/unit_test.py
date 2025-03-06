@@ -182,7 +182,7 @@ def test_read_products():
 
     assert estimate_row_count == 4
     assert record_rows_count == 100  # only 100 products, no matter the count
-    assert state_rows_count == 2
+    assert state_rows_count == 1
 
 
 def test_read_big_random_data():
