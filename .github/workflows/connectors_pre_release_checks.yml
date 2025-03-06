@@ -18,6 +18,7 @@ on:
       - synchronize
     paths:
       - "airbyte-integrations/connectors/**/*"
+
 jobs:
   connectors_ci:
     name: Connector Pre-Release Checks
@@ -44,7 +45,7 @@ jobs:
           # sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           git_branch: ${{ github.head_ref }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
-          github_token: ${{ env.PAT }}
+          # github_token: ${{ env.PAT }}
           # s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           # s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors --modified test --only-step=version_inc_check --only-step=qa_checks --global-status-check-context='Connectors Pre-Release Check' --global-status-check-description='Checking if connectors modified in this PR are ready for release'"
