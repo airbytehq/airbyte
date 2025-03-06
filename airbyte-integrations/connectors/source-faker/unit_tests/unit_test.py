@@ -162,7 +162,6 @@ def test_read_products():
                 stream=AirbyteStream(name="products", json_schema={}, supported_sync_modes=["full_refresh"]),
                 sync_mode="incremental",
                 destination_sync_mode="overwrite",
-            )
         ]
     )
     state = {}
@@ -172,7 +171,6 @@ def test_read_products():
     record_rows_count = 0
     state_rows_count = 0
     for row in iterator:
-        print(f"row: {row}")
         if row.type is Type.TRACE:
             estimate_row_count = estimate_row_count + 1
         if row.type is Type.RECORD:
