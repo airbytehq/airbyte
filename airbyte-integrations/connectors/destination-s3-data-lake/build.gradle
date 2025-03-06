@@ -5,8 +5,8 @@ plugins {
 
 airbyteBulkConnector {
     core = 'load'
-    toolkits = ['load-iceberg-parquet']
-    cdk = 'local'
+    toolkits = ['load-iceberg-parquet', 'load-aws']
+    cdk = '0.334'
 }
 
 application {

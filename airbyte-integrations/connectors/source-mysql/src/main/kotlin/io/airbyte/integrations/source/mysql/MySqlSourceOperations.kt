@@ -63,7 +63,7 @@ import io.airbyte.cdk.read.Where
 import io.airbyte.cdk.read.WhereClauseLeafNode
 import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.WhereNode
-import io.airbyte.cdk.read.cdc.DebeziumState
+import io.airbyte.cdk.read.cdc.DebeziumOffset
 import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
@@ -102,10 +102,9 @@ class MySqlSourceOperations :
         if (globalStateValue == null) {
             return
         }
-        val debeziumState: DebeziumState =
-            MySqlSourceDebeziumOperations.deserializeDebeziumState(globalStateValue)
-        val position: MySqlSourceCdcPosition =
-            MySqlSourceDebeziumOperations.position(debeziumState.offset)
+        val offset: DebeziumOffset =
+            MySqlSourceDebeziumOperations.deserializeStateUnvalidated(globalStateValue).offset
+        val position: MySqlSourceCdcPosition = MySqlSourceDebeziumOperations.position(offset)
         recordData.set<JsonNode>(
             MySqlSourceCdcMetaFields.CDC_LOG_FILE.id,
             CdcStringMetaFieldType.jsonEncoder.encode(position.fileName),

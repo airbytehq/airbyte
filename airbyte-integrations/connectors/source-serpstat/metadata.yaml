@@ -7,17 +7,19 @@ data:
       enabled: false
       packageName: airbyte-source-serpstat
   registryOverrides:
+    cloud:
+      enabled: true
     oss:
       enabled: true
   connectorBuildOptions:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.21.0@sha256:500ba14ec5182ef5879589611c2949e385bb88a475e42489d4818fe8d42c50d4
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
   connectorSubtype: api
   connectorType: source
   definitionId: 3b2e8fb2-9137-41ff-a1e1-83ecb39e26c8
-  dockerImageTag: 0.2.9
+  dockerImageTag: 0.2.14
   dockerRepository: airbyte/source-serpstat
   githubIssueLabel: source-serpstat
   icon: serpstat.svg

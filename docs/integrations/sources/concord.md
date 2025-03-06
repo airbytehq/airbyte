@@ -32,6 +32,12 @@ The API is accessible from two environments, sandbox and production. You can lea
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.15 | 2025-03-01 | [54929](https://github.com/airbytehq/airbyte/pull/54929) | Update dependencies |
+| 0.0.14 | 2025-02-22 | [54407](https://github.com/airbytehq/airbyte/pull/54407) | Update dependencies |
+| 0.0.13 | 2025-02-15 | [53750](https://github.com/airbytehq/airbyte/pull/53750) | Update dependencies |
+| 0.0.12 | 2025-02-08 | [53312](https://github.com/airbytehq/airbyte/pull/53312) | Update dependencies |
+| 0.0.11 | 2025-02-01 | [52864](https://github.com/airbytehq/airbyte/pull/52864) | Update dependencies |
+| 0.0.10 | 2025-01-25 | [52308](https://github.com/airbytehq/airbyte/pull/52308) | Update dependencies |
 | 0.0.9 | 2025-01-18 | [51621](https://github.com/airbytehq/airbyte/pull/51621) | Update dependencies |
 | 0.0.8 | 2025-01-11 | [51131](https://github.com/airbytehq/airbyte/pull/51131) | Update dependencies |
 | 0.0.7 | 2024-12-28 | [50510](https://github.com/airbytehq/airbyte/pull/50510) | Update dependencies |

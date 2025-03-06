@@ -13,7 +13,18 @@ interface ConfigurationUpdater {
      * @return The potentially modified configuration.
      */
     fun update(config: String): String
+
+    /**
+     * Some destinations have a concept of a "default namespace', which is used for streams with
+     * `namespace = null`. For example, Bigquery's "default dataset", Postgres' "default schema".
+     *
+     * This function should return a copy of the config, but updated with the default namespace as
+     * [defaultNamespace].
+     */
+    fun setDefaultNamespace(config: String, defaultNamespace: String): DefaultNamespaceResult
 }
+
+data class DefaultNamespaceResult(val updatedConfig: String, val actualDefaultNamespace: String?)
 
 /**
  * Basic implementation of the [ConfigurationUpdater] interface that does not modify the
@@ -21,4 +32,8 @@ interface ConfigurationUpdater {
  */
 object FakeConfigurationUpdater : ConfigurationUpdater {
     override fun update(config: String): String = config
+    override fun setDefaultNamespace(
+        config: String,
+        defaultNamespace: String
+    ): DefaultNamespaceResult = DefaultNamespaceResult(config, null)
 }

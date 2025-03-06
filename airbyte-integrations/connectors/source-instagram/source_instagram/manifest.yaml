@@ -573,7 +573,7 @@ definitions:
           $ref: "#/schemas/Api"
   base_requester:
     type: HttpRequester
-    url_base: https://graph.facebook.com/v19.0
+    url_base: https://graph.facebook.com/v21.0
     authenticator:
       type: BearerAuthenticator
       api_token: '{{ config["access_token"] }}'
@@ -586,6 +586,12 @@ streams:
   - $ref: "#/definitions/streams/Stories"
   - $ref: "#/definitions/streams/StoryInsights"
   - $ref: "#/definitions/streams/Api"
+
+# Instagram Rate limits are per app and our app have advanced access for Instagram endpoints.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 15) }}"
+  max_concurrency: 50
 
 metadata:
   autoImportSchema:

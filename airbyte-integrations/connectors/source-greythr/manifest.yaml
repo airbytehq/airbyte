@@ -1,4 +1,4 @@
-version: 6.1.0
+version: 6.5.2
 
 type: DeclarativeSource
 
@@ -33,7 +33,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 100
-            start_from_page: 1
+            start_from_page: 0
         requester:
           $ref: "#/definitions/base_requester"
           path: /employee/v2/employees
@@ -144,8 +144,8 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 100
-            start_from_page: 1
-            inject_on_first_request: true
+            start_from_page: 0
+            inject_on_first_request: false
         requester:
           $ref: "#/definitions/base_requester"
           path: /employee/v2/employees/categories
@@ -369,7 +369,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 100
-            start_from_page: 1
+            start_from_page: 0
         requester:
           $ref: "#/definitions/base_requester"
           path: /employee/v2/employees/separation
@@ -500,7 +500,7 @@ metadata:
   testedStreams:
     Employees:
       hasRecords: true
-      streamHash: 28c83fcf7656de194f5722e530d230f8aa5d597d
+      streamHash: 084220da06aabb41f55c7ecfbeccdcc0098c09d6
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -521,7 +521,7 @@ metadata:
       responsesAreSuccessful: true
     Employees Categories:
       hasRecords: true
-      streamHash: d94a5856f8c3c4d3685bc1ebd8fd92debf751557
+      streamHash: a6cd2b51387bc4c2035bdc7b53987dfe09e2f939
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -563,7 +563,7 @@ metadata:
       responsesAreSuccessful: true
     Employee Separation Details:
       hasRecords: true
-      streamHash: a66bfba7e6973d7c81f705d79e209ca39b272d8b
+      streamHash: c10e184f7473f4a265bd211fd792bacc0c74feae
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -641,14 +641,6 @@ schemas:
         type:
           - string
           - "null"
-      middleName:
-        type:
-          - string
-          - "null"
-      yearsInJob:
-        type:
-          - number
-          - "null"
       dateOfBirth:
         type:
           - string
@@ -665,27 +657,7 @@ schemas:
         type:
           - string
           - "null"
-      personalEmail2:
-        type:
-          - string
-          - "null"
-      personalEmail3:
-        type:
-          - string
-          - "null"
-      prevExperience:
-        type:
-          - number
-          - "null"
-      yearsInService:
-        type:
-          - number
-          - "null"
       probationPeriod:
-        type:
-          - number
-          - "null"
-      relevantExperience:
         type:
           - number
           - "null"

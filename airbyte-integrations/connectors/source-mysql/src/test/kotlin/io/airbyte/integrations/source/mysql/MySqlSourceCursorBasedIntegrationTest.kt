@@ -196,7 +196,12 @@ class MySqlSourceCursorBasedIntegrationTest {
                     columns = listOf(Field("k", IntFieldType), Field("v", StringFieldType)),
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
-            val stream: AirbyteStream = MySqlSourceOperations().createGlobal(discoveredStream)
+            val stream: AirbyteStream =
+                MySqlSourceOperations()
+                    .create(
+                        MySqlSourceConfigurationFactory().make(config),
+                        discoveredStream,
+                    )
             val configuredStream: ConfiguredAirbyteStream =
                 CatalogHelpers.toDefaultConfiguredStream(stream)
                     .withSyncMode(SyncMode.INCREMENTAL)
