@@ -120,3 +120,6 @@
 - from:
     - /deploying-airbyte/quickstart
   to: /using-airbyte/getting-started/oss-quickstart
+- from:
+    - /connector-development/connector-builder-ui/compatibility-guide
+  to: /connector-development/connector-builder-ui/overview

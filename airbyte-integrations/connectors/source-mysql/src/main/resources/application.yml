@@ -47,17 +47,36 @@ airbyte:
               Expected to read 10 bytes, read 5 bytes before connection was unexpectedly lost.
             error: transient
             group: MySQL EOF Exception
-            output: Can not read data from MySQL server, will retry.
-            reference-links: -https://docs.oracle.com/javase/8/docs/api/index.html?java/io/EOFException.html
+            output: The sync was interrupted while reading data from the MySQL server, will retry.
+            reference-links: https://docs.oracle.com/javase/8/docs/api/index.html?java/io/EOFException.html
+
+          - pattern: (?i).*Failed to read remaining ([1-9]\d*) of ([1-9]\d*) bytes from position.*
+            input-example: >-
+              java.io.EOFException: Failed to read remaining 2 of 2 bytes from position 114. Block length: 0. Initial block length: 2.
+            error: transient
+            group: MySQL EOF Exception
+            output: The sync encountered a communication issue while reading data from the MySQL server, will retry.
+            reference-links: https://docs.oracle.com/javase/8/docs/api/java/io/EOFException.html
+
+          - pattern: (?i)\s*Error processing row in\s.*
+            input-example: >-
+              io.debezium.DebeziumException: Error processing row in banking_safe, internal schema size 11, but row size 1 , restart connector with schema recovery mode.
+            error: config
+            group: Debezium Configuration Error
+            output: >-
+              The sync encountered a schema mismatch while processing a row. 
+              Please ensure that 'binlog_format' and 'binlog_row_image' are configured correctly, then restart the sync. 
+              For detailed configuration instructions, refer to our documentation: https://docs.airbyte.com/integrations/sources/mysql.
+            reference-links: https://dev.mysql.com/doc/refman/8.0/en/binary-log-formats.html
 
           - pattern: (?i).*connection is not available, request timed out after.*
             input-example: >-
               java.sql.SQLTransientConnectionException: HikariPool-x - 
               Connection is not available, request timed out after 10 ms
             error: transient
-            group: MySQL Hikari Connection Error
-            output: Database read failed due to connection timeout, will retry.
-            reference-links: -https://docs.oracle.com/javase/9/docs/api/java/sql/SQLTransientConnectionException.html
+            group: Hikari Connection Pool Timeout
+            output: The sync encountered a database read failure due to a connection timeout, will retry.
+            reference-links: https://docs.oracle.com/javase/9/docs/api/java/sql/SQLTransientConnectionException.html
 
           - pattern: (?i).*is unrecognized or represents more than one time zone.*
             input-example: >-
@@ -65,33 +84,30 @@ airbyte:
               You must configure either the server or JDBC driver (via the serverTimezone configuration property) to use a more specifc time zone value 
               if you want to utilize time zone support.
             error: config
-            group: MySQL Timezone Error
+            group: MySQL Timezone Configuration Issue
             output: >-
-              Please configure your database with the correct timezone found in the detailed error message. 
-              Please refer to the following documentation: https://dev.mysql.com/doc/refman/8.4/en/time-zone-support.html
-            reference-links: -https://docs.oracle.com/javase/8/docs/api/index.html?java/io/SQLException.html
+              The sync encountered a timezone configuration issue. Please configure your database with the correct timezone as specified in the error message.
+              For more details, refer to: https://dev.mysql.com/doc/refman/8.4/en/time-zone-support.html.
+            reference-links: https://docs.oracle.com/javase/8/docs/api/index.html?java/io/SQLException.html
+
+          - pattern: (?s).*vttablet.*?rpc\s+error.*?code\s*=\s*Unavailable.*?desc\s*=\s*error\s+reading\s+from\s+server\s*:\s*EOF.*
+            input-example: >-
+              java.lang.RuntimeException: java.lang.RuntimeException: java.sql.SQLException: target: ai-solutions.-.primary: 
+              vttablet: rpc error: code = Unavailable desc = error reading from server: EOF
+            error: transient
+            group: MySQL Vitess Connection Error
+            output: The sync encountered a connection issue while reading from the MySQL Vitess database, will retry.
+            reference-links: https://vitess.io/docs/archive/13.0/user-guides/configuration-basic/troubleshooting.html
 
           - pattern: (?i).*exception occurred in the change event produce.*
             input-example: >-
               java.lang.RuntimeException: org.apache.kafka.connect.errors.ConnectException: 
               An exception occurred in the change event producer. This connector will be stopped.
             error: config
-            group: MySQL Schema Change Error
+            group: MySQL Connector Error
             output: >-
-              Your connection could not be completed because changes were detected on an unknown table (see detailed error for the table name),
-              please refresh your schema or reset the connection.
-            reference-links: -https://kafka.apache.org/11/javadoc/org/apache/kafka/connect/errors/ConnectException.html
-
-          - pattern: |
-              (?i).*vttablet: rpc error: code = Unavailable desc = error reading from server: EOF.*
-            input-example: >-
-              java.lang.RuntimeException: java.lang.RuntimeException: java.sql.SQLException: target: ai-solutions.-.primary: 
-              vttablet: rpc error: code = Unavailable desc = error reading from server: EOF
-            error: transient
-            group: MySQL Vitess Connection Error
-            output: Database read failed due to connection timeout, will retry.
-            reference-links: -https://docs.oracle.com/javase/8/docs/api/index.html?java/sql/SQLException.html
-
+              The sync encountered an unexpected error in the change event producer and has stopped. Please check the logs for details and troubleshoot accordingly.
+            reference-links: https://docs.oracle.com/javase/9/docs/api/java/lang/RuntimeException.html
       jdbc:
         # The following rules are for the JdbcExceptionClassifier [0] which are applied on a
         # MySQL's error code [1]. The vendor error code is printed in the exception
@@ -111,13 +127,13 @@ airbyte:
           - code: 1054
             error: config
             output: >-
-              A required column for the MySQL source connector is missing in the database. 
-              Please review your SQL statement to ensure it referencing existing columns.
-            group: MySQL Syntax Exception
+              The sync failed because a required column for the MySQL source connector is missing in the database. 
+              Please review your SQL statement to ensure it references existing columns.
+            group: MySQL Syntax Error
             reference-links: https://dev.mysql.com/doc/mysql-errors/9.1/en/server-error-reference.html#error_er_bad_field_error
 
           - code: 3024
             error: transient
-            output: The query took too long to return results, the database read was aborted. Will retry.
-            group: MySQL Limit Reached
+            output: The sync was aborted because the query took too long to return results, will retry.
+            group: MySQL Query Timeout
             reference-links: https://dev.mysql.com/doc/mysql-errors/5.7/en/server-error-reference.html#error_er_query_timeout
