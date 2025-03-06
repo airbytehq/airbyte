@@ -13,8 +13,11 @@ import io.airbyte.cdk.output.ExceptionHandler
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+
+private val logger = KotlinLogging.logger {}
 
 @Singleton
 @Requires(property = Operation.PROPERTY, value = "check")
@@ -40,6 +43,7 @@ class CheckOperation<T : ConfigurationSpecification, C : DestinationConfiguratio
                     )
             outputConsumer.accept(successMessage)
         } catch (t: Throwable) {
+            logger.warn(t) { "Caught throwable during CHECK" }
             val (traceMessage, statusMessage) = exceptionHandler.handleCheckFailure(t)
             outputConsumer.accept(traceMessage)
             outputConsumer.accept(statusMessage)

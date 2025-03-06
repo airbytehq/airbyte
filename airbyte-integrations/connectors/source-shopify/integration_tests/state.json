@@ -23,9 +23,6 @@
     },
     "updated_at": "2023-09-05T07:12:05-07:00"
   },
-  "products_graph_ql": {
-    "updatedAt": "2023-09-05T14:12:05Z"
-  },
   "abandoned_checkouts": {
     "updated_at": "2023-07-11T13:07:45-07:00"
   },
@@ -214,7 +211,6 @@
     "updated_at": "2022-10-12T02:21:35-07:00"
   },
   "disputes": {},
-  "customer_saved_search": {},
   "customer_address": {
     "id": 8212915650749,
     "customers": {

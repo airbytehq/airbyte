@@ -3,7 +3,7 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   connectorSubtype: api
   connectorTestSuitesOptions:
     - suite: unitTests
@@ -16,7 +16,7 @@ data:
             type: GSM
   connectorType: destination
   definitionId: 356668e2-7e34-47f3-a3b0-67a8a481b692
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   dockerRepository: airbyte/destination-pubsub
   documentationUrl: https://docs.airbyte.com/integrations/destinations/pubsub
   githubIssueLabel: destination-pubsub

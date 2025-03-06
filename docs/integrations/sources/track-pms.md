@@ -1,10 +1,10 @@
 # Track PMS
-An Airbyte source for the Track Property Management System (PMS)
-Enterprise-class property management solutions for vacation rental companies
+An Airbyte source for the Track Property Management System (PMS)  
+Enterprise-class property management solutions for vacation rental companies  
 
-Website: https://tnsinc.com/
-API Docs: hhttps://developer.trackhs.com
-Authentication Docs: https://developer.trackhs.com/docs/authentication#authentication
+Website: https://tnsinc.com/  
+API Docs: hhttps://developer.trackhs.com  
+Authentication Docs: https://developer.trackhs.com/docs/authentication#authentication  
 
 ## Configuration
 
@@ -17,83 +17,84 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| units | id | DefaultPaginator | ✅ |  ✅  |
-| owners | id | DefaultPaginator | ✅ |  ✅  |
-| fractionals | id | DefaultPaginator | ✅ |  ❌  |
-| unit-blocks | id | DefaultPaginator | ✅ |  ❌  |
-| folios | id | DefaultPaginator | ✅ |  ❌  |
-| nodes | id | DefaultPaginator | ✅ |  ❌  |
-| units-amenities | id | DefaultPaginator | ✅ |  ❌  |
-| quotes | id | DefaultPaginator | ✅ |  ❌  |
-| reservations_v2 | id | DefaultPaginator | ✅ |  ✅  |
-| reservation-types | id | DefaultPaginator | ✅ |  ❌  |
-| contacts | id | DefaultPaginator | ✅ |  ✅  |
-| tags | id | DefaultPaginator | ✅ |  ❌  |
-| unit-types | id | DefaultPaginator | ✅ |  ❌  |
-| lodging-types | id | DefaultPaginator | ✅ |  ❌  |
-| tax-districts | id | DefaultPaginator | ✅ |  ❌  |
-| tax-policies | id | DefaultPaginator | ✅ |  ❌  |
-| taxes | id | DefaultPaginator | ✅ |  ❌  |
-| travel-insurance-products | id | DefaultPaginator | ✅ |  ❌  |
-| companies | id | DefaultPaginator | ✅ |  ✅  |
-| contracts | id | DefaultPaginator | ✅ |  ❌  |
-| fractional_inventory | fraction_id.id | DefaultPaginator | ✅ |  ❌  |
-| fractional_owners | fraction_id.id | DefaultPaginator | ✅ |  ❌  |
-| unit_type_daily_pricing_v2 | unit_type_id.rateTypeId | DefaultPaginator | ✅ |  ❌  |
-| unit_daily_pricing_v2 | unit_id.rateTypeId | DefaultPaginator | ✅ |  ❌  |
-| unit_taxes | unit_id.id | DefaultPaginator | ✅ |  ❌  |
-| accounting-items | id | DefaultPaginator | ✅ |  ❌  |
-| accounting-accounts | id | DefaultPaginator | ✅ |  ❌  |
-| accounting-transactions | id | DefaultPaginator | ✅ |  ❌  |
-| accounting-bills | id | DefaultPaginator | ✅ |  ❌  |
-| accounting-charges | id | DefaultPaginator | ✅ |  ❌  |
-| maintenance-work-orders | id | DefaultPaginator | ✅ |  ✅  |
-| unit_taxes_parent | id | DefaultPaginator | ✅ |  ✅  |
-| users | id | DefaultPaginator | ✅ |  ❌  |
-| roles | id | DefaultPaginator | ✅ |  ❌  |
-| crm_company_attachment |  | DefaultPaginator | ✅ |  ❌  |
-| crm-tasks | id | DefaultPaginator | ✅ |  ❌  |
-| units-amenity-groups | id | DefaultPaginator | ✅ |  ❌  |
-| nodes-types | id | DefaultPaginator | ✅ |  ❌  |
+| accounting_accounts | id | DefaultPaginator | ✅ |  ❌  |
+| accounting_bills | id | DefaultPaginator | ✅ |  ❌  |
+| accounting_charges | id | DefaultPaginator | ✅ |  ❌  |
+| accounting_deposits | id | DefaultPaginator | ✅ |  ❌  |
+| accounting_deposits_payments | id | DefaultPaginator | ✅ |  ❌  |
+| accounting_items | id | DefaultPaginator | ✅ |  ❌  |
+| accounting_transactions | id | DefaultPaginator | ✅ |  ❌  |
 | charges | id | DefaultPaginator | ✅ |  ❌  |
-| date-groups | id | DefaultPaginator | ✅ |  ❌  |
+| companies | id | DefaultPaginator | ✅ |  ✅  |
+| contacts | id | DefaultPaginator | ✅ |  ✅  |
+| contacts_companies | contactId.companyId | DefaultPaginator | ✅ |  ❌  |
+| contacts_pii_redacted | id | DefaultPaginator | ✅ |  ✅  |
+| contracts | id | DefaultPaginator | ✅ |  ❌  |
+| crm_company_attachment | company_id.id | DefaultPaginator | ✅ |  ❌  |
+| crm_tasks | id | DefaultPaginator | ✅ |  ❌  |
+| custom_fields | id | DefaultPaginator | ✅ |  ❌  |
+| date_groups | id | DefaultPaginator | ✅ |  ❌  |
 | documents | id | DefaultPaginator | ✅ |  ❌  |
-| folios-rules | id | DefaultPaginator | ✅ |  ❌  |
-| folio_logs | id | DefaultPaginator | ✅ |  ❌  |
-| maintenance-problems | id | DefaultPaginator | ✅ |  ❌  |
-| owners_units | ownerId.id | DefaultPaginator | ✅ |  ❌  |
-| owners-contracts | id | DefaultPaginator | ✅ |  ❌  |
-| owner-statements | id | DefaultPaginator | ✅ |  ❌  |
-| owner_statment_transactions | id | DefaultPaginator | ✅ |  ❌  |
-| promo-codes | id | DefaultPaginator | ✅ |  ❌  |
-| reservations-cancellation-policies | id | DefaultPaginator | ✅ |  ❌  |
-| reservations-guarantee-policies | id | DefaultPaginator | ✅ |  ❌  |
-| reservation-cancellation-reasons | id | DefaultPaginator | ✅ |  ❌  |
-| reservation-discount-reasons | id | DefaultPaginator | ✅ |  ❌  |
-| units-bed-types | id | DefaultPaginator | ✅ |  ❌  |
-| custom-fields | id | DefaultPaginator | ✅ |  ❌  |
-| groups | id | DefaultPaginator | ✅ |  ❌  |
-| rate-types | id | DefaultPaginator | ✅ |  ❌  |
-| group_blocks | group_id.id | DefaultPaginator | ✅ |  ❌  |
-| group_tags | group_id.id | DefaultPaginator | ✅ |  ❌  |
-| group_breakdown | group_id | DefaultPaginator | ✅ |  ❌  |
-| suspend-code-reasons | id | DefaultPaginator | ✅ |  ❌  |
-| units_channel | unit_id.id | DefaultPaginator | ✅ |  ❌  |
-| housekeeping-work-orders | id | DefaultPaginator | ✅ |  ✅  |
-| housekeeping-clean-types | id | DefaultPaginator | ✅ |  ❌  |
-| housekeeping-task-list | id | DefaultPaginator | ✅ |  ❌  |
+| folios | id | DefaultPaginator | ✅ |  ❌  |
+| folios_logs | folio_id.id | DefaultPaginator | ✅ |  ❌  |
 | folios_master_rules | id | DefaultPaginator | ✅ |  ❌  |
-| contact_companies | contactId.companyId | DefaultPaginator | ✅ |  ❌  |
+| folios_rules | id | DefaultPaginator | ✅ |  ❌  |
+| fractionals | id | DefaultPaginator | ✅ |  ❌  |
+| fractionals_inventory | fraction_id.id | DefaultPaginator | ✅ |  ❌  |
+| fractionals_owners | fraction_id.id | DefaultPaginator | ✅ |  ❌  |
+| groups | id | DefaultPaginator | ✅ |  ❌  |
+| groups_blocks | group_id.id | DefaultPaginator | ✅ |  ❌  |
+| groups_breakdown | group_id | DefaultPaginator | ✅ |  ❌  |
+| groups_tags | group_id.id | DefaultPaginator | ✅ |  ❌  |
+| housekeeping_clean_types | id | DefaultPaginator | ✅ |  ❌  |
+| housekeeping_task_list | id | DefaultPaginator | ✅ |  ❌  |
+| housekeeping_work_orders | id | DefaultPaginator | ✅ |  ✅  |
+| lodging_types | id | DefaultPaginator | ✅ |  ❌  |
+| maintenance_problems | id | DefaultPaginator | ✅ |  ❌  |
+| maintenance_work_orders | id | DefaultPaginator | ✅ |  ✅  |
+| nodes | id | DefaultPaginator | ✅ |  ❌  |
+| nodes_types | id | DefaultPaginator | ✅ |  ❌  |
+| owners | id | DefaultPaginator | ✅ |  ✅  |
+| owners_contracts | id | DefaultPaginator | ✅ |  ❌  |
+| owners_pii_redacted | id | DefaultPaginator | ✅ |  ✅  |
+| owners_statements | id | DefaultPaginator | ✅ |  ❌  |
+| owners_statements_transactions | statement_id.id | DefaultPaginator | ✅ |  ❌  |
+| owners_statements_transactions_pii_redacted | statement_id.id | DefaultPaginator | ✅ |  ❌  |
+| owners_units | ownerId.id | DefaultPaginator | ✅ |  ❌  |
+| promo_codes | id | DefaultPaginator | ✅ |  ❌  |
+| quotes | id | DefaultPaginator | ✅ |  ❌  |
+| rate_types | id | DefaultPaginator | ✅ |  ❌  |
+| reservations | id | DefaultPaginator | ✅ |  ✅  |
+| reservations_cancellation_policies | id | DefaultPaginator | ✅ |  ❌  |
+| reservations_cancellation_reasons | id | DefaultPaginator | ✅ |  ❌  |
+| reservations_discount_reasons | id | DefaultPaginator | ✅ |  ❌  |
+| reservations_guarantee_policies | id | DefaultPaginator | ✅ |  ❌  |
+| reservations_types | id | DefaultPaginator | ✅ |  ❌  |
+| reservations_v2 | id | DefaultPaginator | ✅ |  ✅  |
 | reviews | id | DefaultPaginator | ✅ |  ❌  |
-| accounting-deposits | id | DefaultPaginator | ✅ |  ❌  |
-| accounting-deposits-payments | id | DefaultPaginator | ✅ |  ❌  |
+| roles | id | DefaultPaginator | ✅ |  ❌  |
+| suspend_code_reasons | id | DefaultPaginator | ✅ |  ❌  |
+| tags | id | DefaultPaginator | ✅ |  ❌  |
+| tax_districts | id | DefaultPaginator | ✅ |  ❌  |
+| tax_policies | id | DefaultPaginator | ✅ |  ❌  |
+| taxes | id | DefaultPaginator | ✅ |  ❌  |
+| travel_insurance_products | id | DefaultPaginator | ✅ |  ❌  |
+| units | id | DefaultPaginator | ✅ |  ✅  |
+| units_amenities | id | DefaultPaginator | ✅ |  ❌  |
+| units_amenity_groups | id | DefaultPaginator | ✅ |  ❌  |
+| units_bed_types | id | DefaultPaginator | ✅ |  ❌  |
+| units_blocks | id | DefaultPaginator | ✅ |  ❌  |
+| units_channel | unit_id.id | DefaultPaginator | ✅ |  ❌  |
+| units_charge_pricing_parent | id | DefaultPaginator | ✅ |  ❌  |
+| units_daily_pricing_v2 | unit_id.rateTypeId | DefaultPaginator | ✅ |  ❌  |
 | units_pricing_parent | id | DefaultPaginator | ✅ |  ✅  |
-| unit_types_pricing_parent | id | DefaultPaginator | ✅ |  ❌  |
-| unit_charge_pricing_parent | id | DefaultPaginator | ✅ |  ❌  |
-| owners-pii-redacted | id | DefaultPaginator | ✅ |  ✅  |
-| contacts-pii-redacted | id | DefaultPaginator | ✅ |  ✅  |
-| owner_statement_transactions_pii_redacted | id | DefaultPaginator | ✅ |  ❌  |
-| users-pii-redacted | id | DefaultPaginator | ✅ |  ❌  |
+| units_taxes | unit_id.id | DefaultPaginator | ✅ |  ❌  |
+| units_taxes_parent | id | DefaultPaginator | ✅ |  ✅  |
+| units_type_daily_pricing_v2 | unit_type_id.rateTypeId | DefaultPaginator | ✅ |  ❌  |
+| units_types | id | DefaultPaginator | ✅ |  ❌  |
+| units_types_pricing_parent | id | DefaultPaginator | ✅ |  ❌  |
+| users | id | DefaultPaginator | ✅ |  ❌  |
+| users_pii_redacted | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -102,6 +103,8 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 
 | Version          | Date       | Subject        |
 |------------------|------------|----------------|
+| 2.0.0 | 2025-02-13 | Rename and alphabetize folio_id stream |
+| 1.0.0 | 2025-01-16 | Fix housekeeping_work_orders incremental field; add reservations endpoint |
+| 0.1.0 | 2025-01-16 | Move kebab case streams to snake case; alphabetize streams |
 | 0.0.1 | 2024-10-18 | Initial release by [@blakeflei](https://github.com/blakeflei) via Connector Builder|
-
 </details>

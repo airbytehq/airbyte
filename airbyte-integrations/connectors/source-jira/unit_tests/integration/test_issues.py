@@ -71,7 +71,7 @@ class IssuesTest(TestCase):
                     "use_global_cursor": False,
                     "state": {"updated": datetime_with_timezone},
                     "lookback_window": 2,
-                    "states": [{"partition": {"parent_slice": {}, "project_id": "10025"}, "cursor": {"updated": datetime_with_timezone}}],
+                    "states": [{"partition": {}, "cursor": {"updated": datetime_with_timezone}}],
                 },
             )
             .build()

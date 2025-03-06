@@ -56,6 +56,15 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.1.4 | 2025-03-01 | [54611](https://github.com/airbytehq/airbyte/pull/54611) | Update dependencies |
+| 1.1.3 | 2025-02-24 | [53976](https://github.com/airbytehq/airbyte/pull/54654) | Lower mailings endpoint page size to 100 from 1000 |
+| 1.1.2 | 2025-02-15 | [53976](https://github.com/airbytehq/airbyte/pull/53976) | Update dependencies |
+| 1.1.1 | 2025-02-08 | [53480](https://github.com/airbytehq/airbyte/pull/53480) | Update dependencies |
+| 1.1.0 | 2025-02-05 | [47294](https://github.com/airbytehq/airbyte/pull/47294) | Migrate to manifest only format |
+| 1.0.30 | 2025-02-01 | [52540](https://github.com/airbytehq/airbyte/pull/52540) | Update dependencies |
+| 1.0.29 | 2025-01-18 | [51871](https://github.com/airbytehq/airbyte/pull/51871) | Update dependencies |
+| 1.0.28 | 2025-01-11 | [51354](https://github.com/airbytehq/airbyte/pull/51354) | Update dependencies |
+| 1.0.27 | 2025-01-04 | [50931](https://github.com/airbytehq/airbyte/pull/50931) | Update dependencies |
 | 1.0.26 | 2024-12-28 | [50722](https://github.com/airbytehq/airbyte/pull/50722) | Update dependencies |
 | 1.0.25 | 2024-12-21 | [50245](https://github.com/airbytehq/airbyte/pull/50245) | Update dependencies |
 | 1.0.24 | 2024-12-14 | [49654](https://github.com/airbytehq/airbyte/pull/49654) | Update dependencies |

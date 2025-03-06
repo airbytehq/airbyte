@@ -6,19 +6,11 @@ package io.airbyte.cdk.load.test.util
 
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
-import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.data.TimeValue
-import io.airbyte.cdk.load.data.TimestampValue
 import io.airbyte.cdk.load.data.UnknownValue
 import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.OffsetDateTime
-import java.time.OffsetTime
 import kotlin.reflect.jvm.jvmName
 
 class RecordDiffer(
@@ -302,7 +294,7 @@ class RecordDiffer(
         private fun compare(v1: AirbyteValue, v2: AirbyteValue, nullEqualsUnset: Boolean): Int {
             if (v1 is UnknownValue) {
                 return compare(
-                    JsonToAirbyteValue().fromJson(v1.value),
+                    JsonToAirbyteValue().convert(v1.value),
                     v2,
                     nullEqualsUnset,
                 )
@@ -310,7 +302,7 @@ class RecordDiffer(
             if (v2 is UnknownValue) {
                 return compare(
                     v1,
-                    JsonToAirbyteValue().fromJson(v2.value),
+                    JsonToAirbyteValue().convert(v2.value),
                     nullEqualsUnset,
                 )
             }
@@ -321,45 +313,7 @@ class RecordDiffer(
             return if (v1::class != v2::class) {
                 v1::class.jvmName.compareTo(v2::class.jvmName)
             } else {
-                // Handle temporal types specifically, because they require explicit parsing
                 return when (v1) {
-                    is DateValue ->
-                        try {
-                            LocalDate.parse(v1.value)
-                                .compareTo(LocalDate.parse((v2 as DateValue).value))
-                        } catch (e: Exception) {
-                            v1.value.compareTo((v2 as DateValue).value)
-                        }
-                    is TimeValue -> {
-                        try {
-                            val time1 = LocalTime.parse(v1.value)
-                            val time2 = LocalTime.parse((v2 as TimeValue).value)
-                            time1.compareTo(time2)
-                        } catch (e: Exception) {
-                            try {
-                                val time1 = OffsetTime.parse(v1.value)
-                                val time2 = OffsetTime.parse((v2 as TimeValue).value)
-                                time1.compareTo(time2)
-                            } catch (e: Exception) {
-                                v1.value.compareTo((v2 as TimeValue).value)
-                            }
-                        }
-                    }
-                    is TimestampValue -> {
-                        try {
-                            val ts1 = LocalDateTime.parse(v1.value)
-                            val ts2 = LocalDateTime.parse((v2 as TimestampValue).value)
-                            ts1.compareTo(ts2)
-                        } catch (e: Exception) {
-                            try {
-                                val ts1 = OffsetDateTime.parse(v1.value)
-                                val ts2 = OffsetDateTime.parse((v2 as TimestampValue).value)
-                                ts1.compareTo(ts2)
-                            } catch (e: Exception) {
-                                v1.value.compareTo((v2 as TimestampValue).value)
-                            }
-                        }
-                    }
                     is ObjectValue -> {
                         fun objComp(a: ObjectValue, b: ObjectValue): Int {
                             // objects aren't really comparable, so just do an equality check

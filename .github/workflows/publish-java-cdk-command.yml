@@ -61,7 +61,7 @@ env:
 jobs:
   publish-cdk:
     name: Publish Java CDK
-    runs-on: connector-test-large
+    runs-on: linux-20.04-large # Custom runner, defined in GitHub org settings
     timeout-minutes: 30
     steps:
       - name: Link comment to Workflow Run

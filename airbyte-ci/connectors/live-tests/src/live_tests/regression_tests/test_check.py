@@ -4,7 +4,6 @@ from __future__ import annotations
 from collections.abc import Callable
 
 import pytest
-from airbyte_protocol.models import Status, Type  # type: ignore
 
 from live_tests.commons.models import ExecutionResult
 from live_tests.consts import MAX_LINES_IN_REPORT

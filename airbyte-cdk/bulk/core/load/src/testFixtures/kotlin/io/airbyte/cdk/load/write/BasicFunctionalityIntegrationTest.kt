@@ -11,12 +11,12 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.DateType
-import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
@@ -29,14 +29,14 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeTypeWithTimezone
 import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimeValue
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimestampValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.InputFile
+import io.airbyte.cdk.load.message.InputGlobalCheckpoint
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
 import io.airbyte.cdk.load.message.Meta.Change
@@ -52,6 +52,7 @@ import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.deserializeToNode
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.math.BigDecimal
@@ -70,7 +71,6 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertThrows
 
 sealed interface AllTypesBehavior
 
@@ -91,14 +91,66 @@ data class StronglyTyped(
 
 data object Untyped : AllTypesBehavior
 
+/**
+ * Destinations may choose to handle nested objects/arrays in a few different ways.
+ *
+ * Note that this is _not_ the same as
+ * [BasicFunctionalityIntegrationTest.stringifySchemalessObjects]. This enum is only used for
+ * objects with an explicit, non-empty list of properties.
+ */
+enum class SchematizedNestedValueBehavior {
+    /**
+     * Nested objects are written without modification: undeclared fields are retained; values not
+     * matching the schema are retained.
+     */
+    PASS_THROUGH,
+
+    /**
+     * Nested objects are written as structs: undeclared fields are dropped, and values not matching
+     * the schema are nulled.
+     */
+    STRONGLY_TYPE,
+
+    /**
+     * Nested objects/arrays are JSON-serialized and written as strings. Similar to [PASS_THROUGH],
+     * objects are written without modification.
+     */
+    STRINGIFY,
+}
+
+enum class UnionBehavior {
+    /**
+     * Values corresponding to union fields are passed through, regardless of whether they actually
+     * match any of the union options.
+     */
+    PASS_THROUGH,
+
+    /**
+     * Union fields are turned into objects, with a `type` field indicating the selected union
+     * option. For example, the value `42` in a union with an Integer option would be represented as
+     * `{"type": "integer", "integer": 42}`.
+     *
+     * Values which do not match any union options are nulled.
+     */
+    PROMOTE_TO_OBJECT,
+
+    /**
+     * Union fields are JSON-serialized and written as strings. Similar to the [PASS_THROUGH]
+     * option, no validation is performed.
+     */
+    STRINGIFY,
+}
+
 abstract class BasicFunctionalityIntegrationTest(
     /** The config to pass into the connector, as a serialized JSON blob */
-    val configContents: String,
+    configContents: String,
     val configSpecClass: Class<out ConfigurationSpecification>,
     dataDumper: DestinationDataDumper,
     destinationCleaner: DestinationCleaner,
     recordMangler: ExpectedRecordMapper = NoopExpectedRecordMapper,
     nameMapper: NameMapper = NoopNameMapper,
+    additionalMicronautEnvs: List<String> = emptyList(),
+    micronautProperties: Map<Property, String> = emptyMap(),
     /**
      * Whether to actually verify that the connector wrote data to the destination. This should only
      * ever be disabled for test destinations (dev-null, etc.).
@@ -115,10 +167,11 @@ abstract class BasicFunctionalityIntegrationTest(
     val isStreamSchemaRetroactive: Boolean,
     val supportsDedup: Boolean,
     val stringifySchemalessObjects: Boolean,
-    val promoteUnionToObject: Boolean,
+    val schematizedObjectBehavior: SchematizedNestedValueBehavior,
+    val schematizedArrayBehavior: SchematizedNestedValueBehavior,
+    val unionBehavior: UnionBehavior,
     val preserveUndeclaredFields: Boolean,
     val supportFileTransfer: Boolean,
-    val envVars: Map<String, String>,
     /**
      * Whether the destination commits new data when it receives a non-`COMPLETE` stream status. For
      * example:
@@ -130,20 +183,24 @@ abstract class BasicFunctionalityIntegrationTest(
      */
     val commitDataIncrementally: Boolean,
     val allTypesBehavior: AllTypesBehavior,
-    val failOnUnknownTypes: Boolean = false,
+    val nullUnknownTypes: Boolean = false,
     nullEqualsUnset: Boolean = false,
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
 ) :
     IntegrationTest(
+        additionalMicronautEnvs = additionalMicronautEnvs,
         dataDumper = dataDumper,
         destinationCleaner = destinationCleaner,
         recordMangler = recordMangler,
         nameMapper = nameMapper,
         nullEqualsUnset = nullEqualsUnset,
-        configUpdater = configUpdater
+        configUpdater = configUpdater,
+        micronautProperties = micronautProperties,
     ) {
-    val parsedConfig =
-        ValidatedJsonUtils.parseOne(configSpecClass, configUpdater.update(configContents))
+
+    // Update config with any replacements.  This may be necessary when using testcontainers.
+    val updatedConfig = configUpdater.update(configContents)
+    val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
 
     @Test
     open fun testBasicWrite() {
@@ -158,7 +215,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         val messages =
             runSync(
-                configContents,
+                updatedConfig,
                 stream,
                 listOf(
                     InputRecord(
@@ -184,7 +241,6 @@ abstract class BasicFunctionalityIntegrationTest(
                         sourceRecordCount = 1,
                     )
                 ),
-                envVars = envVars,
             )
 
         val stateMessages = messages.filter { it.type == AirbyteMessage.Type.STATE }
@@ -210,7 +266,7 @@ abstract class BasicFunctionalityIntegrationTest(
             {
                 if (verifyDataWriting) {
                     dumpAndDiffRecords(
-                        ValidatedJsonUtils.parseOne(configSpecClass, configContents),
+                        ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig),
                         listOf(
                             OutputRecord(
                                 extractedAt = 1234,
@@ -271,7 +327,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
         val messages =
             runSync(
-                configContents,
+                updatedConfig,
                 stream,
                 listOf(
                     InputFile(
@@ -309,7 +365,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         })
 
-        val config = ValidatedJsonUtils.parseOne(configSpecClass, configContents)
+        val config = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
         val fileContent = dataDumper.dumpFile(config, stream)
 
         assertEquals(listOf("123"), fileContent)
@@ -330,7 +386,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             val stateMessage =
                 runSyncUntilStateAck(
-                    configContents,
+                    this@BasicFunctionalityIntegrationTest.updatedConfig,
                     stream,
                     listOf(
                         InputRecord(
@@ -348,7 +404,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     ),
                     allowGracefulShutdown = false,
                 )
-            runSync(configContents, stream, emptyList())
+            runSync(this@BasicFunctionalityIntegrationTest.updatedConfig, stream, emptyList())
 
             val streamName = stateMessage.stream.streamDescriptor.name
             val streamNamespace = stateMessage.stream.streamDescriptor.namespace
@@ -399,9 +455,13 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testNamespaces() {
         assumeTrue(verifyDataWriting)
-        fun makeStream(namespace: String) =
+        fun makeStream(namespace: String?) =
             DestinationStream(
-                DestinationStream.Descriptor(namespace, "test_stream"),
+                // We need to randomize the stream name for destinations which support
+                // namespace=null natively.
+                // Otherwise, multiple test runs would write to `<null>.test_stream`.
+                // Now, they instead write to `<null>.test_stream_test20250123abcd`.
+                DestinationStream.Descriptor(namespace, "test_stream_$randomizedNamespace"),
                 Append,
                 ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
@@ -410,12 +470,16 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         val stream1 = makeStream(randomizedNamespace + "_1")
         val stream2 = makeStream(randomizedNamespace + "_2")
+        val streamWithDefaultNamespace = makeStream(null)
+        val (configWithRandomizedDefaultNamespace, actualDefaultNamespace) =
+            configUpdater.setDefaultNamespace(updatedConfig, randomizedNamespace + "_default")
         runSync(
-            configContents,
+            configWithRandomizedDefaultNamespace,
             DestinationCatalog(
                 listOf(
                     stream1,
                     stream2,
+                    streamWithDefaultNamespace,
                 )
             ),
             listOf(
@@ -429,6 +493,12 @@ abstract class BasicFunctionalityIntegrationTest(
                     namespace = stream2.descriptor.namespace,
                     name = stream2.descriptor.name,
                     data = """{"id": 5678}""",
+                    emittedAtMs = 1234,
+                ),
+                InputRecord(
+                    namespace = streamWithDefaultNamespace.descriptor.namespace,
+                    name = streamWithDefaultNamespace.descriptor.name,
+                    data = """{"id": 91011}""",
                     emittedAtMs = 1234,
                 ),
             )
@@ -465,20 +535,41 @@ abstract class BasicFunctionalityIntegrationTest(
                     listOf(listOf("id")),
                     cursor = null
                 )
+            },
+            {
+                dumpAndDiffRecords(
+                    parsedConfig,
+                    listOf(
+                        OutputRecord(
+                            extractedAt = 1234,
+                            generationId = 0,
+                            data = mapOf("id" to 91011),
+                            airbyteMeta = OutputRecord.Meta(syncId = 42)
+                        )
+                    ),
+                    streamWithDefaultNamespace.copy(
+                        descriptor =
+                            streamWithDefaultNamespace.descriptor.copy(
+                                namespace = actualDefaultNamespace
+                            )
+                    ),
+                    listOf(listOf("id")),
+                    cursor = null
+                )
             }
         )
     }
 
     @Test
-    @Disabled
     open fun testFunkyCharacters() {
         assumeTrue(verifyDataWriting)
         fun makeStream(
             name: String,
             schema: LinkedHashMap<String, FieldType> = linkedMapOf("id" to intType),
+            namespaceSuffix: String = "",
         ) =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, name),
+                DestinationStream.Descriptor(randomizedNamespace + namespaceSuffix, name),
                 Append,
                 ObjectType(schema),
                 generationId = 0,
@@ -494,6 +585,10 @@ abstract class BasicFunctionalityIntegrationTest(
                     makeStream("stream_with_underscores"),
                     makeStream("STREAM_WITH_ALL_CAPS"),
                     makeStream("CapitalCase"),
+                    makeStream("stream_with_spécial_character"),
+                    makeStream("stream_name_with_operator+1"),
+                    makeStream("stream_name_with_numbers_123"),
+                    makeStream("1stream_with_a_leading_number"),
                     makeStream(
                         "stream_with_edge_case_field_names_and_values",
                         linkedMapOf(
@@ -502,6 +597,9 @@ abstract class BasicFunctionalityIntegrationTest(
                             "field_with_underscore" to stringType,
                             "FIELD_WITH_ALL_CAPS" to stringType,
                             "field_with_spécial_character" to stringType,
+                            "field_name_with_operator+1" to stringType,
+                            "field_name_with_numbers_123" to stringType,
+                            "1field_with_a_leading_number" to stringType,
                             // "order" is a reserved word in many sql engines
                             "order" to stringType,
                             "ProperCase" to stringType,
@@ -513,6 +611,11 @@ abstract class BasicFunctionalityIntegrationTest(
                         "groups",
                         linkedMapOf("id" to intType, "authorization" to stringType)
                     ),
+                    makeStream(
+                        "streamWithSpecialCharactersInNamespace",
+                        namespaceSuffix = "_spøcial"
+                    ),
+                    makeStream("streamWithOperatorInNamespace", namespaceSuffix = "_operator-1"),
                 )
             )
         // For each stream, generate a record containing every field in the schema.
@@ -534,7 +637,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     serialized = "",
                 )
             }
-        runSync(configContents, catalog, messages)
+        runSync(updatedConfig, catalog, messages)
         assertAll(
             catalog.streams.map { stream ->
                 {
@@ -574,7 +677,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId,
             )
         runSync(
-            configContents,
+            updatedConfig,
             makeStream(generationId = 12, minimumGenerationId = 0, syncId = 42),
             listOf(
                 InputRecord(
@@ -587,7 +690,7 @@ abstract class BasicFunctionalityIntegrationTest(
         )
         val finalStream = makeStream(generationId = 13, minimumGenerationId = 13, syncId = 43)
         runSync(
-            configContents,
+            updatedConfig,
             finalStream,
             listOf(
                 InputRecord(
@@ -647,7 +750,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 data =
                     mapOf(
                         "id" to id,
-                        "updated_at" to OffsetDateTime.parse(updatedAt),
+                        "updated_at" to TimestampWithTimezoneValue(updatedAt),
                         "name" to "foo_${id}_$extractedAt",
                     ),
                 airbyteMeta = OutputRecord.Meta(syncId = syncId),
@@ -669,7 +772,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 41,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream1,
             listOf(
                 makeInputRecord(1, "2024-01-23T01:00:00Z", 100),
@@ -708,7 +811,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         // Run a sync, but emit a status incomplete. This should not delete any existing data.
         runSyncUntilStateAck(
-            configContents,
+            updatedConfig,
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
@@ -757,7 +860,7 @@ abstract class BasicFunctionalityIntegrationTest(
         // Run a third sync, this time with a successful status.
         // This should delete the first sync's data, and retain the second+third syncs' data.
         runSync(
-            configContents,
+            updatedConfig,
             stream2,
             listOf(makeInputRecord(2, "2024-01-23T03:00:00Z", 300)),
         )
@@ -816,7 +919,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 data =
                     mapOf(
                         "id" to id,
-                        "updated_at" to OffsetDateTime.parse(updatedAt),
+                        "updated_at" to TimestampWithTimezoneValue(updatedAt),
                         "name" to "foo_${id}_$extractedAt",
                     ),
                 airbyteMeta = OutputRecord.Meta(syncId = syncId),
@@ -838,7 +941,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         // Run a sync, but emit a stream status incomplete.
         runSyncUntilStateAck(
-            configContents,
+            updatedConfig,
             stream,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
@@ -873,7 +976,7 @@ abstract class BasicFunctionalityIntegrationTest(
         // Run a second sync, this time with a successful status.
         // This should retain the first syncs' data.
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             listOf(makeInputRecord(2, "2024-01-23T03:00:00Z", 300)),
         )
@@ -937,7 +1040,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 data =
                     mapOf(
                         "id" to id,
-                        "updated_at" to OffsetDateTime.parse(updatedAt),
+                        "updated_at" to TimestampWithTimezoneValue(updatedAt),
                         "name" to "foo_${id}_$extractedAt",
                     ),
                 airbyteMeta = OutputRecord.Meta(syncId = syncId),
@@ -959,7 +1062,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 41,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream1,
             listOf(
                 makeInputRecord(1, "2024-01-23T01:00:00Z", 100),
@@ -999,7 +1102,7 @@ abstract class BasicFunctionalityIntegrationTest(
         // Run a sync, but emit a stream status incomplete. This should not delete any existing
         // data.
         runSyncUntilStateAck(
-            configContents,
+            updatedConfig,
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
@@ -1054,7 +1157,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 43,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream3,
             listOf(makeInputRecord(2, "2024-01-23T03:00:00Z", 300)),
         )
@@ -1114,7 +1217,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId,
             )
         runSync(
-            configContents,
+            updatedConfig,
             makeStream(syncId = 42),
             listOf(
                 InputRecord(
@@ -1127,7 +1230,7 @@ abstract class BasicFunctionalityIntegrationTest(
         )
         val finalStream = makeStream(syncId = 43)
         runSync(
-            configContents,
+            updatedConfig,
             finalStream,
             listOf(
                 InputRecord(
@@ -1180,7 +1283,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId,
             )
         runSync(
-            configContents,
+            updatedConfig,
             makeStream(
                 syncId = 42,
                 linkedMapOf("id" to intType, "to_drop" to stringType, "to_change" to intType)
@@ -1200,7 +1303,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 linkedMapOf("id" to intType, "to_change" to stringType, "to_add" to stringType)
             )
         runSync(
-            configContents,
+            updatedConfig,
             finalStream,
             listOf(
                 InputRecord(
@@ -1235,6 +1338,120 @@ abstract class BasicFunctionalityIntegrationTest(
             finalStream,
             primaryKey = listOf(listOf("id")),
             cursor = null,
+        )
+    }
+
+    /**
+     * Some destinations have better support for schema evolution in single-generation truncate
+     * syncs. For example, if a destination imposes limitations on column type changes, we can
+     * actually ignore those limits in a truncate sync (because we're dropping all older data
+     * anyway).
+     */
+    @Test
+    open fun testOverwriteSchemaEvolution() {
+        assumeTrue(verifyDataWriting)
+        fun makeStream(
+            syncId: Long,
+            schema: LinkedHashMap<String, FieldType>,
+            generationId: Long,
+            minimumGenerationId: Long,
+        ) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(schema),
+                generationId = generationId,
+                minimumGenerationId = minimumGenerationId,
+                syncId,
+            )
+        runSync(
+            updatedConfig,
+            makeStream(
+                syncId = 42,
+                linkedMapOf("id" to intType, "to_drop" to stringType, "to_change" to intType),
+                generationId = 1,
+                minimumGenerationId = 0,
+            ),
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "to_drop": "val1", "to_change": 42}""",
+                    emittedAtMs = 1234L,
+                )
+            )
+        )
+        val changedStream =
+            makeStream(
+                syncId = 43,
+                linkedMapOf("id" to intType, "to_change" to stringType, "to_add" to stringType),
+                generationId = 2,
+                minimumGenerationId = 2,
+            )
+        runSync(
+            updatedConfig,
+            changedStream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "to_change": "val2", "to_add": "val3"}""",
+                    emittedAtMs = 1234L,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 2,
+                    data = mapOf("id" to 42, "to_change" to "val2", "to_add" to "val3"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                )
+            ),
+            changedStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            reason = "Records were incorrect when trying to change the schema."
+        )
+
+        // Run a third sync, to verify that the schema is stable after evolution
+        // (this is relevant for e.g. iceberg, where every column has an ID,
+        // and we need to be able to match the new columns to their ID)
+        val finalStream = changedStream.copy(minimumGenerationId = 0, syncId = 44)
+        runSync(
+            updatedConfig,
+            finalStream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "to_change": "val4", "to_add": "val5"}""",
+                    emittedAtMs = 5678L,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 2,
+                    data = mapOf("id" to 42, "to_change" to "val2", "to_add" to "val3"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                ),
+                OutputRecord(
+                    extractedAt = 5678,
+                    generationId = 2,
+                    data = mapOf("id" to 42, "to_change" to "val4", "to_add" to "val5"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 44),
+                ),
+            ),
+            finalStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            reason = "Records were incorrect after running a second sync with the updated schema."
         )
     }
 
@@ -1274,7 +1491,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
         val sync1Stream = makeStream(syncId = 42)
         runSync(
-            configContents,
+            updatedConfig,
             sync1Stream,
             listOf(
                 // emitted_at:1000 is equal to 1970-01-01 00:00:01Z.
@@ -1309,7 +1526,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         mapOf(
                             "id1" to 1,
                             "id2" to 200,
-                            "updated_at" to OffsetDateTime.parse("2000-01-01T00:01:00Z"),
+                            "updated_at" to TimestampWithTimezoneValue("2000-01-01T00:01:00Z"),
                             "name" to "Alice2",
                             "_ab_cdc_deleted_at" to null
                         ),
@@ -1322,7 +1539,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         mapOf(
                             "id1" to 1,
                             "id2" to 201,
-                            "updated_at" to OffsetDateTime.parse("2000-01-01T00:02:00Z"),
+                            "updated_at" to TimestampWithTimezoneValue("2000-01-01T00:02:00Z"),
                             "name" to "Bob1"
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
@@ -1335,7 +1552,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
         val sync2Stream = makeStream(syncId = 43)
         runSync(
-            configContents,
+            updatedConfig,
             sync2Stream,
             listOf(
                 // Update both Alice and Bob
@@ -1367,7 +1584,149 @@ abstract class BasicFunctionalityIntegrationTest(
                         mapOf(
                             "id1" to 1,
                             "id2" to 200,
-                            "updated_at" to OffsetDateTime.parse("2000-01-02T00:00:00Z"),
+                            "updated_at" to TimestampWithTimezoneValue("2000-01-02T00:00:00Z"),
+                            "name" to "Alice3",
+                            "_ab_cdc_deleted_at" to null
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                )
+            ),
+            sync2Stream,
+            primaryKey = listOf(listOf("id1"), listOf("id2")),
+            cursor = listOf("updated_at"),
+        )
+    }
+
+    @Test
+    open fun testDedupWithStringKey() {
+        assumeTrue(supportsDedup)
+        fun makeStream(syncId: Long) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                importType =
+                    Dedupe(
+                        primaryKey = listOf(listOf("id1"), listOf("id2")),
+                        cursor = listOf("updated_at"),
+                    ),
+                schema =
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "id1" to stringType,
+                                "id2" to intType,
+                                "updated_at" to timestamptzType,
+                                "name" to stringType,
+                                "_ab_cdc_deleted_at" to timestamptzType,
+                            )
+                    ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = syncId,
+            )
+        fun makeRecord(data: String, extractedAt: Long) =
+            InputRecord(
+                randomizedNamespace,
+                "test_stream",
+                data,
+                emittedAtMs = extractedAt,
+            )
+
+        val sync1Stream = makeStream(syncId = 42)
+        runSync(
+            updatedConfig,
+            sync1Stream,
+            listOf(
+                // emitted_at:1000 is equal to 1970-01-01 00:00:01Z.
+                // This obviously makes no sense in relation to updated_at being in the year 2000,
+                // but that's OK because (from destinations POV) updated_at has no relation to
+                // extractedAt.
+                makeRecord(
+                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 200, "updated_at": "2000-01-01T00:00:00Z", "name": "Alice1", "_ab_cdc_deleted_at": null}""",
+                    extractedAt = 1000,
+                ),
+                // Emit a second record for id=(1,200) with a different updated_at.
+                makeRecord(
+                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 200, "updated_at": "2000-01-01T00:01:00Z", "name": "Alice2", "_ab_cdc_deleted_at": null}""",
+                    extractedAt = 1000,
+                ),
+                // Emit a record with no _ab_cdc_deleted_at field. CDC sources typically emit an
+                // explicit null, but we should handle both cases.
+                makeRecord(
+                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 201, "updated_at": "2000-01-01T00:02:00Z", "name": "Bob1"}""",
+                    extractedAt = 1000,
+                ),
+            ),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                // Alice has only the newer record, and Bob also exists
+                OutputRecord(
+                    extractedAt = 1000,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id1" to "9cf974de-52cf-4194-9f3d-7efa76ba4d84",
+                            "id2" to 200,
+                            "updated_at" to TimestampWithTimezoneValue("2000-01-01T00:01:00Z"),
+                            "name" to "Alice2",
+                            "_ab_cdc_deleted_at" to null
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 1000,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id1" to "9cf974de-52cf-4194-9f3d-7efa76ba4d84",
+                            "id2" to 201,
+                            "updated_at" to TimestampWithTimezoneValue("2000-01-01T00:02:00Z"),
+                            "name" to "Bob1"
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+            ),
+            sync1Stream,
+            primaryKey = listOf(listOf("id1"), listOf("id2")),
+            cursor = listOf("updated_at"),
+        )
+
+        val sync2Stream = makeStream(syncId = 43)
+        runSync(
+            updatedConfig,
+            sync2Stream,
+            listOf(
+                // Update both Alice and Bob
+                makeRecord(
+                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 200, "updated_at": "2000-01-02T00:00:00Z", "name": "Alice3", "_ab_cdc_deleted_at": null}""",
+                    extractedAt = 2000,
+                ),
+                makeRecord(
+                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 201, "updated_at": "2000-01-02T00:00:00Z", "name": "Bob2"}""",
+                    extractedAt = 2000,
+                ),
+                // And delete Bob. Again, T+D doesn't check the actual _value_ of deleted_at (i.e.
+                // the fact that it's in the past is irrelevant). It only cares whether deleted_at
+                // is non-null. So the destination should delete Bob.
+                makeRecord(
+                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 201, "updated_at": "2000-01-02T00:01:00Z", "_ab_cdc_deleted_at": "1970-01-01T00:00:00Z"}""",
+                    extractedAt = 2000,
+                ),
+            ),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                // Alice still exists (and has been updated to the latest version), but Bob is gone
+                OutputRecord(
+                    extractedAt = 2000,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id1" to "9cf974de-52cf-4194-9f3d-7efa76ba4d84",
+                            "id2" to 200,
+                            "updated_at" to TimestampWithTimezoneValue("2000-01-02T00:00:00Z"),
                             "name" to "Alice3",
                             "_ab_cdc_deleted_at" to null
                         ),
@@ -1419,9 +1778,9 @@ abstract class BasicFunctionalityIntegrationTest(
                 // instead of being able to fallback onto extractedAt.
                 emittedAtMs = 100,
             )
-        runSync(configContents, makeStream("cursor1"), listOf(makeRecord("cursor1")))
+        runSync(updatedConfig, makeStream("cursor1"), listOf(makeRecord("cursor1")))
         val stream2 = makeStream("cursor2")
-        runSync(configContents, stream2, listOf(makeRecord("cursor2")))
+        runSync(updatedConfig, stream2, listOf(makeRecord("cursor2")))
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
@@ -1478,7 +1837,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             }
         // Just verify that we don't crash.
-        assertDoesNotThrow { runSync(configContents, DestinationCatalog(streams), messages) }
+        assertDoesNotThrow { runSync(updatedConfig, DestinationCatalog(streams), messages) }
     }
 
     /**
@@ -1531,7 +1890,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 emittedAtMs = 100,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             listOf(
                 // A record with valid values for all fields
@@ -1543,9 +1902,9 @@ abstract class BasicFunctionalityIntegrationTest(
                           "number": 42.1,
                           "integer": 42,
                           "boolean": true,
-                          "timestamp_with_timezone": "2023-01-23T12:34:56Z",
+                          "timestamp_with_timezone": "2023-01-23T11:34:56-01:00",
                           "timestamp_without_timezone": "2023-01-23T12:34:56",
-                          "time_with_timezone": "12:34:56Z",
+                          "time_with_timezone": "11:34:56-01:00",
                           "time_without_timezone": "12:34:56",
                           "date": "2023-01-23"
                         }
@@ -1687,21 +2046,18 @@ abstract class BasicFunctionalityIntegrationTest(
                 bigInt = BigInteger("99999999999999999999999999999999")
                 bigIntChanges = emptyList()
                 badValuesData =
+                    // note that the values have different types than what's declared in the schema
                     mapOf(
                         "id" to 5,
-                        "string" to StringValue("{}"),
+                        "string" to ObjectValue(linkedMapOf()),
                         "number" to "foo",
                         "integer" to "foo",
                         "boolean" to "foo",
-                        // TODO this probably indicates that we should
-                        // 1. actually parse time types
-                        // 2. and just rely on the fallback to JsonToAirbyteValue.fromJson to return
-                        //    a StringValue
-                        "timestamp_with_timezone" to TimestampValue("foo"),
-                        "timestamp_without_timezone" to TimestampValue("foo"),
-                        "time_with_timezone" to TimeValue("foo"),
-                        "time_without_timezone" to TimeValue("foo"),
-                        "date" to DateValue("foo"),
+                        "timestamp_with_timezone" to "foo",
+                        "timestamp_without_timezone" to "foo",
+                        "time_with_timezone" to "foo",
+                        "time_without_timezone" to "foo",
+                        "date" to "foo",
                     )
                 badValuesChanges = mutableListOf()
             }
@@ -1720,10 +2076,10 @@ abstract class BasicFunctionalityIntegrationTest(
                             "integer" to 42,
                             "boolean" to true,
                             "timestamp_with_timezone" to
-                                OffsetDateTime.parse("2023-01-23T12:34:56Z"),
+                                OffsetDateTime.parse("2023-01-23T11:34:56-01:00"),
                             "timestamp_without_timezone" to
                                 LocalDateTime.parse("2023-01-23T12:34:56"),
-                            "time_with_timezone" to OffsetTime.parse("12:34:56Z"),
+                            "time_with_timezone" to OffsetTime.parse("11:34:56-01:00"),
                             "time_without_timezone" to LocalTime.parse("12:34:56"),
                             "date" to LocalDate.parse("2023-01-23"),
                         ),
@@ -1759,7 +2115,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id" to 4,
-                            "struct" to mapOf("foo" to nestedFloat),
+                            "struct" to schematizedObject(linkedMapOf("foo" to nestedFloat)),
                             "number" to topLevelFloat,
                             "integer" to bigInt,
                         ),
@@ -1818,7 +2174,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             listOf(
                 InputRecord(
@@ -1827,7 +2183,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     """
                         {
                           "id": 1,
-                          "schematized_object": { "id": 1, "name": "Joe" },
+                          "schematized_object": { "id": 1, "name": "Joe", "undeclared": 42 },
                           "empty_object": {},
                           "schemaless_object": { "uuid": "38F52396-736D-4B23-B5B4-F504D8894B97", "probability": 1.5 },
                           "schematized_array": [10, null],
@@ -1874,7 +2230,11 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id" to 1,
-                            "schematized_object" to mapOf("id" to 1, "name" to "Joe"),
+                            "schematized_object" to
+                                schematizedObject(
+                                    linkedMapOf("id" to 1, "name" to "Joe", "undeclared" to 42),
+                                    linkedMapOf("id" to 1, "name" to "Joe"),
+                                ),
                             "empty_object" to
                                 if (stringifySchemalessObjects) "{}" else emptyMap<Any, Any>(),
                             "schemaless_object" to
@@ -1886,7 +2246,12 @@ abstract class BasicFunctionalityIntegrationTest(
                                         "probability" to 1.5
                                     )
                                 },
-                            "schematized_array" to listOf(10, null),
+                            "schematized_array" to
+                                when (schematizedArrayBehavior) {
+                                    SchematizedNestedValueBehavior.PASS_THROUGH -> listOf(10, null)
+                                    SchematizedNestedValueBehavior.STRONGLY_TYPE -> listOf(10, null)
+                                    SchematizedNestedValueBehavior.STRINGIFY -> "[10,null]"
+                                },
                             "schemaless_array" to
                                 if (stringifySchemalessObjects) {
                                     """[10,"foo",null,{"bar":"qua"}]"""
@@ -1902,7 +2267,8 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id" to 2,
-                            "schematized_object" to mapOf("id" to 2, "name" to "Jane"),
+                            "schematized_object" to
+                                schematizedObject(linkedMapOf("id" to 2, "name" to "Jane")),
                             "empty_object" to
                                 if (stringifySchemalessObjects) {
                                     """{"extra":"stuff"}"""
@@ -1922,7 +2288,13 @@ abstract class BasicFunctionalityIntegrationTest(
                                         "flags" to listOf(true, false, false)
                                     )
                                 },
-                            "schematized_array" to emptyList<Long>(),
+                            "schematized_array" to
+                                when (schematizedArrayBehavior) {
+                                    SchematizedNestedValueBehavior.PASS_THROUGH -> emptyList<Long>()
+                                    SchematizedNestedValueBehavior.STRONGLY_TYPE ->
+                                        emptyList<Long>()
+                                    SchematizedNestedValueBehavior.STRINGIFY -> "[]"
+                                },
                             "schemaless_array" to
                                 if (stringifySchemalessObjects) {
                                     "[]"
@@ -1959,13 +2331,15 @@ abstract class BasicFunctionalityIntegrationTest(
 
     @Test
     open fun testUnknownTypes() {
+        assumeTrue(verifyDataWriting)
         val stream =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "problematic_types"),
                 Append,
                 ObjectType(
                     linkedMapOf(
-                        "id" to
+                        "id" to intType,
+                        "name" to
                             FieldType(
                                 UnknownType(
                                     JsonNodeFactory.instance.objectNode().put("type", "whatever")
@@ -1979,7 +2353,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             listOf(
                 InputRecord(
@@ -1987,7 +2361,8 @@ abstract class BasicFunctionalityIntegrationTest(
                     "problematic_types",
                     """
                         {
-                          "id": "ex falso quodlibet"
+                          "id": 1,
+                          "name": "ex falso quodlibet"
                         }""".trimIndent(),
                     emittedAtMs = 1602637589100,
                 )
@@ -2001,28 +2376,41 @@ abstract class BasicFunctionalityIntegrationTest(
                     generationId = 42,
                     data =
                         mapOf(
-                            "id" to "ex falso quodlibet",
+                            "id" to 1,
+                            "name" to
+                                if (nullUnknownTypes) {
+                                    null
+                                } else {
+                                    "ex falso quodlibet"
+                                },
                         ),
-                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                    airbyteMeta =
+                        OutputRecord.Meta(
+                            syncId = 42,
+                            changes =
+                                if (nullUnknownTypes) {
+                                    listOf(
+                                        Change(
+                                            "name",
+                                            AirbyteRecordMessageMetaChange.Change.NULLED,
+                                            AirbyteRecordMessageMetaChange.Reason
+                                                .DESTINATION_SERIALIZATION_ERROR
+                                        )
+                                    )
+                                } else {
+                                    emptyList()
+                                }
+                        ),
                 ),
             )
 
-        val dumpBlock = {
-            dumpAndDiffRecords(
-                parsedConfig,
-                expectedRecords,
-                stream,
-                primaryKey = listOf(listOf("id")),
-                cursor = null,
-            )
-        }
-        if (failOnUnknownTypes) {
-            // Note: this will not catch assertion errors against data
-            // if the destination actually succeeds (by design).
-            assertThrows<Exception> { dumpBlock() }
-        } else {
-            dumpBlock()
-        }
+        dumpAndDiffRecords(
+            parsedConfig,
+            expectedRecords,
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
     }
 
     /**
@@ -2048,6 +2436,15 @@ abstract class BasicFunctionalityIntegrationTest(
                         // Our AirbyteType treats them identically, so we don't need two test cases.
                         "combined_type" to
                             FieldType(UnionType.of(StringType, IntegerType), nullable = true),
+                        // For destinations which promote unions to objects,
+                        // and also stringify schemaless values,
+                        // we should verify that the promoted schemaless value
+                        // is still labelled as "object" rather than "string".
+                        "union_of_string_and_schemaless_type" to
+                            FieldType(
+                                UnionType.of(ObjectTypeWithoutSchema, IntegerType),
+                                nullable = true,
+                            ),
                         "union_of_objects_with_properties_identical" to
                             FieldType(
                                 UnionType.of(
@@ -2127,7 +2524,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             listOf(
                 InputRecord(
@@ -2137,6 +2534,7 @@ abstract class BasicFunctionalityIntegrationTest(
                         {
                           "id": 1,
                           "combined_type": "string1",
+                          "union_of_string_and_schemaless_type": {"foo": "bar"},
                           "union_of_objects_with_properties_identical": { "id": 10, "name": "Joe" },
                           "union_of_objects_with_properties_overlapping": { "id": 20, "name": "Jane", "flagged": true },
                           "union_of_objects_with_properties_contradicting": { "id": 1, "name": "Jenny" },
@@ -2175,14 +2573,20 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         )
 
-        fun maybePromote(typeName: String, value: Any?) =
-            if (promoteUnionToObject) {
-                mapOf(
-                    "type" to typeName,
-                    typeName to value,
-                )
-            } else {
-                value
+        fun unionValue(typeName: String, value: Any?, skipSerialize: Boolean = false) =
+            when (unionBehavior) {
+                UnionBehavior.PASS_THROUGH -> value
+                UnionBehavior.PROMOTE_TO_OBJECT ->
+                    mapOf(
+                        "type" to typeName,
+                        typeName to value,
+                    )
+                UnionBehavior.STRINGIFY ->
+                    if (value is String && skipSerialize) {
+                        StringValue(value)
+                    } else {
+                        StringValue(value.serializeToString())
+                    }
             }
         val expectedRecords: List<OutputRecord> =
             listOf(
@@ -2192,19 +2596,49 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id" to 1,
-                            "combined_type" to maybePromote("string", "string1"),
+                            "combined_type" to unionValue("string", "string1"),
+                            "union_of_string_and_schemaless_type" to
+                                unionValue(
+                                    "object",
+                                    if (stringifySchemalessObjects) {
+                                        """{"foo":"bar"}"""
+                                    } else {
+                                        schematizedObject(linkedMapOf("foo" to "bar"))
+                                    },
+                                    // Don't double-serialize the object.
+                                    skipSerialize = stringifySchemalessObjects,
+                                ),
                             "union_of_objects_with_properties_identical" to
-                                mapOf("id" to 10, "name" to "Joe"),
+                                schematizedObject(linkedMapOf("id" to 10, "name" to "Joe")),
                             "union_of_objects_with_properties_overlapping" to
-                                mapOf("id" to 20, "name" to "Jane", "flagged" to true),
+                                schematizedObject(
+                                    linkedMapOf("id" to 20, "name" to "Jane", "flagged" to true)
+                                ),
                             "union_of_objects_with_properties_contradicting" to
-                                mapOf("id" to maybePromote("integer", 1), "name" to "Jenny"),
+                                // can't just call schematizedObject(... unionValue) - there's some
+                                // nontrivial interactions here
+                                when (schematizedObjectBehavior) {
+                                    // these two cases are simple
+                                    SchematizedNestedValueBehavior.PASS_THROUGH,
+                                    SchematizedNestedValueBehavior.STRONGLY_TYPE ->
+                                        linkedMapOf(
+                                            "id" to unionValue("integer", 1),
+                                            "name" to "Jenny"
+                                        )
+                                    // If we stringify, then the nested union value is _not_
+                                    // processed
+                                    // (note that `id` is mapped to 1 and not "1")
+                                    SchematizedNestedValueBehavior.STRINGIFY ->
+                                        """{"id":1,"name":"Jenny"}"""
+                                },
                             "union_of_objects_with_properties_nonoverlapping" to
-                                mapOf(
-                                    "id" to 30,
-                                    "name" to "Phil",
-                                    "flagged" to false,
-                                    "description" to "Very Phil",
+                                schematizedObject(
+                                    linkedMapOf(
+                                        "id" to 30,
+                                        "name" to "Phil",
+                                        "flagged" to false,
+                                        "description" to "Very Phil",
+                                    )
                                 )
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
@@ -2215,18 +2649,30 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id" to 2,
-                            "combined_type" to maybePromote("integer", 20),
+                            "combined_type" to unionValue("integer", 20),
                             "union_of_objects_with_properties_identical" to
-                                emptyMap<String, Any?>(),
+                                schematizedObject(linkedMapOf()),
                             "union_of_objects_with_properties_nonoverlapping" to
-                                emptyMap<String, Any?>(),
+                                schematizedObject(linkedMapOf()),
                             "union_of_objects_with_properties_overlapping" to
-                                emptyMap<String, Any?>(),
+                                schematizedObject(linkedMapOf()),
                             "union_of_objects_with_properties_contradicting" to
-                                mapOf(
-                                    "id" to maybePromote("string", "seal-one-hippity"),
-                                    "name" to "James"
-                                )
+                                // similar to the previous record - need to handle this branch
+                                // manually
+                                when (schematizedObjectBehavior) {
+                                    // these two cases are simple
+                                    SchematizedNestedValueBehavior.PASS_THROUGH,
+                                    SchematizedNestedValueBehavior.STRONGLY_TYPE ->
+                                        linkedMapOf(
+                                            "id" to unionValue("string", "seal-one-hippity"),
+                                            "name" to "James"
+                                        )
+                                    // If we stringify, then the nested union value is _not_
+                                    // processed
+                                    // (note that `id` is mapped to 1 and not "1")
+                                    SchematizedNestedValueBehavior.STRINGIFY ->
+                                        """{"id":"seal-one-hippity","name":"James"}"""
+                                }
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
@@ -2255,10 +2701,113 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    /**
+     * Verify that we can handle a stream with 0 columns. This is... not particularly useful, but
+     * happens sometimes.
+     */
+    open fun testNoColumns() {
+        assumeTrue(verifyDataWriting)
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(linkedMapOf()),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"foo": "bar"}""",
+                    emittedAtMs = 1000L,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1000L,
+                    generationId = 42,
+                    data =
+                        if (preserveUndeclaredFields) {
+                            mapOf("foo" to "bar")
+                        } else {
+                            emptyMap()
+                        },
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                )
+            ),
+            stream,
+            primaryKey = listOf(),
+            cursor = null,
+        )
+    }
+
+    @Test
+    open fun testNoData() {
+        assumeTrue(verifyDataWriting)
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        assertDoesNotThrow { runSync(updatedConfig, stream, messages = emptyList()) }
+        dumpAndDiffRecords(
+            parsedConfig,
+            canonicalExpectedRecords = emptyList(),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    @Test
+    open fun testClear() {
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 1,
+                minimumGenerationId = 1,
+                syncId = 42,
+            )
+        assertDoesNotThrow {
+            runSync(updatedConfig, stream, messages = listOf(InputGlobalCheckpoint(null)))
+        }
+    }
+
+    private fun schematizedObject(
+        fullObject: LinkedHashMap<String, Any?>,
+        coercedObject: LinkedHashMap<String, Any?> = fullObject
+    ): AirbyteValue =
+        schematizedObject(ObjectValue.from(fullObject), ObjectValue.from(coercedObject))
+
+    private fun schematizedObject(
+        fullObject: ObjectValue,
+        coercedObject: ObjectValue = fullObject
+    ): AirbyteValue {
+        return when (schematizedObjectBehavior) {
+            SchematizedNestedValueBehavior.PASS_THROUGH -> fullObject
+            SchematizedNestedValueBehavior.STRONGLY_TYPE -> coercedObject
+            SchematizedNestedValueBehavior.STRINGIFY -> StringValue(fullObject.serializeToString())
+        }
+    }
+
     companion object {
-        private val intType = FieldType(IntegerType, nullable = true)
+        val intType = FieldType(IntegerType, nullable = true)
         private val numberType = FieldType(NumberType, nullable = true)
-        private val stringType = FieldType(StringType, nullable = true)
+        val stringType = FieldType(StringType, nullable = true)
         private val timestamptzType = FieldType(TimestampTypeWithTimezone, nullable = true)
     }
 }
