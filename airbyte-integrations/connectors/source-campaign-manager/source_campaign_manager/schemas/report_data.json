@@ -1,0 +1,68 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "Activity": {
+        "type": ["null", "string"]
+      },
+      "Ad": {
+        "type": ["null", "string"]
+      },
+      "Advertiser": {
+        "type": ["null", "string"]
+      },
+      "Advertiser ID": {
+        "type": ["null", "string"]
+      },
+      "Campaign": {
+        "type": ["null", "string"]
+      },
+      "Campaign End Date": {
+        "type": ["null", "string"],
+        "format": "date"
+      },
+      "Campaign Start Date": {
+        "type": ["null", "string"],
+        "format": "date"
+      },
+      "Date": {
+        "type": ["null", "string"],
+        "format": "date"
+      },
+      "Designated Market Area (DMA)": {
+        "type": ["null", "string"]
+      },
+      "Clicks": {
+        "type": ["null", "integer"]
+      },
+      "Cost Per Click": {
+        "type": ["null", "number"]
+      },
+      "Total Revenue": {
+        "type": ["null", "number"]
+      },
+      "Cost Per Revenue": {
+        "type": ["null", "number"]
+      },
+      "Impressions": {
+        "type": ["null", "integer"]
+      },
+      "Media Cost": {
+        "type": ["null", "number"]
+      },
+      "Effective CPM": {
+        "type": ["null", "number"]
+      },
+      "Revenue Per Click": {
+        "type": ["null", "number"]
+      },
+      "Revenue Per Thousand Impressions": {
+        "type": ["null", "number"]
+      },
+      "Total Social Engagements": {
+        "type": ["null", "integer"]
+      }
+    },
+    "additionalProperties": true
+  }
+  
