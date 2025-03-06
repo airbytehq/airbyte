@@ -164,6 +164,12 @@
         "title": "JDBC URL Params",
         "type": "string",
         "order": 7
+      },
+      "query_band": {
+        "description": "Specifies the custom session query band",
+        "title": "Query Band",
+        "type": "string",
+        "order": 5
       }
     }
   }
