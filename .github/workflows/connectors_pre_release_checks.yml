@@ -16,6 +16,7 @@ on:
     types:
       - opened
       - synchronize
+      - ready_for_review
     paths:
       - "airbyte-integrations/connectors/**/*"
 
