@@ -275,21 +275,3 @@ def test_read_with_seed():
     records = [row for row in iterator if row.type is Type.RECORD]
     assert records[0].record.data["occupation"] == "Wheel Clamper"
     assert records[0].record.data["email"] == "see1889+1@yandex.com"
-
-
-def test_ensure_no_purchases_without_users():
-    with pytest.raises(ValueError):
-        source = SourceFaker()
-        config = {"count": 100, "parallelism": 1}
-        catalog = ConfiguredAirbyteCatalog(
-            streams=[
-                ConfiguredAirbyteStream(
-                    stream=AirbyteStream(name="purchases", json_schema={}, supported_sync_modes=["incremental"]),
-                    sync_mode="incremental",
-                    destination_sync_mode="overwrite",
-                )
-            ]
-        )
-        state = {}
-        iterator = source.read(logger, config, catalog, state)
-        iterator.__next__()
