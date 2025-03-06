@@ -1,0 +1,41 @@
+{
+    "streams": [
+      {
+        "stream": {
+          "name": "RUM Events",
+          "json_schema": {
+            "$schema": "http://json-schema.org/schema#",
+            "additionalProperties": true,
+            "properties": {
+              "attributes": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "timestamp": {
+                "type": "string"
+              },
+              "type": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "timestamp"
+            ],
+            "type": "object"
+          },
+          "supported_sync_modes": ["full_refresh", "incremental"],
+          "source_defined_cursor": false,
+          "default_cursor_field": ["timestamp"]
+        },
+        "sync_mode": "full_refresh",
+        "destination_sync_mode": "overwrite"
+      }
+    ]
+  }
+  
