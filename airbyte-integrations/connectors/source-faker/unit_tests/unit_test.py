@@ -58,7 +58,7 @@ def test_source_streams():
     catalog = serializer.dump(AirbyteMessage(type=Type.CATALOG, catalog=catalog))
     schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
 
-    assert len(schemas) == 3
+    assert len(schemas) == 4
     assert schemas[1]["properties"] == {
         "id": {"type": "integer"},
         "created_at": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
