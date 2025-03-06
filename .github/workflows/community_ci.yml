@@ -38,7 +38,7 @@ jobs:
           exit 1
 
   connectors_pre_release_checks:
-    name: Connector Pre-Release Checks
+    name: Run pre-Release checks on fork
     if: github.event.pull_request.head.repo.fork == true
     needs: fail_on_protected_path_changes
     environment: community-ci-auto
