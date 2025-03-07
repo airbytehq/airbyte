@@ -1,6 +1,10 @@
-version: 6.33.4
+version: 6.36.3
 
 type: DeclarativeSource
+
+description: >-
+  Fixed errors when forking, many fields were custom and not able to be "tested"
+  preventing the ability to publish contributions. No functional changes made.
 
 check:
   type: CheckStream
@@ -21,37 +25,36 @@ definitions:
           path: profiles
           http_method: GET
           request_parameters:
+            sort: updated
+            filter: greater-than(updated,{{ stream_interval.start_time }})
             additional-fields[profile]: >-
               {{ 'predictive_analytics' if not
               config['disable_fetching_predictive_analytics'] else '' }}
-            filter: >-
-              greater-than(updated,{{
-              stream_interval.start_time }})
-            sort: "updated"
           request_headers:
             Accept: application/json
             Revision: "2024-10-15"
           error_handler:
-            type: CustomErrorHandler
-            class_name: >-
-              source_declarative_manifest.components.KlaviyoErrorHandler
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
-            response_filters:
-              - type: HttpResponseFilter
-                action: RATE_LIMITED
-                http_codes:
-                  - 429
-              - type: HttpResponseFilter
-                action: FAIL
-                http_codes:
-                  - 401
-                  - 403
-                failure_type: config_error
-                error_message: >-
-                  Please provide a valid API key and make sure it has
-                  permissions to read specified streams.
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                      - 403
+                    error_message: >-
+                      Please provide a valid API key and make sure it has
+                      permissions to read specified streams.
         record_selector:
           type: RecordSelector
           extractor:
@@ -110,26 +113,27 @@ definitions:
             Accept: application/json
             Revision: "2024-10-15"
           error_handler:
-            type: CustomErrorHandler
-            class_name: >-
-              source_declarative_manifest.components.KlaviyoErrorHandler
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
-            response_filters:
-              - type: HttpResponseFilter
-                action: RATE_LIMITED
-                http_codes:
-                  - 429
-              - type: HttpResponseFilter
-                action: FAIL
-                http_codes:
-                  - 401
-                  - 403
-                failure_type: config_error
-                error_message: >-
-                  Please provide a valid API key and make sure it has
-                  permissions to read specified streams.
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                      - 403
+                    error_message: >-
+                      Please provide a valid API key and make sure it has
+                      permissions to read specified streams.
         record_selector:
           type: RecordSelector
           extractor:
@@ -207,37 +211,38 @@ definitions:
           path: events
           http_method: GET
           request_parameters:
+            sort: datetime
+            filter: >-
+              greater-or-equal(datetime,{{ stream_interval.start_time
+              }}),less-or-equal(datetime,{{ stream_interval.end_time }})
+            include: metric,attributions
             fields[event]: event_properties,timestamp,uuid,datetime
             fields[metric]: name,created,updated,integration
-            include: metric,attributions
-            filter: >-
-              greater-or-equal(datetime,{{
-              stream_interval.start_time }}),less-or-equal(datetime,{{ stream_interval.end_time }})
-            sort: "datetime"
           request_headers:
             Accept: application/json
             Revision: "2024-10-15"
           error_handler:
-            type: CustomErrorHandler
-            class_name: >-
-              source_declarative_manifest.components.KlaviyoErrorHandler
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
-            response_filters:
-              - type: HttpResponseFilter
-                action: RATE_LIMITED
-                http_codes:
-                  - 429
-              - type: HttpResponseFilter
-                action: FAIL
-                http_codes:
-                  - 401
-                  - 403
-                failure_type: config_error
-                error_message: >-
-                  Please provide a valid API key and make sure it has
-                  permissions to read specified streams.
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                      - 403
+                    error_message: >-
+                      Please provide a valid API key and make sure it has
+                      permissions to read specified streams.
         record_selector:
           type: RecordSelector
           extractor:
@@ -275,10 +280,6 @@ definitions:
           $ref: "#/schemas/events"
     events_detailed:
       type: DeclarativeStream
-      state_migrations:
-        - type: CustomStateMigration
-          class_name: >-
-            source_declarative_manifest.components.PerPartitionToSingleStateMigration
       name: events_detailed
       primary_key:
         - id
@@ -289,42 +290,39 @@ definitions:
           path: events
           http_method: GET
           request_parameters:
+            sort: datetime
+            filter: greater-than(datetime,{{ stream_interval.start_time }})
             include: metric,attributions
             fields[metric]: name
-            filter: >-
-              greater-than(datetime,{{
-              stream_interval.start_time }})
-            sort: "datetime"
           request_headers:
             Accept: application/json
             Revision: "2024-10-15"
           error_handler:
-            type: CustomErrorHandler
-            class_name: >-
-              source_declarative_manifest.components.KlaviyoErrorHandler
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
-            response_filters:
-              - type: HttpResponseFilter
-                action: RATE_LIMITED
-                http_codes:
-                  - 429
-              - type: HttpResponseFilter
-                action: FAIL
-                http_codes:
-                  - 401
-                  - 403
-                failure_type: config_error
-                error_message: >-
-                  Please provide a valid API key and make sure it has
-                  permissions to read specified streams.
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                      - 403
+                    error_message: >-
+                      Please provide a valid API key and make sure it has
+                      permissions to read specified streams.
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: >-
-              source_declarative_manifest.components.KlaviyoIncludedFieldExtractor
+            type: DpathExtractor
             field_path:
               - data
         paginator:
@@ -336,7 +334,7 @@ definitions:
             cursor_value: "{{ response.get('links', {}).get('next') }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: "datetime"
+        cursor_field: datetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%dT%H:%M:%S%z"
@@ -368,34 +366,33 @@ definitions:
           path: templates
           http_method: GET
           request_parameters:
-            filter: >-
-              greater-than(updated,{{
-              stream_interval.start_time }})
-            sort: "updated"
+            sort: updated
+            filter: greater-than(updated,{{ stream_interval.start_time }})
           request_headers:
             Accept: application/json
             Revision: "2024-10-15"
           error_handler:
-            type: CustomErrorHandler
-            class_name: >-
-              source_declarative_manifest.components.KlaviyoErrorHandler
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
-            response_filters:
-              - type: HttpResponseFilter
-                action: RATE_LIMITED
-                http_codes:
-                  - 429
-              - type: HttpResponseFilter
-                action: FAIL
-                http_codes:
-                  - 401
-                  - 403
-                failure_type: config_error
-                error_message: >-
-                  Please provide a valid API key and make sure it has
-                  permissions to read specified streams.
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                      - 403
+                    error_message: >-
+                      Please provide a valid API key and make sure it has
+                      permissions to read specified streams.
         record_selector:
           type: RecordSelector
           extractor:
@@ -433,10 +430,6 @@ definitions:
           $ref: "#/schemas/email_templates"
     campaigns:
       type: DeclarativeStream
-      state_migrations:
-        - type: CustomStateMigration
-          class_name: >-
-            source_declarative_manifest.components.CampaignsStateMigration
       name: campaigns
       primary_key:
         - id
@@ -447,36 +440,37 @@ definitions:
           path: campaigns
           http_method: GET
           request_parameters:
+            sort: updated_at
             filter: >-
-              and(greater-or-equal(updated_at,{{
-              stream_interval.start_time }}),less-or-equal(updated_at,{{ stream_interval.end_time
+              and(greater-or-equal(updated_at,{{ stream_interval.start_time
+              }}),less-or-equal(updated_at,{{ stream_interval.end_time
               }}),equals(messages.channel,'{{ stream_partition['campaign_type']
               }}'),equals(archived,{{ stream_partition['archived'] }}))
-            sort: "updated_at"
           request_headers:
             Accept: application/json
             Revision: "2024-10-15"
           error_handler:
-            type: CustomErrorHandler
-            class_name: >-
-              source_declarative_manifest.components.KlaviyoErrorHandler
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
-            response_filters:
-              - type: HttpResponseFilter
-                action: RATE_LIMITED
-                http_codes:
-                  - 429
-              - type: HttpResponseFilter
-                action: FAIL
-                http_codes:
-                  - 401
-                  - 403
-                failure_type: config_error
-                error_message: >-
-                  Please provide a valid API key and make sure it has
-                  permissions to read specified streams.
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                      - 403
+                    error_message: >-
+                      Please provide a valid API key and make sure it has
+                      permissions to read specified streams.
         record_selector:
           type: RecordSelector
           extractor:
@@ -531,10 +525,6 @@ definitions:
           $ref: "#/schemas/campaigns"
     campaigns_detailed:
       type: DeclarativeStream
-      state_migrations:
-        - type: CustomStateMigration
-          class_name: >-
-            source_declarative_manifest.components.CampaignsStateMigration
       name: campaigns_detailed
       primary_key:
         - id
@@ -545,36 +535,37 @@ definitions:
           path: campaigns
           http_method: GET
           request_parameters:
+            sort: updated_at
             filter: >-
-              and(greater-or-equal(updated_at,{{
-              stream_interval.start_time }}),less-or-equal(updated_at,{{ stream_interval.end_time
+              and(greater-or-equal(updated_at,{{ stream_interval.start_time
+              }}),less-or-equal(updated_at,{{ stream_interval.end_time
               }}),equals(messages.channel,'{{ stream_partition['campaign_type']
               }}'),equals(archived,{{ stream_partition['archived'] }}))
-            sort: "updated_at"
           request_headers:
             Accept: application/json
             Revision: "2024-10-15"
           error_handler:
-            type: CustomErrorHandler
-            class_name: >-
-              source_declarative_manifest.components.KlaviyoErrorHandler
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
-            response_filters:
-              - type: HttpResponseFilter
-                action: RATE_LIMITED
-                http_codes:
-                  - 429
-              - type: HttpResponseFilter
-                action: FAIL
-                http_codes:
-                  - 401
-                  - 403
-                failure_type: config_error
-                error_message: >-
-                  Please provide a valid API key and make sure it has
-                  permissions to read specified streams.
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                      - 403
+                    error_message: >-
+                      Please provide a valid API key and make sure it has
+                      permissions to read specified streams.
         record_selector:
           type: RecordSelector
           extractor:
@@ -614,23 +605,15 @@ definitions:
       transformations:
         - type: AddFields
           fields:
-            - type: AddedFieldDefinition
-              path:
+            - path:
                 - updated_at
               value: "{{ record.get('attributes', {}).get('updated_at') }}"
-        - type: CustomTransformation
-          class_name: >-
-            source_declarative_manifest.components.CampaignsDetailedTransformation
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/campaigns_detailed"
     flows:
       type: DeclarativeStream
-      state_migrations:
-        - type: CustomStateMigration
-          class_name: >-
-            source_declarative_manifest.components.ArchivedToPerPartitionStateMigration
       name: flows
       primary_key:
         - id
@@ -641,35 +624,36 @@ definitions:
           path: flows
           http_method: GET
           request_parameters:
+            sort: updated
             filter: >-
-              and(greater-or-equal(updated,{{
-              stream_interval.start_time }}),less-or-equal(updated,{{ stream_interval.end_time
+              and(greater-or-equal(updated,{{ stream_interval.start_time
+              }}),less-or-equal(updated,{{ stream_interval.end_time
               }}),equals(archived,{{ stream_partition['archived'] }}))
-            sort: "updated"
           request_headers:
             Accept: application/json
             Revision: "2024-10-15"
           error_handler:
-            type: CustomErrorHandler
-            class_name: >-
-              source_declarative_manifest.components.KlaviyoErrorHandler
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
-            response_filters:
-              - type: HttpResponseFilter
-                action: RATE_LIMITED
-                http_codes:
-                  - 429
-              - type: HttpResponseFilter
-                action: FAIL
-                http_codes:
-                  - 401
-                  - 403
-                failure_type: config_error
-                error_message: >-
-                  Please provide a valid API key and make sure it has
-                  permissions to read specified streams.
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                      - 403
+                    error_message: >-
+                      Please provide a valid API key and make sure it has
+                      permissions to read specified streams.
         record_selector:
           type: RecordSelector
           extractor:
@@ -726,26 +710,27 @@ definitions:
             Accept: application/json
             Revision: "2024-10-15"
           error_handler:
-            type: CustomErrorHandler
-            class_name: >-
-              source_declarative_manifest.components.KlaviyoErrorHandler
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
-            response_filters:
-              - type: HttpResponseFilter
-                action: RATE_LIMITED
-                http_codes:
-                  - 429
-              - type: HttpResponseFilter
-                action: FAIL
-                http_codes:
-                  - 401
-                  - 403
-                failure_type: config_error
-                error_message: >-
-                  Please provide a valid API key and make sure it has
-                  permissions to read specified streams.
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                      - 403
+                    error_message: >-
+                      Please provide a valid API key and make sure it has
+                      permissions to read specified streams.
         record_selector:
           type: RecordSelector
           extractor:
@@ -762,8 +747,8 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         is_client_side_incremental: true
       transformations:
         - type: AddFields
@@ -790,26 +775,27 @@ definitions:
             Accept: application/json
             Revision: "2024-10-15"
           error_handler:
-            type: CustomErrorHandler
-            class_name: >-
-              source_declarative_manifest.components.KlaviyoErrorHandler
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
-            response_filters:
-              - type: HttpResponseFilter
-                action: RATE_LIMITED
-                http_codes:
-                  - 429
-              - type: HttpResponseFilter
-                action: FAIL
-                http_codes:
-                  - 401
-                  - 403
-                failure_type: config_error
-                error_message: >-
-                  Please provide a valid API key and make sure it has
-                  permissions to read specified streams.
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                      - 403
+                    error_message: >-
+                      Please provide a valid API key and make sure it has
+                      permissions to read specified streams.
         record_selector:
           type: RecordSelector
           extractor:
@@ -826,9 +812,13 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
-        is_client_side_incremental: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       transformations:
         - type: AddFields
           fields:
@@ -850,32 +840,32 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: lists/{{ stream_slice.id }}
           http_method: GET
-          request_parameters:
-            additional-fields[list]: profile_count
           request_headers:
             Accept: application/json
             Revision: "2024-10-15"
+            additional-fields: profile_count
           error_handler:
-            type: CustomErrorHandler
-            class_name: >-
-              source_declarative_manifest.components.KlaviyoErrorHandler
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
-            response_filters:
-              - type: HttpResponseFilter
-                action: RATE_LIMITED
-                http_codes:
-                  - 429
-              - type: HttpResponseFilter
-                action: FAIL
-                http_codes:
-                  - 401
-                  - 403
-                failure_type: config_error
-                error_message: >-
-                  Please provide a valid API key and make sure it has
-                  permissions to read specified streams.
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                      - 403
+                    error_message: >-
+                      Please provide a valid API key and make sure it has
+                      permissions to read specified streams.
         record_selector:
           type: RecordSelector
           extractor:
@@ -900,9 +890,13 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
-        is_client_side_incremental: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       transformations:
         - type: AddFields
           fields:
@@ -918,14 +912,13 @@ definitions:
     url_base: https://a.klaviyo.com/api/
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: Klaviyo-API-Key {{ config['api_key'] }}
+      api_token: "{{ config[\"api_key_2\"] }}"
       inject_into:
         type: RequestOption
         field_name: Authorization
         inject_into: header
 
 streams:
-  # Incremental streams
   - $ref: "#/definitions/streams/profiles"
   - $ref: "#/definitions/streams/global_exclusions"
   - $ref: "#/definitions/streams/events"
@@ -934,7 +927,6 @@ streams:
   - $ref: "#/definitions/streams/campaigns"
   - $ref: "#/definitions/streams/campaigns_detailed"
   - $ref: "#/definitions/streams/flows"
-  # Semi-Incremental streams
   - $ref: "#/definitions/streams/metrics"
   - $ref: "#/definitions/streams/lists"
   - $ref: "#/definitions/streams/lists_detailed"
@@ -945,29 +937,20 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - api_key
+      - api_key_2
     properties:
-      api_key:
-        type: string
-        description: >-
-          Klaviyo API Key. See our <a
-          href="https://docs.airbyte.com/integrations/sources/klaviyo">docs</a>
-          if you need help finding this key.
-        title: Api Key
-        airbyte_secret: true
-        order: 0
       start_date:
         type: string
         description: >-
           UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
           this date will not be replicated. This field is optional - if not
           provided, all data will be replicated.
+        order: 0
         title: Start Date
+        format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
           - "2017-01-25T00:00:00Z"
-        format: date-time
-        order: 1
       disable_fetching_predictive_analytics:
         type: boolean
         description: >-
@@ -977,8 +960,8 @@ spec:
           by not fetching this field. WARNING: Enabling this setting will stop
           the  "predictive_analytics" column from being populated in your
           downstream destination.
+        order: 1
         title: Disable Fetching Predictive Analytics
-        order: 2
       num_workers:
         type: integer
         description: >-
@@ -986,15 +969,20 @@ spec:
           upper boundary is based on the limit of your Klaviyo plan. More info
           about the rate limit plan tiers can be found on Klaviyo's API <a
           href="https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling">docs</a>.
+        order: 2
         title: Number of concurrent workers
-        minimum: 1
-        maximum: 50
         default: 10
+        maximum: 50
+        minimum: 1
         examples:
           - 1
           - 2
           - 3
+      api_key_2:
+        type: string
         order: 3
+        title: API Key
+        airbyte_secret: true
     additionalProperties: true
 
 metadata:
@@ -1008,86 +996,87 @@ metadata:
     campaigns_detailed: false
     flows: false
     metrics: false
-    lists: false
-    lists_detailed: false
+    lists: true
+    lists_detailed: true
   yamlComponents:
     streams:
-      profiles:
-        - errorHandler
-      global_exclusions:
-        - errorHandler
-      events:
-        - errorHandler
-      events_detailed:
-        - errorHandler
-        - recordSelector
-      email_templates:
-        - errorHandler
-      campaigns:
-        - errorHandler
-      campaigns_detailed:
-        - errorHandler
-        - transformations
-      flows:
-        - errorHandler
       metrics:
-        - errorHandler
         - incrementalSync
-      lists:
-        - errorHandler
-        - incrementalSync
-      lists_detailed:
-        - errorHandler
-        - incrementalSync
-    global:
-      - authenticator
   testedStreams:
     profiles:
-      streamHash: 7d27c2aee801ec7d0038722136c6b7e06b14a9ed
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: d5e4c755259a3f0d6c3a45bbce588b42e4dd8e30
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     global_exclusions:
-      streamHash: 7e7633526c2855390903d6e60973bb13b23272d7
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: ac198f2b56fdf5ffd853afc3efad1ce8408cad81
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     events:
-      streamHash: af0180236001cbacc0788046bdc916026e1f82f6
+      hasRecords: true
+      streamHash: b93865f97ca380e54ecca72ef8f4be2e0c156f76
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: false
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    events_detailed:
+      hasRecords: true
+      streamHash: fce54d29cd8e7ec8580d8fca521f52dcf19fcc9c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     email_templates:
-      streamHash: 4c12cf304ffe3cd0fcaba1479498ad19c18c6f32
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 59d7746257e53c6c35fe045802c93eb92ebac0b1
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    campaigns:
+      hasRecords: true
+      streamHash: 53c7578408697a51eb522ad26609af15e68059c4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    campaigns_detailed:
+      hasRecords: true
+      streamHash: b385831c0dde5c002e3d7cd365ab688ae541ad97
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    flows:
+      hasRecords: true
+      streamHash: 3590e4f2cc211d7469f243b7b521944a5a306ebd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     metrics:
-      streamHash: 96e06644c47a223a29c85dc4318ec5f7da1cc414
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: f18b04d1a4f15d683b8832fcd3708de800600bb2
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     lists:
-      streamHash: 9edcccbf069463bf70bdc40db756e0f81eba032b
+      hasRecords: true
+      streamHash: 91698c29a9da9927b65ddb08c45b547fb3b1cdcc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    lists_detailed:
+      streamHash: 04692a06e95f51c4388fe5d2ce160c9ec7c59a87
       hasResponse: true
       responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
-    lists_detailed:
-      streamHash: 34e4a9f1fb0c879b915d8558d67feb887d76f8e5
-      hasResponse: true
-      responsesAreSuccessful: false
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
@@ -2987,360 +2976,211 @@ schemas:
         format: date-time
   lists:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       type:
-        type: string
+        type:
+          - string
+          - "null"
       attributes:
         type:
-          - "null"
           - object
+          - "null"
         properties:
           created:
             type:
-              - "null"
               - string
-            format: date-time
+              - "null"
           name:
-            type: string
+            type:
+              - string
+              - "null"
           opt_in_process:
             type:
-              - "null"
               - string
+              - "null"
           updated:
             type:
-              - "null"
               - string
-            format: date-time
+              - "null"
       id:
         type: string
       links:
         type:
-          - "null"
           - object
-        additionalProperties: true
+          - "null"
         properties:
           self:
-            type: string
+            type:
+              - string
+              - "null"
       relationships:
         type:
-          - "null"
           - object
-        additionalProperties: true
+          - "null"
         properties:
           flow-triggers:
             type:
-              - "null"
               - object
+              - "null"
             properties:
-              data:
-                type:
-                  - "null"
-                  - object
-                properties:
-                  type:
-                    type:
-                      - "null"
-                      - string
-                  id:
-                    type:
-                      - "null"
-                      - string
               links:
                 type:
-                  - "null"
                   - object
+                  - "null"
                 properties:
                   related:
                     type:
-                      - "null"
                       - string
+                      - "null"
                   self:
                     type:
-                      - "null"
                       - string
+                      - "null"
           profiles:
             type:
-              - "null"
               - object
+              - "null"
             properties:
               links:
                 type:
-                  - "null"
                   - object
+                  - "null"
                 properties:
                   related:
-                    type: string
+                    type:
+                      - string
+                      - "null"
                   self:
-                    type: string
+                    type:
+                      - string
+                      - "null"
           tags:
             type:
-              - "null"
               - object
+              - "null"
             properties:
-              data:
-                type: array
-                items:
-                  type:
-                    - "null"
-                    - object
-                  properties:
-                    type:
-                      type: string
-                    id:
-                      type: string
               links:
                 type:
-                  - "null"
                   - object
+                  - "null"
                 properties:
                   related:
-                    type: string
+                    type:
+                      - string
+                      - "null"
                   self:
-                    type: string
+                    type:
+                      - string
+                      - "null"
       updated:
-        type:
-          - "null"
-          - string
-        format: date-time
+        type: string
+    required:
+      - id
+      - updated
   lists_detailed:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       type:
-        type: string
+        type:
+          - string
+          - "null"
       attributes:
         type:
-          - "null"
           - object
+          - "null"
         properties:
           created:
             type:
-              - "null"
               - string
-            format: date-time
+              - "null"
           name:
-            type: string
+            type:
+              - string
+              - "null"
           opt_in_process:
             type:
-              - "null"
               - string
-          profile_count:
-            type:
               - "null"
-              - integer
           updated:
             type:
-              - "null"
               - string
-            format: date-time
+              - "null"
       id:
         type: string
       links:
         type:
-          - "null"
           - object
-        additionalProperties: true
+          - "null"
         properties:
           self:
-            type: string
+            type:
+              - string
+              - "null"
       relationships:
         type:
-          - "null"
           - object
-        additionalProperties: true
+          - "null"
         properties:
           flow-triggers:
             type:
-              - "null"
               - object
+              - "null"
             properties:
-              data:
-                type:
-                  - "null"
-                  - object
-                properties:
-                  type:
-                    type:
-                      - "null"
-                      - string
-                  id:
-                    type:
-                      - "null"
-                      - string
               links:
                 type:
-                  - "null"
                   - object
+                  - "null"
                 properties:
                   related:
                     type:
-                      - "null"
                       - string
+                      - "null"
                   self:
                     type:
-                      - "null"
                       - string
+                      - "null"
           profiles:
             type:
-              - "null"
               - object
+              - "null"
             properties:
               links:
                 type:
-                  - "null"
                   - object
+                  - "null"
                 properties:
                   related:
-                    type: string
+                    type:
+                      - string
+                      - "null"
                   self:
-                    type: string
+                    type:
+                      - string
+                      - "null"
           tags:
             type:
-              - "null"
               - object
+              - "null"
             properties:
-              data:
-                type: array
-                items:
-                  type:
-                    - "null"
-                    - object
-                  properties:
-                    type:
-                      type: string
-                    id:
-                      type: string
               links:
                 type:
-                  - "null"
                   - object
+                  - "null"
                 properties:
                   related:
-                    type: string
+                    type:
+                      - string
+                      - "null"
                   self:
-                    type: string
+                    type:
+                      - string
+                      - "null"
       updated:
-        type:
-          - "null"
-          - string
-        format: date-time
-
-api_budget:
-  type: HTTPAPIBudget
-  # Each policy here uses a MovingWindowCallRatePolicy with two rates:
-  # one for burst (per-second) and one for steady (per-minute).
-  policies:
-    # Campaigns and Campaigns Detailed
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 10 # burst: 10 calls per second
-          interval: PT1S
-        - limit: 150 # steady: 150 calls per minute
-          interval: PT1M
-      matchers:
-        - method: GET
-          url_path_pattern: "^/api/campaigns($|/)" # matches '/campaigns'
-    # Flows
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 3 # burst: 3 calls per second
-          interval: PT1S
-        - limit: 60 # steady: 60 calls per minute
-          interval: PT1M
-      matchers:
-        - method: GET
-          url_path_pattern: "^/api/flows($|/)" # matches '/flows'
-    # Profiles (and global_exclusions share the same endpoint)
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 10 # burst: 10 calls per second
-          interval: PT1S
-        - limit: 150 # steady: 150 calls per minute
-          interval: PT1M
-      matchers:
-        - method: GET
-          url_path_pattern: "^/api/profiles($|/)" # matches '/profiles' (exact or with trailing slash/extra)
-    # Events (and events_detailed share the same endpoint)
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 350 # burst: 350 calls per second
-          interval: PT1S
-        - limit: 3500 # steady: 3500 calls per minute
-          interval: PT1M
-      matchers:
-        - method: GET
-          url_path_pattern: "^/api/events($|/)" # matches '/events' and '/events_detailed' if using same endpoint
-    # Email Templates
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 10 # burst: 10 calls per second
-          interval: PT1S
-        - limit: 150 # steady: 150 calls per minute
-          interval: PT1M
-      matchers:
-        - method: GET
-          url_path_pattern: "^/api/templates($|/)" # matches '/templates'
-    # Metrics
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 10 # burst: 10 calls per second
-          interval: PT1S
-        - limit: 150 # steady: 150 calls per minute
-          interval: PT1M
-      matchers:
-        - method: GET
-          url_path_pattern: "^/api/metrics($|/)"
-    # Lists (the parent endpoint for lists streams)
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 75 # burst: 75 calls per second
-          interval: PT1S
-        - limit: 700 # steady: 700 calls per minute
-          interval: PT1M
-      matchers:
-        - method: GET
-          url_path_pattern: "^/api/lists$" # exactly '/lists'
-    # Lists Detailed (uses a different URL path – note the extra segment)
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 1 # burst: 1 call per second
-          interval: PT1S
-        - limit: 15 # steady: 15 calls per minute
-          interval: PT1M
-      matchers:
-        - method: GET
-          url_path_pattern: "^/api/lists/" # matches any path beginning with '/lists/' (e.g. '/lists/123')
-          params:
-            "additional-fields[list]": "profile_count" # Other API budget settings:
-  status_codes_for_ratelimit_hit: [429]
-
-# Klaviyo's rate limiting is different by endpoints:
-# - XS: 1/s burst; 15/m steady
-# - S: 3/s burst; 60/m steady
-# - M: 10/s burst; 150/m steady
-# - L: 75/s burst; 700/m steady
-# - XL: 350/s burst; 3500/m steady
-# - `lists_detailed`: 1/s burst, 15/m steady (Rate limits when using the additional-fields[list]=profile_count parameter in your API request)
-
-# As of 2024-11-11, we have the following streams:
-# | Stream            | Endpoint                                                             | Klaviyo Rate Limit Size | Source Concurrency Between Streams | Source Concurrency Within Stream                  | Source Max Number of Threads Sharing Rate Limits                 |                                                                                 |
-#|-------------------|----------------------------------------------------------------------|-------------------------|------------------------------------|---------------------------------------------------|------------------------------------------------------------------|---------------------------------------------------------------------------------|
-#| profiles          | https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles | M                       | Yes, shared with global_exclusions | No as `step` is not defined in `incremental_sync` | 2                                                                | With other streams (global_exclusions), not within stream as `step` not defined |
-#| global_exclusions | https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles | M                       | Yes, shared with profiles          | No as `step` is not defined in `incremental_sync` | 2                                                                | With other streams (profiles), not within stream as `step` not defined          |
-#| events            | https://developers.klaviyo.com/en/reference/get_events               | XL                      | Yes, shared with events_detailed   | Yes                                               | number of steps for events + number of steps for events_detailed | With other streams (events_detailed) and within stream as sliced on `datetime`  |
-#| events_detailed   | https://developers.klaviyo.com/en/reference/get_events               | XL                      | Yes, shared with events            | Yes                                               | number of steps for events + number of steps for events_detailed | With other streams (events) and within stream as sliced on `datetime`           |
-#| email_templates   | https://developers.klaviyo.com/en/reference/get_templates            | M                       | None                               | No as `step` is not defined in `incremental_sync` | 1                                                                | None                                                                            |
-#| metrics           | https://developers.klaviyo.com/en/reference/get_metrics              | M                       | None                               | No as `step` is not defined in `incremental_sync` | 1                                                                | None                                                                            |
-#| lists             | https://developers.klaviyo.com/en/reference/get_lists                | L                       | Yes, shared with lists_detailed    | No as `step` is not defined in `incremental_sync` | 2                                                                | With other streams (lists_detailed), not within stream as `step` not defined    |
-#| lists_detailed    | https://developers.klaviyo.com/en/reference/get_lists                | 1/s                     | Yes, shared with lists             | No as `step` is not defined in `incremental_sync` | 1                                                                | With other streams (lists), not within stream as `step` not defined             |
-# Note: As of 2024-11-11, `metrics`, `lists` and `lists_detailed` are not supported by the Concurrent CDK as they do client side-filtering.
-
-# Based on the above, the only threads that allow for slicing and hence might perform more concurrent HTTP requests are `events` and `events_detailed`. There are no slicing for the others and hence the concurrency is limited by the number of streams querying the same endpoint. Given that the event endpoint is XL, we will set a default concurrency to 10.
-
-concurrency_level:
-  type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 25) }}"
-  max_concurrency: 50
+        type: string
+    required:
+      - id
+      - updated
