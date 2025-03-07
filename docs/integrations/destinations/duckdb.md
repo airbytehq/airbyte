@@ -118,7 +118,6 @@ For information about migrating between different versions of DuckDB, please see
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                                                                                                                                                                                                |
 |:--------| :--------- | :-------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.4.27 | 2025-03-07 | [55246](https://github.com/airbytehq/airbyte/pull/55246) | use cusotm agent = airbyte |
 | 0.5.0 | 2025-03-06 | [47861](https://github.com/airbytehq/airbyte/pull/47861) | Upgrade DuckDB engine version to [`v1.2.1`](https://github.com/duckdb/duckdb/releases/tag/v1.2.1).                 
 | 0.4.26 | 2024-10-29 | [47861](https://github.com/airbytehq/airbyte/pull/47861) | Update dependencies |
 | 0.4.25 | 2024-10-28 | [47070](https://github.com/airbytehq/airbyte/pull/47070) | Update dependencies |
