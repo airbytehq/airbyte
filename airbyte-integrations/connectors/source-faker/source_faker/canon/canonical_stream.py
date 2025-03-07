@@ -295,6 +295,7 @@ def create_canonical_stream_facade(
     return CanonicalStreamFacade(canonical_stream, canonical_stream.cursor, slice_logger, logger)
 
 def patch_json_schema(schema: Mapping[str, Any]) -> Mapping[str, Any]:
+    # Replace anyOf with the first type, with the assumption the second one is always null
     schema = replace_any_of(schema)
     return schema
 
