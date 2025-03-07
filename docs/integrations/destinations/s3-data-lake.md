@@ -1,70 +1,221 @@
 # S3 Data Lake
 
-This page guides you through the process of setting up the S3 Data Lake destination connector.
+This page guides you through setting up the S3 Data Lake destination connector. This connector writes the Iceberg table format to S3 or an S3-compatible storage backend.
 
-This connector writes the Iceberg table format to S3, or an S3-compatible storage backend.
-Currently it supports the REST, AWS Glue, and Nessie catalogs.
+## Prerequisites
 
-## Setup Guide
+The S3 Data Lake connector requires two things.
 
-S3 Data Lake requires configuring two components: [S3 storage](#s3-setup), and your [Iceberg catalog](#iceberg-catalog-setup).
+1. An S3 storage bucket or S3-compatible storage backend.
+2. A supported Iceberg catalog. Currently, the connector supports these catalogs:
 
-### S3 Setup
+    - REST
+    - AWS Glue
+    - Nessie
 
-The connector needs certain permissions to be able to write Iceberg-format files to S3:
-* `s3:ListAllMyBuckets`
-* `s3:GetObject*`
-* `s3:PutObject`
-* `s3:PutObjectAcl`
-* `s3:DeleteObject`
-* `s3:ListBucket*`
+## Setup guide
 
-### Iceberg Catalog Setup
+Follow these steps to set up your S3 storage and Iceberg catalog permissions.
 
-Different catalogs have different setup requirements.
+### S3 setup and permissions
+
+S3 setup consists of creating a bucket policy and authenticating.
+
+#### Create a bucket policy
+
+Create a bucket policy.
+
+1. Open the [IAM console](https://console.aws.amazon.com/iam/home#home).
+2. In the IAM dashboard, select **Policies** > **Create Policy**.
+3. Select the **JSON** tab and paste the following JSON into the Policy editor. Substitute your own bucket name on the highlighted lines.
+
+    ```json
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "s3:ListAllMyBuckets",
+            "s3:GetObject*",
+            "s3:PutObject",
+            "s3:PutObjectAcl",
+            "s3:DeleteObject",
+            "s3:ListBucket*"
+          ],
+          "Resource": [
+            // highlight-next-line
+            "arn:aws:s3:::YOUR_BUCKET_NAME/*",
+            // highlight-next-line
+            "arn:aws:s3:::YOUR_BUCKET_NAME"
+          ]
+        }
+      ]
+    }
+    ```
+
+    :::note
+    Object-level permissions alone aren't sufficient to authenticate. Include **bucket-level** permissions as provided in the preceding example.
+    :::
+
+4. Give your policy a descriptive name, then click **Create policy**.
+
+#### Authenticate {#authentication-s3}
+
+In most cases, you authenticate with an IAM user. If you're using Airbyte Cloud with the Glue catalog, you can authenticate with an IAM role.
+
+<details>
+  <summary>Authenticate with an IAM user (Self-Managed or Cloud, with any catalog)</summary>
+
+Use an existing or new [Access Key ID and Secret Access Key](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html).
+
+1. In the IAM dashboard, click **Users**.
+2. If you're using an existing IAM user, select that user, then click **Add permissions** > **Add permission**. If you're creating a new user, click **Add users**.
+3. Click **Attach policies directly**, then check the box for your policy. Click **Next** > **Add permissions**.
+4. Click the **Security credentials** tab > **Create access key**. The AWS console prompts you to select a use case and add optional tags to your access key.
+5. Click **Create access key**. Take note of your keys.
+6. In Airbyte, enter those keys into the Airbyte connector's **AWS Access Key ID** and **AWS Secret Access Key** fields.
+
+</details>
+
+<!-- env:cloud -->
+  <details>
+    <summary>Authenticate with an IAM role (Cloud with Glue catalog only)</summary>
+
+:::note
+To use S3 authentication with an IAM role, an Airbyte team member must enable it. If you'd like to use this feature, [contact the Sales team](https://airbyte.com/company/talk-to-sales).
+:::
+
+1. In the IAM dashboard, click **Roles**, then **Create role**.
+2. Choose the appropriate trust entity and attach the policy you created.
+3. Set up a trust relationship for the role. For example, for **AWS account** trusted entity use the default AWS account on your instance (Airbyte uses it to assume the role). To use an **External ID**, set it to environment variables: `export AWS_ASSUME_ROLE_EXTERNAL_ID="{your-external-id}"`. Edit the trust relationship policy to reflect this.
+
+    ```json
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {
+                    "AWS": "arn:aws:iam::{your-aws-account-id}:user/{your-username}"
+                },
+                "Action": "sts:AssumeRole",
+                "Condition": {
+                    "StringEquals": {
+                        "sts:ExternalId": "{your-external-id}"
+                    }
+                }
+            }
+        ]
+    }
+    ```
+
+2. Choose the **AWS account** trusted entity type.
+3. Set up a trust relationship for the role. This allows the Airbyte instance's AWS account to assume this role. You will also need to specify an external ID, which is a secret key that the trusting service (Airbyte) and the trusted role (the role you're creating) both know. This ID is used to prevent the "confused deputy" problem. The External ID should be your Airbyte workspace ID, which can be found in the URL of your workspace page. Edit the trust relationship policy to include the external ID:
+
+    ```json
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {
+                    "AWS": "arn:aws:iam::094410056844:user/delegated_access_user"
+                },
+                "Action": "sts:AssumeRole",
+                "Condition": {
+                    "StringEquals": {
+                        "sts:ExternalId": "{your-airbyte-workspace-id}"
+                    }
+                }
+            }
+        ]
+    }
+    ```
+
+4. Complete the role creation and save the Role ARN for later.
+5. Select **Attach policies directly**, then find and check the box for your new policy. Click **Next**, then **Add permissions**.
+6. In Airbyte, select **Glue** as the catalog and enter the Role ARN into the **Role ARN** field.
+  </details>
+<!-- /env:cloud -->
+
+### Iceberg catalog setup and permissions
+
+The rest of the setup process differs depending on the catalog you're using.
+
+#### REST
+
+Enter the URI of your REST catalog. You may also need to enter the default namespace.
 
 #### AWS Glue
 
-In addition to the S3 permissions, you should also grant these Glue permissions:
-* `glue:TagResource`
-* `glue:UnTagResource`
-* `glue:BatchCreatePartition`
-* `glue:BatchDeletePartition`
-* `glue:BatchDeleteTable`
-* `glue:BatchGetPartition`
-* `glue:CreateDatabase`
-* `glue:CreateTable`
-* `glue:CreatePartition`
-* `glue:DeletePartition`
-* `glue:DeleteTable`
-* `glue:GetDatabase`
-* `glue:GetDatabases`
-* `glue:GetPartition`
-* `glue:GetPartitions`
-* `glue:GetTable`
-* `glue:GetTables`
-* `glue:UpdateDatabase`
-* `glue:UpdatePartition`
-* `glue:UpdateTable`
+1. Update your S3 policy, created previously, to grant these Glue permissions.
 
-Set the "warehouse location" option to `s3://<bucket name>/path/within/bucket`.
+    ```json
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "s3:ListAllMyBuckets",
+            "s3:GetObject*",
+            "s3:PutObject",
+            "s3:PutObjectAcl",
+            "s3:DeleteObject",
+            "s3:ListBucket*",
+            // highlight-start
+            "glue:TagResource",
+            "glue:UnTagResource",
+            "glue:BatchCreatePartition",
+            "glue:BatchDeletePartition",
+            "glue:BatchDeleteTable",
+            "glue:BatchGetPartition",
+            "glue:CreateDatabase",
+            "glue:CreateTable",
+            "glue:CreatePartition",
+            "glue:DeletePartition",
+            "glue:DeleteTable",
+            "glue:GetDatabase",
+            "glue:GetPartition",
+            "glue:GetPartitions",
+            "glue:GetTable",
+            "glue:GetTables",
+            "glue:UpdateDatabase",
+            "glue:UpdatePartition",
+            "glue:UpdateTable"
+            // highlight-end
+          ],
+          "Resource": [
+            "arn:aws:s3:::YOUR_BUCKET_NAME/*",
+            "arn:aws:s3:::YOUR_BUCKET_NAME"
+          ]
+        }
+      ]
+    }
+    ```
 
-The "Role ARN" option is only usable in cloud.
+2. Set the **warehouse location** option to `s3://<bucket name>/path/within/bucket`.
 
-#### REST catalog
+3. If you're using Airbyte Cloud and authenticating with an IAM role, set the **Role ARN** option to the value you noted earlier while [setting up authentication](#authentication-s3) on S3.
 
-You will need the URI of your REST catalog.
+4. If you have an existing Glue table and you want to replace that table with an Airbyte-managed Iceberg table, drop the Glue table. If you don't, you'll encounter the error `Input Glue table is not an iceberg table: <your table name>`.
+
+    Dropping Glue tables from the console [may not immediately delete them](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glue/client/batch_delete_table.html). Either wait for AWS to finish their background processing, or use the AWS API to drop all table versions.
 
 #### Nessie
 
-You will need the URI of your Nessie catalog, and an access token to authenticate to that catalog.
+To authenticate with Nessie, do two things.
 
-Set the "warehouse location" option to `s3://<bucket name>/path/within/bucket`.
+1. Set the URI of your Nessie catalog and an access token to authenticate to that catalog.
 
-## Iceberg schema generation
+2. Set the **Warehouse location** option to `s3://<bucket name>/path/within/bucket`.
 
-The top-level fields of the stream will be mapped to Iceberg fields. Nested fields (objects, arrays, and unions) will be
-mapped to `STRING` columns, and written as serialized JSON. This is the full mapping between Airbyte types and Iceberg types:
+## How Airbyte generates the Iceberg schema
+
+In each stream, Airbyte maps top-level fields to Iceberg fields. Airbyte maps nested fields (objects, arrays, and unions) to string columns and writes them as serialized JSON. 
+
+This is the full mapping between Airbyte types and Iceberg types.
 
 | Airbyte type               | Iceberg type                   |
 |----------------------------|--------------------------------|
@@ -81,69 +232,54 @@ mapped to `STRING` columns, and written as serialized JSON. This is the full map
 | Array                      | String (JSON-serialized value) |
 | Union                      | String (JSON-serialized value) |
 
-Note that for the time/timestamp with timezone types, the value is first adjusted to UTC, and then
-written into the Iceberg file.
+:::note
+For the `time` and `timestamp with timezone` types, Airbyte adjusts the value to UTC before writing to the Iceberg file.
+:::
 
-### Schema evolution
+<!-- I'm not exactly clear which types this is referring to. Let's be more clear. -->
 
-This connector supports limited schema evolution. Outside of refreshes/clears, the connector will never
-rewrite existing data files. This means that we can only handle specific schema changes:
-* Adding/removing a column
-* Widening columns
-* Changing the primary key
+## Managing schema evolution
 
-If your source goes through an unsupported schema change, the connector will fail at sync time.
-To resolve this, you can either:
-* Manually edit your table schema via Iceberg directly
-* Refresh your connection (removing existing records) / clear your connection
+This connector never rewrites existing Iceberg data files. This means Airbyte can only handle specific source schema changes.
 
-Full refresh overwrite syncs can also handle these schema changes transparently.
+- Adding or removing a column
+- Widening a column
+- Changing the primary key
+
+You have the following options to manage schema evolution.
+
+- To handle unsupported schema changes automatically, use [Full Refresh - Overwrite](../../using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) as your [sync mode](../../using-airbyte/core-concepts/sync-modes).
+- To handle unsupported schema changes as they occur, wait for a sync to fail, then take action to restore it. Either:
+
+    - Manually edit your table schema in Iceberg directly.
+    - [Refresh](../../operator-guides/refreshes) your connection in Airbyte.
+    - [Clear](../../operator-guides/clear) your connection in Airbyte.
 
 ## Deduplication
 
-This connector uses a merge-on-read strategy to support deduplication:
-* The stream's primary keys are translated to Iceberg's [identifier columns](https://iceberg.apache.org/spec/#identifier-field-ids).
-* An "upsert" is an [equality-based delete](https://iceberg.apache.org/spec/#equality-delete-files)
-  on that row's primary key, followed by an insertion of the new data.
+This connector uses a merge-on-read strategy to support deduplication.
 
-### Assumptions
+- Airbyte translates the stream's primary keys to Iceberg's [identifier columns](https://iceberg.apache.org/spec/#identifier-field-ids).
+- An "upsert" is an [equality-based delete](https://iceberg.apache.org/spec/#equality-delete-files) on that row's primary key, followed by an insertion of the new data.
+
+### Assumptions about primary keys
 
 The S3 Data Lake connector assumes that one of two things is true:
-* The source will never emit the same primary key twice in a single sync attempt
-* If the source emits the same PK multiple times in a single attempt, it will always emit those records
-  in cursor order (oldest to newest)
 
-If these conditions are not met, you may see inaccurate data in the destination (i.e. older records
-taking precendence over newer records). If this happens, you should use the `append` or `overwrite`
-sync mode.
+- The source never emits the same primary key twice in a single sync attempt.
+- If the source emits the same primary key multiple times in a single attempt, it always emits those records in cursor order from oldest to newest.
 
-:::caution
-Certain API sources are known to have streams which do not meet these conditions, including
-Stripe and Monday.
-:::
+If these conditions aren't met, you may see inaccurate data in Iceberg in the form of older records taking precedence over newer records. If this happens, use append or overwrite as your [sync modes](../../using-airbyte/core-concepts/sync-modes/).
 
-## Branching
+An unknown number of API sources have streams that don't meet these conditions. Airbyte knows [Stripe](../sources/stripe) and [Monday](../sources/monday) don't, but there are probably others.
 
-Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/branching/) over your data.
-Most query engines target the `main` branch.
+## Branching and data availability
 
-This connector leverages those semantics to provide resilient syncs:
-* Within each sync, each microbatch creates a new snapshot
-* During truncate syncs, the connector writes the refreshed data to the `airbyte_staging` branch,
-  and fast-forwards the `main` branch at the end of the sync.
-  * This means that your data remains queryable right up to the end of a truncate sync, at which point
-    it is atomically swapped to the updated version.
+Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/branching/) over your data. This connector leverages those semantics to provide resilient syncs.
 
-## Catalog-specific information
+- In each sync, each microbatch creates a new snapshot.
 
-### AWS Glue
-
-If you have an existing Glue table, and you want to replace that table with an Airbyte-managed Iceberg table,
-you must first drop the Glue table. Otherwise you will encounter an error `Input Glue table is not an iceberg table: <your table name>`.
-
-Note that dropping Glue tables from the console [may not immediately delete them](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glue/client/batch_delete_table.html).
-You must either wait for AWS to finish their background processing, or manually call the AWS API to
-drop all table versions.
+- During truncate syncs, the connector writes the refreshed data to the `airbyte_staging` branch and fast-forwards the `main` branch at the end of the sync. Since most query engines target the `main` branch,  people can query your data until the end of a truncate sync, at which point it's atomically swapped to the new version.
 
 ## Changelog
 
