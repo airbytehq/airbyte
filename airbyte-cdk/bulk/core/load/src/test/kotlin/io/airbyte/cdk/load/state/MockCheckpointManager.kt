@@ -28,10 +28,10 @@ class MockCheckpointManager : CheckpointManager<DestinationStream.Descriptor, Ch
 
     override suspend fun addStreamCheckpoint(
         key: DestinationStream.Descriptor,
-        index: Long,
+        indexOrId: Long,
         checkpointMessage: CheckpointMessage
     ) {
-        streamStates.getOrPut(key) { mutableListOf() }.add(index to checkpointMessage)
+        streamStates.getOrPut(key) { mutableListOf() }.add(indexOrId to checkpointMessage)
     }
 
     override suspend fun addGlobalCheckpoint(

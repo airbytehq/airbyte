@@ -222,6 +222,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.5.2 | 2025-01-10 | [51500](https://github.com/airbytehq/airbyte/pull/51500) | Use a non root base image |
 | 3.5.1 | 2024-12-18 | [49903](https://github.com/airbytehq/airbyte/pull/49903) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 3.5.0 | 2024-09-18 | [45435](https://github.com/airbytehq/airbyte/pull/45435) | upgrade all dependencies |
 | 3.4.4 | 2024-08-20 | [44476](https://github.com/airbytehq/airbyte/pull/44476) | Increase message parsing limit to 100mb |

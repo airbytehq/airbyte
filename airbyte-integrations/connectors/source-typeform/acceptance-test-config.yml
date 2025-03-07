@@ -5,7 +5,7 @@ test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_typeform/spec.yaml"
+      - spec_path: "manifest.yaml"
         backward_compatibility_tests_config:
           disable_for_version: "0.3.0"
   connection:
@@ -30,7 +30,9 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.jsonl"
   incremental:
-    bypass_reason: "Last record is duplicated for test_two_sequential_reads since greater or equal is used"
+    bypass_reason:
+      "Last record is duplicated for test_two_sequential_reads since
+      greater or equal is used"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

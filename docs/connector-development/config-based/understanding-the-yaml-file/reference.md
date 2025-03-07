@@ -1,6 +1,5 @@
 import ManifestYamlDefinitions from '@site/src/components/ManifestYamlDefinitions';
-
-import schema from "../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml";
+import schema from "@site/src/data/declarative_component_schema.yaml";
 
 # YAML Reference
 

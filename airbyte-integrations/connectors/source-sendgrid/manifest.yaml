@@ -637,9 +637,11 @@ definitions:
             api_token: "{{ config['api_key'] }}"
         download_requester:
           type: HttpRequester
-          path: "{{stream_slice['url']}}"
+          path: "{{stream_slice.extra_fields['url']}}"
           url_base: ""
           http_method: GET
+        download_extractor:
+          type: ResponseToFileExtractor
       schema_loader:
         type: InlineSchemaLoader
         schema:

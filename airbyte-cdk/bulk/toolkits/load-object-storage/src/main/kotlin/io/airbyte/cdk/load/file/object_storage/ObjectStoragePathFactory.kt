@@ -21,11 +21,7 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 interface PathFactory {
-    fun getLongestStreamConstantPrefix(stream: DestinationStream, isStaging: Boolean): String
-    fun getStagingDirectory(
-        stream: DestinationStream,
-        substituteStreamAndNamespaceOnly: Boolean = false
-    ): String
+    fun getLongestStreamConstantPrefix(stream: DestinationStream): String
     fun getFinalDirectory(
         stream: DestinationStream,
         substituteStreamAndNamespaceOnly: Boolean = false
@@ -33,23 +29,40 @@ interface PathFactory {
     fun getPathToFile(
         stream: DestinationStream,
         partNumber: Long?,
-        isStaging: Boolean = false,
         extension: String? = null
     ): String
     fun getPathMatcher(stream: DestinationStream, suffixPattern: String? = null): PathMatcher
 
-    val supportsStaging: Boolean
-    val prefix: String
+    val finalPrefix: String
 }
 
 data class PathMatcher(val regex: Regex, val variableToIndex: Map<String, Int>) {
     fun match(path: String): PathMatcherResult? {
         val match = regex.matchEntire(path) ?: return null
-        return PathMatcherResult(
-            path,
-            variableToIndex["part_number"]?.let { match.groupValues[it].toLong() },
-            variableToIndex["suffix"]?.let { match.groupValues[it].let { g -> g.ifBlank { null } } }
-        )
+
+        val partNumber =
+            try {
+                variableToIndex["part_number"]?.let { match.groupValues[it].toLong() }
+            } catch (e: Exception) {
+                throw PathMatcherException(
+                    "Could not parse part number from $path with pattern: ${regex.pattern} at index: ${variableToIndex["part_number"]}",
+                    e,
+                )
+            }
+
+        val suffix =
+            try {
+                variableToIndex["suffix"]?.let {
+                    match.groupValues[it].let { g -> g.ifBlank { null } }
+                }
+            } catch (e: Exception) {
+                throw PathMatcherException(
+                    "Could not parse suffix from $path with pattern: ${regex.pattern} at index: ${variableToIndex["suffix"]}",
+                    e,
+                )
+            }
+
+        return PathMatcherResult(path, partNumber, suffix)
     }
 }
 
@@ -63,12 +76,22 @@ class ObjectStoragePathFactory(
     compressionConfigProvider: ObjectStorageCompressionConfigurationProvider<*>? = null,
     private val timeProvider: TimeProvider,
 ) : PathFactory {
+    // Resolved configuration
     private val pathConfig = pathConfigProvider.objectStoragePathConfiguration
-    private val stagingPrefixResolved =
-        pathConfig.stagingPrefix
-            ?: Paths.get(pathConfig.prefix, DEFAULT_STAGING_PREFIX_SUFFIX).toString()
-    private val pathPatternResolved = pathConfig.pathSuffixPattern ?: DEFAULT_PATH_FORMAT
+
+    // Resolved bucket path prefix
+    override val finalPrefix: String =
+        if (pathConfig.prefix.endsWith('/')) {
+            pathConfig.prefix.take(pathConfig.prefix.length - 1)
+        } else {
+            pathConfig.prefix
+        }
+
+    // Resolved path and filename patterns
+    private val pathPatternResolved = pathConfig.pathPattern ?: DEFAULT_PATH_FORMAT
     private val filePatternResolved = pathConfig.fileNamePattern ?: DEFAULT_FILE_FORMAT
+
+    // Resolved file extensions
     private val fileFormatExtension =
         formatConfigProvider?.objectStorageFormatConfiguration?.extension
     private val compressionExtension =
@@ -78,24 +101,6 @@ class ObjectStoragePathFactory(
             "$fileFormatExtension.$compressionExtension"
         } else {
             fileFormatExtension ?: compressionExtension
-        }
-
-    private val stagingPrefix: String
-        get() =
-            if (!pathConfig.usesStagingDirectory) {
-                throw UnsupportedOperationException(
-                    "Staging is not supported by this configuration"
-                )
-            } else {
-                stagingPrefixResolved
-            }
-
-    override val supportsStaging: Boolean = pathConfig.usesStagingDirectory
-    override val prefix: String =
-        if (pathConfig.prefix.endsWith('/')) {
-            pathConfig.prefix.take(pathConfig.prefix.length - 1)
-        } else {
-            pathConfig.prefix
         }
 
     /**
@@ -252,26 +257,20 @@ class ObjectStoragePathFactory(
         }
     }
 
-    private fun resolveRetainingTerminalSlash(prefix: String, path: String): String {
-        val asPath = Paths.get(prefix, path)
-        return if (path.endsWith('/')) {
-            asPath.toString() + "/"
+    /**
+     * This is to maintain parity with legacy code. Whether the path pattern ends with "/" is
+     * significant.
+     *
+     * * path: "{STREAM_NAME}/foo/" + "{part_number}{format_extension}" => "my_stream/foo/1.json"
+     * * path: "{STREAM_NAME}/foo" + "{part_number}{format_extension}" => "my_stream/foo1.json"
+     */
+    private fun resolveRetainingTerminalSlash(prefix: String, suffix: String = ""): String {
+        val asPath = Paths.get(prefix, suffix)
+        return if ("$prefix$suffix".endsWith('/')) {
+            "$asPath/"
         } else {
             asPath.toString()
         }
-    }
-
-    override fun getStagingDirectory(
-        stream: DestinationStream,
-        substituteStreamAndNamespaceOnly: Boolean
-    ): String {
-        val path =
-            getFormattedPath(
-                stream,
-                if (substituteStreamAndNamespaceOnly) PATH_VARIABLES_STREAM_CONSTANT
-                else PATH_VARIABLES
-            )
-        return resolveRetainingTerminalSlash(stagingPrefix, path)
     }
 
     override fun getFinalDirectory(
@@ -282,37 +281,26 @@ class ObjectStoragePathFactory(
             getFormattedPath(
                 stream,
                 if (substituteStreamAndNamespaceOnly) PATH_VARIABLES_STREAM_CONSTANT
-                else PATH_VARIABLES
+                else PATH_VARIABLES,
             )
-        return resolveRetainingTerminalSlash(prefix, path)
+        return resolveRetainingTerminalSlash(path)
     }
 
     override fun getLongestStreamConstantPrefix(
         stream: DestinationStream,
-        isStaging: Boolean
     ): String {
-        return if (isStaging) {
-                getStagingDirectory(stream, substituteStreamAndNamespaceOnly = true)
-            } else {
-                getFinalDirectory(stream, substituteStreamAndNamespaceOnly = true)
-            }
-            .takeWhile { it != '$' }
+        return getFinalDirectory(stream, substituteStreamAndNamespaceOnly = true).takeWhile {
+            it != '$'
+        }
     }
 
     override fun getPathToFile(
         stream: DestinationStream,
         partNumber: Long?,
-        isStaging: Boolean,
         extension: String?
     ): String {
         val extensionResolved = extension ?: defaultExtension
-        val path =
-            if (isStaging) {
-                    getStagingDirectory(stream)
-                } else {
-                    getFinalDirectory(stream)
-                }
-                .toString()
+        val path = getFinalDirectory(stream)
         val context =
             VariableContext(stream, extension = extensionResolved, partNumber = partNumber)
         val fileName = getFormattedFileName(context)
@@ -323,9 +311,9 @@ class ObjectStoragePathFactory(
 
     private fun getFormattedPath(
         stream: DestinationStream,
-        variables: List<PathVariable> = PATH_VARIABLES
+        variables: List<PathVariable> = PATH_VARIABLES,
     ): String {
-        val pattern = pathPatternResolved
+        val pattern = resolveRetainingTerminalSlash(finalPrefix, pathPatternResolved)
         val context = VariableContext(stream)
         return variables.fold(pattern) { acc, variable -> variable.maybeApply(acc, context) }
     }
@@ -339,7 +327,22 @@ class ObjectStoragePathFactory(
 
     private fun getPathVariableToPattern(stream: DestinationStream): Map<String, String> {
         return PATH_VARIABLES.associate {
-            it.variable to (it.pattern ?: it.provider(VariableContext(stream)))
+            it.variable to
+                (
+                // Only escape the pattern if
+                //   A) it's not already provided
+                //   B) the value from context is not blank
+                // This is to ensure stream names/namespaces with special characters (foo+1) match
+                // correctly,
+                // but that blank patterns are ignored completely.
+                it.pattern
+                    ?: (it.provider(VariableContext(stream)).let { s ->
+                        if (s.isNotBlank()) {
+                            Regex.escape(s)
+                        } else {
+                            s
+                        }
+                    }))
         } +
             FILENAME_VARIABLES.associate {
                 it.variable to
@@ -352,12 +355,14 @@ class ObjectStoragePathFactory(
         input: String,
         macroPattern: String,
         variableToPattern: Map<String, String>,
-        variableToIndex: MutableMap<String, Int>
+        variableToIndex: MutableList<Pair<String, Int>>
     ): String {
         return Regex.escapeReplacement(input).replace(macroPattern.toRegex()) {
             val variable = it.groupValues[1]
             val pattern = variableToPattern[variable]
             if (pattern == null) {
+                // This should happen if it wasn't a supported variable and is thus interpreted as
+                // a string literal—e.g. ${FOOBAR} will be inserted as FOOBAR.
                 variable
             } else if (pattern.isBlank()) {
                 // This should only happen in the case of a blank namespace.
@@ -365,7 +370,7 @@ class ObjectStoragePathFactory(
                 // `()/($streamName)` against `$streamName`.
                 ""
             } else {
-                variableToIndex[variable] = variableToIndex.size + 1
+                variableToIndex.add(Pair(variable, variableToIndex.size + 1))
                 "($pattern)"
             }
         }
@@ -373,37 +378,38 @@ class ObjectStoragePathFactory(
 
     override fun getPathMatcher(stream: DestinationStream, suffixPattern: String?): PathMatcher {
         val pathVariableToPattern = getPathVariableToPattern(stream)
-        val variableToIndex = mutableMapOf<String, Int>()
+        val variableIndexTuples = mutableListOf<Pair<String, Int>>()
+
+        val pathPattern = resolveRetainingTerminalSlash(finalPrefix, pathPatternResolved)
 
         val replacedForPath =
             buildPattern(
-                pathPatternResolved,
+                pathPattern,
                 """\\\$\{(\w+)}""",
                 pathVariableToPattern,
-                variableToIndex
+                variableIndexTuples
             )
         val replacedForFile =
             buildPattern(
                 filePatternResolved,
                 """\{([\w\:]+)}""",
                 pathVariableToPattern,
-                variableToIndex
+                variableIndexTuples
             )
         // NOTE the old code does not actually resolve the path + filename,
         // even tho the documentation says it does.
-        val combined =
-            if (replacedForPath.startsWith('/')) {
-                "${prefix}$replacedForPath$replacedForFile"
-            } else {
-                "$prefix/$replacedForPath$replacedForFile"
-            }
+        val replacedForPathWithEmptyVariablesRemoved =
+            resolveRetainingTerminalSlash(replacedForPath)
+        val combined = "$replacedForPathWithEmptyVariablesRemoved$replacedForFile"
         val withSuffix =
             if (suffixPattern != null) {
-                variableToIndex["suffix"] = variableToIndex.size + 1
+                variableIndexTuples.add(Pair("suffix", variableIndexTuples.size + 1))
                 "$combined$suffixPattern"
             } else {
                 combined
             }
+
+        val variableToIndex = variableIndexTuples.toMap()
         return PathMatcher(Regex(withSuffix), variableToIndex)
     }
 }

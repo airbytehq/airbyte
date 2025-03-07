@@ -36,7 +36,7 @@ tools.pre-commit.install.Linux:
 
 tools.pre-commit.install.Darwin:
 	@echo "Installing pre-commit with brew..."
-	@brew install pre-commit
+	@brew install pre-commit maven
 	@echo "Pre-commit installation complete"
 
 tools.git-hooks.install: tools.airbyte-ci.install tools.pre-commit.install.$(OS) tools.git-hooks.clean ## Setup pre-commit hooks

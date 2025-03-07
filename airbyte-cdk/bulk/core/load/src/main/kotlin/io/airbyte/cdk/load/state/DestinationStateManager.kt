@@ -33,10 +33,7 @@ class DefaultDestinationStateManager<T : DestinationState>(
     }
 
     override suspend fun persistState(stream: DestinationStream) {
-        val state =
-            states[stream.descriptor]
-                ?: throw IllegalStateException("State not found for stream $stream")
-        persister.persist(stream, state)
+        states[stream.descriptor]?.let { persister.persist(stream, it) }
     }
 }
 

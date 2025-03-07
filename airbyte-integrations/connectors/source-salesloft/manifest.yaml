@@ -3083,6 +3083,14 @@ schemas:
         type:
           - "null"
           - boolean
+      subject:
+        type:
+          - "null"
+          - string
+      body:
+        type:
+          - "null"
+          - string
       cadence:
         type:
           - "null"

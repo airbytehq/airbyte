@@ -66,7 +66,8 @@ You need a Teradata user which has read permissions on the database
 
 | Version | Date       | Pull Request                                             | Subject                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
-| 0.2.4   | 2024-09-05 | [45158](https://github.com/airbytehq/airbyte/pull/45158) | Fix bug in source teradata  |
+| 0.2.5 | 2025-01-10 | [51485](https://github.com/airbytehq/airbyte/pull/51485) | Use a non root base image |
+| 0.2.4 | 2024-09-05 | [45158](https://github.com/airbytehq/airbyte/pull/45158) | Fix bug in source teradata |
 | 0.2.3 | 2024-12-18 | [49894](https://github.com/airbytehq/airbyte/pull/49894) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.2.2 | 2024-02-13 | [35219](https://github.com/airbytehq/airbyte/pull/35219) | Adopt CDK 0.20.4 |
 | 0.2.1 | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |
