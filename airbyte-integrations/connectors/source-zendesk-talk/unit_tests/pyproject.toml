@@ -4,13 +4,13 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "source-zendesk-talk-tests"
-version = "1.2.0-rc.1"
+version = "1.2.0"
 description = "Unit tests for source-zendesk-talk"
 authors = ["Airbyte <contact@airbyte.io>"]
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
-airbyte-cdk = "^6.10.0"
+airbyte-cdk = "*"
 pytest = "^8"
 requests-mock = "*"
 
