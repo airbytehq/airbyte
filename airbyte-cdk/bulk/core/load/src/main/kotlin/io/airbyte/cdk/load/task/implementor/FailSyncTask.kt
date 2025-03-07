@@ -7,13 +7,15 @@ package io.airbyte.cdk.load.task.implementor
 import io.airbyte.cdk.load.state.CheckpointManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.ImplementorScope
+import io.airbyte.cdk.load.task.SelfTerminating
+import io.airbyte.cdk.load.task.Task
+import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface FailSyncTask : ImplementorScope
+interface FailSyncTask : Task
 
 /**
  * FailSyncTask is a task that is executed only when the destination itself fails during a sync. If
@@ -28,6 +30,8 @@ class DefaultFailSyncTask(
     private val checkpointManager: CheckpointManager<*, *>,
 ) : FailSyncTask {
     private val log = KotlinLogging.logger {}
+
+    override val terminalCondition: TerminalCondition = SelfTerminating
 
     override suspend fun execute() {
         // Ensure any remaining ready state gets captured: don't waste work!

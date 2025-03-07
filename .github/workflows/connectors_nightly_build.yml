@@ -5,18 +5,38 @@ on:
     # 0AM UTC is 2AM CEST, 3AM EEST, 5PM PDT.
     - cron: "0 0 * * *"
   workflow_dispatch:
-    inputs:
-      test-connectors-options:
-        default: --concurrency=5 --support-level=certified
-        required: true
 
 run-name: "Test connectors: ${{ inputs.test-connectors-options || 'nightly build for Certified connectors' }}"
 
 jobs:
+  generate_matrix:
+    name: Generate matrix
+    runs-on: ubuntu-24.04
+    outputs:
+      generated_matrix: ${{ steps.generate_matrix.outputs.generated_matrix }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+      - name: Run airbyte-ci connectors list [SCHEDULED TRIGGER]
+        id: airbyte-ci-connectors-list-scheduled
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "master"
+          subcommand: "connectors --support-level=certified list --output=selected_connectors.json"
+      - name: Generate matrix - 30 connectors per job
+        id: generate_matrix
+        run: |
+          matrix=$(jq -c -r '{include: [.[] | "--name=" + .] | to_entries | group_by(.key / 30 | floor) | map(map(.value) | {"connector_names": join(" ")})}' selected_connectors.json)
+          echo "generated_matrix=$matrix" >> $GITHUB_OUTPUT
+
   test_connectors:
+    needs: generate_matrix
     name: "Test connectors: ${{ inputs.test-connectors-options || 'nightly build for Certified connectors' }}"
-    timeout-minutes: 720 # 12 hours
     runs-on: connector-nightly-xlarge
+    continue-on-error: true
+    strategy:
+      matrix: ${{fromJson(needs.generate_matrix.outputs.generated_matrix)}}
+
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -32,7 +52,7 @@ jobs:
         with:
           context: "master"
           ci_job_key: "nightly_builds"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
+          # dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -41,4 +61,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors ${{ inputs.test-connectors-options || '--concurrency=8 --support-level=certified' }} test"
+          subcommand: "connectors ${{ matrix.connector_names}} test"

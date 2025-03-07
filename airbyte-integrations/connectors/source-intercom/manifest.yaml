@@ -1,4 +1,4 @@
-version: 5.7.0
+version: 6.33.0
 
 type: DeclarativeSource
 
@@ -255,14 +255,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - segments
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= ( stream_state.get('prior_state',
-              {}).get('updated_at', 0) - (config.get('lookback_window', 0) *
-              86400) if stream_state else stream_slice.get('prior_state',
-              {}).get('updated_at', 0) ) - (config.get('lookback_window', 0) *
-              86400) }}
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -277,9 +269,17 @@ definitions:
             cursor_value: "{{ response.get('pages', {}).get('next') }}"
             stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
+        type: DatetimeBasedCursor
         cursor_field: updated_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%s') }}"
+          datetime_format: "%s"
+        datetime_format: "%s"
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
+        cursor_datetime_formats:
+          - "%s"
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -312,9 +312,9 @@ definitions:
                     error_message: >-
                       A scroll (export) job is already in progress for this
                       Intercom account, causing the request to fail. Only one
-                      active scroll per           Intercom account is allowed;
-                      ensure no overlap by limiting active connections or
-                      scheduling jobs appropriately.
+                      active scroll per Intercom account is allowed; ensure no
+                      overlap by limiting active connections or scheduling jobs
+                      appropriately.
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
@@ -322,28 +322,20 @@ definitions:
                     http_codes:
                       - 404
               - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
                 response_filters:
                   - type: HttpResponseFilter
                     action: RETRY
                     http_codes:
                       - 500
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 60
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - data
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= ( stream_state.get('prior_state',
-              {}).get('updated_at', 0) - (config.get('lookback_window', 0) *
-              86400) if stream_state else stream_slice.get('prior_state',
-              {}).get('updated_at', 0) ) - (config.get('lookback_window', 0) *
-              86400) }}
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -360,9 +352,17 @@ definitions:
             cursor_value: "{{ response.get('scroll_param') }}"
             stop_condition: "{{ not response.get('data') }}"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
+        type: DatetimeBasedCursor
         cursor_field: updated_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%s') }}"
+          datetime_format: "%s"
+        datetime_format: "%s"
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
+        cursor_datetime_formats:
+          - "%s"
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -491,15 +491,13 @@ definitions:
             sort: "{'field': 'updated_at', 'order': 'ascending'}"
             query: >-
               { 'operator': 'OR', 'value': [ { 'field': 'updated_at',
-              'operator': '>', 'value': {{ stream_slice.get('prior_state',
-              stream_state.get('prior_state', {})).get('updated_at') or
+              'operator': '>', 'value': {{ stream_interval.get('start_time', {}) or
               format_datetime(config['start_date'], '%s') }} }, { 'field':
               'updated_at', 'operator': '=', 'value': {{
-              stream_slice.get('prior_state', stream_state.get('prior_state',
-              {})).get('updated_at') or format_datetime(config['start_date'],
+              stream_interval.get('start_time', {}) or format_datetime(config['start_date'],
               '%s') }} }, ], }
             pagination: >-
-              { 'per_page': {{ parameters.get('page_size') }}, 'page': {{
+              { 'per_page': 150, 'page': {{
               next_page_token.get('next_page_token').get('page') }},
               'starting_after': '{{
               next_page_token.get('next_page_token').get('starting_after') }}' }
@@ -521,14 +519,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= ( stream_state.get('prior_state',
-              {}).get('updated_at', 0) - (config.get('lookback_window', 0) *
-              86400) if stream_state else stream_slice.get('prior_state',
-              {}).get('updated_at', 0) ) - (config.get('lookback_window', 0) *
-              86400)}}
         paginator:
           type: DefaultPaginator
           pagination_strategy:
@@ -537,9 +527,17 @@ definitions:
             cursor_value: "{{ response.get('pages', {}).get('next') }}"
             stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
+        type: DatetimeBasedCursor
         cursor_field: updated_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%s') }}"
+          datetime_format: "%s"
+        datetime_format: "%s"
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
+        cursor_datetime_formats:
+          - "%s"
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -562,15 +560,13 @@ definitions:
             sort: "{'field': 'updated_at', 'order': 'ascending'}"
             query: >-
               { 'operator': 'OR', 'value': [ { 'field': 'updated_at',
-              'operator': '>', 'value': {{ stream_slice.get('prior_state',
-              stream_state.get('prior_state', {})).get('updated_at') or
+              'operator': '>', 'value': {{ stream_interval.get('start_time', {}) or
               format_datetime(config['start_date'], '%s') }} }, { 'field':
               'updated_at', 'operator': '=', 'value': {{
-              stream_slice.get('prior_state', stream_state.get('prior_state',
-              {})).get('updated_at') or format_datetime(config['start_date'],
+              stream_interval.get('start_time', {}) or format_datetime(config['start_date'],
               '%s') }} }, ], }
             pagination: >-
-              { 'per_page': {{ parameters.get('page_size') }}, 'page': {{
+              { 'per_page': 150, 'page': {{
               next_page_token.get('next_page_token').get('page') }},
               'starting_after': '{{
               next_page_token.get('next_page_token').get('starting_after') }}' }
@@ -592,14 +588,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - conversations
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= ( stream_state.get('prior_state',
-              {}).get('updated_at', 0) - (config.get('lookback_window', 0) *
-              86400) if stream_state else stream_slice.get('prior_state',
-              {}).get('updated_at', 0) ) - (config.get('lookback_window', 0) *
-              86400)}}
         paginator:
           type: DefaultPaginator
           pagination_strategy:
@@ -608,9 +596,17 @@ definitions:
             cursor_value: "{{ response.get('pages', {}).get('next') }}"
             stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.IncrementalSingleSliceCursor
+        type: DatetimeBasedCursor
         cursor_field: updated_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%s') }}"
+          datetime_format: "%s"
+        datetime_format: "%s"
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
+        cursor_datetime_formats:
+          - "%s"
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -645,35 +641,26 @@ definitions:
             field_path:
               - conversation_parts
               - conversation_parts
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= stream_state.get('prior_state',
-              {}).get('updated_at', 0) - (config.get('lookback_window', 0) *
-              86400)}}
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              parent_key: id
-              partition_field: id
               stream:
                 $ref: "#/definitions/streams/conversations"
+              parent_key: id
+              partition_field: id
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
-        cursor_datetime_formats:
-          - "%s"
-          - "%ms"
-        datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime: "{{ format_datetime(config['start_date'], '%s') }}"
+          datetime_format: "%s"
+        datetime_format: "%s"
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
+        cursor_datetime_formats:
+          - "%s"
+        is_client_side_incremental: true
       transformations:
         - type: AddFields
           fields:
@@ -716,12 +703,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{ record['updated_at'] >= stream_state.get('prior_state',
-              {}).get('updated_at', 0) - (config.get('lookback_window', 0) *
-              86400)}}
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -730,12 +711,85 @@ definitions:
               partition_field: id
               stream:
                 $ref: "#/definitions/streams/companies"
+              incremental_dependency: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%s') }}"
+          datetime_format: "%s"
+        datetime_format: "%s"
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
+        cursor_datetime_formats:
+          - "%s"
+        is_client_side_incremental: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/company_segments"
+    tickets:
+      type: DeclarativeStream
+      name: tickets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: tickets/search
+          http_method: POST
+          request_headers:
+            Intercom-Version: "2.11"
+            Accept: application/json
+          request_body_json:
+            query: >-
+              {"operator" : "AND", "value" : [ {"operator" : "OR", "value" : [
+              {"field" : "updated_at", "operator" : ">", "value" : {{
+              stream_interval['start_time'] }} }, {"field" : "updated_at",
+              "operator" : "=", "value" : {{ stream_interval['start_time'] }}
+              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{
+              stream_interval['end_time'] }} } ]}
+            sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
+            pagination: >-
+              {{ {"per_page": 150} if not next_page_token
+              else {"per_page": 150, "starting_after":
+              next_page_token["next_page_token"]} }}
+            test: null
+          error_handler:
+            type: CustomErrorHandler
+            class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
+            response_filters:
+              - type: HttpResponseFilter
+                error_message_contains: Active subscription needed
+                action: FAIL
+                failure_type: config_error
+                error_message: >-
+                  Failed to perform request. Error: Active subscription needed.
+                  Please, validate your current Intercom plan to continue using
+                  API.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tickets
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 150
+            cursor_value: >-
+              {{ response.get('pages', {}).get('next', {}).get('starting_after')
+              }}
+            stop_condition: >-
+              {{ not response.get('pages', {}).get('next',
+              {}).get('starting_after') }}
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%s"
-          - "%ms"
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
@@ -748,7 +802,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/company_segments"
+          $ref: "#/schemas/tickets"
   base_requester:
     type: HttpRequester
     url_base: https://api.intercom.io/
@@ -769,6 +823,7 @@ streams:
   - $ref: "#/definitions/streams/conversations"
   - $ref: "#/definitions/streams/conversation_parts"
   - $ref: "#/definitions/streams/company_segments"
+  - $ref: "#/definitions/streams/tickets"
 
 spec:
   type: Spec
@@ -850,6 +905,7 @@ metadata:
     conversations: false
     conversation_parts: false
     company_segments: false
+    tickets: false
   yamlComponents:
     streams:
       activity_logs:
@@ -864,6 +920,7 @@ metadata:
         - errorHandler
         - incrementalSync
       companies:
+        - errorHandler
         - incrementalSync
       company_attributes:
         - errorHandler
@@ -875,7 +932,13 @@ metadata:
       conversations:
         - errorHandler
         - incrementalSync
+      conversation_parts:
+        - incrementalSync
+        - parentStreams
       company_segments:
+        - errorHandler
+        - incrementalSync
+      tickets:
         - errorHandler
   testedStreams:
     activity_logs:
@@ -886,12 +949,12 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     admins:
-      hasRecords: true
       streamHash: 62fdd12c98bec28f09edd3a34cd16bc5c1afedb6
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     tags:
       hasRecords: true
       streamHash: 53f9b051b3d5c8747598b848c006c80f3ffc5957
@@ -908,18 +971,18 @@ metadata:
       responsesAreSuccessful: true
     segments:
       hasRecords: true
-      streamHash: 96ba554609834b986e20813cedf03a96183196fd
+      streamHash: ae2d86bd6100e87bb2a5b135823cf48c2db325e8
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     companies:
-      hasRecords: true
-      streamHash: 801c62e3a0a4028608efc4bf5f1ad5119b986973
+      streamHash: af292917f40d98c014fea2050640637134d638f0
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     company_attributes:
       hasRecords: true
       streamHash: e59558fb65b2c762d2b3f6b67e9071db2773cf13
@@ -935,28 +998,40 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     contacts:
-      hasRecords: false
-      streamHash: e796494e6a861bce39d40f66e78e19b9ec633e29
+      hasRecords: true
+      streamHash: 529d47dc4df86ec11bdaff3cd21e6386db34ef85
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     conversations:
-      hasRecords: false
-      streamHash: 5838b59eba7d58cae3fe42eca72062bc9d29e1c4
+      hasRecords: true
+      streamHash: 3533fb5aa8054cb957e909a5fdf783ec2c8d8c97
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     conversation_parts:
-      streamHash: 67469544cde547846d7636a110f775313d6e04fc
-    company_segments:
       hasRecords: true
-      streamHash: 41220115640c54deccc0e5a421991a60aa808d3c
+      streamHash: eb91dc594cebabb750fa6a14b90cc58a21401035
       hasResponse: true
-      primaryKeysAreUnique: false
+      primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
+    company_segments:
+      streamHash: c5c5063a50ea9cb636bd584d72151fc62c5e1e48
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: false
+    tickets:
+      streamHash: bb16e4f1f24fe355c9698c44204b9d4f98318cd7
+      hasResponse: true
+      responsesAreSuccessful: false
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist: {}
 
 schemas:
@@ -2878,7 +2953,7 @@ schemas:
       conversation_id:
         type:
           - "null"
-          - string
+          - integer
         description: The unique identifier of the conversation.
       conversation_total_parts:
         type:
@@ -2964,3 +3039,517 @@ schemas:
           - "null"
           - integer
         description: The timestamp when the company segment was last updated.
+  tickets:
+    type: object
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: Always ticket.
+      admin_assignee_id:
+        type:
+          - string
+          - "null"
+        description: The id representing the admin assigned to the ticket.
+      category:
+        type:
+          - string
+          - "null"
+        description: Category of the Ticket.
+      contacts:
+        type:
+          - object
+          - "null"
+        description: The list of contacts affected by a ticket.
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+            description: Always contact.list.
+          contacts:
+            type:
+              - array
+              - "null"
+            description: The list of contacts affected by this ticket.
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                  description: Always contact.
+                external_id:
+                  type:
+                    - string
+                    - "null"
+                  description: >-
+                    The unique identifier for the contact which is provided by
+                    the Client.
+                id:
+                  type:
+                    - string
+                    - "null"
+                  description: >-
+                    The unique identifier for the contact which is given by
+                    Intercom.
+      created_at:
+        type:
+          - integer
+          - "null"
+        description: The time the ticket was created as a UTC Unix timestamp.
+      id:
+        type:
+          - string
+          - "null"
+        description: The unique identifier for the ticket which is given by Intercom.
+      is_shared:
+        type:
+          - boolean
+          - "null"
+        description: Whether or not the ticket is shared with the customer.
+      linked_objects:
+        type:
+          - object
+          - "null"
+        description: >-
+          An object containing metadata about linked conversations and linked
+          tickets.
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+            description: Always list.
+          data:
+            type:
+              - array
+              - "null"
+            description: An array containing the linked conversations and linked tickets.
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                  description: Ticket or conversation.
+                category:
+                  type:
+                    - string
+                    - "null"
+                  description: Category of the Linked Ticket Object..
+                id:
+                  type:
+                    - string
+                    - "null"
+                  description: The ID of the linked object.
+          has_more:
+            type:
+              - boolean
+              - "null"
+            description: Whether or not there are more linked objects than returned.
+          total_count:
+            type:
+              - integer
+              - "null"
+            description: The total number of linked objects.
+      open:
+        type:
+          - boolean
+          - "null"
+        description: Whether or not the ticket is open. If false, the ticket is closed.
+      snoozed_until:
+        type:
+          - integer
+          - "null"
+        description: >-
+          The time the ticket will be snoozed until as a UTC Unix timestamp. If
+          null, the ticket is not currently snoozed.
+      team_assignee_id:
+        type:
+          - string
+          - "null"
+        description: The id representing the team assigned to the ticket.
+      ticket_attributes:
+        type:
+          - object
+          - "null"
+        description: >-
+          An object containing the different attributes associated to the ticket
+          as key-value pairs.
+        additionalProperties: true
+      ticket_id:
+        type:
+          - string
+          - "null"
+        description: >-
+          The ID of the Ticket used in the Intercom Inbox and Messenger. Do not
+          use ticket_id for API queries.
+      ticket_parts:
+        type:
+          - object
+          - "null"
+        description: A list of Ticket Part objects for each note and event in the ticket.
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+            description: Value ticket_part.list.
+          ticket_parts:
+            type:
+              - array
+              - "null"
+            description: A list of Ticket Part objects for each ticket.
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                  description: Always ticket_part.
+                assigned_to:
+                  type:
+                    - object
+                    - "null"
+                  description: Teference to another object.
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                      description: Example - contact.
+                    id:
+                      type:
+                        - string
+                        - "null"
+                      description: Example - 1a2b3c.
+                attachments:
+                  type:
+                    - array
+                    - "null"
+                  description: A list of attachments for the part.
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                        description: The type of attachment
+                      content_type:
+                        type:
+                          - string
+                          - "null"
+                        description: The content type of attachment
+                      filesize:
+                        type:
+                          - integer
+                          - "null"
+                        description: The file size of attachment
+                      height:
+                        type:
+                          - integer
+                          - "null"
+                        description: The height of attachment
+                      name:
+                        type:
+                          - string
+                          - "null"
+                        description: The name of attachment
+                      url:
+                        type:
+                          - string
+                          - "null"
+                        description: The url of attachment
+                      width:
+                        type:
+                          - integer
+                          - "null"
+                        description: The width of attachment
+                author:
+                  type:
+                    - object
+                    - "null"
+                  description: >-
+                    The author that wrote or triggered the part. Can be a bot,
+                    admin, team or user.
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                      description: The type of the author.
+                    email:
+                      type:
+                        - string
+                        - "null"
+                      description: The email of the author.
+                    id:
+                      type:
+                        - string
+                        - "null"
+                      description: The id of the author.
+                    name:
+                      type:
+                        - string
+                        - "null"
+                      description: The name of the author.
+                body:
+                  type:
+                    - string
+                    - "null"
+                  description: The message body, which may contain HTML.
+                created_at:
+                  type:
+                    - integer
+                    - "null"
+                  description: The time the ticket part was created.
+                external_id:
+                  type:
+                    - string
+                    - "null"
+                  description: The external id of the ticket part.
+                id:
+                  type:
+                    - string
+                    - "null"
+                  description: The id representing the ticket part.
+                part_type:
+                  type:
+                    - string
+                    - "null"
+                  description: The type of ticket part.
+                previous_ticket_state:
+                  type:
+                    - string
+                    - "null"
+                  description: The previous state of the ticket.
+                redacted:
+                  type:
+                    - boolean
+                    - "null"
+                  description: Whether or not the ticket part has been redacted.
+                ticket_state:
+                  type:
+                    - string
+                    - "null"
+                  description: The state of the ticket.
+                updated_at:
+                  type:
+                    - integer
+                    - "null"
+                  description: The last time the ticket part was updated.
+          total_count:
+            type:
+              - integer
+              - "null"
+            description: Total count of ticket parts.
+      ticket_state:
+        type:
+          - string
+          - "null"
+        description: The state the ticket is currently in.
+      ticket_state_external_label:
+        type:
+          - string
+          - "null"
+        description: >-
+          The state the ticket is currently in, in a human readable form -
+          visible to customers, in the messenger, email and tickets portal.
+      ticket_state_internal_label:
+        type:
+          - string
+          - "null"
+        description: >-
+          The state the ticket is currently in, in a human readable form -
+          visible in Intercom.
+      ticket_type:
+        type:
+          - object
+          - "null"
+        description: he state the ticket is currently in.
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+            description: >-
+              String representing the object's type. Always has the value
+              ticket_type.
+          description:
+            type:
+              - string
+              - "null"
+            description: The description of the ticket type.
+          archived:
+            type:
+              - boolean
+              - "null"
+            description: Whether the ticket type is archived or not.
+          category:
+            type:
+              - string
+              - "null"
+            description: Category of the Ticket Type.
+          created_at:
+            type:
+              - integer
+              - "null"
+            description: The date and time the ticket type was created.
+          icon:
+            type:
+              - string
+              - "null"
+            description: The icon of the ticket type.
+          id:
+            type:
+              - string
+              - "null"
+            description: The id representing the ticket type.
+          name:
+            type:
+              - string
+              - "null"
+            description: The name of the ticket type.
+          ticket_type_attributes:
+            type:
+              - object
+              - "null"
+            description: A list of attributes associated with a given ticket type.
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+                description: >-
+                  String representing the object's type. Always has the value
+                  ticket_type_attributes.list.
+                ticket_type_attributes:
+                  type:
+                    - array
+                    - "null"
+                  description: >-
+                    A list of ticket type attributes associated with a given
+                    ticket type.
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                      description: >-
+                        String representing the object's type. Always has the
+                        value ticket_type_attribute.
+                    description:
+                      type:
+                        - string
+                        - "null"
+                      description: The description of the ticket type attribute.
+                    archived:
+                      type:
+                        - boolean
+                        - "null"
+                      description: Whether the ticket type attribute is archived or not.
+                    created_at:
+                      type:
+                        - integer
+                        - "null"
+                      description: The date and time the ticket type attribute was created.
+                    data_type:
+                      type:
+                        - string
+                        - "null"
+                      description: The type of the data attribute.
+                    default:
+                      type:
+                        - boolean
+                        - "null"
+                      description: Whether the attribute is built in or not.
+                    id:
+                      type:
+                        - string
+                        - "null"
+                      description: The id representing the ticket type attribute.
+                    input_options:
+                      type:
+                        - object
+                        - "null"
+                      description: Input options for the attribute.
+                      additionalProperties: true
+                    name:
+                      type:
+                        - string
+                        - "null"
+                      description: The name of the ticket type attribute.
+                    order:
+                      type:
+                        - integer
+                        - "null"
+                      description: The order of the attribute against other attributes.
+                    required_to_create:
+                      type:
+                        - boolean
+                        - "null"
+                      description: Whether the attribute is required or not for teammates.
+                    required_to_create_for_contacts:
+                      type:
+                        - boolean
+                        - "null"
+                      description: Whether the attribute is required or not for contacts.
+                    ticket_type_id:
+                      type:
+                        - integer
+                        - "null"
+                      description: The id of the ticket type that the attribute belongs to.
+                    updated_at:
+                      type:
+                        - integer
+                        - "null"
+                      description: >-
+                        The date and time the ticket type attribute was last
+                        updated.
+                    visible_on_create:
+                      type:
+                        - boolean
+                        - "null"
+                      description: Whether the attribute is visible or not to teammates.
+                    visible_to_contacts:
+                      type:
+                        - boolean
+                        - "null"
+                      description: Whether the attribute is visible or not to contacts.
+                    workspace_id:
+                      type:
+                        - string
+                        - "null"
+                      description: >-
+                        The id of the workspace that the ticket type attribute
+                        belongs to.
+          updated_at:
+            type:
+              - integer
+              - "null"
+            description: The date and time the ticket type was last updated.
+          workspace_id:
+            type:
+              - string
+              - "null"
+            description: The id of the workspace that the ticket type belongs to.
+      updated_at:
+        type:
+          - integer
+          - "null"
+        description: The last time the ticket was updated as a UTC Unix timestamp.

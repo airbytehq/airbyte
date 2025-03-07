@@ -6,6 +6,7 @@ from typing import Any, Dict, Optional
 from config_builder import ConfigBuilder
 from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
 from source_salesforce import SourceSalesforce
+from source_salesforce.api import API_VERSION
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.source import TState
@@ -17,9 +18,6 @@ from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
-_API_VERSION = "v57.0"
-
-
 def _catalog(stream_name: str, sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
     return CatalogBuilder().with_stream(stream_name, sync_mode).build()
 
@@ -29,7 +27,7 @@ def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any], state: Op
 
 
 def create_base_url(instance_url: str) -> str:
-    return f"{instance_url}/services/data/{_API_VERSION}"
+    return f"{instance_url}/services/data/{API_VERSION}"
 
 
 def read(

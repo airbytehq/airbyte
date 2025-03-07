@@ -32,9 +32,10 @@ class ReservingDeserializingInputFlow(
             "Reserved ${memoryManager.totalCapacityBytes/1024}mb memory for input processing"
         }
 
-        inputStream.bufferedReader().lineSequence().forEachIndexed { index, line ->
+        var index = 0L
+        inputStream.bufferedReader().lineSequence().forEach { line ->
             if (line.isEmpty()) {
-                return@forEachIndexed
+                return@forEach
             }
 
             val lineSize = line.length.toLong()
@@ -43,7 +44,7 @@ class ReservingDeserializingInputFlow(
             val message = deserializer.deserialize(line)
             collector.emit(Pair(lineSize, reserved.replace(message)))
 
-            if (index % 10_000 == 0) {
+            if (++index % 10_000L == 0L) {
                 log.info { "Processed $index lines" }
             }
         }

@@ -45,7 +45,7 @@ DEFAULT_CONTAINER_IMAGE = "python:{version}"
 
 VERSION_CONTAINER_IMAGES = {
     "3.10": DEFAULT_CONTAINER_IMAGE.format(version="3.10.12"),
-    "3.11": DEFAULT_CONTAINER_IMAGE.format(version="3.11.5"),
+    "3.11": DEFAULT_CONTAINER_IMAGE.format(version="3.11.9"),
 }
 
 
@@ -239,7 +239,7 @@ def prepare_container_for_poe_tasks(
                 ],
                 use_entrypoint=True,
             )
-            .with_exec(["poetry", "lock", "--no-update"], use_entrypoint=True)
+            .with_exec(["poetry", "lock"], use_entrypoint=True)
         )
 
     # Install the poetry package

@@ -25,7 +25,11 @@ class AirbyteValueNoopMapper : AirbyteValueMapper {
     ): Pair<AirbyteValue, List<Meta.Change>> = value to changes
 }
 
-open class AirbyteValueIdentityMapper : AirbyteValueMapper {
+open class AirbyteValueIdentityMapper(
+    protected val recurseIntoObjects: Boolean = true,
+    protected val recurseIntoArrays: Boolean = true,
+    protected val recurseIntoUnions: Boolean = true,
+) : AirbyteValueMapper {
     data class Context(
         val nullable: Boolean = false,
         val path: List<String> = emptyList(),
@@ -91,7 +95,8 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
         schema: ObjectType,
         context: Context
     ): Pair<AirbyteValue, Context> {
-        if (value !is ObjectValue) {
+        val shouldRecurse = recurseIntoObjects || context.path.isEmpty()
+        if (value !is ObjectValue || !shouldRecurse) {
             return value to context
         }
         val values = LinkedHashMap<String, AirbyteValue>()
@@ -124,7 +129,7 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
         schema: ArrayType,
         context: Context
     ): Pair<AirbyteValue, Context> {
-        if (value !is ArrayValue) {
+        if (value !is ArrayValue || !recurseIntoArrays) {
             return value to context
         }
         val mapped =
@@ -152,7 +157,44 @@ open class AirbyteValueIdentityMapper : AirbyteValueMapper {
         value: AirbyteValue,
         schema: UnionType,
         context: Context
-    ): Pair<AirbyteValue, Context> = value to context
+    ): Pair<AirbyteValue, Context> {
+        if (!recurseIntoUnions) {
+            return value to context
+        }
+        /*
+           This mapper should not perform validation, so make a best-faith effort to recurse,
+           but if nothing matches the union, pass the value through unchanged. If clients validated
+           upstream, then this must match. If they did not, they won't have anything any more
+           wrong than they started with.
+        */
+        schema.options.forEach {
+            if (optionMatches(it, value)) {
+                return mapInner(value, it, context)
+            }
+        }
+        return value to context
+    }
+
+    private fun optionMatches(schema: AirbyteType, value: AirbyteValue): Boolean {
+        return when (schema) {
+            is StringType -> value is StringValue
+            is BooleanType -> value is BooleanValue
+            is IntegerType -> value is IntegerValue
+            is NumberType -> value is NumberValue
+            is ArrayTypeWithoutSchema,
+            is ArrayType -> value is ArrayValue
+            is ObjectType,
+            is ObjectTypeWithoutSchema,
+            is ObjectTypeWithEmptySchema -> value is ObjectValue
+            is DateType -> value is DateValue
+            is TimeTypeWithTimezone -> value is TimeWithTimezoneValue
+            is TimeTypeWithoutTimezone -> value is TimeWithoutTimezoneValue
+            is TimestampTypeWithTimezone -> value is TimestampWithTimezoneValue
+            is TimestampTypeWithoutTimezone -> value is TimestampWithoutTimezoneValue
+            is UnionType -> schema.options.any { optionMatches(it, value) }
+            is UnknownType -> false
+        }
+    }
 
     open fun mapBoolean(value: AirbyteValue, context: Context): Pair<AirbyteValue, Context> =
         value to context

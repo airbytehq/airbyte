@@ -76,6 +76,14 @@ Pexels-API's [API reference]https://www.pexels.com/api/documentation) has v1 at 
 
 | Version | Date       | Pull Request                                            | Subject        |
 | :------ | :--------- | :------------------------------------------------------ | :------------- |
+| 0.2.14 | 2025-03-01 | [55034](https://github.com/airbytehq/airbyte/pull/55034) | Update dependencies |
+| 0.2.13 | 2025-02-23 | [54572](https://github.com/airbytehq/airbyte/pull/54572) | Update dependencies |
+| 0.2.12 | 2025-02-15 | [53990](https://github.com/airbytehq/airbyte/pull/53990) | Update dependencies |
+| 0.2.11 | 2025-02-08 | [53477](https://github.com/airbytehq/airbyte/pull/53477) | Update dependencies |
+| 0.2.10 | 2025-02-01 | [52990](https://github.com/airbytehq/airbyte/pull/52990) | Update dependencies |
+| 0.2.9 | 2025-01-25 | [52533](https://github.com/airbytehq/airbyte/pull/52533) | Update dependencies |
+| 0.2.8 | 2025-01-18 | [51923](https://github.com/airbytehq/airbyte/pull/51923) | Update dependencies |
+| 0.2.7 | 2025-01-11 | [51374](https://github.com/airbytehq/airbyte/pull/51374) | Update dependencies |
 | 0.2.6 | 2024-12-28 | [50680](https://github.com/airbytehq/airbyte/pull/50680) | Update dependencies |
 | 0.2.5 | 2024-12-21 | [50274](https://github.com/airbytehq/airbyte/pull/50274) | Update dependencies |
 | 0.2.4 | 2024-12-14 | [49708](https://github.com/airbytehq/airbyte/pull/49708) | Update dependencies |

@@ -23,7 +23,12 @@ class AvroMapperPipelineFactory : MapperPipelineFactory {
             listOf(
                 FailOnAllUnknownTypesExceptNull() to AirbyteValueNoopMapper(),
                 MergeUnions() to AirbyteValueNoopMapper(),
-                AirbyteSchemaNoopMapper() to AirbyteValueDeepCoercingMapper(),
+                AirbyteSchemaNoopMapper() to
+                    AirbyteValueDeepCoercingMapper(
+                        recurseIntoObjects = true,
+                        recurseIntoArrays = true,
+                        recurseIntoUnions = true,
+                    ),
                 // We need to maintain the original ObjectWithNoProperties/etc type.
                 // For example, if a stream declares no columns, we will (correctly) recognize
                 // the root schema as ObjectTypeWithEmptySchema.
