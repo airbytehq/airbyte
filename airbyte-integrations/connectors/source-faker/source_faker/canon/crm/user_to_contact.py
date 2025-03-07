@@ -15,11 +15,11 @@ class UserToContact(TransformFunction[Contact]):
                 last_name=None,
                 addresses=[
                     Address(
-                        street_number=record["address"]["street_number"],
-                        street_name=record["address"]["street_name"],
+                        street_1=f'{record["address"]["street_number"]} {record["address"]["street_name"]}',
                         city=record["address"]["city"],
                         state=record["address"]["state"],
-                        postal_code=record["address"]["postal_code"],
+                        zip=record["address"]["postal_code"],
+                        address_type="SHIPPING",
                     )
                 ],
                 emails=[Email(email=record["email"], email_type="PERSONAL")],

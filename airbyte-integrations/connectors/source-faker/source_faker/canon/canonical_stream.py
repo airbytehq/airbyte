@@ -129,12 +129,12 @@ class CanonicalStream(AbstractStream):
         return self._stream.check_availability()
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        return self._canonical_model_type.model_json_schema()
+        return patch_json_schema(self._canonical_model_type.model_json_schema())
 
     def as_airbyte_stream(self) -> AirbyteStream:
         stream = AirbyteStream(
             name=self.name,
-            json_schema=dict(self._canonical_model_type.model_json_schema()),
+            json_schema=dict(patch_json_schema(self._canonical_model_type.model_json_schema())),
             supported_sync_modes=[SyncMode.full_refresh],
             is_resumable=False,
         )
@@ -293,3 +293,18 @@ def create_canonical_stream_facade(
 ) -> CanonicalStreamFacade:
     canonical_stream = create_canonical_stream(stream, canonical_model_type, transform_function, cursor_override, namespace)
     return CanonicalStreamFacade(canonical_stream, canonical_stream.cursor, slice_logger, logger)
+
+def patch_json_schema(schema: Mapping[str, Any]) -> Mapping[str, Any]:
+    schema = replace_any_of(schema)
+    return schema
+
+def replace_any_of(value: Any) -> Any:
+    if isinstance(value, list):
+        return [replace_any_of(item) for item in value]
+    elif isinstance(value, dict):
+        if "anyOf" in value:
+            return value["anyOf"][0]
+        else:
+            return {key: replace_any_of(value[key]) for key in value}
+    else:
+        return value
