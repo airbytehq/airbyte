@@ -1,8 +1,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import base64
-from typing import Any, Dict
 from datetime import datetime
+from typing import Any, Dict
 
 
 class ConfigBuilder:

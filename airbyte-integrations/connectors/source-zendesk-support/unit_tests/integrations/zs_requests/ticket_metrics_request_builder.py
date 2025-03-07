@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 
 from .base_request_builder import ZendeskSupportBaseRequestBuilder
 from .request_authenticators.authenticator import Authenticator
@@ -36,8 +36,8 @@ class TicketMetricsRequestBuilder(ZendeskSupportBaseRequestBuilder):
 
     def with_start_date(self, start_date: str) -> "TicketMetricsRequestBuilder":
         # Handle ISO 8601 format with or without timezone
-        if start_date.endswith('Z'):
-            dt_string = start_date[:-1] + '+00:00'
+        if start_date.endswith("Z"):
+            dt_string = start_date[:-1] + "+00:00"
         else:
             dt_string = start_date
         dt = datetime.fromisoformat(dt_string)

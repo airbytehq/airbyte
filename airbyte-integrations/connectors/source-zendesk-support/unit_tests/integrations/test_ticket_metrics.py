@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest import TestCase
 
 import freezegun
@@ -12,7 +12,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import ConfigBuilder
 from .helpers import given_ticket_forms, given_tickets_with_state
-from .utils import read_stream, string_to_datetime, now_utc, datetime_to_string, create_duration
+from .utils import create_duration, datetime_to_string, now_utc, read_stream, string_to_datetime
 from .zs_requests import TicketMetricsRequestBuilder
 from .zs_requests.request_authenticators import ApiTokenAuthenticator
 from .zs_responses import TicketMetricsResponseBuilder

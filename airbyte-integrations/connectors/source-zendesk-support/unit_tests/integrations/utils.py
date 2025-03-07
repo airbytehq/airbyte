@@ -1,8 +1,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import operator
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
-from datetime import datetime, timezone, timedelta
 
 from source_zendesk_support import SourceZendeskSupport
 
@@ -33,8 +33,8 @@ def datetime_to_string(dt: datetime) -> str:
 
 def string_to_datetime(dt_string: str) -> datetime:
     # Handle ISO 8601 format with or without timezone
-    if dt_string.endswith('Z'):
-        dt_string = dt_string[:-1] + '+00:00'
+    if dt_string.endswith("Z"):
+        dt_string = dt_string[:-1] + "+00:00"
     return datetime.fromisoformat(dt_string)
 
 
@@ -43,4 +43,4 @@ def now_utc() -> datetime:
 
 
 def create_duration(*, days=0, weeks=0, hours=0, minutes=0, seconds=0) -> timedelta:
-    return timedelta(days=days + weeks*7, hours=hours, minutes=minutes, seconds=seconds)
+    return timedelta(days=days + weeks * 7, hours=hours, minutes=minutes, seconds=seconds)

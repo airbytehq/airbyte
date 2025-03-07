@@ -31,8 +31,8 @@ class PostsVotesRequestBuilder(ZendeskSupportBaseRequestBuilder):
 
     def with_start_time(self, start_time: str) -> "PostsVotesRequestBuilder":
         # Handle ISO 8601 format with or without timezone
-        if start_time.endswith('Z'):
-            dt_string = start_time[:-1] + '+00:00'
+        if start_time.endswith("Z"):
+            dt_string = start_time[:-1] + "+00:00"
         else:
             dt_string = start_time
         dt = datetime.fromisoformat(dt_string)

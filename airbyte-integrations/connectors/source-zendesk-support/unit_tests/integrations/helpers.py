@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
 
-from .utils import datetime_to_string, create_duration
+from .utils import create_duration, datetime_to_string
 from .zs_requests import (
     GroupsRequestBuilder,
     PostsCommentsRequestBuilder,

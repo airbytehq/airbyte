@@ -1,6 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest import TestCase
 
 from airbyte_cdk.models import SyncMode
@@ -9,7 +9,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import ConfigBuilder
 from .helpers import given_groups_with_later_records
-from .utils import datetime_to_string, read_stream, string_to_datetime, now_utc, create_duration
+from .utils import create_duration, datetime_to_string, now_utc, read_stream, string_to_datetime
 from .zs_requests.request_authenticators import ApiTokenAuthenticator
 
 
