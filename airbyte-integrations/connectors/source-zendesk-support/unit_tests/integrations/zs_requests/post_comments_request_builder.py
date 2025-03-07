@@ -1,8 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import calendar
-
-import pendulum
+from datetime import datetime
 
 from .base_request_builder import ZendeskSupportBaseRequestBuilder
 from .request_authenticators.authenticator import Authenticator
@@ -30,8 +29,14 @@ class PostsCommentsRequestBuilder(ZendeskSupportBaseRequestBuilder):
             params["page[after]"] = self._page_after
         return params
 
-    def with_start_time(self, start_time: int) -> "PostsCommentsRequestBuilder":
-        self._start_time: int = calendar.timegm(pendulum.parse(start_time).utctimetuple())
+    def with_start_time(self, start_time: str) -> "PostsCommentsRequestBuilder":
+        # Handle ISO 8601 format with or without timezone
+        if start_time.endswith('Z'):
+            dt_string = start_time[:-1] + '+00:00'
+        else:
+            dt_string = start_time
+        dt = datetime.fromisoformat(dt_string)
+        self._start_time: int = calendar.timegm(dt.utctimetuple())
         return self
 
     def with_page_size(self, page_size: int) -> "PostsCommentsRequestBuilder":

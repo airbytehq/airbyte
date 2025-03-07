@@ -2,8 +2,7 @@
 
 import base64
 from typing import Any, Dict
-
-from pendulum.datetime import DateTime
+from datetime import datetime
 
 
 class ConfigBuilder:
@@ -27,8 +26,8 @@ class ConfigBuilder:
         self._credentials["email"] = email
         return self
 
-    def with_start_date(self, start_date: DateTime) -> "ConfigBuilder":
-        self._start_date = start_date.format("YYYY-MM-DDTHH:mm:ss[Z]")
+    def with_start_date(self, start_date: datetime) -> "ConfigBuilder":
+        self._start_date = start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
         return self
 
     def build(self) -> Dict[str, Any]:

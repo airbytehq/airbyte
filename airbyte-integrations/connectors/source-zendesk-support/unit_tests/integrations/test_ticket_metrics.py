@@ -1,9 +1,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+from datetime import datetime, timezone, timedelta
 from unittest import TestCase
 
 import freezegun
-import pendulum
 
 from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -12,15 +12,15 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import ConfigBuilder
 from .helpers import given_ticket_forms, given_tickets_with_state
-from .utils import read_stream, string_to_datetime
+from .utils import read_stream, string_to_datetime, now_utc, datetime_to_string, create_duration
 from .zs_requests import TicketMetricsRequestBuilder
 from .zs_requests.request_authenticators import ApiTokenAuthenticator
 from .zs_responses import TicketMetricsResponseBuilder
 from .zs_responses.records import TicketMetricsRecordBuilder
 
 
-_NOW = pendulum.now(tz="UTC")
-_TWO_YEARS_AGO_DATETIME = _NOW.subtract(years=2)
+_NOW = now_utc()
+_TWO_YEARS_AGO_DATETIME = _NOW.replace(year=_NOW.year - 2)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -40,7 +40,7 @@ class TestTicketMetricsIncremental(TestCase):
 
     @HttpMocker()
     def test_given_no_state_and_successful_sync_when_read_then_set_state_to_most_recently_read_record_cursor(self, http_mocker):
-        record_updated_at: str = pendulum.now(tz="UTC").subtract(days=1).format("YYYY-MM-DDThh:mm:ss") + "Z"
+        record_updated_at: str = datetime_to_string(now_utc() - timedelta(days=1))
         api_token_authenticator = self._get_authenticator(self._config)
         _ = given_ticket_forms(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
         state = StateBuilder().with_stream_state("ticket_metrics", state={}).build()
@@ -55,17 +55,18 @@ class TestTicketMetricsIncremental(TestCase):
 
         assert len(output.records) == 1
         assert output.most_recent_state.stream_descriptor.name == "ticket_metrics"
-        assert output.most_recent_state.stream_state.__dict__ == {"_ab_updated_at": pendulum.parse(record_updated_at).int_timestamp}
+        assert output.most_recent_state.stream_state.__dict__ == {"_ab_updated_at": int(string_to_datetime(record_updated_at).timestamp())}
 
     @HttpMocker()
     def test_given_state_and_successful_sync_when_read_then_return_record(self, http_mocker):
         api_token_authenticator = self._get_authenticator(self._config)
 
-        state_cursor_value = pendulum.now(tz="UTC").subtract(days=2).int_timestamp
+        now = now_utc()
+        state_cursor_value = int((now - timedelta(days=2)).timestamp())
         state = StateBuilder().with_stream_state("ticket_metrics", state={"_ab_updated_at": state_cursor_value}).build()
-        record_cursor_value = pendulum.now(tz="UTC").subtract(days=1)
+        record_cursor_value = now - timedelta(days=1)
         tickets_records_builder = given_tickets_with_state(
-            http_mocker, pendulum.from_timestamp(state_cursor_value), record_cursor_value, api_token_authenticator
+            http_mocker, datetime.fromtimestamp(state_cursor_value, tz=timezone.utc), record_cursor_value, api_token_authenticator
         )
         ticket = tickets_records_builder.build()
 
@@ -84,4 +85,4 @@ class TestTicketMetricsIncremental(TestCase):
 
         assert len(output.records) == 1
         assert output.most_recent_state.stream_descriptor.name == "ticket_metrics"
-        assert output.most_recent_state.stream_state.__dict__ == {"_ab_updated_at": record_cursor_value.int_timestamp}
+        assert output.most_recent_state.stream_state.__dict__ == {"_ab_updated_at": int(record_cursor_value.timestamp())}

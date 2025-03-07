@@ -1,11 +1,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from unittest import TestCase
 from unittest.mock import patch
 
 import freezegun
-import pendulum
 
 from airbyte_cdk.models import AirbyteStateBlob, SyncMode
 from airbyte_cdk.models import Level as LogLevel
@@ -15,7 +14,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import ConfigBuilder
 from .helpers import given_post_comments, given_posts, given_ticket_forms
-from .utils import datetime_to_string, get_log_messages_by_log_level, read_stream, string_to_datetime
+from .utils import datetime_to_string, get_log_messages_by_log_level, read_stream, string_to_datetime, now_utc, create_duration
 from .zs_requests import PostCommentVotesRequestBuilder
 from .zs_requests.request_authenticators import ApiTokenAuthenticator
 from .zs_responses import ErrorResponseBuilder, PostCommentVotesResponseBuilder
@@ -33,7 +32,7 @@ class TestPostsCommentsVotesStreamFullRefresh(TestCase):
             ConfigBuilder()
             .with_basic_auth_credentials("user@example.com", "password")
             .with_subdomain("d3v-airbyte")
-            .with_start_date(pendulum.now(tz="UTC").subtract(years=2))
+            .with_start_date(now_utc().replace(year=now_utc().year - 2))
             .build()
         )
 
@@ -182,7 +181,7 @@ class TestPostsCommentsStreamIncremental(TestCase):
             ConfigBuilder()
             .with_basic_auth_credentials("user@example.com", "password")
             .with_subdomain("d3v-airbyte")
-            .with_start_date(pendulum.now(tz="UTC").subtract(years=2))
+            .with_start_date(now_utc().replace(year=now_utc().year - 2))
             .build()
         )
 
@@ -231,9 +230,11 @@ class TestPostsCommentsStreamIncremental(TestCase):
         """
         api_token_authenticator = self._get_authenticator(self._config)
 
-        state_start_date = pendulum.parse(self._config["start_date"]).add(years=1)
-        first_page_record_updated_at = state_start_date.add(months=1)
-        last_page_record_updated_at = first_page_record_updated_at.add(months=2)
+        state_start_date = string_to_datetime(self._config["start_date"]).replace(year=string_to_datetime(self._config["start_date"]).year + 1)
+        first_page_record_updated_at = state_start_date.replace(month=state_start_date.month + 1 if state_start_date.month < 12 else 1, 
+                                                year=state_start_date.year + (1 if state_start_date.month == 12 else 0))
+        last_page_record_updated_at = first_page_record_updated_at.replace(month=first_page_record_updated_at.month + 2 if first_page_record_updated_at.month <= 10 else (first_page_record_updated_at.month + 2) % 12,
+                                                   year=first_page_record_updated_at.year + (1 if first_page_record_updated_at.month > 10 else 0))
 
         state = {"updated_at": datetime_to_string(state_start_date)}
 

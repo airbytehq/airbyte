@@ -2,9 +2,8 @@
 
 import operator
 from typing import Any, Dict, List, Optional
+from datetime import datetime, timezone, timedelta
 
-import pendulum
-from pendulum.datetime import DateTime
 from source_zendesk_support import SourceZendeskSupport
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, SyncMode
@@ -28,9 +27,20 @@ def get_log_messages_by_log_level(logs: List[AirbyteMessage], log_level: LogLeve
     return map(operator.attrgetter("log.message"), filter(lambda x: x.log.level == log_level, logs))
 
 
-def datetime_to_string(dt: DateTime) -> str:
-    return dt.format("YYYY-MM-DDTHH:mm:ss[Z]")
+def datetime_to_string(dt: datetime) -> str:
+    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def string_to_datetime(dt_string: str) -> DateTime:
-    return pendulum.parse(dt_string)
+def string_to_datetime(dt_string: str) -> datetime:
+    # Handle ISO 8601 format with or without timezone
+    if dt_string.endswith('Z'):
+        dt_string = dt_string[:-1] + '+00:00'
+    return datetime.fromisoformat(dt_string)
+
+
+def now_utc() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def create_duration(*, days=0, weeks=0, hours=0, minutes=0, seconds=0) -> timedelta:
+    return timedelta(days=days + weeks*7, hours=hours, minutes=minutes, seconds=seconds)

@@ -7,12 +7,11 @@ import calendar
 import copy
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, patch
 from urllib.parse import parse_qsl, urlparse
 
 import freezegun
-import pendulum
 import pytest
 import pytz
 import requests
@@ -242,7 +241,9 @@ def test_str_to_unixtime():
 
 def test_check_start_time_param():
     expected = 1626936955
-    start_time = calendar.timegm(pendulum.parse(DATETIME_STR).utctimetuple())
+    # Convert ISO format string to datetime
+    dt = datetime.fromisoformat(DATETIME_STR.replace('Z', '+00:00'))
+    start_time = calendar.timegm(dt.utctimetuple())
     output = SourceZendeskIncrementalExportStream.validate_start_time(start_time)
     assert output == expected
 
@@ -1106,21 +1107,21 @@ class TestStatefulTicketMetrics:
                 {},
                 {
                     "tickets": [
-                        {"id": "13", "generated_timestamp": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp},
-                        {"id": "80", "generated_timestamp": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp},
+                        {"id": "13", "generated_timestamp": int(datetime.fromisoformat(STREAM_ARGS["start_date"].replace('Z', '+00:00')).timestamp())},
+                        {"id": "80", "generated_timestamp": int(datetime.fromisoformat(STREAM_ARGS["start_date"].replace('Z', '+00:00')).timestamp())},
                     ]
                 },
                 [
-                    {"ticket_id": "13", "_ab_updated_at": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp},
-                    {"ticket_id": "80", "_ab_updated_at": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp},
+                    {"ticket_id": "13", "_ab_updated_at": int(datetime.fromisoformat(STREAM_ARGS["start_date"].replace('Z', '+00:00')).timestamp())},
+                    {"ticket_id": "80", "_ab_updated_at": int(datetime.fromisoformat(STREAM_ARGS["start_date"].replace('Z', '+00:00')).timestamp())},
                 ],
             ),
             (
-                {"_ab_updated_state": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp},
-                {"tickets": [{"id": "80", "generated_timestamp": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp}]},
-                [{"ticket_id": "80", "_ab_updated_at": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp}],
+                {"_ab_updated_state": int(datetime.fromisoformat("2024-04-17T19:34:06Z".replace('Z', '+00:00')).timestamp())},
+                {"tickets": [{"id": "80", "generated_timestamp": int(datetime.fromisoformat("2024-04-17T19:34:06Z".replace('Z', '+00:00')).timestamp())}]},
+                [{"ticket_id": "80", "_ab_updated_at": int(datetime.fromisoformat("2024-04-17T19:34:06Z".replace('Z', '+00:00')).timestamp())}],
             ),
-            ({"_ab_updated_state": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp}, {"tickets": []}, []),
+            ({"_ab_updated_state": int(datetime.fromisoformat("2024-04-17T19:34:06Z".replace('Z', '+00:00')).timestamp())}, {"tickets": []}, []),
         ],
         ids=[
             "read_without_state",
@@ -1190,13 +1191,13 @@ class TestStatelessTicketMetrics:
                         "id": 1,
                         "ticket_id": 999,
                         "updated_at": "2023-02-01T00:00:00Z",
-                        "_ab_updated_at": pendulum.parse("2023-02-01T00:00:00Z").int_timestamp,
+                        "_ab_updated_at": int(datetime.fromisoformat("2023-02-01T00:00:00Z".replace('Z', '+00:00')).timestamp()),
                     },
                     {
                         "id": 2,
                         "ticket_id": 1000,
                         "updated_at": "2024-02-01T00:00:00Z",
-                        "_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp,
+                        "_ab_updated_at": int(datetime.fromisoformat("2024-02-01T00:00:00Z".replace('Z', '+00:00')).timestamp()),
                     },
                 ],
             ),
@@ -1213,7 +1214,7 @@ class TestStatelessTicketMetrics:
                         "id": 2,
                         "ticket_id": 1000,
                         "updated_at": "2024-02-01T00:00:00Z",
-                        "_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp,
+                        "_ab_updated_at": int(datetime.fromisoformat("2024-02-01T00:00:00Z".replace('Z', '+00:00')).timestamp()),
                     }
                 ],
             ),
@@ -1238,14 +1239,15 @@ class TestStatelessTicketMetrics:
 
     def test_get_updated_state(self):
         stream = StatelessTicketMetrics(**STREAM_ARGS)
+        timestamp = int(datetime.fromisoformat("2024-02-01T00:00:00Z".replace('Z', '+00:00')).timestamp())
         stream._most_recently_updated_record = {
             "id": 2,
             "ticket_id": 1000,
             "updated_at": "2024-02-01T00:00:00Z",
-            "_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp,
+            "_ab_updated_at": timestamp,
         }
         output_state = stream._get_updated_state(current_stream_state={}, latest_record={})
-        expected_state = {"_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp}
+        expected_state = {"_ab_updated_at": timestamp}
         assert output_state == expected_state
 
 

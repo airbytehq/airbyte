@@ -1,8 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 from typing import Optional
-
-import pendulum
+from datetime import datetime
 
 from .base_request_builder import ZendeskSupportBaseRequestBuilder
 from .request_authenticators.authenticator import Authenticator
@@ -36,5 +35,11 @@ class TicketMetricsRequestBuilder(ZendeskSupportBaseRequestBuilder):
         return self
 
     def with_start_date(self, start_date: str) -> "TicketMetricsRequestBuilder":
-        self._start_date: int = pendulum.parse(start_date).int_timestamp
+        # Handle ISO 8601 format with or without timezone
+        if start_date.endswith('Z'):
+            dt_string = start_date[:-1] + '+00:00'
+        else:
+            dt_string = start_date
+        dt = datetime.fromisoformat(dt_string)
+        self._start_date: int = int(dt.timestamp())
         return self
