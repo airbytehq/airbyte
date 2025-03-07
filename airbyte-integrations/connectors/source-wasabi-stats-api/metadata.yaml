@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "*"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-wasabi-stats-api
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.16.0@sha256:6800f806944ee4fccf24ae01f6b8fbefb12d952c3b3da338f51f732b55de51f2
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 6b0d43cb-8d31-4f9f-9832-6e577aa80db4
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-wasabi-stats-api
+  githubIssueLabel: source-wasabi-stats-api
+  icon: icon.svg
+  license: MIT
+  name: Wasabi
+  releaseDate: 2024-10-25
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/wasabi-stats-api
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

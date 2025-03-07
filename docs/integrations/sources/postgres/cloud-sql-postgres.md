@@ -96,7 +96,8 @@ These are the additional steps required (after following the [quick start](#quic
 
 We recommend following the steps in the [quick start](#quick-start) section to confirm that Airbyte can connect to your Postgres database prior to configuring CDC settings.
 
-For CDC, you must connect to primary/master databases. Pointing the connector configuration to replica database hosts for CDC will lead to failures.
+For CDC, you may connect to primary/master databases. To use a replica as source, which is available starting from Postgres 16.1, and provided additional configurations have been enabled on the database instance (please visit [Postgres official documentation](https://www.postgresql.org/docs/current/warm-standby.html#CASCADING-REPLICATION)), the most recent required connector's version is 3.6.21.
+
 
 #### Step 2: Provide additional permissions to read-only user
 

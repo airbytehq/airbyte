@@ -9,26 +9,24 @@ from source_zendesk_chat.components.id_incremental_cursor import ZendeskChatIdIn
 
 def _get_cursor(config) -> ZendeskChatIdIncrementalCursor:
     return ZendeskChatIdIncrementalCursor(
-        config = config,
-        cursor_field = "id",
-        field_name = "since_id",
-        parameters = {},
+        config=config,
+        cursor_field="id",
+        field_name="since_id",
+        parameters={},
     )
 
 
 @pytest.mark.parametrize(
     "stream_state, expected_cursor_value, expected_state_value",
     [
-        ({"id": 10}, 10, {'id': 10}),
+        ({"id": 10}, 10, {"id": 10}),
     ],
-    ids=[
-        "SET Initial State and GET State"
-    ]
+    ids=["SET Initial State and GET State"],
 )
 def test_id_incremental_cursor_set_initial_state_and_get_stream_state(
-    config, 
+    config,
     stream_state,
-    expected_cursor_value, 
+    expected_cursor_value,
     expected_state_value,
 ) -> None:
     cursor = _get_cursor(config)
@@ -44,17 +42,14 @@ def test_id_incremental_cursor_set_initial_state_and_get_stream_state(
         ({"id": 123}, 123),
         ({"id": 456}, 456),
     ],
-    ids=[
-        "first",
-        "second"
-    ]
+    ids=["first", "second"],
 )
 def test_id_incremental_cursor_close_slice(config, test_record, expected) -> None:
     cursor = _get_cursor(config)
     cursor.observe(stream_slice={}, record=test_record)
     cursor.close_slice(stream_slice={})
     assert cursor._cursor == expected
-    
+
 
 @pytest.mark.parametrize(
     "stream_state, input_slice, expected",
@@ -62,17 +57,14 @@ def test_id_incremental_cursor_close_slice(config, test_record, expected) -> Non
         ({}, {"id": 1}, {}),
         ({"id": 2}, {"id": 1}, {"since_id": 2}),
     ],
-    ids=[
-        "No State",
-        "With State"
-    ]
+    ids=["No State", "With State"],
 )
 def test_id_incremental_cursor_get_request_params(config, stream_state, input_slice, expected) -> None:
     cursor = _get_cursor(config)
     if stream_state:
         cursor.set_initial_state(stream_state)
     assert cursor.get_request_params(stream_slice=input_slice) == expected
-    
+
 
 @pytest.mark.parametrize(
     "stream_state, record, expected",
@@ -85,7 +77,7 @@ def test_id_incremental_cursor_get_request_params(config, stream_state, input_sl
         "No State",
         "With State > Record value",
         "With State < Record value",
-    ]
+    ],
 )
 def test_id_incremental_cursor_should_be_synced(config, stream_state, record, expected) -> None:
     cursor = _get_cursor(config)
@@ -107,7 +99,7 @@ def test_id_incremental_cursor_should_be_synced(config, stream_state, record, ex
         "First < Second - should not be synced",
         "Has First but no Second - should be synced",
         "Has no First and has no Second - should not be synced",
-    ]
+    ],
 )
 def test_id_incremental_cursor_is_greater_than_or_equal(config, first_record, second_record, expected) -> None:
     cursor = _get_cursor(config)

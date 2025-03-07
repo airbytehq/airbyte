@@ -6,9 +6,11 @@ import os
 from typing import Any, Mapping
 
 import pytest
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from source_mailchimp import SourceMailchimp
 from source_mailchimp.config_migrations import MigrateDataCenter
+
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+
 
 # BASE ARGS
 SOURCE: YamlDeclarativeSource = SourceMailchimp()

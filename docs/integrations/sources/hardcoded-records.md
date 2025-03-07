@@ -149,6 +149,21 @@ None!
 
 | Version | Date       | Pull Request                                             | Subject                  |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------|
+| 0.0.31 | 2025-03-04 | [55196](https://github.com/airbytehq/airbyte/pull/55196) | fix(source-hardcoded-records): use latest CDK |
+| 0.0.30 | 2025-03-01 | [54814](https://github.com/airbytehq/airbyte/pull/54814) | Update dependencies |
+| 0.0.29 | 2025-02-22 | [54304](https://github.com/airbytehq/airbyte/pull/54304) | Update dependencies |
+| 0.0.28 | 2025-02-15 | [53810](https://github.com/airbytehq/airbyte/pull/53810) | Update dependencies |
+| 0.0.27 | 2025-02-10 | [53607](https://github.com/airbytehq/airbyte/pull/53607) | fix: pin CDK version and declare Python 3.12 support for source-hardcoded-records |
+| 0.0.26 | 2025-02-01 | [52749](https://github.com/airbytehq/airbyte/pull/52749) | Update dependencies |
+| 0.0.25 | 2025-01-25 | [52269](https://github.com/airbytehq/airbyte/pull/52269) | Update dependencies |
+| 0.0.24 | 2025-01-11 | [51223](https://github.com/airbytehq/airbyte/pull/51223) | Update dependencies |
+| 0.0.23 | 2025-01-04 | [50895](https://github.com/airbytehq/airbyte/pull/50895) | Update dependencies |
+| 0.0.22 | 2024-12-28 | [50626](https://github.com/airbytehq/airbyte/pull/50626) | Update dependencies |
+| 0.0.21 | 2024-12-21 | [50140](https://github.com/airbytehq/airbyte/pull/50140) | Update dependencies |
+| 0.0.20 | 2024-12-14 | [49653](https://github.com/airbytehq/airbyte/pull/49653) | Update dependencies |
+| 0.0.19 | 2024-12-11 | [48976](https://github.com/airbytehq/airbyte/pull/48976) | Update dependencies |
+| 0.0.18 | 2024-11-25 | [48669](https://github.com/airbytehq/airbyte/pull/48669) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.0.17 | 2024-10-28 | [47052](https://github.com/airbytehq/airbyte/pull/47052) | Update dependencies |
 | 0.0.16 | 2024-10-12 | [46773](https://github.com/airbytehq/airbyte/pull/46773) | Update dependencies |
 | 0.0.15 | 2024-10-05 | [46492](https://github.com/airbytehq/airbyte/pull/46492) | Update dependencies |
 | 0.0.14 | 2024-09-28 | [46200](https://github.com/airbytehq/airbyte/pull/46200) | Update dependencies |

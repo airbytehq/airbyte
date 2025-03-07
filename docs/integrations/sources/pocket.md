@@ -57,6 +57,20 @@ curl --insecure -X POST -H 'Content-Type: application/json' -H 'X-Accept: applic
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.13 | 2025-03-01 | [55016](https://github.com/airbytehq/airbyte/pull/55016) | Update dependencies |
+| 0.2.12 | 2025-02-23 | [54594](https://github.com/airbytehq/airbyte/pull/54594) | Update dependencies |
+| 0.2.11 | 2025-02-15 | [54018](https://github.com/airbytehq/airbyte/pull/54018) | Update dependencies |
+| 0.2.10 | 2025-02-08 | [53457](https://github.com/airbytehq/airbyte/pull/53457) | Update dependencies |
+| 0.2.9 | 2025-02-01 | [53006](https://github.com/airbytehq/airbyte/pull/53006) | Update dependencies |
+| 0.2.8 | 2025-01-25 | [52462](https://github.com/airbytehq/airbyte/pull/52462) | Update dependencies |
+| 0.2.7 | 2025-01-18 | [51887](https://github.com/airbytehq/airbyte/pull/51887) | Update dependencies |
+| 0.2.6 | 2025-01-11 | [51366](https://github.com/airbytehq/airbyte/pull/51366) | Update dependencies |
+| 0.2.5 | 2024-12-28 | [50740](https://github.com/airbytehq/airbyte/pull/50740) | Update dependencies |
+| 0.2.4 | 2024-12-21 | [50282](https://github.com/airbytehq/airbyte/pull/50282) | Update dependencies |
+| 0.2.3 | 2024-12-14 | [49671](https://github.com/airbytehq/airbyte/pull/49671) | Update dependencies |
+| 0.2.2 | 2024-12-12 | [47783](https://github.com/airbytehq/airbyte/pull/47783) | Update dependencies |
+| 0.2.1 | 2024-10-28 | [47034](https://github.com/airbytehq/airbyte/pull/47034) | Update dependencies |
+| 0.2.0 | 2024-10-21 | [47143](https://github.com/airbytehq/airbyte/pull/47143) | Migrate to manifest only format |
 | 0.1.21 | 2024-10-12 | [46838](https://github.com/airbytehq/airbyte/pull/46838) | Update dependencies |
 | 0.1.20 | 2024-10-05 | [46404](https://github.com/airbytehq/airbyte/pull/46404) | Update dependencies |
 | 0.1.19 | 2024-09-28 | [46138](https://github.com/airbytehq/airbyte/pull/46138) | Update dependencies |

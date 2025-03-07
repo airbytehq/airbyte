@@ -9,6 +9,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
+
 from airbyte_cdk import AirbyteTracedException, BackoffStrategy
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import WaitTimeFromHeaderBackoffStrategy
@@ -19,6 +20,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_protocol.models import FailureType
 
 from .utils import get_analytics_columns, to_datetime_str
+
 
 # For Pinterest analytics streams rate limit is 300 calls per day / per user.
 # once hit - response would contain `code` property with int.

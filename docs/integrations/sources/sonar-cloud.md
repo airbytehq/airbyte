@@ -30,7 +30,19 @@ This source can sync data from the [Sonar cloud API](https://sonarcloud.io/web_a
 
 | Version | Date                                                                  | Pull Request                                              | Subject                                                                         |
 | :------ | :-------------------------------------------------------------------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.13 | 2025-03-01 | [55133](https://github.com/airbytehq/airbyte/pull/55133) | Update dependencies |
+| 0.2.12 | 2025-02-22 | [54540](https://github.com/airbytehq/airbyte/pull/54540) | Update dependencies |
+| 0.2.11 | 2025-02-15 | [54097](https://github.com/airbytehq/airbyte/pull/54097) | Update dependencies |
+| 0.2.10 | 2025-02-08 | [53539](https://github.com/airbytehq/airbyte/pull/53539) | Update dependencies |
+| 0.2.9 | 2025-02-01 | [53052](https://github.com/airbytehq/airbyte/pull/53052) | Update dependencies |
+| 0.2.8 | 2025-01-25 | [52437](https://github.com/airbytehq/airbyte/pull/52437) | Update dependencies |
+| 0.2.7 | 2025-01-18 | [52004](https://github.com/airbytehq/airbyte/pull/52004) | Update dependencies |
+| 0.2.6 | 2025-01-11 | [51448](https://github.com/airbytehq/airbyte/pull/51448) | Update dependencies |
+| 0.2.5 | 2024-12-28 | [50381](https://github.com/airbytehq/airbyte/pull/50381) | Update dependencies |
+| 0.2.4 | 2024-12-14 | [49746](https://github.com/airbytehq/airbyte/pull/49746) | Update dependencies |
+| 0.2.3 | 2024-12-12 | [48338](https://github.com/airbytehq/airbyte/pull/48338) | Update dependencies |
+| 0.2.2 | 2024-10-28 | [47673](https://github.com/airbytehq/airbyte/pull/47673) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 0.2.0 | 2024-08-14 | [44063](https://github.com/airbytehq/airbyte/pull/44063) | Refactor connector to manifest-only format |
 | 0.1.17 | 2024-08-10 | [43569](https://github.com/airbytehq/airbyte/pull/43569) | Update dependencies |
 | 0.1.16 | 2024-08-03 | [43249](https://github.com/airbytehq/airbyte/pull/43249) | Update dependencies |

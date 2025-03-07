@@ -108,6 +108,14 @@ poe lint
 
 ## Changelog
 
+### 1.10.2
+Update Python version requirement from 3.10 to 3.11.
+
+### 1.10.0
+Do not enforce that PyPi publication is enabled for Python connectors.
+Enforce that it's declared in the metadata file.
+It can be set to true or false. 
+
 ### 1.9.1
 
 Fail assets icon check if the icon is the default Airbyte icon.
@@ -176,7 +184,7 @@ Fix access to connector types: it should be accessed from the `Connector.connect
 
 - Add `applies_to_connector_types` attribute to `Check` class to specify the connector types that
   the check applies to.
-- Make `CheckPublishToPyPiIsEnabled` run on source connectors only.
+- Make `CheckPublishToPyPiIsDeclared` run on source connectors only.
 
 ### 1.0.0
 

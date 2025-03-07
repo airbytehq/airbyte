@@ -33,6 +33,8 @@ allprojects {
         ksp 'io.micronaut:micronaut-inject-kotlin'
         kspTest platform('io.micronaut:micronaut-core-bom:4.6.1')
         kspTest 'io.micronaut:micronaut-inject-kotlin'
+
+        testImplementation("io.mockk:mockk:1.13.13")
     }
 
     if (buildNumberFile.exists()) {
@@ -59,10 +61,6 @@ allprojects {
             }
         }
     }
-}
-
-tasks.register('bulkCdkIntegrationTest').configure {
-    dependsOn allprojects.collect {it.tasks.matching { it.name == 'integrationTest' }}
 }
 
 if (buildNumberFile.exists()) {

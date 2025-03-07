@@ -1,9 +1,14 @@
-version: 4.3.0
+version: 6.33.2
+
 type: DeclarativeSource
+
+description: Add support for custom domain
+
 check:
   type: CheckStream
   stream_names:
     - accounts
+
 definitions:
   streams:
     accounts:
@@ -14,12 +19,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          type: HttpRequester
-          url_base: https://rest.vitally.io/resources/
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['nothing'] }}"
+          $ref: "#/definitions/base_requester"
           path: /accounts
           http_method: GET
           request_parameters:
@@ -34,8 +34,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: from
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: limit
@@ -47,119 +47,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            accountExecutiveId:
-              type:
-                - "null"
-                - string
-            accountOwnerId:
-              type:
-                - "null"
-                - string
-            churnedAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-            createdAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-            csmId:
-              type:
-                - "null"
-                - string
-            externalId:
-              type:
-                - "null"
-                - string
-            firstSeenTimestamp:
-              type:
-                - "null"
-                - string
-              format: date-time
-            healthScore:
-              type:
-                - "null"
-                - number
-            id:
-              type:
-                - "null"
-                - string
-            lastInboundMessageTimestamp:
-              type:
-                - "null"
-                - string
-              format: date-time
-            lastOutboundMessageTimestamp:
-              type:
-                - "null"
-                - string
-              format: date-time
-            lastSeenTimestamp:
-              type:
-                - "null"
-                - string
-              format: date-time
-            mrr:
-              type:
-                - "null"
-                - number
-            name:
-              type:
-                - "null"
-                - string
-            nextRenewalDate:
-              type:
-                - "null"
-                - string
-              format: date-time
-            npsDetractorCount:
-              type:
-                - "null"
-                - integer
-            npsPassiveCount:
-              type:
-                - "null"
-                - integer
-            npsPromoterCount:
-              type:
-                - "null"
-                - integer
-            npsScore:
-              type:
-                - "null"
-                - number
-            organizationId:
-              type:
-                - "null"
-                - string
-            segments:
-              type:
-                - "null"
-                - array
-            traits:
-              type:
-                - "null"
-                - object
-            trialEndDate:
-              type:
-                - "null"
-                - string
-              format: date-time
-            updatedAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-            usersCount:
-              type:
-                - "null"
-                - integer
+          $ref: "#/schemas/accounts"
     admins:
       type: DeclarativeStream
       name: admins
@@ -168,12 +56,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          type: HttpRequester
-          url_base: https://rest.vitally.io/resources/
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['nothing'] }}"
+          $ref: "#/definitions/base_requester"
           path: /admins
           http_method: GET
         record_selector:
@@ -186,8 +69,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: from
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: limit
@@ -199,26 +82,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            email:
-              type:
-                - "null"
-                - string
-            id:
-              type:
-                - "null"
-                - string
-            licenseStatus:
-              type:
-                - "null"
-                - string
-            name:
-              type:
-                - "null"
-                - string
+          $ref: "#/schemas/admins"
     conversations:
       type: DeclarativeStream
       name: conversations
@@ -227,12 +91,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          type: HttpRequester
-          url_base: https://rest.vitally.io/resources/
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['nothing'] }}"
+          $ref: "#/definitions/base_requester"
           path: /conversations
           http_method: GET
         record_selector:
@@ -245,8 +104,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: from
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: limit
@@ -258,32 +117,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            createdAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-            externalId:
-              type:
-                - "null"
-                - string
-            id:
-              type:
-                - "null"
-                - string
-            subject:
-              type:
-                - "null"
-                - string
-            updatedAt:
-              type:
-                - "null"
-                - string
-              format: date-time
+          $ref: "#/schemas/conversations"
     notes:
       type: DeclarativeStream
       name: notes
@@ -292,12 +126,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          type: HttpRequester
-          url_base: https://rest.vitally.io/resources/
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['nothing'] }}"
+          $ref: "#/definitions/base_requester"
           path: /notes
           http_method: GET
         record_selector:
@@ -310,8 +139,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: from
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: limit
@@ -323,272 +152,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            account:
-              type:
-                - "null"
-                - object
-            accountId:
-              type:
-                - "null"
-                - string
-            author:
-              type:
-                - "null"
-                - string
-            authorId:
-              type:
-                - "null"
-                - string
-            category:
-              type:
-                - "null"
-                - string
-            categoryId:
-              type:
-                - "null"
-                - string
-            createdAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-            externalId:
-              type:
-                - "null"
-                - string
-            id:
-              type:
-                - "null"
-                - string
-            note:
-              type:
-                - "null"
-                - string
-            noteDate:
-              type:
-                - "null"
-                - string
-              format: date-time
-            organization:
-              type:
-                - "null"
-                - string
-            organizationId:
-              type:
-                - "null"
-                - string
-            tag:
-              type:
-                - "null"
-                - array
-            traits:
-              type:
-                - "null"
-                - object
-            updatedAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-    nps_responses:
-      type: DeclarativeStream
-      name: nps_responses
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: https://rest.vitally.io/resources/
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['nothing'] }}"
-          path: /npsResponses
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: from
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.next }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            createdAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-            dismissedAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-            externalId:
-              type:
-                - "null"
-                - string
-            feedback:
-              type:
-                - "null"
-                - string
-            id:
-              type:
-                - "null"
-                - string
-            respondedAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-            score:
-              type:
-                - "null"
-                - number
-            updatedAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-            user:
-              type:
-                - "null"
-                - object
-            userId:
-              type:
-                - "null"
-                - string
-    organizations:
-      type: DeclarativeStream
-      name: organizations
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: https://rest.vitally.io/resources/
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['nothing'] }}"
-          path: /organizations
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: from
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.next }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            accountExecutiveId:
-              type:
-                - "null"
-                - string
-            accountOwnerId:
-              type:
-                - "null"
-                - string
-            churnedAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-            createdAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-            csmId:
-              type:
-                - "null"
-                - string
-            externalId:
-              type:
-                - "null"
-                - string
-            id:
-              type:
-                - "null"
-                - string
-            keyRoles:
-              type:
-                - "null"
-                - array
-            mrr:
-              type:
-                - "null"
-                - number
-            name:
-              type:
-                - "null"
-                - string
-            nextRenewalDate:
-              type:
-                - "null"
-                - string
-              format: date-time
-            traits:
-              type:
-                - "null"
-                - object
-            trialEndDate:
-              type:
-                - "null"
-                - string
-              format: date-time
-            updatedAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-            usersCount:
-              type:
-                - "null"
-                - integer
+          $ref: "#/schemas/notes"
     tasks:
       type: DeclarativeStream
       name: tasks
@@ -597,12 +161,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          type: HttpRequester
-          url_base: https://rest.vitally.io/resources/
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['nothing'] }}"
+          $ref: "#/definitions/base_requester"
           path: /tasks
           http_method: GET
         record_selector:
@@ -615,8 +174,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: from
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: limit
@@ -628,98 +187,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            account:
-              type:
-                - "null"
-                - object
-            accountId:
-              type:
-                - "null"
-                - string
-            assignedTo:
-              type:
-                - "null"
-                - object
-            assignedToId:
-              type:
-                - "null"
-                - string
-            category:
-              type:
-                - "null"
-                - string
-            categoryId:
-              type:
-                - "null"
-                - string
-            completedAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-            completedBy:
-              type:
-                - "null"
-                - string
-            completedById:
-              type:
-                - "null"
-                - string
-            createdAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-            description:
-              type:
-                - "null"
-                - string
-            dueDate:
-              type:
-                - "null"
-                - string
-              format: date
-            externalId:
-              type:
-                - "null"
-                - string
-            id:
-              type:
-                - "null"
-                - string
-            name:
-              type:
-                - "null"
-                - string
-            organization:
-              type:
-                - "null"
-                - string
-            organizationId:
-              type:
-                - "null"
-                - string
-            projects:
-              type:
-                - "null"
-                - array
-            tag:
-              type:
-                - "null"
-                - array
-            traits:
-              type:
-                - "null"
-                - object
-            updatedAt:
-              type:
-                - "null"
-                - string
-              format: date-time
+          $ref: "#/schemas/tasks"
     users:
       type: DeclarativeStream
       name: users
@@ -728,12 +196,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          type: HttpRequester
-          url_base: https://rest.vitally.io/resources/
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['nothing'] }}"
+          $ref: "#/definitions/base_requester"
           path: /users
           http_method: GET
         record_selector:
@@ -746,8 +209,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: from
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: limit
@@ -759,971 +222,42 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            accounts:
-              type:
-                - "null"
-                - array
-            avatar:
-              type:
-                - "null"
-                - string
-            createdAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-            deactivatedAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-            email:
-              type:
-                - "null"
-                - string
-            externalId:
-              type:
-                - "null"
-                - string
-            firstKnown:
-              type:
-                - "null"
-                - string
-              format: date-time
-            id:
-              type:
-                - "null"
-                - string
-            joinDate:
-              type:
-                - "null"
-                - string
-              format: date-time
-            lastInboundMessageTimestamp:
-              type:
-                - "null"
-                - string
-              format: date-time
-            lastOutboundMessageTimestamp:
-              type:
-                - "null"
-                - string
-              format: date-time
-            lastSeenTimestamp:
-              type:
-                - "null"
-                - string
-              format: date-time
-            name:
-              type:
-                - "null"
-                - string
-            npsLastFeedback:
-              type:
-                - "null"
-                - string
-            npsLastRespondedAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-            npsLastScore:
-              type:
-                - "null"
-                - number
-            organizations:
-              type:
-                - "null"
-                - array
-            segments:
-              type:
-                - "null"
-                - array
-            traits:
-              type:
-                - "null"
-                - object
-            unsubscribedFromConversations:
-              type:
-                - "null"
-                - boolean
-            updatedAt:
-              type:
-                - "null"
-                - string
-              format: date-time
+          $ref: "#/schemas/users"
   base_requester:
     type: HttpRequester
-    url_base: https://rest.vitally.io/resources/
+    url_base: "{{ 'https://' + config['domain'] + '.' if config.domain else ''  + 'rest.vitally.io/resources' }}"
     authenticator:
       type: BasicHttpAuthenticator
-      username: "{{ config['api_key'] }}"
-      password: "{{ config['nothing'] }}"
+      password: "{{ config[\"basic_auth_header\"] }}"
+      username: "{{ config[\"secret_token\"] }}"
+
 streams:
-  - type: DeclarativeStream
-    name: accounts
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://rest.vitally.io/resources/
-        authenticator:
-          type: BasicHttpAuthenticator
-          username: "{{ config['api_key'] }}"
-          password: "{{ config['nothing'] }}"
-        path: /accounts
-        http_method: GET
-        request_parameters:
-          status: "{{ config['status'] }}"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - results
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: from
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response.next }}"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          accountExecutiveId:
-            type:
-              - "null"
-              - string
-          accountOwnerId:
-            type:
-              - "null"
-              - string
-          churnedAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          createdAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          csmId:
-            type:
-              - "null"
-              - string
-          externalId:
-            type:
-              - "null"
-              - string
-          firstSeenTimestamp:
-            type:
-              - "null"
-              - string
-            format: date-time
-          healthScore:
-            type:
-              - "null"
-              - number
-          id:
-            type:
-              - "null"
-              - string
-          lastInboundMessageTimestamp:
-            type:
-              - "null"
-              - string
-            format: date-time
-          lastOutboundMessageTimestamp:
-            type:
-              - "null"
-              - string
-            format: date-time
-          lastSeenTimestamp:
-            type:
-              - "null"
-              - string
-            format: date-time
-          mrr:
-            type:
-              - "null"
-              - number
-          name:
-            type:
-              - "null"
-              - string
-          nextRenewalDate:
-            type:
-              - "null"
-              - string
-            format: date-time
-          npsDetractorCount:
-            type:
-              - "null"
-              - integer
-          npsPassiveCount:
-            type:
-              - "null"
-              - integer
-          npsPromoterCount:
-            type:
-              - "null"
-              - integer
-          npsScore:
-            type:
-              - "null"
-              - number
-          organizationId:
-            type:
-              - "null"
-              - string
-          segments:
-            type:
-              - "null"
-              - array
-          traits:
-            type:
-              - "null"
-              - object
-          trialEndDate:
-            type:
-              - "null"
-              - string
-            format: date-time
-          updatedAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          usersCount:
-            type:
-              - "null"
-              - integer
-  - type: DeclarativeStream
-    name: admins
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://rest.vitally.io/resources/
-        authenticator:
-          type: BasicHttpAuthenticator
-          username: "{{ config['api_key'] }}"
-          password: "{{ config['nothing'] }}"
-        path: /admins
-        http_method: GET
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - results
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: from
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response.next }}"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          email:
-            type:
-              - "null"
-              - string
-          id:
-            type:
-              - "null"
-              - string
-          licenseStatus:
-            type:
-              - "null"
-              - string
-          name:
-            type:
-              - "null"
-              - string
-  - type: DeclarativeStream
-    name: conversations
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://rest.vitally.io/resources/
-        authenticator:
-          type: BasicHttpAuthenticator
-          username: "{{ config['api_key'] }}"
-          password: "{{ config['nothing'] }}"
-        path: /conversations
-        http_method: GET
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - results
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: from
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response.next }}"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          createdAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          externalId:
-            type:
-              - "null"
-              - string
-          id:
-            type:
-              - "null"
-              - string
-          subject:
-            type:
-              - "null"
-              - string
-          updatedAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-  - type: DeclarativeStream
-    name: notes
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://rest.vitally.io/resources/
-        authenticator:
-          type: BasicHttpAuthenticator
-          username: "{{ config['api_key'] }}"
-          password: "{{ config['nothing'] }}"
-        path: /notes
-        http_method: GET
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - results
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: from
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response.next }}"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          account:
-            type:
-              - "null"
-              - object
-          accountId:
-            type:
-              - "null"
-              - string
-          author:
-            type:
-              - "null"
-              - string
-          authorId:
-            type:
-              - "null"
-              - string
-          category:
-            type:
-              - "null"
-              - string
-          categoryId:
-            type:
-              - "null"
-              - string
-          createdAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          externalId:
-            type:
-              - "null"
-              - string
-          id:
-            type:
-              - "null"
-              - string
-          note:
-            type:
-              - "null"
-              - string
-          noteDate:
-            type:
-              - "null"
-              - string
-            format: date-time
-          organization:
-            type:
-              - "null"
-              - string
-          organizationId:
-            type:
-              - "null"
-              - string
-          tag:
-            type:
-              - "null"
-              - array
-          traits:
-            type:
-              - "null"
-              - object
-          updatedAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-  - type: DeclarativeStream
-    name: nps_responses
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://rest.vitally.io/resources/
-        authenticator:
-          type: BasicHttpAuthenticator
-          username: "{{ config['api_key'] }}"
-          password: "{{ config['nothing'] }}"
-        path: /npsResponses
-        http_method: GET
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - results
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: from
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response.next }}"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          createdAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          dismissedAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          externalId:
-            type:
-              - "null"
-              - string
-          feedback:
-            type:
-              - "null"
-              - string
-          id:
-            type:
-              - "null"
-              - string
-          respondedAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          score:
-            type:
-              - "null"
-              - number
-          updatedAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          user:
-            type:
-              - "null"
-              - object
-          userId:
-            type:
-              - "null"
-              - string
-  - type: DeclarativeStream
-    name: organizations
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://rest.vitally.io/resources/
-        authenticator:
-          type: BasicHttpAuthenticator
-          username: "{{ config['api_key'] }}"
-          password: "{{ config['nothing'] }}"
-        path: /organizations
-        http_method: GET
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - results
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: from
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response.next }}"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          accountExecutiveId:
-            type:
-              - "null"
-              - string
-          accountOwnerId:
-            type:
-              - "null"
-              - string
-          churnedAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          createdAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          csmId:
-            type:
-              - "null"
-              - string
-          externalId:
-            type:
-              - "null"
-              - string
-          id:
-            type:
-              - "null"
-              - string
-          keyRoles:
-            type:
-              - "null"
-              - array
-          mrr:
-            type:
-              - "null"
-              - number
-          name:
-            type:
-              - "null"
-              - string
-          nextRenewalDate:
-            type:
-              - "null"
-              - string
-            format: date-time
-          traits:
-            type:
-              - "null"
-              - object
-          trialEndDate:
-            type:
-              - "null"
-              - string
-            format: date-time
-          updatedAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          usersCount:
-            type:
-              - "null"
-              - integer
-  - type: DeclarativeStream
-    name: tasks
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://rest.vitally.io/resources/
-        authenticator:
-          type: BasicHttpAuthenticator
-          username: "{{ config['api_key'] }}"
-          password: "{{ config['nothing'] }}"
-        path: /tasks
-        http_method: GET
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - results
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: from
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response.next }}"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          account:
-            type:
-              - "null"
-              - object
-          accountId:
-            type:
-              - "null"
-              - string
-          assignedTo:
-            type:
-              - "null"
-              - object
-          assignedToId:
-            type:
-              - "null"
-              - string
-          category:
-            type:
-              - "null"
-              - string
-          categoryId:
-            type:
-              - "null"
-              - string
-          completedAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          completedBy:
-            type:
-              - "null"
-              - string
-          completedById:
-            type:
-              - "null"
-              - string
-          createdAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          description:
-            type:
-              - "null"
-              - string
-          dueDate:
-            type:
-              - "null"
-              - string
-            format: date
-          externalId:
-            type:
-              - "null"
-              - string
-          id:
-            type:
-              - "null"
-              - string
-          name:
-            type:
-              - "null"
-              - string
-          organization:
-            type:
-              - "null"
-              - string
-          organizationId:
-            type:
-              - "null"
-              - string
-          projects:
-            type:
-              - "null"
-              - array
-          tag:
-            type:
-              - "null"
-              - array
-          traits:
-            type:
-              - "null"
-              - object
-          updatedAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-  - type: DeclarativeStream
-    name: users
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://rest.vitally.io/resources/
-        authenticator:
-          type: BasicHttpAuthenticator
-          username: "{{ config['api_key'] }}"
-          password: "{{ config['nothing'] }}"
-        path: /users
-        http_method: GET
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - results
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: from
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 100
-          cursor_value: "{{ response.next }}"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          accounts:
-            type:
-              - "null"
-              - array
-          avatar:
-            type:
-              - "null"
-              - string
-          createdAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          deactivatedAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          email:
-            type:
-              - "null"
-              - string
-          externalId:
-            type:
-              - "null"
-              - string
-          firstKnown:
-            type:
-              - "null"
-              - string
-            format: date-time
-          id:
-            type:
-              - "null"
-              - string
-          joinDate:
-            type:
-              - "null"
-              - string
-            format: date-time
-          lastInboundMessageTimestamp:
-            type:
-              - "null"
-              - string
-            format: date-time
-          lastOutboundMessageTimestamp:
-            type:
-              - "null"
-              - string
-            format: date-time
-          lastSeenTimestamp:
-            type:
-              - "null"
-              - string
-            format: date-time
-          name:
-            type:
-              - "null"
-              - string
-          npsLastFeedback:
-            type:
-              - "null"
-              - string
-          npsLastRespondedAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          npsLastScore:
-            type:
-              - "null"
-              - number
-          organizations:
-            type:
-              - "null"
-              - array
-          segments:
-            type:
-              - "null"
-              - array
-          traits:
-            type:
-              - "null"
-              - object
-          unsubscribedFromConversations:
-            type:
-              - "null"
-              - boolean
-          updatedAt:
-            type:
-              - "null"
-              - string
-            format: date-time
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/admins"
+  - $ref: "#/definitions/streams/conversations"
+  - $ref: "#/definitions/streams/notes"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/users"
+
 spec:
   type: Spec
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - api_key
+      - domain
       - status
+      - secret_token
     properties:
-      api_key:
+      domain:
         type: string
-        title: API Token
-        description: The API Token for a Vitally account.
-        airbyte_secret: true
         order: 0
+        title: Custom Domain
+        description: >-
+          Provide only the domain part, like https://{your-domain}.rest.vitally.io/. 
+          Keep empty if you don't have a subdomain.
       status:
         type: string
-        title: Status
         description: >-
           Status of the Vitally accounts. One of the following values; active,
           churned, activeOrChurned.
@@ -1732,559 +266,2390 @@ spec:
           - churned
           - activeOrChurned
         order: 1
+        title: Status
+      secret_token:
+        type: string
+        description: sk_live_secret_token
+        order: 2
+        title: Secret Token
+      basic_auth_header:
+        type: string
+        description: Basic Auth Header
+        order: 3
+        title: Basic Auth Header
+        always_show: true
+        airbyte_secret: true
     additionalProperties: true
+
 metadata:
   autoImportSchema:
     accounts: false
     admins: false
     conversations: false
     notes: false
-    nps_responses: false
-    organizations: false
     tasks: false
     users: false
+  testedStreams:
+    accounts:
+      hasRecords: true
+      streamHash: ca1b94c2b9bdc691bcd85285d72f00f6597918e0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    admins:
+      hasRecords: true
+      streamHash: 5346644c54cc0595f3109dcb9a630024542e9245
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    conversations:
+      hasRecords: true
+      streamHash: f9f408ccf0d825833fa5d2841f7735aa5499a1fe
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    notes:
+      hasRecords: true
+      streamHash: cde6b8c66ff0e648b01c91c4ec51949a53953910
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tasks:
+      hasRecords: true
+      streamHash: ac9aec74e2812d51bb69abf28087adfadf2f99de
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      hasRecords: true
+      streamHash: dd05be79d845c8fb8b97b16cbbe3b191559e032d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://docs.vitally.io/en/articles/9880649-rest-api-overview
+
 schemas:
   accounts:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       accountExecutiveId:
         type:
-          - "null"
           - string
-      accountOwnerId:
-        type:
           - "null"
-          - string
       churnedAt:
         type:
-          - "null"
           - string
-        format: date-time
+          - "null"
       createdAt:
         type:
-          - "null"
           - string
-        format: date-time
+          - "null"
       csmId:
         type:
-          - "null"
           - string
+          - "null"
       externalId:
         type:
-          - "null"
           - string
-      firstSeenTimestamp:
-        type:
           - "null"
-          - string
-        format: date-time
       healthScore:
         type:
-          - "null"
           - number
-      id:
-        type:
           - "null"
-          - string
+      id:
+        type: string
+      keyRoles:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            assignedAt:
+              type:
+                - string
+                - "null"
+            createdAt:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            keyRole:
+              type:
+                - object
+                - "null"
+              properties:
+                createdAt:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                label:
+                  type:
+                    - string
+                    - "null"
+            vitallyUser:
+              type:
+                - object
+                - "null"
+              properties:
+                email:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                licenseStatus:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
       lastInboundMessageTimestamp:
         type:
-          - "null"
           - string
-        format: date-time
+          - "null"
       lastOutboundMessageTimestamp:
         type:
-          - "null"
           - string
-        format: date-time
-      lastSeenTimestamp:
-        type:
           - "null"
-          - string
-        format: date-time
       mrr:
         type:
-          - "null"
           - number
+          - "null"
       name:
         type:
-          - "null"
           - string
+          - "null"
       nextRenewalDate:
         type:
-          - "null"
           - string
-        format: date-time
+          - "null"
       npsDetractorCount:
         type:
+          - number
           - "null"
-          - integer
       npsPassiveCount:
         type:
+          - number
           - "null"
-          - integer
       npsPromoterCount:
         type:
-          - "null"
-          - integer
-      npsScore:
-        type:
-          - "null"
           - number
-      organizationId:
-        type:
           - "null"
-          - string
       segments:
         type:
-          - "null"
           - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
       traits:
         type:
-          - "null"
           - object
-      trialEndDate:
-        type:
           - "null"
-          - string
-        format: date-time
+        properties:
+          bottom_avg_csat_1:
+            type:
+              - number
+              - "null"
+          bottom_avg_csat_2:
+            type:
+              - number
+              - "null"
+          bottom_avg_csat_3:
+            type:
+              - number
+              - "null"
+          bottom_staff_1:
+            type:
+              - string
+              - "null"
+          bottom_staff_2:
+            type:
+              - string
+              - "null"
+          bottom_staff_3:
+            type:
+              - string
+              - "null"
+          csat_change_pct:
+            type:
+              - number
+              - "null"
+          current_activated_pct:
+            type:
+              - number
+              - "null"
+          current_csat_score:
+            type:
+              - number
+              - "null"
+          current_logins_cnt:
+            type:
+              - number
+              - "null"
+          current_messages_cnt:
+            type:
+              - number
+              - "null"
+          current_new_cases_cnt:
+            type:
+              - number
+              - "null"
+          current_passives_detractors:
+            type:
+              - number
+              - "null"
+          current_period_cases_cnt:
+            type:
+              - number
+              - "null"
+          current_period_nps:
+            type:
+              - number
+              - "null"
+          current_promoters:
+            type:
+              - number
+              - "null"
+          firm_id:
+            type:
+              - number
+              - "null"
+          hspot.annual_contract_value:
+            type:
+              - number
+              - "null"
+          hspot.appointments_per_100_cases:
+            type:
+              - number
+              - "null"
+          hspot.automations_per_100_cases:
+            type:
+              - number
+              - "null"
+          hspot.cancellation_date:
+            type:
+              - number
+              - "null"
+          hspot.checklist_items_per_100_cases:
+            type:
+              - number
+              - "null"
+          hspot.city:
+            type:
+              - string
+              - "null"
+          hspot.contract_start_date:
+            type:
+              - number
+              - "null"
+          hspot.contracted_case_threshold:
+            type:
+              - number
+              - "null"
+          hspot.current_google_reviews:
+            type:
+              - number
+              - "null"
+          hspot.days_from_kickoff_to_fully_implemented__slack_rounded_:
+            type:
+              - number
+              - "null"
+          hspot.documents_per_100_cases:
+            type:
+              - number
+              - "null"
+          hspot.escalation:
+            type:
+              - string
+              - "null"
+          hspot.firm_id:
+            type:
+              - number
+              - "null"
+          hspot.firm_success_manager:
+            type:
+              - string
+              - "null"
+          hspot.hs_csm_sentiment:
+            type:
+              - string
+              - "null"
+          hspot.hubspot_owner_id:
+            type:
+              - string
+              - "null"
+          hspot.implementation_manager:
+            type:
+              - string
+              - "null"
+          hspot.implementation_stage:
+            type:
+              - string
+              - "null"
+          hspot.last_payment:
+            type:
+              - number
+              - "null"
+          hspot.messages_per_100_cases:
+            type:
+              - number
+              - "null"
+          hspot.notice_of_termination_date:
+            type:
+              - number
+              - "null"
+          hspot.of_cases:
+            type:
+              - number
+              - "null"
+          hspot.practice_area:
+            type:
+              - string
+              - "null"
+          hspot.practice_areas:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          hspot.scorecard__activation:
+            type:
+              - string
+              - "null"
+          hspot.scorecard__activation_percentage:
+            type:
+              - string
+              - "null"
+          hspot.scorecard__growth:
+            type:
+              - string
+              - "null"
+          hspot.scorecard_last_updated:
+            type:
+              - number
+              - "null"
+          hspot.sentiment_notes:
+            type:
+              - string
+              - "null"
+          hspot.size_category:
+            type:
+              - string
+              - "null"
+          hspot.starting_google_reviews:
+            type:
+              - number
+              - "null"
+          hspot.state:
+            type:
+              - string
+              - "null"
+          hspot.status:
+            type:
+              - string
+              - "null"
+          hspot.termination_date:
+            type:
+              - number
+              - "null"
+          hspot.treatments_per_100_cases:
+            type:
+              - number
+              - "null"
+          last_nps_1:
+            type:
+              - number
+              - "null"
+          last_nps_2:
+            type:
+              - number
+              - "null"
+          last_nps_3:
+            type:
+              - number
+              - "null"
+          logins_change_pct:
+            type:
+              - number
+              - "null"
+          message_change_pct:
+            type:
+              - number
+              - "null"
+          new_cases_change_pct:
+            type:
+              - number
+              - "null"
+          nps_change_pct:
+            type:
+              - number
+              - "null"
+          passives_change_pct:
+            type:
+              - number
+              - "null"
+          period_cases_change_pct:
+            type:
+              - number
+              - "null"
+          period_month:
+            type:
+              - number
+              - "null"
+          period_year:
+            type:
+              - string
+              - "null"
+          previous_activated_pct:
+            type:
+              - number
+              - "null"
+          previous_csat_score:
+            type:
+              - number
+              - "null"
+          previous_logins_cnt:
+            type:
+              - number
+              - "null"
+          previous_messages_cnt:
+            type:
+              - number
+              - "null"
+          previous_new_cases_cnt:
+            type:
+              - number
+              - "null"
+          previous_passives_detractors:
+            type:
+              - number
+              - "null"
+          previous_period_cases_cnt:
+            type:
+              - number
+              - "null"
+          previous_period_nps:
+            type:
+              - number
+              - "null"
+          previous_promoters:
+            type:
+              - number
+              - "null"
+          promoters_change_pct:
+            type:
+              - number
+              - "null"
+          top_avg_csat_1:
+            type:
+              - number
+              - "null"
+          top_avg_csat_2:
+            type:
+              - number
+              - "null"
+          top_avg_csat_3:
+            type:
+              - number
+              - "null"
+          top_staff_1:
+            type:
+              - string
+              - "null"
+          top_staff_2:
+            type:
+              - string
+              - "null"
+          top_staff_3:
+            type:
+              - string
+              - "null"
+          unhappy_client_1:
+            type:
+              - string
+              - "null"
+          unhappy_client_2:
+            type:
+              - string
+              - "null"
+          unhappy_client_3:
+            type:
+              - string
+              - "null"
+          vitally.custom.adoptionChampions:
+            type:
+              - number
+              - "null"
+          vitally.custom.executiveSponsors:
+            type:
+              - number
+              - "null"
+          vitally.custom.forecast:
+            type:
+              - string
+              - "null"
+          vitally.custom.forecastNotes:
+            type:
+              - string
+              - "null"
+          vitally.custom.implementationProjectStatus:
+            type:
+              - string
+              - "null"
+          vitally.custom.implementationStage:
+            type:
+              - string
+              - "null"
+          vitally.custom.lastAccountReviewReminder:
+            type:
+              - number
+              - "null"
+          vitally.custom.nextSteps:
+            type:
+              - string
+              - "null"
+          vitally.custom.renewalContacts:
+            type:
+              - number
+              - "null"
+          vitally.custom.renewalStage:
+            type:
+              - string
+              - "null"
       updatedAt:
         type:
-          - "null"
           - string
-        format: date-time
+          - "null"
       usersCount:
         type:
+          - number
           - "null"
-          - integer
+    required:
+      - id
   admins:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       email:
         type:
-          - "null"
           - string
+          - "null"
       id:
-        type:
-          - "null"
-          - string
+        type: string
       licenseStatus:
         type:
-          - "null"
           - string
+          - "null"
       name:
         type:
-          - "null"
           - string
+          - "null"
+    required:
+      - id
   conversations:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       createdAt:
         type:
-          - "null"
           - string
-        format: date-time
-      externalId:
-        type:
           - "null"
-          - string
       id:
+        type: string
+      source:
         type:
-          - "null"
           - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
       subject:
         type:
-          - "null"
           - string
+          - "null"
+      traits:
+        type:
+          - object
+          - "null"
+        properties:
+          zendesk.status:
+            type:
+              - string
+              - "null"
+          zendesk.tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          zendesk.type:
+            type:
+              - string
+              - "null"
       updatedAt:
         type:
-          - "null"
           - string
-        format: date-time
+          - "null"
+    required:
+      - id
   notes:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account:
         type:
-          - "null"
           - object
+          - "null"
+        properties:
+          accountExecutiveId:
+            type:
+              - string
+              - "null"
+          churnedAt:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          csmId:
+            type:
+              - string
+              - "null"
+          externalId:
+            type:
+              - string
+              - "null"
+          healthScore:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastInboundMessageTimestamp:
+            type:
+              - string
+              - "null"
+          lastOutboundMessageTimestamp:
+            type:
+              - string
+              - "null"
+          mrr:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          nextRenewalDate:
+            type:
+              - string
+              - "null"
+          npsDetractorCount:
+            type:
+              - number
+              - "null"
+          npsPassiveCount:
+            type:
+              - number
+              - "null"
+          npsPromoterCount:
+            type:
+              - number
+              - "null"
+          traits:
+            type:
+              - object
+              - "null"
+            properties:
+              bottom_avg_csat_1:
+                type:
+                  - number
+                  - "null"
+              bottom_avg_csat_2:
+                type:
+                  - number
+                  - "null"
+              bottom_avg_csat_3:
+                type:
+                  - number
+                  - "null"
+              bottom_staff_1:
+                type:
+                  - string
+                  - "null"
+              bottom_staff_2:
+                type:
+                  - string
+                  - "null"
+              bottom_staff_3:
+                type:
+                  - string
+                  - "null"
+              csat_change_pct:
+                type:
+                  - number
+                  - "null"
+              current_activated_pct:
+                type:
+                  - number
+                  - "null"
+              current_csat_score:
+                type:
+                  - number
+                  - "null"
+              current_logins_cnt:
+                type:
+                  - number
+                  - "null"
+              current_messages_cnt:
+                type:
+                  - number
+                  - "null"
+              current_new_cases_cnt:
+                type:
+                  - number
+                  - "null"
+              current_passives_detractors:
+                type:
+                  - number
+                  - "null"
+              current_period_cases_cnt:
+                type:
+                  - number
+                  - "null"
+              current_period_nps:
+                type:
+                  - number
+                  - "null"
+              current_promoters:
+                type:
+                  - number
+                  - "null"
+              firm_id:
+                type:
+                  - number
+                  - "null"
+              hspot.annual_contract_value:
+                type:
+                  - number
+                  - "null"
+              hspot.appointments_per_100_cases:
+                type:
+                  - number
+                  - "null"
+              hspot.automations_per_100_cases:
+                type:
+                  - number
+                  - "null"
+              hspot.cancellation_date:
+                type:
+                  - number
+                  - "null"
+              hspot.checklist_items_per_100_cases:
+                type:
+                  - number
+                  - "null"
+              hspot.city:
+                type:
+                  - string
+                  - "null"
+              hspot.contract_start_date:
+                type:
+                  - number
+                  - "null"
+              hspot.contracted_case_threshold:
+                type:
+                  - number
+                  - "null"
+              hspot.current_google_reviews:
+                type:
+                  - number
+                  - "null"
+              hspot.days_from_kickoff_to_fully_implemented__slack_rounded_:
+                type:
+                  - number
+                  - "null"
+              hspot.documents_per_100_cases:
+                type:
+                  - number
+                  - "null"
+              hspot.escalation:
+                type:
+                  - string
+                  - "null"
+              hspot.firm_id:
+                type:
+                  - number
+                  - "null"
+              hspot.firm_success_manager:
+                type:
+                  - string
+                  - "null"
+              hspot.hs_csm_sentiment:
+                type:
+                  - string
+                  - "null"
+              hspot.hubspot_owner_id:
+                type:
+                  - string
+                  - "null"
+              hspot.implementation_manager:
+                type:
+                  - string
+                  - "null"
+              hspot.implementation_stage:
+                type:
+                  - string
+                  - "null"
+              hspot.last_payment:
+                type:
+                  - number
+                  - "null"
+              hspot.messages_per_100_cases:
+                type:
+                  - number
+                  - "null"
+              hspot.notice_of_termination_date:
+                type:
+                  - number
+                  - "null"
+              hspot.of_cases:
+                type:
+                  - number
+                  - "null"
+              hspot.practice_area:
+                type:
+                  - string
+                  - "null"
+              hspot.practice_areas:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              hspot.scorecard__activation:
+                type:
+                  - string
+                  - "null"
+              hspot.scorecard__activation_percentage:
+                type:
+                  - string
+                  - "null"
+              hspot.scorecard__growth:
+                type:
+                  - string
+                  - "null"
+              hspot.scorecard_last_updated:
+                type:
+                  - number
+                  - "null"
+              hspot.sentiment_notes:
+                type:
+                  - string
+                  - "null"
+              hspot.size_category:
+                type:
+                  - string
+                  - "null"
+              hspot.starting_google_reviews:
+                type:
+                  - number
+                  - "null"
+              hspot.state:
+                type:
+                  - string
+                  - "null"
+              hspot.status:
+                type:
+                  - string
+                  - "null"
+              hspot.termination_date:
+                type:
+                  - number
+                  - "null"
+              hspot.treatments_per_100_cases:
+                type:
+                  - number
+                  - "null"
+              last_nps_1:
+                type:
+                  - number
+                  - "null"
+              last_nps_2:
+                type:
+                  - number
+                  - "null"
+              last_nps_3:
+                type:
+                  - number
+                  - "null"
+              logins_change_pct:
+                type:
+                  - number
+                  - "null"
+              message_change_pct:
+                type:
+                  - number
+                  - "null"
+              new_cases_change_pct:
+                type:
+                  - number
+                  - "null"
+              nps_change_pct:
+                type:
+                  - number
+                  - "null"
+              passives_change_pct:
+                type:
+                  - number
+                  - "null"
+              period_cases_change_pct:
+                type:
+                  - number
+                  - "null"
+              period_month:
+                type:
+                  - number
+                  - "null"
+              period_year:
+                type:
+                  - string
+                  - "null"
+              previous_activated_pct:
+                type:
+                  - number
+                  - "null"
+              previous_csat_score:
+                type:
+                  - number
+                  - "null"
+              previous_logins_cnt:
+                type:
+                  - number
+                  - "null"
+              previous_messages_cnt:
+                type:
+                  - number
+                  - "null"
+              previous_new_cases_cnt:
+                type:
+                  - number
+                  - "null"
+              previous_passives_detractors:
+                type:
+                  - number
+                  - "null"
+              previous_period_cases_cnt:
+                type:
+                  - number
+                  - "null"
+              previous_period_nps:
+                type:
+                  - number
+                  - "null"
+              previous_promoters:
+                type:
+                  - number
+                  - "null"
+              promoters_change_pct:
+                type:
+                  - number
+                  - "null"
+              top_avg_csat_1:
+                type:
+                  - number
+                  - "null"
+              top_avg_csat_2:
+                type:
+                  - number
+                  - "null"
+              top_avg_csat_3:
+                type:
+                  - number
+                  - "null"
+              top_staff_1:
+                type:
+                  - string
+                  - "null"
+              top_staff_2:
+                type:
+                  - string
+                  - "null"
+              top_staff_3:
+                type:
+                  - string
+                  - "null"
+              unhappy_client_1:
+                type:
+                  - string
+                  - "null"
+              unhappy_client_2:
+                type:
+                  - string
+                  - "null"
+              unhappy_client_3:
+                type:
+                  - string
+                  - "null"
+              vitally.custom.adoptionChampions:
+                type:
+                  - number
+                  - "null"
+              vitally.custom.executiveSponsors:
+                type:
+                  - number
+                  - "null"
+              vitally.custom.forecast:
+                type:
+                  - string
+                  - "null"
+              vitally.custom.forecastNotes:
+                type:
+                  - string
+                  - "null"
+              vitally.custom.implementationProjectStatus:
+                type:
+                  - string
+                  - "null"
+              vitally.custom.implementationStage:
+                type:
+                  - string
+                  - "null"
+              vitally.custom.lastAccountReviewReminder:
+                type:
+                  - number
+                  - "null"
+              vitally.custom.nextSteps:
+                type:
+                  - string
+                  - "null"
+              vitally.custom.renewalContacts:
+                type:
+                  - number
+                  - "null"
+              vitally.custom.renewalStage:
+                type:
+                  - string
+                  - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+          usersCount:
+            type:
+              - number
+              - "null"
       accountId:
         type:
-          - "null"
           - string
+          - "null"
       author:
         type:
+          - object
           - "null"
-          - string
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          licenseStatus:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
       authorId:
         type:
-          - "null"
           - string
+          - "null"
       category:
         type:
+          - object
           - "null"
-          - string
+        properties:
+          createdAt:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
       categoryId:
         type:
-          - "null"
           - string
+          - "null"
       createdAt:
         type:
-          - "null"
           - string
-        format: date-time
-      externalId:
-        type:
           - "null"
-          - string
       id:
-        type:
-          - "null"
-          - string
+        type: string
       note:
         type:
-          - "null"
           - string
+          - "null"
       noteDate:
         type:
-          - "null"
           - string
-        format: date-time
-      organization:
-        type:
           - "null"
+      subject:
+        type:
           - string
-      organizationId:
-        type:
           - "null"
-          - string
-      tag:
+      tags:
         type:
-          - "null"
           - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
       traits:
         type:
-          - "null"
           - object
+          - "null"
       updatedAt:
         type:
-          - "null"
           - string
-        format: date-time
-  nps_responses:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      createdAt:
-        type:
           - "null"
-          - string
-        format: date-time
-      dismissedAt:
+      users:
         type:
-          - "null"
-          - string
-        format: date-time
-      externalId:
-        type:
-          - "null"
-          - string
-      feedback:
-        type:
-          - "null"
-          - string
-      id:
-        type:
-          - "null"
-          - string
-      respondedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      score:
-        type:
-          - "null"
-          - number
-      updatedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      user:
-        type:
-          - "null"
-          - object
-      userId:
-        type:
-          - "null"
-          - string
-  organizations:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      accountExecutiveId:
-        type:
-          - "null"
-          - string
-      accountOwnerId:
-        type:
-          - "null"
-          - string
-      churnedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      createdAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      csmId:
-        type:
-          - "null"
-          - string
-      externalId:
-        type:
-          - "null"
-          - string
-      id:
-        type:
-          - "null"
-          - string
-      keyRoles:
-        type:
-          - "null"
           - array
-      mrr:
-        type:
           - "null"
-          - number
-      name:
-        type:
-          - "null"
-          - string
-      nextRenewalDate:
-        type:
-          - "null"
-          - string
-        format: date-time
-      traits:
-        type:
-          - "null"
-          - object
-      trialEndDate:
-        type:
-          - "null"
-          - string
-        format: date-time
-      updatedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      usersCount:
-        type:
-          - "null"
-          - integer
+    required:
+      - id
   tasks:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      account:
-        type:
-          - "null"
-          - object
-      accountId:
-        type:
-          - "null"
-          - string
-      assignedTo:
-        type:
-          - "null"
-          - object
-      assignedToId:
-        type:
-          - "null"
-          - string
-      category:
-        type:
-          - "null"
-          - string
-      categoryId:
-        type:
-          - "null"
-          - string
-      completedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      completedBy:
-        type:
-          - "null"
-          - string
-      completedById:
-        type:
-          - "null"
-          - string
-      createdAt:
-        type:
-          - "null"
-          - string
-        format: date-time
       description:
         type:
-          - "null"
           - string
+          - "null"
+      account:
+        type:
+          - object
+          - "null"
+        properties:
+          accountExecutiveId:
+            type:
+              - string
+              - "null"
+          churnedAt:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          csmId:
+            type:
+              - string
+              - "null"
+          externalId:
+            type:
+              - string
+              - "null"
+          healthScore:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastInboundMessageTimestamp:
+            type:
+              - string
+              - "null"
+          lastOutboundMessageTimestamp:
+            type:
+              - string
+              - "null"
+          mrr:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          nextRenewalDate:
+            type:
+              - string
+              - "null"
+          npsDetractorCount:
+            type:
+              - number
+              - "null"
+          npsPassiveCount:
+            type:
+              - number
+              - "null"
+          npsPromoterCount:
+            type:
+              - number
+              - "null"
+          traits:
+            type:
+              - object
+              - "null"
+            properties:
+              bottom_avg_csat_1:
+                type:
+                  - number
+                  - "null"
+              bottom_avg_csat_2:
+                type:
+                  - number
+                  - "null"
+              bottom_avg_csat_3:
+                type:
+                  - number
+                  - "null"
+              bottom_staff_1:
+                type:
+                  - string
+                  - "null"
+              bottom_staff_2:
+                type:
+                  - string
+                  - "null"
+              bottom_staff_3:
+                type:
+                  - string
+                  - "null"
+              csat_change_pct:
+                type:
+                  - number
+                  - "null"
+              current_activated_pct:
+                type:
+                  - number
+                  - "null"
+              current_csat_score:
+                type:
+                  - number
+                  - "null"
+              current_logins_cnt:
+                type:
+                  - number
+                  - "null"
+              current_messages_cnt:
+                type:
+                  - number
+                  - "null"
+              current_new_cases_cnt:
+                type:
+                  - number
+                  - "null"
+              current_passives_detractors:
+                type:
+                  - number
+                  - "null"
+              current_period_cases_cnt:
+                type:
+                  - number
+                  - "null"
+              current_period_nps:
+                type:
+                  - number
+                  - "null"
+              current_promoters:
+                type:
+                  - number
+                  - "null"
+              firm_id:
+                type:
+                  - number
+                  - "null"
+              hspot.annual_contract_value:
+                type:
+                  - number
+                  - "null"
+              hspot.appointments_per_100_cases:
+                type:
+                  - number
+                  - "null"
+              hspot.automations_per_100_cases:
+                type:
+                  - number
+                  - "null"
+              hspot.cancellation_date:
+                type:
+                  - number
+                  - "null"
+              hspot.checklist_items_per_100_cases:
+                type:
+                  - number
+                  - "null"
+              hspot.city:
+                type:
+                  - string
+                  - "null"
+              hspot.contract_start_date:
+                type:
+                  - number
+                  - "null"
+              hspot.contracted_case_threshold:
+                type:
+                  - number
+                  - "null"
+              hspot.current_google_reviews:
+                type:
+                  - number
+                  - "null"
+              hspot.days_from_kickoff_to_fully_implemented__slack_rounded_:
+                type:
+                  - number
+                  - "null"
+              hspot.documents_per_100_cases:
+                type:
+                  - number
+                  - "null"
+              hspot.escalation:
+                type:
+                  - string
+                  - "null"
+              hspot.firm_id:
+                type:
+                  - number
+                  - "null"
+              hspot.firm_success_manager:
+                type:
+                  - string
+                  - "null"
+              hspot.hs_csm_sentiment:
+                type:
+                  - string
+                  - "null"
+              hspot.hubspot_owner_id:
+                type:
+                  - string
+                  - "null"
+              hspot.implementation_manager:
+                type:
+                  - string
+                  - "null"
+              hspot.implementation_stage:
+                type:
+                  - string
+                  - "null"
+              hspot.last_payment:
+                type:
+                  - number
+                  - "null"
+              hspot.messages_per_100_cases:
+                type:
+                  - number
+                  - "null"
+              hspot.notice_of_termination_date:
+                type:
+                  - number
+                  - "null"
+              hspot.of_cases:
+                type:
+                  - number
+                  - "null"
+              hspot.practice_area:
+                type:
+                  - string
+                  - "null"
+              hspot.practice_areas:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              hspot.scorecard__activation:
+                type:
+                  - string
+                  - "null"
+              hspot.scorecard__activation_percentage:
+                type:
+                  - string
+                  - "null"
+              hspot.scorecard__growth:
+                type:
+                  - string
+                  - "null"
+              hspot.scorecard_last_updated:
+                type:
+                  - number
+                  - "null"
+              hspot.sentiment_notes:
+                type:
+                  - string
+                  - "null"
+              hspot.size_category:
+                type:
+                  - string
+                  - "null"
+              hspot.starting_google_reviews:
+                type:
+                  - number
+                  - "null"
+              hspot.state:
+                type:
+                  - string
+                  - "null"
+              hspot.status:
+                type:
+                  - string
+                  - "null"
+              hspot.termination_date:
+                type:
+                  - number
+                  - "null"
+              hspot.treatments_per_100_cases:
+                type:
+                  - number
+                  - "null"
+              last_nps_1:
+                type:
+                  - number
+                  - "null"
+              last_nps_2:
+                type:
+                  - number
+                  - "null"
+              last_nps_3:
+                type:
+                  - number
+                  - "null"
+              logins_change_pct:
+                type:
+                  - number
+                  - "null"
+              message_change_pct:
+                type:
+                  - number
+                  - "null"
+              new_cases_change_pct:
+                type:
+                  - number
+                  - "null"
+              nps_change_pct:
+                type:
+                  - number
+                  - "null"
+              passives_change_pct:
+                type:
+                  - number
+                  - "null"
+              period_cases_change_pct:
+                type:
+                  - number
+                  - "null"
+              period_month:
+                type:
+                  - number
+                  - "null"
+              period_year:
+                type:
+                  - string
+                  - "null"
+              previous_activated_pct:
+                type:
+                  - number
+                  - "null"
+              previous_csat_score:
+                type:
+                  - number
+                  - "null"
+              previous_logins_cnt:
+                type:
+                  - number
+                  - "null"
+              previous_messages_cnt:
+                type:
+                  - number
+                  - "null"
+              previous_new_cases_cnt:
+                type:
+                  - number
+                  - "null"
+              previous_passives_detractors:
+                type:
+                  - number
+                  - "null"
+              previous_period_cases_cnt:
+                type:
+                  - number
+                  - "null"
+              previous_period_nps:
+                type:
+                  - number
+                  - "null"
+              previous_promoters:
+                type:
+                  - number
+                  - "null"
+              promoters_change_pct:
+                type:
+                  - number
+                  - "null"
+              top_avg_csat_1:
+                type:
+                  - number
+                  - "null"
+              top_avg_csat_2:
+                type:
+                  - number
+                  - "null"
+              top_avg_csat_3:
+                type:
+                  - number
+                  - "null"
+              top_staff_1:
+                type:
+                  - string
+                  - "null"
+              top_staff_2:
+                type:
+                  - string
+                  - "null"
+              top_staff_3:
+                type:
+                  - string
+                  - "null"
+              unhappy_client_1:
+                type:
+                  - string
+                  - "null"
+              unhappy_client_2:
+                type:
+                  - string
+                  - "null"
+              unhappy_client_3:
+                type:
+                  - string
+                  - "null"
+              vitally.custom.adoptionChampions:
+                type:
+                  - number
+                  - "null"
+              vitally.custom.executiveSponsors:
+                type:
+                  - number
+                  - "null"
+              vitally.custom.forecast:
+                type:
+                  - string
+                  - "null"
+              vitally.custom.forecastNotes:
+                type:
+                  - string
+                  - "null"
+              vitally.custom.implementationProjectStatus:
+                type:
+                  - string
+                  - "null"
+              vitally.custom.implementationStage:
+                type:
+                  - string
+                  - "null"
+              vitally.custom.lastAccountReviewReminder:
+                type:
+                  - number
+                  - "null"
+              vitally.custom.nextSteps:
+                type:
+                  - string
+                  - "null"
+              vitally.custom.renewalContacts:
+                type:
+                  - number
+                  - "null"
+              vitally.custom.renewalStage:
+                type:
+                  - string
+                  - "null"
+          updatedAt:
+            type:
+              - string
+              - "null"
+          usersCount:
+            type:
+              - number
+              - "null"
+      accountId:
+        type:
+          - string
+          - "null"
+      assignedTo:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          licenseStatus:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      assignedToId:
+        type:
+          - string
+          - "null"
+      completedAt:
+        type:
+          - string
+          - "null"
+      completedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          licenseStatus:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      completedById:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
       dueDate:
         type:
-          - "null"
           - string
-        format: date
-      externalId:
-        type:
           - "null"
-          - string
       id:
-        type:
-          - "null"
-          - string
+        type: string
       name:
         type:
-          - "null"
           - string
-      organization:
-        type:
           - "null"
-          - string
-      organizationId:
-        type:
-          - "null"
-          - string
       projects:
         type:
-          - "null"
           - array
-      tag:
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            accountId:
+              type:
+                - string
+                - "null"
+            actualStartDate:
+              type:
+                - string
+                - "null"
+            archivedAt:
+              type:
+                - string
+                - "null"
+            createdAt:
+              type:
+                - string
+                - "null"
+            durationInDays:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            ownedByVitallyUserId:
+              type:
+                - string
+                - "null"
+            projectCategoryId:
+              type:
+                - string
+                - "null"
+            projectStatusId:
+              type:
+                - string
+                - "null"
+            targetCompletionDate:
+              type:
+                - string
+                - "null"
+            traits:
+              type:
+                - object
+                - "null"
+            updatedAt:
+              type:
+                - string
+                - "null"
+      tags:
         type:
-          - "null"
           - array
+          - "null"
       traits:
         type:
-          - "null"
           - object
+          - "null"
       updatedAt:
         type:
-          - "null"
           - string
-        format: date-time
+          - "null"
+    required:
+      - id
   users:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       accounts:
         type:
-          - "null"
           - array
-      avatar:
-        type:
           - "null"
-          - string
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            accountExecutiveId:
+              type:
+                - string
+                - "null"
+            churnedAt:
+              type:
+                - string
+                - "null"
+            createdAt:
+              type:
+                - string
+                - "null"
+            csmId:
+              type:
+                - string
+                - "null"
+            externalId:
+              type:
+                - string
+                - "null"
+            healthScore:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            lastInboundMessageTimestamp:
+              type:
+                - string
+                - "null"
+            lastOutboundMessageTimestamp:
+              type:
+                - string
+                - "null"
+            mrr:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            nextRenewalDate:
+              type:
+                - string
+                - "null"
+            npsDetractorCount:
+              type:
+                - number
+                - "null"
+            npsPassiveCount:
+              type:
+                - number
+                - "null"
+            npsPromoterCount:
+              type:
+                - number
+                - "null"
+            segments:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+            traits:
+              type:
+                - object
+                - "null"
+              properties:
+                bottom_avg_csat_1:
+                  type:
+                    - number
+                    - "null"
+                bottom_avg_csat_2:
+                  type:
+                    - number
+                    - "null"
+                bottom_avg_csat_3:
+                  type:
+                    - number
+                    - "null"
+                bottom_staff_1:
+                  type:
+                    - string
+                    - "null"
+                bottom_staff_2:
+                  type:
+                    - string
+                    - "null"
+                bottom_staff_3:
+                  type:
+                    - string
+                    - "null"
+                csat_change_pct:
+                  type:
+                    - number
+                    - "null"
+                current_activated_pct:
+                  type:
+                    - number
+                    - "null"
+                current_csat_score:
+                  type:
+                    - number
+                    - "null"
+                current_logins_cnt:
+                  type:
+                    - number
+                    - "null"
+                current_messages_cnt:
+                  type:
+                    - number
+                    - "null"
+                current_new_cases_cnt:
+                  type:
+                    - number
+                    - "null"
+                current_passives_detractors:
+                  type:
+                    - number
+                    - "null"
+                current_period_cases_cnt:
+                  type:
+                    - number
+                    - "null"
+                current_period_nps:
+                  type:
+                    - number
+                    - "null"
+                current_promoters:
+                  type:
+                    - number
+                    - "null"
+                firm_id:
+                  type:
+                    - number
+                    - "null"
+                hspot.annual_contract_value:
+                  type:
+                    - number
+                    - "null"
+                hspot.appointments_per_100_cases:
+                  type:
+                    - number
+                    - "null"
+                hspot.automations_per_100_cases:
+                  type:
+                    - number
+                    - "null"
+                hspot.cancellation_date:
+                  type:
+                    - number
+                    - "null"
+                hspot.checklist_items_per_100_cases:
+                  type:
+                    - number
+                    - "null"
+                hspot.city:
+                  type:
+                    - string
+                    - "null"
+                hspot.contract_start_date:
+                  type:
+                    - number
+                    - "null"
+                hspot.contracted_case_threshold:
+                  type:
+                    - number
+                    - "null"
+                hspot.current_google_reviews:
+                  type:
+                    - number
+                    - "null"
+                hspot.days_from_kickoff_to_fully_implemented__slack_rounded_:
+                  type:
+                    - number
+                    - "null"
+                hspot.documents_per_100_cases:
+                  type:
+                    - number
+                    - "null"
+                hspot.escalation:
+                  type:
+                    - string
+                    - "null"
+                hspot.firm_id:
+                  type:
+                    - number
+                    - "null"
+                hspot.firm_success_manager:
+                  type:
+                    - string
+                    - "null"
+                hspot.hs_csm_sentiment:
+                  type:
+                    - string
+                    - "null"
+                hspot.hubspot_owner_id:
+                  type:
+                    - string
+                    - "null"
+                hspot.implementation_manager:
+                  type:
+                    - string
+                    - "null"
+                hspot.implementation_stage:
+                  type:
+                    - string
+                    - "null"
+                hspot.last_payment:
+                  type:
+                    - number
+                    - "null"
+                hspot.messages_per_100_cases:
+                  type:
+                    - number
+                    - "null"
+                hspot.notice_of_termination_date:
+                  type:
+                    - number
+                    - "null"
+                hspot.of_cases:
+                  type:
+                    - number
+                    - "null"
+                hspot.practice_area:
+                  type:
+                    - string
+                    - "null"
+                hspot.practice_areas:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                hspot.scorecard__activation:
+                  type:
+                    - string
+                    - "null"
+                hspot.scorecard__activation_percentage:
+                  type:
+                    - string
+                    - "null"
+                hspot.scorecard__growth:
+                  type:
+                    - string
+                    - "null"
+                hspot.scorecard_last_updated:
+                  type:
+                    - number
+                    - "null"
+                hspot.sentiment_notes:
+                  type:
+                    - string
+                    - "null"
+                hspot.size_category:
+                  type:
+                    - string
+                    - "null"
+                hspot.starting_google_reviews:
+                  type:
+                    - number
+                    - "null"
+                hspot.state:
+                  type:
+                    - string
+                    - "null"
+                hspot.status:
+                  type:
+                    - string
+                    - "null"
+                hspot.termination_date:
+                  type:
+                    - number
+                    - "null"
+                hspot.treatments_per_100_cases:
+                  type:
+                    - number
+                    - "null"
+                last_nps_1:
+                  type:
+                    - number
+                    - "null"
+                last_nps_2:
+                  type:
+                    - number
+                    - "null"
+                last_nps_3:
+                  type:
+                    - number
+                    - "null"
+                logins_change_pct:
+                  type:
+                    - number
+                    - "null"
+                message_change_pct:
+                  type:
+                    - number
+                    - "null"
+                new_cases_change_pct:
+                  type:
+                    - number
+                    - "null"
+                nps_change_pct:
+                  type:
+                    - number
+                    - "null"
+                passives_change_pct:
+                  type:
+                    - number
+                    - "null"
+                period_cases_change_pct:
+                  type:
+                    - number
+                    - "null"
+                period_month:
+                  type:
+                    - number
+                    - "null"
+                period_year:
+                  type:
+                    - string
+                    - "null"
+                previous_activated_pct:
+                  type:
+                    - number
+                    - "null"
+                previous_csat_score:
+                  type:
+                    - number
+                    - "null"
+                previous_logins_cnt:
+                  type:
+                    - number
+                    - "null"
+                previous_messages_cnt:
+                  type:
+                    - number
+                    - "null"
+                previous_new_cases_cnt:
+                  type:
+                    - number
+                    - "null"
+                previous_passives_detractors:
+                  type:
+                    - number
+                    - "null"
+                previous_period_cases_cnt:
+                  type:
+                    - number
+                    - "null"
+                previous_period_nps:
+                  type:
+                    - number
+                    - "null"
+                previous_promoters:
+                  type:
+                    - number
+                    - "null"
+                promoters_change_pct:
+                  type:
+                    - number
+                    - "null"
+                top_avg_csat_1:
+                  type:
+                    - number
+                    - "null"
+                top_avg_csat_2:
+                  type:
+                    - number
+                    - "null"
+                top_avg_csat_3:
+                  type:
+                    - number
+                    - "null"
+                top_staff_1:
+                  type:
+                    - string
+                    - "null"
+                top_staff_2:
+                  type:
+                    - string
+                    - "null"
+                top_staff_3:
+                  type:
+                    - string
+                    - "null"
+                unhappy_client_1:
+                  type:
+                    - string
+                    - "null"
+                unhappy_client_2:
+                  type:
+                    - string
+                    - "null"
+                unhappy_client_3:
+                  type:
+                    - string
+                    - "null"
+                vitally.custom.adoptionChampions:
+                  type:
+                    - number
+                    - "null"
+                vitally.custom.executiveSponsors:
+                  type:
+                    - number
+                    - "null"
+                vitally.custom.forecast:
+                  type:
+                    - string
+                    - "null"
+                vitally.custom.forecastNotes:
+                  type:
+                    - string
+                    - "null"
+                vitally.custom.implementationProjectStatus:
+                  type:
+                    - string
+                    - "null"
+                vitally.custom.implementationStage:
+                  type:
+                    - string
+                    - "null"
+                vitally.custom.lastAccountReviewReminder:
+                  type:
+                    - number
+                    - "null"
+                vitally.custom.nextSteps:
+                  type:
+                    - string
+                    - "null"
+                vitally.custom.renewalContacts:
+                  type:
+                    - number
+                    - "null"
+                vitally.custom.renewalStage:
+                  type:
+                    - string
+                    - "null"
+            updatedAt:
+              type:
+                - string
+                - "null"
+            usersCount:
+              type:
+                - number
+                - "null"
       createdAt:
         type:
-          - "null"
           - string
-        format: date-time
-      deactivatedAt:
-        type:
           - "null"
-          - string
-        format: date-time
       email:
         type:
-          - "null"
           - string
+          - "null"
       externalId:
         type:
-          - "null"
           - string
+          - "null"
       firstKnown:
         type:
-          - "null"
           - string
-        format: date-time
+          - "null"
       id:
-        type:
-          - "null"
-          - string
+        type: string
       joinDate:
         type:
-          - "null"
           - string
-        format: date-time
+          - "null"
       lastInboundMessageTimestamp:
         type:
-          - "null"
           - string
-        format: date-time
+          - "null"
       lastOutboundMessageTimestamp:
         type:
-          - "null"
           - string
-        format: date-time
-      lastSeenTimestamp:
-        type:
           - "null"
-          - string
-        format: date-time
       name:
         type:
-          - "null"
           - string
-      npsLastFeedback:
-        type:
           - "null"
-          - string
-      npsLastRespondedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      npsLastScore:
-        type:
-          - "null"
-          - number
-      organizations:
-        type:
-          - "null"
-          - array
       segments:
         type:
-          - "null"
           - array
+          - "null"
       traits:
         type:
-          - "null"
           - object
+          - "null"
+        properties:
+          hspot.email:
+            type:
+              - string
+              - "null"
+          hspot.executive_sponsor_:
+            type:
+              - string
+              - "null"
+          hspot.firstname:
+            type:
+              - string
+              - "null"
+          hspot.jobtitle:
+            type:
+              - string
+              - "null"
+          hspot.lastname:
+            type:
+              - string
+              - "null"
+          hspot.phone:
+            type:
+              - string
+              - "null"
+          vitally.custom.adoptionChampion:
+            type:
+              - boolean
+              - "null"
+          vitally.custom.executiveSponsor:
+            type:
+              - boolean
+              - "null"
+          vitally.custom.renewalContact:
+            type:
+              - boolean
+              - "null"
       unsubscribedFromConversations:
         type:
-          - "null"
           - boolean
+          - "null"
       updatedAt:
         type:
-          - "null"
           - string
-        format: date-time
+          - "null"
+    required:
+      - id

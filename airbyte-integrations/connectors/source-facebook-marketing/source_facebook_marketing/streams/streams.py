@@ -8,15 +8,17 @@ from typing import Any, Iterable, List, Mapping, Optional, Set
 
 import pendulum
 import requests
-from airbyte_cdk.models import SyncMode
 from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
 from facebook_business.exceptions import FacebookRequestError
+
+from airbyte_cdk.models import SyncMode
 from source_facebook_marketing.spec import ValidAdSetStatuses, ValidAdStatuses, ValidCampaignStatuses
 
 from .base_insight_streams import AdsInsights
 from .base_streams import FBMarketingIncrementalStream, FBMarketingReversedIncrementalStream, FBMarketingStream
+
 
 logger = logging.getLogger("airbyte")
 

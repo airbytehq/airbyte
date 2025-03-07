@@ -5,45 +5,43 @@
 /airbyte-integrations/connectors/destination-qdrant @airbytehq/ai-language-models
 /airbyte-integrations/connectors/destination-chroma @airbytehq/ai-language-models
 /airbyte-integrations/connectors/destination-snowflake-cortex @airbytehq/ai-language-models
-/airbyte-cdk/python/airbyte_cdk/destinations/vector_db_based @airbytehq/ai-language-models
 
 # CI/CD
-/.github/ @airbytehq/dev-tooling
-/airbyte-ci/ @airbytehq/dev-tooling
+/.github/ @airbytehq/dev-extensibility
+/airbyte-ci/ @airbytehq/dev-extensibility
 
 # Python CDK and Connector Acceptance Tests
-/airbyte-cdk/python @airbytehq/python-team
-/airbyte-integrations/connector-templates/ @airbytehq/dev-marketplace-contributions
-/airbyte-integrations/bases/connector-acceptance-test/ @airbytehq/dev-tooling
+/airbyte-integrations/connector-templates/ @airbytehq/dev-extensibility
+/airbyte-integrations/bases/connector-acceptance-test/ @airbytehq/dev-extensibility
 
 # Build customization file change
-/airbyte-integrations/connectors/**/build_customization.py @airbytehq/dev-tooling
+/airbyte-integrations/connectors/**/build_customization.py @airbytehq/dev-extensibility
 
 # Protocol related items
 /docs/understanding-airbyte/airbyte-protocol.md @airbytehq/protocol-reviewers
 
 # Bulk CDK
-/airbyte-cdk/bulk @airbytehq/dbsources @airbytehq/destinations
+/airbyte-cdk/bulk @airbytehq/dbsources @airbytehq/move-destinations
 /airbyte-cdk/bulk/core/extract/ @airbytehq/dbsources
-/airbyte-cdk/bulk/core/load/ @airbytehq/destinations
+/airbyte-cdk/bulk/core/load/ @airbytehq/move-destinations
 /airbyte-cdk/bulk/toolkits/extract-*/ @airbytehq/dbsources
-/airbyte-cdk/bulk/toolkits/load-*/ @airbytehq/destinations
+/airbyte-cdk/bulk/toolkits/load-*/ @airbytehq/move-destinations
 
 # Java CDK
-/airbyte-cdk/java/airbyte-cdk @airbytehq/dbsources @airbytehq/destinations
+/airbyte-cdk/java/airbyte-cdk @airbytehq/dbsources @airbytehq/move-destinations
 /airbyte-cdk/java/airbyte-cdk/*-sources/ @airbytehq/dbsources
-/airbyte-cdk/java/airbyte-cdk/*-destinations/ @airbytehq/destinations
-/airbyte-cdk/java/airbyte-cdk/typing-deduping/ @airbytehq/destinations
+/airbyte-cdk/java/airbyte-cdk/*-destinations/ @airbytehq/move-destinations
+/airbyte-cdk/java/airbyte-cdk/typing-deduping/ @airbytehq/move-destinations
 
 # Java connectors catch-all
-/buildSrc/ @airbytehq/dbsources @airbytehq/destinations
+/buildSrc/ @airbytehq/dbsources @airbytehq/move-destinations
 /airbyte-integrations/connectors/source-*/**/*.java @airbytehq/dbsources
 /airbyte-integrations/connectors/source-*/**/*.kt @airbytehq/dbsources
 /airbyte-integrations/connectors/source-*/**/*.gradle @airbytehq/dbsources
 /airbyte-integrations/connectors-performance/source-harness/ @airbytehq/dbsources
-/airbyte-integrations/connectors/destination-*/**/*.java @airbytehq/destinations
-/airbyte-integrations/connectors/destination-*/**/*.kt @airbytehq/destinations
-/airbyte-integrations/connectors/destination-*/**/*.gradle @airbytehq/destinations
+/airbyte-integrations/connectors/destination-*/**/*.java @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-*/**/*.kt @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-*/**/*.gradle @airbytehq/move-destinations
 /airbyte-integrations/connectors-performance/destination-harness/ @airbytehq/dbsources
 
 # Java-based certified or incubating source connectors
@@ -53,16 +51,16 @@
 /airbyte-integrations/connectors/source-postgres/ @airbytehq/dbsources
 
 # Java-based certified or incubating destination connectors
-/airbyte-integrations/connectors/destination-bigquery/ @airbytehq/destinations
-/airbyte-integrations/connectors/destination-postgres/ @airbytehq/destinations
-/airbyte-integrations/connectors/destination-postgres-strict-encrypt/ @airbytehq/destinations
-/airbyte-integrations/connectors/destination-s3/ @airbytehq/destinations
-/airbyte-integrations/connectors/destination-snowflake/ @airbytehq/destinations
-/airbyte-integrations/connectors/destination-redshift/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-bigquery/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-postgres/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-postgres-strict-encrypt/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-s3/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-snowflake/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-redshift/ @airbytehq/move-destinations
 
 # Python critical connectors
-/airbyte-integrations/connectors/source-facebook-marketing/ @airbytehq/python-team
-/airbyte-integrations/connectors/source-hubspot/ @airbytehq/python-team
-/airbyte-integrations/connectors/source-salesforce/ @airbytehq/python-team
-/airbyte-integrations/connectors/source-shopify/ @airbytehq/python-team
-/airbyte-integrations/connectors/source-stripe/ @airbytehq/python-team
+/airbyte-integrations/connectors/source-facebook-marketing/ @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/source-hubspot/ @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/source-salesforce/ @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/source-shopify/ @airbytehq/dev-extensibility
+/airbyte-integrations/connectors/source-stripe/ @airbytehq/dev-extensibility

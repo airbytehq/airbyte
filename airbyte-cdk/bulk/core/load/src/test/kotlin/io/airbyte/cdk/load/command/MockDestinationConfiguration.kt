@@ -14,9 +14,7 @@ import java.nio.file.Path
 @Requires(env = ["MockDestinationConfiguration"])
 class MockDestinationConfiguration : DestinationConfiguration() {
     override val recordBatchSizeBytes: Long = 1024L
-    override val tmpFileDirectory: Path = Path.of("/tmp-test")
-    override val firstStageTmpFilePrefix: String = "spilled"
-    override val firstStageTmpFileSuffix: String = ".jsonl"
+    override val tmpFileDirectory: Path = Path.of("tmp-test")
 
     override val maxCheckpointFlushTimeMs: Long = 1000L
     override val maxMessageQueueMemoryUsageRatio: Double = 0.1

@@ -129,7 +129,7 @@ For each stream, configure the following components:
 | Cursor field           |                  | Field to use as stream cursor. Can either be a string, or a list of strings if the cursor is a nested field.                                                                                                                          |
 | Transformations        |                  | A set of transformations to be applied on the records read from the source before emitting them to the destination                                                                                                                    |
 
-For a deep dive into each of the components, refer to [Understanding the YAML file](./understanding-the-yaml-file/yaml-overview.md) or the [full YAML Schema definition](../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml)
+For a deep dive into each of the components, refer to [Understanding the YAML file](./understanding-the-yaml-file/yaml-overview.md) or the [full YAML Schema definition](https://github.com/airbytehq/airbyte-python-cdk/blob/main/airbyte_cdk/sources/declarative/declarative_component_schema.yaml)
 
 ## Tutorial
 
@@ -153,4 +153,4 @@ For examples of production-ready config-based connectors, refer to:
 
 ## Reference
 
-The full schema definition for the YAML file can be found [here](https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml).
+The full schema definition for the YAML file can be found [here](https://raw.githubusercontent.com/airbytehq/airbyte-python-cdk/main/airbyte_cdk/sources/declarative/declarative_component_schema.yaml).

@@ -9,10 +9,11 @@ from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
+from cached_property import cached_property
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from cached_property import cached_property
 from source_instagram.api import InstagramAPI
 
 from .common import remove_params_from_url
@@ -126,15 +127,9 @@ class UserInsights(DatetimeTransformerMixin, InstagramIncrementalStream):
 
     METRICS_BY_PERIOD = {
         "day": [
-            "email_contacts",
             "follower_count",
-            "get_directions_clicks",
             "impressions",
-            "phone_call_clicks",
-            "profile_views",
             "reach",
-            "text_message_clicks",
-            "website_clicks",
         ],
         "week": ["impressions", "reach"],
         "days_28": ["impressions", "reach"],

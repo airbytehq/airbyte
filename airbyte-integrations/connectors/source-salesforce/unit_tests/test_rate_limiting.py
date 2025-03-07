@@ -6,32 +6,48 @@ from unittest import TestCase
 import pytest
 import requests
 import requests_mock
+from requests.exceptions import ChunkedEncodingError
+from source_salesforce.api import API_VERSION
+from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
-from requests.exceptions import ChunkedEncodingError
-from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler
+
 
 _ANY = "any"
 _ANY_BASE_URL = "https://any-base-url.com"
-_SF_API_VERSION = "v57.0"
 
 
 class SalesforceErrorHandlerTest(TestCase):
     def setUp(self) -> None:
         self._error_handler = SalesforceErrorHandler()
 
-    def test_given_invalid_entity_with_bulk_not_supported_message_on_job_creation_when_interpret_response_then_raise_bulk_not_supported(self) -> None:
-        response = self._create_response("POST", self._url_for_job_creation(), 400, [{"errorCode": "INVALIDENTITY", "message": "X is not supported by the Bulk API"}])
+    def test_given_invalid_entity_with_bulk_not_supported_message_on_job_creation_when_interpret_response_then_raise_bulk_not_supported(
+        self,
+    ) -> None:
+        response = self._create_response(
+            "POST", self._url_for_job_creation(), 400, [{"errorCode": "INVALIDENTITY", "message": "X is not supported by the Bulk API"}]
+        )
         with pytest.raises(BulkNotSupportedException):
             self._error_handler.interpret_response(response)
 
     def test_given_compound_data_error_on_job_creation_when_interpret_response_then_raise_bulk_not_supported(self) -> None:
-        response = self._create_response("POST", self._url_for_job_creation(), 400, [{"errorCode": _ANY, "message": "Selecting compound data not supported in Bulk Query"}])
+        response = self._create_response(
+            "POST",
+            self._url_for_job_creation(),
+            400,
+            [{"errorCode": _ANY, "message": "Selecting compound data not supported in Bulk Query"}],
+        )
         with pytest.raises(BulkNotSupportedException):
             self._error_handler.interpret_response(response)
 
     def test_given_request_limit_exceeded_on_job_creation_when_interpret_response_then_raise_bulk_not_supported(self) -> None:
-        response = self._create_response("POST", self._url_for_job_creation(), 400, [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "Selecting compound data not supported in Bulk Query"}])
+        response = self._create_response(
+            "POST",
+            self._url_for_job_creation(),
+            400,
+            [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "Selecting compound data not supported in Bulk Query"}],
+        )
         with pytest.raises(BulkNotSupportedException):
             self._error_handler.interpret_response(response)
 
@@ -41,12 +57,24 @@ class SalesforceErrorHandlerTest(TestCase):
             self._error_handler.interpret_response(response)
 
     def test_given_query_not_supported_on_job_creation_when_interpret_response_then_raise_bulk_not_supported(self) -> None:
-        response = self._create_response("POST", self._url_for_job_creation(), 400, [{"errorCode": "API_ERROR", "message": "API does not support query"}])
+        response = self._create_response(
+            "POST", self._url_for_job_creation(), 400, [{"errorCode": "API_ERROR", "message": "API does not support query"}]
+        )
         with pytest.raises(BulkNotSupportedException):
             self._error_handler.interpret_response(response)
 
     def test_given_txn_security_metering_error_when_interpret_response_then_raise_config_error(self) -> None:
-        response = self._create_response("GET", self._url_for_job_creation() + "/job_id", 400, [{"errorCode": "TXN_SECURITY_METERING_ERROR", "message": "We can't complete the action because enabled transaction security policies took too long to complete."}])
+        response = self._create_response(
+            "GET",
+            self._url_for_job_creation() + "/job_id",
+            400,
+            [
+                {
+                    "errorCode": "TXN_SECURITY_METERING_ERROR",
+                    "message": "We can't complete the action because enabled transaction security policies took too long to complete.",
+                }
+            ],
+        )
 
         error_resolution = self._error_handler.interpret_response(response)
 
@@ -68,4 +96,4 @@ class SalesforceErrorHandlerTest(TestCase):
             return requests.request(http_method, url)
 
     def _url_for_job_creation(self) -> str:
-        return f"{_ANY_BASE_URL}/services/data/{_SF_API_VERSION}/jobs/query"
+        return f"{_ANY_BASE_URL}/services/data/{API_VERSION}/jobs/query"

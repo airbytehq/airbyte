@@ -5,6 +5,7 @@
 import pathlib
 
 import yaml
+
 from metadata_service.models import transform
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 
@@ -61,11 +62,14 @@ def test_transform_to_json_does_not_mutate_keys(valid_metadata_upload_files, val
 
     fields_with_defaults = [
         "data.supportsRefreshes",
+        "data.supportsFileTransfer",
         "data.releases.rolloutConfiguration.enableProgressiveRollout",
         "data.releases.rolloutConfiguration.initialPercentage",
         "data.releases.rolloutConfiguration.maxPercentage",
         "data.releases.rolloutConfiguration.advanceDelayMinutes",
         "data.releases.breakingChanges.2.0.0.deadlineAction",
+        "data.ab_internal.isEnterprise",
+        "data.ab_internal.requireVersionIncrementsInPullRequests",
     ]
 
     for file_path in all_valid_metadata_files:

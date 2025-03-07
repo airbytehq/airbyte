@@ -7,29 +7,49 @@ package io.airbyte.cdk.load.test.util.destination_process
 import io.airbyte.cdk.ConnectorUncleanExitException
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
-import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.FeatureFlag
-import io.airbyte.protocol.models.Jsons
+import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import io.micronaut.context.annotation.Requires
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.File
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintWriter
-import javax.inject.Singleton
+import java.util.concurrent.Executors
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.junit.jupiter.api.Assertions.assertFalse
+
+private val logger = KotlinLogging.logger {}
 
 class NonDockerizedDestination(
     command: String,
-    config: ConfigurationSpecification?,
+    configContents: String?,
     catalog: ConfiguredAirbyteCatalog?,
+    useFileTransfer: Boolean,
+    additionalMicronautEnvs: List<String>,
+    micronautProperties: Map<Property, String>,
     vararg featureFlags: FeatureFlag,
 ) : DestinationProcess {
     private val destinationStdinPipe: PrintWriter
     private val destination: CliRunnable
     private val destinationComplete = CompletableDeferred<Unit>()
+    // The destination has a runBlocking inside WriteOperation.
+    // This means that normal coroutine cancellation doesn't work.
+    // So we start our own thread pool, which we can forcibly kill if needed.
+    private val executor = Executors.newSingleThreadExecutor()
+    private val coroutineDispatcher = executor.asCoroutineDispatcher()
+    private val file = File("/tmp/test_file")
 
     init {
+        if (useFileTransfer) {
+            val fileContentStr = "123"
+            file.writeText(fileContentStr)
+        }
         val destinationStdin = PipedInputStream()
         // This could probably be a channel, somehow. But given the current structure,
         // it's easier to just use the pipe stuff.
@@ -42,24 +62,39 @@ class NonDockerizedDestination(
         destination =
             CliRunner.destination(
                 command,
-                config = config,
+                configContents = configContents,
                 catalog = catalog,
                 inputStream = destinationStdin,
                 featureFlags = featureFlags,
+                additionalMicronautEnvs = additionalMicronautEnvs,
+                micronautProperties = micronautProperties.mapKeys { (k, _) -> k.micronautProperty },
             )
     }
 
     override suspend fun run() {
-        try {
-            destination.run()
-        } catch (e: ConnectorUncleanExitException) {
-            throw DestinationUncleanExitException.of(e.exitCode, destination.results.traces())
-        }
-        destinationComplete.complete(Unit)
+        withContext(coroutineDispatcher) {
+                launch {
+                    try {
+                        destination.run()
+                    } catch (e: ConnectorUncleanExitException) {
+                        throw DestinationUncleanExitException.of(
+                            e.exitCode,
+                            destination.results.traces(),
+                            destination.results.states(),
+                        )
+                    }
+                    destinationComplete.complete(Unit)
+                }
+            }
+            .invokeOnCompletion { executor.shutdownNow() }
     }
 
     override fun sendMessage(message: AirbyteMessage) {
-        destinationStdinPipe.println(Jsons.serialize(message))
+        destinationStdinPipe.println(message.serializeToString())
+    }
+
+    override fun sendMessage(string: String) {
+        destinationStdinPipe.println(string)
     }
 
     override fun readMessages(): List<AirbyteMessage> = destination.results.newMessages()
@@ -68,21 +103,39 @@ class NonDockerizedDestination(
         destinationStdinPipe.close()
         destinationComplete.join()
     }
+
+    override fun kill() {
+        // In addition to preventing the executor from accepting new tasks,
+        // this also sends a Thread.interrupt() to running tasks.
+        // Coroutines interpret this as a cancellation.
+        executor.shutdownNow()
+    }
+
+    override fun verifyFileDeleted() {
+        assertFalse(file.exists())
+    }
 }
 
-// Notably, not actually a Micronaut factory. We want to inject the actual
-// factory into our tests, not a pre-instantiated destination, because we want
-// to run multiple destination processes per test.
-@Singleton
-@Requires(notEnv = [DOCKERIZED_TEST_ENV])
-class NonDockerizedDestinationFactory : DestinationProcessFactory() {
+class NonDockerizedDestinationFactory(
+    private val additionalMicronautEnvs: List<String>,
+) : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,
-        config: ConfigurationSpecification?,
+        configContents: String?,
         catalog: ConfiguredAirbyteCatalog?,
+        useFileTransfer: Boolean,
+        micronautProperties: Map<Property, String>,
         vararg featureFlags: FeatureFlag,
     ): DestinationProcess {
         // TODO pass test name into the destination process
-        return NonDockerizedDestination(command, config, catalog, *featureFlags)
+        return NonDockerizedDestination(
+            command,
+            configContents,
+            catalog,
+            useFileTransfer,
+            additionalMicronautEnvs,
+            micronautProperties,
+            *featureFlags
+        )
     }
 }

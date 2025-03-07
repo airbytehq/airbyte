@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING, Callable, Optional, Tuple
 
-from .consts import AUTO_MERGE_LABEL, BASE_BRANCH, CONNECTOR_PATH_PREFIXES
+from .consts import AUTO_MERGE_BYPASS_CI_CHECKS_LABEL, AUTO_MERGE_LABEL, BASE_BRANCH, CONNECTOR_PATH_PREFIXES
 
 if TYPE_CHECKING:
     from github.Commit import Commit as GithubCommit
@@ -15,6 +15,15 @@ def has_auto_merge_label(head_commit: GithubCommit, pr: PullRequest, required_ch
     has_auto_merge_label = any(label.name == AUTO_MERGE_LABEL for label in pr.labels)
     if not has_auto_merge_label:
         return False, f"does not have the {AUTO_MERGE_LABEL} label"
+    return True, None
+
+
+def has_auto_merge_bypass_ci_checks_label(
+    head_commit: GithubCommit, pr: PullRequest, required_checks: set[str]
+) -> Tuple[bool, Optional[str]]:
+    has_auto_merge_bypass_ci_checks_label = any(label.name == AUTO_MERGE_BYPASS_CI_CHECKS_LABEL for label in pr.labels)
+    if not has_auto_merge_bypass_ci_checks_label:
+        return False, f"does not have the {AUTO_MERGE_BYPASS_CI_CHECKS_LABEL} label"
     return True, None
 
 
@@ -55,5 +64,13 @@ def head_commit_passes_all_required_checks(
 #     - the head commit passes all required checks
 
 # PLEASE BE CAREFUL OF THE VALIDATOR ORDERING
-# Let's declared faster checks first as the  check_if_pr_is_auto_mergeable function fails fast.
-ENABLED_VALIDATORS = [has_auto_merge_label, targets_main_branch, only_modifies_connectors, head_commit_passes_all_required_checks]
+# Let's declare faster checks first as the check_if_pr_is_auto_mergeable function fails fast.
+COMMON_VALIDATORS = {
+    targets_main_branch,
+    only_modifies_connectors,
+}
+# Let's declare faster checks first as the check_if_pr_is_auto_mergeable function fails fast.
+VALIDATOR_MAPPING: dict[str, set[Callable]] = {
+    AUTO_MERGE_LABEL: COMMON_VALIDATORS | {has_auto_merge_label, head_commit_passes_all_required_checks},
+    AUTO_MERGE_BYPASS_CI_CHECKS_LABEL: COMMON_VALIDATORS | {has_auto_merge_bypass_ci_checks_label},
+}

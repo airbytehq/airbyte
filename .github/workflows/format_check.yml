@@ -10,53 +10,33 @@ on:
 
 jobs:
   format-check:
-    # IMPORTANT: This name must match the require check name on the branch protection settings
     name: "Check for formatting errors"
-    # Do not run this job on forks
-    # Forked PRs are handled by the community_ci.yml workflow
-    if: github.event.pull_request.head.repo.fork != true
-    runs-on: tooling-test-small
+    runs-on: ubuntu-24.04
     steps:
-      - name: Checkout Airbyte (with credentials)
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v3
         with:
-          ref: ${{ github.head_ref }}
-          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
-          fetch-depth: 1
-      - name: Run airbyte-ci format check [MASTER]
-        id: airbyte_ci_format_check_all_master
-        if: github.ref == 'refs/heads/master'
-        uses: ./.github/actions/run-airbyte-ci
-        continue-on-error: true
+          distribution: "zulu"
+          java-version: "21"
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          context: "master"
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          subcommand: "format check all"
-
-      - name: Run airbyte-ci format check [PULL REQUEST]
-        id: airbyte_ci_format_check_all_pr
-        if: github.event_name == 'pull_request'
-        uses: ./.github/actions/run-airbyte-ci
-        continue-on-error: false
+          python-version: "3.11"
+          cache: "pip"
+          check-latest: true
+          update-environment: true
+      - name: Run pre-commit
+        uses: pre-commit/action@v3.0.1
+        id: format-check
         with:
-          context: "pull_request"
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          subcommand: "format check all"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_2 }}
-
-      - name: Run airbyte-ci format check [WORKFLOW DISPATCH]
-        id: airbyte_ci_format_check_all_manual
-        if: github.event_name == 'workflow_dispatch'
-        uses: ./.github/actions/run-airbyte-ci
-        continue-on-error: false
-        with:
-          context: "manual"
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          subcommand: "format check all"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_2 }}
+          extra_args: --all-files
 
       - name: Match GitHub User to Slack User [MASTER]
-        if: github.ref == 'refs/heads/master'
+        if: >
+          always() && steps.format-check.outcome == 'failure' &&
+          github.ref == 'refs/heads/master' &&
+          github.event.pull_request.head.repo.fork == false
         id: match-github-to-slack-user
         uses: ./.github/actions/match-github-to-slack-user
         env:
@@ -64,7 +44,10 @@ jobs:
           GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Format Failure on Master Slack Channel [MASTER]
-        if: steps.airbyte_ci_format_check_all_master.outcome == 'failure' && github.ref == 'refs/heads/master'
+        if: >
+          always() && steps.format-check.outcome == 'failure' &&
+          github.ref == 'refs/heads/master' &&
+          github.event.pull_request.head.repo.fork == false
         uses: abinoda/slack-action@master
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}

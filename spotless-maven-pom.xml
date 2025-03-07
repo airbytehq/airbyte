@@ -26,6 +26,9 @@
                             <includes>
                                 <include>**/*.java</include>
                             </includes>
+                            <excludes>
+                                <exclude>**/non_formatted_code/*</exclude>
+                            </excludes>
                             <importOrder />
                             <eclipse>
                                 <version>4.21</version>

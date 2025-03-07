@@ -315,7 +315,7 @@ class JdbcMetadataQuerier(
         return pk
     }
 
-    private data class PrimaryKeyRow(
+    data class PrimaryKeyRow(
         val name: String,
         val ordinal: Int,
         val columnName: String,
@@ -323,13 +323,6 @@ class JdbcMetadataQuerier(
 
     override fun extraChecks() {
         checkQueries.executeAll(conn)
-    }
-
-    override fun commonCursorOrNull(cursorColumnID: String): FieldOrMetaField? {
-        return when (cursorColumnID) {
-            CommonMetaField.CDC_LSN.id -> CommonMetaField.CDC_LSN
-            else -> null
-        }
     }
 
     override fun close() {
