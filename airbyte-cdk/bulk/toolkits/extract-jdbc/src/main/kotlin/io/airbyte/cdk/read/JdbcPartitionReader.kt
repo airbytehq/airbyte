@@ -4,12 +4,24 @@ package io.airbyte.cdk.read
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.BufferedReader
+import java.io.InputStream
+import java.time.Clock
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.coroutineContext
+import kotlin.io.path.Path
+import kotlin.io.path.createTempFile
+import kotlin.io.path.fileSize
+import kotlin.io.path.getLastModifiedTime
+import kotlin.io.path.pathString
+import kotlin.text.Charsets.UTF_8
+import kotlin.time.measureTime
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.future.await
 
 /** Base class for JDBC implementations of [PartitionReader]. */
 sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
@@ -58,6 +70,22 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     partition: P,
 ) : JdbcPartitionReader<P>(partition) {
+    private val log = KotlinLogging.logger {}
+
+    fun commands(query: String): List<String> = listOf(
+        "mysql",
+        "--quick",
+        "--raw",
+        "-ss",
+        "-P",
+        sharedState.configuration.realPort.toString(),
+        "-h",
+        sharedState.configuration.realHost,
+        "-u",
+        sharedState.configuration.jdbcProperties.get("user")!!,
+        "-p${sharedState.configuration.jdbcProperties.get("password")}",
+        "-e$query"
+    )
 
     val runComplete = AtomicBoolean(false)
     val numRecords = AtomicLong()
@@ -69,7 +97,52 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
         did before time has elapsed will be wasted. */
         checkMaxReadTimeElapsed()
 
-        selectQuerier
+        fun collectOutput(inputStream: InputStream): String {
+            val out = StringBuilder()
+            val buf: BufferedReader = inputStream.bufferedReader(UTF_8)
+            var line: String? = buf.readLine()
+            do {
+                if (line != null) {
+                    out.append(line).append("\n")
+                }
+                line = buf.readLine()
+            } while (line != null)
+            return out.toString()
+        }
+        /////////////////////////////////
+        // form query
+        var q = partition.nonResumableQuery.sql
+        val bindings = partition.nonResumableQuery.bindings
+        for (binding in bindings) {
+            q = q.replaceFirst("?", binding.value.toString())
+        }
+
+        // Run mysql
+        val cmds = commands(q)
+
+        val pb = ProcessBuilder(cmds)
+        val file = createTempFile(Path("/tmp"), "ab", ".txt")
+        pb.redirectOutput(file.toFile())
+
+        log.info { "Running $cmds to ${file}" }
+        val timeTaken = measureTime {
+            val process = pb.start()
+            val finishedP = process.onExit().await()
+            if (finishedP.exitValue() != 0) {
+                log.error { "Failed to execute command: ${pb.command()}" }
+                log.error { collectOutput(process.errorStream) }
+                throw RuntimeException()
+            }
+        }
+
+        log.info { "${file} Time taken: $timeTaken" }
+        // emit record + file_url
+        val recordTemplate =
+            "{\"type\":\"RECORD\",\"record\":{\"stream\":\"${stream.namespace}.${stream.name}\",\"file\":{\"file_url\":\"${file.pathString}\",\"bytes\":${file.fileSize()},\"file_relative_path\":\"${file.fileName}\",\"modified\":${file.getLastModifiedTime().toMillis()},\"source_file_url\":\"${file.fileName}\"},\"emitted_at\":${Clock.systemUTC().millis()},\"data\":{}}}"
+        println(recordTemplate)
+        /////////////////////////////////
+
+        /*selectQuerier
             .executeQuery(
                 q = partition.nonResumableQuery,
                 parameters =
@@ -83,7 +156,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
                     out(row)
                     numRecords.incrementAndGet()
                 }
-            }
+            }*/
         runComplete.set(true)
     }
 
