@@ -2,45 +2,45 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.pipeline
+package io.airbyte.cdk.load.pipline.object_storage
 
+import io.airbyte.cdk.load.file.object_storage.Part
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.pipeline.BatchUpdate
+import io.airbyte.cdk.load.pipeline.LoadPipelineStep
+import io.airbyte.cdk.load.pipeline.RecordCountFlushStrategy
 import io.airbyte.cdk.load.task.internal.LoadPipelineStepTask
-import io.airbyte.cdk.load.write.DirectLoader
-import io.airbyte.cdk.load.write.DirectLoaderFactory
-import io.github.oshai.kotlinlogging.KotlinLogging
+import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 @Singleton
-@Requires(bean = DirectLoaderFactory::class)
-class DirectLoadPipelineStep<S : DirectLoader>(
-    val accumulator: DirectLoadRecordAccumulator<S, StreamKey>,
+@Requires(bean = ObjectLoader::class)
+class ObjectLoaderPartStep(
+    private val objectLoader: ObjectLoader,
+    private val recordToPartAccumulator: ObjectLoaderRecordToPartAccumulator<*>,
     @Named("recordQueue")
     val inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     @Named("batchStateUpdateQueue") val batchQueue: QueueWriter<BatchUpdate>,
+    @Named("objectLoaderPartQueue") val partQueue: PartitionedQueue<PipelineEvent<ObjectKey, Part>>,
     @Value("\${airbyte.destination.core.record-batch-size-override:null}")
     val batchSizeOverride: Long? = null,
-    val directLoaderFactory: DirectLoaderFactory<S>,
 ) : LoadPipelineStep {
-    private val log = KotlinLogging.logger {}
-
-    override val numWorkers: Int = directLoaderFactory.inputPartitions
+    override val numWorkers: Int = objectLoader.numPartWorkers
 
     override fun taskForPartition(partition: Int): LoadPipelineStepTask<*, *, *, *, *> {
-        log.info { "Creating DirectLoad pipeline step task for partition $partition" }
         return LoadPipelineStepTask(
-            accumulator,
+            recordToPartAccumulator,
             inputQueue.consume(partition),
-            batchUpdateQueue = batchQueue,
-            outputPartitioner = null,
-            outputQueue = null as PartitionedQueue<PipelineEvent<StreamKey, DirectLoadAccResult>>?,
+            batchQueue,
+            ObjectLoaderPartPartitioner(),
+            partQueue,
             batchSizeOverride?.let { RecordCountFlushStrategy(it) },
             partition
         )
