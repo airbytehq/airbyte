@@ -78,6 +78,21 @@ class MSSQLSpecification : ConfigurationSpecification(), LoadTypeSpecification {
     @get:JsonProperty("load_type")
     @get:JsonSchemaInject(json = """{"always_show": true,"order":8}""")
     override val loadType: LoadType = InsertLoadSpecification()
+
+    @get:JsonProperty("num_process_records_workers", required = false)
+    val numProcessRecordsWorkers: Int? = null
+
+    @get:JsonProperty("num_process_batch_workers", required = false)
+    val numProcessBatchWorkers: Int? = null
+
+    @get:JsonProperty("part_size_mb", required = false)
+    val partSizeMb: Long? = null
+
+    @get:JsonProperty("file_size_mb", required = false)
+    val fileSizeMb: Long? = null
+
+    @get:JsonProperty("batch_queue_depth", required = false)
+    val batchQueueDepth: Int? = null
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "name")
