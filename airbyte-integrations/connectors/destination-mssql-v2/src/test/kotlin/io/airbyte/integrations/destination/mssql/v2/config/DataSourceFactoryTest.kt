@@ -89,8 +89,8 @@ internal class DataSourceFactoryTest {
                 user = "airbyte",
                 password = "super secure o//",
                 jdbcUrlParams = null,
-                rawDataSchema = "airbyte_internal",
                 sslMethod = Unencrypted(),
+                MSSQLLoadTypeConfiguration(InsertLoadTypeConfiguration())
             )
     }
 }

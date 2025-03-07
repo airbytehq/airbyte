@@ -5,6 +5,7 @@
 
 import gzip
 import json
+from enum import Enum
 from http import HTTPStatus
 from typing import List, Optional
 
@@ -12,7 +13,6 @@ import freezegun
 import pendulum
 import pytest
 import requests_mock
-from source_amazon_seller_partner.streams import ReportProcessingStatus
 
 from airbyte_cdk.models import AirbyteStateMessage, FailureType, Level, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
@@ -56,6 +56,14 @@ STREAMS = (
     ("GET_STRANDED_INVENTORY_UI_DATA", "csv"),
     ("GET_FBA_REIMBURSEMENTS_DATA", "csv"),
 )
+
+
+class ReportProcessingStatus(str, Enum):
+    CANCELLED = "CANCELLED"
+    DONE = "DONE"
+    FATAL = "FATAL"
+    IN_PROGRESS = "IN_PROGRESS"
+    IN_QUEUE = "IN_QUEUE"
 
 
 def _create_report_request(report_name: str) -> RequestBuilder:

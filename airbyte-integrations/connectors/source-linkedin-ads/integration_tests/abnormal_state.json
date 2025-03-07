@@ -9,7 +9,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "lastModified": "2050-01-02" },
+      "stream_state": { "lastModified": "2050-01-02T00:00:00+0000" },
       "stream_descriptor": { "name": "campaign_groups" }
     }
   },

@@ -128,7 +128,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
         if usage >= self.MIN_RATE:
             sleep_time = self._compute_pause_interval(usage=usage, pause_interval=pause_interval)
-            logger.warning(f"Utilization is too high ({usage})%, pausing for {sleep_time}")
+            logger.warning(f"Facebook API Utilization is too high ({usage})%, pausing for {sleep_time}")
             sleep(sleep_time.total_seconds())
 
     def _update_insights_throttle_limit(self, response: FacebookResponse):

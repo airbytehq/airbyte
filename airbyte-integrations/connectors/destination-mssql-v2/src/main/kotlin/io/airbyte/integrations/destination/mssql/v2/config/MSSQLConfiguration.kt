@@ -19,10 +19,12 @@ data class MSSQLConfiguration(
     val user: String?,
     val password: String?,
     val jdbcUrlParams: String?,
-    val rawDataSchema: String,
     val sslMethod: EncryptionMethod,
-) : DestinationConfiguration() {
+    override val mssqlLoadTypeConfiguration: MSSQLLoadTypeConfiguration,
+) : DestinationConfiguration(), MSSQLLoadTypeConfigurationProvider {
     override val numProcessRecordsWorkers = 1
+    override val numProcessBatchWorkers: Int = 1
+    override val processEmptyFiles: Boolean = true
 }
 
 @Singleton
@@ -53,8 +55,8 @@ class MSSQLConfigurationFactory(private val featureFlags: Set<FeatureFlag>) :
             user = overrides.getOrDefault("user", spec.user),
             password = overrides.getOrDefault("password", spec.password),
             jdbcUrlParams = overrides.getOrDefault("jdbcUrlParams", spec.jdbcUrlParams),
-            rawDataSchema = overrides.getOrDefault("rawDataSchema", spec.rawDataSchema),
             sslMethod = spec.sslMethod,
+            mssqlLoadTypeConfiguration = spec.toLoadConfiguration()
         )
     }
 }

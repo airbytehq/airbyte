@@ -54,13 +54,6 @@
         "title" : "JDBC URL Params",
         "order" : 6
       },
-      "raw_data_schema" : {
-        "type" : "string",
-        "description" : "The schema to write raw tables into (default: airbyte_internal)",
-        "title" : "Raw Table Schema Name",
-        "default" : "airbyte_internal",
-        "order" : 5
-      },
       "ssl_method" : {
         "oneOf" : [ {
           "title" : "Unencrypted",
@@ -123,11 +116,82 @@
         } ],
         "description" : "The encryption method which is used to communicate with the database.",
         "title" : "SSL Method",
+        "order" : 7,
+        "type" : "object"
+      },
+      "load_type" : {
+        "oneOf" : [ {
+          "title" : "Insert Load",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Configuration details for using the INSERT loading mechanism.",
+          "properties" : {
+            "load_type" : {
+              "type" : "string",
+              "enum" : [ "INSERT" ],
+              "default" : "INSERT"
+            }
+          },
+          "required" : [ "load_type" ]
+        }, {
+          "title" : "Bulk Load",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Configuration details for using the BULK loading mechanism.",
+          "properties" : {
+            "load_type" : {
+              "type" : "string",
+              "enum" : [ "BULK" ],
+              "default" : "BULK"
+            },
+            "azure_blob_storage_account_name" : {
+              "type" : "string",
+              "description" : "The name of the Azure Blob Storage account. See: https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction#storage-accounts",
+              "title" : "Azure Blob Storage Account Name",
+              "examples" : [ "mystorageaccount" ]
+            },
+            "azure_blob_storage_container_name" : {
+              "type" : "string",
+              "description" : "The name of the Azure Blob Storage container. See: https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction#containers",
+              "title" : "Azure Blob Storage Container Name",
+              "examples" : [ "mycontainer" ]
+            },
+            "shared_access_signature" : {
+              "type" : "string",
+              "description" : "A shared access signature (SAS) provides secure delegated access to resources in your storage account. See: https://learn.microsoft.com/azure/storage/common/storage-sas-overview",
+              "title" : "Shared Access Signature",
+              "examples" : [ "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY" ],
+              "airbyte_secret" : true,
+              "always_show" : true
+            },
+            "bulk_load_data_source" : {
+              "type" : "string",
+              "description" : "Specifies the external data source name configured in MSSQL, which references the Azure Blob container. See: https://learn.microsoft.com/sql/t-sql/statements/bulk-insert-transact-sql",
+              "title" : "BULK Load Data Source",
+              "examples" : [ "MyAzureBlobStorage" ],
+              "order" : 4,
+              "always_show" : true
+            },
+            "bulk_load_validate_values_pre_load" : {
+              "type" : "boolean",
+              "description" : "When enabled, Airbyte will validate all values before loading them into the destination table. This provides stronger data integrity guarantees but may significantly impact performance.",
+              "title" : "Pre-Load Value Validation",
+              "examples" : [ "false" ],
+              "default" : false,
+              "order" : 5,
+              "always_show" : false
+            }
+          },
+          "required" : [ "load_type", "azure_blob_storage_account_name", "azure_blob_storage_container_name", "shared_access_signature", "bulk_load_data_source" ]
+        } ],
+        "description" : "Specifies the type of load mechanism (e.g., BULK, INSERT) and its associated configuration.",
+        "title" : "Load Type",
+        "always_show" : true,
         "order" : 8,
         "type" : "object"
       }
     },
-    "required" : [ "host", "port", "database", "schema", "raw_data_schema", "ssl_method" ]
+    "required" : [ "host", "port", "database", "schema", "user", "ssl_method", "load_type" ]
   },
   "supportsIncremental" : true,
   "supportsNormalization" : false,

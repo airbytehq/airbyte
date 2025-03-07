@@ -20,7 +20,7 @@ import jakarta.inject.Singleton
 @Singleton
 @JsonSchemaTitle("MSSQL V2 Destination Specification")
 @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
-class MSSQLSpecification : ConfigurationSpecification() {
+class MSSQLSpecification : ConfigurationSpecification(), LoadTypeSpecification {
     @get:JsonSchemaTitle("Host")
     @get:JsonPropertyDescription("The host name of the MSSQL database.")
     @get:JsonProperty("host")
@@ -51,7 +51,7 @@ class MSSQLSpecification : ConfigurationSpecification() {
     @get:JsonPropertyDescription("The username which is used to access the database.")
     @get:JsonProperty("user")
     @get:JsonSchemaInject(json = """{"order":4}""")
-    val user: String? = null
+    val user: String = "user"
 
     @get:JsonSchemaTitle("Password")
     @get:JsonPropertyDescription("The password associated with this username.")
@@ -67,19 +67,17 @@ class MSSQLSpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"order":6}""")
     val jdbcUrlParams: String? = null
 
-    @get:JsonSchemaTitle("Raw Table Schema Name")
-    @get:JsonPropertyDescription("The schema to write raw tables into (default: airbyte_internal)")
-    @get:JsonProperty("raw_data_schema")
-    @get:JsonSchemaInject(json = """{"default":"airbyte_internal","order":5}""")
-    val rawDataSchema: String = "airbyte_internal"
-
     @get:JsonSchemaTitle("SSL Method")
     @get:JsonPropertyDescription(
         "The encryption method which is used to communicate with the database."
     )
     @get:JsonProperty("ssl_method")
-    @get:JsonSchemaInject(json = """{"order":8}""")
+    @get:JsonSchemaInject(json = """{"order":7}""")
     lateinit var sslMethod: EncryptionMethod
+
+    @get:JsonProperty("load_type")
+    @get:JsonSchemaInject(json = """{"always_show": true,"order":8}""")
+    override val loadType: LoadType = InsertLoadSpecification()
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "name")

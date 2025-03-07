@@ -10,11 +10,9 @@ import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateValue
-import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
-import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
@@ -27,13 +25,11 @@ import io.airbyte.integrations.destination.mssql.v2.MSSQLQueryBuilder
 import io.airbyte.protocol.models.Jsons
 import java.sql.Date
 import java.sql.PreparedStatement
-import java.sql.Time
-import java.sql.Timestamp
 import java.sql.Types
 
 class AirbyteValueToStatement {
     companion object {
-        private val toSqlType = AirbyteTypeToSqlType()
+        private val toSqlType = AirbyteTypeToMssqlType()
         private val toSqlValue = AirbyteValueToSqlValue()
         private val valueCoercingMapper =
             AirbyteValueDeepCoercingMapper(
@@ -48,8 +44,7 @@ class AirbyteValueToStatement {
             field: MSSQLQueryBuilder.NamedField
         ) {
             if (value != null && value !is NullValue && field.type.type is UnionType) {
-                val objectValue = createUnionObject(field.type.type as UnionType, value)
-                setAsJsonString(idx, objectValue)
+                setAsJsonString(idx, value)
             } else {
                 when (value) {
                     is ArrayValue -> setAsJsonString(idx, value)
@@ -72,7 +67,7 @@ class AirbyteValueToStatement {
 
         fun PreparedStatement.setAsNullValue(idx: Int, type: AirbyteType) {
             val sqlType = toSqlType.convert(type)
-            setNull(idx, sqlType)
+            setNull(idx, sqlType.sqlType)
         }
 
         private fun PreparedStatement.setAsBooleanValue(idx: Int, value: BooleanValue) {
@@ -100,7 +95,7 @@ class AirbyteValueToStatement {
             value: StringValue,
             type: AirbyteType
         ) {
-            val sqlType = toSqlType.convert(type)
+            val sqlType = toSqlType.convert(type).sqlType
             if (sqlType == Types.VARCHAR || sqlType == Types.LONGVARCHAR) {
                 setString(idx, value.value)
             } else {
@@ -147,77 +142,22 @@ class AirbyteValueToStatement {
         }
 
         private fun PreparedStatement.setAsTime(idx: Int, value: TimeWithTimezoneValue) {
-            setTime(idx, Time.valueOf(value.value.toLocalTime()))
+            setObject(idx, value.value)
         }
 
         private fun PreparedStatement.setAsTime(idx: Int, value: TimeWithoutTimezoneValue) {
-            setTime(idx, Time.valueOf(value.value))
+            setObject(idx, value.value)
         }
 
         private fun PreparedStatement.setAsTimestamp(idx: Int, value: TimestampWithTimezoneValue) {
-            setTimestamp(idx, Timestamp.valueOf(value.value.toLocalDateTime()))
+            setObject(idx, value.value)
         }
 
         private fun PreparedStatement.setAsTimestamp(
             idx: Int,
             value: TimestampWithoutTimezoneValue
         ) {
-            setTimestamp(idx, Timestamp.valueOf(value.value))
+            setObject(idx, value.value)
         }
-
-        private fun createSimpleUnionObject(value: AirbyteValue): ObjectValue {
-            val unionType = value.toTypeName()
-            return ObjectValue.from(mapOf("type" to StringValue(unionType), unionType to value))
-        }
-
-        private fun createUnionObject(type: UnionType, value: AirbyteValue): AirbyteValue =
-            if (type.options.all { it is ObjectType }) {
-                val model =
-                    mutableMapOf<String, MutableSet<FieldType>>().withDefault { mutableSetOf() }
-
-                type.options.map {
-                    (it as ObjectType).properties.entries.forEach { objectEntry ->
-                        if (model.containsKey(objectEntry.key)) {
-                            model[objectEntry.key]!! += objectEntry.value
-                        } else {
-                            model[objectEntry.key] = mutableSetOf(objectEntry.value)
-                        }
-                    }
-                }
-                if (model.values.all { it.size == 1 }) {
-                    value
-                } else {
-                    val valuesWithConflicts =
-                        (value as ObjectValue)
-                            .values
-                            .entries
-                            .map { pair ->
-                                if (model[pair.key]?.let { it.size > 1 } == true)
-                                    Pair(pair.key, createSimpleUnionObject(pair.value))
-                                else Pair(pair.key, pair.value)
-                            }
-                            .toMap()
-                    ObjectValue.from(valuesWithConflicts)
-                }
-            } else {
-                createSimpleUnionObject(value)
-            }
-
-        private fun AirbyteValue.toTypeName(): String =
-            when (this) {
-                is ArrayValue -> "array"
-                is BooleanValue -> "boolean"
-                is DateValue -> "string"
-                is IntegerValue -> "integer"
-                NullValue -> "null"
-                is NumberValue -> "number"
-                is ObjectValue -> "object"
-                is StringValue -> "string"
-                is TimeWithTimezoneValue -> "string"
-                is TimeWithoutTimezoneValue -> "string"
-                is TimestampWithTimezoneValue -> "string"
-                is TimestampWithoutTimezoneValue -> "string"
-                is UnknownValue -> "oneOf"
-            }
     }
 }

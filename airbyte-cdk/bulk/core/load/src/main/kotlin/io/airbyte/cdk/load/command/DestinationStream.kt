@@ -80,8 +80,12 @@ data class DestinationStream(
             }
 
     fun shouldBeTruncatedAtEndOfSync(): Boolean {
-        return importType is Overwrite || minimumGenerationId == generationId
+        return importType is Overwrite ||
+            (minimumGenerationId == generationId && minimumGenerationId > 0)
     }
+
+    fun isSingleGenerationTruncate() =
+        shouldBeTruncatedAtEndOfSync() && minimumGenerationId == generationId
 }
 
 @Singleton

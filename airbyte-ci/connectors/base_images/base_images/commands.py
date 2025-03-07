@@ -153,7 +153,9 @@ async def _publish(
 
 async def execute_async_command(command_fn: Callable, *args, **kwargs):
     """This is a helper function that will execute a command function in an async context, required by the use of Dagger."""
-    async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:
+    # NOTE: Dagger logs using Rich now, and two rich apps don't play well with each other.
+    # Logging into a file makes the CLI experience tolerable.
+    async with dagger.Connection(dagger.Config(log_output=open("dagger.log", "w"))) as dagger_client:
         await command_fn(dagger_client, *args, **kwargs)
 
 

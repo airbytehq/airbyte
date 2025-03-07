@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.s3_data_lake
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
@@ -50,6 +51,9 @@ class S3DataLakeSpecification :
 
     @get:JsonSchemaInject(json = """{"order":4}""") override val s3Endpoint: String? = null
 
+    @get:JsonSchemaDescription(
+        """The root location of the data warehouse used by the Iceberg catalog. Typically includes a bucket name and path within that bucket. For AWS Glue and Nessie, must include the storage protocol (such as "s3://" for Amazon S3)."""
+    )
     @get:JsonSchemaInject(
         json =
             """

@@ -10,7 +10,7 @@ data:
     - suite: integrationTests
   connectorType: source
   definitionId: d917a47b-8537-4d0d-8c10-36a9928d4265
-  dockerImageTag: 0.2.7
+  dockerImageTag: 0.2.8
   dockerRepository: airbyte/source-kafka
   documentationUrl: https://docs.airbyte.com/integrations/sources/kafka
   githubIssueLabel: source-kafka

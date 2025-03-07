@@ -12,7 +12,7 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory.Companio
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory.Companion.DEFAULT_PATH_FORMAT
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory.Companion.DEFAULT_STAGING_PREFIX_SUFFIX
 import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState.Companion.OPTIONAL_ORDINAL_SUFFIX_PATTERN
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import java.util.stream.Stream
@@ -32,20 +32,18 @@ class ObjectStoragePathFactoryUTest {
 
     @BeforeEach
     fun setup() {
-        every { stream.descriptor } returns DestinationStream.Descriptor("test", "stream")
-        every { timeProvider.syncTimeMillis() } returns 0
-        every { timeProvider.currentTimeMillis() } returns 1
+        coEvery { stream.descriptor } returns DestinationStream.Descriptor("test", "stream")
+        coEvery { timeProvider.syncTimeMillis() } returns 0
+        coEvery { timeProvider.currentTimeMillis() } returns 1
     }
 
     @Test
     fun `test matcher with suffix`() {
-        every { pathConfigProvider.objectStoragePathConfiguration } returns
+        coEvery { pathConfigProvider.objectStoragePathConfiguration } returns
             ObjectStoragePathConfiguration(
                 "prefix",
-                null,
                 "path/",
                 "ambiguous_filename",
-                false,
             )
         val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
 
@@ -60,34 +58,23 @@ class ObjectStoragePathFactoryUTest {
 
     @Test
     fun `test file pattern with variable in prefix`() {
-        every { pathConfigProvider.objectStoragePathConfiguration } returns
+        coEvery { pathConfigProvider.objectStoragePathConfiguration } returns
             ObjectStoragePathConfiguration(
                 "prefix-\${NAMESPACE}",
-                "staging-\${NAMESPACE}",
                 "\${STREAM_NAME}/",
                 "any_filename",
-                true,
             )
         val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
-        assertEquals(
-            "prefix-test/stream/any_filename",
-            factory.getPathToFile(stream, 0L, isStaging = false)
-        )
-        assertEquals(
-            "staging-test/stream/any_filename",
-            factory.getPathToFile(stream, 0L, isStaging = true)
-        )
+        assertEquals("prefix-test/stream/any_filename", factory.getPathToFile(stream, 0L))
     }
 
     @Test
     fun `test pattern matcher with variable in prefix`() {
-        every { pathConfigProvider.objectStoragePathConfiguration } returns
+        coEvery { pathConfigProvider.objectStoragePathConfiguration } returns
             ObjectStoragePathConfiguration(
                 "prefix-\${NAMESPACE}",
-                "staging-\${NAMESPACE}",
                 "\${STREAM_NAME}/",
                 "any_filename",
-                true,
             )
         val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
         val matcher = factory.getPathMatcher(stream, "(-foo)?")
@@ -97,25 +84,19 @@ class ObjectStoragePathFactoryUTest {
 
     @Test
     fun `test pattern from null namespace`() {
-        every { pathConfigProvider.objectStoragePathConfiguration } returns
+        coEvery { pathConfigProvider.objectStoragePathConfiguration } returns
             ObjectStoragePathConfiguration(
                 "prefix",
-                "staging",
                 "\${NAMESPACE}/\${STREAM_NAME}/",
                 "any_filename",
-                true,
             )
         val streamWithNullNamespace = mockk<DestinationStream>()
-        every { streamWithNullNamespace.descriptor } returns
+        coEvery { streamWithNullNamespace.descriptor } returns
             DestinationStream.Descriptor(null, "stream")
         val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
         assertEquals(
             "prefix/stream/any_filename",
-            factory.getPathToFile(streamWithNullNamespace, 0L, isStaging = false)
-        )
-        assertEquals(
-            "staging/stream/any_filename",
-            factory.getPathToFile(streamWithNullNamespace, 0L, isStaging = true)
+            factory.getPathToFile(streamWithNullNamespace, 0L)
         )
 
         val matcher = factory.getPathMatcher(streamWithNullNamespace, "(-foo)?")
@@ -124,21 +105,19 @@ class ObjectStoragePathFactoryUTest {
 
     @Test
     fun `test stream name contains legal regex`() {
-        every { pathConfigProvider.objectStoragePathConfiguration } returns
+        coEvery { pathConfigProvider.objectStoragePathConfiguration } returns
             ObjectStoragePathConfiguration(
                 "prefix",
-                "staging",
                 "\${STREAM_NAME}/",
                 "any_filename",
-                true,
             )
         val streamWithLegalRegex = mockk<DestinationStream>()
-        every { streamWithLegalRegex.descriptor } returns
+        coEvery { streamWithLegalRegex.descriptor } returns
             DestinationStream.Descriptor("test", "stream+1")
         val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
         assertEquals(
             "prefix/stream+1/any_filename",
-            factory.getPathToFile(streamWithLegalRegex, 0L, isStaging = false)
+            factory.getPathToFile(streamWithLegalRegex, 0L)
         )
         val matcher = factory.getPathMatcher(streamWithLegalRegex, "(-foo)?")
         assertNotNull(matcher.match("prefix/stream+1/any_filename"))
@@ -155,16 +134,14 @@ class ObjectStoragePathFactoryUTest {
         remoteFileKey: String,
         expectedPartNumber: Long,
     ) {
-        every { pathConfigProvider.objectStoragePathConfiguration } returns
+        coEvery { pathConfigProvider.objectStoragePathConfiguration } returns
             ObjectStoragePathConfiguration(
                 bucketPathTemplate,
-                null,
                 filePathTemplate,
                 fileNameTemplate,
-                false,
             )
         val stream = mockk<DestinationStream>()
-        every { stream.descriptor } returns DestinationStream.Descriptor(namespace, name)
+        coEvery { stream.descriptor } returns DestinationStream.Descriptor(namespace, name)
         val factory = ObjectStoragePathFactory(pathConfigProvider, null, null, timeProvider)
 
         val matcher = factory.getPathMatcher(stream, OPTIONAL_ORDINAL_SUFFIX_PATTERN)

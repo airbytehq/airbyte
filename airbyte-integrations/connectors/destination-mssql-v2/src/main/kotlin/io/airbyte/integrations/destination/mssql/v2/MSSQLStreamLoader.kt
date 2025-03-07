@@ -8,29 +8,15 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.SimpleBatch
-import io.airbyte.cdk.load.state.StreamProcessingFailed
-import io.airbyte.cdk.load.write.StreamLoader
-import io.github.oshai.kotlinlogging.KotlinLogging
 import javax.sql.DataSource
 
-private val log = KotlinLogging.logger {}
-
 class MSSQLStreamLoader(
-    private val dataSource: DataSource,
+    dataSource: DataSource,
     override val stream: DestinationStream,
-    private val sqlBuilder: MSSQLQueryBuilder,
-) : StreamLoader {
+    sqlBuilder: MSSQLQueryBuilder,
+) : AbstractMSSQLStreamLoader(dataSource, stream, sqlBuilder) {
 
-    override suspend fun start() {
-        ensureTableExists(dataSource)
-    }
-
-    override suspend fun close(streamFailure: StreamProcessingFailed?) {
-        if (streamFailure == null) {
-            truncatePreviousGenerations(dataSource)
-        }
-        super.close(streamFailure)
-    }
+    private val recordCommitBatchSize = 5_000
 
     override suspend fun processRecords(
         records: Iterator<DestinationRecordAirbyteValue>,
@@ -38,36 +24,35 @@ class MSSQLStreamLoader(
         endOfStream: Boolean
     ): Batch {
         dataSource.connection.use { connection ->
+            connection.autoCommit = false
+
+            // Prepare the insert statement once
             sqlBuilder.getFinalTableInsertColumnHeader().executeUpdate(connection) { statement ->
-                records.forEach { record ->
+                records.withIndex().forEach { (index, record) ->
+                    // Populate placeholders for each record
                     sqlBuilder.populateStatement(statement, record, sqlBuilder.finalTableSchema)
                     statement.addBatch()
+
+                    // Periodically execute the batch to avoid too-large batches
+                    if (index > 0 && index % recordCommitBatchSize == 0) {
+                        statement.executeBatch()
+                        connection.commit()
+                    }
                 }
-                statement.executeLargeBatch()
+
+                // Execute remaining records if any
+                statement.executeBatch()
             }
+
+            // If CDC is enabled, remove stale records
             if (sqlBuilder.hasCdc) {
                 sqlBuilder.deleteCdc(connection)
             }
+
+            connection.commit()
         }
+
+        // Indicate that the batch has been completely processed
         return SimpleBatch(Batch.State.COMPLETE)
-    }
-
-    private fun ensureTableExists(dataSource: DataSource) {
-        try {
-            dataSource.connection.use { connection ->
-                sqlBuilder.createTableIfNotExists(connection)
-                sqlBuilder.updateSchema(connection)
-            }
-        } catch (ex: Exception) {
-            log.error(ex) { ex.message }
-            throw ex
-        }
-    }
-
-    private fun truncatePreviousGenerations(dataSource: DataSource) {
-        // TODO this can be improved to avoid attempting to truncate the data for each sync
-        dataSource.connection.use { connection ->
-            sqlBuilder.deletePreviousGenerations(connection, stream.minimumGenerationId)
-        }
     }
 }

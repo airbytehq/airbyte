@@ -25,7 +25,11 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
-data class CheckTestConfig(val configPath: Path, val featureFlags: Set<FeatureFlag> = emptySet())
+data class CheckTestConfig(
+    val configPath: Path,
+    val featureFlags: Set<FeatureFlag> = emptySet(),
+    val name: String? = null,
+)
 
 open class CheckIntegrationTest<T : ConfigurationSpecification>(
     val successConfigFilenames: List<CheckTestConfig>,
@@ -44,28 +48,29 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
     ) {
     @Test
     open fun testSuccessConfigs() {
-        for ((path, featureFlags) in successConfigFilenames) {
-            val config = updateConfig(Files.readString(path, StandardCharsets.UTF_8))
+        for (tc in successConfigFilenames) {
+            val config = updateConfig(Files.readString(tc.configPath, StandardCharsets.UTF_8))
             val process =
                 destinationProcessFactory.createDestinationProcess(
                     "check",
                     configContents = config,
-                    featureFlags = featureFlags.toTypedArray(),
+                    featureFlags = tc.featureFlags.toTypedArray(),
                     micronautProperties = micronautProperties,
                 )
             runBlocking { process.run() }
             val messages = process.readMessages()
             val checkMessages = messages.filter { it.type == AirbyteMessage.Type.CONNECTION_STATUS }
+            val testName = tc.name ?: ""
 
             assertEquals(
                 checkMessages.size,
                 1,
-                "Expected to receive exactly one connection status message, but got ${checkMessages.size}: $checkMessages"
+                "$testName: Expected to receive exactly one connection status message, but got ${checkMessages.size}: $checkMessages"
             )
             assertEquals(
                 AirbyteConnectionStatus.Status.SUCCEEDED,
                 checkMessages.first().connectionStatus.status,
-                "Expected check to be successful, but message was ${checkMessages.first().connectionStatus}"
+                "$testName: Expected check to be successful, but message was ${checkMessages.first().connectionStatus}"
             )
         }
     }
@@ -85,20 +90,27 @@ open class CheckIntegrationTest<T : ConfigurationSpecification>(
             runBlocking { process.run() }
             val messages = process.readMessages()
             val checkMessages = messages.filter { it.type == AirbyteMessage.Type.CONNECTION_STATUS }
+            val testName = checkTestConfig.name ?: ""
 
             assertEquals(
                 checkMessages.size,
                 1,
-                "Expected to receive exactly one connection status message, but got ${checkMessages.size}: $checkMessages"
+                "$testName: Expected to receive exactly one connection status message, but got ${checkMessages.size}: $checkMessages"
             )
 
             val connectionStatus = checkMessages.first().connectionStatus
             assertAll(
-                { assertEquals(AirbyteConnectionStatus.Status.FAILED, connectionStatus.status) },
+                {
+                    assertEquals(
+                        AirbyteConnectionStatus.Status.FAILED,
+                        connectionStatus.status,
+                        "$testName: expected check to fail but succeeded",
+                    )
+                },
                 {
                     assertTrue(
                         failurePattern.matcher(connectionStatus.message).find(),
-                        "Expected to match ${failurePattern.pattern()}, but got ${connectionStatus.message}"
+                        "$testName: Expected to match ${failurePattern.pattern()}, but got ${connectionStatus.message}"
                     )
                 }
             )

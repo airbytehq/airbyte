@@ -31,6 +31,8 @@ class SingleStreamInsert(
     duplicateChance: Double = 0.0,
     randomizedNamespace: String,
     streamName: String,
+    generationId: Long = 0,
+    minGenerationId: Long = 0,
 ) : PerformanceTestScenario {
 
     init {
@@ -54,8 +56,8 @@ class SingleStreamInsert(
             descriptor = DestinationStream.Descriptor(randomizedNamespace, streamName),
             importType = importType,
             schema = ObjectType(linkedMapOf(*schema.toTypedArray())),
-            generationId = 0,
-            minimumGenerationId = 0,
+            generationId = generationId,
+            minimumGenerationId = minGenerationId,
             syncId = 1,
         )
     }
