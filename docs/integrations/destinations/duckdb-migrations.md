@@ -14,8 +14,8 @@ MotherDuck users will need to log into the MotherDuck UI at https://app.motherdu
 
 ## Upgrading to 0.5.0
 
-This version updates the DuckDB libraries from `v0.10.3` to `v1.2.1`. Note that DuckDB `1.2.1` is not backwards compatible with databases created using pre-1.x versions of DuckDB. Upgrading may cause your databases to no longer be readable in prior versions of DuckDB. If you run into issues, you may need to manually upgrade your database files.
+This version updates the DuckDB libraries from `v0.10.3` to `v1.2.1`. Note that DuckDB `1.2.1` is backwards compatible with databases created using versions 0.10.x or higher of DuckDB. If your databases were created using an older version, you may need to manually upgrade your database file.
 
-MotherDuck users will need to log into the MotherDuck UI at https://app.motherduck.com/ and accept the upgrade.
+Note that forward compatibility is provided on a best effort basis, so upgrading may cause your databases to no longer be readable in prior versions of DuckDB. You can read more about the DuckDB storage format here: https://duckdb.org/docs/stable/internals/storage.html.
 
 This breaking change will be enforced after May 7, 2025. Please plan to upgrade your databases before this date.
