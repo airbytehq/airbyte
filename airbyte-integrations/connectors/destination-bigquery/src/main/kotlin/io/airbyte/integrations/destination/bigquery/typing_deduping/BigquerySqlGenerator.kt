@@ -29,10 +29,7 @@ import io.airbyte.integrations.destination.bigquery.probably_core_stuff.LegacyTy
 import io.airbyte.integrations.destination.bigquery.probably_core_stuff.Sql
 import io.airbyte.integrations.destination.bigquery.probably_core_stuff.TableName
 
-class BigquerySqlGenerator(
-    private val projectId: String?,
-    private val datasetLocation: String?,
-) {
+class BigquerySqlGenerator(private val projectId: String?) {
     fun createTable(
         stream: DestinationStream,
         finalTableName: TableName,

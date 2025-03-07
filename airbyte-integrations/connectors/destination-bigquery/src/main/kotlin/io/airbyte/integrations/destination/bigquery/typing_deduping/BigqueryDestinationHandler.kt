@@ -13,7 +13,10 @@ import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.JobStatistics
 import com.google.cloud.bigquery.JobStatus
 import com.google.cloud.bigquery.QueryJobConfiguration
+import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.integrations.destination.bigquery.probably_core_stuff.ConnectorExceptionUtil
 import io.airbyte.integrations.destination.bigquery.probably_core_stuff.Sql
+import io.airbyte.integrations.destination.bigquery.util.BigQueryUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
 
@@ -92,6 +95,25 @@ class BigqueryDestinationHandler(private val bq: BigQuery, private val datasetLo
                         }
                     }
                 }
+        }
+    }
+
+    fun createNamespaces(schemas: Set<String>) {
+        schemas.forEach { dataset: String -> createDataset(dataset) }
+    }
+
+    // TODO ... why is this not just done in BigQueryUtils?
+    //   and/or can we kill BigQueryUtils.getOrCreateDataset?
+    private fun createDataset(dataset: String) {
+        logger.info { "Creating dataset if not present $dataset" }
+        try {
+            BigQueryUtils.getOrCreateDataset(bq, dataset, datasetLocation)
+        } catch (e: BigQueryException) {
+            if (ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES.contains(e.code)) {
+                throw ConfigErrorException(e.message!!, e)
+            } else {
+                throw e
+            }
         }
     }
 }
