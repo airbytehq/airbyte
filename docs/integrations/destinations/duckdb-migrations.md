@@ -11,3 +11,11 @@ MotherDuck users will need to log into the MotherDuck UI at https://app.motherdu
 This version updates the DuckDB libraries from `v0.8.1` to `v0.9.1`. Note that DuckDB `0.9.x` is not backwards compatible with prior versions of DuckDB. Please see the [DuckDB 0.9.0 release notes](https://github.com/duckdb/duckdb/releases/tag/v0.9.0) for more information and for upgrade instructions.
 
 MotherDuck users will need to log into the MotherDuck UI at https://app.motherduck.com/ and click "Start Upgrade". The upgrade prompt will automatically appear the next time the user logs in. If the prompt does not appear, then your database has been upgraded automatically, and in this case you are ready to to use the latest version of the connector.
+
+## Upgrading to 0.5.0
+
+This version updates the DuckDB libraries from `v0.10.3` to `v1.2.1`. Note that DuckDB `1.2.1` is not backwards compatible with databases created using pre-1.x versions of DuckDB. Upgrading may cause your databases to no longer be readable in prior versions of DuckDB. If you run into issues, you may need to manually upgrade your database files.
+
+MotherDuck users will need to log into the MotherDuck UI at https://app.motherduck.com/ and accept the upgrade.
+
+This breaking change will be enforced after May 7, 2025. Please plan to upgrade your databases before this date.
