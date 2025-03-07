@@ -16,7 +16,7 @@ class BigqueryDirectLoaderFactory : DirectLoaderFactory<BigqueryDirectLoader> {
         streamDescriptor: DestinationStream.Descriptor,
         part: Int
     ): BigqueryDirectLoader {
-        TODO("Not yet implemented")
+        return BigqueryDirectLoader()
     }
 }
 
@@ -25,13 +25,18 @@ class BigqueryDirectLoaderFactory : DirectLoaderFactory<BigqueryDirectLoader> {
 class BigqueryDirectLoader : DirectLoader {
     override fun accept(record: DestinationRecordAirbyteValue): DirectLoader.DirectLoadResult {
         TODO("Not yet implemented")
+        // TODO plug in ObjectStorageStreamLoader + execute the part upload or whatever
     }
 
     override fun finish() {
         TODO("Not yet implemented")
+        // TODO finalize the GCS upload,
+        //   then execute the `LOAD` query to get the file into bigquery,
+        //   then delete the file from GCS
     }
 
     override fun close() {
         TODO("Not yet implemented")
+        // TODO presumably just call finish()?
     }
 }

@@ -14,10 +14,14 @@ class BigqueryStreamLoader(override val stream: DestinationStream, config: Bigqu
     override suspend fun start() {
         super.start()
         // TODO create raw+final table if not exists
+        //   ... truncate refresh nonsense
+        // see AbstractStreamOperation.init
     }
 
     override suspend fun close(streamFailure: StreamProcessingFailed?) {
         super.close(streamFailure)
         // TODO execute T+D
+        //   ... more truncate refresh nonsense
+        // AbstractStreamOperation.finalizeTable
     }
 }
