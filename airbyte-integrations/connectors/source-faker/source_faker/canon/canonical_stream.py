@@ -294,10 +294,12 @@ def create_canonical_stream_facade(
     canonical_stream = create_canonical_stream(stream, canonical_model_type, transform_function, cursor_override, namespace)
     return CanonicalStreamFacade(canonical_stream, canonical_stream.cursor, slice_logger, logger)
 
+
 def patch_json_schema(schema: Mapping[str, Any]) -> Mapping[str, Any]:
     # Replace anyOf with the first type, with the assumption the second one is always null
     schema = replace_any_of(schema)
     return schema
+
 
 def replace_any_of(value: Any) -> Any:
     if isinstance(value, list):
