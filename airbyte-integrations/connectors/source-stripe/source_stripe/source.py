@@ -268,19 +268,7 @@ class SourceStripe(YamlDeclarativeSource):
             **args,
         )
 
-        payouts = IncrementalStripeStream(
-            name="payouts",
-            path="payouts",
-            event_types=[
-                "payout.canceled",
-                "payout.created",
-                "payout.failed",
-                "payout.paid",
-                "payout.reconciliation_completed",
-                "payout.updated",
-            ],
-            **args,
-        )
+
 
         streams = [
             checkout_sessions,
@@ -303,17 +291,7 @@ class SourceStripe(YamlDeclarativeSource):
                 **args,
             ),
             SetupAttempts(**incremental_args),
-            IncrementalStripeStream(
-                name="refunds",
-                path="refunds",
-                event_types=[
-                    "refund.created",
-                    "refund.updated",
-                    # this is the only event that could track the refund updates
-                    "charge.refund.updated",
-                ],
-                **args,
-            ),
+
             UpdatedCursorIncrementalStripeStream(
                 name="credit_notes",
                 path="credit_notes",
@@ -326,148 +304,31 @@ class SourceStripe(YamlDeclarativeSource):
                 event_types=["radar.early_fraud_warning.created", "radar.early_fraud_warning.updated"],
                 **args,
             ),
-            IncrementalStripeStream(
-                name="authorizations",
-                path="issuing/authorizations",
-                event_types=["issuing_authorization.created", "issuing_authorization.request", "issuing_authorization.updated"],
-                **args,
-            ),
-            self.customers(**args),
-            IncrementalStripeStream(
-                name="cardholders",
-                path="issuing/cardholders",
-                event_types=["issuing_cardholder.created", "issuing_cardholder.updated"],
-                **args,
-            ),
-            IncrementalStripeStream(
-                name="charges",
-                path="charges",
-                expand_items=["data.refunds"],
-                event_types=[
-                    "charge.captured",
-                    "charge.expired",
-                    "charge.failed",
-                    "charge.pending",
-                    "charge.refunded",
-                    "charge.refund.updated",
-                    "charge.succeeded",
-                    "charge.updated",
-                ],
-                **args,
-            ),
-            IncrementalStripeStream(
-                name="coupons", path="coupons", event_types=["coupon.created", "coupon.updated", "coupon.deleted"], **args
-            ),
-            IncrementalStripeStream(
-                name="disputes",
-                path="disputes",
-                event_types=[
-                    "charge.dispute.closed",
-                    "charge.dispute.created",
-                    "charge.dispute.funds_reinstated",
-                    "charge.dispute.funds_withdrawn",
-                    "charge.dispute.updated",
-                ],
-                **args,
-            ),
-            application_fees,
 
-            IncrementalStripeStream(
-                name="invoice_items",
-                path="invoiceitems",
-                legacy_cursor_field="date",
-                event_types=[
-                    "invoiceitem.created",
-                    "invoiceitem.updated",
-                    "invoiceitem.deleted",
-                ],
-                **args,
-            ),
-            payouts,
 
-            IncrementalStripeStream(
-                name="plans",
-                path="plans",
-                expand_items=["data.tiers"],
-                event_types=["plan.created", "plan.updated", "plan.deleted"],
-                **args,
-            ),
-            IncrementalStripeStream(name="prices", path="prices", event_types=["price.created", "price.updated", "price.deleted"], **args),
-            IncrementalStripeStream(
-                name="products", path="products", event_types=["product.created", "product.updated", "product.deleted"], **args
-            ),
-            IncrementalStripeStream(name="reviews", path="reviews", event_types=["review.closed", "review.opened"], **args),
-            subscriptions,
-            IncrementalStripeStream(
-                name="subscription_schedule",
-                path="subscription_schedules",
-                event_types=[
-                    "subscription_schedule.aborted",
-                    "subscription_schedule.canceled",
-                    "subscription_schedule.completed",
-                    "subscription_schedule.created",
-                    "subscription_schedule.expiring",
-                    "subscription_schedule.released",
-                    "subscription_schedule.updated",
-                ],
-                **args,
-            ),
-            transfers,
-            IncrementalStripeStream(
-                name="payment_intents",
-                path="payment_intents",
-                event_types=[
-                    "payment_intent.amount_capturable_updated",
-                    "payment_intent.canceled",
-                    "payment_intent.created",
-                    "payment_intent.partially_funded",
-                    "payment_intent.payment_failed",
-                    "payment_intent.processing",
-                    "payment_intent.requires_action",
-                    "payment_intent.succeeded",
-                ],
-                **args,
-            ),
-            IncrementalStripeStream(
-                name="promotion_codes",
-                path="promotion_codes",
-                event_types=["promotion_code.created", "promotion_code.updated"],
-                **args,
-            ),
-            IncrementalStripeStream(
-                name="setup_intents",
-                path="setup_intents",
-                event_types=[
-                    "setup_intent.canceled",
-                    "setup_intent.created",
-                    "setup_intent.requires_action",
-                    "setup_intent.setup_failed",
-                    "setup_intent.succeeded",
-                ],
-                **args,
-            ),
-            IncrementalStripeStream(
-                name="cards", path="issuing/cards", event_types=["issuing_card.created", "issuing_card.updated"], **args
-            ),
-            IncrementalStripeStream(
-                name="transactions",
-                path="issuing/transactions",
-                event_types=["issuing_transaction.created", "issuing_transaction.updated"],
-                **args,
-            ),
-            IncrementalStripeStream(
-                name="top_ups",
-                path="topups",
-                event_types=["topup.canceled", "topup.created", "topup.failed", "topup.reversed", "topup.succeeded"],
-                **args,
-            ),
-            ParentIncrementalStripeSubStream(
-                name="customer_balance_transactions",
-                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/balance_transactions",
-                parent=self.customers(**args),
-                cursor_field="created",
-                **args,
-            ),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            # ParentIncrementalStripeSubStream(
+            #     name="customer_balance_transactions",
+            #     path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/balance_transactions",
+            #     parent=self.customers(**args),
+            #     cursor_field="created",
+            #     **args,
+            # ),
             UpdatedCursorIncrementalStripeLazySubStream(
                 name="application_fees_refunds",
                 path=lambda self, stream_slice, *args, **kwargs: f"application_fees/{stream_slice['parent']['id']}/refunds",
