@@ -17,6 +17,9 @@ interface InputPartitioner {
     fun getPartition(record: DestinationRecordAirbyteValue, numParts: Int): Int
 }
 
+/**
+ * The default input partitioner, which partitions by the stream name. TODO: Should be round-robin?
+ */
 @Singleton
 @Secondary
 class ByStreamInputPartitioner : InputPartitioner {
