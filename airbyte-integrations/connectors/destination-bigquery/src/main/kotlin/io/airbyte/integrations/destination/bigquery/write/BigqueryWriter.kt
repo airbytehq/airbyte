@@ -19,7 +19,7 @@ class BigqueryWriter(val config: BigqueryConfiguration) : DestinationWriter {
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
-        return BigqueryStreamLoader(stream)
+        return BigqueryStreamLoader(stream, config)
     }
 
     override suspend fun teardown(destinationFailure: DestinationFailure?) {
