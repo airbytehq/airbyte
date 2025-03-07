@@ -501,7 +501,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_time_option:
           type: RequestOption
           field_name: endDate
@@ -1176,7 +1176,7 @@ definitions:
     url_base: https://api.brevo.com/v3/
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config["start_date"] }}'
+      api_token: '{{ config["api_key"] }}'
       inject_into:
         type: RequestOption
         field_name: api-key

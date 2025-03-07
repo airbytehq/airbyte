@@ -100,6 +100,10 @@ def test_source_check_connection_ok(config, requests_mock):
 @pytest.mark.usefixtures("mock_sleep")
 def test_source_check_connection_failed(config, requests_mock, capsys, json_response, expected_result, expected_message):
     requests_mock.get("https://business-api.tiktok.com/open_api/v1.3/oauth2/advertiser/get/", json=json_response)
+    requests_mock.get(
+        "https://business-api.tiktok.com/open_api/v1.3/advertiser/info/?page_size=100&advertiser_ids=%5B%22917429327%22%5D",
+        json=json_response,
+    )
 
     logger_mock = MagicMock()
     result = SourceTiktokMarketing(config=config, catalog=None, state=None).check_connection(logger_mock, config)

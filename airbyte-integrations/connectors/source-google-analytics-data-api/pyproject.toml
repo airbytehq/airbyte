@@ -27,7 +27,7 @@ pandas = "^2.2.0"
 source-google-analytics-data-api = "source_google_analytics_data_api.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.1"
+pytest = "^8.0.0"
 requests-mock = "^1.11.0"
 freezegun = "^1.4.0"
 pytest-mock = "^3.6.1"

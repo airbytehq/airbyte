@@ -100,6 +100,7 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| 0.11.17 | 2025-02-22 | [54486](https://github.com/airbytehq/airbyte/pull/54486) | Update dependencies |
 | 0.11.16 | 2025-01-22 | [52089](https://github.com/airbytehq/airbyte/pull/52089) | Fix typo to fix pagination for `TwilioStream` class |
 | 0.11.15 | 2025-01-18 | [51966](https://github.com/airbytehq/airbyte/pull/51966) | Update dependencies |
 | 0.11.14 | 2024-12-28 | [50803](https://github.com/airbytehq/airbyte/pull/50803) | Update dependencies |
