@@ -16,6 +16,7 @@ class BigqueryStreamLoader(override val stream: DestinationStream, config: Bigqu
         // TODO create raw+final table if not exists
         //   ... truncate refresh nonsense
         // see AbstractStreamOperation.init
+        // also - CatalogParser's column name collision nonsense
     }
 
     override suspend fun close(streamFailure: StreamProcessingFailed?) {

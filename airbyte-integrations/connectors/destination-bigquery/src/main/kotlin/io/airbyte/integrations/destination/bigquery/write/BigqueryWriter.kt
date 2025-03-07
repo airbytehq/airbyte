@@ -16,6 +16,7 @@ class BigqueryWriter(val config: BigqueryConfiguration) : DestinationWriter {
     override suspend fun setup() {
         TODO()
         // get bigquery client object
+        // do CatalogParser's table name collision nonsense
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
