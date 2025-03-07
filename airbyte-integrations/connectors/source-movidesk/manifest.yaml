@@ -1,0 +1,183 @@
+version: 6.36.3
+
+type: DeclarativeSource
+
+description: Integração com Artigos do Movidesk
+
+check:
+  type: CheckStream
+  stream_names:
+    - artigos
+
+definitions:
+  streams:
+    artigos:
+      type: DeclarativeStream
+      name: artigos
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /public/v1/article/178856
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 0
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/artigos"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.movidesk.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"token\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: token
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/artigos"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - token
+    properties:
+      token:
+        type: string
+        description: >-
+          API token to use. Generate it by accessing Movidesk, going to
+          Configurations / Account / Parameters, and clicking 'Generate new key'
+          in the environment tab.
+        name: token
+        title: API Token
+        airbyte_secret: true
+        order: 0
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    artigos: true
+  testedStreams:
+    artigos:
+      streamHash: f72074166442293c3f4db030678a768a074fe775
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: >-
+      https://atendimento.movidesk.com/kb/pt-br/article/382259/api-consulta-de-artigos-da-base-de-conhecimento?menuId=22479-61185-382259&ticketId=&q=api+tickets
+
+schemas:
+  artigos:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      articleStatus:
+        type:
+          - number
+          - "null"
+      attachments:
+        type:
+          - array
+          - "null"
+      categories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      contentHtml:
+        type:
+          - string
+          - "null"
+      contentText:
+        type:
+          - string
+          - "null"
+      createdDate:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      menu:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      readingTime:
+        type:
+          - string
+          - "null"
+      relateds:
+        type:
+          - array
+          - "null"
+      revisionId:
+        type:
+          - number
+          - "null"
+      services:
+        type:
+          - array
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updatedDate:
+        type:
+          - string
+          - "null"
