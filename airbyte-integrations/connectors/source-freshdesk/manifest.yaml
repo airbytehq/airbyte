@@ -1482,7 +1482,6 @@ definitions:
         schema:
           $ref: "#/schemas/time_entries"
   base_requester:
-    # This requester is used to count call credits used for requests to Freshdesk
     type: HttpRequester
     url_base: https://{{ config['domain'] }}/api/v2/
     authenticator:
@@ -3727,9 +3726,10 @@ api_budget:
   policies:
     - type: FixedWindowCallRatePolicy
       period: "PT1M"
-      # call_limit has been hardcoded to 50 due to lack for support for interpolated string for the field
+      # due to lack for support for interpolated string for the call_limit field, this has been
+      # hardcoded to 50 which is the default rate for free plan
       # in the near term use "{{ config.get('requests_per_minute')}}"
-      # long term is to utilize the `rate_limit_plan` field in config and specifying for each end
+      # long term is to utilize the `rate_limit_plan` field in config and specifying for each endpoint
       call_limit: 50 
       matchers:
         - method: GET
