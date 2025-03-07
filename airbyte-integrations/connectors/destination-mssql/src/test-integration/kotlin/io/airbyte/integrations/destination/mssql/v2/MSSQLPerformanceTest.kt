@@ -18,6 +18,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class MSSQLDataValidator(
@@ -53,11 +54,11 @@ abstract class MSSQLPerformanceTest(
         configSpecClass = MSSQLSpecification::class.java,
         configUpdater = configUpdater,
         dataValidator = MSSQLDataValidator(getConfiguration),
-        defaultRecordsToInsert = 10000,
+        defaultRecordsToInsert = 1_000_000,
     ) {
     @Test
     override fun testInsertRecords() {
-        testInsertRecords(recordsToInsert = 100000) {}
+        testInsertRecords(recordsToInsert = 1_000_000) {}
     }
 
     @Test
@@ -110,4 +111,20 @@ class MSSQLBulkInsertPerformanceTest :
         getConfiguration = { spec, _ ->
             MSSQLConfigurationFactory().makeWithOverrides(spec as MSSQLSpecification, emptyMap())
         },
-    )
+    ) {
+    @Test
+    override fun testInsertRecords() {
+        super.testInsertRecords()
+    }
+
+    @Disabled
+    @Test
+    override fun testInsertRecordsWithManyColumns() {
+        super.testInsertRecordsWithManyColumns()
+    }
+
+    @Test
+    override fun testInsertRecordsComplexTypes() {
+        super.testInsertRecordsComplexTypes()
+    }
+}

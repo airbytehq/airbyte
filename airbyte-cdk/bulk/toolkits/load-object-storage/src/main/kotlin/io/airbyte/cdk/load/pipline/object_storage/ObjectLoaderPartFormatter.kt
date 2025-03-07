@@ -25,6 +25,7 @@ import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.OutputStream
 
@@ -40,6 +41,7 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
     private val stateManager: DestinationStateManager<ObjectStorageDestinationState>,
     @Value("\${airbyte.destination.core.record-batch-size-override:null}")
     val batchSizeOverride: Long? = null,
+    @Named("objectLoaderClampedPartSizeBytes") val clampedPartSizeBytes: Long
 ) :
     BatchAccumulator<
         ObjectLoaderPartFormatter.State<T>,
@@ -50,7 +52,6 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
     private val log = KotlinLogging.logger {}
 
     private val objectSizeBytes = loader.objectSizeBytes
-    private val partSizeBytes = loader.partSizeBytes
 
     data class State<T : OutputStream>(
         val stream: DestinationStream,
@@ -105,7 +106,7 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
         state: State<T>
     ): BatchAccumulatorResult<State<T>, FormattedPart> {
         state.writer.accept(input.asDestinationRecordAirbyteValue())
-        val dataSufficient = state.writer.bufferSize >= partSizeBytes || batchSizeOverride != null
+        val dataSufficient = state.writer.bufferSize >= clampedPartSizeBytes || batchSizeOverride != null
         return if (dataSufficient) {
             val part = makePart(state)
             if (part.part.isFinal) {

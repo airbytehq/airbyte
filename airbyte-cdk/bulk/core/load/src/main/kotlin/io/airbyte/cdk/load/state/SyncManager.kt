@@ -56,6 +56,9 @@ interface SyncManager {
 
     suspend fun awaitInputProcessingComplete()
     suspend fun awaitDestinationResult(): DestinationResult
+
+    suspend fun markSetupComplete()
+    suspend fun awaitSetupComplete()
 }
 
 @SuppressFBWarnings(
@@ -70,6 +73,7 @@ class DefaultSyncManager(
         ConcurrentHashMap<DestinationStream.Descriptor, CompletableDeferred<Result<StreamLoader>>>()
     private val inputConsumed = CompletableDeferred<Boolean>()
     private val checkpointsProcessed = CompletableDeferred<Boolean>()
+    private val setupComplete = CompletableDeferred<Unit>()
 
     override fun getStreamManager(stream: DestinationStream.Descriptor): StreamManager {
         return streamManagers[stream] ?: throw IllegalArgumentException("Stream not found: $stream")
@@ -151,6 +155,14 @@ class DefaultSyncManager(
 
     override suspend fun markCheckpointsProcessed() {
         checkpointsProcessed.complete(true)
+    }
+
+    override suspend fun markSetupComplete() {
+        setupComplete.complete(Unit)
+    }
+
+    override suspend fun awaitSetupComplete() {
+        setupComplete.await()
     }
 }
 
