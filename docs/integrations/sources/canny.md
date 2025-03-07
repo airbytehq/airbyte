@@ -28,6 +28,16 @@ A manifest only source for Canny. https://canny.io/
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |---------|------------|----------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| 0.0.15 | 2025-03-01 | [54867](https://github.com/airbytehq/airbyte/pull/54867) | Update dependencies |
+| 0.0.14 | 2025-02-22 | [54212](https://github.com/airbytehq/airbyte/pull/54212) | Update dependencies |
+| 0.0.13 | 2025-02-15 | [53884](https://github.com/airbytehq/airbyte/pull/53884) | Update dependencies |
+| 0.0.12 | 2025-02-08 | [53406](https://github.com/airbytehq/airbyte/pull/53406) | Update dependencies |
+| 0.0.11 | 2025-02-01 | [52902](https://github.com/airbytehq/airbyte/pull/52902) | Update dependencies |
+| 0.0.10 | 2025-01-25 | [52153](https://github.com/airbytehq/airbyte/pull/52153) | Update dependencies |
+| 0.0.9 | 2025-01-18 | [51765](https://github.com/airbytehq/airbyte/pull/51765) | Update dependencies |
+| 0.0.8 | 2025-01-11 | [51237](https://github.com/airbytehq/airbyte/pull/51237) | Update dependencies |
+| 0.0.7 | 2024-12-28 | [50489](https://github.com/airbytehq/airbyte/pull/50489) | Update dependencies |
+| 0.0.6 | 2024-12-21 | [50171](https://github.com/airbytehq/airbyte/pull/50171) | Update dependencies |
 | 0.0.5 | 2024-12-14 | [49574](https://github.com/airbytehq/airbyte/pull/49574) | Update dependencies |
 | 0.0.4 | 2024-12-12 | [49013](https://github.com/airbytehq/airbyte/pull/49013) | Update dependencies |
 | 0.0.3 | 2024-11-04 | [48235](https://github.com/airbytehq/airbyte/pull/48235) | Update dependencies |

@@ -2,11 +2,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import json
-import os
-from typing import Any, Mapping
-
-from conftest import find_stream
+from conftest import find_stream, load_json_file
 from freezegun import freeze_time
 
 from airbyte_cdk.models import SyncMode
@@ -31,12 +27,6 @@ TEST_CONFIG: dict = {
         "authenticator": TokenAuthenticator(token="123"),
     },
 }
-
-
-# HELPERS
-def load_json_file(file_name: str) -> Mapping[str, Any]:
-    with open(f"{os.path.dirname(__file__)}/{file_name}", "r") as data:
-        return json.load(data)
 
 
 @freeze_time("2021-03-01")

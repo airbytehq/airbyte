@@ -9,18 +9,20 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
-import io.airbyte.cdk.load.message.Deserializer
-import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MultiProducerChannel
+import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
-import io.airbyte.cdk.load.task.KillableScope
+import io.airbyte.cdk.load.task.SelfTerminating
+import io.airbyte.cdk.load.task.Task
+import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.task.internal.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.util.lineSequence
 import io.airbyte.cdk.load.util.use
@@ -34,7 +36,7 @@ import java.io.InputStream
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.inputStream
 
-interface ProcessRecordsTask : KillableScope
+interface ProcessRecordsTask : Task
 
 /**
  * Wraps @[StreamLoader.processRecords] and feeds it a lazy iterator over the last batch of spooled
@@ -47,13 +49,16 @@ interface ProcessRecordsTask : KillableScope
 class DefaultProcessRecordsTask(
     private val config: DestinationConfiguration,
     private val taskLauncher: DestinationTaskLauncher,
-    private val deserializer: Deserializer<DestinationMessage>,
+    private val deserializer: ProtocolMessageDeserializer,
     private val syncManager: SyncManager,
     private val diskManager: ReservationManager,
     private val inputQueue: MessageQueue<FileAggregateMessage>,
     private val outputQueue: MultiProducerChannel<BatchEnvelope<*>>,
 ) : ProcessRecordsTask {
     private val log = KotlinLogging.logger {}
+
+    override val terminalCondition: TerminalCondition = SelfTerminating
+
     private val accumulators = ConcurrentHashMap<DestinationStream.Descriptor, BatchAccumulator>()
     override suspend fun execute() {
         outputQueue.use {
@@ -70,7 +75,7 @@ class DefaultProcessRecordsTask(
                         file.localFile.inputStream().use {
                             val records =
                                 if (file.isEmpty) {
-                                    emptyList<DestinationRecord>().listIterator()
+                                    emptyList<DestinationRecordAirbyteValue>().listIterator()
                                 } else {
                                     it.toRecordIterator()
                                 }
@@ -91,7 +96,11 @@ class DefaultProcessRecordsTask(
                 log.info { "Forcing finalization of all accumulators." }
                 accumulators.forEach { (streamDescriptor, acc) ->
                     val finalBatch =
-                        acc.processRecords(emptyList<DestinationRecord>().listIterator(), 0, true)
+                        acc.processRecords(
+                            emptyList<DestinationRecordAirbyteValue>().listIterator(),
+                            0,
+                            true
+                        )
                     handleBatch(streamDescriptor, finalBatch, null)
                 }
             }
@@ -113,7 +122,7 @@ class DefaultProcessRecordsTask(
         }
     }
 
-    private fun InputStream.toRecordIterator(): Iterator<DestinationRecord> {
+    private fun InputStream.toRecordIterator(): Iterator<DestinationRecordAirbyteValue> {
         return lineSequence()
             .map {
                 when (val message = deserializer.deserialize(it)) {
@@ -127,7 +136,7 @@ class DefaultProcessRecordsTask(
             .takeWhile {
                 it !is DestinationRecordStreamComplete && it !is DestinationRecordStreamIncomplete
             }
-            .map { it as DestinationRecord }
+            .map { (it as DestinationRecord).asRecordMarshaledToAirbyteValue() }
             .iterator()
     }
 }
@@ -147,7 +156,7 @@ data class FileAggregateMessage(
 @Secondary
 class DefaultProcessRecordsTaskFactory(
     private val config: DestinationConfiguration,
-    private val deserializer: Deserializer<DestinationMessage>,
+    private val deserializer: ProtocolMessageDeserializer,
     private val syncManager: SyncManager,
     @Named("diskManager") private val diskManager: ReservationManager,
     @Named("fileAggregateQueue") private val inputQueue: MessageQueue<FileAggregateMessage>,

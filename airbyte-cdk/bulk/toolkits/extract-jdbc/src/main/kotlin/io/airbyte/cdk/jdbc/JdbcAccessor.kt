@@ -444,3 +444,64 @@ data class ArraySetter(
         stmt.setArray(paramIdx, stmt.connection.createArrayOf(elementSqlTypeName, javaArray))
     }
 }
+
+@Suppress("UNCHECKED_CAST")
+data class SapHanaArrayGetter<T>(
+    val elementFieldType: JdbcFieldType<T>,
+) : JdbcGetter<List<T>> {
+    override fun get(
+        rs: ResultSet,
+        colIdx: Int,
+    ): List<T>? =
+        rs.getArray(colIdx)
+            ?.takeUnless { rs.wasNull() }
+            ?.let { array ->
+                val arrayValue = array.array as Array<*>
+                convertArrayToList(arrayValue, elementFieldType.genericClass)
+            }
+
+    private fun <T> convertArrayToList(array: Array<*>, targetClass: Class<T>): List<T> {
+        return when {
+            targetClass == LocalDate::class.java -> {
+                array.map { dateValue ->
+                    when (dateValue) {
+                        is Date -> dateValue.toLocalDate()
+                        else ->
+                            throw IllegalArgumentException(
+                                "Cannot convert ${dateValue?.javaClass} to LocalDate"
+                            )
+                    }
+                } as List<T>
+            }
+            targetClass == LocalTime::class.java -> {
+                array.map { dateValue ->
+                    when (dateValue) {
+                        is Time -> dateValue.toLocalTime()
+                        else ->
+                            throw IllegalArgumentException(
+                                "Cannot convert ${dateValue?.javaClass} to LocalTime"
+                            )
+                    }
+                } as List<T>
+            }
+            targetClass == LocalDateTime::class.java -> {
+                array.map { dateValue ->
+                    when (dateValue) {
+                        is Timestamp -> dateValue.toLocalDateTime()
+                        else ->
+                            throw IllegalArgumentException(
+                                "Cannot convert ${dateValue?.javaClass} to LocalDateTime"
+                            )
+                    }
+                } as List<T>
+            }
+            else ->
+                array.map { value ->
+                    targetClass.cast(value)
+                        ?: throw IllegalArgumentException(
+                            "Cannot convert ${value?.javaClass} to ${targetClass.simpleName}"
+                        )
+                }
+        }
+    }
+}

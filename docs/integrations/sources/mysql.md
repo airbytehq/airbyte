@@ -102,7 +102,7 @@ Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting t
 
 ### Change Data Capture \(CDC\)
 
-Airbyte uses logical replication of the [MySQL binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html) to incrementally capture deletes. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/). We generally recommend configure your MySQL source with CDC whenever possible, as it provides:
+Airbyte uses logical replication of the [MySQL binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html) to incrementally capture deletes in addition to new and updated records. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/). We generally recommend configure your MySQL source with CDC whenever possible, as it provides:
 
 - A record of deletions, if needed.
 - Scalable replication to large tables (1 TB and more).
@@ -226,6 +226,23 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.11.6 | 2025-03-06 | [55237](https://github.com/airbytehq/airbyte/pull/55237) | [Fix fetching binlog status for version >=8.4](https://github.com/airbytehq/airbyte/pull/55237#top) |
+| 3.11.5 | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234) | Update base image version for certified DB source connectors |
+| 3.11.4 | 2025-03-06 | [55214](https://github.com/airbytehq/airbyte/pull/55214) | Update default encryption method to 'required'.                                                                                                 | |
+| 3.11.3 | 2025-02-24 | [54156](https://github.com/airbytehq/airbyte/pull/54156) | Improve error handling.                                                                                                                         | |
+| 3.11.2 | 2025-02-06 | [53195](https://github.com/airbytehq/airbyte/pull/53195) | Fix typo in CDC configuration.                                                                                                                  | |
+| 3.11.1 | 2025-01-30 | [52039](https://github.com/airbytehq/airbyte/pull/52039) | Adopt latest API changes from Bulk CDK. |
+| 3.11.0 | 2025-01-14 | [51545](https://github.com/airbytehq/airbyte/pull/51545) | Promoting release candidate 3.11.0-rc.1 to a main version. |
+| 3.11.0-rc.1 | 2025-01-09 | [51029](https://github.com/airbytehq/airbyte/pull/51029)   | Fix unnecessary schema change when upgrading from legacy mysql source.                                                                          |
+| 3.10.1      | 2025-01-10 | [51510](https://github.com/airbytehq/airbyte/pull/51510)   | Use a non root base image                                                                                                                       |
+| 3.10.0      | 2025-01-09 | [51008](https://github.com/airbytehq/airbyte/pull/51008)   | Promoting release candidate 3.10.0-rc.9 to a main version.                                                                                      |
+| 3.10.0-rc.9 | 2025-01-08 | [50987](https://github.com/airbytehq/airbyte/pull/50987)   | Increase Debezium shutdown timeout.                                                                                                             |
+| 3.10.0-rc.8 | 2025-01-07 | [50965](https://github.com/airbytehq/airbyte/pull/50965)   | Fix bug introduced in 3.10.0-rc.3.                                                                                                              |
+| 3.10.0-rc.7 | 2024-12-27 | [50437](https://github.com/airbytehq/airbyte/pull/50437)   | Compatibility with MySQL Views.                                                                                                                 |
+| 3.10.0-rc.6 | 2024-12-18 | [49892](https://github.com/airbytehq/airbyte/pull/49892)   | Use a base image: airbyte/java-connector-base:1.0.0                                                                                             |
+| 3.10.0-rc.5 | 2025-01-03 | [50868](https://github.com/airbytehq/airbyte/pull/50868)   | Fix exception handling rules declaration.                                                                                                       |
+| 3.10.0-rc.4 | 2024-12-23 | [48587](https://github.com/airbytehq/airbyte/pull/48587)   | Fix minor state counting mechanism.                                                                                                             |
+| 3.10.0-rc.3 | 2024-12-20 | [49918](https://github.com/airbytehq/airbyte/pull/49918)   | Fix minor datatype handling and conversion bugs, maintain big number precision.                                                                 |
 | 3.10.0-rc.2 | 2024-12-20 | [49950](https://github.com/airbytehq/airbyte/pull/49950)   | Remove unused configuration field, streamline SSL certificate key store logic.                                                                  |
 | 3.10.0-rc.1 | 2024-12-20 | [49948](https://github.com/airbytehq/airbyte/pull/49948)   | Pin Bulk CDK version to 231, adopt required changes.                                                                                            |
 | 3.9.4       | 2024-12-18 | [49939](https://github.com/airbytehq/airbyte/pull/49939)   | Pin Bulk CDK version to 226, rename classes.                                                                                                    |

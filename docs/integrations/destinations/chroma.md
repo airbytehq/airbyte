@@ -77,6 +77,17 @@ You should now have all the requirements needed to configure Chroma as a destina
 
 | Version | Date       | Pull Request                                              | Subject                                                      |
 |:--------|:-----------| :-------------------------------------------------------- |:-------------------------------------------------------------|
+| 0.0.47 | 2025-03-01 | [54852](https://github.com/airbytehq/airbyte/pull/54852) | Update dependencies |
+| 0.0.46 | 2025-02-22 | [54209](https://github.com/airbytehq/airbyte/pull/54209) | Update dependencies |
+| 0.0.45 | 2025-02-15 | [53930](https://github.com/airbytehq/airbyte/pull/53930) | Update dependencies |
+| 0.0.44 | 2025-02-08 | [53428](https://github.com/airbytehq/airbyte/pull/53428) | Update dependencies |
+| 0.0.43 | 2025-02-01 | [52941](https://github.com/airbytehq/airbyte/pull/52941) | Update dependencies |
+| 0.0.42 | 2025-01-25 | [52189](https://github.com/airbytehq/airbyte/pull/52189) | Update dependencies |
+| 0.0.41 | 2025-01-18 | [51744](https://github.com/airbytehq/airbyte/pull/51744) | Update dependencies |
+| 0.0.40 | 2025-01-11 | [51296](https://github.com/airbytehq/airbyte/pull/51296) | Update dependencies |
+| 0.0.39 | 2025-01-04 | [50913](https://github.com/airbytehq/airbyte/pull/50913) | Update dependencies |
+| 0.0.38 | 2024-12-28 | [50445](https://github.com/airbytehq/airbyte/pull/50445) | Update dependencies |
+| 0.0.37 | 2024-12-21 | [50221](https://github.com/airbytehq/airbyte/pull/50221) | Update dependencies |
 | 0.0.36 | 2024-12-14 | [48956](https://github.com/airbytehq/airbyte/pull/48956) | Update dependencies |
 | 0.0.35 | 2024-11-25 | [48668](https://github.com/airbytehq/airbyte/pull/48668) | Update dependencies |
 | 0.0.34 | 2024-11-04 | [48236](https://github.com/airbytehq/airbyte/pull/48236) | Update dependencies |

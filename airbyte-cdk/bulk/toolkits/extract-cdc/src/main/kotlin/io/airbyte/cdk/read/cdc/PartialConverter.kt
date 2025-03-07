@@ -63,34 +63,46 @@ class ConverterFactory(val customConverterClass: Class<out CustomConverter<*, *>
     fun build(
         column: RelationalColumn,
         partialConverters: List<PartialConverter>
-    ): CustomConverter.Converter =
-        if (!column.isOptional && column.hasDefaultValue()) {
-            val defaultValue: Any? = column.defaultValue()
-            log.info {
-                "Building custom converter for" +
-                    " column '${column.dataCollection()}.${column.name()}'" +
-                    " of type '${column.typeName()}'" +
-                    " with default value '$defaultValue'."
-            }
-            Converter(column, listOf(DefaultFallThrough(defaultValue)) + partialConverters)
-        } else {
+    ): CustomConverter.Converter {
+        val noDefaultConverter = Converter(column, partialConverters, NoConversion)
+        if (column.isOptional || !column.hasDefaultValue()) {
             log.info {
                 "Building custom converter for" +
                     " column '${column.dataCollection()}.${column.name()}'" +
                     " of type '${column.typeName()}'."
             }
-            Converter(column, partialConverters)
+            return noDefaultConverter
         }
+        val unconvertedDefaultValue: Any? = column.defaultValue()
+        log.info {
+            "Computing converted default value for" +
+                " column '${column.dataCollection()}.${column.name()}'" +
+                " of type '${column.typeName()}'" +
+                " with unconverted default value '$unconvertedDefaultValue'."
+        }
+        val convertedDefaultValue: Any? = noDefaultConverter.convert(unconvertedDefaultValue)
+        log.info {
+            "Building custom converter for" +
+                " column '${column.dataCollection()}.${column.name()}'" +
+                " of type '${column.typeName()}'" +
+                " with default value '$convertedDefaultValue'."
+        }
+        return Converter(column, partialConverters, Converted(convertedDefaultValue))
+    }
 
     /** Implementation of [CustomConverter.Converter] used by [ConverterFactory]. */
     internal inner class Converter(
         private val convertedField: ConvertedField,
         private val partialConverters: List<PartialConverter>,
+        private val defaultValue: PartialConverterResult,
     ) : CustomConverter.Converter {
 
         private val loggingFlag = AtomicBoolean()
 
         override fun convert(input: Any?): Any? {
+            if (input == null && defaultValue is Converted) {
+                return defaultValue.output
+            }
             var cause: Throwable? = null
             for (converter in partialConverters) {
                 val result: PartialConverterResult

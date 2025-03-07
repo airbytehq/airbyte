@@ -115,7 +115,9 @@ runs:
         ls -la
         ls -la airbyte-python-cdk || echo "No airbyte-python-cdk directory"
         ls -laL ../airbyte-python-cdk || echo "No airbyte-python-cdk symlink"
-
+    - name: Install Java Environment
+      id: install-java-environment
+      uses: ./.github/actions/install-java-environment
     - name: Docker login
       id: docker-login
       uses: docker/login-action@v3

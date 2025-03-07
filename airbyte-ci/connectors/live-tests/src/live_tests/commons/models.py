@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import _collections_abc
+import hashlib
 import json
 import logging
 import tempfile
@@ -141,6 +142,15 @@ class Command(Enum):
     READ_WITH_STATE = "read-with-state"
     SPEC = "spec"
 
+    def needs_config(self) -> bool:
+        return self in {Command.CHECK, Command.DISCOVER, Command.READ, Command.READ_WITH_STATE}
+
+    def needs_catalog(self) -> bool:
+        return self in {Command.READ, Command.READ_WITH_STATE}
+
+    def needs_state(self) -> bool:
+        return self in {Command.READ_WITH_STATE}
+
 
 class TargetOrControl(Enum):
     TARGET = "target"
@@ -207,6 +217,7 @@ class ConnectorUnderTest:
 
 @dataclass
 class ExecutionInputs:
+    hashed_connection_id: str
     connector_under_test: ConnectorUnderTest
     actor_id: str
     global_output_dir: Path
@@ -238,7 +249,7 @@ class ExecutionInputs:
     def output_dir(self) -> Path:
         output_dir = (
             self.global_output_dir
-            / f"command_execution_artifacts/{self.connector_under_test.name}/{self.command.value}/{self.connector_under_test.version}/"
+            / f"command_execution_artifacts/{self.connector_under_test.name}/{self.command.value}/{self.connector_under_test.version}/{self.hashed_connection_id}"
         )
         output_dir.mkdir(parents=True, exist_ok=True)
         return output_dir
@@ -246,13 +257,16 @@ class ExecutionInputs:
 
 @dataclass
 class ExecutionResult:
+    hashed_connection_id: str
     actor_id: str
+    configured_catalog: ConfiguredAirbyteCatalog
     connector_under_test: ConnectorUnderTest
     command: Command
     stdout_file_path: Path
     stderr_file_path: Path
     success: bool
     executed_container: Optional[dagger.Container]
+    config: Optional[SecretDict]
     http_dump: Optional[dagger.File] = None
     http_flows: list[http.HTTPFlow] = field(default_factory=list)
     stream_schemas: Optional[dict[str, Any]] = None
@@ -271,28 +285,42 @@ class ExecutionResult:
 
     @property
     def duckdb_schema(self) -> Iterable[str]:
-        return (self.connector_under_test.target_or_control.value, self.command.value)
+        return (self.connector_under_test.target_or_control.value, self.command.value, self.hashed_connection_id)
+
+    @property
+    def configured_streams(self) -> List[str]:
+        return [stream.stream.name for stream in self.configured_catalog.streams]
+
+    @property
+    def primary_keys_per_stream(self) -> Dict[str, List[str]]:
+        return {stream.stream.name: stream.primary_key[0] if stream.primary_key else None for stream in self.configured_catalog.streams}
 
     @classmethod
     async def load(
         cls: type[ExecutionResult],
         connector_under_test: ConnectorUnderTest,
+        hashed_connection_id: str,
         actor_id: str,
+        configured_catalog: ConfiguredAirbyteCatalog,
         command: Command,
         stdout_file_path: Path,
         stderr_file_path: Path,
         success: bool,
         executed_container: Optional[dagger.Container],
+        config: Optional[SecretDict] = None,
         http_dump: Optional[dagger.File] = None,
     ) -> ExecutionResult:
         execution_result = cls(
+            hashed_connection_id,
             actor_id,
+            configured_catalog,
             connector_under_test,
             command,
             stdout_file_path,
             stderr_file_path,
             success,
             executed_container,
+            config,
             http_dump,
         )
         await execution_result.load_http_flows()
@@ -501,3 +529,15 @@ class ConnectionObjects:
     destination_id: Optional[str]
     source_docker_image: Optional[str]
     connection_id: Optional[str]
+
+    @property
+    def url(self) -> Optional[str]:
+        if not self.workspace_id or not self.connection_id:
+            return None
+        return f"https://cloud.airbyte.com/workspaces/{self.workspace_id}/connections/{self.connection_id}"
+
+    @property
+    def hashed_connection_id(self) -> Optional[str]:
+        if not self.connection_id:
+            return None
+        return hashlib.sha256(self.connection_id.encode("utf-8")).hexdigest()[:7]

@@ -60,7 +60,8 @@ async def run_connector_build(context: ConnectorContext) -> StepResult:
     build_connector_tar_result = await BuildConnectorDistributionTar(context).run()
     if build_connector_tar_result.status is not StepStatus.SUCCESS:
         return build_connector_tar_result
-    dist_dir = await build_connector_tar_result.output.directory(dist_tar_directory_path(context))
+
+    dist_dir = await build_connector_tar_result.output.directory("build/distributions")
     return await BuildConnectorImages(context).run(dist_dir)
 
 

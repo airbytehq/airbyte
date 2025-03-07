@@ -47,7 +47,7 @@ configuration file to ensure the pipx command is available.""",
     print("pipx is already installed.")
 
     # Install airbyte-ci development version
-    subprocess.run(["pipx", "install", "--editable", "--force", "--python=python3.10", "airbyte-ci/connectors/pipelines/"])
+    subprocess.run(["pipx", "install", "--editable", "--force", "--python=python3.11", "airbyte-ci/connectors/pipelines/"])
     print("Development version of airbyte-ci installed.....")
 
 

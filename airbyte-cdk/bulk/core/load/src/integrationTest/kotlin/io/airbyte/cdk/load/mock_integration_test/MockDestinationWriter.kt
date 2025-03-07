@@ -11,7 +11,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.test.util.OutputRecord
@@ -38,7 +38,7 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
         override val groupId: String? = null
     }
 
-    data class LocalBatch(val records: List<DestinationRecord>) : MockBatch() {
+    data class LocalBatch(val records: List<DestinationRecordAirbyteValue>) : MockBatch() {
         override val state = Batch.State.STAGED
     }
     data class LocalFileBatch(val file: DestinationFile) : MockBatch() {
@@ -72,15 +72,11 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
     }
 
     override suspend fun processRecords(
-        records: Iterator<DestinationRecord>,
+        records: Iterator<DestinationRecordAirbyteValue>,
         totalSizeBytes: Long,
         endOfStream: Boolean
     ): Batch {
         return LocalBatch(records.asSequence().toList())
-    }
-
-    override suspend fun processFile(file: DestinationFile): Batch {
-        return LocalFileBatch(file)
     }
 
     override suspend fun processBatch(batch: Batch): Batch {
