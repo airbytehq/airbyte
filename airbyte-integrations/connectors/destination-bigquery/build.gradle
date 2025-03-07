@@ -1,17 +1,12 @@
 plugins {
-    id 'airbyte-java-connector'
+    id 'application'
+    id 'airbyte-bulk-connector'
 }
 
-airbyteJavaConnector {
-    cdkVersionRequired = '0.46.0'
-    features = [
-            'db-destinations',
-            'datastore-bigquery',
-            'typing-deduping',
-            'gcs-destinations',
-            'core',
-    ]
-    useLocalCdk = false
+airbyteBulkConnector {
+    core = 'load'
+    toolkits = []
+    cdk = 'local'
 }
 
 java {
