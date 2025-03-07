@@ -1552,6 +1552,118 @@ spec:
           There is a rate limit of 50 requests per minute per app per account.
         order: 2
         title: Requests per minute
+      rate_limit_plan:
+        type: object
+        description: Rate Limit Plan for API Budget
+        title: Rate Limit Plan
+        oneOf:
+          - type: object
+            title: Free Plan
+            properties:
+              plan_type:
+                type: string
+                title: Plan
+                const: free
+              general_rate_limit:
+                type: integer
+                title: General Rate
+                description: General Maximum Rate in Limit/minute for other endpoints in Free Plan
+                const: 50
+              tickets_rate_limit:
+                type: integer
+                title: Tickets Rate
+                description: Maximum Rate in Limit/minute for tickets list endpoint in Free Plan
+                const: 50
+              contacts_rate_limit:
+                type: integer
+                title: Contacts Rate
+                description: Maximum Rate in Limit/minute for contacts list endpoint in Free Plan
+                const: 50
+          - type: object
+            title: Growth Plan
+            properties:
+              plan_type:
+                type: string
+                title: Plan
+                const: growth
+              general_rate_limit:
+                type: integer
+                title: General Rate
+                description: General Maximum Rate in Limit/minute for other endpoints in Growth Plan
+                const: 200
+              tickets_rate_limit:
+                type: integer
+                title: Tickets Rate
+                description: Maximum Rate in Limit/minute for tickets list endpoint in Growth Plan
+                const: 20
+              contacts_rate_limit:
+                type: integer
+                title: Contacts Rate
+                description: Maximum Rate in Limit/minute for contacts list endpoint in Growth Plan
+                const: 20
+          - type: object
+            title: Pro Plan
+            properties:
+              plan_type:
+                type: string
+                title: Plan
+                const: pro
+              general_rate_limit:
+                type: integer
+                title: General Rate
+                description: General Maximum Rate in Limit/minute for other endpoints in Pro Plan
+                const: 400
+              tickets_rate_limit:
+                type: integer
+                title: Tickets Rate
+                description: Maximum Rate in Limit/minute for tickets list endpoint in Pro Plan
+                const: 100
+              contacts_rate_limit:
+                type: integer
+                title: Contacts Rate
+                description: Maximum Rate in Limit/minute for contacts list endpoint in Pro Plan
+                const: 100
+          - type: object
+            title: Enterprise Plan
+            properties:
+              plan_type:
+                type: string
+                title: Plan
+                const: enterprise
+              general_rate_limit:
+                type: integer
+                title: General Rate
+                description: General Maximum Rate in Limit/minute for other endpoints in Enterprise Plan
+                const: 700
+              tickets_rate_limit:
+                type: integer
+                title: Tickets Rate
+                description: Maximum Rate in Limit/minute for tickets list endpoint in Enterprise Plan
+                const: 200
+              contacts_rate_limit:
+                type: integer
+                title: Contacts Rate
+                description: Maximum Rate in Limit/minute for contacts list endpoint in Enterprise Plan
+                const: 200
+          - type: object
+            title: Custom Plan
+            properties:
+              plan_type:
+                type: string
+                title: Plan
+                const: custom
+              general_rate_limit:
+                type: integer
+                title: General Rate
+                description: General Maximum Rate in Limit/minute for other endpoints in Custom Plan
+              tickets_rate_limit:
+                type: integer
+                title: Tickets Rate
+                description: Maximum Rate in Limit/minute for tickets list endpoint in Custom Plan
+              contacts_rate_limit:
+                type: integer
+                title: Contacts Rate
+                description: Maximum Rate in Limit/minute for contacts list endpoint in Custom Plan
       start_date:
         type: string
         description: >-
@@ -3614,8 +3726,11 @@ api_budget:
   type: HTTPAPIBudget
   policies:
     - type: FixedWindowCallRatePolicy
-      period: "60"
-      call_limit: "{{ config.get('requests_per_minute')}}"
+      period: "PT1M"
+      # call_limit has been hardcoded to 50 due to lack for support for interpolated string for the field
+      # in the near term use "{{ config.get('requests_per_minute')}}"
+      # long term is to utilize the `rate_limit_plan` field in config and specifying for each end
+      call_limit: 50 
       matchers:
         - method: GET
           url_base: "https://{{ config['domain'] }}/api/v2/"
