@@ -34,7 +34,6 @@ interface MetaFieldDecorator {
         }
         val globalCursorIdentifier: String = globalCursor?.id ?: return
         airbyteStream.defaultCursorField = listOf(globalCursorIdentifier)
-        airbyteStream.sourceDefinedCursor = true
     }
 
     /**

@@ -1,15 +1,5 @@
 # S3 Data Lake
 
-:::caution
-
-This connector is in early access and still evolving.
-Future updates may introduce breaking changes.
-
-We're interested in hearing about your experience! See [Github](https://github.com/airbytehq/airbyte/discussions/50404)
-for more information on joining the beta.
-
-:::
-
 This page guides you through the process of setting up the S3 Data Lake destination connector.
 
 This connector writes the Iceberg table format to S3, or an S3-compatible storage backend.
@@ -94,6 +84,67 @@ mapped to `STRING` columns, and written as serialized JSON. This is the full map
 Note that for the time/timestamp with timezone types, the value is first adjusted to UTC, and then
 written into the Iceberg file.
 
+### Schema evolution
+
+This connector supports limited schema evolution. Outside of refreshes/clears, the connector will never
+rewrite existing data files. This means that we can only handle specific schema changes:
+* Adding/removing a column
+* Widening columns
+* Changing the primary key
+
+If your source goes through an unsupported schema change, the connector will fail at sync time.
+To resolve this, you can either:
+* Manually edit your table schema via Iceberg directly
+* Refresh your connection (removing existing records) / clear your connection
+
+Full refresh overwrite syncs can also handle these schema changes transparently.
+
+## Deduplication
+
+This connector uses a merge-on-read strategy to support deduplication:
+* The stream's primary keys are translated to Iceberg's [identifier columns](https://iceberg.apache.org/spec/#identifier-field-ids).
+* An "upsert" is an [equality-based delete](https://iceberg.apache.org/spec/#equality-delete-files)
+  on that row's primary key, followed by an insertion of the new data.
+
+### Assumptions
+
+The S3 Data Lake connector assumes that one of two things is true:
+* The source will never emit the same primary key twice in a single sync attempt
+* If the source emits the same PK multiple times in a single attempt, it will always emit those records
+  in cursor order (oldest to newest)
+
+If these conditions are not met, you may see inaccurate data in the destination (i.e. older records
+taking precendence over newer records). If this happens, you should use the `append` or `overwrite`
+sync mode.
+
+:::caution
+Certain API sources are known to have streams which do not meet these conditions, including
+Stripe and Monday.
+:::
+
+## Branching
+
+Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/branching/) over your data.
+Most query engines target the `main` branch.
+
+This connector leverages those semantics to provide resilient syncs:
+* Within each sync, each microbatch creates a new snapshot
+* During truncate syncs, the connector writes the refreshed data to the `airbyte_staging` branch,
+  and fast-forwards the `main` branch at the end of the sync.
+  * This means that your data remains queryable right up to the end of a truncate sync, at which point
+    it is atomically swapped to the updated version.
+
+## Catalog-specific information
+
+### AWS Glue
+
+If you have an existing Glue table, and you want to replace that table with an Airbyte-managed Iceberg table,
+you must first drop the Glue table. Otherwise you will encounter an error `Input Glue table is not an iceberg table: <your table name>`.
+
+Note that dropping Glue tables from the console [may not immediately delete them](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glue/client/batch_delete_table.html).
+You must either wait for AWS to finish their background processing, or manually call the AWS API to
+drop all table versions.
+
 ## Changelog
 
 <details>
@@ -101,6 +152,11 @@ written into the Iceberg file.
 
 | Version | Date       | Pull Request                                               | Subject                                                                      |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------|
+| 0.3.15  | 2025-02-28 | [\#54724](https://github.com/airbytehq/airbyte/pull/54724) | Certify connector                                                            |
+| 0.3.14  | 2025-02-14 | [\#53241](https://github.com/airbytehq/airbyte/pull/53241) | New CDK interface; perf improvements, skip initial record staging            |
+| 0.3.13  | 2025-02-14 | [\#53697](https://github.com/airbytehq/airbyte/pull/53697) | Internal refactor                                                            |
+| 0.3.12  | 2025-02-12 | [\#53170](https://github.com/airbytehq/airbyte/pull/53170) | Improve documentation, tweak error handling of invalid schema evolution      |
+| 0.3.11  | 2025-02-12 | [\#53216](https://github.com/airbytehq/airbyte/pull/53216) | Support arbitrary schema change in overwrite / truncate refresh / clear sync |
 | 0.3.10  | 2025-02-11 | [\#53622](https://github.com/airbytehq/airbyte/pull/53622) | Enable the Nessie integration tests                                          |
 | 0.3.9   | 2025-02-10 | [\#53165](https://github.com/airbytehq/airbyte/pull/53165) | Very basic usability improvements and documentation                          |
 | 0.3.8   | 2025-02-10 | [\#52666](https://github.com/airbytehq/airbyte/pull/52666) | Change the chunk size to 1.5Gb                                               |

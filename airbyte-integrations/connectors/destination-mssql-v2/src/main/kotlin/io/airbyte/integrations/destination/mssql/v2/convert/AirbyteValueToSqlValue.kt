@@ -19,9 +19,6 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnknownValue
 import io.airbyte.cdk.load.util.serializeToJsonBytes
-import io.airbyte.integrations.destination.mssql.v2.model.SqlTable
-import io.airbyte.integrations.destination.mssql.v2.model.SqlTableRow
-import io.airbyte.integrations.destination.mssql.v2.model.SqlTableRowValue
 import java.sql.Date
 import java.sql.Time
 import java.sql.Timestamp
@@ -59,34 +56,4 @@ class AirbyteValueToSqlValue {
             is TimestampWithoutTimezoneValue -> Timestamp.valueOf(airbyteValue.value)
         }
     }
-}
-
-/**
- * Extension function that converts an [ObjectValue] into a row of SQL values.
- *
- * @param sqlTable The [SqlTable] that contains data type information for each column. This is used
- * to filter the [ObjectValue]'s values to only those that exist in the table.
- * @return A [SqlTableRow] that contains values converted to their SQL data type equivalents from
- * the provided [ObjectValue].
- */
-fun ObjectValue.toSqlValue(sqlTable: SqlTable): SqlTableRow {
-    val converter = AirbyteValueToSqlValue()
-    return SqlTableRow(
-        values =
-            this.values
-                .filter { (name, _) -> sqlTable.columns.find { it.name == name } != null }
-                .map { (name, value) ->
-                    val dataType = sqlTable.columns.find { it.name == name }!!.type
-                    val converted =
-                        when (value) {
-                            is ObjectValue ->
-                                (converter.convert(value) as LinkedHashMap<*, *>)
-                                    .serializeToJsonBytes()
-                            is ArrayValue ->
-                                (converter.convert(value) as List<*>).serializeToJsonBytes()
-                            else -> converter.convert(value)
-                        }
-                    SqlTableRowValue(name = name, value = converted, type = dataType)
-                }
-    )
 }

@@ -107,6 +107,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.1.0   | 2025-03-03 | [47016](https://github.com/airbytehq/airbyte/pull/47016)  | Migrate to manifest-only format                                                 |
 | 1.0.4   | 2024-04-19 | [37233](https://github.com/airbytehq/airbyte/pull/37233)  | Updating to 0.80.0 CDK                                                          |
 | 1.0.3   | 2024-04-18 | [37233](https://github.com/airbytehq/airbyte/pull/37233)  | Manage dependencies with Poetry.                                                |
 | 1.0.2   | 2024-04-15 | [37233](https://github.com/airbytehq/airbyte/pull/37233)  | Base image migration: remove Dockerfile and use the python-connector-base image |
