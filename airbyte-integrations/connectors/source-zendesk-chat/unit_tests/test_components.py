@@ -5,14 +5,12 @@ from typing import Any, List, Mapping
 import pytest
 import requests
 
-from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-
 
 @pytest.fixture
 def config() -> Mapping[str, Any]:
     return {
         "start_date": "2020-10-01T00:00:00Z",
-        "subdomain": "myzendeskchat",
+        "subdomain": "airbyte",
         "credentials": {"credentials": "access_token", "access_token": "__access_token__"},
     }
 
@@ -49,107 +47,6 @@ def bans_stream_record_extractor_expected_output() -> List[Mapping[str, Any]]:
     ]
 
 
-def _get_id_cursor(components_module, config):
-    ZendeskChatIdIncrementalCursor = components_module.ZendeskChatIdIncrementalCursor
-    return ZendeskChatIdIncrementalCursor(
-        config=config,
-        cursor_field="id",
-        field_name="since_id",
-        parameters={},
-    )
-
-
-@pytest.mark.parametrize(
-    "stream_state, expected_cursor_value, expected_state_value",
-    [
-        ({"id": 10}, 10, {"id": 10}),
-    ],
-    ids=["SET Initial State and GET State"],
-)
-def test_id_incremental_cursor_set_initial_state_and_get_stream_state(
-    components_module,
-    config,
-    stream_state,
-    expected_cursor_value,
-    expected_state_value,
-) -> None:
-    cursor = _get_id_cursor(components_module, config)
-    cursor.set_initial_state(stream_state)
-    assert cursor._cursor == expected_cursor_value
-    assert cursor._state == expected_cursor_value
-    assert cursor.get_stream_state() == expected_state_value
-
-
-@pytest.mark.parametrize(
-    "test_record, expected",
-    [
-        ({"id": 123}, 123),
-        ({"id": 456}, 456),
-    ],
-    ids=["first", "second"],
-)
-def test_id_incremental_cursor_close_slice(components_module, config, test_record, expected) -> None:
-    cursor = _get_id_cursor(components_module, config)
-    cursor.observe(stream_slice={}, record=test_record)
-    cursor.close_slice(stream_slice={})
-    assert cursor._cursor == expected
-
-
-@pytest.mark.parametrize(
-    "stream_state, input_slice, expected",
-    [
-        ({}, {"id": 1}, {}),
-        ({"id": 2}, {"id": 1}, {"since_id": 2}),
-    ],
-    ids=["No State", "With State"],
-)
-def test_id_incremental_cursor_get_request_params(components_module, config, stream_state, input_slice, expected) -> None:
-    cursor = _get_id_cursor(components_module, config)
-    if stream_state:
-        cursor.set_initial_state(stream_state)
-    assert cursor.get_request_params(stream_slice=input_slice) == expected
-
-
-@pytest.mark.parametrize(
-    "stream_state, record, expected",
-    [
-        ({}, {"id": 1}, True),
-        ({"id": 2}, {"id": 1}, False),
-        ({"id": 2}, {"id": 3}, True),
-    ],
-    ids=[
-        "No State",
-        "With State > Record value",
-        "With State < Record value",
-    ],
-)
-def test_id_incremental_cursor_should_be_synced(components_module, config, stream_state, record, expected) -> None:
-    cursor = _get_id_cursor(components_module, config)
-    if stream_state:
-        cursor.set_initial_state(stream_state)
-    assert cursor.should_be_synced(record=record) == expected
-
-
-@pytest.mark.parametrize(
-    "first_record, second_record, expected",
-    [
-        ({"id": 2}, {"id": 1}, True),
-        ({"id": 2}, {"id": 3}, False),
-        ({"id": 3}, {}, True),
-        ({}, {}, False),
-    ],
-    ids=[
-        "First > Second - should synced",
-        "First < Second - should not be synced",
-        "Has First but no Second - should be synced",
-        "Has no First and has no Second - should not be synced",
-    ],
-)
-def test_id_incremental_cursor_is_greater_than_or_equal(components_module, config, first_record, second_record, expected) -> None:
-    cursor = _get_id_cursor(components_module, config)
-    assert cursor.is_greater_than_or_equal(first=first_record, second=second_record) == expected
-
-
 def test_bans_stream_record_extractor(
     components_module,
     config,
@@ -161,51 +58,4 @@ def test_bans_stream_record_extractor(
     test_url = f"https://{config['subdomain']}.zendesk.com/api/v2/chat/bans"
     requests_mock.get(test_url, json=bans_stream_record)
     test_response = requests.get(test_url)
-    assert ZendeskChatBansRecordExtractor().extract_records(test_response) == bans_stream_record_extractor_expected_output
-
-
-def _get_timestamp_cursor(components_module, config, cursor_field, use_microseconds):
-    ZendeskChatTimestampCursor = components_module.ZendeskChatTimestampCursor
-    cursor = ZendeskChatTimestampCursor(
-        start_datetime="2020-10-01T00:00:00Z",
-        cursor_field=cursor_field,
-        datetime_format="%s",
-        config=config,
-        parameters={},
-        use_microseconds=use_microseconds,
-    )
-    # patching missing parts
-    cursor.start_time_option = RequestOption(
-        field_name=cursor_field,
-        inject_into=RequestOptionType.request_parameter,
-        parameters={},
-    )
-    return cursor
-
-
-@pytest.mark.parametrize(
-    "use_microseconds, input_slice, expected",
-    [
-        (True, {"start_time": 1}, {"start_time": 1000000}),
-    ],
-)
-def test_timestamp_based_cursor_add_microseconds(components_module, config, use_microseconds, input_slice, expected) -> None:
-    cursor = _get_timestamp_cursor(components_module, config, "start_time", use_microseconds)
-    test_result = cursor.add_microseconds({}, input_slice)
-    assert test_result == expected
-
-
-@pytest.mark.parametrize(
-    "use_microseconds, input_slice, expected",
-    [
-        (True, {"start_time": 1}, {"start_time": 1000000}),
-        (False, {"start_time": 1}, {"start_time": 1}),
-    ],
-    ids=[
-        "WITH `use_microseconds`",
-        "WITHOUT `use_microseconds`",
-    ],
-)
-def test_timestamp_based_cursor_get_request_params(components_module, config, use_microseconds, input_slice, expected) -> None:
-    cursor = _get_timestamp_cursor(components_module, config, "start_time", use_microseconds)
-    assert cursor.get_request_params(stream_slice=input_slice) == expected
+    assert list(ZendeskChatBansRecordExtractor().extract_records(test_response)) == bans_stream_record_extractor_expected_output

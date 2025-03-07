@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test
 
 class DevNullBasicFunctionalityIntegrationTest :
     BasicFunctionalityIntegrationTest(
-        DevNullTestUtils.loggingConfigContents,
+        DevNullTestUtils.configContents(DevNullTestUtils.loggingConfigPath),
         DevNullSpecificationOss::class.java,
         DevNullDestinationDataDumper,
         NoopDestinationCleaner,

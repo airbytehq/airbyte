@@ -9,12 +9,20 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
+import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
+import io.airbyte.cdk.load.message.PartitionedQueue
+import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.SimpleBatch
+import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.pipeline.BatchUpdate
+import io.airbyte.cdk.load.pipeline.InputPartitioner
+import io.airbyte.cdk.load.pipeline.LoadPipeline
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.StreamManager
 import io.airbyte.cdk.load.state.SyncManager
@@ -29,12 +37,13 @@ import io.airbyte.cdk.load.task.implementor.ProcessFileTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessRecordsTaskFactory
 import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
+import io.airbyte.cdk.load.task.internal.DefaultInputConsumerTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
 import io.airbyte.cdk.load.task.internal.FlushTickTask
-import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
 import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTask
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
+import io.airbyte.cdk.load.task.internal.UpdateBatchStateTaskFactory
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.mockk.Called
 import io.mockk.coEvery
@@ -45,6 +54,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 
 class DestinationTaskLauncherUTest {
     private val taskScopeProvider: TaskScopeProvider = mockk(relaxed = true)
@@ -52,7 +62,7 @@ class DestinationTaskLauncherUTest {
     private val syncManager: SyncManager = mockk(relaxed = true)
 
     // Internal Tasks
-    private val inputConsumerTaskFactory: InputConsumerTaskFactory = mockk(relaxed = true)
+    private val inputConsumerTaskFactory: DefaultInputConsumerTaskFactory = mockk(relaxed = true)
     private val spillToDiskTaskFactory: SpillToDiskTaskFactory = mockk(relaxed = true)
     private val flushTickTask: FlushTickTask = mockk(relaxed = true)
 
@@ -84,9 +94,17 @@ class DestinationTaskLauncherUTest {
     private val fileTransferQueue: MessageQueue<FileTransferQueueMessage> = mockk(relaxed = true)
     private val openStreamQueue: MessageQueue<DestinationStream> = mockk(relaxed = true)
 
+    private val recordQueueForPipeline:
+        PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>> =
+        mockk(relaxed = true)
+    private val batchUpdateQueue: ChannelMessageQueue<BatchUpdate> = mockk(relaxed = true)
+    private val partitioner: InputPartitioner = mockk(relaxed = true)
+    private val updateBatchTaskFactory: UpdateBatchStateTaskFactory = mockk(relaxed = true)
+
     private fun getDefaultDestinationTaskLauncher(
-        useFileTranfer: Boolean
-    ): DefaultDestinationTaskLauncher {
+        useFileTranfer: Boolean,
+        loadPipeline: LoadPipeline? = null
+    ): DefaultDestinationTaskLauncher<Nothing> {
         return DefaultDestinationTaskLauncher(
             taskScopeProvider,
             catalog,
@@ -112,6 +130,13 @@ class DestinationTaskLauncherUTest {
             checkpointQueue,
             fileTransferQueue,
             openStreamQueue,
+
+            // New interface shim
+            recordQueueForPipeline,
+            batchUpdateQueue,
+            loadPipeline,
+            partitioner,
+            updateBatchTaskFactory
         )
     }
 
@@ -126,18 +151,17 @@ class DestinationTaskLauncherUTest {
     }
 
     @Test
-    fun `test that we don't start the spill-to-disk task when file transfer is enabled`() =
-        runTest {
-            val destinationTaskLauncher = getDefaultDestinationTaskLauncher(true)
-            // This is needed to let the run method to complete
-            destinationTaskLauncher.handleTeardownComplete()
-            destinationTaskLauncher.run()
+    fun `don't start the spill-to-disk task when file transfer is enabled`() = runTest {
+        val destinationTaskLauncher = getDefaultDestinationTaskLauncher(true)
+        // This is needed to let the run method to complete
+        destinationTaskLauncher.handleTeardownComplete()
+        destinationTaskLauncher.run()
 
-            coVerify { spillToDiskTaskFactory wasNot Called }
-        }
+        coVerify { spillToDiskTaskFactory wasNot Called }
+    }
 
     @Test
-    fun `test that we start the spill-to-disk task when file transfer is disabled`() = runTest {
+    fun `start the spill-to-disk task when file transfer is disabled`() = runTest {
         val spillToDiskTask = mockk<SpillToDiskTask>(relaxed = true)
         coEvery { spillToDiskTaskFactory.make(any(), any()) } returns spillToDiskTask
 
@@ -150,7 +174,7 @@ class DestinationTaskLauncherUTest {
     }
 
     @Test
-    fun `test handle exception`() = runTest {
+    fun `handle exception`() = runTest {
         val destinationTaskLauncher = getDefaultDestinationTaskLauncher(true)
         launch { destinationTaskLauncher.run() }
         val e = Exception("e")
@@ -162,7 +186,7 @@ class DestinationTaskLauncherUTest {
     }
 
     @Test
-    fun `test run close stream no more than once per stream`() = runTest {
+    fun `run close stream no more than once per stream`() = runTest {
         val destinationTaskLauncher = getDefaultDestinationTaskLauncher(true)
         val streamManager = mockk<StreamManager>(relaxed = true)
         coEvery { syncManager.getStreamManager(any()) } returns streamManager
@@ -180,7 +204,7 @@ class DestinationTaskLauncherUTest {
     }
 
     @Test
-    fun `task successful completion triggers scope close`() = runTest {
+    fun `successful completion triggers scope close`() = runTest {
         // This should close the scope provider.
         val taskLauncher = getDefaultDestinationTaskLauncher(false)
         launch {
@@ -191,7 +215,7 @@ class DestinationTaskLauncherUTest {
     }
 
     @Test
-    fun `test completion with failure triggers scope kill`() = runTest {
+    fun `completion with failure triggers scope kill`() = runTest {
         val taskLauncher = getDefaultDestinationTaskLauncher(false)
         launch {
             taskLauncher.run()
@@ -201,7 +225,7 @@ class DestinationTaskLauncherUTest {
     }
 
     @Test
-    fun `test exceptions in tasks throw`() = runTest {
+    fun `exceptions in tasks throw`() = runTest {
         coEvery { spillToDiskTaskFactory.make(any(), any()) } answers
             {
                 val task = mockk<SpillToDiskTask>(relaxed = true)
@@ -228,7 +252,7 @@ class DestinationTaskLauncherUTest {
     }
 
     @Test
-    fun `test numOpenStreamWorkers open stream tasks are launched`() = runTest {
+    fun `numOpenStreamWorkers open stream tasks are launched`() = runTest {
         val numOpenStreamWorkers = 3
         val destinationTaskLauncher = getDefaultDestinationTaskLauncher(false)
 
@@ -244,7 +268,7 @@ class DestinationTaskLauncherUTest {
     }
 
     @Test
-    fun `test streams opened when setup completes`() = runTest {
+    fun `streams are opened when setup completes`() = runTest {
         val launcher = getDefaultDestinationTaskLauncher(false)
 
         coEvery { openStreamQueue.publish(any()) } returns Unit
@@ -252,5 +276,29 @@ class DestinationTaskLauncherUTest {
         launcher.handleSetupComplete()
 
         coVerify(exactly = catalog.streams.size) { openStreamQueue.publish(any()) }
+    }
+
+    @Test
+    fun `don't start the load pipeline if not provided, do start old tasks`() = runTest {
+        val launcher = getDefaultDestinationTaskLauncher(false, null as LoadPipeline?)
+        coEvery { config.numProcessRecordsWorkers } returns 1
+        coEvery { config.numProcessBatchWorkers } returns 1
+        val job = assertDoesNotThrow { launch { launcher.run() } }
+        launcher.handleTeardownComplete(true)
+        job.join()
+        coVerify { processRecordsTaskFactory.make(any()) }
+        coVerify { processBatchTaskFactory.make(any()) }
+        job.cancel()
+    }
+
+    @Test
+    fun `start the load pipeline if provided`() = runTest {
+        val pipeline = mockk<LoadPipeline>(relaxed = true)
+        val launcher = getDefaultDestinationTaskLauncher(false, pipeline)
+        val job = launch { launcher.run() }
+        launcher.handleTeardownComplete(true)
+        job.join()
+        coVerify { pipeline.start(any()) }
+        job.cancel()
     }
 }

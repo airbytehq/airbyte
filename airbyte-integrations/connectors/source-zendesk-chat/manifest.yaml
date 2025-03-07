@@ -1,4 +1,4 @@
-version: 5.15.0
+version: 6.33.7
 
 type: DeclarativeSource
 
@@ -79,17 +79,20 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: CursorPagination
+            cursor_value: "{{ last_record['id'] + 1 }}"
             page_size: 100
-            cursor_value: "{{ last_record['id'] + 1  }}"
-            stop_condition: "{{ not headers.get('x-next-page', {}) }}"
+            stop_condition: "{{ not last_record }}"
       name: agents
       primary_key:
         - id
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.ZendeskChatIdIncrementalCursor
-        cursor_field: id
-        field_name: since_id
+        type: IncrementingCountCursor
+        cursor_field: "id"
+        start_value: 0
+        start_value_option:
+          type: RequestOption
+          field_name: since_id
+          inject_into: "request_parameter"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -134,27 +137,23 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 1000
-            cursor_value: "{{ response.get('next_page', {}) }}"
-            stop_condition: "{{ response.get('count', {}) < 1000 }}"
+            cursor_value: '{{ response.get("end_time", {}) }}'
+            stop_condition: "{{ last_page_size < 1_000 }}"
       name: agent_timeline
       primary_key:
         - id
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.ZendeskChatTimestampCursor
-        use_microseconds: true
+        type: DatetimeBasedCursor
         cursor_field: start_time
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
           - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%s"
+        datetime_format: "%epoch_microseconds"
         start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config['start_date'], '%s') }}"
+          datetime: "{{ format_datetime(config['start_date'], '%epoch_microseconds') }}"
         start_time_option:
-          type: RequestOption
           field_name: start_time
-          inject_into: request_parameter
+          inject_into: "request_parameter"
       transformations:
         - type: AddFields
           fields:
@@ -168,7 +167,7 @@ definitions:
             - path:
                 - id
               value: >-
-                {{ [record.get('agent_id', ''), '|', record.get('start_time', '')]|join }}
+                {{ [record.get('agent_id', ''), record.get('start_time', '')]|join('|') }}
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -211,18 +210,20 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: CursorPagination
+            cursor_value: "{{ last_record['id'] + 1 }}"
             page_size: 100
-            cursor_value: '{{ headers.get("x-next-page", {}).split("since_id=")[-1] }}'
-            stop_condition: >-
-              {{ ((response.get("visitor", {}) | length) + (response.get("ip_address", {}) | length)) < 100 }}
+            stop_condition: "{{ not last_record }}"
       name: bans
       primary_key:
         - id
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.ZendeskChatIdIncrementalCursor
-        cursor_field: id
-        field_name: since_id
+        type: IncrementingCountCursor
+        cursor_field: "id"
+        start_value: 0
+        start_value_option:
+          type: RequestOption
+          field_name: since_id
+          inject_into: "request_parameter"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -267,27 +268,23 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 1000
-            cursor_value: "{{ response.get('next_page', {}) }}"
-            stop_condition: "{{ response.get('count', {}) < 1000 }}"
+            cursor_value: '{{ response.get("end_time", {}) }}'
+            stop_condition: "{{ last_page_size < 1_000 }}"
       name: chats
       primary_key:
         - id
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: source_declarative_manifest.components.ZendeskChatTimestampCursor
-        use_microseconds: false
+        type: DatetimeBasedCursor
         cursor_field: update_timestamp
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
           - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%s"
         start_datetime:
-          type: MinMaxDatetime
           datetime: "{{ format_datetime(config['start_date'], '%s') }}"
         start_time_option:
-          type: RequestOption
           field_name: start_time
-          inject_into: request_parameter
+          inject_into: "request_parameter"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1872,3 +1869,21 @@ schemas:
         type:
           - "null"
           - string
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 10
+  max_concurrency: 10
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        #        Chat API has limit of 200 requests/minute for all plans: https://developer.zendesk.com/api-reference/introduction/rate-limits/#zendesk-suite-plan-limits
+        - limit: 200
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: ".*" # matches 'any request'
+  status_codes_for_ratelimit_hit: [429]
