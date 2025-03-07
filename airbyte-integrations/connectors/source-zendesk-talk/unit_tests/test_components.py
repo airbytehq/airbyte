@@ -1,10 +1,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
-import requests_mock
 
 from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator, BearerAuthenticator
 
@@ -32,8 +31,10 @@ from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator, B
 )
 def test_ivr_menus_record_extractor(components_module, response_data, expected_records):
     IVRMenusRecordExtractor = components_module.IVRMenusRecordExtractor
-    with requests_mock.Mocker() as m:
-        m.get("https://not-the-real.api/ivrs", json=response_data)
+    with patch("requests.get") as mock_get:
+        mock_response = MagicMock()
+        mock_response.json.return_value = response_data
+        mock_get.return_value = mock_response
         response = requests.get("https://not-the-real.api/ivrs")
 
         extractor = IVRMenusRecordExtractor()
@@ -70,8 +71,10 @@ def test_ivr_menus_record_extractor(components_module, response_data, expected_r
 )
 def test_ivr_routes_record_extractor(components_module, response_data, expected_records):
     IVRRoutesRecordExtractor = components_module.IVRRoutesRecordExtractor
-    with requests_mock.Mocker() as m:
-        m.get("https://not-the-real.api/ivrs", json=response_data)
+    with patch("requests.get") as mock_get:
+        mock_response = MagicMock()
+        mock_response.json.return_value = response_data
+        mock_get.return_value = mock_response
         response = requests.get("https://not-the-real.api/ivrs")
 
         extractor = IVRRoutesRecordExtractor()
