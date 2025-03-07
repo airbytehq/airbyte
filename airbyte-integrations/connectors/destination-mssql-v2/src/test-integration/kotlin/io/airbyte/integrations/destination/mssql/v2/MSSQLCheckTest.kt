@@ -38,7 +38,7 @@ internal class MSSQLCheckTest :
                 CheckTestConfig(
                     MSSQLTestConfigUtil.getConfigPath("check/fail-database-invalid.json"),
                     name = "Invalid database name",
-                ) to "Cannot open database \"iamnotthere\" requested by the login".toPattern(),
+                ) to "Login failed for user 'sa'".toPattern(),
             ),
         configUpdater = MSSQLConfigUpdater()
     ) {
