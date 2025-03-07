@@ -28,6 +28,10 @@ definitions:
 
   default_error_handler:
     type: DefaultErrorHandler
+    max_retries: 10
+    backoff_strategies:
+      - type: ConstantBackoffStrategy
+        backoff_time_in_seconds: 120
     response_filters:
       - http_codes: [400]
         action: FAIL
@@ -69,7 +73,7 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path:
-        - "{{ parameters['field_path'] }}"
+        - "{{ parameters['extractor_field_path'] }}"
 
   selector_empty_dpath:
     type: RecordSelector
@@ -127,7 +131,7 @@ definitions:
     $parameters:
       name: cohorts
       path: 2.0/cohorts/list
-      field_path: []
+      extractor_field_path: []
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -170,7 +174,7 @@ definitions:
     primary_key: distinct_id
     $parameters:
       name: engage
-      field_path: results
+      extractor_field_path: results
     retriever:
       type: SimpleRetriever
       requester:
@@ -218,7 +222,7 @@ definitions:
     $parameters:
       name: cohort_members
       path: 2.0/engage
-      field_path: results
+      extractor_field_path: results
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -261,7 +265,7 @@ definitions:
     $parameters:
       name: revenue
       path: 2.0/engage/revenue
-      field_path: results
+      extractor_field_path: results
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -269,7 +273,7 @@ definitions:
         extractor:
           class_name: "source_mixpanel.components.RevenueDpathExtractor"
           field_path:
-            - "{{ parameters['field_path'] }}"
+            - "{{ parameters['extractor_field_path'] }}"
     incremental_sync: "#/definitions/incremental_sync"
 
   # https://developer.mixpanel.com/reference/list-all-annotations-for-project
@@ -277,7 +281,7 @@ definitions:
     $ref: "#/definitions/stream_base"
     $parameters:
       name: annotations
-      field_path: results
+      extractor_field_path: results
       path: annotations
     primary_key: "id"
     retriever:
@@ -391,3 +395,23 @@ check:
   type: CheckStream
   stream_names:
     - cohorts
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    # -The Query API has a rate limit of 60 queries per hour and a maximum of 5 concurrent queries
+    # https://developer.mixpanel.com/reference/raw-event-export#api-export-endpoint-rate-limits
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 60 # rate limit of 60 queries per hour
+          interval: PT1H
+      matchers: []
+
+# concurrent streams: cohorts, engage, revenue, annotations, cohort_members, funnels
+# synchronous streams: export
+# https://developer.mixpanel.com/reference/rate-limits
+# A maximum of 5 concurrent queries and 60 queries per hour.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  max_concurrency: 25
