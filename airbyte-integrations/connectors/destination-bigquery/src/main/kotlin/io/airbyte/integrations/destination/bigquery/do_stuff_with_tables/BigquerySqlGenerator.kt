@@ -30,7 +30,7 @@ import io.airbyte.integrations.destination.bigquery.probably_core_stuff.Sql
 import io.airbyte.integrations.destination.bigquery.probably_core_stuff.TableName
 
 class BigquerySqlGenerator(private val projectId: String?) {
-    fun createTable(
+    fun createFinalTable(
         stream: DestinationStream,
         finalTableName: TableName,
         destinationColumnNames: DestinationColumnNameMapping,
