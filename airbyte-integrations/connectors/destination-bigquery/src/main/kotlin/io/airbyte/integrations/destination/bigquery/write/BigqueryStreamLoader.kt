@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.bigquery
+package io.airbyte.integrations.destination.bigquery.write
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.StreamProcessingFailed
