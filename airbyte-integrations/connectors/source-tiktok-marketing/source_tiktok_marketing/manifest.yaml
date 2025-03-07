@@ -4164,6 +4164,10 @@ definitions:
       additionalProperties: true
       type: object
       properties:
+        spark_ads_post_id:
+          type:
+            - "null"
+            - string
         user_info:
           type:
             - "null"
