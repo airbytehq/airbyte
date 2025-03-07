@@ -28,8 +28,8 @@ requests-mock = "*"
 timeout-decorator = "==0.5.0"
 pytest-mock = "*"
 pytest = "*"
- 
- 
+
+
 [tool.poe]
 include = [
     # Shared tasks definition file(s) can be imported here.
