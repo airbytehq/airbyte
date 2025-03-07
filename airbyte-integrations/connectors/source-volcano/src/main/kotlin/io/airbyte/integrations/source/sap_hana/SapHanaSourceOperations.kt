@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.sap_hana
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.*
@@ -166,7 +167,12 @@ class SapHanaSourceOperations :
 
     override val globalCursor: FieldOrMetaField = TriggerTableConfig.CURSOR_FIELD
 
-    override val globalMetaFields: Set<MetaField> = emptySet()
+    override val globalMetaFields: Set<MetaField> =
+        setOf(
+            SapHanaSourceCdcMetaFields.CHANGE_TIME,
+            CommonMetaField.CDC_UPDATED_AT,
+            CommonMetaField.CDC_DELETED_AT,
+        )
 
     override fun decorateRecordData(
         timestamp: OffsetDateTime,
@@ -174,6 +180,17 @@ class SapHanaSourceOperations :
         stream: Stream,
         recordData: ObjectNode
     ) {
-        return
+        recordData.set<JsonNode>(
+            CommonMetaField.CDC_UPDATED_AT.id,
+            null,
+        )
+        recordData.set<JsonNode>(
+            CommonMetaField.CDC_DELETED_AT.id,
+            null,
+        )
+        recordData.set<JsonNode>(
+            TriggerTableConfig.CURSOR_FIELD.id,
+            null,
+        )
     }
 }

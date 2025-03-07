@@ -17,38 +17,57 @@ import io.airbyte.cdk.jdbc.StringFieldType
 object TriggerTableConfig {
     const val TRIGGER_TABLE_PREFIX = "_ab_trigger_"
     const val TRIGGER_TABLE_NAMESPACE = "_ab_cdc"
+
+    val CHANGE_ID_FIELD =
+        Field(
+            id = TRIGGER_TABLE_PREFIX + "change_id",
+            type = BigIntegerFieldType,
+        )
+
     val CURSOR_FIELD =
         Field(
             id = TRIGGER_TABLE_PREFIX + "change_time",
             type = OffsetDateTimeFieldType,
         )
 
+    val PRIMARY_KEY_FIELD =
+        Field(
+            id = TRIGGER_TABLE_PREFIX + "primary_key",
+            type = StringFieldType,
+        )
+
+    val STREAM_NAME_FIELD =
+        Field(
+            id = TRIGGER_TABLE_PREFIX + "stream_name",
+            type = StringFieldType,
+        )
+
+    val OPERATION_TYPE_FIELD =
+        Field(
+            id = TRIGGER_TABLE_PREFIX + "operation_type",
+            type = StringFieldType,
+        )
+
+    val VALUE_BEFORE_FIELD =
+        Field(
+            id = TRIGGER_TABLE_PREFIX + "value_before",
+            type = JsonStringFieldType,
+        )
+
+    val VALUE_AFTER_FIELD =
+        Field(
+            id = TRIGGER_TABLE_PREFIX + "value_after",
+            type = JsonStringFieldType,
+        )
+
     val SCHEMA: List<Field> =
         listOf(
-            Field(
-                id = TRIGGER_TABLE_PREFIX + "change_id",
-                type = BigIntegerFieldType,
-            ),
+            CHANGE_ID_FIELD,
             CURSOR_FIELD,
-            Field(
-                id = TRIGGER_TABLE_PREFIX + "primary_key",
-                type = StringFieldType,
-            ),
-            Field(
-                id = TRIGGER_TABLE_PREFIX + "stream_name",
-                type = StringFieldType,
-            ),
-            Field(
-                id = TRIGGER_TABLE_PREFIX + "operation_type",
-                type = StringFieldType,
-            ),
-            Field(
-                id = TRIGGER_TABLE_PREFIX + "value_before",
-                type = JsonStringFieldType,
-            ),
-            Field(
-                id = TRIGGER_TABLE_PREFIX + "value_after",
-                type = JsonStringFieldType,
-            )
+            PRIMARY_KEY_FIELD,
+            STREAM_NAME_FIELD,
+            OPERATION_TYPE_FIELD,
+            VALUE_BEFORE_FIELD,
+            VALUE_AFTER_FIELD,
         )
 }

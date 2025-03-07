@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.And
-import io.airbyte.cdk.read.DefaultJdbcStreamState
 import io.airbyte.cdk.read.Equal
 import io.airbyte.cdk.read.From
 import io.airbyte.cdk.read.FromSample
@@ -37,8 +36,8 @@ import io.airbyte.cdk.util.Jsons
 
 sealed class SapHanaSourceJdbcPartition(
     val selectQueryGenerator: SelectQueryGenerator,
-    final override val streamState: DefaultJdbcStreamState,
-) : JdbcPartition<DefaultJdbcStreamState> {
+    final override val streamState: SapHanaJdbcStreamState,
+) : JdbcPartition<SapHanaJdbcStreamState> {
     val stream: Stream = streamState.stream
     val from = From(stream.name, stream.namespace)
 }
@@ -46,7 +45,7 @@ sealed class SapHanaSourceJdbcPartition(
 /** Base class for default implementations of [JdbcPartition] for unsplittable partitions. */
 sealed class SapHanaJdbcUnsplittablePartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
+    streamState: SapHanaJdbcStreamState,
 ) : SapHanaSourceJdbcPartition(selectQueryGenerator, streamState) {
 
     override val nonResumableQuery: SelectQuery
@@ -68,7 +67,7 @@ sealed class SapHanaJdbcUnsplittablePartition(
 /** Default implementation of a [JdbcPartition] for an unsplittable snapshot partition. */
 class SapHanaJdbcUnsplittableSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
+    streamState: SapHanaJdbcStreamState,
 ) : SapHanaJdbcUnsplittablePartition(selectQueryGenerator, streamState) {
 
     override val completeState: OpaqueStateValue =
@@ -81,11 +80,11 @@ class SapHanaJdbcUnsplittableSnapshotPartition(
  */
 class SapHanaJdbcUnsplittableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
+    streamState: SapHanaJdbcStreamState,
     val cursor: Field,
 ) :
     SapHanaJdbcUnsplittablePartition(selectQueryGenerator, streamState),
-    JdbcCursorPartition<DefaultJdbcStreamState> {
+    JdbcCursorPartition<SapHanaJdbcStreamState> {
 
     override val completeState: OpaqueStateValue
         get() =
@@ -103,12 +102,18 @@ class SapHanaJdbcUnsplittableSnapshotWithCursorPartition(
 /** Base class for default implementations of [JdbcPartition] for splittable partitions. */
 sealed class SapHanaJdbcSplittablePartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
+    streamState: SapHanaJdbcStreamState,
     val checkpointColumns: List<Field>,
     val triggerCdcPartitionState: TriggerCdcPartitionState? = null,
 ) :
     SapHanaSourceJdbcPartition(selectQueryGenerator, streamState),
-    JdbcSplittablePartition<DefaultJdbcStreamState> {
+    JdbcSplittablePartition<SapHanaJdbcStreamState> {
+
+    init {
+        streamState.isReadingFromTriggerTable =
+            triggerCdcPartitionState == TriggerCdcPartitionState.INCREMENTAL
+    }
+
     abstract val lowerBound: List<JsonNode>?
     abstract val upperBound: List<JsonNode>?
 
@@ -205,7 +210,7 @@ sealed class SapHanaJdbcSplittablePartition(
 /** Default implementation of a [JdbcPartition] for a splittable snapshot partition. */
 class SapHanaJdbcSplittableSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
+    streamState: SapHanaJdbcStreamState,
     primaryKey: List<Field>,
     triggerCdcPartitionState: TriggerCdcPartitionState? = null,
     override val lowerBound: List<JsonNode>?,
@@ -241,7 +246,7 @@ class SapHanaJdbcSplittableSnapshotPartition(
  */
 sealed class SapHanaJdbcCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
+    streamState: SapHanaJdbcStreamState,
     checkpointColumns: List<Field>,
     triggerCdcPartitionState: TriggerCdcPartitionState? = null,
     val cursor: Field,
@@ -253,7 +258,7 @@ sealed class SapHanaJdbcCursorPartition(
         checkpointColumns,
         triggerCdcPartitionState,
     ),
-    JdbcCursorPartition<DefaultJdbcStreamState> {
+    JdbcCursorPartition<SapHanaJdbcStreamState> {
 
     val cursorUpperBound: JsonNode
         get() = explicitCursorUpperBound ?: streamState.cursorUpperBound!!
@@ -278,7 +283,7 @@ sealed class SapHanaJdbcCursorPartition(
  */
 class SapHanaJdbcSplittableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
+    streamState: SapHanaJdbcStreamState,
     primaryKey: List<Field>,
     triggerCdcPartitionState: TriggerCdcPartitionState? = null,
     override val lowerBound: List<JsonNode>?,
@@ -327,7 +332,7 @@ class SapHanaJdbcSplittableSnapshotWithCursorPartition(
  */
 class SapHanaJdbcCursorIncrementalPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
+    streamState: SapHanaJdbcStreamState,
     cursor: Field,
     triggerCdcPartitionState: TriggerCdcPartitionState? = null,
     val cursorLowerBound: JsonNode,

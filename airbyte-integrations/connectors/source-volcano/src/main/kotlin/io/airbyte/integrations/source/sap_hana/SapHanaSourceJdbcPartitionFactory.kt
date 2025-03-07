@@ -16,7 +16,6 @@ import io.airbyte.cdk.output.InvalidPrimaryKey
 import io.airbyte.cdk.output.ResetStream
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
-import io.airbyte.cdk.read.DefaultJdbcStreamState
 import io.airbyte.cdk.read.JdbcPartitionFactory
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
@@ -34,20 +33,20 @@ class SapHanaSourceJdbcPartitionFactory(
 ) :
     JdbcPartitionFactory<
         DefaultJdbcSharedState,
-        DefaultJdbcStreamState,
+        SapHanaJdbcStreamState,
         SapHanaSourceJdbcPartition,
     > {
 
-    private val streamStates = ConcurrentHashMap<StreamIdentifier, DefaultJdbcStreamState>()
+    private val streamStates = ConcurrentHashMap<StreamIdentifier, SapHanaJdbcStreamState>()
 
-    override fun streamState(streamFeedBootstrap: StreamFeedBootstrap): DefaultJdbcStreamState =
+    override fun streamState(streamFeedBootstrap: StreamFeedBootstrap): SapHanaJdbcStreamState =
         streamStates.getOrPut(streamFeedBootstrap.feed.id) {
-            DefaultJdbcStreamState(sharedState, streamFeedBootstrap)
+            SapHanaJdbcStreamState(sharedState, streamFeedBootstrap)
         }
 
     override fun create(streamFeedBootstrap: StreamFeedBootstrap): SapHanaSourceJdbcPartition? {
         val stream: Stream = streamFeedBootstrap.feed
-        val streamState: DefaultJdbcStreamState = streamState(streamFeedBootstrap)
+        val streamState: SapHanaJdbcStreamState = streamState(streamFeedBootstrap)
         val opaqueStateValue: OpaqueStateValue? = streamFeedBootstrap.currentState
         if (opaqueStateValue == null) {
             return coldStart(streamState)
@@ -74,8 +73,7 @@ class SapHanaSourceJdbcPartitionFactory(
             }
 
         // Incremental sync applies to CDC or user defined cursor based incremental.
-        val isIncrementalSync: Boolean =
-            stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL || configuration.cdc != null
+        val isIncrementalSync: Boolean = stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL
 
         return if (cursorPair == null) {
             if (isIncrementalSync) {
@@ -92,7 +90,7 @@ class SapHanaSourceJdbcPartitionFactory(
                     streamState,
                     primaryKey = pkMap.keys.toList(),
                     lowerBound = pkMap.values.toList(),
-                    upperBound = null
+                    upperBound = null,
                 )
             }
         } else {
@@ -178,7 +176,7 @@ class SapHanaSourceJdbcPartitionFactory(
         return cursor to cursors[cursorLabel]!!
     }
 
-    private fun coldStart(streamState: DefaultJdbcStreamState): SapHanaSourceJdbcPartition {
+    private fun coldStart(streamState: SapHanaJdbcStreamState): SapHanaSourceJdbcPartition {
         val stream: Stream = streamState.stream
         val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
         if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
@@ -202,7 +200,7 @@ class SapHanaSourceJdbcPartitionFactory(
             return SapHanaJdbcUnsplittableSnapshotWithCursorPartition(
                 selectQueryGenerator,
                 streamState,
-                cursorChosenFromCatalog
+                cursorChosenFromCatalog,
             )
         }
         val triggerCdcPartitionState =

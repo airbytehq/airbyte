@@ -141,10 +141,7 @@ class SapHanaSourceSelectQueryGeneratorTest {
                 Limit(1000),
             )
             .assertSqlEquals(
-                """SELECT "msg", "c" FROM """ +
-                    """(SELECT "msg", "c" FROM "SC"."TBL" """ +
-                    """WHERE ("c" > ?) AND ("c" <= ?) ORDER BY "c"""" +
-                    ") LIMIT ?",
+                """SELECT "msg", "c" FROM "SC"."TBL" WHERE ("c" > ?) AND ("c" <= ?) ORDER BY "c" LIMIT ?""",
                 lb to DoubleFieldType,
                 ub to DoubleFieldType,
                 Jsons.numberNode(1000L) to LongFieldType,
