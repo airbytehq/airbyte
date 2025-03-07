@@ -2223,6 +2223,11 @@ schemas:
             - "null"
             - object
           properties:
+            external_id:
+              type:
+                - "null"
+                - string
+              description: The external ID of the contact
             type:
               type:
                 - "null"
