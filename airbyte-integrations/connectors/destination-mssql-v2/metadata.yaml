@@ -9,14 +9,14 @@ data:
     - suite: unitTests
     - suite: integrationTests
       testSecrets:
-        - fileName: s3_dest_v2_minimal_required_config.json
-          name: SECRET_DESTINATION-S3-V2-MINIMAL-REQUIRED-CONFIG
+        - fileName: bulk_upload_config.json
+          name: SECRET_DESTINATION_MSSQL_V2_BULK_LOAD_CONFIG
           secretStore:
             alias: airbyte-connector-testing-secret-store
             type: GSM
   connectorType: destination
   definitionId: 37a928c1-2d5c-431a-a97d-ae236bd1ea0c
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.14
   dockerRepository: airbyte/destination-mssql-v2
   documentationUrl: https://docs.airbyte.com/integrations/destinations/mssql-v2
   githubIssueLabel: destination-mssql-v2

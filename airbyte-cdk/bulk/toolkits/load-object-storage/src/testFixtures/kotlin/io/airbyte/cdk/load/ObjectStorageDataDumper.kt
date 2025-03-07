@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.AvroFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
+import io.airbyte.cdk.load.command.object_storage.MSSQLCSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
@@ -140,6 +141,16 @@ class ObjectStorageDataDumper(
                         .recordSequence()
                         .map { it.toAirbyteValue().maybeUnflatten(wasFlattened).toOutputRecord() }
                         .toList()
+                }
+            }
+            is MSSQLCSVFormatConfiguration -> {
+                CSVParser(inputStream.bufferedReader(), CSVFormat.DEFAULT.withHeader()).use {
+                    it.records.map { record ->
+                        record
+                            .toAirbyteValue(stream.schema.withAirbyteMeta(true))
+                            .maybeUnflatten(true)
+                            .toOutputRecord()
+                    }
                 }
             }
         }
