@@ -4,4 +4,13 @@
 
 package io.airbyte.integrations.destination.bigquery
 
-class BigqueryDestination {}
+import io.airbyte.cdk.AirbyteDestinationRunner
+
+class BigqueryDestination {
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            AirbyteDestinationRunner.run(*args)
+        }
+    }
+}
