@@ -30,12 +30,35 @@ import io.airbyte.integrations.destination.bigquery.probably_core_stuff.Sql
 import io.airbyte.integrations.destination.bigquery.probably_core_stuff.TableName
 
 class BigquerySqlGenerator(private val projectId: String?) {
+    fun createRawTableIfNotExists(
+        stream: DestinationStream,
+        rawTableName: TableName,
+        suffix: String,
+    ): Sql {
+        return Sql.of(
+            """
+            CREATE IF NOT EXISTS TABLE $projectId.${quote(rawTableName.namespace)}.${quote(rawTableName.name)}$suffix (
+              _airbyte_raw_id STRING,
+              _airbyte_extracted_at TIMESTAMP,
+              _airbyte_loaded_at TIMESTAMP,
+              _airbyte_data STRING,
+              _airbyte_meta STRING,
+              _airbyte_generation_id INT64
+            )
+            PARTITION BY
+              RANGE_BUCKET(_airbyte_generation_id, GENERATE_ARRAY(0, 10000, 5))
+            CLUSTER BY
+              _airbyte_extracted_at
+            """.trimIndent()
+        )
+    }
+
     fun createFinalTable(
         stream: DestinationStream,
         finalTableName: TableName,
         destinationColumnNames: DestinationColumnNameMapping,
         suffix: String,
-        force: Boolean
+        force: Boolean,
     ): Sql {
         val columnDeclarations = columnsAndTypes(stream, destinationColumnNames)
         val clusterConfig =

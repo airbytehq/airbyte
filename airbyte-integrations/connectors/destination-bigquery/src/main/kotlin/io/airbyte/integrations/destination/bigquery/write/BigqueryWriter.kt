@@ -21,6 +21,8 @@ class BigqueryWriter(val config: BigqueryConfiguration) : DestinationWriter {
         // get bigquery client object
         // do CatalogParser's table name collision nonsense - have some logic to build
         // Map<DestinationStream.Descriptor, TableNames> or something?
+
+        // TODO gather initial state
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
