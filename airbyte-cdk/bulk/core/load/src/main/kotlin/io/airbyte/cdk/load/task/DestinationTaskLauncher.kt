@@ -197,23 +197,6 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     }
 
     override suspend fun run() {
-        // Start the input consumer ASAP
-        log.info { "Starting input consumer task" }
-        val inputConsumerTask =
-            inputConsumerTaskFactory.make(
-                catalog = catalog,
-                inputFlow = inputFlow,
-                recordQueueSupplier = recordQueueSupplier,
-                checkpointQueue = checkpointQueue,
-                fileTransferQueue = fileTransferQueue,
-                destinationTaskLauncher = this,
-                recordQueueForPipeline = recordQueueForPipeline,
-                loadPipeline = loadPipeline,
-                partitioner = partitioner,
-                openStreamQueue = openStreamQueue,
-            )
-        launch(inputConsumerTask)
-
         // Launch the client interface setup task
         log.info { "Starting startup task" }
         val setupTask = setupTaskFactory.make(this)
@@ -225,12 +208,29 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
         }
 
         if (loadPipeline != null) {
-            log.info { "Setting up load pipeline" }
-            loadPipeline.start { launch(it) }
+            log.info { "Setup load pipeline" }
+            loadPipeline.start { task -> launch(task, withExceptionHandling = true) }
             log.info { "Launching update batch task" }
             val updateBatchTask = updateBatchTaskFactory.make(this)
             launch(updateBatchTask)
         } else {
+            // Start the input consumer ASAP
+            log.info { "Starting input consumer task" }
+            val inputConsumerTask =
+                inputConsumerTaskFactory.make(
+                    catalog = catalog,
+                    inputFlow = inputFlow,
+                    recordQueueSupplier = recordQueueSupplier,
+                    checkpointQueue = checkpointQueue,
+                    fileTransferQueue = fileTransferQueue,
+                    destinationTaskLauncher = this,
+                    recordQueueForPipeline = recordQueueForPipeline,
+                    loadPipeline = loadPipeline,
+                    partitioner = partitioner,
+                    openStreamQueue = openStreamQueue,
+                )
+            launch(inputConsumerTask)
+
             // TODO: pluggable file transfer
             if (!fileTransferEnabled) {
                 // Start a spill-to-disk task for each record stream
@@ -289,6 +289,26 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
             catalog.streams.forEach { openStreamQueue.publish(it) }
             log.info { "Closing open stream queue" }
             openStreamQueue.close()
+        } else {
+            // When the pipeline is enabled, input consuming for
+            // each stream will wait on stream start to complete,
+            // but not on setup. This is the simplest way to make
+            // it do that.
+            log.info { "Setup complete, starting input consumer task" }
+            val inputConsumerTask =
+                inputConsumerTaskFactory.make(
+                    catalog = catalog,
+                    inputFlow = inputFlow,
+                    recordQueueSupplier = recordQueueSupplier,
+                    checkpointQueue = checkpointQueue,
+                    fileTransferQueue = fileTransferQueue,
+                    destinationTaskLauncher = this,
+                    recordQueueForPipeline = recordQueueForPipeline,
+                    loadPipeline = loadPipeline,
+                    partitioner = partitioner,
+                    openStreamQueue = openStreamQueue,
+                )
+            launch(inputConsumerTask)
         }
     }
 

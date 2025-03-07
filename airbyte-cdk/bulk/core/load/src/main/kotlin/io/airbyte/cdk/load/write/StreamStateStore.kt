@@ -21,7 +21,7 @@ class StreamStateStore<S> {
         store[stream] = state
     }
 
-    fun get(stream: DestinationStream.Descriptor): S? {
+    operator fun get(stream: DestinationStream.Descriptor): S? {
         return store[stream]
     }
 }

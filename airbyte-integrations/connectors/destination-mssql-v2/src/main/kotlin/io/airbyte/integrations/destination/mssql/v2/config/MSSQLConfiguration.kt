@@ -22,9 +22,9 @@ data class MSSQLConfiguration(
     val jdbcUrlParams: String?,
     val sslMethod: EncryptionMethod,
     override val mssqlLoadTypeConfiguration: MSSQLLoadTypeConfiguration,
+    override val numProcessRecordsWorkers: Int,
+    override val numProcessBatchWorkers: Int
 ) : DestinationConfiguration(), MSSQLLoadTypeConfigurationProvider {
-    override val numProcessRecordsWorkers = 1
-    override val numProcessBatchWorkers: Int = 1
     override val processEmptyFiles: Boolean = true
     override val recordBatchSizeBytes = ObjectStorageUploadConfiguration.DEFAULT_PART_SIZE_BYTES
 }
@@ -58,7 +58,9 @@ class MSSQLConfigurationFactory(private val featureFlags: Set<FeatureFlag>) :
             password = overrides.getOrDefault("password", spec.password),
             jdbcUrlParams = overrides.getOrDefault("jdbcUrlParams", spec.jdbcUrlParams),
             sslMethod = spec.sslMethod,
-            mssqlLoadTypeConfiguration = spec.toLoadConfiguration()
+            mssqlLoadTypeConfiguration = spec.toLoadConfiguration(),
+            numProcessRecordsWorkers = spec.numPartWorkers ?: 2,
+            numProcessBatchWorkers = spec.numObjectLoaders ?: 10
         )
     }
 }

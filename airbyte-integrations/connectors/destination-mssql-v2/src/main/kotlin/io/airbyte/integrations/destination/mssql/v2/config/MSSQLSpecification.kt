@@ -78,6 +78,12 @@ class MSSQLSpecification : ConfigurationSpecification(), LoadTypeSpecification {
     @get:JsonProperty("load_type")
     @get:JsonSchemaInject(json = """{"always_show": true,"order":8}""")
     override val loadType: LoadType = InsertLoadSpecification()
+
+    @get:JsonProperty("numPartWorkers")
+    val numPartWorkers: Int? = null
+
+    @get:JsonProperty("numObjectLoaders")
+    val numObjectLoaders: Int? = null
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "name")
