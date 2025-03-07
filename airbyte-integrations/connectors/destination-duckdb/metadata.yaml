@@ -30,6 +30,10 @@ data:
         message: >
           This version uses the DuckDB 0.10.3 database driver, which in not backwards compatible with databases created using the 0.9.x versions of DuckDB. MotherDuck users can upgrade their database by visiting https://app.motherduck.com/ and accepting the upgrade. For more information, see the connector migration guide.
         upgradeDeadline: "2024-06-30"
+      0.5.0:
+        message: >
+          This version uses the DuckDB 1.2.1 database driver, which is not backwards compatible with databases created using pre-1.x versions of DuckDB. Upgrading may cause your databases to no longer be readable in prior versions of DuckDB. If you run into issues, you may need to manually upgrade your database file. MotherDuck users can upgrade their database by visiting https://app.motherduck.com/ and accepting the upgrade. For more information, see the connector migration guide.
+        upgradeDeadline: "2025-05-07"
   resourceRequirements:
     jobSpecific:
       - jobType: check_connection
