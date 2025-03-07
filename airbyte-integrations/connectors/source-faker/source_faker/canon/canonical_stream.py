@@ -1,11 +1,13 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import json
 import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
 from functools import lru_cache
 from typing import Any, Callable, Generic, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, TypeVar, Union
 
+import jsonref
 from source_faker.canon.canonical_model import CanonicalModel
 
 from airbyte_cdk import (
@@ -297,7 +299,9 @@ def create_canonical_stream_facade(
 
 def patch_json_schema(schema: Mapping[str, Any]) -> Mapping[str, Any]:
     # Replace anyOf with the first type, with the assumption the second one is always null
+    schema = jsonref.loads(json.dumps(schema))
     schema = replace_any_of(schema)
+    schema.pop("$defs")
     return schema
 
 
