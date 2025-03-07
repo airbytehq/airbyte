@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.write.object_storage
 
+import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.write.LoadStrategy
 
 /**
@@ -70,4 +71,7 @@ interface ObjectLoader : LoadStrategy {
 
     override val inputPartitions: Int
         get() = numPartWorkers
+
+    val stateAfterUpload: Batch.State
+        get() = Batch.State.COMPLETE
 }

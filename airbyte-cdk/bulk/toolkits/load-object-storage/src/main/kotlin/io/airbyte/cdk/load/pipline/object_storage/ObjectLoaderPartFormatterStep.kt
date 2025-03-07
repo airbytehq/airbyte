@@ -22,7 +22,7 @@ class ObjectLoaderPartFormatterStep(
     @Named("objectLoaderPartQueue")
     val outputQueue:
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
-    val taskFactory: LoadPipelineStepTaskFactory
+    val taskFactory: LoadPipelineStepTaskFactory,
 ) : LoadPipelineStep {
     override val numWorkers: Int = objectLoader.numPartWorkers
 

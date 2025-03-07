@@ -26,6 +26,7 @@ import io.airbyte.cdk.load.task.OnEndOfSync
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.write.LoadStrategy
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
@@ -34,6 +35,9 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.fold
+import kotlinx.coroutines.flow.lastOrNull
+import kotlinx.coroutines.flow.runningFold
+import kotlinx.coroutines.flow.takeWhile
 
 data class StateWithCounts<S : AutoCloseable>(
     val accumulatorState: S,
@@ -59,16 +63,23 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
     private val streamCompletions:
         ConcurrentHashMap<Pair<Int, DestinationStream.Descriptor>, AtomicInteger>
 ) : Task {
+    private val log = KotlinLogging.logger {}
+
     override val terminalCondition: TerminalCondition = OnEndOfSync
 
+    data class StateStore<K1, S: AutoCloseable>(
+        val stateWithCounts: MutableMap<K1, StateWithCounts<S>> = mutableMapOf(),
+        val totalInputCount: Long = 0,
+    )
+
     override suspend fun execute() {
-        inputFlow.fold(mutableMapOf<K1, StateWithCounts<S>>()) { stateStore, input ->
+        inputFlow.fold(StateStore<K1, S>()) { stateStore, input ->
             try {
                 when (input) {
                     is PipelineMessage -> {
                         // Get or create the accumulator state associated w/ the input key.
                         val stateWithCounts =
-                            stateStore
+                            stateStore.stateWithCounts
                                 .getOrPut(input.key) {
                                     StateWithCounts(
                                         accumulatorState = batchAccumulator.start(input.key, part),
@@ -127,22 +138,22 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         // Update the state if `accept` returned a new state, otherwise evict.
                         if (finalAccState != null) {
                             // If accept returned a new state, update the state store.
-                            stateStore[input.key] =
+                            stateStore.stateWithCounts[input.key] =
                                 stateWithCounts.copy(
                                     accumulatorState = finalAccState,
                                     inputCount = inputCount
                                 )
                         } else {
-                            stateStore.remove(input.key)?.close()
+                            stateStore.stateWithCounts.remove(input.key)?.close()
                         }
 
-                        stateStore
+                        stateStore.copy(totalInputCount = stateStore.totalInputCount + 1)
                     }
                     is PipelineEndOfStream -> {
                         // Give any key associated with the stream a chance to finish
-                        val keysToRemove = stateStore.keys.filter { it.stream == input.stream }
+                        val keysToRemove = stateStore.stateWithCounts.keys.filter { it.stream == input.stream }
                         keysToRemove.forEach { key ->
-                            stateStore.remove(key)?.let { stored ->
+                            stateStore.stateWithCounts.remove(key)?.let { stored ->
                                 val output = batchAccumulator.finish(stored.accumulatorState).output
                                 handleOutput(key, stored.checkpointCounts, output)
                                 stored.close()
@@ -150,22 +161,28 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         }
 
                         // Only forward end-of-stream if ALL workers have seen end-of-stream.
-                        if (
-                            streamCompletions
-                                .getOrPut(Pair(taskIndex, input.stream)) { AtomicInteger(0) }
-                                .incrementAndGet() == numWorkers
-                        ) {
+                        val numWorkersSeenEos = streamCompletions
+                            .getOrPut(Pair(taskIndex, input.stream)) { AtomicInteger(0) }
+                            .incrementAndGet()
+                        if (numWorkersSeenEos == numWorkers) {
+                            log.info {
+                                "$this saw end-of-stream for ${input.stream} after ${stateStore.totalInputCount} inputs, all workers complete"
+                            }
                             outputQueue?.broadcast(PipelineEndOfStream(input.stream))
-                        }
+                            batchUpdateQueue.publish(BatchEndOfStream(input.stream, task = this))
 
-                        batchUpdateQueue.publish(BatchEndOfStream(input.stream))
+                        } else {
+                            log.info {
+                                "$this saw end-of-stream for ${input.stream} after ${stateStore.totalInputCount} inputs, ${numWorkers - numWorkersSeenEos} workers remaining"
+                            }
+                        }
 
                         stateStore
                     }
                 }
             } catch (t: Throwable) {
                 // Close the local state associated with the current batch.
-                stateStore.values
+                stateStore.stateWithCounts.values
                     .map { runCatching { it.accumulatorState.close() } }
                     .forEach { it.getOrThrow() }
                 throw t
@@ -188,13 +205,14 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
         }
 
         // If the output contained a global batch state, publish an update.
-        if (output is WithBatchState && output.state.isPersisted()) {
+        if (output is WithBatchState) {
             val update =
                 BatchStateUpdate(
                     stream = inputKey.stream,
                     checkpointCounts = checkpointCounts.toMap(),
-                    state = output.state
-                )
+                    state = output.state,
+                    task = this)
+
             batchUpdateQueue.publish(update)
         }
     }
@@ -213,7 +231,7 @@ class LoadPipelineStepTaskFactory(
     @Value("\${airbyte.destination.core.record-batch-size-override:null}")
     val batchSizeOverride: Long? = null,
 ) {
-    // A map of (TaskIndex, Stream) -> Count_of_closed streams to ensure eos is not forwared from
+    // A map of (TaskIndex, Stream) ->  streams to ensure eos is not forwared from
     // task N to N+1 until all workers have seen eos.
     private val streamCompletions =
         ConcurrentHashMap<Pair<Int, DestinationStream.Descriptor>, AtomicInteger>()

@@ -22,9 +22,12 @@ data class MSSQLConfiguration(
     val jdbcUrlParams: String?,
     val sslMethod: EncryptionMethod,
     override val mssqlLoadTypeConfiguration: MSSQLLoadTypeConfiguration,
+    override val numProcessRecordsWorkers: Int = 2,
+    override val numProcessBatchWorkers: Int = 10,
+    val objectSizeBytes: Long,
+    val partSizeBytes: Long,
+    val maxMemoryRatioReservedForParts: Double
 ) : DestinationConfiguration(), MSSQLLoadTypeConfigurationProvider {
-    override val numProcessRecordsWorkers = 1
-    override val numProcessBatchWorkers: Int = 1
     override val processEmptyFiles: Boolean = true
     override val recordBatchSizeBytes = ObjectStorageUploadConfiguration.DEFAULT_PART_SIZE_BYTES
 }
@@ -58,7 +61,12 @@ class MSSQLConfigurationFactory(private val featureFlags: Set<FeatureFlag>) :
             password = overrides.getOrDefault("password", spec.password),
             jdbcUrlParams = overrides.getOrDefault("jdbcUrlParams", spec.jdbcUrlParams),
             sslMethod = spec.sslMethod,
-            mssqlLoadTypeConfiguration = spec.toLoadConfiguration()
+            mssqlLoadTypeConfiguration = spec.toLoadConfiguration(),
+            numProcessRecordsWorkers = spec.numPartFormatters ?: 2,
+            numProcessBatchWorkers = spec.numUploaders ?: 5,
+            objectSizeBytes = (spec.fileSizeMb ?: 200) * 1024L * 1024,
+            partSizeBytes = (spec.partSizeMb ?: 10) * 1024L * 1024,
+            maxMemoryRatioReservedForParts = spec.maxMemoryRatioReservedForParts ?: 0.4
         )
     }
 }

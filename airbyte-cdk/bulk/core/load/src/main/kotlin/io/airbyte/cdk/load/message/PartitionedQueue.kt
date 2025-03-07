@@ -5,8 +5,10 @@
 package io.airbyte.cdk.load.message
 
 import io.airbyte.cdk.load.util.CloseableCoroutine
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.merge
 
 interface PartitionedQueue<T> : CloseableCoroutine {
@@ -55,6 +57,7 @@ class SinglePartitionQueueWithMultiPartitionBroadcast<T>(
 
     override fun consume(partition: Int): Flow<T> =
         merge(sharedQueue.consume(), broadcastChannels.consume(partition))
+
     override suspend fun publish(value: T, partition: Int) = sharedQueue.publish(value)
     override suspend fun broadcast(value: T) = broadcastChannels.broadcast(value)
 

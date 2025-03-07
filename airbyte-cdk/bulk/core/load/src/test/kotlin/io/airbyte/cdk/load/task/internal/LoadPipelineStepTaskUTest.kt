@@ -381,13 +381,15 @@ class LoadPipelineStepTaskUTest {
             BatchStateUpdate(
                 key1.stream,
                 mapOf(CheckpointId(0) to 15L, CheckpointId(1) to 51L),
-                Batch.State.COMPLETE
+                Batch.State.COMPLETE,
+                task
             )
         val expectedBatchUpdateStream2 =
             BatchStateUpdate(
                 key2.stream,
                 mapOf(CheckpointId(1) to 6L, CheckpointId(2) to 22L, CheckpointId(3) to 38L),
-                Batch.State.PERSISTED
+                Batch.State.PERSISTED,
+                task
             )
         coVerify(exactly = 1) { batchUpdateQueue.publish(expectedBatchUpdateStream1) }
         coVerify(exactly = 1) { batchUpdateQueue.publish(expectedBatchUpdateStream2) }

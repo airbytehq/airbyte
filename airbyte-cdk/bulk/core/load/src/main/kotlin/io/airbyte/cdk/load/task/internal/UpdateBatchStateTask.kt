@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.task.internal
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.QueueReader
+import io.airbyte.cdk.load.pipeline.BatchEndOfStream
 import io.airbyte.cdk.load.pipeline.BatchStateUpdate
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.state.CheckpointManager
@@ -32,25 +33,35 @@ class UpdateBatchStateTask(
     override suspend fun execute() {
         inputQueue.consume().collect { message ->
             val manager = syncManager.getStreamManager(message.stream)
-            if (message is BatchStateUpdate) {
-                when (message.state) {
-                    Batch.State.COMPLETE -> {
-                        message.checkpointCounts.forEach {
-                            manager.incrementCompletedCount(
-                                it.key,
-                                it.value,
-                            )
-                        }
+            when (message) {
+                is BatchStateUpdate -> {
+                    log.info {
+                        "Batch update from ${message.task}: ${message.stream}[${message.state}] += ${message.checkpointCounts}"
                     }
-                    Batch.State.PERSISTED -> {
-                        message.checkpointCounts.forEach {
-                            manager.incrementPersistedCount(
-                                it.key,
-                                it.value,
-                            )
+                    when (message.state) {
+                        Batch.State.COMPLETE -> {
+                            message.checkpointCounts.forEach {
+                                manager.incrementCompletedCount(
+                                    it.key,
+                                    it.value,
+                                )
+                            }
                         }
+                        Batch.State.PERSISTED -> {
+                            message.checkpointCounts.forEach {
+                                manager.incrementPersistedCount(
+                                    it.key,
+                                    it.value,
+                                )
+                            }
+                        }
+                        else -> return@collect
                     }
-                    else -> return@collect
+                }
+                is BatchEndOfStream -> {
+                    log.info {
+                        "End-of-stream checks for ${message.stream}: ${message.task}"
+                    }
                 }
             }
             checkpointManager.flushReadyCheckpointMessages()
