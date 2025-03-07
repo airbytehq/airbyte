@@ -117,12 +117,11 @@ class MSSQLCSVFormattingWriter(
     private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
     private val mssqlRowValidator = MSSQLCsvRowValidator(validateValuesPreLoad)
     override fun accept(record: DestinationRecordAirbyteValue) {
-
         printer.printRecord(
             mssqlRowValidator
                 .validate(record, this.finalSchema)
                 .dataWithAirbyteMeta(stream, true)
-                .toCsvRecord(finalSchema),
+                .toCsvRecord(finalSchema)
         )
     }
     override fun flush() {

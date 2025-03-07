@@ -50,7 +50,8 @@ class MSSQLWriter(
                     azureBlobClient =
                         AzureBlobStorageClientCreator.createAzureBlobClient(loadConfig),
                     validateValuesPreLoad = loadConfig.validateValuesPreLoad ?: false,
-                    recordBatchSizeOverride = recordBatchSizeOverride
+                    recordBatchSizeOverride = recordBatchSizeOverride,
+                    config = config,
                 )
             }
             is InsertLoadTypeConfiguration -> {
