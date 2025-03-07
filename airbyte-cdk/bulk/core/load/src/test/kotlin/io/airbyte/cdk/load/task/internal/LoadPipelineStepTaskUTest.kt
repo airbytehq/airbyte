@@ -15,14 +15,13 @@ import io.airbyte.cdk.load.message.WithBatchState
 import io.airbyte.cdk.load.pipeline.BatchAccumulator
 import io.airbyte.cdk.load.pipeline.BatchStateUpdate
 import io.airbyte.cdk.load.pipeline.BatchUpdate
+import io.airbyte.cdk.load.pipeline.FinalOutput
+import io.airbyte.cdk.load.pipeline.NoOutput
 import io.airbyte.cdk.load.state.CheckpointId
-import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.util.setOnce
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.verify
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
@@ -37,7 +36,7 @@ class LoadPipelineStepTaskUTest {
     @MockK
     lateinit var batchAccumulatorWithUpdate:
         BatchAccumulator<AutoCloseable, StreamKey, String, MyBatch>
-    @MockK lateinit var inputFlow: Flow<Reserved<PipelineEvent<StreamKey, String>>>
+    @MockK lateinit var inputFlow: Flow<PipelineEvent<StreamKey, String>>
     @MockK lateinit var batchUpdateQueue: QueueWriter<BatchUpdate>
 
     data class Closeable(val id: Int = 0) : AutoCloseable {
@@ -48,7 +47,7 @@ class LoadPipelineStepTaskUTest {
 
     @BeforeEach
     fun setup() {
-        coEvery { batchAccumulatorNoUpdate.finish(any()) } returns true
+        coEvery { batchAccumulatorNoUpdate.finish(any()) } returns FinalOutput(true)
     }
 
     private fun <T : Any> createTask(
@@ -66,18 +65,17 @@ class LoadPipelineStepTaskUTest {
             part
         )
 
-    private fun <T> reserved(value: T): Reserved<T> = Reserved(null, 0L, value)
     private fun messageEvent(
         key: StreamKey,
         value: String,
         counts: Map<Int, Long> = emptyMap()
-    ): Reserved<PipelineEvent<StreamKey, String>> =
-        reserved(PipelineMessage(counts.mapKeys { CheckpointId(it.key) }, key, value))
-    private fun endOfStreamEvent(key: StreamKey): Reserved<PipelineEvent<StreamKey, String>> =
-        reserved(PipelineEndOfStream(key.stream))
+    ): PipelineEvent<StreamKey, String> =
+        PipelineMessage(counts.mapKeys { CheckpointId(it.key) }, key, value)
+    private fun endOfStreamEvent(key: StreamKey): PipelineEvent<StreamKey, String> =
+        PipelineEndOfStream(key.stream)
 
     @Test
-    fun `start and accept called on first no-output message, accept only on second`() = runTest {
+    fun `start only called on first message if state returned by accept is null`() = runTest {
         val key = StreamKey(DestinationStream.Descriptor("namespace", "stream"))
         val part = 7
         val task = createTask(part, batchAccumulatorNoUpdate)
@@ -85,72 +83,74 @@ class LoadPipelineStepTaskUTest {
         // No call to accept will finish the batch, but state will be threaded through.
         val state1 = Closeable(1)
         val state2 = Closeable(2)
-        every { batchAccumulatorNoUpdate.start(any(), any()) } returns state1
-        every { batchAccumulatorNoUpdate.accept("value_0", state1) } returns Pair(state2, null)
-        every { batchAccumulatorNoUpdate.accept("value_1", state2) } returns Pair(Closeable(), null)
+        coEvery { batchAccumulatorNoUpdate.start(any(), any()) } returns state1
+        coEvery { batchAccumulatorNoUpdate.accept("value_0", state1) } returns NoOutput(state2)
+        coEvery { batchAccumulatorNoUpdate.accept("value_1", state2) } returns NoOutput(Closeable())
 
         coEvery { inputFlow.collect(any()) } coAnswers
             {
-                val collector =
-                    firstArg<FlowCollector<Reserved<PipelineEvent<StreamKey, String>>>>()
+                val collector = firstArg<FlowCollector<PipelineEvent<StreamKey, String>>>()
                 repeat(2) { collector.emit(messageEvent(key, "value_$it")) }
             }
 
         task.execute()
 
-        verify(exactly = 1) { batchAccumulatorNoUpdate.start(key, part) }
-        repeat(2) { verify(exactly = 1) { batchAccumulatorNoUpdate.accept("value_$it", any()) } }
-        verify(exactly = 0) { batchAccumulatorNoUpdate.finish(any()) }
+        coVerify(exactly = 1) { batchAccumulatorNoUpdate.start(key, part) }
+        repeat(2) { coVerify(exactly = 1) { batchAccumulatorNoUpdate.accept("value_$it", any()) } }
+        coVerify(exactly = 0) { batchAccumulatorNoUpdate.finish(any()) }
     }
 
     @Test
-    fun `start called again after batch completes (no update)`() = runTest {
-        val key = StreamKey(DestinationStream.Descriptor("namespace", "stream"))
-        val part = 6
-        val task = createTask(part, batchAccumulatorNoUpdate)
-        val stateA1 = Closeable(1)
-        val stateA2 = Closeable(2)
-        val stateA3 = Closeable(3)
-        val stateB1 = Closeable(4)
-        val stateB2 = Closeable(5)
-        val startHasBeenCalled = AtomicBoolean(false)
+    fun `start called again only after null state returned, even if accept yields output`() =
+        runTest {
+            val key = StreamKey(DestinationStream.Descriptor("namespace", "stream"))
+            val part = 6
+            val task = createTask(part, batchAccumulatorNoUpdate)
+            val stateA1 = Closeable(1)
+            val stateA2 = Closeable(2)
+            val stateB1 = Closeable(4)
+            val stateB2 = Closeable(5)
+            val startHasBeenCalled = AtomicBoolean(false)
 
-        every { batchAccumulatorNoUpdate.start(any(), any()) } answers
-            {
-                if (startHasBeenCalled.setOnce()) stateA1 else stateB1
+            coEvery { batchAccumulatorNoUpdate.start(any(), any()) } answers
+                {
+                    if (startHasBeenCalled.setOnce()) stateA1 else stateB1
+                }
+            coEvery { batchAccumulatorNoUpdate.accept("value_0", stateA1) } returns
+                NoOutput(stateA2)
+            coEvery { batchAccumulatorNoUpdate.accept("value_1", stateA2) } returns
+                FinalOutput(true)
+            coEvery { batchAccumulatorNoUpdate.accept("value_2", stateB1) } returns
+                NoOutput(stateB2)
+
+            coEvery { inputFlow.collect(any()) } coAnswers
+                {
+                    val collector = firstArg<FlowCollector<PipelineEvent<StreamKey, String>>>()
+                    repeat(3) { collector.emit(messageEvent(key, "value_$it")) }
+                }
+
+            task.execute()
+            coVerify(exactly = 2) { batchAccumulatorNoUpdate.start(key, part) }
+            repeat(3) {
+                coVerify(exactly = 1) { batchAccumulatorNoUpdate.accept("value_$it", any()) }
             }
-        every { batchAccumulatorNoUpdate.accept("value_0", stateA1) } returns Pair(stateA2, null)
-        every { batchAccumulatorNoUpdate.accept("value_1", stateA2) } returns Pair(stateA3, true)
-        every { batchAccumulatorNoUpdate.accept("value_2", stateB1) } returns Pair(stateB2, null)
-
-        coEvery { inputFlow.collect(any()) } coAnswers
-            {
-                val collector =
-                    firstArg<FlowCollector<Reserved<PipelineEvent<StreamKey, String>>>>()
-                repeat(3) { collector.emit(messageEvent(key, "value_$it")) }
-            }
-
-        task.execute()
-        verify(exactly = 2) { batchAccumulatorNoUpdate.start(key, part) }
-        repeat(3) { verify(exactly = 1) { batchAccumulatorNoUpdate.accept("value_$it", any()) } }
-    }
+        }
 
     @Test
-    fun `finish and update called on end-of-stream when last accept did not yield output`() =
+    fun `finish and update called on end-of-stream iff last accept returned a non-null state`() =
         runTest {
             val key = StreamKey(DestinationStream.Descriptor("namespace", "stream"))
             val part = 5
             val task = createTask(part, batchAccumulatorNoUpdate)
 
-            every { batchAccumulatorNoUpdate.start(any(), any()) } returns Closeable()
-            every { batchAccumulatorNoUpdate.accept(any(), any()) } returns Pair(Closeable(), null)
-            every { batchAccumulatorNoUpdate.finish(any()) } returns true
+            coEvery { batchAccumulatorNoUpdate.start(any(), any()) } returns Closeable()
+            coEvery { batchAccumulatorNoUpdate.accept(any(), any()) } returns NoOutput(Closeable())
+            coEvery { batchAccumulatorNoUpdate.finish(any()) } returns FinalOutput(true)
             coEvery { batchUpdateQueue.publish(any()) } returns Unit
 
             coEvery { inputFlow.collect(any()) } coAnswers
                 {
-                    val collector =
-                        firstArg<FlowCollector<Reserved<PipelineEvent<StreamKey, String>>>>()
+                    val collector = firstArg<FlowCollector<PipelineEvent<StreamKey, String>>>()
                     repeat(10) { // arbitrary number of messages
                         collector.emit(messageEvent(key, "value"))
                     }
@@ -159,32 +159,31 @@ class LoadPipelineStepTaskUTest {
 
             task.execute()
 
-            verify(exactly = 1) { batchAccumulatorNoUpdate.start(key, part) }
-            verify(exactly = 10) { batchAccumulatorNoUpdate.accept(any(), any()) }
-            verify(exactly = 1) { batchAccumulatorNoUpdate.finish(any()) }
+            coVerify(exactly = 1) { batchAccumulatorNoUpdate.start(key, part) }
+            coVerify(exactly = 10) { batchAccumulatorNoUpdate.accept(any(), any()) }
+            coVerify(exactly = 1) { batchAccumulatorNoUpdate.finish(any()) }
             coVerify(exactly = 1) { batchUpdateQueue.publish(any()) }
         }
 
     @Test
-    fun `update but not finish called on end-of-stream when last accept yielded output`() =
+    fun `update but not finish called on end-of-stream when last accept returned null state`() =
         runTest {
             val key = StreamKey(DestinationStream.Descriptor("namespace", "stream"))
             val part = 4
             val task = createTask(part, batchAccumulatorNoUpdate)
 
             var acceptCalls = 0
-            every { batchAccumulatorNoUpdate.start(any(), any()) } returns Closeable()
-            every { batchAccumulatorNoUpdate.accept(any(), any()) } answers
+            coEvery { batchAccumulatorNoUpdate.start(any(), any()) } returns Closeable()
+            coEvery { batchAccumulatorNoUpdate.accept(any(), any()) } answers
                 {
-                    if (++acceptCalls == 10) Pair(Closeable(), true) else Pair(Closeable(), null)
+                    if (++acceptCalls == 10) FinalOutput(true) else NoOutput(Closeable())
                 }
-            every { batchAccumulatorNoUpdate.finish(any()) } returns true
+            coEvery { batchAccumulatorNoUpdate.finish(any()) } returns FinalOutput(true)
             coEvery { batchUpdateQueue.publish(any()) } returns Unit
 
             coEvery { inputFlow.collect(any()) } coAnswers
                 {
-                    val collector =
-                        firstArg<FlowCollector<Reserved<PipelineEvent<StreamKey, String>>>>()
+                    val collector = firstArg<FlowCollector<PipelineEvent<StreamKey, String>>>()
                     repeat(10) { // arbitrary number of messages
                         collector.emit(messageEvent(key, "value"))
                     }
@@ -193,9 +192,9 @@ class LoadPipelineStepTaskUTest {
 
             task.execute()
 
-            verify(exactly = 1) { batchAccumulatorNoUpdate.start(key, part) }
-            verify(exactly = 10) { batchAccumulatorNoUpdate.accept(any(), any()) }
-            verify(exactly = 0) { batchAccumulatorNoUpdate.finish(any()) }
+            coVerify(exactly = 1) { batchAccumulatorNoUpdate.start(key, part) }
+            coVerify(exactly = 10) { batchAccumulatorNoUpdate.accept(any(), any()) }
+            coVerify(exactly = 0) { batchAccumulatorNoUpdate.finish(any()) }
             coVerify(exactly = 1) { batchUpdateQueue.publish(any()) }
         }
 
@@ -206,24 +205,21 @@ class LoadPipelineStepTaskUTest {
         val task = createTask(part, batchAccumulator = batchAccumulatorWithUpdate)
         var acceptCalls = 0
 
-        every { batchAccumulatorWithUpdate.start(any(), any()) } returns Closeable()
-        every { batchAccumulatorWithUpdate.accept(any(), any()) } answers
+        coEvery { batchAccumulatorWithUpdate.start(any(), any()) } returns Closeable()
+        coEvery { batchAccumulatorWithUpdate.accept(any(), any()) } answers
             {
-                val output =
-                    when (acceptCalls++ % 4) {
-                        0 -> null
-                        1 -> MyBatch(Batch.State.PROCESSED)
-                        2 -> MyBatch(Batch.State.PERSISTED)
-                        3 -> MyBatch(Batch.State.COMPLETE)
-                        else -> error("unreachable")
-                    }
-                Pair(Closeable(), output)
+                when (acceptCalls++ % 4) {
+                    0 -> NoOutput(Closeable())
+                    1 -> FinalOutput(MyBatch(Batch.State.PROCESSED))
+                    2 -> FinalOutput(MyBatch(Batch.State.PERSISTED))
+                    3 -> FinalOutput(MyBatch(Batch.State.COMPLETE))
+                    else -> error("unreachable")
+                }
             }
         coEvery { batchUpdateQueue.publish(any()) } returns Unit
         coEvery { inputFlow.collect(any()) } coAnswers
             {
-                val collector =
-                    firstArg<FlowCollector<Reserved<PipelineEvent<StreamKey, String>>>>()
+                val collector = firstArg<FlowCollector<PipelineEvent<StreamKey, String>>>()
                 repeat(12) { // arbitrary number of messages
                     collector.emit(messageEvent(key, "value"))
                 }
@@ -231,11 +227,11 @@ class LoadPipelineStepTaskUTest {
 
         task.execute()
 
-        verify(exactly = 9) {
+        coVerify(exactly = 9) {
             batchAccumulatorWithUpdate.start(key, part)
         } // only 1/4 are no output
-        verify(exactly = 12) { batchAccumulatorWithUpdate.accept(any(), any()) } // all have data
-        verify(exactly = 0) { batchAccumulatorWithUpdate.finish(any()) } // never end-of-stream
+        coVerify(exactly = 12) { batchAccumulatorWithUpdate.accept(any(), any()) } // all have data
+        coVerify(exactly = 0) { batchAccumulatorWithUpdate.finish(any()) } // never end-of-stream
         coVerify(exactly = 6) { batchUpdateQueue.publish(any()) } // half are PERSISTED/COMPLETE
     }
 
@@ -247,13 +243,13 @@ class LoadPipelineStepTaskUTest {
 
         val task = createTask(part, batchAccumulatorWithUpdate)
 
-        // Make stream1 finish with a persisted output every 3 calls (otherwise null)
-        // Make stream2 finish with a persisted output every 2 calls (otherwise null)
+        // Make stream1 finish with a persisted output coEvery 3 calls (otherwise null)
+        // Make stream2 finish with a persisted output coEvery 2 calls (otherwise null)
         val stream1States = (0 until 11).map { Closeable(it) }
         val stream2States = (0 until 11).map { Closeable(it + 100) }
         var stream1StartCalls = 0
         var stream2StartCalls = 0
-        every { batchAccumulatorWithUpdate.start(key1, any()) } answers
+        coEvery { batchAccumulatorWithUpdate.start(key1, any()) } answers
             {
                 // Stream 1 will finish on 0, 3, 6, 9
                 // (so the last finish is right before end-of-stream, leaving no input to finish)
@@ -265,7 +261,7 @@ class LoadPipelineStepTaskUTest {
                     else -> error("unreachable stream1 start call")
                 }
             }
-        every { batchAccumulatorWithUpdate.start(key2, any()) } answers
+        coEvery { batchAccumulatorWithUpdate.start(key2, any()) } answers
             {
                 // Stream 2 will finish on 0, 2, 4, 6, 8
                 // (so the last finish is one record before end-of-stream, leaving input to finish)
@@ -280,22 +276,23 @@ class LoadPipelineStepTaskUTest {
                 }
             }
         repeat(10) {
-            every { batchAccumulatorWithUpdate.accept(any(), stream1States[it]) } returns
-                Pair(
-                    stream1States[it + 1],
-                    if (it % 3 == 0) MyBatch(Batch.State.PERSISTED) else null
-                )
-            every { batchAccumulatorWithUpdate.accept(any(), stream2States[it]) } returns
-                Pair(
-                    stream2States[it + 1],
-                    if (it % 2 == 0) MyBatch(Batch.State.COMPLETE) else null
-                )
+            coEvery { batchAccumulatorWithUpdate.accept(any(), stream1States[it]) } returns
+                if (it % 3 == 0) {
+                    FinalOutput(MyBatch(Batch.State.PERSISTED))
+                } else {
+                    NoOutput(stream1States[it + 1])
+                }
+            coEvery { batchAccumulatorWithUpdate.accept(any(), stream2States[it]) } returns
+                if (it % 2 == 0) {
+                    FinalOutput(MyBatch(Batch.State.PERSISTED))
+                } else {
+                    NoOutput(stream2States[it + 1])
+                }
         }
 
         coEvery { inputFlow.collect(any()) } coAnswers
             {
-                val collector =
-                    firstArg<FlowCollector<Reserved<PipelineEvent<StreamKey, String>>>>()
+                val collector = firstArg<FlowCollector<PipelineEvent<StreamKey, String>>>()
                 repeat(10) { // arbitrary number of messages
                     collector.emit(messageEvent(key1, "stream1_value"))
                     collector.emit(messageEvent(key2, "stream2_value"))
@@ -306,20 +303,21 @@ class LoadPipelineStepTaskUTest {
                 collector.emit(endOfStreamEvent(key2))
             }
 
-        every { batchAccumulatorWithUpdate.finish(any()) } returns MyBatch(Batch.State.COMPLETE)
+        coEvery { batchAccumulatorWithUpdate.finish(any()) } returns
+            FinalOutput(MyBatch(Batch.State.COMPLETE))
         coEvery { batchUpdateQueue.publish(any()) } returns Unit
 
         task.execute()
 
-        verify(exactly = 4) { batchAccumulatorWithUpdate.start(key1, part) }
-        verify(exactly = 6) { batchAccumulatorWithUpdate.start(key2, part) }
-        verify(exactly = 10) {
+        coVerify(exactly = 4) { batchAccumulatorWithUpdate.start(key1, part) }
+        coVerify(exactly = 6) { batchAccumulatorWithUpdate.start(key2, part) }
+        coVerify(exactly = 10) {
             batchAccumulatorWithUpdate.accept("stream1_value", match { it in stream1States })
         }
-        verify(exactly = 10) {
+        coVerify(exactly = 10) {
             batchAccumulatorWithUpdate.accept("stream2_value", match { it in stream2States })
         }
-        verify(exactly = 1) { batchAccumulatorWithUpdate.finish(stream2States[10]) }
+        coVerify(exactly = 1) { batchAccumulatorWithUpdate.finish(stream2States[10]) }
     }
 
     @Test
@@ -330,21 +328,20 @@ class LoadPipelineStepTaskUTest {
 
         val task = createTask(part, batchAccumulatorWithUpdate)
 
-        every { batchAccumulatorWithUpdate.start(key1, part) } returns Closeable(1)
-        every { batchAccumulatorWithUpdate.start(key2, part) } returns Closeable(2)
-        every { batchAccumulatorWithUpdate.accept("stream1_value", any()) } returns
-            Pair(Closeable(1), null)
-        every { batchAccumulatorWithUpdate.accept("stream2_value", any()) } returns
-            Pair(Closeable(2), null)
-        every { batchAccumulatorWithUpdate.finish(Closeable(1)) } returns
-            MyBatch(Batch.State.COMPLETE)
-        every { batchAccumulatorWithUpdate.finish(Closeable(2)) } returns
-            MyBatch(Batch.State.PERSISTED)
+        coEvery { batchAccumulatorWithUpdate.start(key1, part) } returns Closeable(1)
+        coEvery { batchAccumulatorWithUpdate.start(key2, part) } returns Closeable(2)
+        coEvery { batchAccumulatorWithUpdate.accept("stream1_value", any()) } returns
+            NoOutput(Closeable(1))
+        coEvery { batchAccumulatorWithUpdate.accept("stream2_value", any()) } returns
+            NoOutput(Closeable(2))
+        coEvery { batchAccumulatorWithUpdate.finish(Closeable(1)) } returns
+            FinalOutput(MyBatch(Batch.State.COMPLETE))
+        coEvery { batchAccumulatorWithUpdate.finish(Closeable(2)) } returns
+            FinalOutput(MyBatch(Batch.State.PERSISTED))
 
         coEvery { inputFlow.collect(any()) } coAnswers
             {
-                val collector =
-                    firstArg<FlowCollector<Reserved<PipelineEvent<StreamKey, String>>>>()
+                val collector = firstArg<FlowCollector<PipelineEvent<StreamKey, String>>>()
 
                 // Emit 10 messages for stream1, 10 messages for stream2
                 repeat(12) {

@@ -18,7 +18,6 @@ import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.pipeline.OutputPartitioner
 import io.airbyte.cdk.load.pipeline.PipelineFlushStrategy
 import io.airbyte.cdk.load.state.CheckpointId
-import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.task.OnEndOfSync
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
@@ -34,7 +33,7 @@ data class RangeState<S>(
 /** A long-running task that actually implements a load pipeline step. */
 class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStream, U : Any>(
     private val batchAccumulator: BatchAccumulator<S, K1, T, U>,
-    private val inputFlow: Flow<Reserved<PipelineEvent<K1, T>>>,
+    private val inputFlow: Flow<PipelineEvent<K1, T>>,
     private val batchUpdateQueue: QueueWriter<BatchUpdate>,
     private val outputPartitioner: OutputPartitioner<K1, T, K2, U>?,
     private val outputQueue: PartitionedQueue<PipelineEvent<K2, U>>?,
@@ -44,11 +43,11 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
     override val terminalCondition: TerminalCondition = OnEndOfSync
 
     override suspend fun execute() {
-        inputFlow.fold(mutableMapOf<K1, RangeState<S>>()) { stateStore, reservation ->
+        inputFlow.fold(mutableMapOf<K1, RangeState<S>>()) { stateStore, input ->
             try {
-                when (val input = reservation.value) {
+                when (input) {
                     is PipelineMessage -> {
-                        // Fetch and update the local state associated with the current batch.
+                        // Get or create the accumulator state associated w/ the input key.
                         val state =
                             stateStore
                                 .getOrPut(input.key) {
@@ -57,34 +56,56 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                                     )
                                 }
                                 .let { it.copy(inputCount = it.inputCount + 1) }
-                        val (newState, output) =
+
+                        // Accumulate the input and get the new state and output.
+                        val result =
                             batchAccumulator.accept(
                                 input.value,
                                 state.state,
                             )
-                        reservation.release() // TODO: Accumulate and release when persisted
+
+                        // Update bookkeeping metadata
+                        input
+                            .postProcessingCallback() // TODO: Accumulate and release when persisted
                         input.checkpointCounts.forEach {
                             state.checkpointCounts.merge(it.key, it.value) { old, new -> old + new }
                         }
 
-                        // If the accumulator did not produce a result, check if we should flush.
-                        // If so, use the result of a finish call as the output.
-                        val finalOutput =
-                            output
-                                ?: if (flushStrategy?.shouldFlush(state.inputCount) == true) {
-                                    batchAccumulator.finish(newState)
+                        // Finalize the state and output
+                        val (finalState, finalOutput) =
+                            if (result.output == null) {
+                                // Possibly force an output (and if so, discard the state)
+                                if (flushStrategy?.shouldFlush(state.inputCount) == true) {
+                                    val finalResult = batchAccumulator.finish(result.nextState!!)
+                                    Pair(null, finalResult.output)
                                 } else {
-                                    null
+                                    Pair(result.nextState, null)
                                 }
+                            } else {
+                                // Otherwise, just use what we were given
+                                Pair(result.nextState, result.output)
+                            }
 
-                        if (finalOutput != null) {
-                            // Publish the emitted output and evict the state.
-                            handleOutput(input.key, state.checkpointCounts, finalOutput)
-                            stateStore.remove(input.key)
+                        // Publish the output if there is one & reset the input count
+                        val inputCount =
+                            if (finalOutput != null) {
+                                // Publish the emitted output and evict the state.
+                                handleOutput(input.key, state.checkpointCounts, finalOutput)
+                                state.checkpointCounts.clear()
+                                0
+                            } else {
+                                state.inputCount
+                            }
+
+                        // Update the state if `accept` returned a new state, otherwise evict.
+                        if (finalState != null) {
+                            // If accept returned a new state, update the state store.
+                            stateStore[input.key] =
+                                state.copy(state = finalState, inputCount = inputCount)
                         } else {
-                            // If there's no output yet, just update the local state.
-                            stateStore[input.key] = RangeState(newState, state.checkpointCounts)
+                            stateStore.remove(input.key)
                         }
+
                         stateStore
                     }
                     is PipelineEndOfStream -> {
@@ -92,7 +113,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         val keysToRemove = stateStore.keys.filter { it.stream == input.stream }
                         keysToRemove.forEach { key ->
                             stateStore.remove(key)?.let { stored ->
-                                val output = batchAccumulator.finish(stored.state)
+                                val output = batchAccumulator.finish(stored.state).output
                                 handleOutput(key, stored.checkpointCounts, output)
                             }
                         }
@@ -122,7 +143,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
         // Only publish the output if there's a next step.
         outputQueue?.let {
             val outputKey = outputPartitioner!!.getOutputKey(inputKey, output)
-            val message = PipelineMessage(checkpointCounts, outputKey, output)
+            val message = PipelineMessage(checkpointCounts.toMap(), outputKey, output)
             val outputPart = outputPartitioner.getPart(outputKey, it.partitions)
             it.publish(message, outputPart)
         }
@@ -132,7 +153,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
             val update =
                 BatchStateUpdate(
                     stream = inputKey.stream,
-                    checkpointCounts = checkpointCounts,
+                    checkpointCounts = checkpointCounts.toMap(),
                     state = output.state
                 )
             batchUpdateQueue.publish(update)
