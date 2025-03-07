@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.bigquery.typing_deduping
+package io.airbyte.integrations.destination.bigquery.do_stuff_with_tables
 
 import com.google.cloud.bigquery.StandardSQLTypeName
 import io.airbyte.cdk.load.command.Dedupe
