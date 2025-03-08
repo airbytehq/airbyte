@@ -53,7 +53,6 @@ definitions:
               http_codes:
                 - 403
 
-
   bearer_authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['client_secret'] }}"
@@ -117,7 +116,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "updated" ]
+          - path: ["updated"]
             value: "{{ record['created'] }}"
 
   updated_incremental_sync:
@@ -165,21 +164,6 @@ definitions:
       $parameters:
         path: file_links
         name: file_links
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     customers:
       $ref: "#/definitions/updated_stream"
@@ -616,14 +600,6 @@ definitions:
             request_parameters:
               types[]: '{{["topup.canceled", "topup.created", "topup.failed", "topup.reversed", "topup.succeeded"]}}'
 
-
-
-
-
-
-
-
-
     accounts:
       $ref: "#/definitions/updated_stream"
       $parameters:
@@ -644,9 +620,8 @@ definitions:
       transformations:
         - type: AddFields
           fields:
-            - path: [ "updated" ]
+            - path: ["updated"]
               value: "{{ record['created'] or  format_datetime(config.get('start_date', '2017-01-25T00:00:00Z'), '%s') }}"
-
 
     checkout_sessions:
       $ref: "#/definitions/updated_stream"
@@ -770,23 +745,6 @@ definitions:
             request_parameters:
               types[]: '{{["radar.early_fraud_warning.created", "radar.early_fraud_warning.updated"]}}'
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     persons:
       $ref: "#/definitions/updated_stream"
       $parameters:
@@ -838,19 +796,6 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["payment_method.*"]}}'
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     customer_balance_transactions:
       $ref: "#/definitions/created_stream"
@@ -979,9 +924,9 @@ definitions:
                 $ref: "#/definitions/streams/checkout_sessions"
               incremental_dependency: true
               extra_fields:
-                - [ "updated" ]
-                - [ "created" ]
-                - [ "expires_at" ]
+                - ["updated"]
+                - ["created"]
+                - ["expires_at"]
         $parameters:
           path: checkout/sessions/{{ stream_partition.checkout_session_id }}/line_items
       incremental_sync:
@@ -1060,18 +1005,6 @@ definitions:
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
-
-
-
-
-
-
-
-
-
-
-
-
     subscription_items:
       $ref: "#/definitions/updated_stream"
       $parameters:
@@ -1122,7 +1055,7 @@ definitions:
                 stream:
                   $ref: "#/definitions/streams/invoices"
                 extra_fields:
-                  - [ "updated" ]
+                  - ["updated"]
           $parameters:
             path: invoices/{{stream_partition.invoice_id}}/lines
         incremental_retriever:
@@ -1203,10 +1136,6 @@ definitions:
             record_filter:
               condition: "{{ record['object'] == 'bank_account' }}"
 
-
-
-
-
     setup_attempts:
       $ref: "#/definitions/created_stream"
       $parameters:
@@ -1227,7 +1156,6 @@ definitions:
           request_parameters:
             setup_intent: "{{  stream_partition.setup_intent_id  }}"
 
-
     usage_records:
       $ref: "#/definitions/base_stream"
       $parameters:
@@ -1246,34 +1174,25 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: subscription_items/{{ stream_partition.subscription_item_id }}/usage_record_summaries
 
-
-
-
-
-
-
-
-
-
 streams:
-## CreatedCursorIncrementalStripeStream
-#  - $ref: "#/definitions/streams/events"
-#  - $ref: "#/definitions/streams/shipping_rates"
-#  - $ref: "#/definitions/streams/balance_transactions"
-#  - $ref: "#/definitions/streams/files"
-#  - $ref: "#/definitions/streams/file_links"
-#
-## IncrementalStripeStream
-#  - $ref: "#/definitions/streams/customers"
-#  - $ref: "#/definitions/streams/subscriptions"
-#  - $ref: "#/definitions/streams/invoices"
-#  - $ref: "#/definitions/streams/transfers"
-#  - $ref: "#/definitions/streams/refunds"
-#  - $ref: "#/definitions/streams/authorizations"
-#  - $ref: "#/definitions/streams/cardholders"
-#  - $ref: "#/definitions/streams/charges"
-#  - $ref: "#/definitions/streams/coupons"
-#  - $ref: "#/definitions/streams/disputes"
+  ## CreatedCursorIncrementalStripeStream
+  #  - $ref: "#/definitions/streams/events"
+  #  - $ref: "#/definitions/streams/shipping_rates"
+  #  - $ref: "#/definitions/streams/balance_transactions"
+  #  - $ref: "#/definitions/streams/files"
+  #  - $ref: "#/definitions/streams/file_links"
+  #
+  ## IncrementalStripeStream
+  #  - $ref: "#/definitions/streams/customers"
+  #  - $ref: "#/definitions/streams/subscriptions"
+  #  - $ref: "#/definitions/streams/invoices"
+  #  - $ref: "#/definitions/streams/transfers"
+  #  - $ref: "#/definitions/streams/refunds"
+  #  - $ref: "#/definitions/streams/authorizations"
+  #  - $ref: "#/definitions/streams/cardholders"
+  #  - $ref: "#/definitions/streams/charges"
+  #  - $ref: "#/definitions/streams/coupons"
+  #  - $ref: "#/definitions/streams/disputes"
   - $ref: "#/definitions/streams/application_fees"
 #  - $ref: "#/definitions/streams/invoice_items"
 #  - $ref: "#/definitions/streams/payouts"
@@ -1316,9 +1235,6 @@ streams:
 #
 #  - $ref: "#/definitions/streams/setup_attempts"
 #  - $ref: "#/definitions/streams/usage_records"
-
-
-
 
 spec:
   type: Spec
