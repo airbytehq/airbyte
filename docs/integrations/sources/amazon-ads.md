@@ -153,6 +153,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.1.2 | 2025-02-24 | [53692](https://github.com/airbytehq/airbyte/pull/53692) | Added handling 401 error for Polling Requester                                                                                                                         |
 | 7.1.1 | 2025-03-01 | [54895](https://github.com/airbytehq/airbyte/pull/54895) | Update dependencies |
 | 7.1.0 | 2025-02-24 | [53692](https://github.com/airbytehq/airbyte/pull/53692) | Migrate stream `Portfolios` to Portfolios API v3 |
 | 7.0.1 | 2025-02-22 | [52918](https://github.com/airbytehq/airbyte/pull/52918) | Update dependencies |
