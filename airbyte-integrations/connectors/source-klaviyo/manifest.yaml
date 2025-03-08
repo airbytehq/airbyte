@@ -2,10 +2,6 @@ version: 6.36.3
 
 type: DeclarativeSource
 
-description: >-
-  Fixed errors when forking, many fields were custom and not able to be "tested"
-  preventing the ability to publish contributions. No functional changes made.
-
 check:
   type: CheckStream
   stream_names:
