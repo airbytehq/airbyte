@@ -9,8 +9,6 @@ import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfiguratio
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.airbyte.cdk.load.util.setOnce
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.BufferedInputStream
-import java.io.ByteArrayInputStream
 import java.nio.ByteBuffer
 import java.util.Base64
 import java.util.concurrent.ConcurrentSkipListMap
@@ -44,12 +42,12 @@ class AzureBlobStreamingUpload(
         // The stageBlock call can be done asynchronously or blocking.
         // Here we use the blocking call in a coroutine context.
         part.inputStream().use {
-                blockBlobClient.stageBlock(
-                    blockId,
-                    it,
-                    part.size.toLong(),
-                )
-            }
+            blockBlobClient.stageBlock(
+                blockId,
+                it,
+                part.size.toLong(),
+            )
+        }
 
         log.info { "Staged block #$index => $rawBlockId (encoded = $blockId)" }
 

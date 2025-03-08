@@ -29,7 +29,6 @@ import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.BatchAccumulator
 import io.airbyte.cdk.load.write.object_storage.PartToObjectAccumulator
 import io.airbyte.cdk.load.write.object_storage.RecordToPartAccumulator
-import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.atomic.AtomicLong
 import javax.sql.DataSource
@@ -37,7 +36,6 @@ import kotlinx.coroutines.runBlocking
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
 class MSSQLBulkLoadStreamLoader(
-    private val config: MSSQLConfiguration,
     override val stream: DestinationStream,
     dataSource: DataSource,
     sqlBuilder: MSSQLQueryBuilder,
@@ -101,9 +99,9 @@ class MSSQLBulkLoadStreamLoader(
         return RecordToPartAccumulator(
             objectStoragePathFactory,
             writerFactory,
-            partSizeBytes = config.partSizeBytes,
+            partSizeBytes = ObjectStorageUploadConfiguration.DEFAULT_PART_SIZE_BYTES,
             fileSizeBytes = recordBatchSizeOverride
-                    ?: config.fileSizeBytes,
+                    ?: ObjectStorageUploadConfiguration.DEFAULT_FILE_SIZE_BYTES,
             stream = stream,
             fileNumber = AtomicLong(0),
             fileNameMapper = { it }

@@ -248,7 +248,7 @@ data class CSVFormatConfiguration(
 data class MSSQLCSVFormatConfiguration(
     override val extension: String = "csv",
     override val rootLevelFlattening: Boolean = true,
-    val validateValuesPreLoad: Boolean,
+    val validateValuesPreLoad: Boolean
 ) : ObjectStorageFormatConfiguration {}
 
 data class AvroFormatConfiguration(

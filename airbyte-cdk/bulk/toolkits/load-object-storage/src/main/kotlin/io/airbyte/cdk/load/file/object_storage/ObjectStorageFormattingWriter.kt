@@ -121,7 +121,7 @@ class MSSQLCSVFormattingWriter(
             mssqlRowValidator
                 .validate(record, this.finalSchema)
                 .dataWithAirbyteMeta(stream, true)
-                .toCsvRecord(finalSchema)
+                .toCsvRecord(finalSchema),
         )
     }
     override fun flush() {
