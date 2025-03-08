@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - events
+    - accounts
 
 definitions:
   # base components
@@ -630,6 +630,7 @@ definitions:
         name: accounts
       retriever:
         type: StateDelegatingRetriever
+        full_refresh_no_slice_in_params: true
         full_refresh_ignore_min_max_datetime: true
         full_refresh_retriever:
           $ref: "#/definitions/base_retriever"
@@ -640,6 +641,145 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["account.updated", "account.external_account.created", "account.external_account.updated", "account.external_account.deleted"]}}'
+      transformations:
+        - type: AddFields
+          fields:
+            - path: [ "updated" ]
+              value: "{{ record['created'] or  format_datetime(config.get('start_date', '2017-01-25T00:00:00Z'), '%s') }}"
+
+
+    checkout_sessions:
+      $ref: "#/definitions/updated_stream"
+      $parameters:
+        name: checkout_sessions
+      retriever:
+        type: StateDelegatingRetriever
+        full_refresh_no_slice_in_params: true
+        full_refresh_ignore_min_max_datetime: true
+        full_refresh_retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: checkout/sessions
+        incremental_retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["checkout.session.async_payment_failed", "checkout.session.async_payment_succeeded", "checkout.session.completed", "checkout.session.expired"]}}'
+
+    external_account_cards:
+      $ref: "#/definitions/updated_stream"
+      $parameters:
+        name: external_account_cards
+      retriever:
+        type: StateDelegatingRetriever
+        full_refresh_no_slice_in_params: true
+        full_refresh_ignore_min_max_datetime: true
+        full_refresh_retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: accounts/{{ config["account_id"] }}/external_accounts
+          requester:
+            $ref: "#/definitions/base_requester"
+            request_parameters:
+              object: "card"
+        incremental_retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"]}}'
+              object: "card"
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path:
+                - data
+                - "*"
+                - data
+                - object
+            record_filter:
+              condition: "{{ record['object'] == 'card' }}"
+
+    external_account_bank_accounts:
+      $ref: "#/definitions/updated_stream"
+      $parameters:
+        name: external_account_bank_accounts
+      retriever:
+        type: StateDelegatingRetriever
+        full_refresh_no_slice_in_params: true
+        full_refresh_ignore_min_max_datetime: true
+        full_refresh_retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: accounts/{{ config["account_id"] }}/external_accounts
+          requester:
+            $ref: "#/definitions/base_requester"
+            request_parameters:
+              object: "bank_account"
+        incremental_retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"]}}'
+              object: "bank_account"
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path:
+                - data
+                - "*"
+                - data
+                - object
+            record_filter:
+              condition: "{{ record['object'] == 'bank_account' }}"
+
+    credit_notes:
+      $ref: "#/definitions/updated_stream"
+      $parameters:
+        name: credit_notes
+      retriever:
+        type: StateDelegatingRetriever
+        full_refresh_no_slice_in_params: true
+        full_refresh_ignore_min_max_datetime: true
+        full_refresh_retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: credit_notes
+        incremental_retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["credit_note.created", "credit_note.updated", "credit_note.voided"]}}'
+
+    early_fraud_warnings:
+      $ref: "#/definitions/updated_stream"
+      $parameters:
+        name: early_fraud_warnings
+      retriever:
+        type: StateDelegatingRetriever
+        full_refresh_no_slice_in_params: true
+        full_refresh_ignore_min_max_datetime: true
+        full_refresh_retriever:
+          $ref: "#/definitions/base_retriever"
+          $parameters:
+            path: early_fraud_warnings
+        incremental_retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["radar.early_fraud_warning.created", "radar.early_fraud_warning.updated"]}}'
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -698,6 +838,19 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["payment_method.*"]}}'
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     customer_balance_transactions:
       $ref: "#/definitions/created_stream"
@@ -798,6 +951,126 @@ definitions:
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
+    checkout_sessions_line_items:
+      $ref: "#/definitions/created_stream"
+      $parameters:
+        name: checkout_sessions_line_items
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          request_parameters:
+            expand[]: '{{["data.discounts", "data.taxes"]}}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/base_paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: checkout_session_id
+              stream:
+                $ref: "#/definitions/streams/checkout_sessions"
+              incremental_dependency: true
+              extra_fields:
+                - [ "updated" ]
+                - [ "created" ]
+                - [ "expires_at" ]
+        $parameters:
+          path: checkout/sessions/{{ stream_partition.checkout_session_id }}/line_items
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: checkout_session_updated
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        lookback_window: P{{ config.get('lookback_window_days', 0) }}D
+        global_substream_cursor: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('start_date', '2017-01-25T00:00:00Z'), '%Y-%m-%dT%H:%M:%S%z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - checkout_session_id
+              value: "{{ stream_partition.checkout_session_id }}"
+            - path:
+                - checkout_session_created
+              value: "{{ stream_partition.created }}"
+            - path:
+                - checkout_session_updated
+              value: "{{ stream_partition.updated }}"
+            - path:
+                - checkout_session_expires_at
+              value: "{{ stream_partition.expires_at }}"
+
+    transfer_reversals:
+      $ref: "#/definitions/created_stream"
+      $parameters:
+        name: transfer_reversals
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/base_paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: transfer_id
+              stream:
+                $ref: "#/definitions/streams/transfers"
+              incremental_dependency: true
+        $parameters:
+          path: transfers/{{ stream_partition.transfer_id }}/reversals
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        lookback_window: P{{ config.get('lookback_window_days', 0) }}D
+        global_substream_cursor: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('start_date', '2017-01-25T00:00:00Z'), '%Y-%m-%dT%H:%M:%S%z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+
+
+
+
+
+
+
+
+
+
+
 
     subscription_items:
       $ref: "#/definitions/updated_stream"
@@ -867,15 +1140,130 @@ definitions:
                 - invoice_updated
               value: "{{ stream_slice.extra_fields.updated }}"
 
+    application_fees_refunds:
+      $ref: "#/definitions/updated_stream"
+      $parameters:
+        name: application_fees_refunds
+      retriever:
+        type: StateDelegatingRetriever
+        full_refresh_no_slice_in_params: true
+        full_refresh_ignore_min_max_datetime: true
+        full_refresh_retriever:
+          $ref: "#/definitions/base_retriever"
+          partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: application_fee_id
+                stream:
+                  $ref: "#/definitions/streams/application_fees"
+          $parameters:
+            path: application_fees/{{ stream_partition.application_fee_id }}/refunds
+        incremental_retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["application_fee.refund.updated"]}}'
+
+    bank_accounts:
+      $ref: "#/definitions/updated_stream"
+      $parameters:
+        name: bank_accounts
+      retriever:
+        type: StateDelegatingRetriever
+        full_refresh_no_slice_in_params: true
+        full_refresh_ignore_min_max_datetime: true
+        full_refresh_retriever:
+          $ref: "#/definitions/base_retriever"
+          partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: application_fee_id
+                stream:
+                  $ref: "#/definitions/streams/customers"
+          $parameters:
+            path: application_fees/{{ stream_partition.application_fee_id }}/refunds
+        incremental_retriever:
+          $ref: "#/definitions/events_objects_retriever"
+          $parameters:
+            request_parameters:
+              types[]: '{{["customer.source.created", "customer.source.expiring", "customer.source.updated", "customer.source.deleted"]}}'
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path:
+                - data
+                - "*"
+                - data
+                - object
+            record_filter:
+              condition: "{{ record['object'] == 'bank_account' }}"
+
+
+
+
+
+    setup_attempts:
+      $ref: "#/definitions/created_stream"
+      $parameters:
+        path: setup_attempts
+        name: setup_attempts
+      retriever:
+        $ref: "#/definitions/base_retriever"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: setup_intent_id
+              stream:
+                $ref: "#/definitions/streams/setup_intents"
+        requester:
+          $ref: "#/definitions/base_requester"
+          request_parameters:
+            setup_intent: "{{  stream_partition.setup_intent_id  }}"
+
+
+    usage_records:
+      $ref: "#/definitions/base_stream"
+      $parameters:
+        name: usage_records
+      retriever:
+        $ref: "#/definitions/base_retriever"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: subscription_item_id
+              stream:
+                $ref: "#/definitions/streams/subscription_items"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: subscription_items/{{ stream_partition.subscription_item_id }}/usage_record_summaries
+
+
+
+
+
+
+
+
+
+
 streams:
-# CreatedCursorIncrementalStripeStream
+## CreatedCursorIncrementalStripeStream
 #  - $ref: "#/definitions/streams/events"
 #  - $ref: "#/definitions/streams/shipping_rates"
 #  - $ref: "#/definitions/streams/balance_transactions"
 #  - $ref: "#/definitions/streams/files"
 #  - $ref: "#/definitions/streams/file_links"
-
-# IncrementalStripeStream
+#
+## IncrementalStripeStream
 #  - $ref: "#/definitions/streams/customers"
 #  - $ref: "#/definitions/streams/subscriptions"
 #  - $ref: "#/definitions/streams/invoices"
@@ -886,7 +1274,7 @@ streams:
 #  - $ref: "#/definitions/streams/charges"
 #  - $ref: "#/definitions/streams/coupons"
 #  - $ref: "#/definitions/streams/disputes"
-#  - $ref: "#/definitions/streams/application_fees"
+  - $ref: "#/definitions/streams/application_fees"
 #  - $ref: "#/definitions/streams/invoice_items"
 #  - $ref: "#/definitions/streams/payouts"
 #  - $ref: "#/definitions/streams/plans"
@@ -900,21 +1288,36 @@ streams:
 #  - $ref: "#/definitions/streams/cards"
 #  - $ref: "#/definitions/streams/transactions"
 #  - $ref: "#/definitions/streams/top_ups"
-
-# UpdatedCursorIncrementalStripeStream
-  - $ref: "#/definitions/streams/accounts"
-
-# UpdatedCursorIncrementalStripeSubStream
+#
+## UpdatedCursorIncrementalStripeStream
+#  - $ref: "#/definitions/streams/accounts"
+#  - $ref: "#/definitions/streams/checkout_sessions"
+#  - $ref: "#/definitions/streams/external_account_cards"
+#  - $ref: "#/definitions/streams/external_account_bank_accounts"
+#  - $ref: "#/definitions/streams/credit_notes"
+#  - $ref: "#/definitions/streams/early_fraud_warnings"
+#
+## UpdatedCursorIncrementalStripeSubStream
 #  - $ref: "#/definitions/streams/payment_methods"
 #  - $ref: "#/definitions/streams/persons"
-
-# ParentIncrementalStripeSubStream
-  - $ref: "#/definitions/streams/customer_balance_transactions"
+#
+## ParentIncrementalStripeSubStream
+#  - $ref: "#/definitions/streams/customer_balance_transactions"
 #  - $ref: "#/definitions/streams/payout_balance_transactions"
-
-# UpdatedCursorIncrementalStripeLazySubStream
+#  - $ref: "#/definitions/streams/checkout_sessions_line_items"
+#  - $ref: "#/definitions/streams/transfer_reversals"
+#
+## UpdatedCursorIncrementalStripeLazySubStream
 #  - $ref: "#/definitions/streams/subscription_items"
 #  - $ref: "#/definitions/streams/invoice_line_items"
+#  - $ref: "#/definitions/streams/application_fees_refunds"
+#  - $ref: "#/definitions/streams/bank_accounts"
+#
+#
+#  - $ref: "#/definitions/streams/setup_attempts"
+#  - $ref: "#/definitions/streams/usage_records"
+
+
 
 
 spec:
