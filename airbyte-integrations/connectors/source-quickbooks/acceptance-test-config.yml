@@ -5,20 +5,20 @@ test_strictness_level: "low"
 acceptance_tests:
   spec:
     tests:
-    - spec_path: "manifest.yaml"
-      backward_compatibility_tests_config:
-        disable_for_version: "1.0.0"
+      - spec_path: "manifest.yaml"
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.0"
   connection:
     tests:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
     tests:
-    - config_path: "secrets/config.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "2.0.0"   #change type of a field in payments schema
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "2.0.0" #change type of a field in payments schema
   # basic_read:
   #   tests:
   #     - config_path: "secrets/config.json"
@@ -40,9 +40,9 @@ acceptance_tests:
   #   exact_order: no
   incremental:
     tests:
-    - config_path: "secrets/config.json"
-      future_state:
-        future_state_path: "integration_tests/abnormal_state.json"
+      - config_path: "secrets/config.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
-    - config_path: "secrets/config.json"
+      - config_path: "secrets/config.json"
