@@ -1,0 +1,192 @@
+version: 6.36.3
+
+type: DeclarativeSource
+
+description: |-
+  UK Bank Holidays from the UK Government API: 
+  https://www.api.gov.uk/gds/bank-holidays/#bank-holidays
+
+  england-and-wales
+  scotland
+  northern-island 
+
+check:
+  type: CheckStream
+  stream_names:
+    - england-and-wales
+
+definitions:
+  streams:
+    england-and-wales:
+      type: DeclarativeStream
+      name: england-and-wales
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /bank-holidays.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - england-and-wales
+              - events
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/england-and-wales"
+    scotland:
+      type: DeclarativeStream
+      name: scotland
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /bank-holidays.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - scotland
+              - events
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/scotland"
+    northern-ireland:
+      type: DeclarativeStream
+      name: northern-ireland
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /bank-holidays.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - northern-ireland
+              - events
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/northern-ireland"
+  base_requester:
+    type: HttpRequester
+    url_base: https://www.gov.uk
+
+streams:
+  - $ref: "#/definitions/streams/england-and-wales"
+  - $ref: "#/definitions/streams/scotland"
+  - $ref: "#/definitions/streams/northern-ireland"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required: []
+    properties: {}
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    england-and-wales: true
+    scotland: true
+    northern-ireland: true
+  testedStreams:
+    england-and-wales:
+      streamHash: 650f294d480010b8d8562451d61967a45e9a344f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    scotland:
+      streamHash: 884a41edfed85baa89c5503e44cd2a78d825cd87
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    northern-ireland:
+      streamHash: 2b2b37d26185308cb4230151b0c53dd7128ae339
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://www.gov.uk/bank-holidays.json
+    openapiSpecUrl: https://www.gov.uk/bank-holidays.json
+
+schemas:
+  england-and-wales:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bunting:
+        type:
+          - boolean
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+  scotland:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bunting:
+        type:
+          - boolean
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+  northern-ireland:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bunting:
+        type:
+          - boolean
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
