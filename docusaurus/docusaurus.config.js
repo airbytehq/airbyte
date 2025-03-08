@@ -111,6 +111,23 @@ const config = {
         ],
       },
     ],
+    // This plugin controls release notes, which are unversioned
+    [
+      '@docusaurus/plugin-content-docs',
+      {
+        id: 'release_notes',
+        path: '../docs/release_notes',
+        routeBasePath: '/release_notes',
+        sidebarPath: './sidebar-release_notes.js',
+        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        remarkPlugins: [
+          docsHeaderDecoration,
+          enterpriseDocsHeaderInformation,
+          productInformation,
+          docMetaTags,
+        ],
+      },
+    ],
     // This plugin controls "connector/source/destination" docs, which are unversioned by Docusaurus and use their own versioning
     [
       '@docusaurus/plugin-content-docs',
