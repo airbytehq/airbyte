@@ -1,15 +1,5 @@
 # S3 Data Lake
 
-:::caution
-
-This connector is in early access and still evolving.
-Future updates may introduce breaking changes.
-
-We're interested in hearing about your experience! See [Github](https://github.com/airbytehq/airbyte/discussions/50404)
-for more information on joining the beta.
-
-:::
-
 This page guides you through the process of setting up the S3 Data Lake destination connector.
 
 This connector writes the Iceberg table format to S3, or an S3-compatible storage backend.
@@ -127,6 +117,11 @@ If these conditions are not met, you may see inaccurate data in the destination 
 taking precendence over newer records). If this happens, you should use the `append` or `overwrite`
 sync mode.
 
+:::caution
+Certain API sources are known to have streams which do not meet these conditions, including
+Stripe and Monday.
+:::
+
 ## Branching
 
 Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/branching/) over your data.
@@ -157,6 +152,8 @@ drop all table versions.
 
 | Version | Date       | Pull Request                                               | Subject                                                                      |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------|
+| 0.3.15  | 2025-02-28 | [\#54724](https://github.com/airbytehq/airbyte/pull/54724) | Certify connector                                                            |
+| 0.3.14  | 2025-02-14 | [\#53241](https://github.com/airbytehq/airbyte/pull/53241) | New CDK interface; perf improvements, skip initial record staging            |
 | 0.3.13  | 2025-02-14 | [\#53697](https://github.com/airbytehq/airbyte/pull/53697) | Internal refactor                                                            |
 | 0.3.12  | 2025-02-12 | [\#53170](https://github.com/airbytehq/airbyte/pull/53170) | Improve documentation, tweak error handling of invalid schema evolution      |
 | 0.3.11  | 2025-02-12 | [\#53216](https://github.com/airbytehq/airbyte/pull/53216) | Support arbitrary schema change in overwrite / truncate refresh / clear sync |

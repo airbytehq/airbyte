@@ -61,7 +61,7 @@ class CheckpointManagerUTest {
             syncManager,
             outputConsumer,
             timeProvider,
-            checkpointById = checkpointById
+            checkpointById
         )
     }
 

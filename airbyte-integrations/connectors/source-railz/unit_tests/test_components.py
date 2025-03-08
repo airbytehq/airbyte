@@ -1,20 +1,25 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from datetime import datetime, timezone
+from unittest.mock import MagicMock, patch
 
-from freezegun import freeze_time
-from source_railz.components import ShortLivedTokenAuthenticator
 
-
-def test_get_tokens(requests_mock):
+def test_get_tokens(components_module):
     url = "https://auth.railz.ai/getAccess"
-
     responses = [
+        {"access_token": "access_token1"},
         {"access_token": "access_token1"},
         {"access_token": "access_token2"},
     ]
-    requests_mock.get(url, json=lambda request, context: responses.pop(0))
 
+    timestamps = [
+        datetime(2023, 1, 1, 12, 0, 0, tzinfo=timezone.utc).timestamp(),
+        datetime(2023, 1, 1, 12, 30, 0, tzinfo=timezone.utc).timestamp(),
+        datetime(2023, 1, 1, 13, 0, 0, tzinfo=timezone.utc).timestamp(),
+    ]
+
+    ShortLivedTokenAuthenticator = components_module.ShortLivedTokenAuthenticator
     authenticator = ShortLivedTokenAuthenticator(
         client_id="client_id",
         secret_key="secret_key",
@@ -25,9 +30,12 @@ def test_get_tokens(requests_mock):
         parameters={},
     )
 
-    with freeze_time("2023-01-01 12:00:00"):
-        assert authenticator.token == "Bearer access_token1"
-    with freeze_time("2023-01-01 12:30:00"):
-        assert authenticator.token == "Bearer access_token1"
-    with freeze_time("2023-01-01 13:00:00"):
-        assert authenticator.token == "Bearer access_token2"
+    def mock_requests_get(*args, **kwargs):
+        mock_response = MagicMock()
+        mock_response.json.return_value = responses[0]
+        return mock_response
+
+    # Mock requests.get and time.time
+    for _ in range(3):
+        with patch("requests.Session.get", side_effect=mock_requests_get), patch("time.time", return_value=timestamps.pop(0)):
+            assert authenticator.token == f"Bearer {responses.pop(0)['access_token']}"

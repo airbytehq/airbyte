@@ -53,7 +53,7 @@ class ObjectStorageDestinationState(
             return emptyList()
         }
 
-        val prefix = pathFactory.getLongestStreamConstantPrefix(stream, isStaging = false)
+        val prefix = pathFactory.getLongestStreamConstantPrefix(stream)
         log.info {
             "Searching $prefix for objects to delete (minGenId=${stream.minimumGenerationId}; matcher=${matcher.regex})"
         }
