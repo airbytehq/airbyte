@@ -3,6 +3,7 @@
 #
 
 
+import logging
 import sys
 from io import StringIO
 
@@ -12,7 +13,6 @@ from integration_tests.test_buffer import read_input_messages
 from integration_tests.test_helpers import TEST_CONFIG
 from integration_tests.test_writer import TEST_CATALOG, TEST_SPREADSHEET, TEST_STREAM
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
 
 
@@ -45,7 +45,7 @@ TEST_RECORDS_PATH: str = "integration_tests/test_data/test_destination_messages.
 
 def test_check():
     expected = AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    actual = TEST_DESTINATION.check(logger=AirbyteLogger, config=TEST_CONFIG)
+    actual = TEST_DESTINATION.check(logger=logging.getLogger("airbyte"), config=TEST_CONFIG)
     assert actual == expected
 
 
