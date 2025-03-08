@@ -1,4 +1,4 @@
-version: 5.13.0
+version: 6.36.3
 
 type: DeclarativeSource
 
@@ -604,7 +604,7 @@ definitions:
             - timeout
           completed:
             - ready
-        urls_extractor:
+        download_target_extractor:
           type: DpathExtractor
           field_path:
             - urls
@@ -620,7 +620,7 @@ definitions:
         polling_requester:
           type: HttpRequester
           path: >-
-            /v3/marketing/contacts/exports/{{stream_slice['create_job_response'].json()['id']
+            /v3/marketing/contacts/exports/{{creation_response['id']
             }}
           url_base: https://api.sendgrid.com
           http_method: GET
@@ -637,7 +637,7 @@ definitions:
             api_token: "{{ config['api_key'] }}"
         download_requester:
           type: HttpRequester
-          path: "{{stream_slice.extra_fields['url']}}"
+          path: "{{download_target}}"
           url_base: ""
           http_method: GET
         download_extractor:
