@@ -11,7 +11,10 @@ import io.airbyte.integrations.base.destination.typing_deduping.Array
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.concat
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.of
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId.Companion.concatenateRawTableName
+import io.airbyte.integrations.destination.postgres.PostgresSQLNameTransformer
 import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange
+import java.io.FileOutputStream
+import java.io.PrintWriter
 import java.util.*
 import java.util.function.Function
 import java.util.stream.Collectors
@@ -376,5 +379,91 @@ class PostgresSqlGenerator(
         private const val AB_META_CHANGES_FIELD_KEY = "field"
         private const val AB_META_CHANGES_CHANGE_KEY = "change"
         private const val AB_META_CHANGES_REASON_KEY = "reason"
+    }
+}
+
+private fun col(name: String) =
+    ColumnId(
+        name = name,
+        originalName = name,
+        canonicalName = name,
+    )
+
+fun getStreamConfig(size: String, part: Int) =
+    StreamConfig(
+        StreamId(
+            finalNamespace = "no_raw_tables_experiment",
+            finalName = "old_final_table_${size}",
+            rawNamespace = "no_raw_tables_experiment",
+            rawName = "old_raw_table_${size}_part${part}",
+            originalNamespace = "unused",
+            originalName = "unused",
+        ),
+        postImportAction = ImportType.DEDUPE,
+        primaryKey = listOf(col("primary_key")),
+        cursor = Optional.of(col("cursor")),
+        columns =
+        linkedMapOf(
+            col("primary_key") to AirbyteProtocolType.INTEGER,
+            col("cursor") to AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE,
+            col("string") to AirbyteProtocolType.STRING,
+            col("bool") to AirbyteProtocolType.BOOLEAN,
+            col("integer") to AirbyteProtocolType.INTEGER,
+            col("float") to AirbyteProtocolType.NUMBER,
+            col("date") to AirbyteProtocolType.DATE,
+            col("ts_with_tz") to AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE,
+            col("ts_without_tz") to AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE,
+            col("time_with_tz") to AirbyteProtocolType.TIME_WITH_TIMEZONE,
+            col("time_no_tz") to AirbyteProtocolType.TIME_WITHOUT_TIMEZONE,
+            col("array") to Array(AirbyteProtocolType.UNKNOWN),
+            col("json_object") to Struct(linkedMapOf()),
+        ),
+        generationId = 42,
+        minimumGenerationId = 0,
+        syncId = 21,
+    )
+
+fun main() {
+    val generator =
+        PostgresSqlGenerator(
+            PostgresSQLNameTransformer(),
+            cascadeDrop = false,
+        )
+    val streamConfig = getStreamConfig("5mb", part = 1)
+    val createTableSql = generator.createTable(streamConfig, suffix = "", force = false)
+    val fastUpdateTableSql =
+        generator.updateTable(
+            streamConfig,
+            finalSuffix = "",
+            minRawTimestamp = Optional.empty(),
+            useExpensiveSaferCasting = false,
+        )
+    val slowUpdateTableSql =
+        generator.updateTable(
+            streamConfig,
+            finalSuffix = "",
+            minRawTimestamp = Optional.empty(),
+            useExpensiveSaferCasting = true,
+        )
+
+    PrintWriter(FileOutputStream("/Users/edgao/code/airbyte/raw_table_experiments/generated_files/postgres.sql")).use { out ->
+        out.println("-- create table --------------------------------")
+        out.printSql(createTableSql)
+
+        repeat(10) { out.println() }
+        out.println("""-- "fast" T+D query -------------------------------""")
+        out.printSql(fastUpdateTableSql)
+
+        repeat(10) { out.println() }
+        out.println("""-- "slow" T+D query -------------------------------""")
+        out.printSql(slowUpdateTableSql)
+    }
+}
+
+fun PrintWriter.printSql(sql: Sql) {
+    sql.transactions.forEach { txn ->
+        txn.forEach { statement ->
+            this.println(statement)
+        }
     }
 }
