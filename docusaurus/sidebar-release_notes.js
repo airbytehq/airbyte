@@ -1,5 +1,5 @@
 export default {
-    mySidebar: [
+    releaseNotes: [
         {
             type: 'doc',
             id: 'readme', // document ID
