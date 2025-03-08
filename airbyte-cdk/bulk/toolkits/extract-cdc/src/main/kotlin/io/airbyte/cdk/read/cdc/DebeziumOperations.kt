@@ -20,11 +20,19 @@ interface CdcPartitionsCreatorDebeziumOperations<T : Comparable<T>> {
     /** Extracts the WAL position from a [DebeziumOffset]. */
     fun position(offset: DebeziumOffset): T
 
-    /** Synthesizes a [DebeziumInput] when no incumbent [OpaqueStateValue] is available. */
-    fun synthesize(): DebeziumInput
+    /**
+     * Synthesizes a [DebeziumColdStartingState] when no incumbent [OpaqueStateValue] is available.
+     */
+    fun generateColdStartOffset(): DebeziumOffset
 
-    /** Builds a [DebeziumInput] using an incumbent [OpaqueStateValue]. */
-    fun deserialize(opaqueStateValue: OpaqueStateValue, streams: List<Stream>): DebeziumInput
+    /** Generates Debezium properties for use with a [DebeziumColdStartingState]. */
+    fun generateColdStartProperties(): Map<String, String>
+
+    /** Maps an incumbent [OpaqueStateValue] into a [DebeziumWarmStartState]. */
+    fun deserializeState(opaqueStateValue: OpaqueStateValue): DebeziumWarmStartState
+
+    /** Generates Debezium properties for use with a [ValidDebeziumWarmStartState]. */
+    fun generateWarmStartProperties(streams: List<Stream>): Map<String, String>
 }
 
 interface CdcPartitionReaderDebeziumOperations<T : Comparable<T>> {
@@ -34,7 +42,7 @@ interface CdcPartitionReaderDebeziumOperations<T : Comparable<T>> {
      *
      * Returning null means that the event should be treated like a heartbeat.
      */
-    fun deserialize(
+    fun deserializeRecord(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,
         stream: Stream,
@@ -52,8 +60,11 @@ interface CdcPartitionReaderDebeziumOperations<T : Comparable<T>> {
         value: DebeziumRecordValue,
     ): String?
 
-    /** Maps a [DebeziumState] to an [OpaqueStateValue]. */
-    fun serialize(debeziumState: DebeziumState): OpaqueStateValue
+    /** Maps a Debezium state to an [OpaqueStateValue]. */
+    fun serializeState(
+        offset: DebeziumOffset,
+        schemaHistory: DebeziumSchemaHistory?
+    ): OpaqueStateValue
 
     /** Tries to extract the WAL position from a [DebeziumRecordValue]. */
     fun position(recordValue: DebeziumRecordValue): T?

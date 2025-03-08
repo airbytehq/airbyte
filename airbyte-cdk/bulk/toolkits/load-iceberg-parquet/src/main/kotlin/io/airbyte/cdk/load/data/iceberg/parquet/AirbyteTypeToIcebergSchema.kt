@@ -21,6 +21,7 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.message.Meta
 import java.util.UUID
 import org.apache.iceberg.Schema
 import org.apache.iceberg.types.Type
@@ -29,63 +30,65 @@ import org.apache.iceberg.types.Types.NestedField
 
 class AirbyteTypeToIcebergSchema {
 
-    fun convert(airbyteSchema: AirbyteType): Type {
+    fun convert(airbyteSchema: AirbyteType, stringifyObjects: Boolean): Type {
         return when (airbyteSchema) {
             is ObjectType -> {
-                Types.StructType.of(
-                    *airbyteSchema.properties.entries
-                        .map { (name, field) ->
-                            if (field.nullable) {
-                                NestedField.optional(
-                                    UUID.randomUUID().hashCode(),
-                                    name,
-                                    convert(field.type)
-                                )
-                            } else {
-                                NestedField.required(
-                                    UUID.randomUUID().hashCode(),
-                                    name,
-                                    convert(field.type)
-                                )
+                if (stringifyObjects) {
+                    Types.StringType.get()
+                } else {
+                    Types.StructType.of(
+                        *airbyteSchema.properties.entries
+                            .map { (name, field) ->
+                                if (field.nullable) {
+                                    NestedField.optional(
+                                        UUID.randomUUID().hashCode(),
+                                        name,
+                                        convert(field.type, stringifyObjects)
+                                    )
+                                } else {
+                                    NestedField.required(
+                                        UUID.randomUUID().hashCode(),
+                                        name,
+                                        convert(field.type, stringifyObjects)
+                                    )
+                                }
                             }
-                        }
-                        .toTypedArray()
-                )
+                            .toTypedArray()
+                    )
+                }
             }
             is ArrayType -> {
-                val convert = convert(airbyteSchema.items.type)
+                val convert = convert(airbyteSchema.items.type, stringifyObjects)
                 if (airbyteSchema.items.nullable) {
                     return Types.ListType.ofOptional(UUID.randomUUID().hashCode(), convert)
                 }
                 return Types.ListType.ofRequired(UUID.randomUUID().hashCode(), convert)
             }
-            is ArrayTypeWithoutSchema ->
-                throw IllegalArgumentException("Array type without schema is not supported")
             is BooleanType -> Types.BooleanType.get()
             is DateType -> Types.DateType.get()
             is IntegerType -> Types.LongType.get()
             is NumberType -> Types.DoubleType.get()
-            is ObjectTypeWithEmptySchema ->
-                throw IllegalArgumentException("Object type with empty schema is not supported")
-            is ObjectTypeWithoutSchema ->
-                throw IllegalArgumentException("Object type without schema is not supported")
+            // Schemaless types are converted to string
+            is ArrayTypeWithoutSchema,
+            is ObjectTypeWithEmptySchema,
+            is ObjectTypeWithoutSchema -> Types.StringType.get()
             is StringType -> Types.StringType.get()
             is TimeTypeWithTimezone,
             is TimeTypeWithoutTimezone -> Types.TimeType.get()
             is TimestampTypeWithTimezone -> Types.TimestampType.withZone()
             is TimestampTypeWithoutTimezone -> Types.TimestampType.withoutZone()
             is UnionType -> {
+                // We should never get a trivial union, b/c the AirbyteType parser already handles
+                // this case.
+                // but it costs nothing to have this check here
                 if (airbyteSchema.options.size == 1) {
                     return Types.ListType.ofOptional(
                         UUID.randomUUID().hashCode(),
-                        convert(airbyteSchema.options.first())
+                        convert(airbyteSchema.options.first(), stringifyObjects)
                     )
                 }
-                // Iceberg doesnt support a UNION data type
-                return Types.ListType.ofOptional(
-                    UUID.randomUUID().hashCode(),
-                    Types.StringType.get()
-                )
+                // We stringify nontrivial unions
+                return Types.StringType.get()
             }
             is UnknownType -> Types.StringType.get()
         }
@@ -101,12 +104,15 @@ fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
         val id = generatedSchemaFieldId()
         val isPrimaryKey = identifierFieldNames.contains(name)
         val isOptional = !isPrimaryKey && field.nullable
+        // There's no _airbyte_data field, because we flatten the fields.
+        // But we should leave the _airbyte_meta field as an actual object.
+        val stringifyObjects = name != Meta.COLUMN_NAME_AB_META
         fields.add(
             NestedField.of(
                 id,
                 isOptional,
                 name,
-                icebergTypeConverter.convert(field.type),
+                icebergTypeConverter.convert(field.type, stringifyObjects = stringifyObjects),
             ),
         )
         if (isPrimaryKey) {

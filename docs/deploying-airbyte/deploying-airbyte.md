@@ -143,5 +143,5 @@ You can now access the UI in your browser at: http://127.0.0.1:8080.
 If you'd like to set up a more permanent ingress checkout our ingress customization. For a deployment to a local machine we recommend using [nginx](./integrations/ingress.md) as an easy-to-setup option.
 
 :::note
-As part of maintainging your Airbyte instance, you'll need to do periodic upgrades. See our documentation on [when and how to upgrade Airbyte](../operator-guides/upgrading-airbyte.md) for details. 
+As part of maintaining your Airbyte instance, you'll need to do periodic upgrades. See our documentation on [when and how to upgrade Airbyte](../operator-guides/upgrading-airbyte.md) for details. 
 :::

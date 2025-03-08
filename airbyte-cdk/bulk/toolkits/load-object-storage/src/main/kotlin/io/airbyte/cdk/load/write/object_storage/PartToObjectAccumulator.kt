@@ -48,7 +48,7 @@ class PartToObjectAccumulator<T : RemoteObject<*>>(
         val streamingUpload = upload.streamingUpload.await()
 
         log.info {
-            "Processing loadable part ${batch.part.partIndex} of ${batch.part.key} (empty=${batch.part.isEmpty}; final=${batch.part.isFinal})"
+            "Processing loadable part ${batch.part.partIndex} of ${batch.part.key} (size=${batch.part.bytes?.size}; final=${batch.part.isFinal})"
         }
 
         // Upload provided bytes and update indexes.
@@ -58,10 +58,15 @@ class PartToObjectAccumulator<T : RemoteObject<*>>(
         upload.partBookkeeper.add(batch.part)
         if (upload.partBookkeeper.isComplete) {
             val obj = streamingUpload.complete()
+            val empty = upload.partBookkeeper.isEmpty
             uploadsInProgress.remove(batch.part.key)
 
             log.info { "Completed upload of ${obj.key}" }
-            return LoadedObject(remoteObject = obj, fileNumber = batch.part.fileNumber)
+            return LoadedObject(
+                remoteObject = obj,
+                fileNumber = batch.part.fileNumber,
+                isEmpty = empty
+            )
         } else {
             return IncompletePartialUpload(batch.part.key)
         }

@@ -14,7 +14,6 @@ import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.Global
 import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReader
-import io.airbyte.cdk.read.StateQuerier
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
@@ -37,13 +36,9 @@ class CdcPartitionsCreatorTest {
 
     @MockK lateinit var concurrencyResource: ConcurrencyResource
 
-    @MockK(relaxUnitFun = true) lateinit var globalLockResource: CdcGlobalLockResource
-
     @MockK lateinit var creatorOps: CdcPartitionsCreatorDebeziumOperations<CreatorPosition>
 
     @MockK lateinit var readerOps: CdcPartitionReaderDebeziumOperations<CreatorPosition>
-
-    @MockK lateinit var stateQuerier: StateQuerier
 
     @MockK lateinit var globalFeedBootstrap: GlobalFeedBootstrap
 
@@ -60,92 +55,72 @@ class CdcPartitionsCreatorTest {
 
     val lowerBoundReference = AtomicReference<CreatorPosition>(null)
     val upperBoundReference = AtomicReference<CreatorPosition>(null)
+    val reset = AtomicReference<String?>(null)
 
     val creator: CdcPartitionsCreator<CreatorPosition>
         get() =
             CdcPartitionsCreator(
                 concurrencyResource,
-                globalLockResource,
                 globalFeedBootstrap,
                 creatorOps,
                 readerOps,
                 lowerBoundReference,
                 upperBoundReference,
+                reset,
             )
 
     val syntheticOffset = DebeziumOffset(mapOf(Jsons.objectNode() to Jsons.objectNode()))
     val incumbentOffset = DebeziumOffset(mapOf(Jsons.objectNode() to Jsons.objectNode()))
-    val syntheticInput =
-        DebeziumInput(
-            properties = emptyMap(),
-            state = DebeziumState(offset = syntheticOffset, schemaHistory = null),
-            isSynthetic = true,
-        )
 
     @BeforeEach
     fun setup() {
         every { globalFeedBootstrap.feed } returns global
-        every { globalFeedBootstrap.stateQuerier } returns stateQuerier
+        every { globalFeedBootstrap.feeds } returns listOf(global, stream)
         every { globalFeedBootstrap.streamRecordConsumers() } returns emptyMap()
-        every { stateQuerier.feeds } returns listOf(global, stream)
         every { creatorOps.position(syntheticOffset) } returns 123L
         every { creatorOps.position(incumbentOffset) } returns 123L
-        every { creatorOps.synthesize() } returns syntheticInput
+        every { creatorOps.generateColdStartOffset() } returns syntheticOffset
+        every { creatorOps.generateColdStartProperties() } returns emptyMap()
+        every { creatorOps.generateWarmStartProperties(listOf(stream)) } returns emptyMap()
     }
 
     @Test
     fun testCreateWithSyntheticOffset() {
         every { globalFeedBootstrap.currentState } returns null
-        every { stateQuerier.current(stream) } returns null
+        every { globalFeedBootstrap.currentState(stream) } returns null
         val syntheticOffset = DebeziumOffset(mapOf(Jsons.nullNode() to Jsons.nullNode()))
         every { creatorOps.position(syntheticOffset) } returns 123L
-        val syntheticInput =
-            DebeziumInput(
-                properties = emptyMap(),
-                state = DebeziumState(offset = syntheticOffset, schemaHistory = null),
-                isSynthetic = true,
-            )
-        every { creatorOps.synthesize() } returns syntheticInput
+        every { creatorOps.generateColdStartOffset() } returns syntheticOffset
         upperBoundReference.set(null)
         val readers: List<PartitionReader> = runBlocking { creator.run() }
         Assertions.assertEquals(1, readers.size)
         val reader = readers.first() as CdcPartitionReader<*>
         Assertions.assertEquals(123L, reader.upperBound)
-        Assertions.assertEquals(syntheticInput, reader.input)
+        Assertions.assertEquals(syntheticOffset, reader.startingOffset)
     }
 
     @Test
     fun testCreateWithDeserializedOffset() {
         every { globalFeedBootstrap.currentState } returns Jsons.objectNode()
-        every { stateQuerier.current(stream) } returns Jsons.objectNode()
-        val deserializedInput =
-            DebeziumInput(
-                properties = emptyMap(),
-                state = DebeziumState(offset = incumbentOffset, schemaHistory = null),
-                isSynthetic = false,
-            )
-        every { creatorOps.deserialize(Jsons.objectNode(), listOf(stream)) } returns
-            deserializedInput
+        every { globalFeedBootstrap.currentState(stream) } returns Jsons.objectNode()
+        val deserializedState =
+            ValidDebeziumWarmStartState(offset = incumbentOffset, schemaHistory = null)
+        every { creatorOps.deserializeState(Jsons.objectNode()) } returns deserializedState
         upperBoundReference.set(1_000_000L)
         val readers: List<PartitionReader> = runBlocking { creator.run() }
         Assertions.assertEquals(1, readers.size)
         val reader = readers.first() as CdcPartitionReader<*>
         Assertions.assertEquals(1_000_000L, reader.upperBound)
-        Assertions.assertEquals(deserializedInput, reader.input)
+        Assertions.assertEquals(deserializedState.offset, reader.startingOffset)
     }
 
     @Test
     fun testCreateNothing() {
         every { globalFeedBootstrap.currentState } returns Jsons.objectNode()
-        every { stateQuerier.current(stream) } returns Jsons.objectNode()
-        val deserializedInput =
-            DebeziumInput(
-                properties = emptyMap(),
-                state = DebeziumState(offset = incumbentOffset, schemaHistory = null),
-                isSynthetic = false,
-            )
-        every { creatorOps.deserialize(Jsons.objectNode(), listOf(stream)) } returns
-            deserializedInput
+        every { globalFeedBootstrap.currentState(stream) } returns Jsons.objectNode()
+        val deserializedState =
+            ValidDebeziumWarmStartState(offset = incumbentOffset, schemaHistory = null)
+        every { creatorOps.deserializeState(Jsons.objectNode()) } returns deserializedState
         upperBoundReference.set(1L)
         val readers: List<PartitionReader> = runBlocking { creator.run() }
         Assertions.assertEquals(emptyList<PartitionReader>(), readers)
@@ -154,9 +129,9 @@ class CdcPartitionsCreatorTest {
     @Test
     fun testCreateWithFailedValidation() {
         every { globalFeedBootstrap.currentState } returns Jsons.objectNode()
-        every { stateQuerier.current(stream) } returns Jsons.objectNode()
-        every { creatorOps.deserialize(Jsons.objectNode(), listOf(stream)) } throws
-            ConfigErrorException("invalid state value")
+        every { globalFeedBootstrap.currentState(stream) } returns Jsons.objectNode()
+        every { creatorOps.deserializeState(Jsons.objectNode()) } returns
+            AbortDebeziumWarmStartState("boom")
         assertThrows(ConfigErrorException::class.java) { runBlocking { creator.run() } }
     }
 }

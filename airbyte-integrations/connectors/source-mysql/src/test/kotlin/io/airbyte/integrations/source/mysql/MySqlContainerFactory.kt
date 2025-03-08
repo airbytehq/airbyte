@@ -9,7 +9,7 @@ import org.testcontainers.containers.Network
 import org.testcontainers.utility.DockerImageName
 
 object MySqlContainerFactory {
-    const val COMPATIBLE_NAME = "mysql:8.0"
+    const val COMPATIBLE_NAME = "mysql:9.2.0"
     private val log = KotlinLogging.logger {}
 
     init {
@@ -79,7 +79,7 @@ object MySqlContainerFactory {
             database = "test"
             checkpointTargetIntervalSeconds = 60
             concurrency = 1
-            setMethodValue(UserDefinedCursor)
+            setIncrementalValue(UserDefinedCursor)
         }
 
     fun MySQLContainer<*>.execAsRoot(sql: String) {

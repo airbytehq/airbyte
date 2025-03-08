@@ -9,7 +9,7 @@ application {
 airbyteBulkConnector {
     core = 'extract'
     toolkits = ['extract-jdbc', 'extract-cdc']
-    cdk = '0.226'
+    cdk = 'local'
 }
 
 dependencies {
@@ -17,5 +17,5 @@ dependencies {
     implementation 'io.debezium:debezium-connector-mysql'
 
     testImplementation 'org.testcontainers:mysql'
-    testImplementation("io.mockk:mockk:1.12.0")
+    testImplementation 'io.mockk:mockk:1.12.0'
 }

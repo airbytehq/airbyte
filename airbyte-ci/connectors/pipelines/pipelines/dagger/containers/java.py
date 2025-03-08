@@ -183,10 +183,11 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         )
         base = with_integration_base_java(context, build_platform).with_entrypoint(["/airbyte/base.sh"])
 
+    current_user = (await base.with_exec(["whoami"]).stdout()).strip()
     connector_container = (
         base.with_workdir("/airbyte")
         .with_env_variable("APPLICATION", application)
-        .with_mounted_directory("built_artifacts", build_stage.directory("/airbyte"))
+        .with_mounted_directory("built_artifacts", build_stage.directory("/airbyte"), owner=current_user)
         .with_exec(sh_dash_c(["mv built_artifacts/* ."]))
     )
     return await finalize_build(context, connector_container)

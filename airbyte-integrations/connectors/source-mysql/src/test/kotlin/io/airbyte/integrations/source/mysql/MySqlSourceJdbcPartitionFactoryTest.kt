@@ -21,10 +21,8 @@ import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
-import io.airbyte.cdk.read.Feed
-import io.airbyte.cdk.read.NoOpGlobalLockResource
 import io.airbyte.cdk.read.SelectQuerier
-import io.airbyte.cdk.read.StateQuerier
+import io.airbyte.cdk.read.StateManager
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
@@ -118,9 +116,9 @@ class MySqlSourceJdbcPartitionFactoryTest {
                     database = "localhost"
                 }
             if (global) {
-                configSpec.setMethodValue(CdcCursor())
+                configSpec.setIncrementalValue(Cdc())
             } else {
-                configSpec.setMethodValue(UserDefinedCursor)
+                configSpec.setIncrementalValue(UserDefinedCursor)
             }
             val configFactory = MySqlSourceConfigurationFactory()
             val configuration = configFactory.make(configSpec)
@@ -132,7 +130,6 @@ class MySqlSourceJdbcPartitionFactoryTest {
                 mockSelectQuerier,
                 DefaultJdbcConstants(),
                 ConcurrencyResource(configuration),
-                NoOpGlobalLockResource()
             )
         }
 
@@ -154,15 +151,8 @@ class MySqlSourceJdbcPartitionFactoryTest {
                             recordData: ObjectNode
                         ) {}
                     },
-                stateQuerier =
-                    object : StateQuerier {
-                        override val feeds: List<Feed> = listOf(stream)
-                        override fun current(feed: Feed): OpaqueStateValue? =
-                            if (feed == stream) incumbentStateValue else null
-                        override fun resetFeedStates() {
-                            /* no-op */
-                        }
-                    },
+                stateManager =
+                    StateManager(initialStreamStates = mapOf(stream to incumbentStateValue)),
                 stream,
             )
     }

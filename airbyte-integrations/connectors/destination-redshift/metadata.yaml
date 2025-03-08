@@ -2,10 +2,46 @@ data:
   ab_internal:
     ql: 200
     sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   connectorSubtype: database
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - fileName: 1s1t_config.json
+          name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: 1s1t_config_raw_schema_override.json
+          name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG_RAW_SCHEMA_OVERRIDE_DISABLE_TYPING_DEDUPING
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: 1s1t_config_staging.json
+          name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG_STAGING
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: 1s1t_config_staging_raw_schema_override.json
+          name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG_STAGING_RAW_SCHEMA_OVERRIDE_DISABLE_TYPING_DEDUPING
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: config_staging.json
+          name: SECRET_DESTINATION-REDSHIFT_STAGING__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
+        - fileName: config.json
+          name: SECRET_DESTINATION-REDSHIFT__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: destination
   definitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
-  dockerImageTag: 3.5.0
+  dockerImageTag: 3.5.2
   dockerRepository: airbyte/destination-redshift
   documentationUrl: https://docs.airbyte.com/integrations/destinations/redshift
   githubIssueLabel: destination-redshift
@@ -17,16 +53,32 @@ data:
       enabled: true
     oss:
       enabled: true
+  releaseStage: generally_available
   releases:
     breakingChanges:
       2.0.0:
-        message: >
-          This version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides better error handling, incremental delivery of data for large syncs, and improved final table structures. To review the breaking changes, and how to upgrade, see [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading). These changes will likely require updates to downstream dbt / SQL models, which we walk through [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#updating-downstream-transformations).
-          Selecting `Upgrade` will upgrade **all** connections using this destination at their next sync. You can manually sync existing connections prior to the next scheduled sync to start the upgrade early.
+        message:
+          "This version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2),
+          which provides better error handling, incremental delivery of data for large
+          syncs, and improved final table structures. To review the breaking changes,
+          and how to upgrade, see [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading).
+          These changes will likely require updates to downstream dbt / SQL models,
+          which we walk through [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#updating-downstream-transformations).
+          Selecting `Upgrade` will upgrade **all** connections using this destination
+          at their next sync. You can manually sync existing connections prior to
+          the next scheduled sync to start the upgrade early.
+
+          "
         upgradeDeadline: "2024-03-15"
       3.0.0:
-        message: >
-          Version 3.0.0 of destination-redshift removes support for the "standard inserts" mode. S3 staging was always preferred for being faster and less expensive, and as part of Airbyte 1.0, we are officially removing the inferior "standard inserts" mode. Upgrading to this version of the destination will require a configuration with an S3 staging area.
+        message:
+          'Version 3.0.0 of destination-redshift removes support for the "standard
+          inserts" mode. S3 staging was always preferred for being faster and less
+          expensive, and as part of Airbyte 1.0, we are officially removing the inferior
+          "standard inserts" mode. Upgrading to this version of the destination will
+          require a configuration with an S3 staging area.
+
+          '
         upgradeDeadline: "2024-07-31"
   resourceRequirements:
     jobSpecific:
@@ -34,44 +86,9 @@ data:
         resourceRequirements:
           memory_limit: 1Gi
           memory_request: 1Gi
-  releaseStage: generally_available
   supportLevel: certified
   supportsDbt: true
   supportsRefreshes: true
   tags:
     - language:java
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG
-          fileName: 1s1t_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG_RAW_SCHEMA_OVERRIDE_DISABLE_TYPING_DEDUPING
-          fileName: 1s1t_config_raw_schema_override.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG_STAGING
-          fileName: 1s1t_config_staging.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-REDSHIFT_1S1T_CONFIG_STAGING_RAW_SCHEMA_OVERRIDE_DISABLE_TYPING_DEDUPING
-          fileName: 1s1t_config_staging_raw_schema_override.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-REDSHIFT_STAGING__CREDS
-          fileName: config_staging.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_DESTINATION-REDSHIFT__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

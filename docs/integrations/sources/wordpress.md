@@ -38,6 +38,16 @@ The WordPress connector enables seamless data synchronization between your WordP
 
 | Version | Date       | Pull Request | Subject                                                                               |
 | ------- | ---------- | ------------ | ------------------------------------------------------------------------------------- |
+| 0.0.13 | 2025-03-01 | [55140](https://github.com/airbytehq/airbyte/pull/55140) | Update dependencies |
+| 0.0.12 | 2025-02-22 | [54494](https://github.com/airbytehq/airbyte/pull/54494) | Update dependencies |
+| 0.0.11 | 2025-02-15 | [54027](https://github.com/airbytehq/airbyte/pull/54027) | Update dependencies |
+| 0.0.10 | 2025-02-08 | [53564](https://github.com/airbytehq/airbyte/pull/53564) | Update dependencies |
+| 0.0.9 | 2025-02-01 | [53044](https://github.com/airbytehq/airbyte/pull/53044) | Update dependencies |
+| 0.0.8 | 2025-01-25 | [52424](https://github.com/airbytehq/airbyte/pull/52424) | Update dependencies |
+| 0.0.7 | 2025-01-18 | [52008](https://github.com/airbytehq/airbyte/pull/52008) | Update dependencies |
+| 0.0.6 | 2025-01-11 | [51432](https://github.com/airbytehq/airbyte/pull/51432) | Update dependencies |
+| 0.0.5 | 2024-12-28 | [50763](https://github.com/airbytehq/airbyte/pull/50763) | Update dependencies |
+| 0.0.4 | 2024-12-21 | [50361](https://github.com/airbytehq/airbyte/pull/50361) | Update dependencies |
 | 0.0.3 | 2024-12-14 | [49743](https://github.com/airbytehq/airbyte/pull/49743) | Update dependencies |
 | 0.0.2 | 2024-12-12 | [49433](https://github.com/airbytehq/airbyte/pull/49433) | Update dependencies |
 | 0.0.1   | 2024-10-21 | 46378        | Initial release by [@bishalbera](https://github.com/bishalbera) via Connector Builder |
