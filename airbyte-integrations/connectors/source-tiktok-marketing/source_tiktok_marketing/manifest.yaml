@@ -421,7 +421,7 @@ definitions:
     cursor_granularity: "PT1H"
     step: P1D
     cursor_datetime_formats:
-      - "%Y-%m-%d %H:%M:%S"
+      - "%Y-%m-%d"
       - "%Y-%m-%dT%H:%M:%SZ"
     datetime_format: "%Y-%m-%d %H:%M:%S"
     start_datetime:
