@@ -1,0 +1,17 @@
+data:
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 216d815c-8ddc-4617-8cb3-3a23e5811292
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-singlestore
+  githubIssueLabel: destination-singlestore
+  icon: icon.svg
+  license: MIT
+  name: SingleStore
+  releaseDate:
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/singlestore
+  tags:
+    - language:java
+metadataSpecVersion: "1.0"
