@@ -170,7 +170,7 @@ class BulkLoadSpecification(
         "always_show": false
     }"""
     )
-    val validateValuesPreLoad: Boolean?,
+    val validateValuesPreLoad: Boolean?
 ) : LoadType(loadType), AzureBlobStorageSpecification
 
 /**
@@ -204,7 +204,7 @@ data class BulkLoadConfiguration(
     val containerName: String,
     val sharedAccessSignature: String,
     val bulkLoadDataSource: String,
-    val validateValuesPreLoad: Boolean?,
+    val validateValuesPreLoad: Boolean?
 ) : LoadTypeConfiguration
 
 /**

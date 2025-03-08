@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
-import org.apache.hadoop.yarn.server.api.protocolrecords.BatchSaveFederationQueuePoliciesRequest
 
 data class MSSQLConfiguration(
     val host: String,
@@ -23,14 +22,11 @@ data class MSSQLConfiguration(
     val jdbcUrlParams: String?,
     val sslMethod: EncryptionMethod,
     override val mssqlLoadTypeConfiguration: MSSQLLoadTypeConfiguration,
-    override val numProcessRecordsWorkers: Int,
-    override val numProcessBatchWorkers: Int,
-    override val recordBatchSizeBytes: Long,
-    override val batchQueueDepth: Int,
-    val partSizeBytes: Long,
-    val fileSizeBytes: Long,
 ) : DestinationConfiguration(), MSSQLLoadTypeConfigurationProvider {
+    override val numProcessRecordsWorkers = 1
+    override val numProcessBatchWorkers: Int = 1
     override val processEmptyFiles: Boolean = true
+    override val recordBatchSizeBytes = ObjectStorageUploadConfiguration.DEFAULT_PART_SIZE_BYTES
 }
 
 @Singleton
@@ -62,13 +58,7 @@ class MSSQLConfigurationFactory(private val featureFlags: Set<FeatureFlag>) :
             password = overrides.getOrDefault("password", spec.password),
             jdbcUrlParams = overrides.getOrDefault("jdbcUrlParams", spec.jdbcUrlParams),
             sslMethod = spec.sslMethod,
-            mssqlLoadTypeConfiguration = spec.toLoadConfiguration(),
-            numProcessRecordsWorkers = spec.numProcessRecordsWorkers ?: 1,
-            numProcessBatchWorkers = spec.numProcessBatchWorkers ?: 1,
-            recordBatchSizeBytes = (spec.partSizeMb ?: ObjectStorageUploadConfiguration.DEFAULT_PART_SIZE_BYTES) * 1024 * 1024,
-            batchQueueDepth = spec.batchQueueDepth ?: 10,
-            partSizeBytes = (spec.partSizeMb ?: ObjectStorageUploadConfiguration.DEFAULT_PART_SIZE_BYTES) * 1024 * 1024,
-            fileSizeBytes = (spec.fileSizeMb ?: ObjectStorageUploadConfiguration.DEFAULT_FILE_SIZE_BYTES) * 1024 * 1024
+            mssqlLoadTypeConfiguration = spec.toLoadConfiguration()
         )
     }
 }
