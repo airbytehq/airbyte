@@ -8,6 +8,7 @@ from typing import Dict, List
 
 from mimesis import Datetime, Numeric
 
+from airbyte_cdk import AirbyteMessage
 from airbyte_cdk.models import AirbyteRecordMessage, Type
 
 from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
@@ -15,7 +16,7 @@ from .utils import format_airbyte_time, now_millis
 
 
 class PurchaseGenerator:
-    def __init__(self, stream_name: str, seed: int) -> None:
+    def __init__(self, stream_name: str, seed: int | None) -> None:
         self.stream_name = stream_name
         self.seed = seed
 
@@ -48,13 +49,13 @@ class PurchaseGenerator:
         random_date = start_date + datetime.timedelta(days=random_number_of_days)
         return random_date
 
-    def generate(self, user_id: int) -> List[Dict]:
+    def generate(self, user_id: int) -> List[AirbyteMessage]:
         """
         Because we are doing this work in parallel processes, we need a deterministic way to know what a purchase's ID should be given on the input of a user_id.
         tldr; Every 10 user_ids produce 10 purchases.  User ID x5 has no purchases, User ID mod x7 has 2, and everyone else has 1
         """
 
-        purchases: List[Dict] = []
+        purchases: List[AirbyteMessage] = []
         last_user_id_digit = int(repr(user_id)[-1])
         purchase_count = 1
         id_offset = 0
