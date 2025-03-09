@@ -115,6 +115,9 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 | CampaignsAudienceReportsDaily             | Prod,Sandbox | campaign_id, stat_time_day, gender, age    | Yes         |
 | CampaignsAudienceReportsByCountryDaily    | Prod,Sandbox | campaign_id, stat_time_day, country_code   | Yes         |
 | CampaignsAudienceReportsByPlatformDaily   | Prod,Sandbox | campaign_id, stat_time_day, platform       | Yes         |
+| Pixels                                    | Prod         | pixel_id                                   | No          |
+| PixelInstantPageEvents                    | Prod         | -                                          | No          |
+| PixelEventsStatistics                     | Prod         | -                                          | No          |
 
 :::info
 
@@ -138,6 +141,7 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version   | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.5.0 | 2025-03-09 | [45081](https://github.com/airbytehq/airbyte/pull/45081) | Add `Pixels`, `PixelInstantPageEvents`, `PixelEventsStatistics` streams |
 | 4.4.0 | 2025-03-07 | [55242](https://github.com/airbytehq/airbyte/pull/55242) | Promoting release candidate 4.4.0-rc3 to a main version. |
 | 4.4.0-rc3 | 2025-03-04 | [55194](https://github.com/airbytehq/airbyte/pull/55194) | Resolve state format issue |
 | 4.4.0-rc2 | 2025-02-20 | [53645)](https://github.com/airbytehq/airbyte/pull/53645) | Remove stream_state interpolation and custom cursors |
