@@ -6,11 +6,11 @@ data:
     hosts:
       - "*"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.4@sha256:a612db8bc977a46d7d2e0442f5c6be26da6039ee83a8aceb7be545e4cbdd7040
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.38.3@sha256:fcba02266f262aabc2f37e4f14574aa1c8c5cffd018504bab28803e405c93afe
   connectorSubtype: api
   connectorType: source
   definitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
-  dockerImageTag: 0.8.0
+  dockerImageTag: 0.8.1
   dockerRepository: airbyte/source-sentry
   documentationUrl: https://docs.airbyte.com/integrations/sources/sentry
   githubIssueLabel: source-sentry
