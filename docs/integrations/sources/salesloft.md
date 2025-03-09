@@ -105,6 +105,7 @@ Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Top
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
+| 1.4.1 | 2025-03-08 | [49079](https://github.com/airbytehq/airbyte/pull/49079) | Update dependencies |
 | 1.4.0 | 2025-02-18 | [54136](https://github.com/airbytehq/airbyte/pull/54136) | add body and subject fields to email stream |
 | 1.3.1 | 2024-12-03 | [48770](https://github.com/airbytehq/airbyte/pull/48770) | Remove duplication in manifest, fix query param updated_at[gt] |
 | 1.3.0 | 2024-11-04 | [47298](https://github.com/airbytehq/airbyte/pull/47298) | Migrate to manifest only format |
