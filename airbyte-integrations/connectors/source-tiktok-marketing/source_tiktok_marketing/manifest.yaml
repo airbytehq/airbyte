@@ -1634,7 +1634,7 @@ definitions:
     retriever:
       type: SimpleRetriever
       requester:
-        $ref: "#/definitions/base_requester"
+        $ref: "#/definitions/requester"
         path: pixel/list/
         http_method: GET
       record_selector:
@@ -1670,7 +1670,7 @@ definitions:
               inject_into: request_parameter
             partition_field: advertiser_id
             stream:
-              $ref: "#/definitions/streams/advertisers"
+              $ref: "#/definitions/advertisers_stream"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1682,7 +1682,7 @@ definitions:
     retriever:
       type: SimpleRetriever
       requester:
-        $ref: "#/definitions/base_requester"
+        $ref: "#/definitions/requester"
         path: pixel/instant_page/event/
         http_method: GET
       record_selector:
@@ -1750,7 +1750,7 @@ definitions:
                 inject_into: request_parameter
               partition_field: advertiser_id
               stream:
-                $ref: "#/definitions/streams/advertisers"
+                $ref: "#/definitions/advertisers_stream"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1762,7 +1762,7 @@ definitions:
     retriever:
       type: SimpleRetriever
       requester:
-        $ref: "#/definitions/base_requester"
+        $ref: "#/definitions/requester"
         path: pixel/event/stats/
         http_method: GET
         request_parameters:
@@ -1790,14 +1790,14 @@ definitions:
                 inject_into: request_parameter
               partition_field: advertiser_id
               stream:
-                $ref: "#/definitions/streams/advertisers"
+                $ref: "#/definitions/advertisers_stream"
         - type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: pixel_id
               partition_field: pixel_id
               stream:
-                $ref: "#/definitions/streams/pixels"
+                $ref: "#/definitions/pixels"
     schema_loader:
       type: InlineSchemaLoader
       schema:
