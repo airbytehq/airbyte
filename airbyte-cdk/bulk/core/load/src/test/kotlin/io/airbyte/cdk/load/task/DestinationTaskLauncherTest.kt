@@ -159,7 +159,7 @@ class DestinationTaskLauncherTest {
             destinationTaskLauncher: DestinationTaskLauncher,
             fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
             recordQueueForPipeline:
-                PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>>,
+                PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>,
             loadPipeline: LoadPipeline?,
             partitioner: InputPartitioner,
             openStreamQueue: QueueWriter<DestinationStream>,

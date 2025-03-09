@@ -8,6 +8,7 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
@@ -25,6 +26,7 @@ data class MSSQLConfiguration(
     override val numProcessRecordsWorkers = 1
     override val numProcessBatchWorkers: Int = 1
     override val processEmptyFiles: Boolean = true
+    override val recordBatchSizeBytes = ObjectStorageUploadConfiguration.DEFAULT_PART_SIZE_BYTES
 }
 
 @Singleton
