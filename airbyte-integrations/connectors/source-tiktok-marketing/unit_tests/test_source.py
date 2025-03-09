@@ -14,7 +14,7 @@ from airbyte_cdk.models import ConnectorSpecification
 @pytest.mark.parametrize(
     "config, stream_len",
     [
-        ({"access_token": "token", "environment": {"app_id": "1111", "secret": "secret"}, "start_date": "2021-04-01"}, 37),
+        ({"access_token": "token", "environment": {"app_id": "1111", "secret": "secret"}, "start_date": "2021-04-01"}, 39),
         ({"access_token": "token", "start_date": "2021-01-01", "environment": {"advertiser_id": "1111"}}, 28),
         (
             {
@@ -23,7 +23,7 @@ from airbyte_cdk.models import ConnectorSpecification
                 "start_date": "2021-04-01",
                 "report_granularity": "LIFETIME",
             },
-            37,
+            39,
         ),
         (
             {
@@ -32,7 +32,7 @@ from airbyte_cdk.models import ConnectorSpecification
                 "start_date": "2021-04-01",
                 "report_granularity": "DAY",
             },
-            37,
+            39,
         ),
     ],
 )
