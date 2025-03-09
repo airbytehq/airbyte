@@ -4299,7 +4299,12 @@ definitions:
       type: object
       $schema: http://json-schema.org/draft-07/schema#
       additionalProperties: true
-      properties: {}
+      properties:
+        pixel_id:
+          description: Unique identifier for the pixel
+          type:
+            - "null"
+            - integer
     pixel_instant_page_events:
       type: object
       $schema: http://json-schema.org/draft-07/schema#
