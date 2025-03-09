@@ -74,7 +74,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
     data object DatetimeMicrosHandler : RelationalColumnCustomConverter.Handler {
 
         override fun matches(column: RelationalColumn): Boolean =
-            column.typeName().equals("DATETIME", ignoreCase = true) && column.length().orElse(0) > 3
+            column.typeName().equals("DATETIME", ignoreCase = true) && column.length().asInt > 3
 
         override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string()
 
