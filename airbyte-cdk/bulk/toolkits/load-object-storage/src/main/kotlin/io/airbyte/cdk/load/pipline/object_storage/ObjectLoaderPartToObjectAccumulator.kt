@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.Part
 import io.airbyte.cdk.load.file.object_storage.PartBookkeeper
+import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.WithBatchState
@@ -24,33 +25,38 @@ import java.util.concurrent.ConcurrentHashMap
  */
 @Singleton
 @Requires(bean = ObjectLoader::class)
-class UploadsInProgress {
-    val byKey: ConcurrentHashMap<String, ObjectLoaderPartToObjectAccumulator.State> =
+class UploadsInProgress<T : RemoteObject<*>> {
+    val byKey: ConcurrentHashMap<String, ObjectLoaderPartToObjectAccumulator<T>.State> =
         ConcurrentHashMap()
 }
 
+data class LoadedObject<T : RemoteObject<*>>(
+    val remoteObject: T,
+    override val state: Batch.State = Batch.State.COMPLETE
+) : WithBatchState {}
+
 @Singleton
 @Requires(bean = ObjectLoader::class)
-class ObjectLoaderPartToObjectAccumulator(
-    private val client: ObjectStorageClient<*>,
+class ObjectLoaderPartToObjectAccumulator<T : RemoteObject<*>>(
+    private val client: ObjectStorageClient<T>,
     private val catalog: DestinationCatalog,
-    private val uploads: UploadsInProgress,
+    private val uploads: UploadsInProgress<T>,
+    private val strategy: ObjectLoader,
 ) :
     BatchAccumulator<
-        ObjectLoaderPartToObjectAccumulator.State,
-        ObjectKey,
-        Part,
-        ObjectLoaderPartToObjectAccumulator.ObjectResult
-    > {
+        ObjectLoaderPartToObjectAccumulator<T>.State, ObjectKey, Part, LoadedObject<T>> {
 
-    data class State(val streamingUpload: StreamingUpload<*>, val bookkeeper: PartBookkeeper) :
-        AutoCloseable {
+    inner class State(
+        val streamingUpload: StreamingUpload<T>,
+        val bookkeeper: PartBookkeeper,
+    ) : AutoCloseable {
         override fun close() {
             // Do Nothing
         }
     }
 
-    data class ObjectResult(override val state: Batch.State) : WithBatchState
+    data class ObjectResult(override val state: Batch.State, val objectKey: String) :
+        WithBatchState
 
     override suspend fun start(key: ObjectKey, part: Int): State {
         val stream = catalog.getStream(key.stream)
@@ -60,12 +66,12 @@ class ObjectLoaderPartToObjectAccumulator(
                     key.objectKey,
                     metadata = ObjectStorageDestinationState.metadataFor(stream)
                 ),
-                PartBookkeeper()
+                PartBookkeeper(),
             )
         }
     }
 
-    override suspend fun accept(input: Part, state: State): Pair<State, ObjectResult?> {
+    override suspend fun accept(input: Part, state: State): Pair<State, LoadedObject<T>?> {
         input.bytes?.let { state.streamingUpload.uploadPart(it, input.partIndex) }
         if (input.bytes == null) {
             throw IllegalStateException("Empty non-final part received: this should not happen")
@@ -77,10 +83,9 @@ class ObjectLoaderPartToObjectAccumulator(
         return Pair(state, null)
     }
 
-    override suspend fun finish(state: State): ObjectResult {
-        if (state.bookkeeper.isComplete) {
-            state.streamingUpload.complete()
-        } // else assume another part is finishing this
-        return ObjectResult(Batch.State.COMPLETE)
+    override suspend fun finish(state: State): LoadedObject<T> {
+        val obj = state.streamingUpload.complete()
+
+        return LoadedObject(obj, strategy.batchStateOnUpload)
     }
 }
