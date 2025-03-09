@@ -15,8 +15,3 @@ class AirbyteMessageWithCachedJSON(AirbyteMessage):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._json = self.json(exclude_unset=True)
-        self.json = self.get_json
-
-    def get_json(self, **kwargs):
-        return self._json

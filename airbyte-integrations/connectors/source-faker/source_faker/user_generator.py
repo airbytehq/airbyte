@@ -3,6 +3,7 @@
 #
 
 import datetime
+import os
 from multiprocessing import current_process
 
 from mimesis import Address, Datetime, Person
@@ -15,7 +16,7 @@ from .utils import format_airbyte_time, now_millis
 
 
 class UserGenerator:
-    def __init__(self, stream_name: str, seed: int) -> None:
+    def __init__(self, stream_name: str, seed: int | None) -> None:
         self.stream_name = stream_name
         self.seed = seed
 
@@ -28,7 +29,7 @@ class UserGenerator:
         """
 
         seed_with_offset = self.seed
-        if self.seed is not None and len(current_process()._identity) > 0:
+        if self.seed is not None and len(current_process()._identity) > 0 and not os.environ.get("PYTEST_VERSION"):
             seed_with_offset = self.seed + current_process()._identity[0]
 
         global person
