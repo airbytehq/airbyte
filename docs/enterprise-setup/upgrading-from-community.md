@@ -19,7 +19,7 @@ These instructions are for you if:
 You must first update to the latest Open Source Community release. We assume you are running the following steps from the root of the `airbytehq/airbyte-platform` cloned repo.
 
 1. Determine your current helm release name by running `helm list`. This will now be referred to as `[RELEASE_NAME]` for the rest of this guide.
-2. Upgrade to the latest Open Source Community release. The output will now be refered to as `[RELEASE_VERSION]` for the rest of this guide:
+2. Upgrade to the latest Open Source Community release. The output will now be referred to as `[RELEASE_VERSION]` for the rest of this guide:
 
 ```sh
 helm upgrade [RELEASE_NAME] airbyte/airbyte
