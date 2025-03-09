@@ -138,6 +138,7 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version   | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.4.1 | 2025-03-08 | [51959](https://github.com/airbytehq/airbyte/pull/51959) | Update dependencies |
 | 4.4.0 | 2025-03-07 | [55242](https://github.com/airbytehq/airbyte/pull/55242) | Promoting release candidate 4.4.0-rc3 to a main version. |
 | 4.4.0-rc3 | 2025-03-04 | [55194](https://github.com/airbytehq/airbyte/pull/55194) | Resolve state format issue |
 | 4.4.0-rc2 | 2025-02-20 | [53645)](https://github.com/airbytehq/airbyte/pull/53645) | Remove stream_state interpolation and custom cursors |
