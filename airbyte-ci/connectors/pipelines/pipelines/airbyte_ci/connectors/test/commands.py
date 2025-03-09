@@ -118,8 +118,6 @@ async def test(
         raise click.UsageError("Cannot use both --only-step and --skip-step at the same time.")
     if not only_steps:
         skip_steps = list(skip_steps)
-    if ctx.obj["is_ci"]:
-        fail_if_missing_docker_hub_creds(ctx)
 
     do_regression_test_status_check(ctx, REGRESSION_TEST_MANUAL_APPROVAL_CONTEXT, main_logger)
     if ctx.obj["selected_connectors_with_modified_files"]:

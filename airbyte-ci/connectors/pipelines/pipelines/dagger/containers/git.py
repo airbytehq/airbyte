@@ -27,6 +27,7 @@ async def checked_out_git_container(
     We then checkout the current branch.
     """
     origin_repo_url = AIRBYTE_GITHUB_REPO_URL
+    target_repo_url = origin_repo_url  # Unless we override it below
     current_git_branch = current_git_branch.removeprefix("origin/")
     diffed_branch = current_git_branch if diffed_branch is None else diffed_branch.removeprefix("origin/")
     if github_token := os.environ.get("CI_GITHUB_ACCESS_TOKEN"):
