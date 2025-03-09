@@ -286,7 +286,7 @@ AI tools like ChatGPT and GitHub Copilot are good at describing code. For open s
 
 ## Lint your content with Vale {#linting}
 
-Airbyte uses Vale to ensure standardization and minimum quality for docs content. Vale is an open source command-line tool that brings code-like linting to prose. It's not a general-purpose writing aid or a an AI. It simply automates the identification of non-compliance with the style guide, principles for good writing, and other rules Airbyte defines as needed.
+Airbyte uses Vale to ensure standardization and minimum quality for docs content. Vale is an open source command-line tool that brings code-like linting to prose. It's not a general-purpose writing aid or an AI. It simply automates the identification of non-compliance with the style guide, principles for good writing, and other rules Airbyte defines as needed.
 
 :::note
 This Vale implementation is new, and it might still generate false positives. Currently, Airbyte doesn't enforce style compliance in pull requests. This might happen in the future. For now, just do your best to comply with Vale's recommendations.
