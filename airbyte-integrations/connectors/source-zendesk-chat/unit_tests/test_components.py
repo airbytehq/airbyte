@@ -1,10 +1,9 @@
-#
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-#
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 from typing import Any, List, Mapping
 
 import pytest
+import requests
 
 
 @pytest.fixture
@@ -46,3 +45,17 @@ def bans_stream_record_extractor_expected_output() -> List[Mapping[str, Any]]:
             "created_at": "2021-04-27T13:25:01Z",
         },
     ]
+
+
+def test_bans_stream_record_extractor(
+    components_module,
+    config,
+    requests_mock,
+    bans_stream_record,
+    bans_stream_record_extractor_expected_output,
+) -> None:
+    ZendeskChatBansRecordExtractor = components_module.ZendeskChatBansRecordExtractor
+    test_url = f"https://{config['subdomain']}.zendesk.com/api/v2/chat/bans"
+    requests_mock.get(test_url, json=bans_stream_record)
+    test_response = requests.get(test_url)
+    assert list(ZendeskChatBansRecordExtractor().extract_records(test_response)) == bans_stream_record_extractor_expected_output
