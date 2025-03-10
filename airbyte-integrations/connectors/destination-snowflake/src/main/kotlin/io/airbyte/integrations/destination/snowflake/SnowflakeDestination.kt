@@ -180,7 +180,7 @@ constructor(
         }
     }
 
-    private fun getDataSource(config: JsonNode): DataSource {
+    fun getDataSource(config: JsonNode): DataSource {
         return SnowflakeDatabaseUtils.createDataSource(config, airbyteEnvironment)
     }
 
