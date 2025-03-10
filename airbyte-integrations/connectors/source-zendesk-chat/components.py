@@ -6,11 +6,13 @@
 from dataclasses import dataclass
 from typing import Any, Iterable, List, Mapping
 
-import pendulum
 import requests
 
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 
+
+date_time_parser = DatetimeParser()
 
 @dataclass
 class ZendeskChatBansRecordExtractor(RecordExtractor):
@@ -26,5 +28,5 @@ class ZendeskChatBansRecordExtractor(RecordExtractor):
         ip_address: List[Mapping[str, Any]] = response_data.get("ip_address", [])
         visitor: List[Mapping[str, Any]] = response_data.get("visitor", [])
         bans = ip_address + visitor
-        bans = sorted(bans, key=lambda x: pendulum.parse(x["created_at"]) if x["created_at"] else pendulum.datetime(1970, 1, 1))
+        bans = sorted(bans, key=lambda x: date_time_parser.parse(date=x["created_at"], format="%Y-%m-%dT%H:%M:%SZ") if x["created_at"] else date_time_parser.parse(date=DatetimeParser._UNIX_EPOCH, format="%Y-%m-%dT%H:%M:%SZ"))
         yield from bans
