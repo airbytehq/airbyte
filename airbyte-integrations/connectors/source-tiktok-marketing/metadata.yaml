@@ -50,6 +50,8 @@ data:
               - "ad_groups"
               - "ad_groups_reports_daily"
               - "ad_groups_reports_hourly"
+              - "ad_groups_reports_by_country_daily"
+              - "ad_groups_reports_by_country_hourly"
               - "ads"
               - "ads_audience_reports_by_country_daily"
               - "ads_audience_reports_by_platform_daily"
@@ -57,6 +59,8 @@ data:
               - "ads_audience_reports_daily"
               - "ads_reports_daily"
               - "ads_reports_hourly"
+              - "ads_reports_by_country_daily"
+              - "ads_reports_by_country_hourly"
               - "advertisers_audience_reports_by_country_daily"
               - "advertisers_audience_reports_by_platform_daily"
               - "advertisers_audience_reports_daily"
@@ -70,6 +74,7 @@ data:
               - "campaigns_reports_hourly"
               - "creative_assets_images"
               - "creative_assets_videos"
+              - "spark_ads"
   releaseStage: generally_available
   remoteRegistries:
     pypi:

@@ -586,6 +586,80 @@ definitions:
       - type: CustomTransformation
         class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
 
+  ads_reports_by_country_daily_stream:
+    type: DeclarativeStream
+    name: ads_reports_by_country_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_AD"
+      filtering:
+        [
+          {
+            "field_name": "ad_status",
+            "filter_type": "IN",
+            "filter_value": "[\\\"STATUS_ALL\\\"]",
+          }
+        ]
+      report_metrics:
+        [
+          "campaign_name",
+          "campaign_id",
+          "adgroup_name",
+          "placement_type",
+          "tt_app_id",
+          "tt_app_name",
+          "mobile_app_id",
+          "promotion_type",
+          "dpa_target_audience_type",
+          "conversion",
+          "cost_per_conversion",
+          "conversion_rate",
+          "real_time_conversion",
+          "real_time_cost_per_conversion",
+          "real_time_conversion_rate",
+          "result",
+          "cost_per_result",
+          "result_rate",
+          "real_time_result",
+          "real_time_cost_per_result",
+          "real_time_result_rate",
+          "secondary_goal_result",
+          "cost_per_secondary_goal_result",
+          "secondary_goal_result_rate",
+          "adgroup_id",
+          "ad_name",
+          "ad_text",
+          "total_purchase_value",
+          "total_onsite_shopping_value",
+          "onsite_shopping",
+          "vta_purchase",
+          "vta_conversion",
+          "cta_purchase",
+          "cta_conversion",
+          "total_pageview",
+          "complete_payment",
+          "value_per_complete_payment",
+          "total_complete_payment_rate",
+        ]
+      dimensions: ["ad_id", "stat_time_day", "country_code"]
+    primary_key:
+      - ad_id
+      - stat_time_day
+      - country_code
+    $ref: "#/definitions/base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["ad_id"]
+            value: "{{ record.dimensions.ad_id }}"
+          - path: ["country_code"]
+            value_type: "string"
+            value: "{{ record.dimensions.country_code }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
   ad_groups_reports_daily_stream:
     type: DeclarativeStream
     name: ad_groups_reports_daily
@@ -639,6 +713,66 @@ definitions:
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["adgroup_id"]
             value: "{{ record.dimensions.adgroup_id }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  ad_groups_reports_by_country_daily_stream:
+    type: DeclarativeStream
+    name: ad_groups_reports_by_country_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_ADGROUP"
+      filtering:
+        [
+          {
+            "field_name": "adgroup_status",
+            "filter_type": "IN",
+            "filter_value": "[\\\"STATUS_ALL\\\"]",
+          }
+        ]
+      report_metrics:
+        [
+          "campaign_name",
+          "campaign_id",
+          "adgroup_name",
+          "placement_type",
+          "tt_app_id",
+          "tt_app_name",
+          "mobile_app_id",
+          "promotion_type",
+          "dpa_target_audience_type",
+          "conversion",
+          "cost_per_conversion",
+          "conversion_rate",
+          "real_time_conversion",
+          "real_time_cost_per_conversion",
+          "real_time_conversion_rate",
+          "result",
+          "cost_per_result",
+          "result_rate",
+          "real_time_result",
+          "real_time_cost_per_result",
+          "real_time_result_rate",
+          "secondary_goal_result",
+          "cost_per_secondary_goal_result",
+          "secondary_goal_result_rate",
+        ]
+      dimensions: [ "adgroup_id", "stat_time_day", "country_code" ]
+    primary_key:
+      - adgroup_id
+      - stat_time_day
+      - country_code
+    $ref: "#/definitions/base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [ "stat_time_day" ]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: [ "adgroup_id" ]
+            value: "{{ record.dimensions.adgroup_id }}"
+          - path: [ "country_code" ]
+            value_type: "string"
+            value: "{{ record.dimensions.country_code }}"
       - type: CustomTransformation
         class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
 
@@ -1320,6 +1454,80 @@ definitions:
       - type: CustomTransformation
         class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
 
+  ads_reports_by_country_hourly_stream:
+    type: DeclarativeStream
+    name: ads_reports_by_country_hourly
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_AD"
+      filtering:
+        [
+          {
+            "field_name": "ad_status",
+            "filter_type": "IN",
+            "filter_value": "[\\\"STATUS_ALL\\\"]",
+          },
+        ]
+      report_metrics:
+        [
+          "campaign_name",
+          "campaign_id",
+          "adgroup_name",
+          "placement_type",
+          "tt_app_id",
+          "tt_app_name",
+          "mobile_app_id",
+          "promotion_type",
+          "dpa_target_audience_type",
+          "conversion",
+          "cost_per_conversion",
+          "conversion_rate",
+          "real_time_conversion",
+          "real_time_cost_per_conversion",
+          "real_time_conversion_rate",
+          "result",
+          "cost_per_result",
+          "result_rate",
+          "real_time_result",
+          "real_time_cost_per_result",
+          "real_time_result_rate",
+          "secondary_goal_result",
+          "cost_per_secondary_goal_result",
+          "secondary_goal_result_rate",
+          "adgroup_id",
+          "ad_name",
+          "ad_text",
+          "total_purchase_value",
+          "total_onsite_shopping_value",
+          "onsite_shopping",
+          "vta_purchase",
+          "vta_conversion",
+          "cta_purchase",
+          "cta_conversion",
+          "total_pageview",
+          "complete_payment",
+          "value_per_complete_payment",
+          "total_complete_payment_rate",
+        ]
+      dimensions: [ "ad_id", "stat_time_hour", "country_code" ]
+    primary_key:
+      - ad_id
+      - stat_time_hour
+      - country_code
+    $ref: "#/definitions/base_report_hourly"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [ "stat_time_hour" ]
+            value: "{{ record.dimensions.stat_time_hour }}"
+          - path: [ "ad_id" ]
+            value: "{{ record.dimensions.ad_id }}"
+          - path: [ "country_code" ]
+            value_type: "string"
+            value: "{{ record.dimensions.country_code }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
   advertisers_reports_hourly_stream:
     type: DeclarativeStream
     name: advertisers_reports_hourly
@@ -1424,6 +1632,66 @@ definitions:
             value: "{{ record.dimensions.stat_time_hour }}"
           - path: ["adgroup_id"]
             value: "{{ record.dimensions.adgroup_id }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  ad_groups_reports_by_country_hourly_stream:
+    type: DeclarativeStream
+    name: ad_groups_reports_by_country_hourly
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_ADGROUP"
+      filtering:
+        [
+          {
+            "field_name": "adgroup_status",
+            "filter_type": "IN",
+            "filter_value": "[\\\"STATUS_ALL\\\"]",
+          }
+        ]
+      report_metrics:
+        [
+          "campaign_name",
+          "campaign_id",
+          "adgroup_name",
+          "placement_type",
+          "tt_app_id",
+          "tt_app_name",
+          "mobile_app_id",
+          "promotion_type",
+          "dpa_target_audience_type",
+          "conversion",
+          "cost_per_conversion",
+          "conversion_rate",
+          "real_time_conversion",
+          "real_time_cost_per_conversion",
+          "real_time_conversion_rate",
+          "result",
+          "cost_per_result",
+          "result_rate",
+          "real_time_result",
+          "real_time_cost_per_result",
+          "real_time_result_rate",
+          "secondary_goal_result",
+          "cost_per_secondary_goal_result",
+          "secondary_goal_result_rate",
+        ]
+      dimensions: [ "adgroup_id", "stat_time_hour", "country_code" ]
+    primary_key:
+      - adgroup_id
+      - stat_time_hour
+      - country_code
+    $ref: "#/definitions/base_report_hourly"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [ "stat_time_hour" ]
+            value: "{{ record.dimensions.stat_time_hour }}"
+          - path: [ "adgroup_id" ]
+            value: "{{ record.dimensions.adgroup_id }}"
+          - path: [ "country_code" ]
+            value_type: "string"
+            value: "{{ record.dimensions.country_code }}"
       - type: CustomTransformation
         class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
 
@@ -3558,6 +3826,11 @@ definitions:
           type:
             - "null"
             - integer
+        country_code:
+          description: Country code of the target audience
+          type:
+            - "null"
+            - string
         metrics:
           description:
             A list of metrics for which data should be retrieved such as views,
@@ -4019,6 +4292,11 @@ definitions:
               type:
                 - "null"
                 - integer
+            country_code:
+              description: Country code within dimensions
+              type:
+                - "null"
+                - string
     audience_report:
       $schema: http://json-schema.org/draft-07/schema#
       additionalProperties: true
@@ -4781,7 +5059,9 @@ streams:
   - $ref: "#/definitions/creative_assets_images_stream"
   - $ref: "#/definitions/creative_assets_videos_stream"
   - $ref: "#/definitions/ads_reports_daily_stream"
+  - $ref: "#/definitions/ads_reports_by_country_daily_stream"
   - $ref: "#/definitions/ad_groups_reports_daily_stream"
+  - $ref: "#/definitions/ad_groups_reports_by_country_daily_stream"
   - $ref: "#/definitions/advertisers_reports_daily_stream"
   - $ref: "#/definitions/campaigns_reports_daily_stream"
   - $ref: "#/definitions/campaigns_audience_reports_daily_stream"
@@ -4798,9 +5078,11 @@ streams:
   - $ref: "#/definitions/advertisers_audience_reports_by_platform_daily_stream"
   - $ref: "#/definitions/ads_audience_reports_by_province_daily_stream"
   - $ref: "#/definitions/ads_reports_hourly_stream"
+  - $ref: "#/definitions/ads_reports_by_country_hourly_stream"
   - $ref: "#/definitions/advertisers_reports_hourly_stream"
   - $ref: "#/definitions/campaigns_reports_hourly_stream"
   - $ref: "#/definitions/ad_groups_reports_hourly_stream"
+  - $ref: "#/definitions/ad_groups_reports_by_country_hourly_stream"
   - $ref: "#/definitions/ads_reports_lifetime_stream"
   - $ref: "#/definitions/advertisers_reports_lifetime_stream"
   - $ref: "#/definitions/campaigns_reports_lifetime_stream"
