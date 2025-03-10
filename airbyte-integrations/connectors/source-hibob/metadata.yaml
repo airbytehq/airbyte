@@ -20,7 +20,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4dc991ed-3dcc-4c40-ac28-9402836709f1
-  dockerImageTag: 0.2.15
+  dockerImageTag: 0.2.16
   dockerRepository: airbyte/source-hibob
   githubIssueLabel: source-hibob
   icon: icon.svg
