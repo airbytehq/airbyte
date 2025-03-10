@@ -94,7 +94,7 @@ class SourceMixpanel(YamlDeclarativeSource):
             config.get("date_window_size", 30),
             config.get("credentials", dict()).get("project_id"),
             config.get("page_size", 1000),
-            config.get("export_lookback_window", 0)
+            config.get("export_lookback_window", 0),
         )
         try:
             project_timezone = pendulum.timezone(project_timezone)

@@ -748,15 +748,19 @@ def test_export_stream_lookback_window(requests_mock, export_response, config_ra
     stream = init_stream("export", config=config_raw)
 
     # Mock get_json_schema to avoid actual schema fetching
-    mocker.patch.object(Export, "get_json_schema", return_value={
-        "type": "object",
-        "properties": {
-            "event": {"type": "string"},
-            "time": {"type": "string"},
-            "distinct_id": {"type": "string"},
-            "insert_id": {"type": "string"}
-        }
-    })
+    mocker.patch.object(
+        Export,
+        "get_json_schema",
+        return_value={
+            "type": "object",
+            "properties": {
+                "event": {"type": "string"},
+                "time": {"type": "string"},
+                "distinct_id": {"type": "string"},
+                "insert_id": {"type": "string"},
+            },
+        },
+    )
 
     # Mock response with two records at different times in JSONL format
     export_response_multiple = (
@@ -768,7 +772,7 @@ def test_export_stream_lookback_window(requests_mock, export_response, config_ra
         "GET",
         get_url_to_mock(stream),
         content=export_response_multiple,  # Use content directly for bytes
-        status_code=200
+        status_code=200,
     )
 
     # State with a timestamp 1 hour ago from the latest record
