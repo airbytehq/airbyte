@@ -1067,6 +1067,7 @@ schemas:
         type:
           - 'null'
           - array
+          - string
       city:
         type:
           - string
