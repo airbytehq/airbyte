@@ -104,7 +104,7 @@ None!
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
-| 6.3.0 | 2025-03-15 | [55223](https://github.com/airbytehq/airbyte/pull/55223) | Upgrade to concurrent CDK interface.                                                                                             |
+| 6.3.0 | 2025-03-15 | [55240](https://github.com/airbytehq/airbyte/pull/55240) | Upgrade to concurrent CDK interface and add crm_contacts.                                                                                             |
 | 6.2.21-rc.1 | 2024-11-13 | [48013](https://github.com/airbytehq/airbyte/pull/48013) | Update for testing.                                                                                             |
 | 6.2.20      | 2024-10-30 | [48013](https://github.com/airbytehq/airbyte/pull/48013) | Promoting release candidate 6.2.20-rc.1 to a main version.                                                      |
 | 6.2.20-rc.1 | 2024-10-21 | [47221](https://github.com/airbytehq/airbyte/pull/46678)                                                              | Testing release candidate with RC suffix versioning.                                                            |
