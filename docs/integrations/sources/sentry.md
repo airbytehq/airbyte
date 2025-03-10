@@ -65,6 +65,7 @@ Please be aware: this also means that any change older than 90 days will not be 
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
+| 0.8.0 | 2025-03-05 | [55215](https://github.com/airbytehq/airbyte/pull/55215) | Fix lints for events stream |
 | 0.7.0 | 2025-02-25 | [46664](https://github.com/airbytehq/airbyte/pull/46664) | Converting to manifest-only format |
 | 0.6.11 | 2025-02-22 | [54521](https://github.com/airbytehq/airbyte/pull/54521) | Update dependencies |
 | 0.6.10 | 2025-02-15 | [54100](https://github.com/airbytehq/airbyte/pull/54100) | Update dependencies |

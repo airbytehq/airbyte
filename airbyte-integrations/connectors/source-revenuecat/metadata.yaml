@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8b3b5d6-7b64-49f7-9e73-73a1da277cf2
-  dockerImageTag: 0.0.5
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-revenuecat
   githubIssueLabel: source-revenuecat
   icon: icon.svg
