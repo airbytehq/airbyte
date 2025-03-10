@@ -1,14 +1,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 from datetime import datetime, timezone
-from multiprocessing.context import AuthenticationError
 from unittest import TestCase
 
 import freezegun
 import pendulum
 
 from airbyte_cdk.models import AirbyteStateBlob, SyncMode
-from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest
+from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import ConfigBuilder
