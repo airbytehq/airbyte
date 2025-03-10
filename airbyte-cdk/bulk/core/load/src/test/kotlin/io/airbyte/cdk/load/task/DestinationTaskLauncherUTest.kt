@@ -95,7 +95,7 @@ class DestinationTaskLauncherUTest {
     private val openStreamQueue: MessageQueue<DestinationStream> = mockk(relaxed = true)
 
     private val recordQueueForPipeline:
-        PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>> =
+        PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>> =
         mockk(relaxed = true)
     private val batchUpdateQueue: ChannelMessageQueue<BatchUpdate> = mockk(relaxed = true)
     private val partitioner: InputPartitioner = mockk(relaxed = true)

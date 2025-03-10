@@ -145,7 +145,7 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     // New interface shim
     @Named("recordQueue")
     private val recordQueueForPipeline:
-        PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>>,
+        PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>,
     @Named("batchStateUpdateQueue") private val batchUpdateQueue: ChannelMessageQueue<BatchUpdate>,
     private val loadPipeline: LoadPipeline?,
     private val partitioner: InputPartitioner,
