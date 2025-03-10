@@ -36,17 +36,17 @@ class ObjectLoaderPartQueueFactory(
     fun objectLoaderPartQueue(): PartitionedQueue<PipelineMessage<ObjectKey, Part>> {
         val bytes = memoryManager.totalCapacityBytes * loader.maxMemoryRatioReservedForParts
         val reservation = runBlocking { memoryManager.reserve(bytes.toLong(), this) }
-        val bytesPerPartition = reservation.bytesReserved / loader.numPartWorkers
+        val bytesPerPartition = reservation.bytesReserved / loader.numUploadWorkers
         val partsPerPartition = bytesPerPartition / loader.partSizeBytes
 
         if (partsPerPartition < 1) {
             throw IllegalArgumentException(
-                "Reserved $bytes/${memoryManager.totalCapacityBytes}b not enough for ${loader.numPartWorkers} ${loader.partSizeBytes}b parts"
+                "Reserved $bytes/${memoryManager.totalCapacityBytes}b not enough for ${loader.numUploadWorkers} ${loader.partSizeBytes}b parts"
             )
         }
 
         log.info {
-            "Reserved $bytes/${memoryManager.totalCapacityBytes}b for ${loader.numPartWorkers} ${loader.partSizeBytes}b parts => $partsPerPartition capacity per queue partition"
+            "Reserved $bytes/${memoryManager.totalCapacityBytes}b for ${loader.numUploadWorkers} ${loader.partSizeBytes}b parts => $partsPerPartition capacity per queue partition"
         }
 
         return PartitionedQueue(

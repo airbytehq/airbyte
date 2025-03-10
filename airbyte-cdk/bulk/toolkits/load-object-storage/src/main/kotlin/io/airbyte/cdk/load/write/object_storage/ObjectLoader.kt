@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.write.object_storage
 
+import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.write.LoadStrategy
 
 /**
@@ -38,6 +39,11 @@ import io.airbyte.cdk.load.write.LoadStrategy
  * destination.
  * - [objectSizeBytes] is the approximate desired file size in bytes. When this much part data has
  * been accumulated, the upload will be completed, and the file will become visible to the end user.
+ * - [batchStateOnUpload] determines whether work is considered COMPLETE on upload (the default),
+ * PERSISTED (not complete but recoverable and safe to ack to the platform), or STAGED/PROCESSED
+ * (neither). Connector devs who are implementing file storage destinations should not need to
+ * change this. It is for use internally by pipelines that compose object storage into more complex
+ * workflows (ie, bulk load).
  *
  * Partitioning:
  *
@@ -49,6 +55,15 @@ import io.airbyte.cdk.load.write.LoadStrategy
  * The parts are also distributed round-robin to the upload workers using
  * [io.airbyte.cdk.load.pipeline.object_storage.ObjectLoaderPartPartitioner]. This is not currently
  * configurable.
+ *
+ * Post-processing:
+ *
+ * If a connector dev implements this interface directly, there will by default be no
+ * post-processing of individual files (except what is done when the stream is closed).
+ *
+ * However, CDK devs who are composing this into part of a larger strategy will probably also want
+ * to declare a named object ["objectLoaderObjectQueue"] to pass the final uploaded object to
+ * another step (see [io.airbyte.cdk.load.pipeline.object_storage.ObjectLoaderUploadStep]).
  */
 interface ObjectLoader : LoadStrategy {
     val numPartWorkers: Int
@@ -62,6 +77,8 @@ interface ObjectLoader : LoadStrategy {
     val objectSizeBytes: Long
         get() = 200L * 1024 * 1024
 
+    val batchStateOnUpload: Batch.State
+        get() = Batch.State.COMPLETE
     override val inputPartitions: Int
         get() = numPartWorkers
 }

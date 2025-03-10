@@ -110,4 +110,9 @@ class MSSQLBulkInsertPerformanceTest :
         getConfiguration = { spec, _ ->
             MSSQLConfigurationFactory().makeWithOverrides(spec as MSSQLSpecification, emptyMap())
         },
-    )
+    ) {
+    @Test
+    override fun testInsertRecordsWithManyColumns() {
+        super.testInsertRecordsWithManyColumns()
+    }
+}

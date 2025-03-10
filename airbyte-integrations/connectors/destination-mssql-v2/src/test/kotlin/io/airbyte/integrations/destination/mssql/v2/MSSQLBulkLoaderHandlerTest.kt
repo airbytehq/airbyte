@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class MSSQLBulkLoadHandlerTest {
+class MSSQLBulkLoaderHandlerTest {
 
     private lateinit var dataSource: DataSource
     private lateinit var connection: Connection
