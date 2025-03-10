@@ -90,6 +90,7 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version | Date       | Pull Request                                    | Subject                                                  |
 |:--------|:-----------|:------------------------------------------------|:---------------------------------------------------------|
+| 0.1.9   |            |                                                 | Added Query Band Support                                 |
 | 0.1.8   |            |                                                 | Migration to Kotlin                                      |
 | 0.1.7   |            |                                                 | Upgrade teradata jdbc driver to 20.00.00.43              |
 | 0.1.6   | 2024-06-24 | https://github.com/airbytehq/airbyte/pull/39455 | Fix for Parameter 2 length size                          |
