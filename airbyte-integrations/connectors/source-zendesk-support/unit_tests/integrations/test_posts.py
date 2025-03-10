@@ -102,24 +102,24 @@ class TestPostsStream(TestCase):
     def test_when_read_then_set_state_value_to_most_recent_cursor_value(self, http_mocker):
         config = self._config().with_start_date(_START_DATE).build()
         api_token_authenticator = self._get_authenticator(config)
-        most_recent_cursor_value = datetime_to_string(_START_DATE.add(days=2))
+        most_recent_cursor_value = _START_DATE.add(days=2)
         http_mocker.get(
             PostsRequestBuilder.posts_endpoint(api_token_authenticator)
             .with_start_time(datetime_to_string(_START_DATE))
             .with_page_size(100)
             .build(),
             PostsResponseBuilder.posts_response()
-            .with_record(PostsRecordBuilder.posts_record().with_cursor(most_recent_cursor_value))
+            .with_record(PostsRecordBuilder.posts_record().with_cursor(datetime_to_string(most_recent_cursor_value)))
             .with_record(PostsRecordBuilder.posts_record().with_cursor(datetime_to_string(_START_DATE.add(days=1))))
             .build(),
         )
 
         output = read_stream("posts", SyncMode.full_refresh, config)
 
-        assert output.most_recent_state.stream_state == AirbyteStateBlob({"updated_at": most_recent_cursor_value})
+        assert output.most_recent_state.stream_state == AirbyteStateBlob({"updated_at": str(most_recent_cursor_value.int_timestamp)})
 
     @HttpMocker()
-    def test_given_input_state_when_read_then_set_state_value_to_most_recent_cursor_value(self, http_mocker):
+    def test_given_input_state_as_old_format_when_read_then_set_state_value_to_most_recent_cursor_value(self, http_mocker):
         config = self._config().with_start_date(_START_DATE).build()
         api_token_authenticator = self._get_authenticator(config)
         state_cursor_value = datetime_to_string(_START_DATE.add(days=2))
@@ -135,7 +135,7 @@ class TestPostsStream(TestCase):
         assert len(output.records) == 1
 
     @HttpMocker()
-    def test_given_input_state_with_low_code_format_when_read_then_set_state_value_to_most_recent_cursor_value(self, http_mocker):
+    def test_given_input_state_when_read_then_set_state_value_to_most_recent_cursor_value(self, http_mocker):
         config = self._config().with_start_date(_START_DATE).build()
         api_token_authenticator = self._get_authenticator(config)
         state_cursor_value = _START_DATE.add(days=2)

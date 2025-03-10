@@ -122,7 +122,6 @@ class SourceZendeskSupport(YamlDeclarativeSource):
             ArticleComments(**args),
             ArticleCommentVotes(**args),
             ArticleVotes(**args),
-            Posts(**args),
             PostComments(**args),
             PostCommentVotes(**args),
             PostVotes(**args),

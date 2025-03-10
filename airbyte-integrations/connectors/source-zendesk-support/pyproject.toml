@@ -18,7 +18,6 @@ include = "source_zendesk_support"
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
 airbyte-cdk = "^6"
-pytz = "==2024.1"
 
 [tool.poetry.scripts]
 source-zendesk-support = "source_zendesk_support.run:run"
