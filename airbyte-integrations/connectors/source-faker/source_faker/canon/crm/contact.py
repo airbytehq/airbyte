@@ -42,4 +42,4 @@ class Contact(CanonicalModel):
 
     @classmethod
     def stream_name(cls) -> str:
-        return "crm_contacts"
+        return "abc_crm_contacts"
