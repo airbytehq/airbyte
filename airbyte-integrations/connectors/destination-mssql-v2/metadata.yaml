@@ -10,7 +10,7 @@ data:
     - suite: integrationTests
       testSecrets:
         - fileName: bulk_upload_config.json
-          name: SECRET_DESTINATION_MSSQL_V2_BULK_LOAD_CONFIG
+          name: SECRET_DESTINATION_MSSQL_V2_BULK_LOAD_CONFIG_UPDATED
           secretStore:
             alias: airbyte-connector-testing-secret-store
             type: GSM
