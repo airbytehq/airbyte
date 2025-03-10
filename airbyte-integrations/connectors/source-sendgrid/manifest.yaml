@@ -637,8 +637,7 @@ definitions:
             api_token: "{{ config['api_key'] }}"
         download_requester:
           type: HttpRequester
-          path: "{{download_target}}"
-          url_base: ""
+          url_base: "{{download_target}}"
           http_method: GET
         download_decoder:
           type: GzipDecoder
