@@ -221,21 +221,21 @@ const config = {
             position: 'left',
             docsPluginId: "platform",
             sidebarId: 'platform',
-            label: 'Airbyte Platform',
+            label: 'Airbyte platform',
           },
           {
             type: 'docSidebar',
             position: 'left',
             docsPluginId: "connectors",
             sidebarId: 'connectors',
-            label: 'Connector Catalog',
+            label: 'Connector catalog',
           },
           {
             type: 'docSidebar',
             position: 'left',
             docsPluginId: "release_notes",
             sidebarId: 'releaseNotes',
-            label: 'Release Notes',
+            label: 'Release notes',
           },
           {
             type: 'dropdown',
@@ -251,22 +251,28 @@ const config = {
                 href: "https://airbyte.com/tutorials",
               },
               {
+                label: 'Blog',
+                href: "https://airbyte.com/blog",
+              },
+              {
                 href: "https://support.airbyte.com/",
                 label: "Support",
               },
             ],
           },
           // --- Right side ---
+          // Platform docs version selector
           {
             type: 'docsVersion',
             position: 'right',
             to: '/platform',
             docsPluginId: 'platform',
             label: 'Version',
+            dropdownActiveClassDisabled: true, // do not style the dropdown as active when viewing platform docs
           },
           {
             href: "https://status.airbyte.com",
-            label: "Cloud Status",
+            label: "Cloud status",
             className: "cloudStatusLink",
             position: "right",
           },
