@@ -455,17 +455,6 @@ class Organizations(SourceZendeskIncrementalExportStream):
     next_page_field: str = "next_page"
 
 
-class Posts(CursorPaginationZendeskSupportStream):
-    """Posts stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/posts/#list-posts"""
-
-    use_cache = True
-
-    cursor_field = "updated_at"
-
-    def path(self, **kwargs):
-        return "community/posts"
-
-
 class Tickets(SourceZendeskIncrementalExportStream):
     """Tickets stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based"""
 
@@ -1055,64 +1044,11 @@ class UserIdentities(Users):
         return req_params
 
 
-class PostComments(CursorPaginationZendeskSupportStream, HttpSubStream):
-    """Post Comments Stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/"""
-
-    response_list_name = "comments"
-
-    def __init__(self, **kwargs):
-        parent = Posts(**kwargs)
-        super().__init__(parent=parent, **kwargs)
-
-    def path(
-        self,
-        *,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> str:
-        post_id = stream_slice.get("parent").get("id")
-        return f"community/posts/{post_id}/comments"
-
-
 class AbstractVotes(CursorPaginationZendeskSupportStream, ABC):
     response_list_name = "votes"
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("votes")
-
-
-class PostVotes(AbstractVotes, HttpSubStream):
-    def __init__(self, **kwargs):
-        parent = Posts(**kwargs)
-        super().__init__(parent=parent, **kwargs)
-
-    def path(
-        self,
-        *,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> str:
-        post_id = stream_slice.get("parent").get("id")
-        return f"community/posts/{post_id}/votes"
-
-
-class PostCommentVotes(AbstractVotes, HttpSubStream):
-    def __init__(self, **kwargs):
-        parent = PostComments(**kwargs)
-        super().__init__(parent=parent, **kwargs)
-
-    def path(
-        self,
-        *,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> str:
-        post_id = stream_slice.get("parent").get("post_id")
-        comment_id = stream_slice.get("parent").get("id")
-        return f"community/posts/{post_id}/comments/{comment_id}/votes"
 
 
 class Articles(SourceZendeskIncrementalExportStream):
