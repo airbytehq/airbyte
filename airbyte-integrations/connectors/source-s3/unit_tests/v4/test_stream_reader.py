@@ -358,30 +358,3 @@ def test_filter_file_by_start_date(start_date: datetime, last_modified_date: dat
     )
 
     assert expected_result == reader.is_modified_after_start_date(last_modified_date)
-
-
-def test_file_permissions_and_identity_methods():
-    """
-    Test the no-op methods for file permissions and identities.
-    These methods are required by the abstract base class but are not relevant for S3.
-    """
-    reader = SourceS3StreamReader()
-    reader.config = Config(
-        bucket="test",
-        aws_access_key_id="test",
-        aws_secret_access_key="test",
-        streams=[],
-    )
-
-    # Test file_permissions_schema returns an empty dict
-    assert reader.file_permissions_schema() == {}
-
-    # Test get_file_acl_permissions returns an empty dict
-    file = RemoteFile(uri="test.csv", last_modified=datetime.now())
-    assert reader.get_file_acl_permissions(file) == {}
-
-    # Test identities_schema returns an empty dict
-    assert reader.identities_schema() == {}
-
-    # Test load_identity_groups returns an empty dict
-    assert reader.load_identity_groups() == {}

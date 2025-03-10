@@ -339,33 +339,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         remote_file = RemoteFile(uri=file["Key"], last_modified=file["LastModified"].astimezone(pytz.utc).replace(tzinfo=None))
         return remote_file
 
-    @override
-    def file_permissions_schema(self) -> Dict[str, Any]:
-        """
-        Return an empty schema for file permissions as this is not relevant for S3.
-        """
-        return {}
 
-    @override
-    def get_file_acl_permissions(self, file: RemoteFile) -> Dict[str, Any]:
-        """
-        Return empty permissions as this is not relevant for S3.
-        """
-        return {}
-
-    @override
-    def identities_schema(self) -> Dict[str, Any]:
-        """
-        Return an empty schema for identities as this is not relevant for S3.
-        """
-        return {}
-
-    @override
-    def load_identity_groups(self) -> Dict[str, List[str]]:
-        """
-        Return empty identity groups as this is not relevant for S3.
-        """
-        return {}
 
 
 def _get_s3_compatible_client_args(config: Config) -> dict:
