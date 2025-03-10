@@ -60,6 +60,14 @@ acceptance_tests:
             bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
           - name: pixel_events_statistics
             bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
+          - name: ads_reports_by_country_daily
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
+          - name: ad_groups_reports_by_country_daily
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
+          - name: ads_reports_by_country_hourly
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
+          - name: ad_groups_reports_by_country_hourly
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
