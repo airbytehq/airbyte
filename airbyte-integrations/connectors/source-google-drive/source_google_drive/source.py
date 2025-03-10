@@ -10,8 +10,8 @@ from airbyte_cdk.models import AuthFlowType, OauthConnectorInputSpecification
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from source_google_drive.spec import SourceGoogleDriveSpec
-from source_google_drive.stream_reader import SourceGoogleDriveStreamReader
 from source_google_drive.stream_permissions_reader import SourceGoogleDriveStreamPermissionsReader
+from source_google_drive.stream_reader import SourceGoogleDriveStreamReader
 
 
 class SourceGoogleDrive(FileBasedSource):

@@ -1,7 +1,9 @@
-from datetime import datetime
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
 import json
 import logging
 import uuid
+from datetime import datetime
 from typing import Any, Dict, Iterator, List, Tuple
 
 import pytz
@@ -12,8 +14,9 @@ from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.file_based_stream_permissions_reader import AbstractFileBasedStreamPermissionsReader
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from source_google_drive.spec import RemoteIdentity, RemoteIdentityType, RemotePermissions, SourceGoogleDriveSpec
 from source_google_drive.exceptions import ErrorFetchingMetadata
+from source_google_drive.spec import RemoteIdentity, RemoteIdentityType, RemotePermissions, SourceGoogleDriveSpec
+
 
 DRIVE_SERVICE_SCOPES = [
     "https://www.googleapis.com/auth/admin.directory.group.readonly",
