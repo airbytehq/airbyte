@@ -1,5 +1,5 @@
 export default {
-    mySidebar: [
+    connectors: [
         {
             type: 'doc',
             id: 'README', // document ID

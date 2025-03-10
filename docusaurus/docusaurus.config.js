@@ -199,6 +199,14 @@ const config = {
         apiKey: "15c487fd9f7722282efd8fcb76746fce", // Public API key: it is safe to commit it
         indexName: "airbyte",
       },
+      announcementBar: {
+        id: 'try_airbyte_cloud',
+        content:
+          '<a target="_blank" rel="noopener noreferrer" href="https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar">Try Airbyte Cloud</a>! Free for 14 days, no credit card needed.',
+        backgroundColor: '#615eff',
+        textColor: '#ffffff',
+        isCloseable: true,
+      },
       navbar: {
         title: "",
         logo: {
@@ -209,32 +217,64 @@ const config = {
         },
         items: [
           {
-            href: "https://airbyte.io/",
-            position: "left",
-            label: "About Airbyte",
+            type: 'docSidebar',
+            position: 'left',
+            docsPluginId: "platform",
+            sidebarId: 'platform',
+            label: 'Airbyte platform',
           },
           {
-            href: "https://airbyte.com/tutorials",
-            label: "Tutorials",
-            position: "left",
+            type: 'docSidebar',
+            position: 'left',
+            docsPluginId: "connectors",
+            sidebarId: 'connectors',
+            label: 'Connector catalog',
           },
           {
-            href: "https://support.airbyte.com/",
-            label: "Support",
-            position: "left",
+            type: 'docSidebar',
+            position: 'left',
+            docsPluginId: "release_notes",
+            sidebarId: 'releaseNotes',
+            label: 'Release notes',
+          },
+          {
+            type: 'dropdown',
+            label: 'More resources',
+            position: 'left',
+            items: [
+              {
+                label: 'Airbyte website',
+                href: 'https://airbyte.io/',
+              },
+              {
+                label: 'Tutorials',
+                href: "https://airbyte.com/tutorials",
+              },
+              {
+                label: 'Blog',
+                href: "https://airbyte.com/blog",
+              },
+              {
+                href: "https://support.airbyte.com/",
+                label: "Support",
+              },
+            ],
           },
           // --- Right side ---
+          // Platform docs version selector
           {
-            href: "https://status.airbyte.com",
-            label: "Cloud Status",
-            className: "cloudStatusLink",
-            position: "right",
+            type: 'docsVersion',
+            position: 'right',
+            to: '/platform',
+            docsPluginId: 'platform',
+            label: 'Version',
+            dropdownActiveClassDisabled: true, // do not style the dropdown as active when viewing platform docs
           },
           {
-            href: "https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar",
-            label: "Try Airbyte Cloud",
+            href: "https://status.airbyte.com",
+            label: "Cloud status",
+            className: "cloudStatusLink",
             position: "right",
-            className: "header-button",
           },
           {
             href: "https://github.com/airbytehq",

@@ -1,5 +1,5 @@
 export default {
-    mySidebar: [
+    home: [
         {
             type: 'doc',
             id: 'readme', // document ID
