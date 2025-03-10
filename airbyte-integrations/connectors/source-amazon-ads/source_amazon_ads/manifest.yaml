@@ -1234,7 +1234,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "purchasedAsin report {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_BRANDS
@@ -1276,7 +1281,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "purchasedAsin report daily {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_BRANDS
@@ -1318,7 +1328,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "campaigns report {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
@@ -1408,7 +1423,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "campaigns report daily {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
@@ -1495,7 +1515,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "adGroups report {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
@@ -1585,7 +1610,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "adGroups report daily {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
@@ -1672,7 +1702,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "productAds report {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
@@ -1765,7 +1800,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "productAds report daily {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
@@ -1855,7 +1895,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "targets report {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
@@ -1940,7 +1985,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "targets report daily {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
@@ -2022,7 +2072,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "asins report {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
@@ -2073,7 +2128,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "asins report daily {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_DISPLAY
@@ -2122,7 +2182,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "campaigns report {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
@@ -2182,7 +2247,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "campaigns report daily {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
@@ -2241,7 +2311,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "adGroups report {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
@@ -2298,7 +2373,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "adGroups report daily {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
@@ -2354,7 +2434,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "keywords report {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
@@ -2420,7 +2505,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "keywords report daily {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
@@ -2481,7 +2571,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "targets report {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
@@ -2552,7 +2647,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "targets report daily {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
@@ -2616,7 +2716,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "productAds report {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
@@ -2676,7 +2781,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "productAds report daily {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
@@ -2735,7 +2845,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "asins_keywords report {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
@@ -2784,7 +2899,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "asins_keywords report daily {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
@@ -2832,7 +2952,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "asins_targets report {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
@@ -2882,7 +3007,12 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             name: "asins_targets report daily {{ stream_interval.start_time }}"
-            startDate: "{{ stream_interval.start_time }}"
+            startDate: >
+              {% if stream_interval.start_time < config['start_date'] %}
+                {{ config['start_date'] }}
+              {% else %}
+                {{ stream_interval.start_time }}
+              {% endif %}
             endDate: "{{ stream_interval.end_time }}"
             configuration:
               adProduct: SPONSORED_PRODUCTS
@@ -3001,7 +3131,12 @@ definitions:
         Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
       request_body_json:
         name: "purchasedAsin report {{ stream_interval.start_time }}"
-        startDate: "{{ stream_interval.start_time }}"
+        startDate:  >
+          {% if stream_interval.start_time < config['start_date'] %}
+            {{ config['start_date'] }}
+          {% else %}
+            {{ stream_interval.start_time }}
+          {% endif %}
         endDate: "{{ stream_interval.end_time }}"
         configuration:
           adProduct: OVERRIDDEN_REPORT_TYPE # Placeholder value. Each report stream overrides the adProduct value to the respective report name
