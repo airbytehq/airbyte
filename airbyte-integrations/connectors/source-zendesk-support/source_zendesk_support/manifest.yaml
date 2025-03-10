@@ -351,8 +351,11 @@ definitions:
 
   posts_stream:
     $ref: "#/definitions/base_incremental_stream"
-    name: posts
+    name: "posts"
     primary_key: "id"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_zendesk_support/schemas/posts.json"
     incremental_sync:
       $ref: "#/definitions/cursor_incremental_sync"
       start_time_option:
@@ -370,10 +373,118 @@ definitions:
           $ref: "#/definitions/links_next_paginator/pagination_strategy"
           stop_condition: "{{ config.get('ignore_pagination', False) or not response['meta']['has_more'] }}"
       record_selector:
-        $ref: "#/definitions/retriever/record_selector"
+        extractor:
+          type: DpathExtractor
+          field_path: ["posts"]
         schema_normalization: None
-    $parameters:
-      name: "posts"
+
+  post_comments_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    name: "post_comments"
+    primary_key: "id"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_zendesk_support/schemas/post_comments.json"
+    incremental_sync:
+      $ref: "#/definitions/cursor_incremental_sync"
+      start_time_option:
+        $ref: "#/definitions/cursor_incremental_sync/start_time_option"
+        field_name: "start_time"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "community/posts/{{ stream_partition.post_id }}/comments"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: post_id
+            stream:
+              $ref: "#/definitions/posts_stream"
+            incremental_dependency: true
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path: ["comments"]
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - _airbyte_parent_id # used for post_comment_votes stream
+            value: "{{ { 'post_id': record['post_id'], 'comment_id': record['id'] } }}"
+
+  post_votes_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    name: "post_votes"
+    primary_key: "id"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_zendesk_support/schemas/votes.json"
+    incremental_sync:
+      $ref: "#/definitions/cursor_incremental_sync"
+      start_time_option:
+        $ref: "#/definitions/cursor_incremental_sync/start_time_option"
+        field_name: "start_time"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "community/posts/{{ stream_partition.post_id }}/votes"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: post_id
+            stream:
+              $ref: "#/definitions/posts_stream"
+            incremental_dependency: true
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path: ["votes"]
+
+  post_comment_votes_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    name: "post_comment_votes"
+    primary_key: "id"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_zendesk_support/schemas/votes.json"
+    incremental_sync:
+      $ref: "#/definitions/cursor_incremental_sync"
+      start_time_option:
+        $ref: "#/definitions/cursor_incremental_sync/start_time_option"
+        field_name: "start_time"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "community/posts/{{ stream_partition.id.post_id }}/comments/{{ stream_partition.id.comment_id }}/votes"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: _airbyte_parent_id
+            partition_field: id
+            stream:
+              $ref: "#/definitions/post_comments_stream"
+            incremental_dependency: true
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path: ["votes"]
 
   satisfaction_ratings_stream:
     $ref: "#/definitions/base_incremental_stream"
@@ -648,6 +759,9 @@ streams:
   - $ref: "#/definitions/organization_memberships_stream"
   - $ref: "#/definitions/organizations_stream"
   - $ref: "#/definitions/posts_stream"
+  - $ref: "#/definitions/post_comment_votes_stream"
+  - $ref: "#/definitions/post_comments_stream"
+  - $ref: "#/definitions/post_votes_stream"
   - $ref: "#/definitions/satisfaction_ratings_stream"
   - $ref: "#/definitions/ticket_activities_stream"
   - $ref: "#/definitions/ticket_audits_stream"
