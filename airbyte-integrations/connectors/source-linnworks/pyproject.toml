@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.42"
+version = "0.1.44"
 name = "source-linnworks"
 description = "Source implementation for Linnworks."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -26,7 +26,7 @@ source-linnworks = "source_linnworks.run:run"
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
-pytest = "^6.1"
+pytest = "^8.0.0"
 
 
 [tool.poe]

@@ -27,6 +27,8 @@
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.2.4 | 2025-03-08 | [55556](https://github.com/airbytehq/airbyte/pull/55556) | Update dependencies |
+| 0.2.3 | 2025-03-01 | [55024](https://github.com/airbytehq/airbyte/pull/55024) | Update dependencies |
 | 0.2.2 | 2025-02-23 | [54601](https://github.com/airbytehq/airbyte/pull/54601) | Update dependencies |
 | 0.2.1 | 2025-02-15 | [50686](https://github.com/airbytehq/airbyte/pull/50686) | Update dependencies |
 | 0.2.0 | 2025-01-29 | [52596](https://github.com/airbytehq/airbyte/pull/52596) | Fixes for category_groups and plan_items |

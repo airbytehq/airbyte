@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.33"
+version = "0.2.35"
 name = "source-google-directory"
 description = "Source implementation for Google Directory."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -29,7 +29,7 @@ source-google-directory = "source_google_directory.run:run"
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.6.1"
 requests-mock = "^1.9.3"
-pytest = "^6.1"
+pytest = "^8.0.0"
 
 
 [tool.poe]

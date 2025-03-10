@@ -37,6 +37,8 @@ Bunny provides a single platform for subscription management, billing, quoting, 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.14 | 2025-03-08 | [55420](https://github.com/airbytehq/airbyte/pull/55420) | Update dependencies |
+| 0.0.13 | 2025-03-01 | [54840](https://github.com/airbytehq/airbyte/pull/54840) | Update dependencies |
 | 0.0.12 | 2025-02-22 | [54260](https://github.com/airbytehq/airbyte/pull/54260) | Update dependencies |
 | 0.0.11 | 2025-02-15 | [53915](https://github.com/airbytehq/airbyte/pull/53915) | Update dependencies |
 | 0.0.10 | 2025-02-08 | [53442](https://github.com/airbytehq/airbyte/pull/53442) | Update dependencies |

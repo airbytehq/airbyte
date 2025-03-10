@@ -24,6 +24,8 @@ Apptivo connector  seamless data integration between Apptivo and various data wa
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.14 | 2025-03-08 | [55356](https://github.com/airbytehq/airbyte/pull/55356) | Update dependencies |
+| 0.0.13 | 2025-03-01 | [54903](https://github.com/airbytehq/airbyte/pull/54903) | Update dependencies |
 | 0.0.12 | 2025-02-22 | [54225](https://github.com/airbytehq/airbyte/pull/54225) | Update dependencies |
 | 0.0.11 | 2025-02-15 | [53902](https://github.com/airbytehq/airbyte/pull/53902) | Update dependencies |
 | 0.0.10 | 2025-02-08 | [53401](https://github.com/airbytehq/airbyte/pull/53401) | Update dependencies |
