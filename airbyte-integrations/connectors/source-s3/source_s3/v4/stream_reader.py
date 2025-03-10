@@ -340,8 +340,6 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         return remote_file
 
 
-
-
 def _get_s3_compatible_client_args(config: Config) -> dict:
     """
     Returns map of args used for creating s3 boto3 client.
