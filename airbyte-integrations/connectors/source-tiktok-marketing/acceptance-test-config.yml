@@ -54,6 +54,12 @@ acceptance_tests:
             bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
           - name: spark_ads
             bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
+          - name: pixels
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
+          - name: pixel_instant_page_events
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
+          - name: pixel_events_statistics
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
