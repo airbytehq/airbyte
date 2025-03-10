@@ -9,9 +9,8 @@ from multiprocessing import current_process
 from mimesis import Address, Datetime, Person
 from mimesis.locales import Locale
 
-from airbyte_cdk.models import AirbyteRecordMessage, Type
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, Type
 
-from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
 from .utils import format_airbyte_time, now_millis
 
 
@@ -77,4 +76,4 @@ class UserGenerator:
             profile["created_at"] = format_airbyte_time(dt.datetime())
 
         record = AirbyteRecordMessage(stream=self.stream_name, data=profile, emitted_at=now_millis())
-        return AirbyteMessageWithCachedJSON(type=Type.RECORD, record=record)
+        return CAirbyteMessage(type=Type.RECORD, record=record)

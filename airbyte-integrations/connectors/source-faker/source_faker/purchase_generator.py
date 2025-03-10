@@ -9,9 +9,8 @@ from typing import Dict, List
 from mimesis import Datetime, Numeric
 
 from airbyte_cdk import AirbyteMessage
-from airbyte_cdk.models import AirbyteRecordMessage, Type
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, Type
 
-from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
 from .utils import format_airbyte_time, now_millis
 
 
@@ -99,7 +98,7 @@ class PurchaseGenerator:
             }
 
             record = AirbyteRecordMessage(stream=self.stream_name, data=purchase, emitted_at=now_millis())
-            message = AirbyteMessageWithCachedJSON(type=Type.RECORD, record=record)
+            message = AirbyteMessage(type=Type.RECORD, record=record)
             purchases.append(message)
 
             purchase_count = purchase_count - 1
