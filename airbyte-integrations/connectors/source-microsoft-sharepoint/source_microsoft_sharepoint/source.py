@@ -11,6 +11,7 @@ from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 from source_microsoft_sharepoint.stream_reader import SourceMicrosoftSharePointStreamReader
+from source_microsoft_sharepoint.stream_permissions_reader import SourceMicrosoftSharePointStreamPermissionsReader
 from source_microsoft_sharepoint.utils import PlaceholderUrlBuilder
 
 
@@ -26,6 +27,7 @@ class SourceMicrosoftSharePoint(FileBasedSource):
             config=config,
             state=state,
             cursor_cls=DefaultFileBasedCursor,
+            stream_permissions_reader=SourceMicrosoftSharePointStreamPermissionsReader(),
         )
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
