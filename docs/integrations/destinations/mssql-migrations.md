@@ -63,3 +63,5 @@ Where as:
 - Raw Table Schema Name: `raw_data`
 
 Writes to `raw_data.default_raw__stream_my_stream`
+
+## Upgrading to 2.0.0
