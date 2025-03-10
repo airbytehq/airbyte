@@ -117,8 +117,6 @@ class SourceZendeskSupport(YamlDeclarativeSource):
         """
         args = self.convert_config2stream_args(config)
 
-        tickets = Tickets(**args)
-
         streams = [
             Articles(**args),
             ArticleComments(**args),
@@ -128,7 +126,7 @@ class SourceZendeskSupport(YamlDeclarativeSource):
             PostComments(**args),
             PostCommentVotes(**args),
             PostVotes(**args),
-            tickets,
+            Tickets(**args),
             TicketMetrics(**args),
             UserIdentities(**args),
         ]

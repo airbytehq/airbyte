@@ -261,7 +261,7 @@ class IncrementalZendeskSupportStream(FullRefreshZendeskSupportStream):
         Returns the state value, if exists. Otherwise, returns user defined `Start Date`.
         """
         state = stream_state.get(self.cursor_field) or self._start_date if stream_state else self._start_date
-        return calendar.timegm(pendulum.parse(state).utctimetuple())
+        return int(state) if isinstance(state, int) or state.isdigit() else calendar.timegm(pendulum.parse(state).utctimetuple())
 
 
 class CursorPaginationZendeskSupportStream(IncrementalZendeskSupportStream):
