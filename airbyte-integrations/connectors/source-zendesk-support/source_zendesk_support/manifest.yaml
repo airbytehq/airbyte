@@ -8,10 +8,6 @@ check:
     - Tags
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_zendesk_support/schemas/{{ parameters.get('schema_name') or parameters['name'] }}.json"
-
   bearer_authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['access_token'] }}"
@@ -66,7 +62,7 @@ definitions:
   base_stream:
     type: DeclarativeStream
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: JsonFileSchemaLoader
     retriever:
       $ref: "#/definitions/retriever"
 
@@ -353,6 +349,32 @@ definitions:
       cursor_filter: "start_time"
       primary_key: "id"
 
+  posts_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    name: posts
+    primary_key: "id"
+    incremental_sync:
+      $ref: "#/definitions/cursor_incremental_sync"
+      start_time_option:
+        $ref: "#/definitions/cursor_incremental_sync/start_time_option"
+        field_name: "start_time"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "community/posts"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+        pagination_strategy:
+          $ref: "#/definitions/links_next_paginator/pagination_strategy"
+          stop_condition: "{{ config.get('ignore_pagination', False) or not response['meta']['has_more'] }}"
+      record_selector:
+        $ref: "#/definitions/retriever/record_selector"
+        schema_normalization: None
+    $parameters:
+      name: "posts"
+
   satisfaction_ratings_stream:
     $ref: "#/definitions/base_incremental_stream"
     retriever:
@@ -625,6 +647,7 @@ streams:
   - $ref: "#/definitions/organization_fields_stream"
   - $ref: "#/definitions/organization_memberships_stream"
   - $ref: "#/definitions/organizations_stream"
+  - $ref: "#/definitions/posts_stream"
   - $ref: "#/definitions/satisfaction_ratings_stream"
   - $ref: "#/definitions/ticket_activities_stream"
   - $ref: "#/definitions/ticket_audits_stream"
