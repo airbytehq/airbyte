@@ -31,7 +31,7 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
     breakingChanges:
       4.0.0:
         message: Version 4.0.0 changes the cursors in most of the Stripe streams that support incremental sync mode. This is done to not only sync the data that was created since previous sync, but also the data that was modified. A schema refresh of all effected streams is required to use the new cursor format.
