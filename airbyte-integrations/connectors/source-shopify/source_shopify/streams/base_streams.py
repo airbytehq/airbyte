@@ -80,6 +80,12 @@ class ShopifyStream(HttpStream, ABC):
             params["order"] = f"{self.order_field} asc"
             params[self.filter_field] = self.default_filter_field_value
         return params
+    
+    def backoff_time(self, response):
+        if response.status_code == 500:
+            return 10
+        else:
+            return super().backoff_time(response)
 
     @limiter.balance_rate_limit()
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
