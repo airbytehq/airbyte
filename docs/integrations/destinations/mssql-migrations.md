@@ -1,5 +1,7 @@
 # MS SQL Server Migration Guide
 
+## Upgrading to 2.0.0
+
 ## Upgrading to 1.0.0
 
 This version removes the option to use "normalization" with Microsoft SQL Server. It also changes
@@ -63,5 +65,3 @@ Where as:
 - Raw Table Schema Name: `raw_data`
 
 Writes to `raw_data.default_raw__stream_my_stream`
-
-## Upgrading to 2.0.0
