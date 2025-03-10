@@ -1,22 +1,24 @@
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
+import logging
 from datetime import datetime
 from functools import lru_cache
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Tuple
-import logging
 
 import requests
-from airbyte_cdk import AirbyteTracedException, FailureType
-from airbyte_cdk.sources.file_based.file_based_stream_permissions_reader import AbstractFileBasedStreamPermissionsReader
-from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from office365.directory.groups.collection import GroupCollection
 from office365.directory.users.collection import UserCollection
 from office365.graph_client import GraphClient
 from office365.runtime.auth.token_response import TokenResponse
 from office365.sharepoint.client_context import ClientContext
 
+from airbyte_cdk import AirbyteTracedException, FailureType
+from airbyte_cdk.sources.file_based.file_based_stream_permissions_reader import AbstractFileBasedStreamPermissionsReader
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from source_microsoft_sharepoint.exceptions import ErrorFetchingMetadata
 from source_microsoft_sharepoint.spec import RemoteIdentity, RemoteIdentityType, RemotePermissions, SourceMicrosoftSharePointSpec
 from source_microsoft_sharepoint.stream_reader import MicrosoftSharePointRemoteFile, SourceMicrosoftSharePointClient
-from source_microsoft_sharepoint.exceptions import ErrorFetchingMetadata
 from source_microsoft_sharepoint.utils import execute_query_with_retry
 
 
