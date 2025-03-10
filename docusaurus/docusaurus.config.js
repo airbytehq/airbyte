@@ -258,6 +258,13 @@ const config = {
           },
           // --- Right side ---
           {
+            type: 'docsVersion',
+            position: 'right',
+            to: '/platform',
+            docsPluginId: 'platform',
+            label: 'Version',
+          },
+          {
             href: "https://status.airbyte.com",
             label: "Cloud Status",
             className: "cloudStatusLink",
