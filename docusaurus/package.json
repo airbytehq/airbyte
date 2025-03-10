@@ -92,6 +92,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@headlessui/react": "^2.1.9",
+    "@markprompt/docusaurus-theme-search": "^0.32.3",
     "@mdx-js/react": "^3.0.0",
     "async": "2.6.4",
     "autoprefixer": "10.4.16",
