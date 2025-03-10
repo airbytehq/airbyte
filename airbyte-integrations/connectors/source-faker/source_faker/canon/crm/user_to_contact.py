@@ -8,11 +8,12 @@ from airbyte_cdk.sources.types import Record
 
 class UserToContact(TransformFunction[Contact]):
     def __call__(self, record: Record) -> Record:
+        first_name, last_name = record["name"].split(" ")
         return Record(
             data=Contact(
                 id=str(record["id"]),
-                first_name=record["name"],
-                last_name=None,
+                first_name=first_name,
+                last_name=last_name,
                 addresses=[
                     Address(
                         street_1=f'{record["address"]["street_number"]} {record["address"]["street_name"]}',

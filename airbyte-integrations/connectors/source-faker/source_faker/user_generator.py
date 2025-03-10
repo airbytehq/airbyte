@@ -49,7 +49,7 @@ class UserGenerator:
             "id": user_id + 1,
             "created_at": format_airbyte_time(dt.datetime()),
             "updated_at": format_airbyte_time(datetime.datetime.now()),
-            "name": person.name(),
+            "name": f"{person.first_name()} {person.last_name()}",
             "title": person.title(),
             "age": person.age(),
             "email": email,
