@@ -640,8 +640,10 @@ definitions:
           path: "{{download_target}}"
           url_base: ""
           http_method: GET
-        download_extractor:
-          type: ResponseToFileExtractor
+        download_decoder:
+          type: GzipDecoder
+          decoder:
+            type: CsvDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
