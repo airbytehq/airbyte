@@ -62,6 +62,53 @@ class MongoDbSourceTest {
   }
 
   @Test
+  void testExploreFixedRoundtrips() {
+    // see credentials.json for real credentials
+    String connectionString = "mongodb+srv://<user>:<password>@<cluster>";
+    try (MongoClient mongoClient = MongoClients.create(connectionString)) {
+      var database = mongoClient.getDatabase("discover_bench_10000");
+      // Define collection names
+      String collection1 = "CUSTOMER_1";
+      String collection2 = "CUSTOMER_2";
+      List<Document> pipeline = Arrays.asList(
+              // Sample from collection1
+              new Document("$sample", new Document("size", 10)),
+              // Convert document to field names
+              new Document("$project",
+                      new Document("_id", 0)
+                              .append("fields",
+                                      new Document("$objectToArray", "$$ROOT"))),
+              new Document("$unwind", "$fields"),
+              new Document("$group",
+                      new Document("_id", null)
+                              .append("collection1Fields",
+                                      new Document("$addToSet", "$fields.k"))),
+              // Lookup collection2 sample
+              new Document("$lookup",
+                      new Document("from", collection2)
+                              .append("pipeline", Arrays.asList(
+                                      new Document("$sample", new Document("size", 10)),
+                                      new Document("$project",
+                                              new Document("_id", 0)
+                                                      .append("fields",
+                                                              new Document("$objectToArray", "$$ROOT"))),
+                                      new Document("$unwind", "$fields"),
+                                      new Document("$group",
+                                              new Document("_id", null)
+                                                      .append("collection2Fields",
+                                                              new Document("$addToSet", "$fields.k")))
+                              ))
+                              .append("as", "collection2Result"))
+      );
+      // This would execute the efficient pipeline in a real environment
+      AggregateIterable<Document> efficientResult = database.getCollection(collection1).aggregate(pipeline);
+      efficientResult.forEach(document -> {
+        System.out.println(Jsons.serialize(document));
+      });
+    }
+  }
+
+  @Test
   void testCheckOperation() throws IOException {
     final ClusterDescription clusterDescription = mock(ClusterDescription.class);
     final Document response = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
