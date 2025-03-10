@@ -13,7 +13,6 @@ python = "^3.10,<3.13"
 airbyte-cdk = "==6.38.3"
 pytest = "^8"
 requests-mock = "*"
-pendulum = "*"
 
 [tool.pytest.ini_options]
 filterwarnings = [
