@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.0.5"
+version = "1.0.7"
 name = "source-amazon-sqs"
 description = "Source implementation for amazon-sqs."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,7 +16,7 @@ packages = [ { include = "source_amazon_sqs" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "^4"
+airbyte-cdk = "^6"
 
 [tool.poetry.scripts]
 source-amazon-sqs = "source_amazon_sqs.run:run"

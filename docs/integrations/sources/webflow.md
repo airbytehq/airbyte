@@ -41,6 +41,8 @@ If you are interested in learning more about the Webflow API and implementation 
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
+| 0.1.39 | 2025-03-08 | [55612](https://github.com/airbytehq/airbyte/pull/55612) | Update dependencies |
+| 0.1.38 | 2025-03-01 | [55156](https://github.com/airbytehq/airbyte/pull/55156) | Update dependencies |
 | 0.1.37 | 2025-02-22 | [54505](https://github.com/airbytehq/airbyte/pull/54505) | Update dependencies |
 | 0.1.36 | 2025-02-15 | [54076](https://github.com/airbytehq/airbyte/pull/54076) | Update dependencies |
 | 0.1.35 | 2025-02-01 | [53089](https://github.com/airbytehq/airbyte/pull/53089) | Update dependencies |

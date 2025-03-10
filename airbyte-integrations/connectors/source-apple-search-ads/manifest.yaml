@@ -1,6 +1,9 @@
-version: 5.7.5
+version: 6.36.3
 
 type: DeclarativeSource
+
+description: |
+  Connector for Apple Search Ads.
 
 check:
   type: CheckStream
@@ -48,8 +51,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: offset
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: limit
@@ -100,8 +103,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: offset
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: limit
@@ -162,8 +165,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: offset
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: limit
@@ -192,9 +195,6 @@ definitions:
             - reportingDataResponse
             - row
       name: campaigns_report_daily
-      primary_key:
-        - date
-        - campaignId
       retriever:
         type: SimpleRetriever
         requester:
@@ -217,15 +217,15 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: "{{ config.backoff_factor }}"
                 response_filters:
                   - type: HttpResponseFilter
                     action: RETRY
                     http_codes:
                       - 500
                       - 429
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: "{{ config.backoff_factor }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -234,10 +234,29 @@ definitions:
               - data
               - reportingDataResponse
               - row
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_path:
+              - selector
+              - pagination
+              - offset
+            inject_into: body_json
+          page_size_option:
+            type: RequestOption
+            field_path:
+              - selector
+              - pagination
+              - limit
+            inject_into: body_json
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: 'P{{ config.lookback_window}}D'
+        lookback_window: P{{ config.lookback_window}}D
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -275,9 +294,6 @@ definitions:
             - reportingDataResponse
             - row
       name: adgroups_report_daily
-      primary_key:
-        - date
-        - adGroupId
       retriever:
         type: SimpleRetriever
         requester:
@@ -300,15 +316,15 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 max_retries: 10
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: "{{ config.backoff_factor }}"
                 response_filters:
                   - type: HttpResponseFilter
                     action: RETRY
                     http_codes:
                       - 500
                       - 429
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: "{{ config.backoff_factor }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -317,6 +333,25 @@ definitions:
               - data
               - reportingDataResponse
               - row
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_path:
+              - selector
+              - pagination
+              - offset
+            inject_into: body_json
+          page_size_option:
+            type: RequestOption
+            field_path:
+              - selector
+              - pagination
+              - limit
+            inject_into: body_json
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -328,7 +363,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: 'P{{ config.lookback_window}}D'
+        lookback_window: P{{ config.lookback_window}}D
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -366,9 +401,6 @@ definitions:
             - reportingDataResponse
             - row
       name: keywords_report_daily
-      primary_key:
-        - date
-        - keywordId
       retriever:
         type: SimpleRetriever
         requester:
@@ -411,6 +443,25 @@ definitions:
               - data
               - reportingDataResponse
               - row
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_path:
+              - selector
+              - pagination
+              - offset
+            inject_into: body_json
+          page_size_option:
+            type: RequestOption
+            field_path:
+              - selector
+              - pagination
+              - limit
+            inject_into: body_json
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -422,7 +473,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: 'P{{ config.lookback_window }}D'
+        lookback_window: P{{ config.lookback_window }}D
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -457,8 +508,8 @@ definitions:
     authenticator:
       type: OAuthAuthenticator
       client_id: "{{ config.client_id }}"
-      client_secret: "{{ config.client_secret }}"
       grant_type: client_credentials
+      client_secret: "{{ config.client_secret }}"
       token_refresh_endpoint: >-
         https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg
 
@@ -486,62 +537,63 @@ spec:
         description: >-
           The identifier of the organization that owns the campaign. Your Org Id
           is the same as your account in the Apple Search Ads UI.
-        title: Org Id
         order: 0
+        title: Org Id
       end_date:
         type: string
         description: Data is retrieved until that date (included)
+        order: 1
         title: End Date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         examples:
           - "2021-01-01"
-        order: 1
       client_id:
         type: string
         description: >-
           A user identifier for the token request. See <a
           href="https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api">here</a>
+        order: 2
         title: Client Id
         airbyte_secret: true
-        order: 2
       start_date:
         type: string
         description: Start getting data from that date.
+        order: 3
         title: Start Date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         examples:
           - "2020-01-01"
-        order: 3
       client_secret:
         type: string
         description: >-
           A string that authenticates the user’s setup request. See <a
           href="https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api">here</a>
+        order: 4
         title: Client Secret
         airbyte_secret: true
-        order: 4
       lookback_window:
         type: integer
-        default: 30
         description: >-
-          Apple Search Ads uses a 30-day attribution window. However, you may consider smaller values in order
-          to shorten sync durations, at the cost of missing late data attributions.
+          Apple Search Ads uses a 30-day attribution window. However, you may
+          consider smaller values in order to shorten sync durations, at the
+          cost of missing late data attributions.
+        order: 5
         title: Lookback Window
+        default: 30
         pattern: ^(30|[1-2][0-9]|[1-9])$
         examples:
           - 7
-        order: 5
       backoff_factor:
         type: integer
-        default: 5
         description: >-
-          This factor factor determines the delay increase factor between retryable failures.
-          Valid values are integers between 1 and 20.
+          This factor factor determines the delay increase factor between
+          retryable failures. Valid values are integers between 1 and 20.
+        order: 6
         title: Exponential Backoff Factor
+        default: 5
         pattern: ^(20|1[0-9]|[1-9])$
         examples:
           - 10
-        order: 6
     additionalProperties: true
 
 metadata:
@@ -554,23 +606,57 @@ metadata:
     keywords_report_daily: false
   yamlComponents:
     streams:
+      campaigns_report_daily:
+        - errorHandler
+      adgroups_report_daily:
+        - errorHandler
       keywords_report_daily:
         - errorHandler
     global:
       - authenticator
   testedStreams:
     campaigns:
-      streamHash: feda30929d58abb1441b9a5a9fa676ac53732898
+      streamHash: 471be30065f2e627f876ceb64b765b1c9b144b3a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     adgroups:
-      streamHash: 4bee763630f2faa1e57b8fdecfb5ad2562a6f8e5
+      streamHash: 78700b260228ba45013dc89a6dc308ecb66c1493
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     keywords:
-      streamHash: 8e9c01bded0da3421d384099ab66fe699e448558
+      streamHash: 41a8b9105965783ffb44bebddd40ef5e36b59da4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     campaigns_report_daily:
-      streamHash: b73b3a7fd009d515e31b6eae904bf925e45f4370
+      streamHash: 65c26f415b78932b495424c2da6b13d4408f02a4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     adgroups_report_daily:
-      streamHash: 5982b7f631f8bfc624b467b8e4b442f3beec34e6
+      streamHash: 236c631495a6c5d871069511422cf4ecccd45127
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     keywords_report_daily:
-      streamHash: 642ee63980cc78adbe63e1008199574b282d846f
+      streamHash: 960877547a37e031d2b50197379b164fb42028c1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist: {}
 
 schemas:
@@ -893,13 +979,6 @@ schemas:
         items:
           type: object
           properties:
-            tapInstallCPI:
-              type: object
-              properties:
-                amount:
-                  type: string
-                currency:
-                  type: string
             avgCPM:
               type: object
               properties:
@@ -914,13 +993,9 @@ schemas:
                   type: string
                 currency:
                   type: string
-            tapInstallRate:
-              type: number
             date:
               type: string
             impressions:
-              type: integer
-            tapInstalls:
               type: integer
             latOffInstalls:
               type: integer
@@ -933,6 +1008,17 @@ schemas:
                   type: string
                 currency:
                   type: string
+            tapInstallCPI:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            tapInstallRate:
+              type: number
+            tapInstalls:
+              type: integer
             tapNewDownloads:
               type: integer
             tapRedownloads:
@@ -999,13 +1085,6 @@ schemas:
         items:
           type: object
           properties:
-            tapInstallCPI:
-              type: object
-              properties:
-                amount:
-                  type: string
-                currency:
-                  type: string
             avgCPM:
               type: object
               properties:
@@ -1020,13 +1099,9 @@ schemas:
                   type: string
                 currency:
                   type: string
-            tapInstallRate:
-              type: number
             date:
               type: string
             impressions:
-              type: integer
-            tapInstalls:
               type: integer
             latOffInstalls:
               type: integer
@@ -1039,6 +1114,17 @@ schemas:
                   type: string
                 currency:
                   type: string
+            tapInstallCPI:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            tapInstallRate:
+              type: number
+            tapInstalls:
+              type: integer
             tapNewDownloads:
               type: integer
             tapRedownloads:
@@ -1093,13 +1179,6 @@ schemas:
         items:
           type: object
           properties:
-            tapInstallCPI:
-              type: object
-              properties:
-                amount:
-                  type: string
-                currency:
-                  type: string
             avgCPT:
               type: object
               properties:
@@ -1107,13 +1186,9 @@ schemas:
                   type: string
                 currency:
                   type: string
-            tapInstallRate:
-              type: number
             date:
               type: string
             impressions:
-              type: integer
-            tapInstalls:
               type: integer
             latOffInstalls:
               type: integer
@@ -1126,6 +1201,17 @@ schemas:
                   type: string
                 currency:
                   type: string
+            tapInstallCPI:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            tapInstallRate:
+              type: number
+            tapInstalls:
+              type: integer
             tapNewDownloads:
               type: integer
             tapRedownloads:
@@ -1140,15 +1226,6 @@ schemas:
           bidRecommendation:
             type: object
             properties:
-              suggestedBidAmount:
-                anyOf:
-                  - type: "null"
-                  - type: object
-                    properties:
-                      amount:
-                        type: string
-                      currency:
-                        type: string
               bidMax:
                 anyOf:
                   - type: "null"
@@ -1159,6 +1236,15 @@ schemas:
                       currency:
                         type: string
               bidMin:
+                anyOf:
+                  - type: "null"
+                  - type: object
+                    properties:
+                      amount:
+                        type: string
+                      currency:
+                        type: string
+              suggestedBidAmount:
                 anyOf:
                   - type: "null"
                   - type: object

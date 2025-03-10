@@ -22,8 +22,8 @@ This page contains the setup guide and reference information for the Apple Searc
 7. For **Start Date** and **End Date**, enter the date in YYYY-MM-DD format. For DAILY reports, the Start Date can't be
    earlier than 90 days from today. If the End Date field is left blank, Airbyte will replicate data to today.
 8. When syncing large amounts of data over vast durations, you can customize **Exponential Backoff Factor** in order to
-   reduce the chance of synchronization failures in case of Apple's rate limit kicking in. 
-9. You can also decrease the **Lookback Window** in order to sync smaller amounts of data on each incremental sync, 
+   reduce the chance of synchronization failures in case of Apple's rate limit kicking in.
+9. You can also decrease the **Lookback Window** in order to sync smaller amounts of data on each incremental sync,
    at the cost of missing late data attributions.
 10. Click **Set up source**.
 
@@ -48,6 +48,12 @@ The Apple Ads source connector supports the following streams. For more informat
 
 ### Report Streams
 
+::: note
+The usual primary keys for reports are `date` and `campaignId`.
+However, there are cases where active fields must be selected as primary keys to ensure data deduplication is correct.
+One example is `countryOrRegion`.
+:::
+
 - [campaigns_report_daily](https://developer.apple.com/documentation/apple_search_ads/get_campaign-level_reports)
 - [adgroups_report_daily](https://developer.apple.com/documentation/apple_search_ads/get__ad_group-level_reports)
 - [keywords_report_daily](https://developer.apple.com/documentation/apple_search_ads/get_keyword-level_reports)
@@ -65,6 +71,10 @@ However, at this moment and as indicated in the stream names, the connector only
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| 0.5.1 | 2025-03-08 | [55366](https://github.com/airbytehq/airbyte/pull/55366) | Update dependencies |
+| 0.5.0 | 2025-03-05 | [55210](https://github.com/airbytehq/airbyte/pull/55210) | Remove primary keys |
+| 0.4.3 | 2025-03-01 | [54873](https://github.com/airbytehq/airbyte/pull/54873) | Update dependencies |
+| 0.4.2 | 2025-02-24 | [54646](https://github.com/airbytehq/airbyte/pull/54646) | Fix paginator settings for incremental report streams |
 | 0.4.1 | 2025-02-22 | [54284](https://github.com/airbytehq/airbyte/pull/54284) | Update dependencies |
 | 0.4.0 | 2025-02-20 | [54170](https://github.com/airbytehq/airbyte/pull/54170) | Externalize backoff factor and lookback window configurations |
 | 0.3.3 | 2025-02-15 | [53920](https://github.com/airbytehq/airbyte/pull/53920) | Update dependencies |

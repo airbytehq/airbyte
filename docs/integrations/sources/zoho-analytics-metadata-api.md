@@ -30,6 +30,8 @@ Zoho Analytics Metadata api connector enables seamless data syncing from Zoho An
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.13 | 2025-03-09 | [55655](https://github.com/airbytehq/airbyte/pull/55655) | Update dependencies |
+| 0.0.12 | 2025-03-01 | [55163](https://github.com/airbytehq/airbyte/pull/55163) | Update dependencies |
 | 0.0.11 | 2025-02-23 | [54631](https://github.com/airbytehq/airbyte/pull/54631) | Update dependencies |
 | 0.0.10 | 2025-02-16 | [54121](https://github.com/airbytehq/airbyte/pull/54121) | Update dependencies |
 | 0.0.9 | 2025-02-08 | [53600](https://github.com/airbytehq/airbyte/pull/53600) | Update dependencies |
