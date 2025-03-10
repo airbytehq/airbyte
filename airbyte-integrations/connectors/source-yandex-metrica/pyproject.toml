@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.0.33"
+version = "1.0.35"
 name = "source-yandex-metrica"
 description = "Source implementation for Yandex Metrica."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -25,7 +25,7 @@ source-yandex-metrica = "source_yandex_metrica.run:run"
 [tool.poetry.group.dev.dependencies]
 freezegun = "^1.4.0"
 requests-mock = "^1.9.3"
-pytest = "^6.1"
+pytest = "^8.0.0"
 pytest-mock = "^3.14.0"
 
 

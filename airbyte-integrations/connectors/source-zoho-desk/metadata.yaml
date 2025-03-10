@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-zoho-desk
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.38.3@sha256:fcba02266f262aabc2f37e4f14574aa1c8c5cffd018504bab28803e405c93afe
   connectorSubtype: api
   connectorType: source
   definitionId: 08164461-a3fd-49d5-8185-b83d51013585
-  dockerImageTag: 0.0.11
+  dockerImageTag: 0.0.13
   dockerRepository: airbyte/source-zoho-desk
   githubIssueLabel: source-zoho-desk
   icon: icon.svg

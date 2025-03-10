@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.3.17"
+version = "0.3.19"
 name = "source-cart"
 description = "Source implementation for Cart."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -24,7 +24,7 @@ source-cart = "source_cart.run:run"
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.6.1"
-pytest = "^6.1"
+pytest = "^8.0.0"
 requests-mock = "^1.9.3"
 
 

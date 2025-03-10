@@ -42,6 +42,8 @@ Configure the API key as your username and leave password field as blank
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.17 | 2025-03-08 | [55520](https://github.com/airbytehq/airbyte/pull/55520) | Update dependencies |
+| 0.0.16 | 2025-03-01 | [55047](https://github.com/airbytehq/airbyte/pull/55047) | Update dependencies |
 | 0.0.15 | 2025-02-23 | [54617](https://github.com/airbytehq/airbyte/pull/54617) | Update dependencies |
 | 0.0.14 | 2025-02-15 | [54000](https://github.com/airbytehq/airbyte/pull/54000) | Update dependencies |
 | 0.0.13 | 2025-02-08 | [52955](https://github.com/airbytehq/airbyte/pull/52955) | Update dependencies |

@@ -1,12 +1,12 @@
 [build-system]
-requires = [ "poetry-core>=1.0.0",]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.5.23"
+version = "0.5.25"
 name = "source-file"
 description = "Source implementation for File"
-authors = [ "Airbyte <contact@airbyte.io>",]
+authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/file"
@@ -39,14 +39,14 @@ fastparquet = "^2024.2.0"
 source-file = "source_file.run:run"
 
 [tool.poetry.dependencies.smart-open]
-extras = [ "all",]
+extras = ["all"]
 version = "==6.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.6.1"
-pytest = "==6.2.5"
+pytest = "^8.0.0"
 requests-mock = "^1.9.3"
-pytest-docker = "==2.0.1"
+pytest-docker = "==3.0.0"
 
 
 [tool.poe]

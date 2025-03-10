@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "7.0.1"
+version = "7.1.3"
 name = "source-amazon-ads"
 description = "Source implementation for Amazon Ads."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_amazon_ads"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "^6"
+airbyte-cdk = "==6.34.0"
 
 [tool.poetry.scripts]
 source-amazon-ads = "source_amazon_ads.run:run"

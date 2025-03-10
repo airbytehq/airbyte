@@ -41,6 +41,8 @@ The Vitally connector should not run into Vitally API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
+| 0.3.4 | 2025-03-08 | [55622](https://github.com/airbytehq/airbyte/pull/55622) | Update dependencies |
+| 0.3.3 | 2025-03-01 | [55090](https://github.com/airbytehq/airbyte/pull/55090) | Update dependencies |
 | 0.3.2 | 2025-02-22 | [54500](https://github.com/airbytehq/airbyte/pull/54500) | Update dependencies |
 | 0.3.1 | 2025-02-15 | [47470](https://github.com/airbytehq/airbyte/pull/47470) | Update dependencies |
 | 0.3.0 | 2025-02-12 | [53648](https://github.com/airbytehq/airbyte/pull/53648) | Add support for custom domain. |

@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-freshchat
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.38.3@sha256:fcba02266f262aabc2f37e4f14574aa1c8c5cffd018504bab28803e405c93afe
   connectorSubtype: api
   connectorType: source
   definitionId: 100640bc-c2f3-42b2-a91a-8164f7499ec3
-  dockerImageTag: 0.0.4
+  dockerImageTag: 0.0.6
   dockerRepository: airbyte/source-freshchat
   githubIssueLabel: source-freshchat
   icon: icon.svg

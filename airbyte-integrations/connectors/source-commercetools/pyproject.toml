@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.3.2"
+version = "0.3.4"
 name = "source-commercetools"
 description = "Source implementation for Commercetools."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -24,7 +24,7 @@ source-commercetools = "source_commercetools.run:run"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
-pytest = "^6.2"
+pytest = "^8.0.0"
 pytest-mock = "^3.6.1"
 
 

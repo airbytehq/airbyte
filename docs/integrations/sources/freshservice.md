@@ -57,6 +57,8 @@ Please read [How to find your API key](https://api.freshservice.com/#authenticat
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
+| 1.4.17 | 2025-03-08 | [55272](https://github.com/airbytehq/airbyte/pull/55272) | Update dependencies |
+| 1.4.16 | 2025-03-01 | [54928](https://github.com/airbytehq/airbyte/pull/54928) | Update dependencies |
 | 1.4.15 | 2025-02-22 | [54438](https://github.com/airbytehq/airbyte/pull/54438) | Update dependencies |
 | 1.4.14 | 2025-02-15 | [53758](https://github.com/airbytehq/airbyte/pull/53758) | Update dependencies |
 | 1.4.13 | 2025-02-08 | [53333](https://github.com/airbytehq/airbyte/pull/53333) | Update dependencies |

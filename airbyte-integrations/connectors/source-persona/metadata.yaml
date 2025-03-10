@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-persona
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.38.3@sha256:fcba02266f262aabc2f37e4f14574aa1c8c5cffd018504bab28803e405c93afe
   connectorSubtype: api
   connectorType: source
   definitionId: 7e55429a-a1ea-43c2-81c2-4fc3cf88f81f
-  dockerImageTag: 0.0.14
+  dockerImageTag: 0.0.16
   dockerRepository: airbyte/source-persona
   githubIssueLabel: source-persona
   icon: icon.svg
