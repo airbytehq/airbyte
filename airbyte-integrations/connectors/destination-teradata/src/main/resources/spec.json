@@ -8,7 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Teradata Destination Spec",
     "type": "object",
-    "required": ["host", "username"],
+    "required": ["host"],
     "additionalProperties": true,
     "properties": {
       "host": {
@@ -17,18 +17,83 @@
         "type": "string",
         "order": 0
       },
-      "username": {
-        "title": "User",
-        "description": "Username to use to access the database.",
-        "type": "string",
-        "order": 1
-      },
-      "password": {
-        "title": "Password",
-        "description": "Password associated with the username.",
-        "type": "string",
-        "airbyte_secret": true,
-        "order": 2
+      "logmech": {
+        "title": "Authorization Mechanism",
+        "description": "",
+        "type": "object",
+        "order": 1,
+        "oneOf": [
+          {
+            "title": "TD2",
+            "type": "object",
+            "order": 0,
+            "required": ["username", "password"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "TD2",
+                "enum": ["TD2"],
+                "default": "TD2",
+                "order": 0
+              },
+              "username": {
+                "title": "User",
+                "description": "Username to use to access the database.",
+                "type": "string",
+                "order": 1
+              },
+              "password": {
+                "description": "Enter the password associated with the username.",
+                "type": "string",
+                "airbyte_secret": true,
+                "title": "Password",
+                "order": 2
+              }
+            }
+          },
+          {
+            "title": "LDAP",
+            "type": "object",
+            "required": ["username", "password"],
+            "order": 1,
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "LDAP",
+                "enum": ["LDAP"],
+                "default": "LDAP",
+                "order": 0
+              },
+              "username": {
+                "title": "User",
+                "description": "Username to use to access the database.",
+                "type": "string",
+                "order": 1
+              },
+              "password": {
+                "description": "Enter the password associated with the username.",
+                "type": "string",
+                "airbyte_secret": true,
+                "title": "Password",
+                "order": 2
+              }
+            }
+          },
+          {
+            "title": "BROWSER",
+            "type": "object",
+            "order": 1,
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "BROWSER",
+                "enum": ["BROWSER"],
+                "default": "BROWSER",
+                "order": 0
+              }
+            }
+          }
+        ]
       },
       "schema": {
         "title": "Default Schema",
@@ -36,20 +101,20 @@
         "type": "string",
         "examples": ["airbyte_td"],
         "default": "airbyte_td",
-        "order": 3
+        "order": 2
       },
       "ssl": {
         "title": "SSL Connection",
         "description": "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
         "type": "boolean",
         "default": false,
-        "order": 4
+        "order": 3
       },
       "ssl_mode": {
         "title": "SSL modes",
         "description": "SSL connection modes. \n <b>disable</b> - Chose this mode to disable encryption of communication between Airbyte and destination database\n <b>allow</b> - Chose this mode to enable encryption only when required by the destination database\n <b>prefer</b> - Chose this mode to allow unencrypted connection only if the destination database does not support encryption\n <b>require</b> - Chose this mode to always require encryption. If the destination database server does not support encryption, connection will fail\n  <b>verify-ca</b> - Chose this mode to always require encryption and to verify that the destination database server has a valid SSL certificate\n  <b>verify-full</b> - This is the most secure mode. Chose this mode to always require encryption and to verify the identity of the destination database server\n See more information - <a href=\"https://teradata-docs.s3.amazonaws.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html#URL_SSLMODE\"> in the docs</a>.",
         "type": "object",
-        "order": 5,
+        "order": 4,
         "oneOf": [
           {
             "title": "disable",
@@ -159,15 +224,15 @@
           }
         ]
       },
-      "query_band": {
-        "description": "Specifies the custom session query band",
-        "title": "Query Band",
-        "type": "string",
-        "order": 7
-      },
       "jdbc_url_params": {
         "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
         "title": "JDBC URL Params",
+        "type": "string",
+        "order": 5
+      },
+      "query_band": {
+        "description": "Specifies the custom session query band",
+        "title": "Query Band",
         "type": "string",
         "order": 6
       }

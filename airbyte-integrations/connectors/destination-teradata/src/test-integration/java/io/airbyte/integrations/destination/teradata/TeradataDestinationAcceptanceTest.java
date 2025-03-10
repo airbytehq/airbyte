@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.teradata;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
@@ -20,6 +21,7 @@ import io.airbyte.integrations.destination.teradata.envclient.TeradataHttpClient
 import io.airbyte.integrations.destination.teradata.envclient.dto.*;
 import io.airbyte.integrations.destination.teradata.envclient.exception.BaseException;
 import io.airbyte.integrations.destination.teradata.util.TeradataConstants;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
@@ -28,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Pattern;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
@@ -46,6 +49,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
   private static final String DELETE_DATABASE = "DELETE DATABASE \"%s\"";
 
   private static final String DROP_DATABASE = "DROP DATABASE \"%s\"";
+  private static final Pattern ALLOWED_URL_PATTERN = Pattern.compile("^(https?://)(www\\.)?api.clearscape.teradata.com\\.com.*");
 
   private JsonNode configJson;
   private JdbcDatabase database;
@@ -62,10 +66,25 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
     return configJson;
   }
 
+  private static boolean isValidUrl(String url) {
+    return ALLOWED_URL_PATTERN.matcher(url).matches();
+  }
+
+  private static TeradataHttpClient getTeradataHttpClient(JsonNode config) throws URISyntaxException {
+    String envUrl = config.get("env_url").asText();
+    if (isValidUrl(envUrl)) {
+      return new TeradataHttpClient(envUrl);
+    } else {
+      LOGGER.error("Invalid or untrusted URL");
+      throw new URISyntaxException(envUrl, "Provide valid environment URL");
+    }
+
+  }
+
   @BeforeAll
   void initEnvironment() throws Exception {
     this.configJson = Jsons.clone(getStaticConfig());
-    TeradataHttpClient teradataHttpClient = new TeradataHttpClient(configJson.get("env_url").asText());
+    TeradataHttpClient teradataHttpClient = getTeradataHttpClient(configJson);
     String name = configJson.get("env_name").asText();
     String token = configJson.get("env_token").asText();
     var getRequest = new GetEnvironmentRequest(name);
@@ -81,24 +100,29 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
           configJson.get("env_region").asText(),
           configJson.get("env_password").asText());
       response = teradataHttpClient.createEnvironment(request, token).get();
-      LOGGER.info("Environemnt " + configJson.get("env_name").asText() + " is created successfully ");
+      LOGGER.info("Environemnt {} is created successfully ", configJson.get("env_name").asText());
     } else if (response.state() == EnvironmentResponse.State.STOPPED) {
       var request = new EnvironmentRequest(name, new OperationRequest("start"));
       teradataHttpClient.startEnvironment(request, token);
     }
-    ((ObjectNode) configJson).put("host", response.ip());
-    if (configJson.get("password") == null) {
-      ((ObjectNode) configJson).put("password", configJson.get("env_password").asText());
-    }
+    ((ObjectNode) configJson).put(JdbcUtils.HOST_KEY, response.ip());
+    ImmutableMap<Object, Object> authMap = ImmutableMap.builder()
+        .put(TeradataConstants.AUTH_TYPE, "TD2")
+        .put(JdbcUtils.USERNAME_KEY, configJson.get("username").asText())
+        .put(JdbcUtils.PASSWORD_KEY, configJson.get("env_password").asText())
+        .build();
+    ((ObjectNode) configJson).set(TeradataConstants.LOG_MECH, Jsons.jsonNode(authMap));
+
   }
 
   @AfterAll
-  void cleanupEnvironment() throws ExecutionException, InterruptedException {
+  void cleanupEnvironment() throws ExecutionException, InterruptedException, Exception {
     try {
-      TeradataHttpClient teradataHttpClient = new TeradataHttpClient(configJson.get("env_url").asText());
+      TeradataHttpClient teradataHttpClient = getTeradataHttpClient(configJson);
+      String token = configJson.get("env_token").asText();
       var request = new DeleteEnvironmentRequest(configJson.get("env_name").asText());
-      teradataHttpClient.deleteEnvironment(request, configJson.get("env_token").asText());
-      LOGGER.info("Environemnt " + configJson.get("env_name").asText() + " is deleted successfully ");
+      teradataHttpClient.deleteEnvironment(request, token);
+      LOGGER.info("Environemnt {} is deleted successfully ", configJson.get("env_name").asText());
     } catch (BaseException be) {
       LOGGER.error("Environemnt " + configJson.get("env_name").asText() + " is not available. " + be.getMessage());
     }
@@ -111,7 +135,8 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
   @Override
   protected JsonNode getFailCheckConfig() throws Exception {
     JsonNode failureConfig = Jsons.clone(this.configJson);
-    ((ObjectNode) failureConfig).put("password", "wrongpassword");
+    JsonNode logMechConfig = failureConfig.get(TeradataConstants.LOG_MECH);
+    ((ObjectNode) logMechConfig).put(JdbcUtils.PASSWORD_KEY, "wrongpassword");
     return failureConfig;
   }
 
