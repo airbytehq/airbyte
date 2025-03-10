@@ -4609,7 +4609,7 @@ definitions:
                   - "null"
                   - string
               custom_event_type:
-                description: Returned only for a Custom Pixel Event. Custom Pixel Event type. 
+                description: Returned only for a Custom Pixel Event. Custom Pixel Event type.
                 type:
                   - "null"
                   - string
