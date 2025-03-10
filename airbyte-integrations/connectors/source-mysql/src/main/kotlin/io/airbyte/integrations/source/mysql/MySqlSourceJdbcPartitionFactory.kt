@@ -13,6 +13,7 @@ import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LocalDateTimeCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.output.CatalogValidationFailureHandler
@@ -39,6 +40,7 @@ import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoField
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import scala.math.BigInt
 
 @Primary
 @Singleton
@@ -417,8 +419,10 @@ class MySqlSourceJdbcPartitionFactory(
     private fun MySqlSourceJdbcSnapshotWithCursorPartition.split(
         splitPointValues: List<MySqlSourceJdbcStreamStateValue>
     ): List<MySqlSourceJdbcResumablePartition> {
-        val inners: List<List<JsonNode>> =
+        var inners: List<List<JsonNode>> =
             splitPointValues.mapNotNull { it.pkMap(streamState.stream)?.values?.toList() }
+        inners =
+            redoInners(inners, /*6658729623L*/50827485)
         val lbs: List<List<JsonNode>?> = listOf(lowerBound) + inners
         val ubs: List<List<JsonNode>?> = inners + listOf(upperBound)
         return lbs.zip(ubs).map { (lBound, uBound) ->
@@ -434,6 +438,15 @@ class MySqlSourceJdbcPartitionFactory(
 
             )
         }
+    }
+
+    private fun redoInners(inners: List<List<JsonNode>>, upperBound: Long): List<List<JsonNode>> {
+        var queryPlan: MutableList<Long> = mutableListOf()
+        val eachStep: Long = upperBound / inners.size
+        for (i in 1..inners.size) {
+            queryPlan.add((i) * eachStep)
+        }
+        return inners.mapIndexed { index, inner -> listOf(stateValueToJsonNode(Field("id", BigIntegerFieldType), queryPlan[index].toString())) }
     }
 
     private fun MySqlSourceJdbcStreamStateValue.pkMap(stream: Stream): Map<Field, JsonNode>? =

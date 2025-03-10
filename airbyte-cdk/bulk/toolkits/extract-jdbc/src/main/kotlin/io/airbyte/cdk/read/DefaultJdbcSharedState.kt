@@ -30,8 +30,8 @@ class DefaultJdbcSharedState(
     val maxPartitionThroughputBytesPerSecond: Long =
         constants.expectedThroughputBytesPerSecond / configuration.maxConcurrency
 
-    override val targetPartitionByteSize: Long =
-        maxPartitionThroughputBytesPerSecond * configuration.checkpointTargetInterval.seconds
+    override val targetPartitionByteSize: Long = 1000L shl 20 // TEMP: hardcode partition size to 1GB
+//        maxPartitionThroughputBytesPerSecond * configuration.checkpointTargetInterval.seconds
 
     override fun jdbcFetchSizeEstimator(): JdbcSharedState.JdbcFetchSizeEstimator =
         DefaultJdbcFetchSizeEstimator(

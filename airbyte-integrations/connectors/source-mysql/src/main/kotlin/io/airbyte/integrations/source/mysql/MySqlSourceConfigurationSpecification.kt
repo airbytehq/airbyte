@@ -147,7 +147,7 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaInject(json = """{"order":11}""")
     @JsonSchemaDefault("300")
     @JsonPropertyDescription("How often (in seconds) a stream should checkpoint, when possible.")
-    var checkpointTargetIntervalSeconds: Int? = 300
+    var checkpointTargetIntervalSeconds: Int? = 600
 
     @JsonProperty("concurrency")
     @JsonSchemaTitle("Concurrency")
