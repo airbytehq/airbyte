@@ -222,11 +222,11 @@ data class EnrichedAirbyteValue(
  * The [EnrichedAirbyteValue] category allows us to quickly understand if the field is an Airbyte controlled
  * field or if it is declared by the source.
  */
-enum class FieldCategory(val columnName: String) {
-    RAW_ID(Meta.COLUMN_NAME_AB_RAW_ID),
-    EXTRACTED_AT(Meta.COLUMN_NAME_AB_EXTRACTED_AT),
-    META(Meta.COLUMN_NAME_AB_META),
-    GENERATION_ID(Meta.COLUMN_NAME_AB_GENERATION_ID),
+enum class FieldCategory {
+    RAW_ID,
+    EXTRACTED_AT,
+    META,
+    GENERATION_ID,
     // For fields that don't match any of the predefined Airbyte columns
-    CLIENT_DATA("");
+    CLIENT_DATA;
 }
