@@ -26,6 +26,7 @@ dependencies {
     implementation 'commons-codec:commons-codec:1.16.0'
     implementation 'io.debezium:debezium-embedded:3.0.1.Final'
     implementation 'io.debezium:debezium-connector-postgres:3.0.1.Final'
+    implementation 'com.azure:azure-identity:1.15.3'
 
     testFixturesApi 'org.testcontainers:postgresql:1.19.0'
 
