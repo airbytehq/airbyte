@@ -23,7 +23,6 @@ from .streams import (
     ArticleVotes,
     TicketMetrics,
     Tickets,
-    UserIdentities,
     UserSettingsStream,
 )
 
@@ -120,7 +119,6 @@ class SourceZendeskSupport(YamlDeclarativeSource):
             ArticleVotes(**args),
             Tickets(**args),
             TicketMetrics(**args),
-            UserIdentities(**args),
         ]
         return streams
 

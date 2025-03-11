@@ -438,16 +438,6 @@ class Automations(FullRefreshZendeskSupportStream):
     """Automations stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/automations/#list-automations"""
 
 
-class Users(SourceZendeskIncrementalExportStream):
-    """Users stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export"""
-
-    response_list_name: str = "users"
-    next_page_field: str = "after_url"
-
-    def path(self, **kwargs) -> str:
-        return "incremental/users/cursor.json"
-
-
 class Organizations(SourceZendeskIncrementalExportStream):
     """Organizations stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"""
 
@@ -1021,27 +1011,6 @@ class UserFields(FullRefreshZendeskSupportStream):
 
     def path(self, *args, **kwargs) -> str:
         return "user_fields"
-
-
-class UserIdentities(Users):
-    """
-    User Identities Stream: https://developer.zendesk.com/api-reference/ticketing/users/user_identities/
-
-    Side-loading (https://developer.zendesk.com/documentation/ticketing/using-the-zendesk-api/side_loading/) the users stream
-    (https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export)
-    """
-
-    response_list_name = "identities"
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        req_params = super().request_params(stream_state, stream_slice, next_page_token)
-        req_params["include"] = "identities"
-        return req_params
 
 
 class AbstractVotes(CursorPaginationZendeskSupportStream, ABC):
