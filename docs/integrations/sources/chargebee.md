@@ -104,6 +104,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.1 | 2025-03-08 | [51760](https://github.com/airbytehq/airbyte/pull/51760) | Update dependencies |
 | 0.10.0 | 2025-02-20 | [54182](https://github.com/airbytehq/airbyte/pull/54182) | Promoting release candidate 0.10.0-rc.1 to a main version. |
 | 0.10.0-rc.1  | 2025-07-02 | [53220](https://github.com/airbytehq/airbyte/pull/53220) | Replace custom `IncrementalSingleSliceCursor` component with low-code semi-incremental `DatetimeBasedCursor`   |
 | 0.9.0   | 2025-02-06 | [47243](https://github.com/airbytehq/airbyte/pull/47243) | Migrate to Manifest-only  |
