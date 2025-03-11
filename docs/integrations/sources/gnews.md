@@ -40,6 +40,8 @@ Rate Limiting is based on the API Key tier subscription, get more info [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                          |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------- |
+| 0.2.15 | 2025-03-08 | [55273](https://github.com/airbytehq/airbyte/pull/55273) | Update dependencies |
+| 0.2.14 | 2025-03-01 | [54964](https://github.com/airbytehq/airbyte/pull/54964) | Update dependencies |
 | 0.2.13 | 2025-02-22 | [54380](https://github.com/airbytehq/airbyte/pull/54380) | Update dependencies |
 | 0.2.12 | 2025-02-15 | [53745](https://github.com/airbytehq/airbyte/pull/53745) | Update dependencies |
 | 0.2.11 | 2025-02-08 | [53366](https://github.com/airbytehq/airbyte/pull/53366) | Update dependencies |

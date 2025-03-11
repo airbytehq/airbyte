@@ -38,6 +38,8 @@ There is no published rate limit. However, since this data updates infrequently,
 
 | Version | Date       | Pull Request                                             | Subject                                          |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------- |
+| 0.2.18 | 2025-03-08 | [55634](https://github.com/airbytehq/airbyte/pull/55634) | Update dependencies |
+| 0.2.17 | 2025-03-01 | [55119](https://github.com/airbytehq/airbyte/pull/55119) | Update dependencies |
 | 0.2.16 | 2025-02-22 | [54534](https://github.com/airbytehq/airbyte/pull/54534) | Update dependencies |
 | 0.2.15 | 2025-02-15 | [54065](https://github.com/airbytehq/airbyte/pull/54065) | Update dependencies |
 | 0.2.14 | 2025-02-08 | [53571](https://github.com/airbytehq/airbyte/pull/53571) | Update dependencies |

@@ -149,6 +149,9 @@ None!
 
 | Version | Date       | Pull Request                                             | Subject                  |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------|
+| 0.0.32 | 2025-03-08 | [55481](https://github.com/airbytehq/airbyte/pull/55481) | Update dependencies |
+| 0.0.31 | 2025-03-04 | [55196](https://github.com/airbytehq/airbyte/pull/55196) | fix(source-hardcoded-records): use latest CDK |
+| 0.0.30 | 2025-03-01 | [54814](https://github.com/airbytehq/airbyte/pull/54814) | Update dependencies |
 | 0.0.29 | 2025-02-22 | [54304](https://github.com/airbytehq/airbyte/pull/54304) | Update dependencies |
 | 0.0.28 | 2025-02-15 | [53810](https://github.com/airbytehq/airbyte/pull/53810) | Update dependencies |
 | 0.0.27 | 2025-02-10 | [53607](https://github.com/airbytehq/airbyte/pull/53607) | fix: pin CDK version and declare Python 3.12 support for source-hardcoded-records |

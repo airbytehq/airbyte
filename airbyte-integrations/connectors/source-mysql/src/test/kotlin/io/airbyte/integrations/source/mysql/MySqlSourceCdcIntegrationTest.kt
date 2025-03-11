@@ -44,7 +44,7 @@ class MySqlSourceCdcIntegrationTest {
         )
 
         MySqlContainerFactory.exclusive(
-                imageName = "mysql:8.0",
+                imageName = "mysql:9.2.0",
                 MySqlContainerFactory.WithCdcOff,
             )
             .use { nonCdcDbContainer ->
@@ -143,7 +143,7 @@ class MySqlSourceCdcIntegrationTest {
         fun startAndProvisionTestContainer() {
             dbContainer =
                 MySqlContainerFactory.exclusive(
-                    imageName = "mysql:8.0",
+                    imageName = "mysql:9.2.0",
                     MySqlContainerFactory.WithNetwork,
                 )
             provisionTestContainer(dbContainer, connectionFactory)

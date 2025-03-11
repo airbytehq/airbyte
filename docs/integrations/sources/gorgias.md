@@ -43,6 +43,8 @@ Visit `https://developers.gorgias.com/reference/introduction` for API documentat
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.1.4 | 2025-03-08 | [55491](https://github.com/airbytehq/airbyte/pull/55491) | Update dependencies |
+| 0.1.3 | 2025-03-01 | [54794](https://github.com/airbytehq/airbyte/pull/54794) | Update dependencies |
 | 0.1.2 | 2025-02-22 | [54335](https://github.com/airbytehq/airbyte/pull/54335) | Update dependencies |
 | 0.1.1 | 2025-02-15 | [50638](https://github.com/airbytehq/airbyte/pull/50638) | Update dependencies |
 | 0.1.0 | 2025-01-30 | [52637](https://github.com/airbytehq/airbyte/pull/52637) | Add retries for rate limited streams |
