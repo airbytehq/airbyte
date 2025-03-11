@@ -3,7 +3,7 @@
 
 import logging
 from datetime import datetime
-from unittest.mock import MagicMock, Mock, patch, PropertyMock
+from unittest.mock import MagicMock, Mock, PropertyMock, patch
 
 import pytest
 import requests
