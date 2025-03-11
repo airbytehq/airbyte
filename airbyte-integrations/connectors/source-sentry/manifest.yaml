@@ -48,7 +48,7 @@ definitions:
               - dateCreated
           record_filter:
             type: RecordFilter
-            condition: "{{ record[dateCreated] > stream_interval.get('start_time', '') }}"
+            condition: "{{ record['dateCreated'] > stream_interval.get('start_time', '') }}"
       primary_key:
         - id
       cursor_field: dateCreated
