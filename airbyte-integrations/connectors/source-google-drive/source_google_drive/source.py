@@ -14,7 +14,7 @@ from source_google_drive.stream_permissions_reader import SourceGoogleDriveStrea
 from source_google_drive.stream_reader import SourceGoogleDriveStreamReader
 
 
-class SourceGoogleDrive():
+class SourceGoogleDrive(FileBasedSource):
 
     # Provide specific implementation classes for Google Drive specifically.
     # The FileBasedSource base class's constructor will instantiate these when they are needed.
