@@ -14,17 +14,13 @@ from source_google_drive.stream_permissions_reader import SourceGoogleDriveStrea
 from source_google_drive.stream_reader import SourceGoogleDriveStreamReader
 
 
-class SourceGoogleDrive(FileBasedSource):
-    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: Optional[TState]):
-        super().__init__(
-            stream_reader=SourceGoogleDriveStreamReader(),
-            spec_class=SourceGoogleDriveSpec,
-            catalog=catalog,
-            config=config,
-            state=state,
-            cursor_cls=DefaultFileBasedCursor,
-            stream_permissions_reader=SourceGoogleDriveStreamPermissionsReader(),
-        )
+class SourceGoogleDrive():
+
+    # Provide specific implementation classes for Google Drive specifically.
+    # The FileBasedSource base class's constructor will instantiate these when they are needed.
+    spec_class = SourceGoogleDriveSpec
+    stream_reader_class = SourceGoogleDriveStreamReader
+    stream_permission_reader_class = SourceGoogleDriveStreamReader
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         """
