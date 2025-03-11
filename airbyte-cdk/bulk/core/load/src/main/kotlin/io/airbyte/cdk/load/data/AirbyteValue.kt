@@ -219,8 +219,8 @@ data class EnrichedAirbyteValue(
 }
 
 /**
- * The [EnrichedAirbyteValue] category allows us to quickly understand if the field is an Airbyte controlled
- * field or if it is declared by the source.
+ * The [EnrichedAirbyteValue] category allows us to quickly understand if the field is an Airbyte
+ * controlled field or if it is declared by the source.
  */
 enum class FieldCategory {
     RAW_ID,
@@ -228,5 +228,5 @@ enum class FieldCategory {
     META,
     GENERATION_ID,
     // For fields that don't match any of the predefined Airbyte columns
-    CLIENT_DATA;
+    CLIENT_DATA
 }
