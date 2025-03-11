@@ -15,7 +15,7 @@ import pendulum
 import requests
 
 from airbyte_cdk import BackoffStrategy, StreamSlice
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import SyncMode, AirbyteMessage, AirbyteStateBlob, AirbyteStreamState, AirbyteStateType, AirbyteStateMessage, StreamDescriptor, Type as MessageType
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ExponentialBackoffStrategy
 from airbyte_cdk.sources.streams.checkpoint import Cursor
 from airbyte_cdk.sources.streams.checkpoint.resumable_full_refresh_cursor import ResumableFullRefreshCursor
@@ -26,7 +26,6 @@ from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_stripe.error_handlers import ParentIncrementalStripeSubStreamErrorHandler, StripeErrorHandler
 from source_stripe.error_mappings import PARENT_INCREMENTAL_STRIPE_SUB_STREAM_ERROR_MAPPING
-
 
 STRIPE_API_VERSION = "2022-11-15"
 CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
@@ -841,22 +840,65 @@ class CustomerBalanceTransactions(ParentIncrementalStripeSubStream):
         """
         stream_state = stream_state or {}
         seen = set()
+        parent_processed = []
+        parent_cursors_updated = {
+            parent.name: stream_state.get(f"{parent.name}_cursor_updated", 0) for parent in self.parent_streams
+        }
 
         for parent in self.parent_streams:
-            parent_stream_state = {parent.cursor_field: stream_state.get(parent.cursor_field, 0)}
-            parent_cursor = parent.cursor_field
-            self.logger.info(f"Starting Parent Stream {parent.name} with parent cursor_field {parent_cursor}")
-            parent_slices = parent.stream_slices(sync_mode=sync_mode, cursor_field=parent_cursor, stream_state=parent_stream_state)
+            parent_cursor_value = parent_cursors_updated[parent.name]
+            parent_stream_state = {parent.cursor_field: parent_cursor_value}
+            self.logger.info(f"Starting Parent Stream {parent.name} with cursor {parent_cursor_value} - {parent_stream_state}")
+            parent_has_records = False
+            parent_slices = parent.stream_slices(sync_mode=sync_mode, cursor_field=parent.cursor_field, stream_state=parent_stream_state)
 
             for stream_slice in parent_slices:
                 parent_records = parent.read_records(
-                    sync_mode=sync_mode, cursor_field=parent_cursor, stream_slice=stream_slice, stream_state=parent_stream_state
+                    sync_mode=sync_mode, cursor_field=parent.cursor_field, stream_slice=stream_slice, stream_state=parent_stream_state
                 )
                 for record in parent_records:
                     parent_id = record.get("customer") or record.get("id")
-                    if parent_id and parent_id not in seen:
+                    balance = record.get("balance", 0) or record.get("total", 0)
+                    if parent_id and parent_id not in seen and balance != 0:
                         seen.add(parent_id)
+                        parent_has_records = True
                         yield {"parent": {"id": parent_id}}
+            parent_processed.append(parent_has_records)
+
+        if not all(parent_processed):
+            self.logger.info("No parent records found. Persisting previous state.")
+            yield {"parent": {"id": "synthetic_placeholder"}}
+#            yield AirbyteMessage(
+#                type=MessageType.STATE,
+#                state=AirbyteStateMessage(
+#                    type=AirbyteStateType.STREAM,
+#                    stream=AirbyteStreamState(
+#                        stream_descriptor=StreamDescriptor(name=self.name),
+#                        stream_state=updated_state
+#                    )
+#                )
+#            )
+#            yield {"parent": {"id": "synthetic_placeholder"}}
+
+
+        #for loop to update everything
+#        if not seen:
+#            self.logger.info("No parent records found. Persisting state update and yielding an empty slice.")
+#            fake_record = {self.cursor_field: int(datetime.utcnow().timestamp())}
+#            updated_state = self.get_updated_state(stream_state, fake_record)
+#            self.state = updated_state
+#            self.logger.info(f"Persisted state update: {updated_state}")
+#            self.logger.info("No parent records found. Yielding a default empty slice to trigger state update.")
+#            yield AirbyteMessage(
+#                type=MessageType.STATE,
+#                state=AirbyteStateMessage(
+#                    stream=AirbyteStreamState(
+#                        stream_descriptor=StreamDescriptor(name=self.name)
+#                    ),
+#                    data=updated_state
+#                )
+#            )
+#            yield {"parent": {"id": "synthetic_placeholder"}}
 
     def read_records(
         self,
@@ -865,12 +907,36 @@ class CustomerBalanceTransactions(ParentIncrementalStripeSubStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        created_filter = max(stream_state.get(self.cursor_field, 0) - int(timedelta(days=2).total_seconds()), self.start_date)
+
+        child_cursor_key = f"{self.name}_cursor_created"
+        created_filter = max(stream_state.get(child_cursor_key, 0) - int(timedelta(days=2).total_seconds()), self.start_date)
+
         for record in super().read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
             if record.get("created") > created_filter:
                 yield record
+
+        fake_record = {self.cursor_field: int(datetime.utcnow().timestamp())}
+        updated_state = self.get_updated_state(stream_state, fake_record)
+        self.logger.info(f"Persisting updated state: {updated_state}")
+        yield AirbyteMessage(
+            type=MessageType.STATE,
+            state=AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(
+                    stream_descriptor=StreamDescriptor(name=self.name),
+                    stream_state=AirbyteStateBlob(data=updated_state)
+                )
+            )
+        )
+
+   #     yield AirbyteMessage(
+   #         type=MessageType.STATE,
+   #         state=AirbyteStateMessage(
+   #             data=updated_state,
+   #         ),
+   #     )
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -880,32 +946,32 @@ class CustomerBalanceTransactions(ParentIncrementalStripeSubStream):
         if no new CBTs are generated in source.
         """
         current_stream_state = current_stream_state or {}
+        child_cursor_key = f"{self.name}_cursor_created"
+        parent_cursor_keys = {
+            parent.name: f"{parent.name}_cursor_updated"
+            for parent in self.parent_streams
+        }
 
         # Track the latest cursor for each parent stream
         latest_child_cursor = latest_record.get(self.cursor_field, 0) or 0
         latest_parent_cursors = {
-            parent.name: current_stream_state.get(parent.name, {}).get(parent.cursor_field, 0) or 0 for parent in self.parent_streams
+            parent_cursor_keys[parent.name]: current_stream_state.get(parent_cursor_keys[parent.name], 0) or 0
+            for parent in self.parent_streams
         }
+
 
         # Determine the max cursor value across all parent and child streams
         latest_cursor_value = max(latest_child_cursor, max(latest_parent_cursors.values(), default=0), self.start_date)
-
-        latest_cursor_value_minus_2 = latest_cursor_value - int(timedelta(days=2).total_seconds())
-        current_time_minus_7 = int(datetime.utcnow().timestamp()) - int(timedelta(days=7).total_seconds())
-
-        # Set the new stream cursor the latest cursor across the streams minus 2 or the current runtime minus 7
-        new_stream_cursor = max(latest_cursor_value_minus_2, current_time_minus_7)
+        latest_cursor_value_minus_1 = latest_cursor_value - int(timedelta(days=1).total_seconds())
+        current_time_minus_3 = int(datetime.utcnow().timestamp()) - int(timedelta(days=3).total_seconds())
+        new_stream_cursor = max(latest_cursor_value_minus_1, current_time_minus_3)
         self.logger.info(
             f"Latest cursor value across all streams: {latest_cursor_value}, New stream cursor after adjustments: {new_stream_cursor}"
         )
 
-        updated_state = {self.name: {"created": new_stream_cursor, "updated": new_stream_cursor}}
-        # Update all parent states
-        for parent in self.parent_streams:
-            latest_parent_cursor = latest_parent_cursors.get(parent.name, 0)
-            updated_state[parent.name] = {
-                "created": max(latest_parent_cursor, new_stream_cursor),
-                "updated": max(latest_parent_cursor, new_stream_cursor),
-            }
+        updated_state = current_stream_state.copy()
+        updated_state[child_cursor_key] = new_stream_cursor
+        for parent_name, parent_cursor_key in parent_cursor_keys.items():
+            updated_state[parent_cursor_key] = max(latest_parent_cursors[parent_cursor_key], new_stream_cursor)
 
         return updated_state
