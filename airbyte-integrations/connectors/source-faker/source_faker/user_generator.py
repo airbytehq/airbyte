@@ -3,19 +3,19 @@
 #
 
 import datetime
+import os
 from multiprocessing import current_process
 
 from mimesis import Address, Datetime, Person
 from mimesis.locales import Locale
 
-from airbyte_cdk.models import AirbyteRecordMessage, Type
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, Type
 
-from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
 from .utils import format_airbyte_time, now_millis
 
 
 class UserGenerator:
-    def __init__(self, stream_name: str, seed: int) -> None:
+    def __init__(self, stream_name: str, seed: int | None) -> None:
         self.stream_name = stream_name
         self.seed = seed
 
@@ -28,7 +28,7 @@ class UserGenerator:
         """
 
         seed_with_offset = self.seed
-        if self.seed is not None and len(current_process()._identity) > 0:
+        if self.seed is not None and len(current_process()._identity) > 0 and not os.environ.get("PYTEST_VERSION"):
             seed_with_offset = self.seed + current_process()._identity[0]
 
         global person
@@ -48,7 +48,7 @@ class UserGenerator:
             "id": user_id + 1,
             "created_at": format_airbyte_time(dt.datetime()),
             "updated_at": format_airbyte_time(datetime.datetime.now()),
-            "name": person.name(),
+            "name": f"{person.first_name()} {person.last_name()}",
             "title": person.title(),
             "age": person.age(),
             "email": email,
@@ -76,4 +76,4 @@ class UserGenerator:
             profile["created_at"] = format_airbyte_time(dt.datetime())
 
         record = AirbyteRecordMessage(stream=self.stream_name, data=profile, emitted_at=now_millis())
-        return AirbyteMessageWithCachedJSON(type=Type.RECORD, record=record)
+        return AirbyteMessage(type=Type.RECORD, record=record)
