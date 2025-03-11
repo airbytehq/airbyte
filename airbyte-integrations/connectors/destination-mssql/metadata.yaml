@@ -48,7 +48,7 @@ data:
            require the execution of a truncate refresh on an existing connection or the creation of a new connection.  
            If a new connection is set up, you may delete the old connection and the raw table in the destination after 
           a successful initial sync of the new connection.
-          
+
           '
         upgradeDeadline: "2025-09-11"
   releaseStage: generally_available
