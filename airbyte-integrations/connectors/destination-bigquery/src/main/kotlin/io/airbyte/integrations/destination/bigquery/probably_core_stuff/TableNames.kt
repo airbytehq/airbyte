@@ -11,6 +11,11 @@ data class TableNames(
     // * only the final table exists (i.e. new-style direct-load tables)
     val oldStyleRawTableName: TableName?,
     val finalTableName: TableName?,
-)
+) {
+    companion object {
+        // TODO comment explaining this
+        const val TMP_TABLE_SUFFIX = "_airbyte_tmp"
+    }
+}
 
 data class TableName(val namespace: String, val name: String)

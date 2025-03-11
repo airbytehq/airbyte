@@ -92,57 +92,57 @@ class BigquerySqlGenerator(private val projectId: String?) {
             .joinToString { ",\n" }
     }
 
-    private fun clusteringColumns(
-        stream: DestinationStream,
-        destinationColumnNames: DestinationColumnNameMapping,
-    ): List<String> {
-        val clusterColumns: MutableList<String> = ArrayList()
-        if (stream.importType is Dedupe) {
-            // We're doing de-duping, therefore we have a primary key.
-            // Cluster on the first 3 PK columns since BigQuery only allows up to 4 clustering
-            // columns,
-            // and we're always clustering on _airbyte_extracted_at
-            (stream.importType as Dedupe).primaryKey.take(3).forEach { origColumnName ->
-                // needing the [0] to get the first PK element is gross
-                clusterColumns.add(destinationColumnNames[origColumnName[0]]!!)
-            }
-        }
-        clusterColumns.add("_airbyte_extracted_at")
-        return clusterColumns
-    }
-
-    private fun toDialectType(type: AirbyteType): StandardSQLTypeName =
-        when (type) {
-            BooleanType -> StandardSQLTypeName.BOOL
-            DateType -> StandardSQLTypeName.DATE
-            IntegerType -> StandardSQLTypeName.INT64
-            NumberType -> StandardSQLTypeName.NUMERIC
-            StringType -> StandardSQLTypeName.STRING
-            TimeTypeWithTimezone -> StandardSQLTypeName.STRING
-            TimeTypeWithoutTimezone -> StandardSQLTypeName.TIME
-            TimestampTypeWithTimezone -> StandardSQLTypeName.TIMESTAMP
-            TimestampTypeWithoutTimezone -> StandardSQLTypeName.DATETIME
-            is UnionType -> {
-                val typeWithPrecedence: AirbyteType = LegacyTypingDedupingUtil.chooseType(type)
-                when (typeWithPrecedence) {
-                    ArrayTypeWithoutSchema,
-                    is ArrayType,
-                    is ObjectType,
-                    ObjectTypeWithEmptySchema,
-                    ObjectTypeWithoutSchema -> StandardSQLTypeName.JSON
-                    else -> toDialectType(typeWithPrecedence)
-                }
-            }
-            ArrayTypeWithoutSchema,
-            is ArrayType,
-            is ObjectType,
-            ObjectTypeWithEmptySchema,
-            ObjectTypeWithoutSchema,
-            is UnknownType -> StandardSQLTypeName.JSON
-        }
-
     companion object {
         private const val QUOTE: Char = '`'
-        private fun quote(identifier: String) = "$QUOTE$identifier$QUOTE"
+        fun quote(identifier: String) = "$QUOTE$identifier$QUOTE"
+
+        internal fun clusteringColumns(
+            stream: DestinationStream,
+            destinationColumnNames: DestinationColumnNameMapping,
+        ): List<String> {
+            val clusterColumns: MutableList<String> = ArrayList()
+            if (stream.importType is Dedupe) {
+                // We're doing de-duping, therefore we have a primary key.
+                // Cluster on the first 3 PK columns since BigQuery only allows up to 4 clustering
+                // columns,
+                // and we're always clustering on _airbyte_extracted_at
+                (stream.importType as Dedupe).primaryKey.take(3).forEach { origColumnName ->
+                    // needing the [0] to get the first PK element is gross
+                    clusterColumns.add(destinationColumnNames[origColumnName[0]]!!)
+                }
+            }
+            clusterColumns.add("_airbyte_extracted_at")
+            return clusterColumns
+        }
+
+        internal fun toDialectType(type: AirbyteType): StandardSQLTypeName =
+            when (type) {
+                BooleanType -> StandardSQLTypeName.BOOL
+                DateType -> StandardSQLTypeName.DATE
+                IntegerType -> StandardSQLTypeName.INT64
+                NumberType -> StandardSQLTypeName.NUMERIC
+                StringType -> StandardSQLTypeName.STRING
+                TimeTypeWithTimezone -> StandardSQLTypeName.STRING
+                TimeTypeWithoutTimezone -> StandardSQLTypeName.TIME
+                TimestampTypeWithTimezone -> StandardSQLTypeName.TIMESTAMP
+                TimestampTypeWithoutTimezone -> StandardSQLTypeName.DATETIME
+                is UnionType -> {
+                    val typeWithPrecedence: AirbyteType = LegacyTypingDedupingUtil.chooseType(type)
+                    when (typeWithPrecedence) {
+                        ArrayTypeWithoutSchema,
+                        is ArrayType,
+                        is ObjectType,
+                        ObjectTypeWithEmptySchema,
+                        ObjectTypeWithoutSchema -> StandardSQLTypeName.JSON
+                        else -> toDialectType(typeWithPrecedence)
+                    }
+                }
+                ArrayTypeWithoutSchema,
+                is ArrayType,
+                is ObjectType,
+                ObjectTypeWithEmptySchema,
+                ObjectTypeWithoutSchema,
+                is UnknownType -> StandardSQLTypeName.JSON
+            }
     }
 }

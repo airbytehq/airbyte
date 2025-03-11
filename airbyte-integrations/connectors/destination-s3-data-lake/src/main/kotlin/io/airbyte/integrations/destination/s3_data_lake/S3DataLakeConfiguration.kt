@@ -28,7 +28,8 @@ data class S3DataLakeConfiguration(
     // This will likely not show performance improvements in the cloud without additional
     // resources. In the future, if enterprise or oss users need more flexibility, we can
     // expose this in their configurations.
-    override val numProcessRecordsWorkers: Int = 2
+    override val numProcessRecordsWorkers: Int = 2,
+    override val recordBatchSizeBytes: Long = 42,
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
