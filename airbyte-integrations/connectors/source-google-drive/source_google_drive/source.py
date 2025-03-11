@@ -20,7 +20,7 @@ class SourceGoogleDrive(FileBasedSource):
     # The FileBasedSource base class's constructor will instantiate these when they are needed.
     spec_class = SourceGoogleDriveSpec
     stream_reader_class = SourceGoogleDriveStreamReader
-    stream_permission_reader_class = SourceGoogleDriveStreamReader
+    stream_permission_reader_class = SourceGoogleDriveStreamPermissionsReader
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         """
