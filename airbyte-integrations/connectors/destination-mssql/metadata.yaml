@@ -30,9 +30,26 @@ data:
       enabled: true
   releases:
     breakingChanges:
+      1.0.0:
+        message:
+          'This version removes the option to use "normalization" with MSSQL.
+          It also changes the schema and database of Airbyte''s "raw" tables to be
+          compatible with the new [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2)
+          format. These changes will likely require updates to downstream dbt / SQL
+          models. Selecting `Upgrade` will upgrade **all** connections using this
+          destination at their next sync.
+
+          '
+        upgradeDeadline: "2024-05-25"
       2.0.0:
         message: >
-          This version introduces new configuration options (bulk insert via Azure Cloud Storage) and removes the use of a raw table prior to final insertion in the destination table.  These changes will either require the execution of a truncate refresh on an existing connection or the creation of a new connection.  If a new connection is set up, you may delete the old connection and the raw table in the destination after a successful initial sync of the new connection.
+          'This version introduces new configuration options (bulk insert via Azure Cloud Storage) and removes 
+           the use of a raw table prior to final insertion in the destination table.  These changes will either 
+           require the execution of a truncate refresh on an existing connection or the creation of a new connection.  
+           If a new connection is set up, you may delete the old connection and the raw table in the destination after 
+          a successful initial sync of the new connection.
+          
+          '
         upgradeDeadline: "2025-09-11"
   releaseStage: generally_available
   supportLevel: certified
