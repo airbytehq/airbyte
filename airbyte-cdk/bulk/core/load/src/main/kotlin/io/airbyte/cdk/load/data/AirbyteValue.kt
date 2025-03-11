@@ -157,20 +157,36 @@ private class ObjectValueSerializer : JsonSerializer<ObjectValue>() {
 
 @JvmInline value class UnknownValue(val value: JsonNode) : AirbyteValue
 
+/**
+ * Represents an "enriched" (/augmented) Airbyte value with additional metadata.
+ *
+ * @property value The actual [AirbyteValue]
+ * @property type The type ([AirbyteType]) of the [AirbyteValue]
+ * @property changes List of [Meta.Change]s that have been applied to this value
+ * @property name Field name
+ * @property fieldCategory [FieldCategory] of the field
+ */
 data class EnrichedAirbyteValue(
     val value: AirbyteValue,
-    val changes: List<Meta.Change>,
-    // If this is null then the field is "undeclared" and should probably be ignored.
-    // It could mean for example that there is a bug in the destination and some values
-    // are being added that are not currently in the schema.
-    val field: DeclaredField? = null
+    val type: AirbyteType,
+    val changes: List<Meta.Change> = emptyList(),
+    val name: String,
+    val fieldCategory: FieldCategory
 ) {
-    fun nulled(reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR): EnrichedAirbyteValue {
+    init {
+        require(name.isNotBlank()) { "Field name cannot be blank" }
+    }
+
+    /**
+     * Creates a nullified version of this value with the specified reason.
+     *
+     * @param reason The [Reason] for nullification, defaults to DESTINATION_SERIALIZATION_ERROR
+     * @return A new [EnrichedAirbyteValue] with a null value and an additional change record
+     */
+    fun toNullified(reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR): EnrichedAirbyteValue {
         val nullChange =
             Meta.Change(
-                field =
-                    field!!
-                        .name, // in the case of an undeclared field We would probably not need to
+                field = name,
                 change = AirbyteRecordMessageMetaChange.Change.NULLED,
                 reason = reason
             )
@@ -179,15 +195,20 @@ data class EnrichedAirbyteValue(
         return copy(value = NullValue, changes = changes + nullChange)
     }
 
-    fun truncated(
+    /**
+     * Creates a truncated version of this value with the specified reason and new value.
+     *
+     * @param reason The [Reason] for truncation, defaults to DESTINATION_RECORD_SIZE_LIMITATION
+     * @param newValue The new (truncated) value to use
+     * @return A new [EnrichedAirbyteValue] with the truncated value and an additional change record
+     */
+    fun toTruncated(
         reason: Reason = Reason.DESTINATION_RECORD_SIZE_LIMITATION,
         newValue: AirbyteValue
     ): EnrichedAirbyteValue {
         val truncateChange =
             Meta.Change(
-                field =
-                    field!!
-                        .name, // in the case of an undeclared field We would probably not need to
+                field = name,
                 change = AirbyteRecordMessageMetaChange.Change.TRUNCATED,
                 reason = reason
             )
@@ -197,10 +218,8 @@ data class EnrichedAirbyteValue(
     }
 }
 
-data class DeclaredField(val type: AirbyteType, val name: String, val fieldCategory: FieldCategory)
-
 /**
- * The DeclaredField category allows us to quickly understand if the field is an Airbyte controlled
+ * The [EnrichedAirbyteValue] category allows us to quickly understand if the field is an Airbyte controlled
  * field or if it is declared by the source.
  */
 enum class FieldCategory(val columnName: String) {
@@ -210,10 +229,4 @@ enum class FieldCategory(val columnName: String) {
     AB_GENERATION_ID(Meta.COLUMN_NAME_AB_GENERATION_ID),
     // For fields that don't match any of the predefined Airbyte columns
     CLIENT_DATA("");
-
-    companion object {
-        fun fromColumnName(columnName: String): FieldCategory {
-            return entries.find { it.columnName == columnName } ?: CLIENT_DATA
-        }
-    }
 }
