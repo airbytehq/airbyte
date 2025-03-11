@@ -2,12 +2,20 @@
 package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.AirbyteSourceRunner
-import java.lang.Thread.sleep
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.File
 
+private val log = KotlinLogging.logger {}
 object MySqlSource {
     @JvmStatic
     fun main(args: Array<String>) {
-        sleep(100_000)
+        args.forEachIndexed { index, arg ->
+            log.info { "***$index $arg" }
+            if (index in listOf(2, 4, 6)) {
+                log.info { (File(arg).readText()) }
+            }
+
+        }
         AirbyteSourceRunner.run(*args)
     }
 }
