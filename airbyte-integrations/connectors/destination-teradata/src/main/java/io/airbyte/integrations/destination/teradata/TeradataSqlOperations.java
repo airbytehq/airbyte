@@ -106,10 +106,12 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
   @Override
   public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
     final StringBuilder appendedQueries = new StringBuilder();
-    for (final String query : queries) {
-      appendedQueries.append(query);
+    if (!queries.isEmpty()) {
+      for (final String query : queries) {
+        appendedQueries.append(query);
+      }
+      database.execute(appendedQueries.toString());
     }
-    database.execute(appendedQueries.toString());
   }
 
 }
