@@ -76,4 +76,4 @@ class UserGenerator:
             profile["created_at"] = format_airbyte_time(dt.datetime())
 
         record = AirbyteRecordMessage(stream=self.stream_name, data=profile, emitted_at=now_millis())
-        return CAirbyteMessage(type=Type.RECORD, record=record)
+        return AirbyteMessage(type=Type.RECORD, record=record)
