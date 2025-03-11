@@ -5,8 +5,9 @@
 package io.airbyte.cdk.load.data
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Meta.Change
+import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 
+// implemented by connectors
 class MapperPipeline(
     inputSchema: AirbyteType,
     schemaValueMapperPairs: List<Pair<AirbyteSchemaMapper, AirbyteValueMapper>>,
@@ -23,12 +24,21 @@ class MapperPipeline(
         finalSchema = schemas.last()
     }
 
-    fun map(data: AirbyteValue, changes: List<Change>? = null): Pair<AirbyteValue, List<Change>> =
-        schemasWithMappers.fold(data to (changes ?: emptyList())) {
-            (value, changes),
-            (schema, mapper) ->
-            mapper.map(value, schema, changes)
+    fun map(record: DestinationRecordAirbyteValue): DestinationRecordAirbyteValue =
+        record.copy(
+            declaredFields =
+                record.declaredFields.mapValues { (_, value) -> nullifyLongStrings(value) }
+        )
+
+    private fun nullifyLongStrings(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+        return if (
+            value.type is StringType && value.value is StringValue && value.value.value.length > 100
+        ) {
+            value.toTruncated(newValue = StringValue(value.value.value.substring(0, 100)))
+        } else {
+            value
         }
+    }
 }
 
 interface MapperPipelineFactory {

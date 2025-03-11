@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
+import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
@@ -157,7 +158,9 @@ data class DestinationRecordSerialized(
 /** Represents a record both deserialized AND marshaled to airbyte value. The marshaling */
 data class DestinationRecordAirbyteValue(
     val stream: DestinationStream.Descriptor,
-    val data: AirbyteValue,
+    val declaredFields: Map<String, EnrichedAirbyteValue>,
+    val airbyteMetaFields: Map<String, EnrichedAirbyteValue>,
+    val undeclaredFields: Map<String, JsonNode>,
     val emittedAtMs: Long,
     val meta: Meta?,
     val serializedSizeBytes: Long = 0L
