@@ -223,10 +223,10 @@ data class EnrichedAirbyteValue(
  * field or if it is declared by the source.
  */
 enum class FieldCategory(val columnName: String) {
-    AB_RAW_ID(Meta.COLUMN_NAME_AB_RAW_ID),
-    AB_EXTRACTED_AT(Meta.COLUMN_NAME_AB_EXTRACTED_AT),
-    AB_META(Meta.COLUMN_NAME_AB_META),
-    AB_GENERATION_ID(Meta.COLUMN_NAME_AB_GENERATION_ID),
+    RAW_ID(Meta.COLUMN_NAME_AB_RAW_ID),
+    EXTRACTED_AT(Meta.COLUMN_NAME_AB_EXTRACTED_AT),
+    META(Meta.COLUMN_NAME_AB_META),
+    GENERATION_ID(Meta.COLUMN_NAME_AB_GENERATION_ID),
     // For fields that don't match any of the predefined Airbyte columns
     CLIENT_DATA("");
 }
