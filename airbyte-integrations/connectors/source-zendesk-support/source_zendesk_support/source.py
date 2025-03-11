@@ -117,7 +117,7 @@ class SourceZendeskSupport(YamlDeclarativeSource):
             ArticleComments(**args),
             ArticleCommentVotes(**args),
             ArticleVotes(**args),
-            Tickets(**args),
+            # Tickets(**args),
             TicketMetrics(**args),
         ]
         return streams

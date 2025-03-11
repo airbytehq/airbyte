@@ -700,6 +700,20 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
+  tickets_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true # TODO config
+      paginator:
+        $ref: "#/definitions/end_of_stream_paginator"
+    $parameters:
+      name: "tickets"
+      path: "incremental/tickets/cursor.json"
+      cursor_field: "generated_timestamp"
+      cursor_filter: "start_time"
+      primary_key: "id"
+
   topics_stream:
     $ref: "#/definitions/semi_incremental_stream"
     retriever:
@@ -790,6 +804,7 @@ streams:
   - $ref: "#/definitions/ticket_comments_stream"
   - $ref: "#/definitions/ticket_metric_events_stream"
   - $ref: "#/definitions/ticket_skips_stream"
+  - $ref: "#/definitions/tickets_stream"
   - $ref: "#/definitions/triggers_stream"
   - $ref: "#/definitions/users_stream"
   - $ref: "#/definitions/users_identities_stream"
