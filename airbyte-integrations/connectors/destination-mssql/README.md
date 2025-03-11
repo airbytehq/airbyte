@@ -1,4 +1,4 @@
-# Microsoft SQL Server V2 (Bulk CDK) Destination
+# Microsoft SQL Server (Bulk CDK) Destination
 
 ## Build
 

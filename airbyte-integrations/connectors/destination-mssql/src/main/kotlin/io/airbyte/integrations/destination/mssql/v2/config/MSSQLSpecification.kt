@@ -18,7 +18,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import jakarta.inject.Singleton
 
 @Singleton
-@JsonSchemaTitle("MSSQL V2 Destination Specification")
+@JsonSchemaTitle("MSSQL Destination Specification")
 @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
 class MSSQLSpecification : ConfigurationSpecification(), LoadTypeSpecification {
     @get:JsonSchemaTitle("Host")
