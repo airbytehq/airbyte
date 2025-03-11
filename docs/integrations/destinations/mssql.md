@@ -1,30 +1,82 @@
-# MSSQL (V2)
+# MSSQL
 
-:::danger
-This connector is in early access and **should not be used for production**. It is subject to breaking changes without notice.
-:::
+## Features
 
-## MSSQL with Azure Blob Storage (Bulk Upload)
+| Feature                        | Supported?\(Yes/No\) | Notes |
+| :----------------------------- | :------------------- | :---- |
+| Full Refresh Sync              | Yes                  |       |
+| Incremental - Append Sync      | Yes                  |       |
+| Incremental - Append + Deduped | Yes                  |       |
+| Namespaces                     | Yes                  |       |
 
-:::caution
-The **Azure Blob Storage Bulk Upload** feature is also in early access and may change in backward-incompatible ways.
+## Output Schema
 
-We appreciate your feedback as we continue to refine it!
-:::
+Each stream will be output into its own table in SQL Server. Each table will contain 3 columns:
 
-This document describes how to set up and use the **Microsoft SQL Server (MSSQL) connector** with the **Azure Blob Storage Bulk Upload** feature. By staging data in an Azure Blob Storage container and using `BULK INSERT`, you can significantly improve ingestion speed and reduce network overhead for large or frequent data loads.
+## Getting Started
 
----
+### Setup guide
 
-## Why Use Azure Blob Storage Bulk Upload?
+- MS SQL Server: `Azure SQL Database`, `SQL Server 2016` or greater
+
+#### Network Access
+
+Make sure your SQL Server database can be accessed by Airbyte. If your database is within a VPC, you may need to allow access from the IP you're using to expose Airbyte.
+
+#### **Permissions**
+
+You need a user configured in SQL Server that can create tables and write rows. We highly recommend creating an Airbyte-specific user for this purpose.
+In order to allow for normalization, please grant ALTER permissions for the user configured.
+
+#### Target Database
+
+You will need to choose an existing database or create a new database that will be used to store synced data from Airbyte.
+
+### Configuration
+
+You'll need the following information to configure the MSSQL destination:
+
+- **Host**
+  - The host name of the MSSQL database.
+- **Port**
+  - The port of the MSSQL database.
+- **Database Name** 
+  - The name of the MSSQL database.
+- **Default Schema** 
+  - The default schema tables are written to if the source does not specify a namespace. The usual value for this field is "public".
+- **Username** 
+  - The username which is used to access the database.
+- **Password** 
+  - The password associated with this username.
+- **JDBC URL Parameters** 
+  - Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).
+- **SSL Method**
+  - The SSL configuration supports three modes: Unencrypted, Encrypted \(trust server certificate\), and Encrypted \(verify certificate\).
+    - **Unencrypted**: Do not use SSL encryption on the database connection
+    - **Encrypted \(trust server certificate\)**: Use SSL encryption without verifying the server's certificate. This is useful for self-signed certificates in testing scenarios, but should not be used in production.
+    - **Encrypted \(verify certificate\)**: Use the server's SSL certificate, after standard certificate verification.
+      - **Host Name In Certificate** \(optional\): When using certificate verification, this property can be set to specify an expected name for added security. If this value is present, and the server's certificate's host name does not match it, certificate verification will fail.
+- **Load Type**
+  - The data load type supports two modes:  Insert or Bulk
+    - **Insert**: Utilizes SQL `INSERT` statements to load data to the destination table.
+    - **Bulk**: Utilizes Azure Blob Storage and the `BULK INSERT` command to load data to the destination table.  If selected, additional configuration is required:
+      - **Azure Blob Storage Account Name** - The name of the [Azure Blob Storage account]( https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction#storage-accounts).
+      - **Azure Blob Storage Container Name** - The name of the [Azure Blob Storage container](https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction#containers).
+      - **Shared Access Signature** - A [shared access signature (SAS)](https://learn.microsoft.com/azure/storage/common/storage-sas-overview) provides secure delegated access to resources.\
+      - **BULK Load Data Source** - Specifies the [external data source name configured in MSSQL](https://learn.microsoft.com/sql/t-sql/statements/bulk-insert-transact-sql), which references the Azure Blob container.
+      - **Pre-Load Value Validation** - When enabled, Airbyte will validate all values before loading them into the destination table. This provides stronger data integrity guarantees but may significantly impact performance.
+
+#### MSSQL with Azure Blob Storage (Bulk Upload) Setup Guide
+
+This section describes how to set up and use the **Microsoft SQL Server (MSSQL) connector** with the **Azure Blob Storage Bulk Upload** feature. By staging data in an Azure Blob Storage container and using `BULK INSERT`, you can significantly improve ingestion speed and reduce network overhead for large or frequent data loads.
+
+##### Why Use Azure Blob Storage Bulk Upload?
 
 When handling high data volumes or frequent syncs, row-by-row inserts into MSSQL can become slow and resource-intensive. By staging files in Azure Blob Storage first, you can:
 1. **Aggregate Data into Bulk Files**: Data is written to Blob Storage in batches, reducing overhead.
 2. **Perform Bulk Ingestion**: MSSQL uses `BULK INSERT` to directly load these files, typically resulting in faster performance compared to conventional row-by-row inserts.
 
----
-
-## Prerequisites
+##### Prerequisites
 
 1. **A Microsoft SQL Server Instance**
     - Compatible with on-premises SQL Server or Azure SQL Database.
@@ -34,13 +86,11 @@ When handling high data volumes or frequent syncs, row-by-row inserts into MSSQL
     - **Blob Storage**: ability to create, read, and delete objects within the designated container.
     - **MSSQL**: ability to create or modify tables, and permission to execute `BULK INSERT`.
 
----
-
-## Setup Guide
+##### Setup Guide
 
 Follow these steps to configure MSSQL with Azure Blob Storage for bulk uploads.
 
-### 1. Set Up Azure Blob Storage
+###### 1. Set Up Azure Blob Storage
 
 1. **Create a Storage Account & Container**
     - In the Azure Portal, create (or reuse) a Storage Account.
@@ -49,7 +99,7 @@ Follow these steps to configure MSSQL with Azure Blob Storage for bulk uploads.
     - Use a **Shared Access Signature (SAS)** scoped to your container.
     - Ensure the SAS token or role assignments include permissions such as **Read**, **Write**, **Delete**, and **List**.
 
-### 2. Configure MSSQL
+###### 2. Configure MSSQL
 
 See the official [Microsoft documentation](https://learn.microsoft.com/en-us/sql/t-sql/statements/create-external-data-source-transact-sql?view=sql-server-2017&tabs=dedicated#e-create-an-external-data-source-for-bulk-operations-retrieving-data-from-azure-storage) for more details. Below is a simplified overview:
 
@@ -79,7 +129,7 @@ See the official [Microsoft documentation](https://learn.microsoft.com/en-us/sql
    ```
    You’ll reference `<data_source_name>` when configuring the connector.
 
-### 3. Connector Configuration
+###### 3. Connector Configuration
 
 You’ll need to supply:
 
@@ -92,7 +142,7 @@ You’ll need to supply:
 4. **SAS Token**
     - The token that grants Blob Storage access.
 
----
+See the [Getting Started: Configuration section](#configuration) of this guide for more details on `BULK INSERT` connector configuration.
 
 ## Changelog
 
@@ -101,7 +151,7 @@ You’ll need to supply:
 
 | Version | Date       | Pull Request                                               | Subject                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------|
-| 2.0.0   | 2025-03-11 | []()           | Release 2.0.0                                          |
+| 2.0.0   | 2025-03-11 | [55684](https://github.com/airbytehq/airbyte/pull/55684)   | Release 2.0.0                                          |
 | 0.1.15  | 2025-03-07 | [55252](https://github.com/airbytehq/airbyte/pull/55252)   | RC13: Bugfix for OOM on Bulk Load                      |
 | 0.1.14  | 2025-03-05 | [54159](https://github.com/airbytehq/airbyte/pull/54159)   | RC12: Support For Bulk Insert Using Azure Blob Storage |
 | 0.1.13  | 2025-03-04 | [55193](https://github.com/airbytehq/airbyte/pull/55193)   | RC11: Increase decimal precision                       |
