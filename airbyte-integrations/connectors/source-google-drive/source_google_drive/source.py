@@ -18,6 +18,7 @@ class SourceGoogleDrive(FileBasedSource):
 
     # Provide specific implementation classes for Google Drive specifically.
     # The FileBasedSource base class's constructor will instantiate these when they are needed.
+    cursor_class = DefaultFileBasedCursor
     spec_class = SourceGoogleDriveSpec
     stream_reader_class = SourceGoogleDriveStreamReader
     stream_permission_reader_class = SourceGoogleDriveStreamPermissionsReader
