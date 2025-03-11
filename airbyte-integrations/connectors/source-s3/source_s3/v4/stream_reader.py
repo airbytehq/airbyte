@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 from io import IOBase
 from os import getenv, makedirs, path
-from typing import Dict, Iterable, List, Optional, Set, cast
+from typing import Any, Dict, Iterable, List, Optional, Set, cast
 
 import boto3.session
 import pendulum
@@ -33,6 +33,20 @@ AWS_EXTERNAL_ID = getenv("AWS_ASSUME_ROLE_EXTERNAL_ID")
 
 
 class SourceS3StreamReader(AbstractFileBasedStreamReader):
+    def get_file_acl_permissions(self, file: RemoteFile, logger: logging.Logger) -> Dict[str, Any]:
+        return {}
+
+    def load_identity_groups(self, logger: logging.Logger) -> Iterable[Dict[str, Any]]:
+        return []
+
+    @property
+    def file_permissions_schema(self) -> Dict[str, Any]:
+        return {}
+
+    @property
+    def identities_schema(self) -> Dict[str, Any]:
+        return {}
+
     FILE_SIZE_LIMIT = 1_500_000_000
 
     def __init__(self):
