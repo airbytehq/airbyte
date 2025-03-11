@@ -1,6 +1,6 @@
 # S3 Data Lake
 
-This page guides you through setting up the S3 Data Lake destination connector. This connector writes the Iceberg table format to S3 or an S3-compatible storage backend.
+This page guides you through setting up the S3 Data Lake destination connector. This connector writes the Iceberg table format to S3 or an S3-compatible storage backend. This is Airbyte's preferred Iceberg integration. It replaces the older [Iceberg](iceberg) destination. You should switch to this one if you can.
 
 ## Prerequisites
 
@@ -58,7 +58,7 @@ Create a bucket policy.
     Object-level permissions alone aren't sufficient to authenticate. Include **bucket-level** permissions as provided in the preceding example.
     :::
 
-4. Give your policy a descriptive name, then click **Create policy**.
+4. Click **Next**, give your policy a descriptive name, then click **Create policy**.
 
 #### Authenticate {#authentication-s3}
 
@@ -70,10 +70,15 @@ In most cases, you authenticate with an IAM user. If you're using Airbyte Cloud 
 Use an existing or new [Access Key ID and Secret Access Key](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html).
 
 1. In the IAM dashboard, click **Users**.
+
 2. If you're using an existing IAM user, select that user, then click **Add permissions** > **Add permission**. If you're creating a new user, click **Add users**.
+
 3. Click **Attach policies directly**, then check the box for your policy. Click **Next** > **Add permissions**.
+
 4. Click the **Security credentials** tab > **Create access key**. The AWS console prompts you to select a use case and add optional tags to your access key.
+
 5. Click **Create access key**. Take note of your keys.
+
 6. In Airbyte, enter those keys into the Airbyte connector's **AWS Access Key ID** and **AWS Secret Access Key** fields.
 
 </details>
@@ -218,7 +223,7 @@ In each stream, Airbyte maps top-level fields to Iceberg fields. Airbyte maps ne
 This is the full mapping between Airbyte types and Iceberg types.
 
 | Airbyte type               | Iceberg type                   |
-|----------------------------|--------------------------------|
+| -------------------------- | ------------------------------ |
 | Boolean                    | Boolean                        |
 | Date                       | Date                           |
 | Integer                    | Long                           |
@@ -281,13 +286,46 @@ Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/bra
 
 - During truncate syncs, the connector writes the refreshed data to the `airbyte_staging` branch and fast-forwards the `main` branch at the end of the sync. Since most query engines target the `main` branch,  people can query your data until the end of a truncate sync, at which point it's atomically swapped to the new version.
 
+## Considerations and limitations
+
+This section documents known considerations and limitations in how this Iceberg destination interacts with other products.
+
+### Snowflake
+
+Airbyte uses Iceberg row-level deletes to mark older versions of records as outdated. Snowflake doesn't recognize native Iceberg row-level deletes for Iceberg tables with external catalogs like Glue ([see Snowflake's docs](https://docs.snowflake.com/en/user-guide/tables-iceberg#considerations-and-limitations)). As a result, your query results return all versions of a record.
+
+For example, the following table contains three versions of the 'Alice' record.
+
+| `id` | `name` | `updated_at`     | `_airbyte_extracted_at` | `_ab_cdc_deleted_at` |
+| :--- | :----- | :--------------- | :---------------------- | -------------------- |
+| 1    | Alice  | 2024-03-01 10:00 | 2024-03-01 10:10        | NULL                 |
+| 1    | Alice  | 2024-03-02 12:00 | 2024-03-02 12:10        | NULL                 |
+| 1    | Alice  | 2024-03-03 14:00 | 2024-03-03 14:10        | NULL                 |
+| 2    | Bob    | 2024-03-04 10:00 | 2024-03-04 10:10        | 2024-03-05 11:00     |
+
+To mitigate this, generate an equivalent flag to detect outdated records. Airbyte generates an `airbyte_extracted_at` field that assists with this.
+
+```sql
+row_number() over (partition by {primary_key} order by {cursor}, _airbyte_extracted_at)) != 1 OR _ab_cdc_deleted_at IS NOT NULL as is_outdated;
+```
+
+Now, identifying the latest version of the 'Alice' record is possible by querying whether `is_outdated` is false.
+
+| `id` | `name` | `updated_at`     | `_airbyte_extracted_at` | `row_number` | `_ab_cdc_deleted_at` | `is_outdated` |
+| :--- | :----- | :--------------- | :---------------------- | ------------ | -------------------- | ------------- |
+| 2    | Bob    | 2024-03-04 10:00 | 2024-03-04 10:10        | 4            | 2024-03-05 11:00     | True          |
+| 1    | Alice  | 2024-03-01 10:00 | 2024-03-01 10:10        | 3            | NULL                 | True          |
+| 1    | Alice  | 2024-03-02 12:00 | 2024-03-02 12:10        | 2            | NULL                 | True          |
+| 1    | Alice  | 2024-03-03 14:00 | 2024-03-03 14:10        | 1            | NULL                 | False         |
+
+
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                      |
-|:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------|
+| :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------- |
 | 0.3.15  | 2025-02-28 | [\#54724](https://github.com/airbytehq/airbyte/pull/54724) | Certify connector                                                            |
 | 0.3.14  | 2025-02-14 | [\#53241](https://github.com/airbytehq/airbyte/pull/53241) | New CDK interface; perf improvements, skip initial record staging            |
 | 0.3.13  | 2025-02-14 | [\#53697](https://github.com/airbytehq/airbyte/pull/53697) | Internal refactor                                                            |
