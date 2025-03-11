@@ -42,8 +42,6 @@ import io.airbyte.cdk.load.message.InputStreamCheckpoint
 import io.airbyte.cdk.load.message.Meta.Change
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
-import io.airbyte.cdk.load.test.util.DefaultDefaultNamespaceProvider
-import io.airbyte.cdk.load.test.util.DefaultNamespaceProvider
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
@@ -145,7 +143,7 @@ enum class UnionBehavior {
 
 abstract class BasicFunctionalityIntegrationTest(
     /** The config to pass into the connector, as a serialized JSON blob */
-    val configContents: String,
+    configContents: String,
     val configSpecClass: Class<out ConfigurationSpecification>,
     dataDumper: DestinationDataDumper,
     destinationCleaner: DestinationCleaner,
@@ -153,7 +151,6 @@ abstract class BasicFunctionalityIntegrationTest(
     nameMapper: NameMapper = NoopNameMapper,
     additionalMicronautEnvs: List<String> = emptyList(),
     micronautProperties: Map<Property, String> = emptyMap(),
-    val defaultNamespaceProvider: DefaultNamespaceProvider = DefaultDefaultNamespaceProvider(),
     /**
      * Whether to actually verify that the connector wrote data to the destination. This should only
      * ever be disabled for test destinations (dev-null, etc.).
@@ -458,9 +455,13 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testNamespaces() {
         assumeTrue(verifyDataWriting)
-        fun makeStream(namespace: String?, name: String = "test_stream") =
+        fun makeStream(namespace: String?) =
             DestinationStream(
-                DestinationStream.Descriptor(namespace, name),
+                // We need to randomize the stream name for destinations which support
+                // namespace=null natively.
+                // Otherwise, multiple test runs would write to `<null>.test_stream`.
+                // Now, they instead write to `<null>.test_stream_test20250123abcd`.
+                DestinationStream.Descriptor(namespace, "test_stream_$randomizedNamespace"),
                 Append,
                 ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
@@ -469,9 +470,11 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         val stream1 = makeStream(randomizedNamespace + "_1")
         val stream2 = makeStream(randomizedNamespace + "_2")
-        val streamWithDefaultNamespace = makeStream(null, randomizedNamespace + "_stream")
+        val streamWithDefaultNamespace = makeStream(null)
+        val (configWithRandomizedDefaultNamespace, actualDefaultNamespace) =
+            configUpdater.setDefaultNamespace(updatedConfig, randomizedNamespace + "_default")
         runSync(
-            updatedConfig,
+            configWithRandomizedDefaultNamespace,
             DestinationCatalog(
                 listOf(
                     stream1,
@@ -547,7 +550,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     streamWithDefaultNamespace.copy(
                         descriptor =
                             streamWithDefaultNamespace.descriptor.copy(
-                                namespace = defaultNamespaceProvider.get(randomizedNamespace)
+                                namespace = actualDefaultNamespace
                             )
                     ),
                     listOf(listOf("id")),
@@ -1338,6 +1341,120 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    /**
+     * Some destinations have better support for schema evolution in single-generation truncate
+     * syncs. For example, if a destination imposes limitations on column type changes, we can
+     * actually ignore those limits in a truncate sync (because we're dropping all older data
+     * anyway).
+     */
+    @Test
+    open fun testOverwriteSchemaEvolution() {
+        assumeTrue(verifyDataWriting)
+        fun makeStream(
+            syncId: Long,
+            schema: LinkedHashMap<String, FieldType>,
+            generationId: Long,
+            minimumGenerationId: Long,
+        ) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(schema),
+                generationId = generationId,
+                minimumGenerationId = minimumGenerationId,
+                syncId,
+            )
+        runSync(
+            updatedConfig,
+            makeStream(
+                syncId = 42,
+                linkedMapOf("id" to intType, "to_drop" to stringType, "to_change" to intType),
+                generationId = 1,
+                minimumGenerationId = 0,
+            ),
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "to_drop": "val1", "to_change": 42}""",
+                    emittedAtMs = 1234L,
+                )
+            )
+        )
+        val changedStream =
+            makeStream(
+                syncId = 43,
+                linkedMapOf("id" to intType, "to_change" to stringType, "to_add" to stringType),
+                generationId = 2,
+                minimumGenerationId = 2,
+            )
+        runSync(
+            updatedConfig,
+            changedStream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "to_change": "val2", "to_add": "val3"}""",
+                    emittedAtMs = 1234L,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 2,
+                    data = mapOf("id" to 42, "to_change" to "val2", "to_add" to "val3"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                )
+            ),
+            changedStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            reason = "Records were incorrect when trying to change the schema."
+        )
+
+        // Run a third sync, to verify that the schema is stable after evolution
+        // (this is relevant for e.g. iceberg, where every column has an ID,
+        // and we need to be able to match the new columns to their ID)
+        val finalStream = changedStream.copy(minimumGenerationId = 0, syncId = 44)
+        runSync(
+            updatedConfig,
+            finalStream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "to_change": "val4", "to_add": "val5"}""",
+                    emittedAtMs = 5678L,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 2,
+                    data = mapOf("id" to 42, "to_change" to "val2", "to_add" to "val3"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                ),
+                OutputRecord(
+                    extractedAt = 5678,
+                    generationId = 2,
+                    data = mapOf("id" to 42, "to_change" to "val4", "to_add" to "val5"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 44),
+                ),
+            ),
+            finalStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            reason = "Records were incorrect after running a second sync with the updated schema."
+        )
+    }
+
     @Test
     open fun testDedup() {
         assumeTrue(supportsDedup)
@@ -1466,6 +1583,148 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id1" to 1,
+                            "id2" to 200,
+                            "updated_at" to TimestampWithTimezoneValue("2000-01-02T00:00:00Z"),
+                            "name" to "Alice3",
+                            "_ab_cdc_deleted_at" to null
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                )
+            ),
+            sync2Stream,
+            primaryKey = listOf(listOf("id1"), listOf("id2")),
+            cursor = listOf("updated_at"),
+        )
+    }
+
+    @Test
+    open fun testDedupWithStringKey() {
+        assumeTrue(supportsDedup)
+        fun makeStream(syncId: Long) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                importType =
+                    Dedupe(
+                        primaryKey = listOf(listOf("id1"), listOf("id2")),
+                        cursor = listOf("updated_at"),
+                    ),
+                schema =
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "id1" to stringType,
+                                "id2" to intType,
+                                "updated_at" to timestamptzType,
+                                "name" to stringType,
+                                "_ab_cdc_deleted_at" to timestamptzType,
+                            )
+                    ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = syncId,
+            )
+        fun makeRecord(data: String, extractedAt: Long) =
+            InputRecord(
+                randomizedNamespace,
+                "test_stream",
+                data,
+                emittedAtMs = extractedAt,
+            )
+
+        val sync1Stream = makeStream(syncId = 42)
+        runSync(
+            updatedConfig,
+            sync1Stream,
+            listOf(
+                // emitted_at:1000 is equal to 1970-01-01 00:00:01Z.
+                // This obviously makes no sense in relation to updated_at being in the year 2000,
+                // but that's OK because (from destinations POV) updated_at has no relation to
+                // extractedAt.
+                makeRecord(
+                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 200, "updated_at": "2000-01-01T00:00:00Z", "name": "Alice1", "_ab_cdc_deleted_at": null}""",
+                    extractedAt = 1000,
+                ),
+                // Emit a second record for id=(1,200) with a different updated_at.
+                makeRecord(
+                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 200, "updated_at": "2000-01-01T00:01:00Z", "name": "Alice2", "_ab_cdc_deleted_at": null}""",
+                    extractedAt = 1000,
+                ),
+                // Emit a record with no _ab_cdc_deleted_at field. CDC sources typically emit an
+                // explicit null, but we should handle both cases.
+                makeRecord(
+                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 201, "updated_at": "2000-01-01T00:02:00Z", "name": "Bob1"}""",
+                    extractedAt = 1000,
+                ),
+            ),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                // Alice has only the newer record, and Bob also exists
+                OutputRecord(
+                    extractedAt = 1000,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id1" to "9cf974de-52cf-4194-9f3d-7efa76ba4d84",
+                            "id2" to 200,
+                            "updated_at" to TimestampWithTimezoneValue("2000-01-01T00:01:00Z"),
+                            "name" to "Alice2",
+                            "_ab_cdc_deleted_at" to null
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 1000,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id1" to "9cf974de-52cf-4194-9f3d-7efa76ba4d84",
+                            "id2" to 201,
+                            "updated_at" to TimestampWithTimezoneValue("2000-01-01T00:02:00Z"),
+                            "name" to "Bob1"
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+            ),
+            sync1Stream,
+            primaryKey = listOf(listOf("id1"), listOf("id2")),
+            cursor = listOf("updated_at"),
+        )
+
+        val sync2Stream = makeStream(syncId = 43)
+        runSync(
+            updatedConfig,
+            sync2Stream,
+            listOf(
+                // Update both Alice and Bob
+                makeRecord(
+                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 200, "updated_at": "2000-01-02T00:00:00Z", "name": "Alice3", "_ab_cdc_deleted_at": null}""",
+                    extractedAt = 2000,
+                ),
+                makeRecord(
+                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 201, "updated_at": "2000-01-02T00:00:00Z", "name": "Bob2"}""",
+                    extractedAt = 2000,
+                ),
+                // And delete Bob. Again, T+D doesn't check the actual _value_ of deleted_at (i.e.
+                // the fact that it's in the past is irrelevant). It only cares whether deleted_at
+                // is non-null. So the destination should delete Bob.
+                makeRecord(
+                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 201, "updated_at": "2000-01-02T00:01:00Z", "_ab_cdc_deleted_at": "1970-01-01T00:00:00Z"}""",
+                    extractedAt = 2000,
+                ),
+            ),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                // Alice still exists (and has been updated to the latest version), but Bob is gone
+                OutputRecord(
+                    extractedAt = 2000,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id1" to "9cf974de-52cf-4194-9f3d-7efa76ba4d84",
                             "id2" to 200,
                             "updated_at" to TimestampWithTimezoneValue("2000-01-02T00:00:00Z"),
                             "name" to "Alice3",

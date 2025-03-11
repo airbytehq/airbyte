@@ -1,4 +1,4 @@
-version: 6.30.0
+version: 6.33.0
 
 type: DeclarativeSource
 
@@ -187,7 +187,7 @@ definitions:
     url_base: https://api.omnisend.com/v3/
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config["api_key"] }}'
+      api_token: "{{ config[\"api_key\"] }}"
       inject_into:
         type: RequestOption
         field_name: X-API-KEY
@@ -225,35 +225,35 @@ metadata:
     products: false
   testedStreams:
     contacts:
-      streamHash: c1780aa16a2e70b2bf49848d54f4a786ba247b5f
+      streamHash: 136b637658311d09cfceca024e41c8f768c80181
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     campaigns:
-      streamHash: e5888d1fc5af739cf89fbbf8b8925a9bbff0eae3
+      streamHash: c521f74b61abde3eef94fee0af7f552f1f24bf3b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     carts:
-      streamHash: 2fe21f705870f0937f696fe929e04337de494ac5
+      streamHash: c9737893ea95eaff145f23d36f0b55a90dbb9b90
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     orders:
-      streamHash: 5855d381bf05ab942b99d7cc8a33ad7e271894fc
+      streamHash: 5d01bd9b2104c5ec1b1c1947f543f1b9795c87e1
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     products:
-      streamHash: 92b21aa73c18bdd694411480e2a98f1c2347b730
+      streamHash: b6a88ced7a2a4aceb138d15788515b3d1a03b447
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -264,8 +264,7 @@ metadata:
 schemas:
   contacts:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
+    $schema: http://json-schema.org/schema#
     properties:
       address:
         type:
@@ -279,10 +278,35 @@ schemas:
         type:
           - string
           - "null"
-      clicked:
+      consents:
         type:
-          - integer
+          - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            channel:
+              type:
+                - string
+                - "null"
+            createdAt:
+              type:
+                - string
+                - "null"
+            ip:
+              type:
+                - string
+                - "null"
+            source:
+              type:
+                - string
+                - "null"
+            userAgent:
+              type:
+                - string
+                - "null"
       contactID:
         type: string
       country:
@@ -297,6 +321,12 @@ schemas:
         type:
           - string
           - "null"
+      customProperties:
+        type:
+          - object
+          - "null"
+        additionalProperties:
+         true
       email:
         type:
           - string
@@ -306,19 +336,31 @@ schemas:
           - string
           - "null"
       gender:
-        type: string
+        type:
+          - string
+          - "null"
       identifiers:
-        type: array
+        type:
+          - array
+          - "null"
         items:
-          type: object
+          type:
+            - object
+            - "null"
           properties:
             type:
-              type: string
+              type:
+                - string
+                - "null"
             channels:
-              type: object
+              type:
+                - object
+                - "null"
               properties:
                 email:
-                  type: object
+                  type:
+                    - object
+                    - "null"
                   properties:
                     status:
                       type:
@@ -329,7 +371,9 @@ schemas:
                         - string
                         - "null"
                 sms:
-                  type: object
+                  type:
+                    - object
+                    - "null"
                   properties:
                     status:
                       type:
@@ -340,32 +384,38 @@ schemas:
                         - string
                         - "null"
             id:
-              type: string
+              type:
+                - string
+                - "null"
       lastName:
         type:
           - string
-          - "null"
-      opened:
-        type:
-          - integer
           - "null"
       optIns:
         type:
           - array
           - "null"
         items:
-          type: object
+          type:
+            - object
+            - "null"
           properties:
+            channel:
+              type:
+                - string
+                - "null"
             date:
-              type: string
+              type:
+                - string
+                - "null"
       phone:
-        type: array
-        items:
-          type: string
-      phoneNumber:
         type:
-          - string
+          - array
           - "null"
+        items:
+          type:
+            - string
+            - "null"
       postalCode:
         type:
           - string
@@ -375,11 +425,9 @@ schemas:
           - array
           - "null"
         items:
-          type: string
-      sent:
-        type:
-          - integer
-          - "null"
+          type:
+            - string
+            - "null"
       state:
         type:
           - string
@@ -393,8 +441,14 @@ schemas:
           - array
           - "null"
         items:
-          type: object
+          type:
+            - object
+            - "null"
           properties:
+            channel:
+              type:
+                - string
+                - "null"
             date:
               type:
                 - string
@@ -408,34 +462,76 @@ schemas:
           - array
           - "null"
         items:
-          type: string
+          type:
+            - string
+            - "null"
     required:
       - contactID
+    additionalProperties: true
   campaigns:
     type: object
-    additionalProperties: true
+    $schema: http://json-schema.org/schema#
     properties:
       type:
         type:
           - string
           - "null"
-      allSubscribers:
+      allContacts:
         type:
           - boolean
           - "null"
       bounced:
         type:
-          - integer
+          - number
           - "null"
+      byDevices:
+        type:
+          - object
+          - "null"
+        properties:
+          clicked:
+            type:
+              - object
+              - "null"
+            properties:
+              desktop:
+                type:
+                  - number
+                  - "null"
+              mobile:
+                type:
+                  - number
+                  - "null"
+              tablet:
+                type:
+                  - number
+                  - "null"
+          opened:
+            type:
+              - object
+              - "null"
+            properties:
+              desktop:
+                type:
+                  - number
+                  - "null"
+              mobile:
+                type:
+                  - number
+                  - "null"
+              tablet:
+                type:
+                  - number
+                  - "null"
       campaignID:
         type: string
       clicked:
         type:
-          - integer
+          - number
           - "null"
       complained:
         type:
-          - integer
+          - number
           - "null"
       createdAt:
         type:
@@ -445,6 +541,14 @@ schemas:
         type:
           - string
           - "null"
+      excludedSegments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
       fromName:
         type:
           - string
@@ -455,22 +559,19 @@ schemas:
           - "null"
       opened:
         type:
-          - integer
+          - number
           - "null"
       segments:
         type:
           - array
           - "null"
         items:
-          type: object
-          properties:
-            segmentID:
-              type:
-                - string
-                - "null"
+          type:
+            - string
+            - "null"
       sent:
         type:
-          - integer
+          - number
           - "null"
       startDate:
         type:
@@ -486,23 +587,23 @@ schemas:
           - "null"
       unsubscribed:
         type:
-          - integer
+          - number
           - "null"
       updatedAt:
         type:
           - string
           - "null"
-      url:
+    required:
+      - campaignID
+    additionalProperties: true
+  carts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      attributionID:
         type:
           - string
           - "null"
-    required:
-      - campaignID
-  carts:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
       cartID:
         type: string
       cartRecoveryUrl:
@@ -511,7 +612,7 @@ schemas:
           - "null"
       cartSum:
         type:
-          - integer
+          - number
           - "null"
       contactID:
         type:
@@ -534,9 +635,13 @@ schemas:
           - string
           - "null"
       products:
-        type: array
+        type:
+          - array
+          - "null"
         items:
-          type: object
+          type:
+            - object
+            - "null"
           properties:
             description:
               type:
@@ -548,19 +653,15 @@ schemas:
                 - "null"
             discount:
               type:
-                - integer
+                - number
                 - "null"
             imageUrl:
               type:
                 - string
                 - "null"
-            oldPrice:
-              type:
-                - integer
-                - "null"
             price:
               type:
-                - integer
+                - number
                 - "null"
             productID:
               type:
@@ -572,7 +673,11 @@ schemas:
                 - "null"
             quantity:
               type:
-                - integer
+                - number
+                - "null"
+            sku:
+              type:
+                - string
                 - "null"
             title:
               type:
@@ -588,15 +693,25 @@ schemas:
           - "null"
     required:
       - cartID
+    additionalProperties: true
   orders:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
+    $schema: http://json-schema.org/schema#
     properties:
+      attributionID:
+        type:
+          - string
+          - "null"
       billingAddress:
-        type: object
+        type:
+          - object
+          - "null"
         properties:
           address:
+            type:
+              - string
+              - "null"
+          address2:
             type:
               - string
               - "null"
@@ -636,6 +751,18 @@ schemas:
             type:
               - string
               - "null"
+          stateCode:
+            type:
+              - string
+              - "null"
+      cancelReason:
+        type:
+          - string
+          - "null"
+      canceledDate:
+        type:
+          - string
+          - "null"
       cartID:
         type:
           - string
@@ -664,22 +791,17 @@ schemas:
         type:
           - string
           - "null"
-      customFields:
+      depersonalized:
         type:
-          - object
+          - boolean
           - "null"
-        properties:
-          phone:
-            type:
-              - string
-              - "null"
       discountCode:
         type:
           - string
           - "null"
       discountSum:
         type:
-          - integer
+          - number
           - "null"
       discountType:
         type:
@@ -687,13 +809,9 @@ schemas:
           - "null"
       discountValue:
         type:
-          - integer
+          - number
           - "null"
       email:
-        type:
-          - string
-          - "null"
-      firstName:
         type:
           - string
           - "null"
@@ -701,19 +819,15 @@ schemas:
         type:
           - string
           - "null"
-      lastName:
-        type:
-          - string
-          - "null"
       orderID:
         type: string
       orderNumber:
         type:
-          - integer
+          - number
           - "null"
       orderSum:
         type:
-          - integer
+          - number
           - "null"
       orderUrl:
         type:
@@ -727,24 +841,30 @@ schemas:
         type:
           - string
           - "null"
+      phone:
+        type:
+          - string
+          - "null"
       products:
-        type: array
+        type:
+          - array
+          - "null"
         items:
-          type: object
+          type:
+            - object
+            - "null"
           properties:
-            cartProductID:
-              type:
-                - string
-                - "null"
             categoryIDs:
-              type: array
+              type:
+                - array
+                - "null"
               items:
                 type:
                   - string
                   - "null"
             discount:
               type:
-                - integer
+                - number
                 - "null"
             imageUrl:
               type:
@@ -752,7 +872,7 @@ schemas:
                 - "null"
             price:
               type:
-                - integer
+                - number
                 - "null"
             productID:
               type:
@@ -764,14 +884,12 @@ schemas:
                 - "null"
             quantity:
               type:
-                - integer
+                - number
                 - "null"
-            tags:
-              type: array
-              items:
-                type:
-                  - string
-                  - "null"
+            sku:
+              type:
+                - string
+                - "null"
             title:
               type:
                 - string
@@ -784,14 +902,24 @@ schemas:
               type:
                 - string
                 - "null"
+            vendor:
+              type:
+                - string
+                - "null"
             weight:
               type:
-                - integer
+                - number
                 - "null"
       shippingAddress:
-        type: object
+        type:
+          - object
+          - "null"
         properties:
           address:
+            type:
+              - string
+              - "null"
+          address2:
             type:
               - string
               - "null"
@@ -831,13 +959,17 @@ schemas:
             type:
               - string
               - "null"
+          stateCode:
+            type:
+              - string
+              - "null"
       shippingMethod:
         type:
           - string
           - "null"
       shippingSum:
         type:
-          - integer
+          - number
           - "null"
       source:
         type:
@@ -845,19 +977,15 @@ schemas:
           - "null"
       subTotalSum:
         type:
-          - integer
+          - number
           - "null"
-      tags:
+      subTotalTaxIncluded:
         type:
-          - array
+          - boolean
           - "null"
-        items:
-          type:
-            - string
-            - "null"
       taxSum:
         type:
-          - integer
+          - number
           - "null"
       trackingCode:
         type:
@@ -869,10 +997,10 @@ schemas:
           - "null"
     required:
       - orderID
+    additionalProperties: true
   products:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
+    $schema: http://json-schema.org/schema#
     properties:
       type:
         type:
@@ -903,7 +1031,9 @@ schemas:
           - array
           - "null"
         items:
-          type: object
+          type:
+            - object
+            - "null"
           properties:
             imageID:
               type:
@@ -917,8 +1047,10 @@ schemas:
               type:
                 - string
                 - "null"
-            variants:
-              type: array
+            variantIDs:
+              type:
+                - array
+                - "null"
               items:
                 type:
                   - string
@@ -933,14 +1065,6 @@ schemas:
         type:
           - string
           - "null"
-      tags:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
       title:
         type:
           - string
@@ -950,30 +1074,25 @@ schemas:
           - string
           - "null"
       variants:
-        type: array
+        type:
+          - array
+          - "null"
         items:
-          type: object
+          type:
+            - object
+            - "null"
           properties:
-            customFields:
-              type:
-                - object
-                - "null"
-              properties:
-                protectionClass:
-                  type:
-                    - string
-                    - "null"
             imageID:
               type:
                 - string
                 - "null"
             oldPrice:
               type:
-                - integer
+                - number
                 - "null"
             price:
               type:
-                - integer
+                - number
                 - "null"
             productUrl:
               type:
@@ -1001,3 +1120,4 @@ schemas:
           - "null"
     required:
       - productID
+    additionalProperties: true

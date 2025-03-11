@@ -124,7 +124,7 @@ When publishing a new version of a connector, Airbyte only considers the followi
 | Destination Format / Normalization Change | The way the destination writes the final data or how Airbyte cleans that data is changing in a way that requires a full refresh |
 | State Changes                             | The format of the source’s state has changed, and the full dataset will need to be re-synced                                    |
 
-We expect that most users will gracefully continue syncing successfully with most major version updates. However, users using a destination that does not utilize [Typing & Deduping](./using-airbyte/core-concepts/typing-deduping) will experience sync failures if the major version includes a data type change. 
+We expect that most users will gracefully continue syncing successfully with most major version updates. However, users using a destination that does not utilize [Typing & Deduping](/using-airbyte/core-concepts/typing-deduping) will experience sync failures if the major version includes a data type change. 
 
 
 ### Upgrading your connector

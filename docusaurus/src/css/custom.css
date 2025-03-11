@@ -280,3 +280,8 @@ table tr:hover {
 table thead tr:hover {
   background-color: transparent;
 }
+
+svg.inline-svg {
+  max-height: 1em;
+  max-width: 1em;
+}

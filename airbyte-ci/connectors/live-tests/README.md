@@ -181,6 +181,9 @@ The traffic recorded on the control connector is passed to the target connector 
 ## Changelog
 
 
+### 0.21.2
+Fix selected streams filter in regression tests
+
 ### 0.21.1
 Update Python version requirement from 3.10 to 3.11.
 

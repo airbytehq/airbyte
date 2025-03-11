@@ -24,6 +24,11 @@ The Ubidots Connector facilitates easy integration with the Ubidots IoT platform
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.15 | 2025-03-08 | [55584](https://github.com/airbytehq/airbyte/pull/55584) | Update dependencies |
+| 0.0.14 | 2025-03-01 | [55097](https://github.com/airbytehq/airbyte/pull/55097) | Update dependencies |
+| 0.0.13 | 2025-02-22 | [54488](https://github.com/airbytehq/airbyte/pull/54488) | Update dependencies |
+| 0.0.12 | 2025-02-15 | [54081](https://github.com/airbytehq/airbyte/pull/54081) | Update dependencies |
+| 0.0.11 | 2025-02-08 | [53541](https://github.com/airbytehq/airbyte/pull/53541) | Update dependencies |
 | 0.0.10 | 2025-02-01 | [53064](https://github.com/airbytehq/airbyte/pull/53064) | Update dependencies |
 | 0.0.9 | 2025-01-25 | [52454](https://github.com/airbytehq/airbyte/pull/52454) | Update dependencies |
 | 0.0.8 | 2025-01-18 | [51979](https://github.com/airbytehq/airbyte/pull/51979) | Update dependencies |

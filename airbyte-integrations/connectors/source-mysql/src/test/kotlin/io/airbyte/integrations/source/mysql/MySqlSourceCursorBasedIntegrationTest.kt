@@ -179,7 +179,7 @@ class MySqlSourceCursorBasedIntegrationTest {
 
     companion object {
         val log = KotlinLogging.logger {}
-        val dbContainer: MySQLContainer<*> = MySqlContainerFactory.shared(imageName = "mysql:8.0")
+        val dbContainer: MySQLContainer<*> = MySqlContainerFactory.shared(imageName = "mysql:9.2.0")
 
         val config: MySqlSourceConfigurationSpecification =
             MySqlContainerFactory.config(dbContainer)
@@ -196,7 +196,12 @@ class MySqlSourceCursorBasedIntegrationTest {
                     columns = listOf(Field("k", IntFieldType), Field("v", StringFieldType)),
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
-            val stream: AirbyteStream = MySqlSourceOperations().createGlobal(discoveredStream)
+            val stream: AirbyteStream =
+                MySqlSourceOperations()
+                    .create(
+                        MySqlSourceConfigurationFactory().make(config),
+                        discoveredStream,
+                    )
             val configuredStream: ConfiguredAirbyteStream =
                 CatalogHelpers.toDefaultConfiguredStream(stream)
                     .withSyncMode(SyncMode.INCREMENTAL)
