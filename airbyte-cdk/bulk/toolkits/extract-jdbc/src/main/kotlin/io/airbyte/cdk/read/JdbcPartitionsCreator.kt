@@ -222,7 +222,7 @@ class JdbcConcurrentPartitionsCreator<
         }
         val rowByteSizeSample: Sample<Long> = sample.map { (_, rowByteSize: Long) -> rowByteSize }
         streamState.fetchSize = sharedState.jdbcFetchSizeEstimator().apply(rowByteSizeSample)
-        val expectedTableByteSize: Long = /*1_000_000_000_000L*/rowByteSizeSample.sampledValues.sum() * sample.valueWeight / 3
+        val expectedTableByteSize: Long = 1_000_000_000_000L/*rowByteSizeSample.sampledValues.sum() * sample.valueWeight / 3*/
         log.info { "Table memory size estimated at ${expectedTableByteSize shr 20} MiB." }
         // Handle edge case where the table can't be split.
         if (partition !is JdbcSplittablePartition<*>) {

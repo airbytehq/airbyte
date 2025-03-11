@@ -422,7 +422,7 @@ class MySqlSourceJdbcPartitionFactory(
         var inners: List<List<JsonNode>> =
             splitPointValues.mapNotNull { it.pkMap(streamState.stream)?.values?.toList() }
         inners =
-            redoInners(inners, /*6658729623L*/50827485)
+            redoInners(inners, 6658729623L/*50827485*/)
         val lbs: List<List<JsonNode>?> = listOf(lowerBound) + inners
         val ubs: List<List<JsonNode>?> = inners + listOf(upperBound)
         return lbs.zip(ubs).map { (lBound, uBound) ->

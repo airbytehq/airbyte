@@ -7,6 +7,7 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedReader
 import java.io.InputStream
+import java.nio.file.attribute.PosixFilePermissions
 import java.time.Clock
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
@@ -121,7 +122,8 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
         val cmds = commands(q)
 
         val pb = ProcessBuilder(cmds)
-        val file = createTempFile(Path("/tmp"), "ab", ".txt")
+        val file = createTempFile(Path("/staging/files"), "ab", ".txt",
+            PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-rw-rw-")))
         pb.redirectOutput(file.toFile())
 
         log.info { "Running $cmds to ${file}" }
@@ -138,8 +140,10 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
         log.info { "${file} Time taken: $timeTaken" }
         // emit record + file_url
         val recordTemplate =
-            "{\"type\":\"RECORD\",\"record\":{\"stream\":\"${stream.namespace}.${stream.name}\",\"file\":{\"file_url\":\"${file.pathString}\",\"bytes\":${file.fileSize()},\"file_relative_path\":\"${file.fileName}\",\"modified\":${file.getLastModifiedTime().toMillis()},\"source_file_url\":\"${file.fileName}\"},\"emitted_at\":${Clock.systemUTC().millis()},\"data\":{}}}"
+            "{\"type\":\"RECORD\",\"record\":{\"namespace\":\"${stream.namespace}\",\"stream\":\"${stream.name}\",\"file\":{\"file_url\":\"${file.pathString}\",\"bytes\":${file.fileSize()},\"file_relative_path\":\"${file.fileName}\",\"modified\":${file.getLastModifiedTime().toMillis()},\"source_file_url\":\"${file.fileName}\"},\"emitted_at\":${Clock.systemUTC().millis()},\"data\":{}}}"
+        log.info { "Emitting: $recordTemplate" }
         println(recordTemplate)
+        numRecords.incrementAndGet()
         /////////////////////////////////
 
         /*selectQuerier

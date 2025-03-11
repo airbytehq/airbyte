@@ -35,7 +35,7 @@ import jakarta.inject.Singleton
  */
 @JsonSchemaTitle("MySQL Source Spec")
 @JsonPropertyOrder(
-    value = ["host", "port", "database", "username", "replication_method"],
+    value = ["host", "port", "database", "username", "replication_method", "delivery_method"],
 )
 @Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
@@ -167,6 +167,25 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
             "In large schemas, this might cause schema discovery to take too long, " +
             "in which case it might be advisable to disable this feature.",
     )
+
+    @JsonIgnore
+    @ConfigurationBuilder(configurationPrefix = "delivery_method")
+    var deliveryMethod = MicronautPropertiesFriendlyDeliveryConfigurationSpecification()
+
+    @JsonIgnore var deliveryMethodJson: DeliveryConfigurationSpecification? = null
+
+    @JsonSetter("delivery_method")
+    fun setDeliveryValue(value: DeliveryConfigurationSpecification) {
+        deliveryMethodJson = value
+    }
+
+    @JsonProperty("delivery_method")
+    @JsonSchemaTitle("Delivery Method")
+    @JsonPropertyDescription("Configures how data is delivered to destination.")
+    @JsonSchemaInject(json = """{"order":14,"display_type":"radio"}""")
+    fun getDeliveryValue(): DeliveryConfigurationSpecification =
+        deliveryMethodJson ?: deliveryMethod.asDeliveryMethodConfiguration()
+
     var checkPrivileges: Boolean? = true
 
     @JsonIgnore var additionalPropertiesMap = mutableMapOf<String, Any>()
@@ -365,3 +384,44 @@ class MicronautPropertiesFriendlyIncrementalConfigurationSpecification {
             else -> throw ConfigErrorException("invalid value $method")
         }
 }
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "delivery_type")
+@JsonSubTypes(
+    JsonSubTypes.Type(value = ReplicateRecords::class, name = "use_records_transfer"),
+    JsonSubTypes.Type(value = CopyRawFiles::class, name = "use_file_transfer"),
+)
+
+@JsonSchemaTitle("Delivery Method")
+@JsonSchemaDescription("Configures how records are delivered to destination.")
+sealed interface DeliveryConfigurationSpecification
+
+@JsonSchemaTitle("Replicate Records")
+@JsonSchemaDescription(
+    "Recommended - Extract and load structured records into your destination of choice. " +
+        "This is the classic method of moving data in Airbyte. " +
+        "It allows for blocking and hashing individual fields or files from a structured schema. " +
+        "Data can be flattened, typed and deduped depending on the destination.",
+)
+data object ReplicateRecords : DeliveryConfigurationSpecification
+
+
+@JsonSchemaTitle("Copy Raw Files")
+@JsonSchemaDescription(
+    "If enabled, sends subdirectory folder structure along with source file names to the destination. " +
+        "Otherwise, files will be synced by their names only. " +
+        "This option is ignored when file-based replication is not enabled.",
+)
+class CopyRawFiles : DeliveryConfigurationSpecification
+
+@ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.delivery_method")
+class MicronautPropertiesFriendlyDeliveryConfigurationSpecification {
+    var method: String = "use_records_transfer"
+
+    fun asDeliveryMethodConfiguration(): DeliveryConfigurationSpecification =
+        when (method) {
+            "use_records_transfer" -> ReplicateRecords
+            "use_file_transfer" -> CopyRawFiles()
+            else -> throw ConfigErrorException("invalid value $method")
+        }
+}
+
