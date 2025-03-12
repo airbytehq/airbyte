@@ -209,7 +209,7 @@ Add a source from which you want to get data. In this example, you add Stripe as
 
 2. Run `terraform apply`. Terraform tells you it will add 1 resource. Type `yes` and press <kbd>Enter</kbd>.
 
-Terraform adds the source to Airbyte. To see your new source, open your Airbyte workspace and and click **Sources**. Or, use the [List sources](https://reference.airbyte.com/reference/listsources) API endpoint.
+Terraform adds the source to Airbyte. To see your new source, open your Airbyte workspace and click **Sources**. Or, use the [List sources](https://reference.airbyte.com/reference/listsources) API endpoint.
 
 ## Step 3: Create a destination
 

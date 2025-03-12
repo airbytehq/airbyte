@@ -6,11 +6,11 @@ data:
     hosts:
       - "*.zendesk.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.38.3@sha256:fcba02266f262aabc2f37e4f14574aa1c8c5cffd018504bab28803e405c93afe
   connectorSubtype: api
   connectorType: source
   definitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
-  dockerImageTag: 1.0.4
+  dockerImageTag: 1.2.0
   dockerRepository: airbyte/source-zendesk-chat
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-chat
   githubIssueLabel: source-zendesk-chat
@@ -20,7 +20,7 @@ data:
   maxSecondsBetweenMessages: 60
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-zendesk-chat
   registryOverrides:
     cloud:
@@ -35,9 +35,10 @@ data:
         upgradeDeadline: "2024-11-12"
   supportLevel: certified
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: unitTests
     - suite: liveTests
       testConnections:
         - name: zendesk-chat_config_oauth_dev_null
