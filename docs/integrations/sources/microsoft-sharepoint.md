@@ -267,6 +267,11 @@ Format options will not be taken into account. Instead, files will be transferre
 
 If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files will be synced by their names only. This option is ignored when file-based replication is not enabled.
 
+### Multi-Site Support
+
+By providing a url to the site URL field, the connector will be able to access the files in the specific sharepoint site. 
+The site url should be in the format `https://<tenan_name>.sharepoint.com/sites/<site>`. If no field is provided, the connector will access the files in the main site.
+
 ### Supported sync modes
 
 The Microsoft SharePoint source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
