@@ -1,8 +1,4 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-#
-
-#
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 from typing import Any, Mapping, Optional
