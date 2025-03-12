@@ -2,7 +2,7 @@
 
 ## Upgrading to 2.0.0
 
-This version removes the Airbyte "raw" tables introduced in version [1.0.0](#upgrading-to-100).  As such,
+This version removes the Airbyte "raw" tables introduced in version 1.0.0.  As such,
 any attempt to upgrade an existing connection will fail unless a "truncate refresh" is first executed.  It is 
 recommended that you should create a new connection using this upgraded destination and delete the existing
 connection and generated "raw" tables in the destination after performing a successful sync via the new connection.
