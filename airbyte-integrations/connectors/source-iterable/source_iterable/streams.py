@@ -39,10 +39,13 @@ class IterableStream(HttpStream, ABC):
         self._slice_retry = 0
         super().__init__(authenticator)
 
+    # TODO: move this property and make sure it's still feeding this value into the class that abstracts it(?) and call it from the HttpClient class?
     @property
     def retry_factor(self) -> int:
         return 20
-
+    
+    # TODO: move this method and call it from the HttpClient class?
+    # TODO: -> HINT: Entrypoint.py
     # With factor 20 it would be from 20 to 400 seconds delay
     @property
     def max_retries(self) -> Union[int, None]:
