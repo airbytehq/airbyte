@@ -114,7 +114,12 @@ class MondayGraphqlRequester(HttpRequester):
         else:
             query = self._build_query("items_page", field_schema, limit=nested_limit)
             arguments = self._get_object_arguments(**object_arguments)
-            query = f"boards({arguments}){{{query}}}"
+            board_ids = self.config.get('board_ids')
+            if board_ids:
+                board_ids = ','.join(str(id) for id in board_ids)
+                query = f"boards({arguments}, ids:[{board_ids}]){{{query}}}"
+            else:
+                query = f"boards({arguments}){{{query}}}"
 
         return query
 
@@ -157,6 +162,10 @@ class MondayGraphqlRequester(HttpRequester):
 
         query = self._build_query(object_name, field_schema, limit=nested_limit, page=sub_page, fromt=created_at)
         arguments = self._get_object_arguments(**object_arguments)
+        board_ids = self.config.get('board_ids')
+        if board_ids:
+            board_ids = ','.join(str(id) for id in board_ids)
+            return f"boards({arguments},ids:[{board_ids}]){{{query}}}"
         return f"boards({arguments}){{{query}}}"
 
     def get_request_headers(
