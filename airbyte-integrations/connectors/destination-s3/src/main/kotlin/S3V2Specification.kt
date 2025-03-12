@@ -76,14 +76,12 @@ class S3V2Specification :
     )
     override val fileNamePattern: String? = null
 
-    @get:JsonProperty("num_part_workers")
-    val numPartWorkers: Int? = null
-    @get:JsonProperty("num_upload_workers")
+    @get:JsonProperty("num_uploaders")
     val numObjectLoaders: Int? = null
     @get:JsonProperty("part_size_mb")
     val partSizeMb: Int? = null
-    @get:JsonProperty("max_memory_ratio_reserved_for_parts")
-    val maxMemoryRatioReservedForParts: Double? = null
+    @get:JsonProperty("total_data_mb")
+    val totalDataMb: Int? = null
     @get:JsonProperty("use_legacy_client")
     val useLegacyClient: Boolean? = null
 }
