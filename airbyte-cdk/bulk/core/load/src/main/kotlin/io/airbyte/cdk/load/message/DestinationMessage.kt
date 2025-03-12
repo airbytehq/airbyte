@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
+import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
@@ -143,6 +144,12 @@ data class DestinationRecord(
             serialized.length.toLong()
         )
     }
+    fun asDestinationRecordRaw(): DestinationRecordRaw {
+        return DestinationRecordRaw(
+            stream,
+            message
+        )
+    }
 }
 
 /**
@@ -161,6 +168,21 @@ data class DestinationRecordAirbyteValue(
     val emittedAtMs: Long,
     val meta: Meta?,
     val serializedSizeBytes: Long = 0L
+)
+
+data class EnrichedDestinationRecordAirbyteValue(
+    val stream: DestinationStream.Descriptor,
+    val declaredFields: Map<String, EnrichedAirbyteValue>,
+    val airbyteMetaFields: Map<String, EnrichedAirbyteValue>,
+    val undeclaredFields: Map<String, JsonNode>,
+    val emittedAtMs: Long,
+    val meta: Meta?,
+    val serializedSizeBytes: Long = 0L
+)
+
+data class DestinationRecordRaw(
+    val stream: DestinationStream.Descriptor,
+    val rawData: AirbyteMessage
 )
 
 data class DestinationFile(

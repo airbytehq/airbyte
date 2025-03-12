@@ -158,7 +158,7 @@ class DefaultInputConsumerTask(
         val manager = syncManager.getStreamManager(stream)
         when (val message = reserved.value) {
             is DestinationRecord -> {
-                val record = message.asRecordMarshaledToAirbyteValue()
+                val record = message.asDestinationRecordRaw()
                 manager.incrementReadCount()
                 val pipelineMessage =
                     PipelineMessage(
