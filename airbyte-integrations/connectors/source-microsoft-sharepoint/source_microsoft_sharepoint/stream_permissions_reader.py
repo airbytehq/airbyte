@@ -130,7 +130,9 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
                         member_info.append({"remote_id": member.get("id"), "type": identity_type})
                     except ValueError:
                         # Log the error and skip this member
-                        logging.warning(f"Unrecognized member type '{member_type}' for member ID {member.get('id')} in group {group_id}. Skipping this member.")
+                        logging.warning(
+                            f"Unrecognized member type '{member_type}' for member ID {member.get('id')} in group {group_id}. Skipping this member."
+                        )
                         continue
 
             return member_info
