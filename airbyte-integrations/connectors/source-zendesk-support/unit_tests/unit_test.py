@@ -56,7 +56,6 @@ from source_zendesk_support.streams import (
     TicketSkips,
     Topics,
     UserFields,
-    Users,
     UserSettingsStream,
 )
 from test_data.data import TICKET_EVENTS_STREAM_RESPONSE
@@ -304,7 +303,6 @@ class TestAllStreams:
             (TicketSkips, "skips.json"),
             (TicketMetricEvents, "incremental/ticket_metric_events"),
             (Tickets, "incremental/tickets/cursor.json"),
-            (Users, "incremental/users/cursor.json"),
             (Topics, "community/topics"),
             (Brands, "brands"),
             (CustomRoles, "custom_roles"),
@@ -335,7 +333,6 @@ class TestAllStreams:
             "TicketMetricEvents",
             "Tickets",
             "Topics",
-            "Users",
             "Brands",
             "CustomRoles",
             "Schedules",
@@ -699,11 +696,9 @@ class TestSourceZendeskIncrementalExportStream:
     @pytest.mark.parametrize(
         "stream_cls",
         [
-            (Users),
             (Tickets),
         ],
         ids=[
-            "Users",
             "Tickets",
         ],
     )
@@ -716,11 +711,9 @@ class TestSourceZendeskIncrementalExportStream:
     @pytest.mark.parametrize(
         "stream_cls",
         [
-            (Users),
             (Tickets),
         ],
         ids=[
-            "Users",
             "Tickets",
         ],
     )
@@ -735,12 +728,10 @@ class TestSourceZendeskIncrementalExportStream:
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
-            (Users, {"start_time": 1622505600}),
             (Tickets, {"start_time": 1622505600}),
             (Articles, {"sort_by": "updated_at", "sort_order": "asc", "start_time": 1622505600}),
         ],
         ids=[
-            "Users",
             "Tickets",
             "Articles",
         ],
@@ -753,11 +744,9 @@ class TestSourceZendeskIncrementalExportStream:
     @pytest.mark.parametrize(
         "stream_cls",
         [
-            (Users),
             (Tickets),
         ],
         ids=[
-            "Users",
             "Tickets",
         ],
     )
