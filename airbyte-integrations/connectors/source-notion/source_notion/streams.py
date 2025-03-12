@@ -326,7 +326,9 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
             return
 
         records = super().read_records(**kwargs)
-        for record in records:
+        for sequence_number, record in enumerate(records):
+            if "parent" in record:
+                record["parent"]["sequence_number"] = sequence_number
             if record.get("has_children", False):
                 # do the depth first traversal recursive call, get children blocks
                 self.block_id_stack.append(record["id"])
