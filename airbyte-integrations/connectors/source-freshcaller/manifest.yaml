@@ -121,6 +121,30 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/calls"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_time
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config[''start_date''] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          field_name: by_time[from]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: by_time[to]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P1Y
+        cursor_granularity: P1D
     call_metrics:
       type: DeclarativeStream
       name: call_metrics
