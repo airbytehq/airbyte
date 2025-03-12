@@ -75,6 +75,12 @@ class MondayGraphqlRequester(HttpRequester):
             else:
                 fields.append(field)
 
+        if object_name == "boards" and "board_ids" in self.config:
+            # sometimes board_ids are already present because of how we executed incremental syncs by first querying activity_logs.
+            # If they are present, don't override them.
+            if "ids" not in object_arguments:
+                object_arguments["ids"] = ','.join(str(id) for id in self.config.get("board_ids"))
+        
         arguments = self._get_object_arguments(**object_arguments)
         arguments = f"({arguments})" if arguments else ""
 
@@ -115,6 +121,7 @@ class MondayGraphqlRequester(HttpRequester):
             query = self._build_query("items_page", field_schema, limit=nested_limit)
             arguments = self._get_object_arguments(**object_arguments)
             board_ids = self.config.get('board_ids')
+            #TODO: test removing this or else move this into object_arguments
             if board_ids:
                 board_ids = ','.join(str(id) for id in board_ids)
                 query = f"boards({arguments}, ids:[{board_ids}]){{{query}}}"
@@ -163,6 +170,7 @@ class MondayGraphqlRequester(HttpRequester):
         query = self._build_query(object_name, field_schema, limit=nested_limit, page=sub_page, fromt=created_at)
         arguments = self._get_object_arguments(**object_arguments)
         board_ids = self.config.get('board_ids')
+        #TODO: test removing this or else move this into object_arguments
         if board_ids:
             board_ids = ','.join(str(id) for id in board_ids)
             return f"boards({arguments},ids:[{board_ids}]){{{query}}}"
@@ -214,6 +222,7 @@ class MondayGraphqlRequester(HttpRequester):
             limit=limit or None,
             page=page,
         )
+        import pdb; pdb.set_trace()
         return {"query": f"query{{{query}}}"}
 
     # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.
