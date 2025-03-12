@@ -942,6 +942,15 @@ schemas:
             type: array
             items:
               type: string
+          totalBudget:
+            anyOf:
+              - type: "null"
+              - type: object
+                properties:
+                  amount:
+                    type: string
+                  currency:
+                    type: string
       campaignId:
         type: integer
       date:
