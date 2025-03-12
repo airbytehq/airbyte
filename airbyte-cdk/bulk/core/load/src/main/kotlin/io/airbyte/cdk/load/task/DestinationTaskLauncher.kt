@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
+import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueue
@@ -146,6 +147,8 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     @Named("recordQueue")
     private val recordQueueForPipeline:
         PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>,
+    @Named("fileQueue")
+    private val fileQueueForPipeline: PartitionedQueue<PipelineEvent<StreamKey, DestinationFile>>,
     @Named("batchStateUpdateQueue") private val batchUpdateQueue: ChannelMessageQueue<BatchUpdate>,
     private val loadPipeline: LoadPipeline?,
     private val partitioner: InputPartitioner,
@@ -201,6 +204,7 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
         log.info { "Starting input consumer task" }
         val inputConsumerTask =
             inputConsumerTaskFactory.make(
+                config = config,
                 catalog = catalog,
                 inputFlow = inputFlow,
                 recordQueueSupplier = recordQueueSupplier,
@@ -208,6 +212,7 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
                 fileTransferQueue = fileTransferQueue,
                 destinationTaskLauncher = this,
                 recordQueueForPipeline = recordQueueForPipeline,
+                fileQueueForPipeline = fileQueueForPipeline,
                 loadPipeline = loadPipeline,
                 partitioner = partitioner,
                 openStreamQueue = openStreamQueue,

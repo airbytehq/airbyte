@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.ChannelMessageQueue
+import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.message.PartitionedQueue
@@ -120,6 +121,21 @@ class SyncBeanFactory {
     fun recordQueue(
         loadStrategy: LoadStrategy? = null,
     ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>> {
+        return PartitionedQueue(
+            Array(loadStrategy?.inputPartitions ?: 1) {
+                ChannelMessageQueue(Channel(Channel.UNLIMITED))
+            }
+        )
+    }
+
+    /**
+     * Same as recordQueue, but for files.
+     */
+    @Singleton
+    @Named("fileQueue")
+    fun fileQueue(
+        loadStrategy: LoadStrategy? = null,
+    ): PartitionedQueue<PipelineEvent<StreamKey, DestinationFile>> {
         return PartitionedQueue(
             Array(loadStrategy?.inputPartitions ?: 1) {
                 ChannelMessageQueue(Channel(Channel.UNLIMITED))

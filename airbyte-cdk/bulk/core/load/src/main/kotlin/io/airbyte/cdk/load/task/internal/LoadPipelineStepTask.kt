@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.task.internal
 
+import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEndOfStream
 import io.airbyte.cdk.load.message.PipelineEvent
@@ -71,8 +72,6 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         }
 
                         // Update bookkeeping metadata
-                        input
-                            .postProcessingCallback() // TODO: Accumulate and release when persisted
                         input.checkpointCounts.forEach {
                             state.checkpointCounts.merge(it.key, it.value) { old, new -> old + new }
                         }
@@ -112,6 +111,9 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                             stateStore.remove(input.key)
                         }
 
+                        input
+                            .postProcessingCallback() // TODO: Accumulate and release when persisted
+
                         stateStore
                     }
                     is PipelineEndOfStream -> {
@@ -147,7 +149,6 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
         checkpointCounts: Map<CheckpointId, Long>,
         output: U
     ) {
-
         // Only publish the output if there's a next step.
         outputQueue?.let {
             val outputKey = outputPartitioner!!.getOutputKey(inputKey, output)

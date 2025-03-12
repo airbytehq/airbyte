@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.pipeline
 
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
 import kotlin.math.abs
 import kotlin.random.Random
 

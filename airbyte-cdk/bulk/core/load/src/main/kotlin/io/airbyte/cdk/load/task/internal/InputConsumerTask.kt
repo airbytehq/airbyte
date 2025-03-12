@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.task.internal
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
@@ -50,6 +51,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.io.RandomAccessFile
+import java.nio.channels.FileChannel
 import java.util.concurrent.ConcurrentHashMap
 
 interface InputConsumerTask : Task
@@ -67,6 +70,7 @@ interface InputConsumerTask : Task
 @Singleton
 @Secondary
 class DefaultInputConsumerTask(
+    private val config: DestinationConfiguration,
     private val catalog: DestinationCatalog,
     private val inputFlow: ReservingDeserializingInputFlow,
     private val recordQueueSupplier:
@@ -81,6 +85,9 @@ class DefaultInputConsumerTask(
     @Named("recordQueue")
     private val recordQueueForPipeline:
         PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>,
+    @Named("fileQueue")
+    private val fileQueueForPipeline:
+        PartitionedQueue<PipelineEvent<StreamKey, DestinationFile>>,
     private val loadPipeline: LoadPipeline? = null,
     private val partitioner: InputPartitioner,
     private val openStreamQueue: QueueWriter<DestinationStream>
@@ -182,19 +189,21 @@ class DefaultInputConsumerTask(
                 reserved.release()
             }
             is DestinationFile -> {
-                val index = manager.incrementReadCount()
-                // destinationTaskLauncher.handleFile(stream, message, index)
-                fileTransferQueue.publish(FileTransferQueueMessage(stream, message, index))
+                val partition = manager.incrementReadCount().toInt() % fileQueueForPipeline.partitions
+                fileQueueForPipeline.publish(
+                    PipelineMessage(
+                        mapOf(manager.getCurrentCheckpointId() to 1),
+                        StreamKey(stream),
+                        message
+                    ) { reserved.release() },
+                    partition
+                )
             }
             is DestinationFileStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
                 manager.markEndOfStream(true)
-                val envelope =
-                    BatchEnvelope(
-                        SimpleBatch(Batch.State.COMPLETE),
-                        streamDescriptor = message.stream,
-                    )
-                destinationTaskLauncher.handleNewBatch(stream, envelope)
+                log.info { "Read COMPLETE for file stream $stream" }
+                fileQueueForPipeline.broadcast(PipelineEndOfStream(stream))
             }
             is DestinationFileStreamIncomplete ->
                 throw IllegalStateException("File stream $stream failed upstream, cannot continue.")
@@ -294,12 +303,14 @@ class DefaultInputConsumerTask(
             catalog.streams.forEach { recordQueueSupplier.get(it.descriptor).close() }
             fileTransferQueue.close()
             recordQueueForPipeline.close()
+            fileQueueForPipeline.close()
         }
     }
 }
 
 interface InputConsumerTaskFactory {
     fun make(
+        config: DestinationConfiguration,
         catalog: DestinationCatalog,
         inputFlow: ReservingDeserializingInputFlow,
         recordQueueSupplier:
@@ -311,6 +322,7 @@ interface InputConsumerTaskFactory {
         // Required by new interface
         recordQueueForPipeline:
             PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>,
+        fileQueueForPipeline: PartitionedQueue<PipelineEvent<StreamKey, DestinationFile>>,
         loadPipeline: LoadPipeline?,
         partitioner: InputPartitioner,
         openStreamQueue: QueueWriter<DestinationStream>,
@@ -323,6 +335,7 @@ class DefaultInputConsumerTaskFactory(
     private val syncManager: SyncManager,
 ) : InputConsumerTaskFactory {
     override fun make(
+        config: DestinationConfiguration,
         catalog: DestinationCatalog,
         inputFlow: ReservingDeserializingInputFlow,
         recordQueueSupplier:
@@ -334,11 +347,13 @@ class DefaultInputConsumerTaskFactory(
         // Required by new interface
         recordQueueForPipeline:
             PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>,
+        fileQueueForPipeline: PartitionedQueue<PipelineEvent<StreamKey, DestinationFile>>,
         loadPipeline: LoadPipeline?,
         partitioner: InputPartitioner,
         openStreamQueue: QueueWriter<DestinationStream>,
     ): InputConsumerTask {
         return DefaultInputConsumerTask(
+            config,
             catalog,
             inputFlow,
             recordQueueSupplier,
@@ -349,6 +364,7 @@ class DefaultInputConsumerTaskFactory(
 
             // Required by new interface
             recordQueueForPipeline,
+            fileQueueForPipeline,
             loadPipeline,
             partitioner,
             openStreamQueue,

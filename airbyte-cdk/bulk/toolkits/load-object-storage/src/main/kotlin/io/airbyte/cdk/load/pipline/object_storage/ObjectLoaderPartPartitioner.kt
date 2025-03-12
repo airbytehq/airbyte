@@ -19,8 +19,8 @@ import kotlin.random.Random
  *
  * The partition is round-robin, for maximum concurrency.
  */
-class ObjectLoaderPartPartitioner :
-    OutputPartitioner<StreamKey, DestinationRecordAirbyteValue, ObjectKey, Part> {
+class ObjectLoaderPartPartitioner<T> :
+    OutputPartitioner<StreamKey, T, ObjectKey, Part> {
     // Start on a random value
     private var nextPartition = Random(System.currentTimeMillis()).nextInt(Int.MAX_VALUE)
 

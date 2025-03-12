@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.pipeline
 
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import kotlin.math.abs

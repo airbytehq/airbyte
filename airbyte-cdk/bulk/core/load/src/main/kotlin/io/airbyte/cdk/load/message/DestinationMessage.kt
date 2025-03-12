@@ -32,6 +32,7 @@ import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.math.BigInteger
+import java.nio.MappedByteBuffer
 import java.time.OffsetDateTime
 
 /**
@@ -167,7 +168,7 @@ data class DestinationFile(
     override val stream: DestinationStream.Descriptor,
     val emittedAtMs: Long,
     val serialized: String,
-    val fileMessage: AirbyteRecordMessageFile
+    val fileMessage: AirbyteRecordMessageFile,
 ) : DestinationFileDomainMessage {
     /** Convenience constructor, primarily intended for use in tests. */
     class AirbyteRecordMessageFile {

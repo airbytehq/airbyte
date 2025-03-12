@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_v2
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
@@ -74,6 +75,17 @@ class S3V2Specification :
             "{\"examples\":[\"{date}\",\"{date:yyyy_MM}\",\"{timestamp}\",\"{part_number}\",\"{sync_id}\"],\"order\":9}"
     )
     override val fileNamePattern: String? = null
+
+    @get:JsonProperty("num_part_workers")
+    val numPartWorkers: Int? = null
+    @get:JsonProperty("num_upload_workers")
+    val numObjectLoaders: Int? = null
+    @get:JsonProperty("part_size_mb")
+    val partSizeMb: Int? = null
+    @get:JsonProperty("max_memory_ratio_reserved_for_parts")
+    val maxMemoryRatioReservedForParts: Double? = null
+    @get:JsonProperty("use_legacy_client")
+    val useLegacyClient: Boolean? = null
 }
 
 @Singleton
