@@ -50,8 +50,6 @@ data:
               - "ad_groups"
               - "ad_groups_reports_daily"
               - "ad_groups_reports_hourly"
-              - "ad_groups_reports_by_country_daily"
-              - "ad_groups_reports_by_country_hourly"
               - "ads"
               - "ads_audience_reports_by_country_daily"
               - "ads_audience_reports_by_platform_daily"
