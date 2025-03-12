@@ -314,7 +314,12 @@ class S3V2WriteTestJsonUncompressed :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
-    )
+    ) {
+        @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}
 
 class S3V2WriteTestJsonRootLevelFlattening :
     S3V2WriteTest(
