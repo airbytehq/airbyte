@@ -1,6 +1,6 @@
 data:
   ab_internal:
-    ql: 200
+    ql: 100
     sl: 100
   connectorBuildOptions:
     baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
@@ -8,22 +8,26 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
+      testSecrets:
+        - fileName: bulk_upload_config.json
+          name: SECRET_DESTINATION_MSSQL_V2_BULK_LOAD_CONFIG
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: destination
-  definitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
-  dockerImageTag: 1.0.2
+  definitionId: 37a928c1-2d5c-431a-a97d-ae236bd1ea0c
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/destination-mssql
   documentationUrl: https://docs.airbyte.com/integrations/destinations/mssql
   githubIssueLabel: destination-mssql
-  icon: mssql.svg
+  icon: icon.svg
   license: ELv2
   name: MS SQL Server
   registryOverrides:
     cloud:
-      dockerRepository: airbyte/destination-mssql-strict-encrypt
       enabled: true
     oss:
       enabled: true
-  releaseStage: alpha
   releases:
     breakingChanges:
       1.0.0:
@@ -37,8 +41,19 @@ data:
 
           '
         upgradeDeadline: "2024-05-25"
-  supportLevel: community
-  supportsDbt: true
+      2.0.0:
+        message: >
+          'This version introduces new configuration options (bulk insert via Azure Cloud Storage) and removes 
+           the use of a raw table prior to final insertion in the destination table.  These changes will either 
+           require the execution of a truncate refresh on an existing connection or the creation of a new connection.  
+           If a new connection is set up, you may delete the old connection and the raw table in the destination after 
+          a successful initial sync of the new connection.
+
+          '
+        upgradeDeadline: "2025-09-11"
+  releaseStage: generally_available
+  supportLevel: certified
+  supportsRefreshes: true
   tags:
     - language:java
 metadataSpecVersion: "1.0"
