@@ -13,6 +13,12 @@ data:
   dockerImageTag: 0.9.4
   dockerRepository: airbyte/source-google-sheets
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
+  resourceRequirements:
+  jobSpecific:
+    - jobType: check_connection
+      resourceRequirements:
+        memory_limit: 4096mi
+        memory_request: 4096mi
   githubIssueLabel: source-google-sheets
   icon: google-sheets.svg
   license: Elv2
