@@ -15,6 +15,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
     RequestInput,
 )
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.types import Record
 
 
 @dataclass
@@ -99,17 +100,31 @@ class FreshdeskTicketsPaginationStrategy(PageIncrement):
 
     PAGE_LIMIT = 300
 
-    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
+    def next_page_token(
+        self,
+        response: requests.Response,
+        last_page_size: int,
+        last_record: Optional[Record],
+        last_page_token_value: Optional[Any],
+    ) -> Optional[Any]:
         # Stop paginating when there are fewer records than the page size or the current page has no records, or maximum page number is hit
-        if (self._page_size and len(last_records) < self._page_size) or len(last_records) == 0:
+        if (self._page_size and last_page_size < self._page_size) or last_page_size == 0:
             return None
+        elif last_page_token_value is None:
+            # If the PageIncrement strategy does not inject on the first request, the incoming last_page_token_value
+            # may be None. When this is the case, we assume we've already requested the first page specified by
+            # start_from_page and must now get the next page
+            return self.start_from_page + 1
+        elif not isinstance(last_page_token_value, int):
+            raise ValueError(
+                f"Last page token value {last_page_token_value} for PageIncrement pagination strategy was not an integer"
+            )
         elif self._page >= self.PAGE_LIMIT:
             # reset page count as cursor parameter will be updated in the stream slicer
             self._page = self.start_from_page
             # get last_record from latest batch, pos. -1, because of ACS order of records
-            last_record_updated_at = last_records[-1]["updated_at"]
+            last_record_updated_at = last_record["updated_at"]
             # updating slicer request parameters with last_record state
             return last_record_updated_at
         else:
-            self._page += 1
-            return self._page
+            return last_page_token_value + 1
