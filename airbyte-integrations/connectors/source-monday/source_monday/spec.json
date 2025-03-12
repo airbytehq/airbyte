@@ -72,6 +72,14 @@
             }
           }
         ]
+      },
+      "board_ids": {
+        "type": "array",
+        "title": "Boards to sync",
+        "description": "The IDs of the boards to sync for Items and Boards streams.",
+        "items": {
+          "type": "integer"
+        }
       }
     }
   },
