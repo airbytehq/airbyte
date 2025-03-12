@@ -72,7 +72,6 @@ data:
               - "campaigns_reports_hourly"
               - "creative_assets_images"
               - "creative_assets_videos"
-              - "spark_ads"
   releaseStage: generally_available
   remoteRegistries:
     pypi:
