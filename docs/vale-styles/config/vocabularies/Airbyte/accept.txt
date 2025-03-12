@@ -41,3 +41,7 @@ S3 Data Lake
 # Companies and products
 
 Glue
+
+# Acceptable non-words that should not trigger spellcheck
+
+[Nn]ulled

@@ -1,6 +1,8 @@
 # S3 Data Lake
 
-This page guides you through setting up the S3 Data Lake destination connector. This connector writes the Iceberg table format to S3 or an S3-compatible storage backend. This is Airbyte's preferred Iceberg integration. It replaces the older [Iceberg](iceberg) destination. You should switch to this one if you can.
+This page guides you through setting up the S3 Data Lake destination connector. 
+
+This connector writes the Iceberg table format to S3 or an S3-compatible storage backend using a supported Iceberg catalog. This is Airbyte's preferred Iceberg integration. It replaces the older [Iceberg](iceberg) destination, performs better, and implements Airbyte's newer core features. You should switch to this destination when you can.
 
 ## Prerequisites
 
@@ -216,7 +218,9 @@ To authenticate with Nessie, do two things.
 
 2. Set the **Warehouse location** option to `s3://<bucket name>/path/within/bucket`.
 
-## How Airbyte generates the Iceberg schema
+## Output schema
+
+### How Airbyte generates the Iceberg schema
 
 In each stream, Airbyte maps top-level fields to Iceberg fields. Airbyte maps nested fields (objects, arrays, and unions) to string columns and writes them as serialized JSON. 
 
@@ -229,21 +233,17 @@ This is the full mapping between Airbyte types and Iceberg types.
 | Integer                    | Long                           |
 | Number                     | Double                         |
 | String                     | String                         |
-| Time with timezone         | Time                           |
+| Time with timezone*         | Time                           |
 | Time without timezone      | Time                           |
-| Timestamp with timezone    | Timestamp with timezone        |
+| Timestamp with timezone*    | Timestamp with timezone        |
 | Timestamp without timezone | Timestamp without timezone     |
 | Object                     | String (JSON-serialized value) |
 | Array                      | String (JSON-serialized value) |
 | Union                      | String (JSON-serialized value) |
 
-:::note
-For the `time` and `timestamp with timezone` types, Airbyte adjusts the value to UTC before writing to the Iceberg file.
-:::
+*Airbyte converts the `time with timezone` and `timestamp with timezone` types to Coordinated Universal Time (UTC) before writing to the Iceberg file.
 
-<!-- I'm not exactly clear which types this is referring to. Let's be more clear. -->
-
-## Managing schema evolution
+### Managing schema evolution
 
 This connector never rewrites existing Iceberg data files. This means Airbyte can only handle specific source schema changes.
 
@@ -288,35 +288,33 @@ Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/bra
 
 ## Considerations and limitations
 
-This section documents known considerations and limitations in how this Iceberg destination interacts with other products.
+This section documents known considerations and limitations about how this Iceberg destination interacts with other products.
 
 ### Snowflake
 
-Airbyte uses Iceberg row-level deletes to mark older versions of records as outdated. Snowflake doesn't recognize native Iceberg row-level deletes for Iceberg tables with external catalogs like Glue ([see Snowflake's docs](https://docs.snowflake.com/en/user-guide/tables-iceberg#considerations-and-limitations)). As a result, your query results return all versions of a record.
+Airbyte uses Iceberg row-level deletes to mark older versions of records as outdated. If you're using Iceberg tables for Snowflake, Snowflake doesn't recognize native Iceberg row-level deletes for Iceberg tables with external catalogs like Glue ([see Snowflake's docs](https://docs.snowflake.com/en/user-guide/tables-iceberg#considerations-and-limitations)). As a result, your query results return all versions of a record.
 
 For example, the following table contains three versions of the 'Alice' record.
 
-| `id` | `name` | `updated_at`     | `_airbyte_extracted_at` | `_ab_cdc_deleted_at` |
-| :--- | :----- | :--------------- | :---------------------- | -------------------- |
-| 1    | Alice  | 2024-03-01 10:00 | 2024-03-01 10:10        | NULL                 |
-| 1    | Alice  | 2024-03-02 12:00 | 2024-03-02 12:10        | NULL                 |
-| 1    | Alice  | 2024-03-03 14:00 | 2024-03-03 14:10        | NULL                 |
-| 2    | Bob    | 2024-03-04 10:00 | 2024-03-04 10:10        | 2024-03-05 11:00     |
+| `id` | `name` | `updated_at`     | `_airbyte_extracted_at` |
+| :--- | :----- | :--------------- | :---------------------- |
+| 1    | Alice  | 2024-03-01 10:00 | 2024-03-01 10:10        |
+| 1    | Alice  | 2024-03-02 12:00 | 2024-03-02 12:10        |
+| 1    | Alice  | 2024-03-03 14:00 | 2024-03-03 14:10        |
 
-To mitigate this, generate an equivalent flag to detect outdated records. Airbyte generates an `airbyte_extracted_at` field that assists with this.
+To mitigate this, generate a flag to detect outdated records. Airbyte generates an `airbyte_extracted_at` [metadata field](../../understanding-airbyte/airbyte-metadata-fields.md) that assists with this.
 
 ```sql
 row_number() over (partition by {primary_key} order by {cursor}, _airbyte_extracted_at)) != 1 OR _ab_cdc_deleted_at IS NOT NULL as is_outdated;
 ```
 
-Now, identifying the latest version of the 'Alice' record is possible by querying whether `is_outdated` is false.
+Now, you can identify the latest version of the 'Alice' record by querying whether `is_outdated` is false.
 
-| `id` | `name` | `updated_at`     | `_airbyte_extracted_at` | `row_number` | `_ab_cdc_deleted_at` | `is_outdated` |
-| :--- | :----- | :--------------- | :---------------------- | ------------ | -------------------- | ------------- |
-| 2    | Bob    | 2024-03-04 10:00 | 2024-03-04 10:10        | 4            | 2024-03-05 11:00     | True          |
-| 1    | Alice  | 2024-03-01 10:00 | 2024-03-01 10:10        | 3            | NULL                 | True          |
-| 1    | Alice  | 2024-03-02 12:00 | 2024-03-02 12:10        | 2            | NULL                 | True          |
-| 1    | Alice  | 2024-03-03 14:00 | 2024-03-03 14:10        | 1            | NULL                 | False         |
+| `id` | `name` | `updated_at`     | `_airbyte_extracted_at` | `row_number` | `is_outdated` |
+| :--- | :----- | :--------------- | :---------------------- | ------------ | ------------- |
+| 1    | Alice  | 2024-03-01 10:00 | 2024-03-01 10:10        | 3            | True          |
+| 1    | Alice  | 2024-03-02 12:00 | 2024-03-02 12:10        | 2            | True          |
+| 1    | Alice  | 2024-03-03 14:00 | 2024-03-03 14:10        | 1            | False         |
 
 
 ## Changelog
