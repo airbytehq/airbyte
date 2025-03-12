@@ -8,6 +8,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -16,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.sync.withLock
@@ -179,7 +181,7 @@ class FeedReader(
         while (true) {
             val status: PartitionReader.TryAcquireResourcesStatus =
             // Resource acquisition always executes serially.
-            root.resourceAcquisitionMutex.withLock { partitionReader.tryAcquireResources() }
+            root.resourceAcquisitionMutex.withLock {delay(1.seconds); partitionReader.tryAcquireResources() }
             if (status == PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN) break
             root.waitForResourceAvailability()
         }
