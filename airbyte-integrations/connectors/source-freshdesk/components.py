@@ -116,9 +116,7 @@ class FreshdeskTicketsPaginationStrategy(PageIncrement):
             # start_from_page and must now get the next page
             return self.start_from_page + 1
         elif not isinstance(last_page_token_value, int):
-            raise ValueError(
-                f"Last page token value {last_page_token_value} for PageIncrement pagination strategy was not an integer"
-            )
+            raise ValueError(f"Last page token value {last_page_token_value} for PageIncrement pagination strategy was not an integer")
         elif self._page >= self.PAGE_LIMIT:
             # reset page count as cursor parameter will be updated in the stream slicer
             self._page = self.start_from_page
