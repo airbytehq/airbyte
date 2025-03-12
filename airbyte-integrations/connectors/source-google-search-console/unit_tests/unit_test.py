@@ -8,7 +8,6 @@ from urllib.parse import quote_plus
 
 import pytest
 import requests
-from pytest_lazyfixture import lazy_fixture
 from source_google_search_console.source import SourceGoogleSearchConsole
 from source_google_search_console.streams import (
     ROW_LIMIT,
@@ -24,9 +23,7 @@ from utils import command_check
 from airbyte_cdk.models import AirbyteConnectionStatus, Status, SyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
-
 logger = logging.getLogger("airbyte")
-
 
 class MockResponse:
     def __init__(self, data_field: str, count: int):
@@ -34,7 +31,6 @@ class MockResponse:
 
     def json(self):
         return self.value
-
 
 @pytest.mark.parametrize(
     "count, expected",
@@ -49,7 +45,6 @@ def test_pagination(count, expected):
     response = MockResponse(stream.data_field, count)
     stream.next_page_token(response)
     assert stream.start_row == expected
-
 
 @pytest.mark.parametrize(
     "site_urls",
@@ -79,7 +74,6 @@ def test_slice(site_urls, sync_mode, data_state):
                 }
                 assert expected == next(stream_slice)
 
-
 @pytest.mark.parametrize(
     "current_stream_state, latest_record, expected",
     [
@@ -102,26 +96,21 @@ def test_slice(site_urls, sync_mode, data_state):
 )
 def test_state(current_stream_state, latest_record, expected):
     stream = SearchAnalyticsByDate(None, ["https://example.com"], "start_date", "end_date")
-
     value = stream._get_updated_state(current_stream_state, latest_record)
     assert value == expected
 
-
 def test_updated_state():
     stream = SearchAnalyticsByDate(None, ["https://domain1.com", "https://domain2.com"], "start_date", "end_date")
-
     state = {}
     record = {"site_url": "https://domain1.com", "search_type": "web", "date": "2022-01-01"}
     state = stream._get_updated_state(state, record)
     record = {"site_url": "https://domain2.com", "search_type": "web", "date": "2022-01-01"}
     state = stream._get_updated_state(state, record)
-
     assert state == {
         "https://domain1.com": {"web": {"date": "2022-01-01"}},
         "https://domain2.com": {"web": {"date": "2022-01-01"}},
         "date": "2022-01-01",
     }
-
 
 def test_forbidden_should_retry(requests_mock, forbidden_error_message_json):
     stream = Sites(None, ["https://domain1.com"], "2023-01-01", "2023-01-01")
@@ -132,7 +121,6 @@ def test_forbidden_should_retry(requests_mock, forbidden_error_message_json):
     assert stream.should_retry(test_response) is False
     assert stream.raise_on_http_errors is False
 
-
 def test_bad_aggregation_type_should_retry(requests_mock, bad_aggregation_type):
     stream = SearchAnalyticsKeywordSiteReportBySite(None, ["https://example.com"], "2021-01-01", "2021-01-02")
     requests_mock.post(
@@ -142,14 +130,10 @@ def test_bad_aggregation_type_should_retry(requests_mock, bad_aggregation_type):
     url = stream.url_base + stream.path(None, slice)
     requests_mock.get(url, status_code=400, json=bad_aggregation_type)
     test_response = requests.get(url)
-    # before should_retry, the aggregation_type should be set to `by_propety`
     assert stream.aggregation_type == QueryAggregationType.by_property
-    # trigger should retry
     assert stream.should_retry(test_response) is False
-    # after should_retry, the aggregation_type should be set to `auto`
     assert stream.aggregation_type == QueryAggregationType.auto
     assert stream.raise_on_http_errors is False
-
 
 @pytest.mark.parametrize(
     "stream_class, expected",
@@ -164,33 +148,23 @@ def test_bad_aggregation_type_should_retry(requests_mock, bad_aggregation_type):
 @patch.multiple(GoogleSearchConsole, __abstractmethods__=set())
 def test_parse_response(stream_class, expected):
     stream = stream_class(None, ["https://domain1.com", "https://domain2.com"], "2021-09-01", "2021-09-07")
-
     stream.data_field = "data_field"
     stream_slice = next(stream.stream_slices(sync_mode=SyncMode.full_refresh))
     response = MagicMock()
     response.json = MagicMock(return_value={"data_field": [{"keys": ["keys"]}]})
-
     record = next(stream.parse_response(response, stream_state={}, stream_slice=stream_slice))
-
     assert record == expected
-
 
 def test_check_connection(config_gen, config, mocker, requests_mock):
     requests_mock.get("https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fexample.com%2F", json={})
     requests_mock.get("https://www.googleapis.com/webmasters/v3/sites", json={"siteEntry": [{"siteUrl": "https://example.com/"}]})
     requests_mock.post("https://oauth2.googleapis.com/token", json={"access_token": "token", "expires_in": 10})
-
     source = SourceGoogleSearchConsole()
-
     assert command_check(source, config_gen()) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
-
-    # test site_urls
     assert command_check(source, config_gen(site_urls=["https://example.com"])) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
     assert command_check(source, config_gen(site_urls=["https://missed.com"])) == AirbyteConnectionStatus(
         status=Status.FAILED, message="\"InvalidSiteURLValidationError('The following URLs are not permitted: https://missed.com/')\""
     )
-
-    # test start_date
     assert command_check(source, config_gen(start_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
     with pytest.raises(AirbyteTracedException):
         assert command_check(source, config_gen(start_date="")) == AirbyteConnectionStatus(
@@ -206,8 +180,6 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
         status=Status.FAILED,
         message="\"Unable to check connectivity to Google Search Console API - ParserError('Unable to parse string [2022-99-99]')\"",
     )
-
-    # test end_date
     assert command_check(source, config_gen(end_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
     assert command_check(source, config_gen(end_date="")) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
     with pytest.raises(Exception):
@@ -216,8 +188,6 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
         status=Status.FAILED,
         message="\"Unable to check connectivity to Google Search Console API - ParserError('Unable to parse string [2022-99-99]')\"",
     )
-
-    # test custom_reports
     with pytest.raises(AirbyteTracedException):
         assert command_check(source, config_gen(custom_reports_array="")) == AirbyteConnectionStatus(
             status=Status.FAILED,
@@ -228,19 +198,18 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
             status=Status.FAILED, message="'<ValidationError: \"{} is not of type \\'array\\'\">'"
         )
 
-
 @pytest.mark.parametrize(
-    "test_config, expected",
+    "fixture_name, expected",
     [
         (
-            lazy_fixture("config"),
+            "config",
             (
                 False,
                 "UnauthorizedOauthError('Unable to connect with provided OAuth credentials. The `access token` or `refresh token` is expired. Please re-authrenticate using valid account credenials.')",
             ),
         ),
         (
-            lazy_fixture("service_account_config"),
+            "service_account_config",
             (
                 False,
                 "UnauthorizedServiceAccountError('Unable to connect with provided Service Account credentials. Make sure the `sevice account credentials` provided are valid.')",
@@ -248,12 +217,12 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
         ),
     ],
 )
-def test_unauthorized_creds_exceptions(test_config, expected, requests_mock):
+def test_unauthorized_creds_exceptions(fixture_name, expected, requests_mock, request):
+    test_config = request.getfixturevalue(fixture_name)
     source = SourceGoogleSearchConsole()
     requests_mock.post("https://oauth2.googleapis.com/token", status_code=401, json={})
     actual = source.check_connection(logger, test_config)
     assert actual == expected
-
 
 def test_streams(config_gen):
     source = SourceGoogleSearchConsole()
@@ -262,16 +231,13 @@ def test_streams(config_gen):
     streams = source.streams(config_gen(custom_reports_array=...))
     assert len(streams) == 14
 
-
 def test_get_start_date():
     stream = SearchAnalyticsByDate(None, ["https://domain1.com", "https://domain2.com"], "2021-09-01", "2021-09-07")
     date = "2021-09-07"
     state_date = stream._get_start_date(
         stream_state={"https://domain1.com": {"web": {"date": date}}}, site_url="https://domain1.com", search_type="web"
     )
-
     assert date == str(state_date)
-
 
 @pytest.mark.parametrize(
     "dimensions, expected_status, schema_props, primary_key",
