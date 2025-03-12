@@ -158,6 +158,7 @@ See the [Getting Started: Configuration section](#configuration) of this guide f
 
 | Version    | Date       | Pull Request                                               | Subject                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------|
+| 2.0.1      | 2025-03-12 | [55718](https://github.com/airbytehq/airbyte/pull/55718) | Fix breaking change information in metadata.yaml |
 | 2.0.0      | 2025-03-11 | [55684](https://github.com/airbytehq/airbyte/pull/55684)   | Release 2.0.0                                          |
 | 2.0.0.rc13 | 2025-03-07 | [55252](https://github.com/airbytehq/airbyte/pull/55252)   | RC13: Bugfix for OOM on Bulk Load                      |
 | 2.0.0.rc12 | 2025-03-05 | [54159](https://github.com/airbytehq/airbyte/pull/54159)   | RC12: Support For Bulk Insert Using Azure Blob Storage |
