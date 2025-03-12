@@ -34,7 +34,7 @@ class RemoteIdentity(BaseModel):
     description: str | None = None
     email_address: str | None = None
     login_name: str | None = None
-    member_email_addresses: list[str] | None = None
+    members: list[dict[str, str]] | None = None
     type: RemoteIdentityType
     modified_at: datetime
 

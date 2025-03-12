@@ -6,7 +6,7 @@
     "name": { "type": ["null", "string"] },
     "description": { "type": ["null", "string"] },
     "email_address": { "type": ["null", "string"] },
-    "member_email_addresses": { "type": ["null", "array"] },
+    "members": { "type": ["null", "array"] },
     "type": { "type": "string" },
     "modified_at": { "type": "string" }
   }

@@ -99,6 +99,45 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
         groups = execute_query_with_retry(self.one_drive_client.groups.get())
         return groups
 
+    def get_group_members(self, group_id: str) -> List[Dict[str, str]]:
+        """
+        Retrieves the members of a specific group using the Microsoft Graph API.
+
+        Args:
+            group_id (str): The ID of the group to get members for.
+
+        Returns:
+            List[Dict[str, str]]: A list of dictionaries containing member ID and type.
+        """
+        try:
+            headers = self._get_headers()
+            url = f"https://graph.microsoft.com/v1.0/groups/{group_id}/members"
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            members = response.json().get("value", [])
+
+            # Extract member IDs and types
+            member_info = []
+            for member in members:
+                if member.get("id"):
+                    # Extract the type from @odata.type which is in format "#microsoft.graph.user", "#microsoft.graph.group", etc.
+                    odata_type = member.get("@odata.type", "")
+                    member_type = odata_type.split(".")[-1] if "." in odata_type else "user"  # Default to user if type not found
+
+                    # Try to get the identity type directly from RemoteIdentityType enum
+                    try:
+                        identity_type = RemoteIdentityType(member_type).value
+                    except ValueError:
+                        # If the member_type doesn't match any RemoteIdentityType, default to USER
+                        identity_type = RemoteIdentityType.USER.value
+
+                    member_info.append({"remote_id": member.get("id"), "type": identity_type})
+
+            return member_info
+        except Exception as e:
+            logging.warning(f"Failed to retrieve members for group {group_id}: {str(e)}")
+            return []
+
     def get_site_users(self) -> UserCollection:
         client_context = self.get_client_context()
         site_users = client_context.web.site_users
@@ -112,6 +151,59 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
         client_context.load(site_groups)
         client_context.execute_query()
         return site_groups
+
+    def _get_site_group_members_client_context(self, group_id: str) -> List[Dict[str, str]]:
+        """
+        Use Office365 client context to get site group members.
+
+        Args:
+            group_id (str): The ID of the site group.
+
+        Returns:
+            List[Dict[str, str]]: A list of dictionaries containing member ID and type.
+
+        Raises:
+            Exception: If the client context operations fail.
+        """
+        client_context = self.get_client_context()
+
+        # Try to get the group by ID
+        group = client_context.web.site_groups.get_by_id(group_id)
+        users = group.users
+
+        # Load the users with a specific query to avoid permission issues
+        client_context.load(users, ["Id", "Title", "Email"])
+
+        # Execute the query with retry
+        execute_query_with_retry(client_context)
+
+        # Process the users
+        member_info = []
+        for user in users:
+            if hasattr(user, "id") and user.id:
+                # For site groups, members are typically site users
+                member_info.append({"remote_id": user.id, "type": RemoteIdentityType.SITE_USER.value})
+
+        return member_info
+
+    def get_site_group_members(self, site_group) -> List[Dict[str, str]]:
+        """
+        Retrieves the members of a specific SharePoint site group using the client context.
+
+        Args:
+            site_group: The site group object to get members for.
+
+        Returns:
+            List[Dict[str, str]]: A list of dictionaries containing member ID and type.
+        """
+        try:
+            group_id = site_group.id
+            logging.info(f"Getting members for site group {group_id} using client context...")
+            return self._get_site_group_members_client_context(group_id)
+        except Exception as e:
+            logging.warning(f"Failed to retrieve members for site group {site_group.id}: {str(e)}")
+            # Return an empty list instead of failing completely
+            return []
 
     def get_applications(self):
         applications = execute_query_with_retry(self.one_drive_client.applications.get())
@@ -228,6 +320,9 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
         groups = self.get_groups()
         if groups:
             for group in groups:
+                # Get members of the group
+                member_info = self.get_group_members(group.id)
+
                 rfp = RemoteIdentity(
                     remote_id=group.id,
                     name=group.display_name,
@@ -235,8 +330,8 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
                     email_address=group.mail,
                     type=RemoteIdentityType.GROUP,
                     modified_at=datetime.now(),
+                    members=member_info,
                 )
-                # todo: get members of the group
                 yield rfp.dict()
 
         site_users = self.get_site_users()
@@ -255,14 +350,17 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
         site_groups = self.get_site_groups()
         if site_groups:
             for site_group in site_groups:
+                # Get members of the site group
+                member_info = self.get_site_group_members(site_group)
+
                 rfp = RemoteIdentity(
                     remote_id=site_group.id,
                     name=site_group.properties["Title"],
                     description=site_group.properties["Description"],
                     type=RemoteIdentityType.SITE_GROUP,
                     modified_at=datetime.now(),
+                    members=member_info,
                 )
-                # todo: get members of the site group
                 yield rfp.dict()
 
         applications = self.get_applications()
