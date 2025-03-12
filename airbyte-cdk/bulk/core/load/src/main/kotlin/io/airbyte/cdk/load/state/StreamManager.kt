@@ -389,7 +389,6 @@ class DefaultStreamManager(
         if (readCount == 0L) {
             return true
         }
-
         val completedCount = checkpointCounts.values.sumOf { it.recordsCompleted.get() }
         return completedCount == readCount
     }

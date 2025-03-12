@@ -11,17 +11,17 @@ class PartitionedQueue<T>(private val queues: Array<MessageQueue<T>>) : Closeabl
     val partitions = queues.size
 
     fun consume(partition: Int): Flow<T> {
-        if (partition < 0 || partition >= queues.size) {
-            throw IllegalArgumentException("Invalid partition: $partition")
-        }
-        return queues[partition].consume()
+//        if (partition < 0 || partition >= queues.size) {
+//            throw IllegalArgumentException("Invalid partition: $partition")
+//        }
+        return queues[partition % partitions].consume()
     }
 
     suspend fun publish(value: T, partition: Int) {
-        if (partition < 0 || partition >= queues.size) {
-            throw IllegalArgumentException("Invalid partition: $partition")
-        }
-        queues[partition].publish(value)
+//        if (partition < 0 || partition >= queues.size) {
+//            throw IllegalArgumentException("Invalid partition: $partition")
+//        }
+        queues[partition % partitions].publish(value)
     }
 
     suspend fun broadcast(value: T) = queues.forEach { it.publish(value) }

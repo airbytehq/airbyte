@@ -67,9 +67,9 @@ class ObjectLoaderPartToObjectAccumulator(
 
     override suspend fun accept(input: Part, state: State): Pair<State, ObjectResult?> {
         input.bytes?.let { state.streamingUpload.uploadPart(it, input.partIndex) }
-        if (input.bytes == null) {
-            throw IllegalStateException("Empty non-final part received: this should not happen")
-        }
+//        if (input.bytes == null) {
+//            throw IllegalStateException("Empty non-final part received: this should not happen")
+//        }
         state.bookkeeper.add(input)
         if (state.bookkeeper.isComplete) {
             return Pair(state, finish(state))
@@ -81,6 +81,6 @@ class ObjectLoaderPartToObjectAccumulator(
         if (state.bookkeeper.isComplete) {
             state.streamingUpload.complete()
         } // else assume another part is finishing this
-        return ObjectResult(Batch.State.COMPLETE)
+        return ObjectResult(Batch.State.STAGED)
     }
 }

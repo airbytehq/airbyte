@@ -20,6 +20,8 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurati
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketConfigurationProvider
+import io.airbyte.cdk.load.command.s3.S3ClientConfiguration
+import io.airbyte.cdk.load.command.s3.S3ClientConfigurationProvider
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.io.OutputStream
@@ -46,6 +48,7 @@ data class S3V2Configuration<T : OutputStream>(
     val maxMemoryRatioReservedForParts: Double = 0.2,
     val objectSizeBytes: Long = 200L * 1024 * 1024,
     val partSizeBytes: Long = 10L * 1024 * 1024,
+    val useLegacyClient: Boolean = false,
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
@@ -54,7 +57,10 @@ data class S3V2Configuration<T : OutputStream>(
     ObjectStoragePathConfigurationProvider,
     ObjectStorageFormatConfigurationProvider,
     ObjectStorageUploadConfigurationProvider,
-    ObjectStorageCompressionConfigurationProvider<T>
+    ObjectStorageCompressionConfigurationProvider<T>,
+    S3ClientConfigurationProvider {
+       override val s3ClientConfiguration = S3ClientConfiguration(useLegacyJavaClient = useLegacyClient)
+    }
 
 @Singleton
 class S3V2ConfigurationFactory :
@@ -67,6 +73,11 @@ class S3V2ConfigurationFactory :
             objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
+            numPartWorkers = pojo.numPartWorkers ?: 2,
+            numUploadWorkers = pojo.numObjectLoaders ?: 3,
+            maxMemoryRatioReservedForParts = pojo.maxMemoryRatioReservedForParts ?: 0.2,
+            partSizeBytes = (pojo.partSizeMb ?: 10) * 1024L * 1024L,
+            useLegacyClient = pojo.useLegacyClient ?: false,
         )
     }
 }
