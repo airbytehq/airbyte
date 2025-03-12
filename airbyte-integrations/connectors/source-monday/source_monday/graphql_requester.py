@@ -75,11 +75,12 @@ class MondayGraphqlRequester(HttpRequester):
             else:
                 fields.append(field)
 
+        # when querying boards, filter by board_ids if provided in the config
         if object_name == "boards" and "board_ids" in self.config:
-            # sometimes board_ids are already present because of how we executed incremental syncs by first querying activity_logs.
+            # sometimes board_ids are already present under 'ids' key in object_arguments because of how we execute incremental syncs for source monday by first querying activity_logs.
             # If they are present, don't override them.
             if "ids" not in object_arguments:
-                object_arguments["ids"] = ','.join(str(id) for id in self.config.get("board_ids"))
+                object_arguments["ids"] = self.config.get("board_ids")
         
         arguments = self._get_object_arguments(**object_arguments)
         arguments = f"({arguments})" if arguments else ""
@@ -119,14 +120,11 @@ class MondayGraphqlRequester(HttpRequester):
             query = self._build_query("next_items_page", field_schema, limit=nested_limit, cursor=f'"{sub_page}"')
         else:
             query = self._build_query("items_page", field_schema, limit=nested_limit)
+            # since items are a subresource of boards, when querying items, filter by board_ids if provided in the config
+            if "board_ids" in self.config and "ids" not in object_arguments:
+                object_arguments["ids"] = self.config.get("board_ids")
             arguments = self._get_object_arguments(**object_arguments)
-            board_ids = self.config.get('board_ids')
-            #TODO: test removing this or else move this into object_arguments
-            if board_ids:
-                board_ids = ','.join(str(id) for id in board_ids)
-                query = f"boards({arguments}, ids:[{board_ids}]){{{query}}}"
-            else:
-                query = f"boards({arguments}){{{query}}}"
+            query = f"boards({arguments}){{{query}}}"
 
         return query
 
@@ -168,12 +166,10 @@ class MondayGraphqlRequester(HttpRequester):
             created_at = datetime.fromtimestamp(created_at).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         query = self._build_query(object_name, field_schema, limit=nested_limit, page=sub_page, fromt=created_at)
+        if "board_ids" in self.config and "ids" not in object_arguments:
+            object_arguments["ids"] = self.config.get("board_ids")
         arguments = self._get_object_arguments(**object_arguments)
-        board_ids = self.config.get('board_ids')
-        #TODO: test removing this or else move this into object_arguments
-        if board_ids:
-            board_ids = ','.join(str(id) for id in board_ids)
-            return f"boards({arguments},ids:[{board_ids}]){{{query}}}"
+        
         return f"boards({arguments}){{{query}}}"
 
     def get_request_headers(
