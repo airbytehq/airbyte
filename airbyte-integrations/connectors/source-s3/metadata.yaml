@@ -13,6 +13,12 @@ data:
   dockerImageTag: 4.12.2
   dockerRepository: airbyte/source-s3
   documentationUrl: https://docs.airbyte.com/integrations/sources/s3
+  resourceRequirements:
+    jobSpecific:
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 4096mi
+          memory_request: 4096mi
   githubIssueLabel: source-s3
   icon: s3.svg
   license: ELv2
