@@ -16,7 +16,7 @@ data:
             type: GSM
   connectorType: destination
   definitionId: 37a928c1-2d5c-431a-a97d-ae236bd1ea0c
-  dockerImageTag: 2.0.0
+  dockerImageTag: 2.0.1
   dockerRepository: airbyte/destination-mssql
   documentationUrl: https://docs.airbyte.com/integrations/destinations/mssql
   githubIssueLabel: destination-mssql
