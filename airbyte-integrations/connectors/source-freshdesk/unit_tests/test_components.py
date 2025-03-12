@@ -3,7 +3,6 @@
 #
 
 import random
-import time
 from typing import Any, MutableMapping
 from unittest.mock import MagicMock, patch
 
@@ -209,32 +208,27 @@ class TestFreshdeskTicketsIncrementalSync:
 class TestFreshdeskTicketsPaginationStrategy:
     #  returns None when there are fewer records than the page size
     @pytest.mark.parametrize(
-        "response, current_page, last_records, expected",
+        "response, current_page, last_page_size, last_record, expected",
         [
-            (requests.Response(), 1, [], None),  # No records
-            (requests.Response(), 1, [1, 2, 3], None),  # Fewer records than page size
-            (requests.Response(), 3, [1, 2, 3, 4], 4),  # Page size records
+            (requests.Response(), 1, 0, {}, None),  # No records
+            (requests.Response(), 1, 3, {"updated_at": "2022-01-05"}, None),  # Fewer records than page size
+            (requests.Response(), 3, 4, {"updated_at": "2022-01-05"}, 4),  # Page size records
             (
                 requests.Response(),
                 6,
-                [
-                    {"updated_at": "2022-01-01"},
-                    {"updated_at": "2022-01-02"},
-                    {"updated_at": "2022-01-03"},
-                    {"updated_at": "2022-01-03"},
-                    {"updated_at": "2022-01-05"},
-                ],
+                5,
+                {"updated_at": "2022-01-05"},
                 "2022-01-05",
             ),  # Page limit is hit
         ],
     )
     def test_returns_none_when_fewer_records_than_page_size(
-        self, components_module, response, current_page, last_records, expected, config
+        self, components_module, response, current_page, last_page_size, last_record, expected, config
     ):
         pagination_strategy = components_module.FreshdeskTicketsPaginationStrategy(config=config, page_size=4, parameters={})
         pagination_strategy.PAGE_LIMIT = 5
         pagination_strategy._page = current_page
-        assert pagination_strategy.next_page_token(response, last_records) == expected
+        assert pagination_strategy.next_page_token(response, last_page_size, last_record, current_page) == expected
 
 
 @pytest.mark.parametrize(
