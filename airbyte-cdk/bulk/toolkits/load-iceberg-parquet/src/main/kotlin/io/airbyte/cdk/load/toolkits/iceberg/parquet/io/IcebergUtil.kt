@@ -148,7 +148,7 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     ): Record {
         val dataMapped =
             pipeline
-                .map(record.data, record.meta?.changes)
+                .map(record)
                 .withAirbyteMeta(stream, record.emittedAtMs, true)
         // TODO figure out how to detect the actual operation value
         return RecordWrapper(
