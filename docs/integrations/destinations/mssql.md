@@ -158,24 +158,25 @@ See the [Getting Started: Configuration section](#configuration) of this guide f
 
 | Version    | Date       | Pull Request                                               | Subject                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------|
-| 2.0.2      | 2025-03-12 | [54657](https://github.com/airbytehq/airbyte/pull/54657)   | Add support for Active Directory based Auth            |
-| 2.0.1      | 2025-03-12 | [55718](https://github.com/airbytehq/airbyte/pull/55718) | Fix breaking change information in metadata.yaml |
-| 2.0.0      | 2025-03-11 | [55684](https://github.com/airbytehq/airbyte/pull/55684)   | Release 2.0.0                                          |
-| 2.0.0.rc13 | 2025-03-07 | [55252](https://github.com/airbytehq/airbyte/pull/55252)   | RC13: Bugfix for OOM on Bulk Load                      |
-| 2.0.0.rc12 | 2025-03-05 | [54159](https://github.com/airbytehq/airbyte/pull/54159)   | RC12: Support For Bulk Insert Using Azure Blob Storage |
-| 2.0.0.rc11 | 2025-03-04 | [55193](https://github.com/airbytehq/airbyte/pull/55193)   | RC11: Increase decimal precision                       |
-| 2.0.0.rc10 | 2025-02-24 | [54648](https://github.com/airbytehq/airbyte/pull/54648)   | RC10: Fix index column names with hyphens              |
-| 2.0.0.rc9  | 2025-02-21 | [54197](https://github.com/airbytehq/airbyte/pull/54197)   | RC9: Fix index column names with invalid characters    |
-| 2.0.0.rc8  | 2025-02-20 | [54186](https://github.com/airbytehq/airbyte/pull/54186)   | RC8: Fix String support                                |
-| 2.0.0.rc7  | 2025-02-11 | [53364](https://github.com/airbytehq/airbyte/pull/53364)   | RC7: Revert deletion change                            |
-| 2.0.0.rc6  | 2025-02-11 | [53364](https://github.com/airbytehq/airbyte/pull/53364)   | RC6: Break up deletes into loop to reduce locking      |
-| 2.0.0.rc5  | 2025-02-07 | [53236](https://github.com/airbytehq/airbyte/pull/53236)   | RC5: Use rowlock hint                                  |
-| 2.0.0.rc4  | 2025-02-06 | [53192](https://github.com/airbytehq/airbyte/pull/53192)   | RC4: Fix config, timehandling, performance tweak       |
-| 2.0.0.rc3  | 2025-02-04 | [53174](https://github.com/airbytehq/airbyte/pull/53174)   | RC3: Fix metadata.yaml for publish                     |
-| 2.0.0.rc2  | 2025-02-04 | [52704](https://github.com/airbytehq/airbyte/pull/52704)   | RC2: Performance improvement                           |
-| 2.0.0.rc1  | 2025-01-24 | [52096](https://github.com/airbytehq/airbyte/pull/52096)   | Release candidate                                      |
-| 1.0.3      | 2025-01-10 | [51497](https://github.com/airbytehq/airbyte/pull/51497) | Use a non root base image |
-| 1.0.2      | 2024-12-18 | [49891](https://github.com/airbytehq/airbyte/pull/49891) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 2.0.3      | 2025-03-12 | [54657](https://github.com/airbytehq/airbyte/pull/54657)   | Add support for Active Directory based Auth            |
+| 2.0.2      | 2025-03-12 | [55720](https://github.com/airbytehq/airbyte/pull/55720)   | Restore definition ID                                                                               |
+| 2.0.1      | 2025-03-12 | [55718](https://github.com/airbytehq/airbyte/pull/55718)   | Fix breaking change information in metadata.yaml                                                    |
+| 2.0.0      | 2025-03-11 | [55684](https://github.com/airbytehq/airbyte/pull/55684)   | Release 2.0.0                                                                                       |
+| 2.0.0.rc13 | 2025-03-07 | [55252](https://github.com/airbytehq/airbyte/pull/55252)   | RC13: Bugfix for OOM on Bulk Load                                                                   |
+| 2.0.0.rc12 | 2025-03-05 | [54159](https://github.com/airbytehq/airbyte/pull/54159)   | RC12: Support For Bulk Insert Using Azure Blob Storage                                              |
+| 2.0.0.rc11 | 2025-03-04 | [55193](https://github.com/airbytehq/airbyte/pull/55193)   | RC11: Increase decimal precision                                                                    |
+| 2.0.0.rc10 | 2025-02-24 | [54648](https://github.com/airbytehq/airbyte/pull/54648)   | RC10: Fix index column names with hyphens                                                           |
+| 2.0.0.rc9  | 2025-02-21 | [54197](https://github.com/airbytehq/airbyte/pull/54197)   | RC9: Fix index column names with invalid characters                                                 |
+| 2.0.0.rc8  | 2025-02-20 | [54186](https://github.com/airbytehq/airbyte/pull/54186)   | RC8: Fix String support                                                                             |
+| 2.0.0.rc7  | 2025-02-11 | [53364](https://github.com/airbytehq/airbyte/pull/53364)   | RC7: Revert deletion change                                                                         |
+| 2.0.0.rc6  | 2025-02-11 | [53364](https://github.com/airbytehq/airbyte/pull/53364)   | RC6: Break up deletes into loop to reduce locking                                                   |
+| 2.0.0.rc5  | 2025-02-07 | [53236](https://github.com/airbytehq/airbyte/pull/53236)   | RC5: Use rowlock hint                                                                               |
+| 2.0.0.rc4  | 2025-02-06 | [53192](https://github.com/airbytehq/airbyte/pull/53192)   | RC4: Fix config, timehandling, performance tweak                                                    |
+| 2.0.0.rc3  | 2025-02-04 | [53174](https://github.com/airbytehq/airbyte/pull/53174)   | RC3: Fix metadata.yaml for publish                                                                  |
+| 2.0.0.rc2  | 2025-02-04 | [52704](https://github.com/airbytehq/airbyte/pull/52704)   | RC2: Performance improvement                                                                        |
+| 2.0.0.rc1  | 2025-01-24 | [52096](https://github.com/airbytehq/airbyte/pull/52096)   | Release candidate                                                                                   |
+| 1.0.3      | 2025-01-10 | [51497](https://github.com/airbytehq/airbyte/pull/51497)   | Use a non root base image                                                                           |
+| 1.0.2      | 2024-12-18 | [49891](https://github.com/airbytehq/airbyte/pull/49891)   | Use a base image: airbyte/java-connector-base:1.0.0                                                 |
 | 1.0.1      | 2024-11-04 | [\#48134](https://github.com/airbytehq/airbyte/pull/48134) | Fix supported sync modes (destination-mssql 1.x.y does not support dedup)                           |
 | 1.0.0      | 2024-04-11 | [\#36050](https://github.com/airbytehq/airbyte/pull/36050) | Update to Dv2 Table Format and Remove normalization                                                 |
 | 0.2.0      | 2023-06-27 | [\#27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                |
