@@ -378,12 +378,14 @@ class SearchAppearance(SearchAnalytics):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Dict[str, Any], str]]:
         data = super().request_body_json(stream_state, stream_slice, next_page_token)
-        
+
         fields_to_remove = ["aggregationType", "startRow", "rowLimit", "dataState"]
         for field in fields_to_remove:
             data.pop(field, None)
-    
+
         return data
+
+
 class SearchByKeyword(SearchAnalytics):
     """
     Adds searchAppearance value to dimensionFilterGroups in json body
@@ -392,6 +394,7 @@ class SearchByKeyword(SearchAnalytics):
     groupType: "and" - Whether all filters in this group must return true ("and"), or one or more must return true (not yet supported).
     filters: {"dimension": "searchAppearance", "operator": "equals", "expression": keyword}
     """
+
     search_types = ["web", "news", "image", "video", "discover", "googleNews"]
 
     def stream_slices(
