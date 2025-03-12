@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 from io import IOBase
 from os import getenv, makedirs, path
-from typing import Any, Dict, Iterable, List, Optional, Set, cast
+from typing import Dict, Iterable, List, Optional, Set, cast
 
 import boto3.session
 import pendulum
