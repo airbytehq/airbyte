@@ -125,7 +125,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
         val pb = ProcessBuilder(cmds)
         val file = createTempFile(Path(/*"/staging/files"*/"/tmp"), "ab", ".txt",
             PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-rw-rw-")))
-        pb.redirectOutput(file.toFile())
+        pb.redirectOutput(/*file.toFile()*/ProcessBuilder.Redirect.DISCARD)
 
         log.info { "Running $cmds to ${file}" }
         val timeTaken = measureTime {
