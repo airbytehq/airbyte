@@ -148,7 +148,7 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     ): Record {
         val dataMapped =
             pipeline
-                .map(record.data, record.meta?.changes)
+                .map(record)
                 .withAirbyteMeta(stream, record.emittedAtMs, true)
         // TODO figure out how to detect the actual operation value
         return RecordWrapper(
@@ -177,9 +177,8 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         importType: ImportType,
     ): Operation =
         if (
-            record.data is ObjectValue &&
-                (record.data as ObjectValue).values[AIRBYTE_CDC_DELETE_COLUMN] != null &&
-                (record.data as ObjectValue).values[AIRBYTE_CDC_DELETE_COLUMN] !is NullValue
+            record.declaredFields[AIRBYTE_CDC_DELETE_COLUMN] != null &&
+            record.declaredFields[AIRBYTE_CDC_DELETE_COLUMN]?.value !is NullValue
         ) {
             Operation.DELETE
         } else if (importType is Dedupe) {
