@@ -442,7 +442,6 @@ class SearchAnalyticsKeywordPageReport(SearchByKeyword):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Dict[str, Any], str]]:
         data = super().request_body_json(stream_state, stream_slice, next_page_token)
-        data["dimensionFilterGroups"] = stream_slice["dimensionFilterGroups"]
         return data
 
 
@@ -463,7 +462,6 @@ class SearchAnalyticsKeywordSiteReportByPage(SearchByKeyword):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Dict[str, Any], str]]:
         data = super().request_body_json(stream_state, stream_slice, next_page_token)
-        data["dimensionFilterGroups"] = stream_slice["dimensionFilterGroups"]
         return data
 
 
@@ -484,7 +482,6 @@ class SearchAnalyticsKeywordSiteReportBySite(SearchByKeyword):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Dict[str, Any], str]]:
         data = super().request_body_json(stream_state, stream_slice, next_page_token)
-        data["dimensionFilterGroups"] = stream_slice["dimensionFilterGroups"]
         return data
 
 
