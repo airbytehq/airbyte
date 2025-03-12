@@ -704,9 +704,12 @@ definitions:
     $ref: "#/definitions/base_incremental_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      ignore_stream_slicer_parameters_on_paginated_requests: true # TODO config
+      ignore_stream_slicer_parameters_on_paginated_requests: true
       paginator:
-        $ref: "#/definitions/end_of_stream_paginator"
+        $ref: "#/definitions/after_url_paginator"
+        pagination_strategy:
+          $ref: "#/definitions/after_url_paginator/pagination_strategy"
+          stop_condition: "{{ config.get('ignore_pagination', False) or response.get('end_of_stream') }}"
     $parameters:
       name: "tickets"
       path: "incremental/tickets/cursor.json"
