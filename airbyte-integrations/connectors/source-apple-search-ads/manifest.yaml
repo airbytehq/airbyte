@@ -209,7 +209,7 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: UTC
+            timeZone: "{{ config.time_zone }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
@@ -311,7 +311,7 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: UTC
+            timeZone: "{{ config.time_zone }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
@@ -421,7 +421,7 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: UTC
+            timeZone: "{{ config.time_zone }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
@@ -537,6 +537,7 @@ spec:
       - client_id
       - start_date
       - client_secret
+      - time_zone
     properties:
       org_id:
         type: integer
@@ -572,7 +573,7 @@ spec:
       client_secret:
         type: string
         description: >-
-          A string that authenticates the user’s setup request. See <a
+          A string that authenticates the user's setup request. See <a
           href="https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api">here</a>
         title: Client Secret
         airbyte_secret: true
@@ -599,6 +600,15 @@ spec:
         examples:
           - 10
         order: 6
+      time_zone:
+        type: string
+        default: UTC
+        description: The timezone for the reporting data. Use 'ORTZ' for Organization Time Zone or 'UTC' for Coordinated Universal Time.
+        title: Time Zone
+        enum: ["ORTZ", "UTC"]
+        examples:
+          - ORTZ
+        order: 7
     additionalProperties: true
 
 metadata:
@@ -932,15 +942,6 @@ schemas:
             type: array
             items:
               type: string
-          totalBudget:
-            anyOf:
-              - type: "null"
-              - type: object
-                properties:
-                  amount:
-                    type: string
-                  currency:
-                    type: string
       campaignId:
         type: integer
       date:
