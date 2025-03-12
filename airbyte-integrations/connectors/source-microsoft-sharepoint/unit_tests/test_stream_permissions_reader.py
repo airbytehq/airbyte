@@ -11,6 +11,8 @@ from source_microsoft_sharepoint.exceptions import ErrorFetchingMetadata
 from source_microsoft_sharepoint.spec import RemoteIdentity, RemoteIdentityType, SourceMicrosoftSharePointSpec
 from source_microsoft_sharepoint.stream_permissions_reader import SourceMicrosoftSharePointStreamPermissionsReader
 from source_microsoft_sharepoint.stream_reader import MicrosoftSharePointRemoteFile
+from office365.directory.groups.collection import GroupCollection
+from office365.directory.users.collection import UserCollection
 
 
 @pytest.fixture
@@ -488,3 +490,513 @@ def test_load_identity_groups_all_types(setup_permissions_reader_class):
         assert RemoteIdentityType.SITE_GROUP in identity_types
         assert RemoteIdentityType.APPLICATION in identity_types
         assert RemoteIdentityType.DEVICE in identity_types
+
+
+def test_get_group_members_success(setup_permissions_reader_class):
+    """Test get_group_members method with successful API response."""
+    instance = setup_permissions_reader_class
+    group_id = "test_group_id"
+
+    # Mock API response with different member types
+    mock_response = {
+        "value": [
+            {"id": "user1", "@odata.type": "#microsoft.graph.user", "displayName": "Test User"},
+            {"id": "group1", "@odata.type": "#microsoft.graph.group", "displayName": "Test Group"},
+            {"id": "app1", "@odata.type": "#microsoft.graph.application", "displayName": "Test App"},
+            {"id": "device1", "@odata.type": "#microsoft.graph.device", "displayName": "Test Device"},
+        ]
+    }
+
+    # Mock the requests.get method
+    with patch("requests.get") as mock_get:
+        mock_response_obj = Mock()
+        mock_response_obj.raise_for_status = Mock()
+        mock_response_obj.json.return_value = mock_response
+        mock_get.return_value = mock_response_obj
+
+        # Mock the _get_headers method
+        with patch.object(instance, "_get_headers", return_value={"Authorization": "Bearer test_token"}):
+            # Call the method
+            result = instance.get_group_members(group_id)
+
+            # Verify the API call
+            mock_get.assert_called_once_with(
+                f"https://graph.microsoft.com/v1.0/groups/{group_id}/members", headers={"Authorization": "Bearer test_token"}
+            )
+
+            # Verify the result
+            assert len(result) == 4
+            assert result[0] == {"remote_id": "user1", "type": "user"}
+            assert result[1] == {"remote_id": "group1", "type": "group"}
+            assert result[2] == {"remote_id": "app1", "type": "application"}
+            assert result[3] == {"remote_id": "device1", "type": "device"}
+
+
+def test_get_group_members_unrecognized_type(setup_permissions_reader_class):
+    """Test get_group_members method with an unrecognized member type."""
+    instance = setup_permissions_reader_class
+    group_id = "test_group_id"
+
+    # Mock API response with an unrecognized member type
+    mock_response = {
+        "value": [
+            {"id": "user1", "@odata.type": "#microsoft.graph.user", "displayName": "Test User"},
+            {"id": "unknown1", "@odata.type": "#microsoft.graph.unknownType", "displayName": "Unknown Type"},
+        ]
+    }
+
+    # Mock the requests.get method
+    with patch("requests.get") as mock_get:
+        mock_response_obj = Mock()
+        mock_response_obj.raise_for_status = Mock()
+        mock_response_obj.json.return_value = mock_response
+        mock_get.return_value = mock_response_obj
+
+        # Mock the _get_headers method
+        with patch.object(instance, "_get_headers", return_value={"Authorization": "Bearer test_token"}):
+            # Mock the logging
+            with patch("logging.warning") as mock_warning:
+                # Call the method
+                result = instance.get_group_members(group_id)
+
+                # Verify the API call
+                mock_get.assert_called_once_with(
+                    f"https://graph.microsoft.com/v1.0/groups/{group_id}/members", headers={"Authorization": "Bearer test_token"}
+                )
+
+                # Verify the result
+                assert len(result) == 1
+                assert result[0] == {"remote_id": "user1", "type": "user"}
+
+                # Verify the warning was logged
+                mock_warning.assert_called_once_with(
+                    f"Unrecognized member type 'unknownType' for member ID unknown1 in group {group_id}. Skipping this member."
+                )
+
+
+def test_get_group_members_api_error(setup_permissions_reader_class):
+    """Test get_group_members method when the API call fails."""
+    instance = setup_permissions_reader_class
+    group_id = "test_group_id"
+
+    # Mock the requests.get method to raise an exception
+    with patch("requests.get") as mock_get:
+        mock_get.side_effect = requests.exceptions.RequestException("API Error")
+
+        # Mock the _get_headers method
+        with patch.object(instance, "_get_headers", return_value={"Authorization": "Bearer test_token"}):
+            # Mock the logging
+            with patch("logging.warning") as mock_warning:
+                # Call the method
+                result = instance.get_group_members(group_id)
+
+                # Verify the result is an empty list
+                assert result == []
+
+                # Verify the warning was logged
+                mock_warning.assert_called_once_with(f"Failed to retrieve members for group {group_id}: API Error")
+
+
+def test_get_site_group_members_success(setup_permissions_reader_class):
+    """Test get_site_group_members method with successful client context execution."""
+    instance = setup_permissions_reader_class
+
+    # Create a mock site group
+    mock_site_group = Mock()
+    mock_site_group.id = "test_site_group_id"
+
+    # Create mock users
+    mock_user1 = Mock()
+    mock_user1.id = "site_user1"
+    mock_user1.properties = {"Title": "Site User 1", "Email": "user1@example.com"}
+
+    mock_user2 = Mock()
+    mock_user2.id = "site_user2"
+    mock_user2.properties = {"Title": "Site User 2", "Email": "user2@example.com"}
+
+    # Mock the client context and its methods
+    mock_client_context = Mock()
+    mock_group = Mock()
+    mock_users = [mock_user1, mock_user2]
+
+    mock_client_context.web.site_groups.get_by_id.return_value = mock_group
+    mock_group.users = mock_users
+
+    # Mock the get_client_context method
+    with patch.object(instance, "get_client_context", return_value=mock_client_context):
+        # Mock the execute_query_with_retry function
+        with patch("source_microsoft_sharepoint.stream_permissions_reader.execute_query_with_retry") as mock_execute:
+            # Mock the logging
+            with patch("logging.info") as mock_info:
+                # Call the method
+                result = instance.get_site_group_members(mock_site_group)
+
+                # Verify the client context calls
+                mock_client_context.web.site_groups.get_by_id.assert_called_once_with(mock_site_group.id)
+                mock_client_context.load.assert_called_once_with(mock_users, ["Id", "Title", "Email"])
+                mock_execute.assert_called_once_with(mock_client_context)
+
+                # Verify the result
+                assert len(result) == 2
+                assert result[0] == {"remote_id": "site_user1", "type": "siteUser"}
+                assert result[1] == {"remote_id": "site_user2", "type": "siteUser"}
+
+                # Verify the info was logged
+                mock_info.assert_called_once_with(f"Getting members for site group {mock_site_group.id} using client context...")
+
+
+def test_get_site_group_members_error(setup_permissions_reader_class):
+    """Test get_site_group_members method when an error occurs."""
+    instance = setup_permissions_reader_class
+
+    # Create a mock site group
+    mock_site_group = Mock()
+    mock_site_group.id = "test_site_group_id"
+
+    # Mock the get_client_context method to raise an exception
+    with patch.object(instance, "get_client_context", side_effect=Exception("Client context error")):
+        # Mock the logging
+        with patch("logging.info") as mock_info:
+            with patch("logging.warning") as mock_warning:
+                # Call the method
+                result = instance.get_site_group_members(mock_site_group)
+
+                # Verify the result is an empty list
+                assert result == []
+
+                # Verify the logs
+                mock_info.assert_called_once_with(f"Getting members for site group {mock_site_group.id} using client context...")
+                mock_warning.assert_called_once_with(
+                    f"Failed to retrieve members for site group {mock_site_group.id}: Client context error"
+                )
+
+
+def test_get_site_group_members_client_context_implementation(setup_permissions_reader_class):
+    """Test the _get_site_group_members_client_context method directly."""
+    instance = setup_permissions_reader_class
+    group_id = "test_site_group_id"
+
+    # Create mock users
+    mock_user1 = Mock()
+    type(mock_user1).id = PropertyMock(return_value="site_user1")
+
+    mock_user2 = Mock()
+    type(mock_user2).id = PropertyMock(return_value="site_user2")
+
+    # User without an ID
+    mock_user3 = Mock()
+    type(mock_user3).id = PropertyMock(return_value=None)
+
+    # Mock the client context and its methods
+    mock_client_context = Mock()
+    mock_group = Mock()
+    mock_users = [mock_user1, mock_user2, mock_user3]
+
+    mock_client_context.web.site_groups.get_by_id.return_value = mock_group
+    mock_group.users = mock_users
+
+    # Mock the get_client_context method
+    with patch.object(instance, "get_client_context", return_value=mock_client_context):
+        # Mock the execute_query_with_retry function
+        with patch("source_microsoft_sharepoint.stream_permissions_reader.execute_query_with_retry") as mock_execute:
+            # Call the method
+            result = instance._get_site_group_members_client_context(group_id)
+
+            # Verify the client context calls
+            mock_client_context.web.site_groups.get_by_id.assert_called_once_with(group_id)
+            mock_client_context.load.assert_called_once_with(mock_users, ["Id", "Title", "Email"])
+            mock_execute.assert_called_once_with(mock_client_context)
+
+            # Verify the result - should only include users with IDs
+            assert len(result) == 2
+            assert result[0] == {"remote_id": "site_user1", "type": "siteUser"}
+            assert result[1] == {"remote_id": "site_user2", "type": "siteUser"}
+
+
+def test_get_site_prefix(setup_permissions_reader_class):
+    """Test get_site_prefix static method."""
+    # Create a mock site object
+    mock_site = Mock()
+    mock_site.web_url = "https://airbyte.sharepoint.com/sites/TestSite"
+    mock_site.site_collection.hostname = "airbyte.sharepoint.com"
+
+    # Call the static method
+    site_url, root_site_prefix = setup_permissions_reader_class.get_site_prefix(mock_site)
+
+    # Verify the results
+    assert site_url == "https://airbyte.sharepoint.com/sites/TestSite"
+    assert root_site_prefix == "airbyte"
+
+
+def test_get_site(setup_permissions_reader_class):
+    """Test get_site method with and without site_url parameter."""
+    instance = setup_permissions_reader_class
+    mock_graph_client = Mock()
+
+    # Mock for get_by_url
+    mock_site_by_url = Mock()
+    mock_graph_client.sites.get_by_url.return_value = mock_site_by_url
+
+    # Mock for root.get
+    mock_root_site = Mock()
+    mock_graph_client.sites.root.get.return_value = mock_root_site
+
+    # Mock execute_query_with_retry
+    with patch("source_microsoft_sharepoint.stream_permissions_reader.execute_query_with_retry") as mock_execute:
+        # Set up mock_execute to return the appropriate site based on the input
+        mock_execute.side_effect = lambda x: x
+
+        # Test with site_url
+        site_url = "https://airbyte.sharepoint.com/sites/TestSite"
+        result_with_url = instance.get_site(mock_graph_client, site_url)
+
+        # Verify calls
+        mock_graph_client.sites.get_by_url.assert_called_once_with(site_url)
+        mock_execute.assert_called_with(mock_site_by_url)
+        assert result_with_url == mock_site_by_url
+
+        # Reset mocks
+        mock_execute.reset_mock()
+
+        # Test without site_url
+        result_without_url = instance.get_site(mock_graph_client)
+
+        # Verify calls
+        mock_graph_client.sites.root.get.assert_called_once()
+        mock_execute.assert_called_with(mock_root_site)
+        assert result_without_url == mock_root_site
+
+
+def test_get_client_context(setup_permissions_reader_class):
+    """Test get_client_context method."""
+    instance = setup_permissions_reader_class
+
+    # Mock get_site
+    mock_site = Mock()
+    mock_site.web_url = "https://airbyte.sharepoint.com/sites/TestSite"
+    mock_site.site_collection.hostname = "airbyte.sharepoint.com"
+
+    # Mock get_site_prefix to return the site URL and prefix
+    site_url = "https://airbyte.sharepoint.com/sites/TestSite"
+    root_site_prefix = "airbyte"
+
+    # Mock ClientContext
+    mock_client_context = Mock()
+    mock_client_context_with_token = Mock()
+    mock_client_context.with_access_token.return_value = mock_client_context_with_token
+
+    # Mock auth_client and its get_token_response_object_wrapper method
+    mock_auth_client = Mock()
+    mock_token_func = Mock()
+    mock_auth_client.get_token_response_object_wrapper.return_value = mock_token_func
+
+    # Set the mock auth_client directly to the _auth_client attribute
+    instance._auth_client = mock_auth_client
+
+    # Set the mock one_drive_client directly to the _one_drive_client attribute
+    mock_one_drive_client = Mock()
+    instance._one_drive_client = mock_one_drive_client
+
+    with (
+        patch.object(instance, "get_site", return_value=mock_site) as mock_get_site,
+        patch.object(instance, "get_site_prefix", return_value=(site_url, root_site_prefix)) as mock_get_site_prefix,
+        patch(
+            "source_microsoft_sharepoint.stream_permissions_reader.ClientContext", return_value=mock_client_context
+        ) as mock_client_context_class,
+    ):
+        # Call the method
+        result = instance.get_client_context()
+
+        # Verify calls
+        mock_get_site.assert_called_once_with(mock_one_drive_client)
+        mock_get_site_prefix.assert_called_once_with(mock_site)
+        mock_client_context_class.assert_called_once_with(site_url)
+        mock_auth_client.get_token_response_object_wrapper.assert_called_once_with(tenant_prefix=root_site_prefix)
+        mock_client_context.with_access_token.assert_called_once_with(mock_token_func)
+
+        # Verify result
+        assert result == mock_client_context_with_token
+
+
+def test_get_token_response_object(setup_permissions_reader_class):
+    """Test get_token_response_object method."""
+    instance = setup_permissions_reader_class
+
+    # Mock auth_client and its get_token_response_object_wrapper method
+    mock_auth_client = Mock()
+    mock_token_func = Mock()
+    mock_auth_client.get_token_response_object_wrapper.return_value = mock_token_func
+
+    # Set the mock auth_client directly to the _auth_client attribute
+    instance._auth_client = mock_auth_client
+
+    # Test with tenant_prefix
+    result_with_prefix = instance.get_token_response_object(tenant_prefix="airbyte")
+    mock_auth_client.get_token_response_object_wrapper.assert_called_once_with(tenant_prefix="airbyte")
+    assert result_with_prefix == mock_token_func
+
+    # Reset mock
+    mock_auth_client.get_token_response_object_wrapper.reset_mock()
+
+    # Test without tenant_prefix
+    result_without_prefix = instance.get_token_response_object()
+    mock_auth_client.get_token_response_object_wrapper.assert_called_once_with(tenant_prefix=None)
+    assert result_without_prefix == mock_token_func
+
+
+def test_get_users(setup_permissions_reader_class):
+    """Test get_users method."""
+    instance = setup_permissions_reader_class
+
+    # Mock users collection
+    mock_users = Mock(spec=UserCollection)
+
+    # Mock one_drive_client by setting the _one_drive_client attribute directly
+    mock_one_drive_client = Mock()
+    instance._one_drive_client = mock_one_drive_client
+    mock_one_drive_client.users.get.return_value = mock_users
+
+    # Mock execute_query_with_retry
+    with patch("source_microsoft_sharepoint.stream_permissions_reader.execute_query_with_retry") as mock_execute:
+        # Set up mock_execute to return the users collection
+        mock_execute.return_value = mock_users
+
+        # Call the method
+        result = instance.get_users()
+
+        # Verify calls
+        mock_one_drive_client.users.get.assert_called_once()
+        mock_execute.assert_called_once_with(mock_users)
+
+        # Verify result
+        assert result == mock_users
+
+
+def test_get_groups(setup_permissions_reader_class):
+    """Test get_groups method."""
+    instance = setup_permissions_reader_class
+
+    # Mock groups collection
+    mock_groups = Mock(spec=GroupCollection)
+
+    # Mock one_drive_client by setting the _one_drive_client attribute directly
+    mock_one_drive_client = Mock()
+    instance._one_drive_client = mock_one_drive_client
+    mock_one_drive_client.groups.get.return_value = mock_groups
+
+    # Mock execute_query_with_retry
+    with patch("source_microsoft_sharepoint.stream_permissions_reader.execute_query_with_retry") as mock_execute:
+        # Set up mock_execute to return the groups collection
+        mock_execute.return_value = mock_groups
+
+        # Call the method
+        result = instance.get_groups()
+
+        # Verify calls
+        mock_one_drive_client.groups.get.assert_called_once()
+        mock_execute.assert_called_once_with(mock_groups)
+
+        # Verify result
+        assert result == mock_groups
+
+
+def test_get_site_users(setup_permissions_reader_class):
+    """Test get_site_users method."""
+    instance = setup_permissions_reader_class
+
+    # Mock site users collection
+    mock_site_users = Mock(spec=UserCollection)
+
+    # Mock client context
+    mock_client_context = Mock()
+    mock_client_context.web.site_users = mock_site_users
+
+    # Mock get_client_context
+    with patch.object(instance, "get_client_context", return_value=mock_client_context) as mock_get_client_context:
+        # Call the method
+        result = instance.get_site_users()
+
+        # Verify calls
+        mock_get_client_context.assert_called_once()
+        mock_client_context.load.assert_called_once_with(mock_site_users)
+        mock_client_context.execute_query.assert_called_once()
+
+        # Verify result
+        assert result == mock_site_users
+
+
+def test_get_site_groups(setup_permissions_reader_class):
+    """Test get_site_groups method."""
+    instance = setup_permissions_reader_class
+
+    # Mock site groups collection
+    mock_site_groups = Mock(spec=GroupCollection)
+
+    # Mock client context
+    mock_client_context = Mock()
+    mock_client_context.web.site_groups = mock_site_groups
+
+    # Mock get_client_context
+    with patch.object(instance, "get_client_context", return_value=mock_client_context) as mock_get_client_context:
+        # Call the method
+        result = instance.get_site_groups()
+
+        # Verify calls
+        mock_get_client_context.assert_called_once()
+        mock_client_context.load.assert_called_once_with(mock_site_groups)
+        mock_client_context.execute_query.assert_called_once()
+
+        # Verify result
+        assert result == mock_site_groups
+
+
+def test_get_applications(setup_permissions_reader_class):
+    """Test get_applications method."""
+    instance = setup_permissions_reader_class
+
+    # Mock applications collection
+    mock_applications = Mock()
+
+    # Mock one_drive_client by setting the _one_drive_client attribute directly
+    mock_one_drive_client = Mock()
+    instance._one_drive_client = mock_one_drive_client
+    mock_one_drive_client.applications.get.return_value = mock_applications
+
+    # Mock execute_query_with_retry
+    with patch("source_microsoft_sharepoint.stream_permissions_reader.execute_query_with_retry") as mock_execute:
+        # Set up mock_execute to return the applications collection
+        mock_execute.return_value = mock_applications
+
+        # Call the method
+        result = instance.get_applications()
+
+        # Verify calls
+        mock_one_drive_client.applications.get.assert_called_once()
+        mock_execute.assert_called_once_with(mock_applications)
+
+        # Verify result
+        assert result == mock_applications
+
+
+def test_get_devices(setup_permissions_reader_class):
+    """Test get_devices method."""
+    instance = setup_permissions_reader_class
+
+    # Mock devices response
+    mock_devices_response = Mock()
+    mock_devices_response.json.return_value = {"value": [{"id": "device1"}, {"id": "device2"}]}
+
+    # Mock one_drive_client by setting the _one_drive_client attribute directly
+    mock_one_drive_client = Mock()
+    instance._one_drive_client = mock_one_drive_client
+    mock_one_drive_client.execute_request_direct.return_value = mock_devices_response
+
+    # Call the method
+    result = instance.get_devices()
+
+    # Verify calls
+    mock_one_drive_client.execute_request_direct.assert_called_once_with("devices")
+    mock_devices_response.raise_for_status.assert_called_once()
+
+    # Verify result
+    assert result == [{"id": "device1"}, {"id": "device2"}]

@@ -204,7 +204,6 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
             return self._get_site_group_members_client_context(group_id)
         except Exception as e:
             logging.warning(f"Failed to retrieve members for site group {site_group.id}: {str(e)}")
-            # Return an empty list instead of failing completely
             return []
 
     def get_applications(self):
