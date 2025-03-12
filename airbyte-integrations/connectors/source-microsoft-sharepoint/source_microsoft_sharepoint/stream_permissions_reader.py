@@ -127,11 +127,11 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
                     # Try to get the identity type directly from RemoteIdentityType enum
                     try:
                         identity_type = RemoteIdentityType(member_type).value
+                        member_info.append({"remote_id": member.get("id"), "type": identity_type})
                     except ValueError:
-                        # If the member_type doesn't match any RemoteIdentityType, default to USER
-                        identity_type = RemoteIdentityType.USER.value
-
-                    member_info.append({"remote_id": member.get("id"), "type": identity_type})
+                        # Log the error and skip this member
+                        logging.warning(f"Unrecognized member type '{member_type}' for member ID {member.get('id')} in group {group_id}. Skipping this member.")
+                        continue
 
             return member_info
         except Exception as e:
