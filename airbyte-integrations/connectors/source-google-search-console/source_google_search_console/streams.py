@@ -400,6 +400,38 @@ class SearchByKeyword(SearchAnalytics):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        search_appearance_stream = SearchAppearance(self._session.auth, self._site_urls, self._start_date, self._end_date)
+
+        for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):    
+            keywords_records = search_appearance_stream.read_records(
+                sync_mode=SyncMode.full_refresh, stream_state=stream_state, stream_slice=stream_slice
+            )
+            keywords = {record["searchAppearance"] for record in keywords_records}
+
+            for keyword in keywords:
+                filters = {"dimension": "searchAppearance", "operator": "equals", "expression": keyword}
+                stream_slice["dimensionFilterGroups"] = [{"groupType": "and", "filters": filters}]
+                stream_slice["dimensions"] = self.dimensions
+
+                yield stream_slice
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Union[Dict[str, Any], str]]:
+        data = super().request_body_json(stream_state, stream_slice, next_page_token)
+        data["dimensionFilterGroups"] = stream_slice["dimensionFilterGroups"]
+        return data
+
+
+class SearchAnalyticsKeywordPageReport(SearchByKeyword):
+    primary_key = ["site_url", "date", "country", "device", "query", "page", "search_type"]
+    dimensions = ["date", "country", "device", "query", "page"]
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
             yield stream_slice
 
@@ -410,24 +442,50 @@ class SearchByKeyword(SearchAnalytics):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Dict[str, Any], str]]:
         data = super().request_body_json(stream_state, stream_slice, next_page_token)
+        data["dimensionFilterGroups"] = stream_slice["dimensionFilterGroups"]
         return data
-
-
-class SearchAnalyticsKeywordPageReport(SearchByKeyword):
-    primary_key = ["site_url", "date", "country", "device", "query", "page", "search_type"]
-    dimensions = ["date", "country", "device", "query", "page"]
 
 
 class SearchAnalyticsKeywordSiteReportByPage(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
     dimensions = ["date", "country", "device", "query"]
     aggregation_type = QueryAggregationType.by_page
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
+            yield stream_slice
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Union[Dict[str, Any], str]]:
+        data = super().request_body_json(stream_state, stream_slice, next_page_token)
+        data["dimensionFilterGroups"] = stream_slice["dimensionFilterGroups"]
+        return data
 
 
 class SearchAnalyticsKeywordSiteReportBySite(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
     dimensions = ["date", "country", "device", "query"]
     aggregation_type = QueryAggregationType.by_property
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
+            yield stream_slice
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Union[Dict[str, Any], str]]:
+        data = super().request_body_json(stream_state, stream_slice, next_page_token)
+        data["dimensionFilterGroups"] = stream_slice["dimensionFilterGroups"]
+        return data
 
 
 class SearchAnalyticsSiteReportBySite(SearchAnalytics):
