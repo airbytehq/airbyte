@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.38.3.dev4101"
+version = "6.38.5"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 files = [
-    {file = "airbyte_cdk-6.38.3.dev4101-py3-none-any.whl", hash = "sha256:04d98ee2954342920cb3afeeb58208ad24f62a716d7d0b2333acb2e7808ff4f1"},
-    {file = "airbyte_cdk-6.38.3.dev4101.tar.gz", hash = "sha256:8bd8e18cfdb687043fed1ef877791a75f4457522fa320b5a2bb321389b4b2aff"},
+    {file = "airbyte_cdk-6.38.5-py3-none-any.whl", hash = "sha256:0e1e7471a2e7919b377d914089aa3b45a955f6e928c1f96651b2566332a8cba1"},
+    {file = "airbyte_cdk-6.38.5.tar.gz", hash = "sha256:c4e7182238acadd01301c173e04044090cdbb7ed8b88b8ec40097ade2ab04741"},
 ]
 
 [package.dependencies]
@@ -129,20 +129,20 @@ files = [
 
 [[package]]
 name = "attrs"
-version = "25.1.0"
+version = "25.2.0"
 description = "Classes Without Boilerplate"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "attrs-25.1.0-py3-none-any.whl", hash = "sha256:c75a69e28a550a7e93789579c22aa26b0f5b83b75dc4e08fe092980051e1090a"},
-    {file = "attrs-25.1.0.tar.gz", hash = "sha256:1c97078a80c814273a76b2a298a932eb681c87415c11dee0a6921de7f1b02c3e"},
+    {file = "attrs-25.2.0-py3-none-any.whl", hash = "sha256:611344ff0a5fed735d86d7784610c84f8126b95e549bcad9ff61b4242f2d386b"},
+    {file = "attrs-25.2.0.tar.gz", hash = "sha256:18a06db706db43ac232cce80443fcd9f2500702059ecf53489e3c5a3f417acaf"},
 ]
 
 [package.extras]
 benchmark = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4.3.0)", "pytest-codspeed", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
 cov = ["cloudpickle", "coverage[toml] (>=5.3)", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
 dev = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pre-commit-uv", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
-docs = ["cogapp", "furo", "myst-parser", "sphinx", "sphinx-notfound-page", "sphinxcontrib-towncrier", "towncrier (<24.7)"]
+docs = ["cogapp", "furo", "myst-parser", "sphinx", "sphinx-notfound-page", "sphinxcontrib-towncrier", "towncrier"]
 tests = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
 tests-mypy = ["mypy (>=1.11.1)", "pytest-mypy-plugins"]
 
@@ -3312,4 +3312,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.12"
-content-hash = "0fb2e6bb6c778c45a5bb8cbac37cbc9bccf2e48dd9f2d24365c6dcd3ce5af660"
+content-hash = "9fbc5121c9d058b32df444857f06ab120b52f3efa0d60c7b9b11ed791e6495f6"
