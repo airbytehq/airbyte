@@ -7,12 +7,12 @@ from unittest.mock import MagicMock, Mock, PropertyMock, patch
 
 import pytest
 import requests
+from office365.directory.groups.collection import GroupCollection
+from office365.directory.users.collection import UserCollection
 from source_microsoft_sharepoint.exceptions import ErrorFetchingMetadata
 from source_microsoft_sharepoint.spec import RemoteIdentity, RemoteIdentityType, SourceMicrosoftSharePointSpec
 from source_microsoft_sharepoint.stream_permissions_reader import SourceMicrosoftSharePointStreamPermissionsReader
 from source_microsoft_sharepoint.stream_reader import MicrosoftSharePointRemoteFile
-from office365.directory.groups.collection import GroupCollection
-from office365.directory.users.collection import UserCollection
 
 
 @pytest.fixture
