@@ -159,7 +159,7 @@ The following metrics are available. They're published every minute.
     <tr>
       <td rowspan="7"><code>airbyte.api_requests</code></td>
       <td><code>uri</code></td>
-      <td>https://api.airbyte.com/v1/applications</td>
+      <td>/v1/applications/create</td>
     </tr>
     <tr>
       <td><code>status</code></td>
@@ -179,7 +179,7 @@ The following metrics are available. They're published every minute.
     </tr>
     <tr>
       <td><code>service</code></td>
-      <td>airbyte-worker</td>
+      <td>airbyte-server</td>
     </tr>
   </tbody>
 </table>
