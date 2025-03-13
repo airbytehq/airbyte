@@ -2,10 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Optional, Tuple
 import re
+from dataclasses import InitVar, dataclass
 from datetime import datetime as dt
+from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
@@ -14,6 +14,7 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 
 class ParserError(Exception):
     """Replacement for pendulum's ParserError"""
+
     pass
 
 
@@ -32,7 +33,7 @@ class CustomFieldTransformation(RecordTransformation):
         self.name = parameters.get("name")
         self._schema = self._get_schema_root_properties()
         self._date_and_date_time_fields = self._get_fields_with_property_formats_from_schema(("date", "date-time"))
-        
+
         # Get datetime formats from parameters
         self.cursor_datetime_formats = parameters.get("cursor_datetime_formats", ["%Y-%m-%d %H:%M:%S"])
         self.datetime_format = parameters.get("datetime_format", "%Y-%m-%d %H:%M:%S")
@@ -54,54 +55,50 @@ class CustomFieldTransformation(RecordTransformation):
         Handles various date formats including those with timezone information.
         """
         # Reject dates with zeros like '0000-00-00' or '0000-00-00 00:00:00'
-        if re.match(r'^0+[-]0+[-]0+', text):
+        if re.match(r"^0+[-]0+[-]0+", text):
             raise ParserError("Zero date not allowed")
-            
+
         # Comprehensive list of formats to try
         formats = [
             # Basic formats
-            '%Y-%m-%d',
-            '%Y/%m/%d',
-            '%d-%m-%Y',
-            '%d/%m/%Y',
-            
+            "%Y-%m-%d",
+            "%Y/%m/%d",
+            "%d-%m-%Y",
+            "%d/%m/%Y",
             # Date and time formats
-            '%Y-%m-%d %H:%M:%S',
-            '%Y-%m-%d %H:%M:%S.%f',
-            '%Y/%m/%d %H:%M:%S',
-            '%Y/%m/%d %H:%M:%S.%f',
-            
+            "%Y-%m-%d %H:%M:%S",
+            "%Y-%m-%d %H:%M:%S.%f",
+            "%Y/%m/%d %H:%M:%S",
+            "%Y/%m/%d %H:%M:%S.%f",
             # ISO formats
-            '%Y-%m-%dT%H:%M:%S',
-            '%Y-%m-%dT%H:%M:%S.%f',
-            
+            "%Y-%m-%dT%H:%M:%S",
+            "%Y-%m-%dT%H:%M:%S.%f",
             # With timezone
-            '%Y-%m-%d %H:%M:%S%z',
-            '%Y-%m-%d %H:%M:%S.%f%z',
-            '%Y-%m-%dT%H:%M:%S%z',
-            '%Y-%m-%dT%H:%M:%S.%f%z',
-            
+            "%Y-%m-%d %H:%M:%S%z",
+            "%Y-%m-%d %H:%M:%S.%f%z",
+            "%Y-%m-%dT%H:%M:%S%z",
+            "%Y-%m-%dT%H:%M:%S.%f%z",
             # Using Z for UTC
-            '%Y-%m-%dT%H:%M:%SZ',
-            '%Y-%m-%dT%H:%M:%S.%fZ',
+            "%Y-%m-%dT%H:%M:%SZ",
+            "%Y-%m-%dT%H:%M:%S.%fZ",
         ]
-        
+
         # Add specified formats from parameters
         formats.extend(self.cursor_datetime_formats)
         if self.datetime_format and self.datetime_format not in formats:
             formats.append(self.datetime_format)
-            
+
         # Try parsing with different formats
         for fmt in formats:
             try:
                 # Handle 'Z' timezone indicator for UTC
                 text_to_parse = text
-                if fmt.endswith('Z') and not text.endswith('Z'):
+                if fmt.endswith("Z") and not text.endswith("Z"):
                     continue
-                if not fmt.endswith('Z') and text.endswith('Z'):
+                if not fmt.endswith("Z") and text.endswith("Z"):
                     text_to_parse = text[:-1]  # Remove Z
-                    fmt = fmt + 'Z' if 'Z' not in fmt else fmt
-                    
+                    fmt = fmt + "Z" if "Z" not in fmt else fmt
+
                 date_obj = dt.strptime(text_to_parse, fmt)
                 # In pendulum, dates with zero components are rejected
                 if date_obj.year == 0 or date_obj.month == 0 or date_obj.day == 0:
@@ -109,25 +106,25 @@ class CustomFieldTransformation(RecordTransformation):
                 return date_obj
             except ValueError:
                 continue
-                
+
         # Try ISO format as a last resort
         try:
             # Replace Z with +00:00 for ISO format parsing
-            iso_text = text.replace('Z', '+00:00')
-            
+            iso_text = text.replace("Z", "+00:00")
+
             # For Python < 3.11 compatibility, remove microseconds if they have more than 6 digits
-            microseconds_match = re.search(r'\.(\d{7,})(?=[+-Z]|$)', iso_text)
+            microseconds_match = re.search(r"\.(\d{7,})(?=[+-Z]|$)", iso_text)
             if microseconds_match:
                 fixed_micro = microseconds_match.group(1)[:6]
-                iso_text = iso_text.replace(microseconds_match.group(0), f'.{fixed_micro}')
-                
+                iso_text = iso_text.replace(microseconds_match.group(0), f".{fixed_micro}")
+
             date_obj = dt.fromisoformat(iso_text)
             if date_obj.year == 0 or date_obj.month == 0 or date_obj.day == 0:
                 raise ParserError("Date with zero components")
             return date_obj
         except (ValueError, AttributeError):
             pass
-            
+
         # If nothing worked, raise the error like pendulum would
         raise ParserError(f"Unable to parse: {text}")
 
