@@ -1,23 +1,30 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import json
+import logging
 from dataclasses import dataclass
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import dpath.util
+import pendulum
 import requests
 
-from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
+from airbyte_cdk.models import AirbyteMessage, FailureType, SyncMode, Type
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ConstantBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import _default_file_path
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
 from source_mixpanel.backoff_strategy import DEFAULT_API_BUDGET
+from source_mixpanel.property_transformation import transform_property_names
+from source_mixpanel.streams.export import ExportSchema
 
 from .source import SourceMixpanel
 from .streams.engage import EngageSchema
@@ -352,3 +359,135 @@ class EngageJsonFileSchemaLoader(JsonFileSchemaLoader):
                 schema["properties"][property_name] = types.get(property_type, {"type": ["null", "string"]})
         self.schema = schema
         return schema
+
+
+def iter_dicts(lines, logger=logging.getLogger("airbyte")):
+    """
+    The incoming stream has to be JSON lines format.
+    From time to time for some reason, the one record can be split into multiple lines.
+    We try to combine such split parts into one record only if parts go nearby.
+    """
+    parts = []
+    for record_line in lines:
+        if record_line == "terminated early":
+            logger.warning(f"Couldn't fetch data from Export API. Response: {record_line}")
+            return
+        try:
+            yield json.loads(record_line)
+        except ValueError:
+            parts.append(record_line)
+        else:
+            parts = []
+
+        if len(parts) > 1:
+            try:
+                yield json.loads("".join(parts))
+            except ValueError:
+                pass
+            else:
+                parts = []
+
+
+class ExportJsonFileSchemaLoader(JsonFileSchemaLoader):
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        if not self.file_path:
+            self.file_path = _default_file_path()
+        self.file_path = InterpolatedString.create(self.file_path, parameters=parameters)
+        self.schema = {}
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """
+        :return: A dict of the JSON schema representing this stream.
+
+        The default implementation of this method looks for a JSONSchema file with the same name as this stream's "name" property.
+        Override as needed.
+        """
+
+        schema = super().get_json_schema()
+        params = {
+            "authenticator": SourceMixpanel.get_authenticator(self.config),
+            "region": self.config.get("region"),
+            "project_id": self.config.get("credentials").get("project_id"),
+        }
+
+        # Set whether to allow additional properties for engage and export endpoints
+        # Event and Engage properties are dynamic and depend on the properties provided on upload,
+        #   when the Event or Engage (user/person) was created.
+        schema["additionalProperties"] = True
+
+        # read existing Export schema from API
+        schema_properties = ExportSchema(**params).read_records(sync_mode=SyncMode.full_refresh)
+        for result in transform_property_names(schema_properties):
+            # Schema does not provide exact property type
+            # string ONLY for event properties (no other datatypes)
+            # Reference: https://help.mixpanel.com/hc/en-us/articles/360001355266-Event-Properties#field-size-character-limits-for-event-properties
+            schema["properties"][result.transformed_name] = {"type": ["null", "string"]}
+
+        return schema
+
+
+class ExportDpathExtractor(DpathExtractor):
+    def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
+        """Export API return response in JSONL format but each line is a valid JSON object
+        Raw item example:
+            {
+                "event": "Viewed E-commerce Page",
+                "properties": {
+                    "time": 1623860880,
+                    "distinct_id": "1d694fd9-31a5-4b99-9eef-ae63112063ed",
+                    "$browser": "Chrome",                                           -> will be renamed to "browser"
+                    "$browser_version": "91.0.4472.101",
+                    "$current_url": "https://unblockdata.com/solutions/e-commerce/",
+                    "$insert_id": "c5eed127-c747-59c8-a5ed-d766f48e39a4",
+                    "$mp_api_endpoint": "api.mixpanel.com",
+                    "mp_lib": "Segment: analytics-wordpress",
+                    "mp_processing_time_ms": 1623886083321,
+                    "noninteraction": true
+                }
+            }
+        """
+
+        # We prefer response.iter_lines() to response.text.split_lines() as the later can missparse text properties embeding linebreaks
+        records = []
+        for record in iter_dicts(response.iter_lines(decode_unicode=True)):
+            # transform record into flat dict structure
+            item = {"event": record["event"]}
+            properties = record["properties"]
+            for result in transform_property_names(properties.keys()):
+                # Convert all values to string (this is default property type)
+                # because API does not provide properties type information
+                item[result.transformed_name] = str(properties[result.source_name])
+
+            # convert timestamp to datetime string
+            item["time"] = pendulum.from_timestamp(int(item["time"]), tz="UTC").to_iso8601_string()
+
+            records.append(item)
+
+        return records
+
+
+class ExportErrorHandler(DefaultErrorHandler):
+    """
+    Custom error handler for handling export errors specific to Mixpanel streams.
+
+    This handler addresses:
+    - 400 status code with "to_date cannot be later than today" message, indicating a potential timezone mismatch.
+    - ConnectionResetError during response parsing, indicating a need to retry the request.
+
+    If the response does not match these specific cases, the handler defers to the parent class's implementation.
+
+    """
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
+        if isinstance(response_or_exception, requests.Response):
+            try:
+                # trying to parse response to avoid ConnectionResetError and retry if it occurs
+                iter_dicts(response_or_exception.iter_lines(decode_unicode=True))
+            except ConnectionResetError:
+                return ErrorResolution(
+                    response_action=ResponseAction.RETRY,
+                    failure_type=FailureType.transient_error,
+                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
+                )
+
+        return super().interpret_response(response_or_exception)
