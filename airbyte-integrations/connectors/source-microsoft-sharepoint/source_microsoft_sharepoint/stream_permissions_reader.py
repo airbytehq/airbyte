@@ -95,9 +95,42 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
         users = execute_query_with_retry(self.one_drive_client.users.get())
         return users
 
+    def get_users_identities(self) -> Iterator[Dict[str, Any]]:
+        users = self.get_users()
+        if users:
+            for user in users:
+                rfp = RemoteIdentity(
+                    remote_id=user.id,
+                    display_name=user.properties["displayName"],
+                    user_principal_name=user.user_principal_name,
+                    email_address=user.mail,
+                    type=RemoteIdentityType.USER,
+                    modified_at=datetime.now(),
+                    description=None,
+                )
+                yield rfp.dict()
+
     def get_groups(self) -> GroupCollection:
         groups = execute_query_with_retry(self.one_drive_client.groups.get())
         return groups
+
+    def get_groups_identities(self) -> Iterator[Dict[str, Any]]:
+        groups = self.get_groups()
+        if groups:
+            for group in groups:
+                # Get members of the group
+                member_info = self.get_group_members(group.id)
+
+                rfp = RemoteIdentity(
+                    remote_id=group.id,
+                    display_name=group.display_name,
+                    description=group.properties["description"],
+                    email_address=group.mail,
+                    type=RemoteIdentityType.GROUP,
+                    modified_at=datetime.now(),
+                    members=member_info,
+                )
+                yield rfp.dict()
 
     def get_group_members(self, group_id: str) -> List[Dict[str, str]]:
         """
@@ -145,15 +178,47 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
         client_context = self.get_client_context()
         site_users = client_context.web.site_users
         client_context.load(site_users)
-        client_context.execute_query()
+        execute_query_with_retry(client_context)
         return site_users
+
+    def get_site_users_identities(self) -> Iterator[Dict[str, Any]]:
+        site_users = self.get_site_users()
+        if site_users:
+            for site_user in site_users:
+                rfp = RemoteIdentity(
+                    remote_id=site_user.id,
+                    title=site_user.properties["Title"],
+                    login_name=site_user.login_name,
+                    user_principal_name=site_user.user_principal_name,
+                    email_address=site_user.properties["Email"],
+                    type=RemoteIdentityType.SITE_USER,
+                    modified_at=datetime.now(),
+                )
+                yield rfp.dict()
 
     def get_site_groups(self) -> GroupCollection:
         client_context = self.get_client_context()
         site_groups = client_context.web.site_groups
         client_context.load(site_groups)
-        client_context.execute_query()
+        execute_query_with_retry(client_context)
         return site_groups
+
+    def get_site_groups_identities(self) -> Iterator[Dict[str, Any]]:
+        site_groups = self.get_site_groups()
+        if site_groups:
+            for site_group in site_groups:
+                # Get members of the site group
+                member_info = self.get_site_group_members(site_group)
+
+                rfp = RemoteIdentity(
+                    remote_id=site_group.id,
+                    title=site_group.properties["Title"],
+                    description=site_group.properties["Description"],
+                    type=RemoteIdentityType.SITE_GROUP,
+                    modified_at=datetime.now(),
+                    members=member_info,
+                )
+                yield rfp.dict()
 
     def _get_site_group_members_client_context(self, group_id: str) -> List[Dict[str, str]]:
         """
@@ -211,10 +276,35 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
         applications = execute_query_with_retry(self.one_drive_client.applications.get())
         return applications
 
+    def get_applications_identities(self) -> Iterator[Dict[str, Any]]:
+        applications = self.get_applications()
+        if applications:
+            for application in applications:
+                rfp = RemoteIdentity(
+                    remote_id=application.id,
+                    display_name=application.display_name,
+                    description=application.properties["description"],
+                    type=RemoteIdentityType.APPLICATION,
+                    modified_at=datetime.now(),
+                )
+                yield rfp.dict()
+
     def get_devices(self):
         devices = self.one_drive_client.execute_request_direct("devices")
         devices.raise_for_status()
         return devices.json().get("value")
+
+    def get_devices_identities(self) -> Iterator[Dict[str, Any]]:
+        devices = self.get_devices()
+        if devices:
+            for device in devices:
+                rfp = RemoteIdentity(
+                    remote_id=device.get("id"),
+                    display_name=device.get("displayName"),
+                    type=RemoteIdentityType.DEVICE,
+                    modified_at=datetime.now(),
+                )
+                yield rfp.dict()
 
     def get_file_permissions(self, file: MicrosoftSharePointRemoteFile, logger: logging.Logger) -> Tuple[List[RemoteIdentity], bool]:
         """
@@ -306,86 +396,9 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
         return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("identities")
 
     def load_identity_groups(self, logger: logging.Logger) -> Iterator[Dict[str, Any]]:
-        users = self.get_users()
-        if users:
-            for user in users:
-                rfp = RemoteIdentity(
-                    remote_id=user.id,
-                    display_name=user.properties["displayName"],
-                    user_principal_name=user.user_principal_name,
-                    email_address=user.mail,
-                    type=RemoteIdentityType.USER,
-                    modified_at=datetime.now(),
-                    description=None,
-                )
-                yield rfp.dict()
-
-        groups = self.get_groups()
-        if groups:
-            for group in groups:
-                # Get members of the group
-                member_info = self.get_group_members(group.id)
-
-                rfp = RemoteIdentity(
-                    remote_id=group.id,
-                    display_name=group.display_name,
-                    description=group.properties["description"],
-                    email_address=group.mail,
-                    type=RemoteIdentityType.GROUP,
-                    modified_at=datetime.now(),
-                    members=member_info,
-                )
-                yield rfp.dict()
-
-        site_users = self.get_site_users()
-        if site_users:
-            for site_user in site_users:
-                rfp = RemoteIdentity(
-                    remote_id=site_user.id,
-                    title=site_user.properties["Title"],
-                    login_name=site_user.login_name,
-                    user_principal_name=site_user.user_principal_name,
-                    email_address=site_user.properties["Email"],
-                    type=RemoteIdentityType.SITE_USER,
-                    modified_at=datetime.now(),
-                )
-                yield rfp.dict()
-
-        site_groups = self.get_site_groups()
-        if site_groups:
-            for site_group in site_groups:
-                # Get members of the site group
-                member_info = self.get_site_group_members(site_group)
-
-                rfp = RemoteIdentity(
-                    remote_id=site_group.id,
-                    title=site_group.properties["Title"],
-                    description=site_group.properties["Description"],
-                    type=RemoteIdentityType.SITE_GROUP,
-                    modified_at=datetime.now(),
-                    members=member_info,
-                )
-                yield rfp.dict()
-
-        applications = self.get_applications()
-        if applications:
-            for application in applications:
-                rfp = RemoteIdentity(
-                    remote_id=application.id,
-                    display_name=application.display_name,
-                    description=application.properties["description"],
-                    type=RemoteIdentityType.APPLICATION,
-                    modified_at=datetime.now(),
-                )
-                yield rfp.dict()
-
-        devices = self.get_devices()
-        if devices:
-            for device in devices:
-                rfp = RemoteIdentity(
-                    remote_id=device.get("id"),
-                    display_name=device.get("displayName"),
-                    type=RemoteIdentityType.DEVICE,
-                    modified_at=datetime.now(),
-                )
-                yield rfp.dict()
+        yield from self.get_users_identities()
+        yield from self.get_groups_identities()
+        yield from self.get_site_users_identities()
+        yield from self.get_site_groups_identities()
+        yield from self.get_applications_identities()
+        yield from self.get_devices_identities()

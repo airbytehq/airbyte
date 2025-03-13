@@ -205,24 +205,23 @@ def test_load_identity_groups_users(setup_permissions_reader_class):
     instance = setup_permissions_reader_class
     mock_logger = Mock(spec=logging.Logger)
 
-    # Mock user data
-    mock_user = Mock()
-    mock_user.id = "user1"
-    mock_user.properties = {
-        "displayName": "Test User",
-        "userPrincipalName": "test.user@example.com",
+    # Mock formatted user data
+    mock_user_identity = {
+        "remote_id": "user1",
+        "display_name": "Test User",
+        "user_principal_name": "test.user@example.com",
+        "email_address": "test.user@example.com",
+        "type": RemoteIdentityType.USER,
     }
-    mock_user.user_principal_name = "test.user@example.com"
-    mock_user.mail = "test.user@example.com"
 
-    # Mock all methods except get_users
+    # Mock all methods except get_users_identities
     with (
-        patch.object(instance, "get_groups", return_value=[]),
-        patch.object(instance, "get_site_users", return_value=[]),
-        patch.object(instance, "get_site_groups", return_value=[]),
-        patch.object(instance, "get_applications", return_value=[]),
-        patch.object(instance, "get_devices", return_value=[]),
-        patch.object(instance, "get_users", return_value=[mock_user]),  # This is the method we're testing
+        patch.object(instance, "get_groups_identities", return_value=[]),
+        patch.object(instance, "get_site_users_identities", return_value=[]),
+        patch.object(instance, "get_site_groups_identities", return_value=[]),
+        patch.object(instance, "get_applications_identities", return_value=[]),
+        patch.object(instance, "get_devices_identities", return_value=[]),
+        patch.object(instance, "get_users_identities", return_value=[mock_user_identity]),  # This is the method we're testing
     ):
         # Get the identities
         identities = list(instance.load_identity_groups(mock_logger))
@@ -230,11 +229,7 @@ def test_load_identity_groups_users(setup_permissions_reader_class):
         # Verify we got the expected identity
         assert len(identities) == 1
         identity = identities[0]
-        assert identity["remote_id"] == "user1"
-        assert identity["display_name"] == "Test User"
-        assert identity["user_principal_name"] == "test.user@example.com"
-        assert identity["email_address"] == "test.user@example.com"
-        assert identity["type"] == RemoteIdentityType.USER
+        assert identity == mock_user_identity
 
 
 def test_load_identity_groups_groups(setup_permissions_reader_class):
@@ -242,23 +237,23 @@ def test_load_identity_groups_groups(setup_permissions_reader_class):
     instance = setup_permissions_reader_class
     mock_logger = Mock(spec=logging.Logger)
 
-    # Mock group data
-    mock_group = Mock()
-    mock_group.id = "group1"
-    mock_group.display_name = "Test Group"
-    mock_group.properties = {
+    # Mock formatted group data
+    mock_group_identity = {
+        "remote_id": "group1",
+        "display_name": "Test Group",
         "description": "Test Group Description",
+        "email_address": "group@example.com",
+        "type": RemoteIdentityType.GROUP,
     }
-    mock_group.mail = "group@example.com"
 
-    # Mock all methods except get_groups
+    # Mock all methods except get_groups_identities
     with (
-        patch.object(instance, "get_users", return_value=[]),
-        patch.object(instance, "get_site_users", return_value=[]),
-        patch.object(instance, "get_site_groups", return_value=[]),
-        patch.object(instance, "get_applications", return_value=[]),
-        patch.object(instance, "get_devices", return_value=[]),
-        patch.object(instance, "get_groups", return_value=[mock_group]),  # This is the method we're testing
+        patch.object(instance, "get_users_identities", return_value=[]),
+        patch.object(instance, "get_site_users_identities", return_value=[]),
+        patch.object(instance, "get_site_groups_identities", return_value=[]),
+        patch.object(instance, "get_applications_identities", return_value=[]),
+        patch.object(instance, "get_devices_identities", return_value=[]),
+        patch.object(instance, "get_groups_identities", return_value=[mock_group_identity]),  # This is the method we're testing
     ):
         # Get the identities
         identities = list(instance.load_identity_groups(mock_logger))
@@ -266,11 +261,7 @@ def test_load_identity_groups_groups(setup_permissions_reader_class):
         # Verify we got the expected identity
         assert len(identities) == 1
         identity = identities[0]
-        assert identity["remote_id"] == "group1"
-        assert identity["display_name"] == "Test Group"
-        assert identity["description"] == "Test Group Description"
-        assert identity["email_address"] == "group@example.com"
-        assert identity["type"] == RemoteIdentityType.GROUP
+        assert identity == mock_group_identity
 
 
 def test_load_identity_groups_site_users(setup_permissions_reader_class):
@@ -278,30 +269,24 @@ def test_load_identity_groups_site_users(setup_permissions_reader_class):
     instance = setup_permissions_reader_class
     mock_logger = Mock(spec=logging.Logger)
 
-    # Mock site user data
-    mock_site_user = Mock()
-    mock_site_user.id = "site_user1"
-    mock_site_user.properties = {
-        "Title": "Test Site User",
-        "Email": "site.user@example.com",
+    # Mock formatted site user data
+    mock_site_user_identity = {
+        "remote_id": "site_user1",
+        "title": "Test Site User",
+        "user_principal_name": "site.user@example.com",
+        "email_address": "site.user@example.com",
+        "login_name": "site.user@example.com",
+        "type": RemoteIdentityType.SITE_USER,
     }
-    mock_site_user.user_principal_name = "site.user@example.com"
-    mock_site_user.login_name = "site.user@example.com"
 
-    # Mock client context
-    mock_client_context = Mock()
-    mock_client_context.web.site_users = [mock_site_user]
-    mock_client_context.load = Mock()
-    mock_client_context.execute_query = Mock()
-
-    # Mock all methods except get_site_users
+    # Mock all methods except get_site_users_identities
     with (
-        patch.object(instance, "get_users", return_value=[]),
-        patch.object(instance, "get_groups", return_value=[]),
-        patch.object(instance, "get_site_groups", return_value=[]),
-        patch.object(instance, "get_applications", return_value=[]),
-        patch.object(instance, "get_devices", return_value=[]),
-        patch.object(instance, "get_client_context", return_value=mock_client_context),  # Required for get_site_users to work
+        patch.object(instance, "get_users_identities", return_value=[]),
+        patch.object(instance, "get_groups_identities", return_value=[]),
+        patch.object(instance, "get_site_groups_identities", return_value=[]),
+        patch.object(instance, "get_applications_identities", return_value=[]),
+        patch.object(instance, "get_devices_identities", return_value=[]),
+        patch.object(instance, "get_site_users_identities", return_value=[mock_site_user_identity]),  # This is the method we're testing
     ):
         # Get the identities
         identities = list(instance.load_identity_groups(mock_logger))
@@ -309,12 +294,7 @@ def test_load_identity_groups_site_users(setup_permissions_reader_class):
         # Verify we got the expected identity
         assert len(identities) == 1
         identity = identities[0]
-        assert identity["remote_id"] == "site_user1"
-        assert identity["title"] == "Test Site User"
-        assert identity["user_principal_name"] == "site.user@example.com"
-        assert identity["email_address"] == "site.user@example.com"
-        assert identity["login_name"] == "site.user@example.com"
-        assert identity["type"] == RemoteIdentityType.SITE_USER
+        assert identity == mock_site_user_identity
 
 
 def test_load_identity_groups_site_groups(setup_permissions_reader_class):
@@ -322,28 +302,22 @@ def test_load_identity_groups_site_groups(setup_permissions_reader_class):
     instance = setup_permissions_reader_class
     mock_logger = Mock(spec=logging.Logger)
 
-    # Mock site group data
-    mock_site_group = Mock()
-    mock_site_group.id = "site_group1"
-    mock_site_group.properties = {
-        "Title": "Test Site Group",
-        "Description": "Test Site Group Description",
+    # Mock formatted site group data
+    mock_site_group_identity = {
+        "remote_id": "site_group1",
+        "title": "Test Site Group",
+        "description": "Test Site Group Description",
+        "type": RemoteIdentityType.SITE_GROUP,
     }
 
-    # Mock client context
-    mock_client_context = Mock()
-    mock_client_context.web.site_groups = [mock_site_group]
-    mock_client_context.load = Mock()
-    mock_client_context.execute_query = Mock()
-
-    # Mock all methods except get_site_groups
+    # Mock all methods except get_site_groups_identities
     with (
-        patch.object(instance, "get_users", return_value=[]),
-        patch.object(instance, "get_groups", return_value=[]),
-        patch.object(instance, "get_site_users", return_value=[]),
-        patch.object(instance, "get_applications", return_value=[]),
-        patch.object(instance, "get_devices", return_value=[]),
-        patch.object(instance, "get_client_context", return_value=mock_client_context),  # Required for get_site_groups to work
+        patch.object(instance, "get_users_identities", return_value=[]),
+        patch.object(instance, "get_groups_identities", return_value=[]),
+        patch.object(instance, "get_site_users_identities", return_value=[]),
+        patch.object(instance, "get_applications_identities", return_value=[]),
+        patch.object(instance, "get_devices_identities", return_value=[]),
+        patch.object(instance, "get_site_groups_identities", return_value=[mock_site_group_identity]),  # This is the method we're testing
     ):
         # Get the identities
         identities = list(instance.load_identity_groups(mock_logger))
@@ -351,10 +325,7 @@ def test_load_identity_groups_site_groups(setup_permissions_reader_class):
         # Verify we got the expected identity
         assert len(identities) == 1
         identity = identities[0]
-        assert identity["remote_id"] == "site_group1"
-        assert identity["title"] == "Test Site Group"
-        assert identity["description"] == "Test Site Group Description"
-        assert identity["type"] == RemoteIdentityType.SITE_GROUP
+        assert identity == mock_site_group_identity
 
 
 def test_load_identity_groups_applications(setup_permissions_reader_class):
@@ -362,22 +333,22 @@ def test_load_identity_groups_applications(setup_permissions_reader_class):
     instance = setup_permissions_reader_class
     mock_logger = Mock(spec=logging.Logger)
 
-    # Mock application data
-    mock_application = Mock()
-    mock_application.id = "app1"
-    mock_application.display_name = "Test Application"
-    mock_application.properties = {
+    # Mock formatted application data
+    mock_application_identity = {
+        "remote_id": "app1",
+        "display_name": "Test Application",
         "description": "Test Application Description",
+        "type": RemoteIdentityType.APPLICATION,
     }
 
-    # Mock all methods except get_applications
+    # Mock all methods except get_applications_identities
     with (
-        patch.object(instance, "get_users", return_value=[]),
-        patch.object(instance, "get_groups", return_value=[]),
-        patch.object(instance, "get_site_users", return_value=[]),
-        patch.object(instance, "get_site_groups", return_value=[]),
-        patch.object(instance, "get_devices", return_value=[]),
-        patch.object(instance, "get_applications", return_value=[mock_application]),  # This is the method we're testing
+        patch.object(instance, "get_users_identities", return_value=[]),
+        patch.object(instance, "get_groups_identities", return_value=[]),
+        patch.object(instance, "get_site_users_identities", return_value=[]),
+        patch.object(instance, "get_site_groups_identities", return_value=[]),
+        patch.object(instance, "get_devices_identities", return_value=[]),
+        patch.object(instance, "get_applications_identities", return_value=[mock_application_identity]),  # This is the method we're testing
     ):
         # Get the identities
         identities = list(instance.load_identity_groups(mock_logger))
@@ -385,10 +356,7 @@ def test_load_identity_groups_applications(setup_permissions_reader_class):
         # Verify we got the expected identity
         assert len(identities) == 1
         identity = identities[0]
-        assert identity["remote_id"] == "app1"
-        assert identity["display_name"] == "Test Application"
-        assert identity["description"] == "Test Application Description"
-        assert identity["type"] == RemoteIdentityType.APPLICATION
+        assert identity == mock_application_identity
 
 
 def test_load_identity_groups_devices(setup_permissions_reader_class):
@@ -396,24 +364,17 @@ def test_load_identity_groups_devices(setup_permissions_reader_class):
     instance = setup_permissions_reader_class
     mock_logger = Mock(spec=logging.Logger)
 
-    # Mock device data
-    mock_device_response = {
-        "value": [
-            {
-                "id": "device1",
-                "displayName": "Test Device",
-            }
-        ]
-    }
+    # Mock formatted device data
+    mock_device_identity = {"remote_id": "device1", "display_name": "Test Device", "type": RemoteIdentityType.DEVICE}
 
-    # Mock all methods except get_devices
+    # Mock all methods except get_devices_identities
     with (
-        patch.object(instance, "get_users", return_value=[]),
-        patch.object(instance, "get_groups", return_value=[]),
-        patch.object(instance, "get_site_users", return_value=[]),
-        patch.object(instance, "get_site_groups", return_value=[]),
-        patch.object(instance, "get_applications", return_value=[]),
-        patch.object(instance, "get_devices", return_value=mock_device_response["value"]),  # This is the method we're testing
+        patch.object(instance, "get_users_identities", return_value=[]),
+        patch.object(instance, "get_groups_identities", return_value=[]),
+        patch.object(instance, "get_site_users_identities", return_value=[]),
+        patch.object(instance, "get_site_groups_identities", return_value=[]),
+        patch.object(instance, "get_applications_identities", return_value=[]),
+        patch.object(instance, "get_devices_identities", return_value=[mock_device_identity]),  # This is the method we're testing
     ):
         # Get the identities
         identities = list(instance.load_identity_groups(mock_logger))
@@ -421,9 +382,7 @@ def test_load_identity_groups_devices(setup_permissions_reader_class):
         # Verify we got the expected identity
         assert len(identities) == 1
         identity = identities[0]
-        assert identity["remote_id"] == "device1"
-        assert identity["display_name"] == "Test Device"
-        assert identity["type"] == RemoteIdentityType.DEVICE
+        assert identity == mock_device_identity
 
 
 def test_load_identity_groups_all_types(setup_permissions_reader_class):
@@ -431,54 +390,22 @@ def test_load_identity_groups_all_types(setup_permissions_reader_class):
     instance = setup_permissions_reader_class
     mock_logger = Mock(spec=logging.Logger)
 
-    # Mock user data
-    mock_user = Mock()
-    mock_user.id = "user1"
-    mock_user.properties = {"displayName": "Test User", "userPrincipalName": "test.user@example.com"}
-    mock_user.user_principal_name = "test.user@example.com"
-    mock_user.mail = "test.user@example.com"
-
-    # Mock group data
-    mock_group = Mock()
-    mock_group.id = "group1"
-    mock_group.display_name = "Test Group"
-    mock_group.properties = {"description": "Test Group Description"}
-    mock_group.mail = "group@example.com"
-
-    # Mock site user data
-    mock_site_user = Mock()
-    mock_site_user.id = "site_user1"
-    mock_site_user.properties = {"Title": "Test Site User", "Email": "site.user@example.com"}
-    mock_site_user.user_principal_name = "site.user@example.com"
-    mock_site_user.login_name = "site.user@example.com"
-    # Mock site group data
-    mock_site_group = Mock()
-    mock_site_group.id = "site_group1"
-    mock_site_group.properties = {"Title": "Test Site Group", "Description": "Test Site Group Description"}
-
-    # Mock application data
-    mock_application = Mock()
-    mock_application.id = "app1"
-    mock_application.display_name = "Test Application"
-    mock_application.properties = {"description": "Test Application Description"}
-
-    # Mock device data
-    mock_device_response = {"value": [{"id": "device1", "displayName": "Test Device"}]}
-
-    # Mock client context for site users and groups
-    mock_client_context = Mock()
-    mock_client_context.web.site_users = [mock_site_user]
-    mock_client_context.web.site_groups = [mock_site_group]
-    mock_client_context.load = Mock()
-    mock_client_context.execute_query = Mock()
+    # Mock formatted identity data for each type
+    mock_user_identity = {"remote_id": "user1", "display_name": "Test User", "type": RemoteIdentityType.USER}
+    mock_group_identity = {"remote_id": "group1", "display_name": "Test Group", "type": RemoteIdentityType.GROUP}
+    mock_site_user_identity = {"remote_id": "site_user1", "title": "Test Site User", "type": RemoteIdentityType.SITE_USER}
+    mock_site_group_identity = {"remote_id": "site_group1", "title": "Test Site Group", "type": RemoteIdentityType.SITE_GROUP}
+    mock_application_identity = {"remote_id": "app1", "display_name": "Test Application", "type": RemoteIdentityType.APPLICATION}
+    mock_device_identity = {"remote_id": "device1", "display_name": "Test Device", "type": RemoteIdentityType.DEVICE}
 
     # Mock all methods to return their respective data
     with (
-        patch.object(instance, "get_users", return_value=[mock_user]),
-        patch.object(instance, "get_groups", return_value=[mock_group]),
-        patch.object(instance, "get_applications", return_value=[mock_application]),
-        patch.object(instance, "get_devices", return_value=mock_device_response["value"]),
-        patch.object(instance, "get_client_context", return_value=mock_client_context),
+        patch.object(instance, "get_users_identities", return_value=[mock_user_identity]),
+        patch.object(instance, "get_groups_identities", return_value=[mock_group_identity]),
+        patch.object(instance, "get_site_users_identities", return_value=[mock_site_user_identity]),
+        patch.object(instance, "get_site_groups_identities", return_value=[mock_site_group_identity]),
+        patch.object(instance, "get_applications_identities", return_value=[mock_application_identity]),
+        patch.object(instance, "get_devices_identities", return_value=[mock_device_identity]),
     ):
         # Get all identities
         identities = list(instance.load_identity_groups(mock_logger))
@@ -492,6 +419,184 @@ def test_load_identity_groups_all_types(setup_permissions_reader_class):
         assert RemoteIdentityType.SITE_GROUP in identity_types
         assert RemoteIdentityType.APPLICATION in identity_types
         assert RemoteIdentityType.DEVICE in identity_types
+
+
+def test_get_users_identities(setup_permissions_reader_class):
+    """Test get_users_identities method."""
+    instance = setup_permissions_reader_class
+
+    # Mock user data
+    mock_user = Mock()
+    mock_user.id = "user1"
+    mock_user.properties = {
+        "displayName": "Test User",
+        "userPrincipalName": "test.user@example.com",
+    }
+    mock_user.user_principal_name = "test.user@example.com"
+    mock_user.mail = "test.user@example.com"
+
+    # Mock the get_users method
+    with patch.object(instance, "get_users", return_value=[mock_user]):
+        # Get the formatted users
+        formatted_users = list(instance.get_users_identities())
+
+        # Verify we got the expected formatted user
+        assert len(formatted_users) == 1
+        formatted_user = formatted_users[0]
+        assert formatted_user["remote_id"] == "user1"
+        assert formatted_user["display_name"] == "Test User"
+        assert formatted_user["user_principal_name"] == "test.user@example.com"
+        assert formatted_user["email_address"] == "test.user@example.com"
+        assert formatted_user["type"] == RemoteIdentityType.USER
+
+
+def test_get_groups_identities(setup_permissions_reader_class):
+    """Test get_groups_identities method."""
+    instance = setup_permissions_reader_class
+
+    # Mock group data
+    mock_group = Mock()
+    mock_group.id = "group1"
+    mock_group.display_name = "Test Group"
+    mock_group.properties = {
+        "description": "Test Group Description",
+    }
+    mock_group.mail = "group@example.com"
+
+    # Mock member info
+    mock_member_info = [{"remote_id": "member1", "type": "user"}]
+
+    # Mock the get_groups and get_group_members methods
+    with (
+        patch.object(instance, "get_groups", return_value=[mock_group]),
+        patch.object(instance, "get_group_members", return_value=mock_member_info),
+    ):
+        # Get the formatted groups
+        formatted_groups = list(instance.get_groups_identities())
+
+        # Verify we got the expected formatted group
+        assert len(formatted_groups) == 1
+        formatted_group = formatted_groups[0]
+        assert formatted_group["remote_id"] == "group1"
+        assert formatted_group["display_name"] == "Test Group"
+        assert formatted_group["description"] == "Test Group Description"
+        assert formatted_group["email_address"] == "group@example.com"
+        assert formatted_group["type"] == RemoteIdentityType.GROUP
+        assert formatted_group["members"] == mock_member_info
+
+
+def test_get_site_users_identities(setup_permissions_reader_class):
+    """Test get_site_users_identities method."""
+    instance = setup_permissions_reader_class
+
+    # Mock site user data
+    mock_site_user = Mock()
+    mock_site_user.id = "site_user1"
+    mock_site_user.properties = {
+        "Title": "Test Site User",
+        "Email": "site.user@example.com",
+    }
+    mock_site_user.user_principal_name = "site.user@example.com"
+    mock_site_user.login_name = "site.user@example.com"
+
+    # Mock the get_site_users method
+    with patch.object(instance, "get_site_users", return_value=[mock_site_user]):
+        # Get the formatted site users
+        formatted_site_users = list(instance.get_site_users_identities())
+
+        # Verify we got the expected formatted site user
+        assert len(formatted_site_users) == 1
+        formatted_site_user = formatted_site_users[0]
+        assert formatted_site_user["remote_id"] == "site_user1"
+        assert formatted_site_user["title"] == "Test Site User"
+        assert formatted_site_user["login_name"] == "site.user@example.com"
+        assert formatted_site_user["user_principal_name"] == "site.user@example.com"
+        assert formatted_site_user["email_address"] == "site.user@example.com"
+        assert formatted_site_user["type"] == RemoteIdentityType.SITE_USER
+
+
+def test_get_site_groups_identities(setup_permissions_reader_class):
+    """Test get_site_groups_identities method."""
+    instance = setup_permissions_reader_class
+
+    # Mock site group data
+    mock_site_group = Mock()
+    mock_site_group.id = "site_group1"
+    mock_site_group.properties = {
+        "Title": "Test Site Group",
+        "Description": "Test Site Group Description",
+    }
+
+    # Mock member info
+    mock_member_info = [{"remote_id": "member1", "type": "siteUser"}]
+
+    # Mock the get_site_groups and get_site_group_members methods
+    with (
+        patch.object(instance, "get_site_groups", return_value=[mock_site_group]),
+        patch.object(instance, "get_site_group_members", return_value=mock_member_info),
+    ):
+        # Get the formatted site groups
+        formatted_site_groups = list(instance.get_site_groups_identities())
+
+        # Verify we got the expected formatted site group
+        assert len(formatted_site_groups) == 1
+        formatted_site_group = formatted_site_groups[0]
+        assert formatted_site_group["remote_id"] == "site_group1"
+        assert formatted_site_group["title"] == "Test Site Group"
+        assert formatted_site_group["description"] == "Test Site Group Description"
+        assert formatted_site_group["type"] == RemoteIdentityType.SITE_GROUP
+        assert formatted_site_group["members"] == mock_member_info
+
+
+def test_get_applications_identities(setup_permissions_reader_class):
+    """Test get_applications_identities method."""
+    instance = setup_permissions_reader_class
+
+    # Mock application data
+    mock_application = Mock()
+    mock_application.id = "app1"
+    mock_application.display_name = "Test Application"
+    mock_application.properties = {
+        "description": "Test Application Description",
+    }
+
+    # Mock the get_applications method
+    with patch.object(instance, "get_applications", return_value=[mock_application]):
+        # Get the formatted applications
+        formatted_applications = list(instance.get_applications_identities())
+
+        # Verify we got the expected formatted application
+        assert len(formatted_applications) == 1
+        formatted_application = formatted_applications[0]
+        assert formatted_application["remote_id"] == "app1"
+        assert formatted_application["display_name"] == "Test Application"
+        assert formatted_application["description"] == "Test Application Description"
+        assert formatted_application["type"] == RemoteIdentityType.APPLICATION
+
+
+def test_get_devices_identities(setup_permissions_reader_class):
+    """Test get_devices_identities method."""
+    instance = setup_permissions_reader_class
+
+    # Mock device data
+    mock_devices = [
+        {
+            "id": "device1",
+            "displayName": "Test Device",
+        }
+    ]
+
+    # Mock the get_devices method
+    with patch.object(instance, "get_devices", return_value=mock_devices):
+        # Get the formatted devices
+        formatted_devices = list(instance.get_devices_identities())
+
+        # Verify we got the expected formatted device
+        assert len(formatted_devices) == 1
+        formatted_device = formatted_devices[0]
+        assert formatted_device["remote_id"] == "device1"
+        assert formatted_device["display_name"] == "Test Device"
+        assert formatted_device["type"] == RemoteIdentityType.DEVICE
 
 
 def test_get_group_members_success(setup_permissions_reader_class):
@@ -915,16 +1020,19 @@ def test_get_site_users(setup_permissions_reader_class):
 
     # Mock get_client_context
     with patch.object(instance, "get_client_context", return_value=mock_client_context) as mock_get_client_context:
-        # Call the method
-        result = instance.get_site_users()
+        # Add a mock for execute_query_with_retry
+        with patch("source_microsoft_sharepoint.stream_permissions_reader.execute_query_with_retry") as mock_execute_with_retry:
+            # Call the method
+            result = instance.get_site_users()
 
-        # Verify calls
-        mock_get_client_context.assert_called_once()
-        mock_client_context.load.assert_called_once_with(mock_site_users)
-        mock_client_context.execute_query.assert_called_once()
+            # Verify calls
+            mock_get_client_context.assert_called_once()
+            mock_client_context.load.assert_called_once_with(mock_site_users)
+            # Verify execute_query_with_retry was called with the client_context
+            mock_execute_with_retry.assert_called_once_with(mock_client_context)
 
-        # Verify result
-        assert result == mock_site_users
+            # Verify result
+            assert result == mock_site_users
 
 
 def test_get_site_groups(setup_permissions_reader_class):
@@ -940,16 +1048,19 @@ def test_get_site_groups(setup_permissions_reader_class):
 
     # Mock get_client_context
     with patch.object(instance, "get_client_context", return_value=mock_client_context) as mock_get_client_context:
-        # Call the method
-        result = instance.get_site_groups()
+        # Add mock for execute_query_with_retry
+        with patch("source_microsoft_sharepoint.stream_permissions_reader.execute_query_with_retry") as mock_execute_with_retry:
+            # Call the method
+            result = instance.get_site_groups()
 
-        # Verify calls
-        mock_get_client_context.assert_called_once()
-        mock_client_context.load.assert_called_once_with(mock_site_groups)
-        mock_client_context.execute_query.assert_called_once()
+            # Verify calls
+            mock_get_client_context.assert_called_once()
+            mock_client_context.load.assert_called_once_with(mock_site_groups)
+            # Verify execute_query_with_retry was called with the client_context
+            mock_execute_with_retry.assert_called_once_with(mock_client_context)
 
-        # Verify result
-        assert result == mock_site_groups
+            # Verify result
+            assert result == mock_site_groups
 
 
 def test_get_applications(setup_permissions_reader_class):
