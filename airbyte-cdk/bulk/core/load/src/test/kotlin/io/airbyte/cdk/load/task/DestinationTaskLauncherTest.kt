@@ -13,7 +13,7 @@ import io.airbyte.cdk.load.command.MockDestinationConfiguration
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
@@ -159,7 +159,7 @@ class DestinationTaskLauncherTest {
             destinationTaskLauncher: DestinationTaskLauncher,
             fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
             recordQueueForPipeline:
-                PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>>,
+                PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
             loadPipeline: LoadPipeline?,
             partitioner: InputPartitioner,
             openStreamQueue: QueueWriter<DestinationStream>,
