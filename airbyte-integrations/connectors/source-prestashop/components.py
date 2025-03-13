@@ -91,7 +91,7 @@ class CustomFieldTransformation(RecordTransformation):
             '%Y-%m-%dT%H:%M:%SZ',
             '%Y-%m-%dT%H:%M:%S.%fZ',
         ]
-            
+
         # Try parsing with different formats
         for fmt in formats:
             try:
