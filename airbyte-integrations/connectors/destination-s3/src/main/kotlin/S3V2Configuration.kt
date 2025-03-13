@@ -73,10 +73,9 @@ class S3V2ConfigurationFactory :
             objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
-            numUploadWorkers = pojo.numObjectLoaders ?: 25,
-            partSizeBytes = (pojo.partSizeMb ?: 50) * 1024L * 1024L,
+            numUploadWorkers = pojo.numObjectLoaders ?: 10,
+            partSizeBytes = (pojo.partSizeMb ?: 10) * 1024L * 1024L,
             useLegacyClient = pojo.useLegacyClient ?: false,
-            objectSizeBytes = (pojo.totalDataMb ?: 2024) * 1024L * 1024L,
         )
     }
 }

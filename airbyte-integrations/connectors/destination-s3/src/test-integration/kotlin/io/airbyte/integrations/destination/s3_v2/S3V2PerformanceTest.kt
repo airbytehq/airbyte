@@ -15,8 +15,8 @@ class S3V2JsonNoFrillsPerformanceTest :
         configSpecClass = S3V2Specification::class.java,
         defaultRecordsToInsert = 1_000_000,
         micronautProperties = S3V2TestUtils.PERFORMANCE_TEST_MICRONAUT_PROPERTIES,
-        numFilesForFileTransfer = 5,
-        fileSizeMbForFileTransfer = 1024,
+        numFilesForFileTransfer = 3,
+        fileSizeMbForFileTransfer = 1099,
     ) {
     @Test
     override fun testFileTransfer() {
