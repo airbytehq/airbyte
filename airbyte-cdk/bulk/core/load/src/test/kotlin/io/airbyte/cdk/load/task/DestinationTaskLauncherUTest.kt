@@ -102,7 +102,7 @@ class DestinationTaskLauncherUTest {
     private val updateBatchTaskFactory: UpdateBatchStateTaskFactory = mockk(relaxed = true)
 
     private fun getDefaultDestinationTaskLauncher(
-        useFileTranfer: Boolean,
+        useFileTransfer: Boolean,
         loadPipeline: LoadPipeline? = null
     ): DefaultDestinationTaskLauncher<Nothing> {
         return DefaultDestinationTaskLauncher(
@@ -124,7 +124,7 @@ class DestinationTaskLauncherUTest {
             updateCheckpointsTask,
             failStreamTaskFactory,
             failSyncTaskFactory,
-            useFileTranfer,
+            useFileTransfer,
             inputFlow,
             recordQueueSupplier,
             checkpointQueue,
