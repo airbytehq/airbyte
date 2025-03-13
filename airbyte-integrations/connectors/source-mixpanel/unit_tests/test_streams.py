@@ -22,7 +22,7 @@ from .utils import get_url_to_mock, read_incremental, setup_response
 
 logger = logging.getLogger("airbyte")
 
-MIXPANEL_BASE_URL = "https://mixpanel.com/api/2.0/"
+MIXPANEL_BASE_URL = "https://mixpanel.com/api/query/"
 
 
 @pytest.fixture
@@ -51,7 +51,7 @@ def time_sleep_mock(mocker):
 def test_url_base(patch_base_class, config):
     stream = MixpanelStream(authenticator=MagicMock(), **config)
 
-    assert stream.url_base == "https://mixpanel.com/api/2.0/"
+    assert stream.url_base == "https://mixpanel.com/api/query/"
 
 
 def test_request_headers(patch_base_class, config):
@@ -580,7 +580,7 @@ def annotations_response():
 
 def test_annotations_stream(requests_mock, annotations_response, config_raw):
     stream = init_stream("annotations", config=config_raw)
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/annotations", annotations_response)
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/annotations", annotations_response)
 
     stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-25", "end_time": "2021-07-25"})
     # read records for single slice
@@ -609,7 +609,7 @@ def revenue_response():
 
 def test_revenue_stream(requests_mock, revenue_response, config_raw):
     stream = init_stream("revenue", config=config_raw)
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/revenue", revenue_response)
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/revenue", revenue_response)
     stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-25", "end_time": "2021-07-25"})
     # read records for single slice
     records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
@@ -640,7 +640,7 @@ def test_export_schema(requests_mock, export_schema_response, config):
 
 
 def test_export_get_json_schema(requests_mock, export_schema_response, config):
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", export_schema_response)
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", export_schema_response)
 
     stream = Export(authenticator=MagicMock(), **config)
     schema = stream.get_json_schema()
