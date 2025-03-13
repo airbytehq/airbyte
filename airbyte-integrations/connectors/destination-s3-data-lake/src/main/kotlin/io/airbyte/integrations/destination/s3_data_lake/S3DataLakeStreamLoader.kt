@@ -7,16 +7,13 @@ package io.airbyte.integrations.destination.s3_data_lake
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.iceberg.parquet.IcebergParquetPipelineFactory
-import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
-import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
-import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableWriterFactory
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamLoader
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
@@ -30,11 +27,11 @@ class S3DataLakeStreamLoader(
     private val icebergConfiguration: S3DataLakeConfiguration,
     override val stream: DestinationStream,
     private val icebergTableSynchronizer: IcebergTableSynchronizer,
-    private val icebergTableWriterFactory: IcebergTableWriterFactory,
     private val s3DataLakeUtil: S3DataLakeUtil,
     private val icebergUtil: IcebergUtil,
     private val stagingBranchName: String,
-    private val mainBranchName: String
+    private val mainBranchName: String,
+    private val streamStateStore: StreamStateStore<S3DataLakeStreamState>,
 ) : StreamLoader {
     private lateinit var table: Table
     private lateinit var targetSchema: Schema
@@ -86,47 +83,13 @@ class S3DataLakeStreamLoader(
                 "branch $DEFAULT_STAGING_BRANCH already exists for stream ${stream.descriptor}"
             }
         }
-    }
 
-    override suspend fun processRecords(
-        records: Iterator<DestinationRecordAirbyteValue>,
-        totalSizeBytes: Long,
-        endOfStream: Boolean
-    ): Batch {
-        icebergTableWriterFactory
-            .create(
+        val state =
+            S3DataLakeStreamState(
                 table = table,
-                generationId = icebergUtil.constructGenerationIdSuffix(stream),
-                importType = stream.importType,
                 schema = targetSchema,
             )
-            .use { writer ->
-                logger.info { "Writing records to branch $stagingBranchName" }
-                records.forEach { record ->
-                    val icebergRecord =
-                        icebergUtil.toRecord(
-                            record = record,
-                            stream = stream,
-                            tableSchema = targetSchema,
-                            pipeline = pipeline,
-                        )
-                    writer.write(icebergRecord)
-                }
-                val writeResult = writer.complete()
-                if (writeResult.deleteFiles().isNotEmpty()) {
-                    val delta = table.newRowDelta().toBranch(stagingBranchName)
-                    writeResult.dataFiles().forEach { delta.addRows(it) }
-                    writeResult.deleteFiles().forEach { delta.addDeletes(it) }
-                    delta.commit()
-                } else {
-                    val append = table.newAppend().toBranch(stagingBranchName)
-                    writeResult.dataFiles().forEach { append.appendFile(it) }
-                    append.commit()
-                }
-                logger.info { "Finished writing records to $stagingBranchName" }
-            }
-
-        return SimpleBatch(Batch.State.COMPLETE)
+        streamStateStore.put(stream.descriptor, state)
     }
 
     override suspend fun close(streamFailure: StreamProcessingFailed?) {
@@ -143,6 +106,7 @@ class S3DataLakeStreamLoader(
             table.refresh()
             computeOrExecuteSchemaUpdate().pendingUpdate?.commit()
             table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
+
             if (stream.minimumGenerationId > 0) {
                 logger.info {
                     "Detected a minimum generation ID (${stream.minimumGenerationId}). Preparing to delete obsolete generation IDs."

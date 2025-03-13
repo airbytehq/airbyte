@@ -1,0 +1,4285 @@
+version: "4.3.2"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["data"]
+  requester:
+    type: HttpRequester
+    url_base: "https://api.railz.ai/"
+    http_method: "GET"
+    authenticator:
+      class_name: source_declarative_manifest.components.ShortLivedTokenAuthenticator
+      url: "https://auth.railz.ai/getAccess"
+      client_id: "{{ config.client_id }}"
+      secret_key: "{{ config.secret_key }}"
+      lifetime: "PT3600S"
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: DefaultPaginator
+      page_size_option:
+        inject_into: request_parameter
+        field_name: "limit"
+      pagination_strategy:
+        type: OffsetIncrement
+        page_size: 100
+      page_token_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: "offset"
+    requester:
+      $ref: "#/definitions/requester"
+
+  # Full Refresh Base
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+  businesses_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "businesses"
+      path: "/businesses"
+    primary_key: "businessName"
+  connections_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "connections"
+      path: "/connections"
+    primary_key: "connectionId"
+
+  # Internal stream for slicing
+  connections_slice_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          # every stream defines in parameters which services it is needed
+          condition: "{{ record.status in ['active', 'expired'] and record.serviceName in parameters.serviceNames }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - connection
+            value: >-
+              {{
+              stream_partition['businessName']-stream_partition['serviceName']
+              }}
+    $parameters:
+      name: "connections_slice"
+      path: "/connections"
+
+  # Full Refresh Service
+  base_service_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          businessName: "{{ stream_slice.connection.businessName }}"
+          serviceName: "{{ stream_slice.connection.serviceName }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/connections_slice_stream"
+            parent_key: "/"
+            partition_field: "connection"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["businessName"]
+            value: "{{ stream_slice.connection.businessName }}"
+          - path: ["serviceName"]
+            value: "{{ stream_slice.connection.serviceName }}"
+
+  customers_stream:
+    $ref: "#/definitions/base_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          customerName:
+            type: string
+          contactName:
+            type:
+            - 'null'
+            - string
+          emailAddress:
+            type:
+            - 'null'
+            - string
+          website:
+            type:
+            - 'null'
+            - string
+          defaultCurrency:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+              symbol:
+                type:
+                - 'null'
+                - string
+          phone:
+            type:
+            - 'null'
+            - string
+          addresses:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                line1:
+                  type:
+                  - 'null'
+                  - string
+                line2:
+                  type:
+                  - 'null'
+                  - string
+                city:
+                  type:
+                  - 'null'
+                  - string
+                region:
+                  type:
+                  - 'null'
+                  - string
+                country:
+                  type:
+                  - 'null'
+                  - string
+                postalCode:
+                  type:
+                  - 'null'
+                  - string
+                type:
+                  type: string
+          contacts:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                name:
+                  type:
+                  - 'null'
+                  - string
+                email:
+                  type:
+                  - 'null'
+                  - string
+                phone:
+                  type:
+                  - 'null'
+                  - string
+                addresses:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    line1:
+                      type:
+                      - 'null'
+                      - string
+                    line2:
+                      type:
+                      - 'null'
+                      - string
+                    city:
+                      type:
+                      - 'null'
+                      - string
+                    region:
+                      type:
+                      - 'null'
+                      - string
+                    country:
+                      type:
+                      - 'null'
+                      - string
+                    postalCode:
+                      type:
+                      - 'null'
+                      - string
+                    type:
+                      type: string
+                status:
+                  type: string
+                modifiedDate:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
+          taxNumber:
+            type:
+            - 'null'
+            - string
+          balance:
+            type:
+            - 'null'
+            - number
+          status:
+            type: string
+          subsidiaryRefs:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                id:
+                  type:
+                  - string
+                  - integer
+                name:
+                  type:
+                  - 'null'
+                  - string
+                modifiedDate:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+    $parameters:
+      name: "customers"
+      path: "/customers"
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "wave",
+          "myob",
+        ]
+    primary_key: "id"
+  accounts_stream:
+    $ref: "#/definitions/base_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          nominalCode:
+            type:
+            - 'null'
+            - string
+          name:
+            type:
+            - 'null'
+            - string
+          description:
+            type:
+            - 'null'
+            - string
+          section:
+            type:
+            - 'null'
+            - string
+          subSection:
+            type:
+            - 'null'
+            - string
+          group:
+            type:
+            - 'null'
+            - string
+          subGroup:
+            type:
+            - 'null'
+            - string
+          classification:
+            type:
+            - 'null'
+            - string
+          fullyQualifiedName:
+            type:
+            - 'null'
+            - string
+          depth:
+            type:
+            - 'null'
+            - integer
+          currencyRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - 'null'
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+              symbol:
+                type:
+                - 'null'
+                - string
+          currentBalance:
+            type:
+            - 'null'
+            - number
+          type:
+            type: string
+          subType:
+            type:
+            - 'null'
+            - string
+          isBankAccount:
+            type:
+            - 'null'
+            - boolean
+          isSubAccount:
+            type:
+            - 'null'
+            - boolean
+          isActive:
+            type: boolean
+          subsidiaryRefs:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                id:
+                  type:
+                  - string
+                  - integer
+                name:
+                  type:
+                  - 'null'
+                  - string
+          parentRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - 'null'
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+    $parameters:
+      name: "accounts"
+      path: "/accounts"
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "wave",
+          "myob",
+        ]
+    primary_key: "id"
+  inventory_stream:
+    $ref: "#/definitions/base_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          name:
+            type: string
+          code:
+            type:
+            - 'null'
+            - string
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          itemStatus:
+            type:
+            - 'null'
+            - string
+          isBillItem:
+            type:
+            - 'null'
+            - boolean
+          billItem:
+            type:
+            - 'null'
+            - object
+            properties:
+              description:
+                type:
+                - 'null'
+                - string
+              unitPrice:
+                type:
+                - 'null'
+                - number
+              accountRef:
+                type:
+                - 'null'
+                - object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type:
+                    - 'null'
+                    - string
+              taxRateRef:
+                type:
+                - 'null'
+                - object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type:
+                    - 'null'
+                    - string
+                  effectiveTaxRate:
+                    type:
+                    - 'null'
+                    - number
+          isInvoiceItem:
+            type:
+            - 'null'
+            - boolean
+          taxRateRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              description:
+                type:
+                - 'null'
+                - string
+              unitPrice:
+                type:
+                - 'null'
+                - number
+              accountRef:
+                type:
+                - 'null'
+                - object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type:
+                    - 'null'
+                    - string
+              taxRateRef:
+                type:
+                - 'null'
+                - object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type:
+                    - 'null'
+                    - string
+                  effectiveTaxRate:
+                    type:
+                    - 'null'
+                    - number
+          subsidiaryRefs:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - string
+                name:
+                  type:
+                  - 'null'
+                  - string
+          quantityOnHandPerLocation:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                locationRef:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                quantity:
+                  type: number
+          quantityOnHand:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                locationRef:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                quantity:
+                  type: number
+    $parameters:
+      name: "inventory"
+      path: "/inventory"
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "wave",
+          "myob",
+        ]
+    primary_key: "id"
+  tax_rates_stream:
+    $ref: "#/definitions/base_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          name:
+            type: string
+          code:
+            type:
+            - 'null'
+            - string
+          effectiveTaxRate:
+            type:
+            - 'null'
+            - number
+          totalTaxRate:
+            type:
+            - 'null'
+            - number
+          components:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                name:
+                  type:
+                  - 'null'
+                  - string
+                rate:
+                  type:
+                  - 'null'
+                  - number
+                isCompound:
+                  type:
+                  - 'null'
+                  - boolean
+                isPurchasesTax:
+                  type:
+                  - 'null'
+                  - boolean
+                isSalesTax:
+                  type:
+                  - 'null'
+                  - boolean
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+    $parameters:
+      name: "tax_rates"
+      path: "/taxRates"
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "wave",
+          "myob",
+        ]
+    primary_key: "id"
+  tracking_categories_stream:
+    $ref: "#/definitions/base_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          name:
+            type: string
+          isEditable:
+            type: boolean
+          parentRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type: string
+              name:
+                type:
+                - 'null'
+                - string
+          status:
+            type: string
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+    $parameters:
+      name: "tracking_categories"
+      path: "/trackingCategories"
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageIntacct",
+          "myob",
+        ]
+    primary_key: "id"
+  vendors_stream:
+    $ref: "#/definitions/base_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          vendorName:
+            type: string
+          contactName:
+            type:
+            - 'null'
+            - string
+          emailAddress:
+            type:
+            - 'null'
+            - string
+          website:
+            type:
+            - 'null'
+            - string
+          defaultCurrency:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type: string
+              name:
+                type:
+                - 'null'
+                - string
+              symbol:
+                type:
+                - 'null'
+                - string
+          phone:
+            type:
+            - 'null'
+            - string
+          addresses:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                line1:
+                  type:
+                  - 'null'
+                  - string
+                line2:
+                  type:
+                  - 'null'
+                  - string
+                city:
+                  type:
+                  - 'null'
+                  - string
+                region:
+                  type:
+                  - 'null'
+                  - string
+                country:
+                  type:
+                  - 'null'
+                  - string
+                postalCode:
+                  type:
+                  - 'null'
+                  - string
+                type:
+                  type: string
+          contacts:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                name:
+                  type:
+                  - 'null'
+                  - string
+                email:
+                  type:
+                  - 'null'
+                  - string
+                phone:
+                  type:
+                  - 'null'
+                  - string
+                addresses:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    line1:
+                      type:
+                      - 'null'
+                      - string
+                    line2:
+                      type:
+                      - 'null'
+                      - string
+                    city:
+                      type:
+                      - 'null'
+                      - string
+                    region:
+                      type:
+                      - 'null'
+                      - string
+                    country:
+                      type:
+                      - 'null'
+                      - string
+                    postalCode:
+                      type:
+                      - 'null'
+                      - string
+                    type:
+                      type: string
+                status:
+                  type: string
+                modifiedDate:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
+          taxNumber:
+            type:
+            - 'null'
+            - string
+          balance:
+            type:
+            - 'null'
+            - number
+          status:
+            type: string
+          subsidiaryRefs:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                id:
+                  type: string
+                name:
+                  type:
+                  - 'null'
+                  - string
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+    $parameters:
+      name: "vendors"
+      path: "/vendors"
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "wave",
+          "myob",
+        ]
+    primary_key: "id"
+  bank_accounts_stream:
+    $ref: "#/definitions/base_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          institutionName:
+            type: string
+          accountId:
+            type:
+            - string
+            - integer
+          currentBalance:
+            type:
+            - 'null'
+            - number
+          availableBalance:
+            type:
+            - 'null'
+            - number
+          limit:
+            type:
+            - 'null'
+            - number
+          currency:
+            type: string
+          maskedAccountNumber:
+            type:
+            - 'null'
+            - string
+          accountName:
+            type: string
+          officialAccountName:
+            type:
+            - 'null'
+            - string
+          accountType:
+            type: string
+          accountSubType:
+            type:
+            - 'null'
+            - string
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+    $parameters:
+      name: "bank_accounts"
+      path: "/bankAccounts"
+      serviceNames: ["plaid"]
+    primary_key: "accountId"
+
+  # Incremental Service
+  base_incremental_service_stream:
+    $ref: "#/definitions/base_service_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record[parameters.cursor_field] >= stream_interval['start_date'] }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: /
+            partition_field: connection
+            stream:
+              $ref: "#/definitions/connections_slice_stream"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          businessName: "{{ stream_slice.connection.businessName }}"
+          serviceName: "{{ stream_slice.connection.serviceName }}"
+          startDate: "{{ format_datetime(stream_slice.start_time, '%Y-%m-%d') }}"
+          endDate: "{{ format_datetime(stream_slice.end_time, '%Y-%m-%d') }}"
+          orderBy: "{{ parameters.cursor_field }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: "P1M"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_granularity: "P1D"
+
+  accounting_transactions_stream:
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          transactionNumber:
+            type:
+            - 'null'
+            - string
+          postedDate:
+            type: string
+            format: date-time
+          entityRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - 'null'
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+          type:
+            type: string
+          isPosting:
+            type: boolean
+          isReconciled:
+            type:
+            - 'null'
+            - boolean
+          accountRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              name:
+                type: string
+              section:
+                type:
+                - 'null'
+                - string
+              subSection:
+                type:
+                - 'null'
+                - string
+              group:
+                type:
+                - 'null'
+                - string
+              subGroup:
+                type:
+                - 'null'
+                - string
+          currencyRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - 'null'
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+              symbol:
+                type:
+                - 'null'
+                - string
+          currencyRate:
+            type:
+            - 'null'
+            - number
+          isSplitTransaction:
+            type:
+            - 'null'
+            - boolean
+          parentTransactionId:
+            type:
+            - 'null'
+            - string
+          subTotal:
+            type:
+            - 'null'
+            - number
+          taxAmount:
+            type:
+            - 'null'
+            - number
+          totalAmount:
+            type:
+            - number
+            - string
+    $ref: "#/definitions/base_incremental_service_stream"
+    $parameters:
+      name: "accounting_transactions"
+      path: "/accountingTransactions"
+      cursor_field: "postedDate"
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "myob",
+        ]
+    primary_key: "id"
+  bank_transfers_stream:
+    $ref: "#/definitions/base_incremental_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          date:
+            type: string
+            format: date-time
+          currencyRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+              symbol:
+                type:
+                - 'null'
+                - string
+          currencyRate:
+            type: number
+          totalAmount:
+            type:
+            - 'null'
+            - number
+            - string
+          fromAccountRef:
+            type: object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+          toAccountRef:
+            type: object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+          fromBankTransactionId:
+            type: string
+          toBankTransactionId:
+            type: string
+          memo:
+            type:
+            - 'null'
+            - string
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+    $parameters:
+      name: "bank_transfers"
+      path: "/bankTransfers"
+      cursor_field: "date"
+      serviceNames: ["xero"]
+    primary_key: "id"
+  bills_stream:
+    $ref: "#/definitions/base_incremental_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          vendorRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+          purchaseOrderRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - 'null'
+                - string
+                - integer
+              purchaseOrderNumber:
+                type:
+                - 'null'
+                - string
+          purchaseOrderRefs:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - string
+                  - integer
+                purchaseOrderNumber:
+                  type:
+                  - 'null'
+                  - string
+          postedDate:
+            type: string
+            format: date-time
+          dueDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          currencyRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+              symbol:
+                type:
+                - 'null'
+                - string
+          currencyRate:
+            type:
+            - 'null'
+            - number
+          vendorInvoiceNumber:
+            type:
+            - 'null'
+            - string
+          lines:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                description:
+                  type:
+                  - 'null'
+                  - string
+                unitAmount:
+                  type:
+                  - 'null'
+                  - number
+                quantity:
+                  type:
+                  - 'null'
+                  - integer
+                discountAmount:
+                  type:
+                  - 'null'
+                  - number
+                subTotal:
+                  type:
+                  - 'null'
+                  - number
+                taxAmount:
+                  type:
+                  - 'null'
+                  - number
+                totalAmount:
+                  type:
+                  - number
+                  - string
+                discountPercentage:
+                  type:
+                  - 'null'
+                  - number
+                  - string
+                taxRateRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                    effectiveTaxRate:
+                      type:
+                      - 'null'
+                      - number
+                inventoryRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                trackingCategoryRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                    option:
+                      type:
+                      - 'null'
+                      - string
+                    optionId:
+                      type:
+                      - 'null'
+                      - string
+                id:
+                  type:
+                  - string
+                  - integer
+                accountRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+          status:
+            type: string
+          subTotal:
+            type:
+            - 'null'
+            - number
+          taxAmount:
+            type:
+            - 'null'
+            - number
+          totalAmount:
+            type:
+            - number
+            - string
+          amountDue:
+            type:
+            - 'null'
+            - number
+          memo:
+            type:
+            - 'null'
+            - string
+          payments:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                amount:
+                  type:
+                  - 'null'
+                  - number
+                paymentId:
+                  type:
+                  - 'null'
+                  - string
+                date:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
+          subsidiaryRefs:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                id:
+                  type:
+                  - string
+                  - integer
+                name:
+                  type:
+                  - 'null'
+                  - string
+          locationRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - 'null'
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+    $parameters:
+      name: "bills"
+      path: "/bills"
+      cursor_field: "postedDate"
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "myob",
+        ]
+    primary_key: "id"
+  bills_credit_notes_stream:
+    $ref: "#/definitions/base_incremental_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          postedDate:
+            type: string
+            format: date-time
+          allocatedOnDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          currencyRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+              symbol:
+                type:
+                - 'null'
+                - string
+          currencyRate:
+            type:
+            - 'null'
+            - number
+          lines:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                description:
+                  type:
+                  - 'null'
+                  - string
+                unitAmount:
+                  type:
+                  - 'null'
+                  - number
+                quantity:
+                  type:
+                  - 'null'
+                  - integer
+                discountAmount:
+                  type:
+                  - 'null'
+                  - number
+                subTotal:
+                  type:
+                  - 'null'
+                  - number
+                taxAmount:
+                  type:
+                  - 'null'
+                  - number
+                totalAmount:
+                  type:
+                  - number
+                  - string
+                discountPercentage:
+                  type:
+                  - 'null'
+                  - number
+                  - string
+                taxRateRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                    effectiveTaxRate:
+                      type:
+                      - 'null'
+                      - number
+                inventoryRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                trackingCategoryRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                    option:
+                      type:
+                      - 'null'
+                      - string
+                    optionId:
+                      type:
+                      - 'null'
+                      - string
+                id:
+                  type:
+                  - string
+                  - integer
+                accountRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+          totalDiscount:
+            type:
+            - 'null'
+            - number
+          discountPercentage:
+            type:
+            - 'null'
+            - number
+          subTotal:
+            type:
+            - 'null'
+            - number
+          taxAmount:
+            type:
+            - 'null'
+            - number
+          totalAmount:
+            type:
+            - number
+            - string
+          remainingCredit:
+            type:
+            - 'null'
+            - number
+          status:
+            type: string
+          memo:
+            type: string
+          payments:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                amount:
+                  type:
+                  - 'null'
+                  - number
+                paymentId:
+                  type:
+                  - 'null'
+                  - string
+                date:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          locationRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - 'null'
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+          vendorRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+    $parameters:
+      name: "bills_credit_notes"
+      path: "/bills/creditNotes"
+      cursor_field: "postedDate"
+      serviceNames:
+        ["quickbooks", "xero", "oracleNetsuite", "sageIntacct", "myob"]
+    primary_key: "id"
+  bills_payments_stream:
+    $ref: "#/definitions/base_incremental_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          vendorRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+          accountRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+          totalAmount:
+            type:
+            - number
+            - string
+          currencyRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+              symbol:
+                type:
+                - 'null'
+                - string
+          currencyRate:
+            type:
+            - 'null'
+            - number
+          date:
+            type: string
+            format: date-time
+          memo:
+            type:
+            - 'null'
+            - string
+          lines:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                amount:
+                  type: number
+                link:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type:
+                      - 'null'
+                      - string
+                      - integer
+                    amount:
+                      type:
+                      - 'null'
+                      - number
+                links:
+                  type:
+                  - 'null'
+                  - array
+                  items:
+                    type:
+                    - 'null'
+                    - object
+                    properties:
+                      type:
+                        type: string
+                      id:
+                        type:
+                        - string
+                        - integer
+                allocatedOnDate:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
+          subsidiaryRefs:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                id:
+                  type:
+                  - string
+                  - integer
+                name:
+                  type:
+                  - 'null'
+                  - string
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+    $parameters:
+      name: "bills_payments"
+      path: "/bills/payments"
+      cursor_field: "date"
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "myob",
+        ]
+    primary_key: "id"
+  deposits_stream:
+    $ref: "#/definitions/base_incremental_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          postedDate:
+            type: string
+            format: date-time
+          currencyRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+              symbol:
+                type:
+                - 'null'
+                - string
+          currencyRate:
+            type:
+            - 'null'
+            - number
+          lines:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                description:
+                  type:
+                  - 'null'
+                  - string
+                unitAmount:
+                  type:
+                  - 'null'
+                  - number
+                quantity:
+                  type:
+                  - 'null'
+                  - integer
+                subTotal:
+                  type:
+                  - 'null'
+                  - number
+                taxAmount:
+                  type:
+                  - 'null'
+                  - number
+                totalAmount:
+                  type:
+                  - number
+                  - string
+                accountRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                taxRateRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                    effectiveTaxRate:
+                      type:
+                      - 'null'
+                      - number
+                entityRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                    type:
+                      type:
+                      - 'null'
+                      - string
+                link:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      type:
+                      - 'null'
+                      - string
+                links:
+                  type:
+                  - 'null'
+                  - array
+                  items:
+                    type:
+                    - 'null'
+                    - object
+                    properties:
+                      id:
+                        type: string
+                      type:
+                        type:
+                        - 'null'
+                        - string
+          subTotal:
+            type:
+            - 'null'
+            - number
+          taxAmount:
+            type:
+            - 'null'
+            - number
+          totalAmount:
+            type:
+            - number
+            - string
+          status:
+            type: string
+          memo:
+            type:
+            - 'null'
+            - string
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+    $parameters:
+      name: "deposits"
+      path: "/deposits"
+      cursor_field: "postedDate"
+      serviceNames: ["quickbooks", "xero", "myob"]
+    primary_key: "id"
+  estimates_stream:
+    $ref: "#/definitions/base_incremental_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          customerRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+          postedDate:
+            type: string
+            format: date-time
+          dueDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          acceptedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          expiryDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          currencyRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+              symbol:
+                type:
+                - 'null'
+                - string
+          currencyRate:
+            type:
+            - 'null'
+            - number
+          lines:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                description:
+                  type:
+                  - 'null'
+                  - string
+                unitAmount:
+                  type:
+                  - 'null'
+                  - number
+                quantity:
+                  type:
+                  - 'null'
+                  - integer
+                discountAmount:
+                  type:
+                  - 'null'
+                  - number
+                subTotal:
+                  type:
+                  - 'null'
+                  - number
+                taxAmount:
+                  type:
+                  - 'null'
+                  - number
+                totalAmount:
+                  type:
+                  - number
+                  - string
+                discountPercentage:
+                  type:
+                  - 'null'
+                  - number
+                  - string
+                taxRateRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                    effectiveTaxRate:
+                      type:
+                      - 'null'
+                      - number
+                inventoryRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                trackingCategoryRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                    option:
+                      type:
+                      - 'null'
+                      - string
+                    optionId:
+                      type:
+                      - 'null'
+                      - string
+                id:
+                  type:
+                  - 'null'
+                  - string
+                  - integer
+                accountRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+          totalDiscount:
+            type:
+            - 'null'
+            - number
+          discountPercentage:
+            type:
+            - 'null'
+            - number
+          subTotal:
+            type:
+            - 'null'
+            - number
+          taxAmount:
+            type:
+            - 'null'
+            - number
+          totalAmount:
+            type:
+            - number
+            - string
+          status:
+            type: string
+          memo:
+            type:
+            - 'null'
+            - string
+          shippingAddress:
+            type: object
+            properties:
+              line1:
+                type:
+                - string
+                - 'null'
+              line2:
+                type:
+                - string
+                - 'null'
+              city:
+                type:
+                - string
+                - 'null'
+              region:
+                type:
+                - string
+                - 'null'
+              country:
+                type:
+                - string
+                - 'null'
+              postalCode:
+                type:
+                - string
+                - 'null'
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+    $parameters:
+      name: "estimates"
+      path: "/estimates"
+      cursor_field: "postedDate"
+      serviceNames: ["freshbooks", "quickbooks", "xero", "myob"]
+    primary_key: "id"
+  invoices_stream:
+    $ref: "#/definitions/base_incremental_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          invoiceNumber:
+            type:
+            - 'null'
+            - string
+          customerRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+          postedDate:
+            type: string
+            format: date-time
+          dueDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          currencyRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+              symbol:
+                type:
+                - 'null'
+                - string
+          currencyRate:
+            type:
+            - 'null'
+            - number
+          lines:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                description:
+                  type:
+                  - 'null'
+                  - string
+                unitAmount:
+                  type:
+                  - 'null'
+                  - number
+                quantity:
+                  type:
+                  - 'null'
+                  - integer
+                discountAmount:
+                  type:
+                  - 'null'
+                  - number
+                subTotal:
+                  type:
+                  - 'null'
+                  - number
+                taxAmount:
+                  type:
+                  - 'null'
+                  - number
+                totalAmount:
+                  type:
+                  - number
+                  - string
+                discountPercentage:
+                  type:
+                  - 'null'
+                  - number
+                  - string
+                taxRateRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                    effectiveTaxRate:
+                      type:
+                      - 'null'
+                      - number
+                inventoryRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                trackingCategoryRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                    option:
+                      type:
+                      - 'null'
+                      - string
+                    optionId:
+                      type:
+                      - 'null'
+                      - string
+                accountRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                locationRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - 'null'
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+          status:
+            type: string
+          totalDiscount:
+            type:
+            - 'null'
+            - number
+          subTotal:
+            type:
+            - 'null'
+            - number
+          taxAmount:
+            type:
+            - 'null'
+            - number
+          totalAmount:
+            type:
+            - number
+            - string
+          amountDue:
+            type:
+            - 'null'
+            - number
+          discountPercentage:
+            type:
+            - 'null'
+            - number
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          memo:
+            type:
+            - 'null'
+            - string
+          payments:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                amount:
+                  type:
+                  - 'null'
+                  - number
+                paymentId:
+                  type:
+                  - 'null'
+                  - string
+                date:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
+          subsidiaryRefs:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                id:
+                  type:
+                  - string
+                  - integer
+                name:
+                  type:
+                  - 'null'
+                  - string
+    $parameters:
+      name: "invoices"
+      path: "/invoices"
+      cursor_field: "postedDate"
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "wave",
+          "myob",
+        ]
+    primary_key: "id"
+  invoices_credit_notes_stream:
+    $ref: "#/definitions/base_incremental_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          postedDate:
+            type: string
+            format: date-time
+          allocatedOnDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          currencyRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type: string
+              name:
+                type:
+                - 'null'
+                - string
+              symbol:
+                type:
+                - 'null'
+                - string
+          currencyRate:
+            type:
+            - 'null'
+            - number
+          lines:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                description:
+                  type:
+                  - 'null'
+                  - string
+                unitAmount:
+                  type:
+                  - 'null'
+                  - number
+                quantity:
+                  type:
+                  - 'null'
+                  - integer
+                discountAmount:
+                  type:
+                  - 'null'
+                  - number
+                subTotal:
+                  type:
+                  - 'null'
+                  - number
+                taxAmount:
+                  type:
+                  - 'null'
+                  - number
+                totalAmount:
+                  type:
+                  - number
+                  - string
+                discountPercentage:
+                  type:
+                  - 'null'
+                  - number
+                  - string
+                taxRateRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                    effectiveTaxRate:
+                      type:
+                      - 'null'
+                      - number
+                inventoryRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                trackingCategoryRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                    option:
+                      type:
+                      - 'null'
+                      - string
+                    optionId:
+                      type:
+                      - 'null'
+                      - string
+                id:
+                  type:
+                  - 'null'
+                  - string
+                accountRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type:
+                      - 'null'
+                      - string
+          totalDiscount:
+            type:
+            - 'null'
+            - number
+          discountPercentage:
+            type:
+            - 'null'
+            - number
+          subTotal:
+            type:
+            - 'null'
+            - number
+          taxAmount:
+            type:
+            - 'null'
+            - number
+          totalAmount:
+            type:
+            - number
+            - string
+          remainingCredit:
+            type:
+            - 'null'
+            - number
+          status:
+            type: string
+          memo:
+            type:
+            - 'null'
+            - string
+          payments:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                amount:
+                  type:
+                  - 'null'
+                  - number
+                paymentId:
+                  type:
+                  - 'null'
+                  - string
+                date:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          locationRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - 'null'
+                - string
+              name:
+                type:
+                - 'null'
+                - string
+          customerRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type: string
+              name:
+                type:
+                - 'null'
+                - string
+    $parameters:
+      name: "invoices_credit_notes"
+      path: "/invoices/creditNotes"
+      cursor_field: "postedDate"
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "xero",
+          "oracleNetsuite",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "myob",
+        ]
+    primary_key: "id"
+  invoices_payments_stream:
+    $ref: "#/definitions/base_incremental_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          customerRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type: string
+              name:
+                type:
+                - 'null'
+                - string
+          accountRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type: string
+              name:
+                type:
+                - 'null'
+                - string
+          totalAmount:
+            type:
+            - number
+            - string
+          currencyRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type: string
+              name:
+                type:
+                - 'null'
+                - string
+              symbol:
+                type:
+                - 'null'
+                - string
+          currencyRate:
+            type:
+            - 'null'
+            - number
+          date:
+            type: string
+            format: date-time
+          memo:
+            type:
+            - 'null'
+            - string
+          lines:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                amount:
+                  type: number
+                lines:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type:
+                      - 'null'
+                      - string
+                    amount:
+                      type:
+                      - 'null'
+                      - number
+                allocatedOnDate:
+                  type:
+                  - 'null'
+                  - string
+                  format: date-time
+          subsidiaryRefs:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                id:
+                  type: string
+                name:
+                  type:
+                  - 'null'
+                  - string
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+    $parameters:
+      name: "invoices_payments"
+      path: "/invoices/payments"
+      cursor_field: "date"
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "myob",
+        ]
+    primary_key: "id"
+  journal_entries_stream:
+    $ref: "#/definitions/base_incremental_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          postedDate:
+            type: string
+            format: date-time
+          createdDate:
+            type: string
+            format: date-time
+          currencyRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - 'null'
+                - string
+              name:
+                type:
+                - 'null'
+                - string
+              symbol:
+                type:
+                - 'null'
+                - string
+          currencyRate:
+            type:
+            - 'null'
+            - number
+          subsidiaryRefs:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                id:
+                  type: string
+                name:
+                  type:
+                  - 'null'
+                  - string
+          lines:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                description:
+                  type:
+                  - 'null'
+                  - string
+                credit:
+                  type:
+                  - 'null'
+                  - number
+                debit:
+                  type:
+                  - 'null'
+                  - number
+                taxAmount:
+                  type:
+                  - 'null'
+                  - number
+                accountRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                entityRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                    type:
+                      type:
+                      - 'null'
+                      - string
+                taxRateRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                    effectiveTaxRate:
+                      type:
+                      - 'null'
+                      - number
+                trackingCategoryRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                    option:
+                      type:
+                      - 'null'
+                      - string
+                    optionId:
+                      type:
+                      - 'null'
+                      - string
+                id:
+                  type:
+                  - 'null'
+                  - string
+          memo:
+            type:
+            - 'null'
+            - string
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          totalCredit:
+            type:
+            - 'null'
+            - number
+          totalDebit:
+            type:
+            - 'null'
+            - number
+    $parameters:
+      name: "journal_entries"
+      path: "/journalEntries"
+      cursor_field: "postedDate"
+      serviceNames:
+        [
+          "freshbooks",
+          "quickbooks",
+          "quickbooksDesktop",
+          "xero",
+          "oracleNetsuite",
+          "sageBusinessCloud",
+          "sageIntacct",
+          "myob",
+        ]
+    primary_key: "id"
+  purchase_orders_stream:
+    $ref: "#/definitions/base_incremental_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          vendorRef:
+            type: object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+          postedDate:
+            type: string
+            format: date-time
+          deliveryDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          expectedArrivalDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          dueDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          currencyRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              name:
+                type:
+                - 'null'
+                - string
+              symbol:
+                type:
+                - 'null'
+                - string
+          currencyRate:
+            type:
+            - 'null'
+            - number
+          lines:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                description:
+                  type:
+                  - 'null'
+                  - string
+                unitAmount:
+                  type:
+                  - 'null'
+                  - number
+                quantity:
+                  type:
+                  - 'null'
+                  - integer
+                discountAmount:
+                  type:
+                  - 'null'
+                  - number
+                subTotal:
+                  type:
+                  - 'null'
+                  - number
+                taxAmount:
+                  type:
+                  - 'null'
+                  - number
+                totalAmount:
+                  type:
+                  - number
+                  - string
+                discountPercentage:
+                  type:
+                  - 'null'
+                  - number
+                  - string
+                taxRateRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                    effectiveTaxRate:
+                      type:
+                      - 'null'
+                      - number
+                inventoryRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                trackingCategoryRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                    option:
+                      type:
+                      - 'null'
+                      - string
+                    optionId:
+                      type:
+                      - 'null'
+                      - string
+                id:
+                  type:
+                  - 'null'
+                  - string
+                  - integer
+                accountRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type:
+                      - string
+                      - integer
+                    name:
+                      type:
+                      - 'null'
+                      - string
+          totalDiscount:
+            type:
+            - 'null'
+            - number
+          discountPercentage:
+            type:
+            - 'null'
+            - number
+          subTotal:
+            type:
+            - 'null'
+            - number
+          taxAmount:
+            type:
+            - 'null'
+            - number
+          totalAmount:
+            type:
+            - number
+            - string
+          status:
+            type: string
+          memo:
+            type:
+            - 'null'
+            - string
+          shippingAddress:
+            type: object
+            properties:
+              line1:
+                type:
+                - string
+                - 'null'
+              line2:
+                type:
+                - string
+                - 'null'
+              city:
+                type:
+                - string
+                - 'null'
+              region:
+                type:
+                - string
+                - 'null'
+              country:
+                type:
+                - string
+                - 'null'
+              postalCode:
+                type:
+                - string
+                - 'null'
+          contacts:
+            type:
+            - 'null'
+            - object
+            properties:
+              name:
+                type:
+                - 'null'
+                - string
+              email:
+                type:
+                - 'null'
+                - string
+              phone:
+                type:
+                - 'null'
+                - string
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+    $parameters:
+      name: "purchase_orders"
+      path: "/purchaseOrders"
+      cursor_field: "postedDate"
+      serviceNames:
+        [
+          "quickbooks",
+          "xero",
+          "oracleNetsuite",
+          "sageIntacct",
+          "dynamicsBusinessCentral",
+          "myob",
+        ]
+    primary_key: "id"
+  refunds_stream:
+    $ref: "#/definitions/base_incremental_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          customerRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type: string
+              name:
+                type:
+                - 'null'
+                - string
+          accountRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type: string
+              name:
+                type:
+                - 'null'
+                - string
+          date:
+            type: string
+            format: date-time
+          currencyRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type: string
+              name:
+                type:
+                - 'null'
+                - string
+              symbol:
+                type:
+                - 'null'
+                - string
+          currencyRate:
+            type:
+            - 'null'
+            - number
+          lines:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                description:
+                  type:
+                  - 'null'
+                  - string
+                unitAmount:
+                  type:
+                  - 'null'
+                  - number
+                quantity:
+                  type:
+                  - 'null'
+                  - integer
+                discountAmount:
+                  type:
+                  - 'null'
+                  - number
+                subTotal:
+                  type:
+                  - 'null'
+                  - number
+                taxAmount:
+                  type:
+                  - 'null'
+                  - number
+                totalAmount:
+                  type:
+                  - number
+                  - string
+                discountPercentage:
+                  type:
+                  - 'null'
+                  - number
+                  - string
+                taxRateRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                    effectiveTaxRate:
+                      type:
+                      - 'null'
+                      - number
+                inventoryRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                trackingCategoryRef:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type:
+                      - 'null'
+                      - string
+                    option:
+                      type:
+                      - 'null'
+                      - string
+                    optionId:
+                      type:
+                      - 'null'
+                      - string
+          totalDiscount:
+            type:
+            - 'null'
+            - number
+          discountPercentage:
+            type:
+            - 'null'
+            - number
+          subTotal:
+            type:
+            - 'null'
+            - number
+          taxAmount:
+            type:
+            - 'null'
+            - number
+          totalAmount:
+            type:
+            - number
+            - string
+          memo:
+            type:
+            - 'null'
+            - string
+          shippingAddress:
+            type: object
+            properties:
+              line1:
+                type:
+                - string
+                - 'null'
+              line2:
+                type:
+                - string
+                - 'null'
+              city:
+                type:
+                - string
+                - 'null'
+              region:
+                type:
+                - string
+                - 'null'
+              country:
+                type:
+                - string
+                - 'null'
+              postalCode:
+                type:
+                - string
+                - 'null'
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+    $parameters:
+      name: "refunds"
+      path: "/refunds"
+      cursor_field: "date"
+      serviceNames: ["quickbooks", "xero", "myob"]
+    primary_key: "id"
+  commerce_disputes_stream:
+    $ref: "#/definitions/base_incremental_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          totalAmount:
+            type:
+            - number
+            - string
+          status:
+            type: string
+          reason:
+            type: string
+          dueDate:
+            type: string
+            format: date-time
+          createdDate:
+            type: string
+            format: date-time
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          orderRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              orderNumber:
+                type:
+                - 'null'
+                - string
+          currencyRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - 'null'
+                - string
+                - integer
+              name:
+                type: string
+              symbol:
+                type: string
+    $parameters:
+      name: "commerce_disputes"
+      path: "/commerce/disputes"
+      cursor_field: "createdDate"
+      serviceNames: ["shopify", "square", "myob"]
+    primary_key: "id"
+  commerce_orders_stream:
+    $ref: "#/definitions/base_incremental_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          orderNumber:
+            type:
+            - 'null'
+            - string
+          fulfillmentRefs:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                carrier:
+                  type:
+                  - 'null'
+                  - string
+                trackingNumber:
+                  type:
+                  - 'null'
+                  - string
+                service:
+                  type:
+                  - 'null'
+                  - string
+                trackingUrl:
+                  type:
+                  - 'null'
+                  - string
+          lines:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                id:
+                  type:
+                  - string
+                  - integer
+                productId:
+                  type:
+                  - 'null'
+                  - string
+                variantId:
+                  type: string
+                name:
+                  type:
+                  - 'null'
+                  - string
+                quantity:
+                  type: integer
+                totalPrice:
+                  type: number
+                unitPrice:
+                  type:
+                  - 'null'
+                  - number
+          refundRefs:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                id:
+                  type:
+                  - string
+                  - integer
+                totalAmount:
+                  type:
+                  - number
+                  - string
+          transactionSourceRefs:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                id:
+                  type:
+                  - string
+                  - integer
+                type:
+                  type: string
+                totalAmount:
+                  type:
+                  - number
+                  - string
+          shippingAddress:
+            type:
+            - 'null'
+            - object
+            properties:
+              contactName:
+                type:
+                - string
+                - 'null'
+              phone:
+                type:
+                - string
+                - 'null'
+              line1:
+                type:
+                - string
+                - 'null'
+              line2:
+                type:
+                - string
+                - 'null'
+              city:
+                type:
+                - string
+                - 'null'
+              region:
+                type:
+                - string
+                - 'null'
+              country:
+                type:
+                - string
+                - 'null'
+              postalCode:
+                type:
+                - string
+                - 'null'
+          billingAddress:
+            type:
+            - 'null'
+            - object
+            properties:
+              contactName:
+                type:
+                - string
+                - 'null'
+              phone:
+                type:
+                - string
+                - 'null'
+              line1:
+                type:
+                - string
+                - 'null'
+              line2:
+                type:
+                - string
+                - 'null'
+              city:
+                type:
+                - string
+                - 'null'
+              region:
+                type:
+                - string
+                - 'null'
+              country:
+                type:
+                - string
+                - 'null'
+              postalCode:
+                type:
+                - string
+                - 'null'
+          customerRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - string
+                - integer
+              customerName:
+                type:
+                - 'null'
+                - string
+              email:
+                type:
+                - 'null'
+                - string
+          currencyRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - 'null'
+                - string
+                - integer
+              name:
+                type: string
+              symbol:
+                type: string
+          totalShippingAmount:
+            type:
+            - 'null'
+            - number
+          totalGratuityAmount:
+            type:
+            - 'null'
+            - number
+          totalDiscountAmount:
+            type:
+            - 'null'
+            - number
+          totalTaxAmount:
+            type: number
+          totalAmount:
+            type:
+            - number
+            - string
+          createdDate:
+            type: string
+            format: date-time
+          sourceModifiedDate:
+            type: string
+            format: date-time
+          status:
+            type: string
+          paymentStatus:
+            type: string
+          fulfillmentStatus:
+            type: string
+    $parameters:
+      name: "commerce_orders"
+      path: "/commerce/orders"
+      cursor_field: "createdDate"
+      serviceNames: ["shopify", "square", "myob"]
+    primary_key: "id"
+  commerce_products_stream:
+    $ref: "#/definitions/base_incremental_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          type:
+            type:
+            - 'null'
+            - string
+          name:
+            type: string
+          description:
+            type:
+            - 'null'
+            - string
+          createdDate:
+            type: string
+            format: date-time
+          sourceModifiedDate:
+            type: string
+            format: date-time
+          status:
+            type: string
+          isGiftCard:
+            type:
+            - 'null'
+            - boolean
+          productVariants:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                id:
+                  type:
+                  - string
+                  - integer
+                name:
+                  type: string
+                isTaxEnabled:
+                  type:
+                  - 'null'
+                  - boolean
+                sku:
+                  type:
+                  - 'null'
+                  - string
+                barcode:
+                  type:
+                  - 'null'
+                  - string
+                weight:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    value:
+                      type:
+                      - 'null'
+                      - number
+                    unitOfMeasure:
+                      type:
+                      - 'null'
+                      - string
+                unitPrice:
+                  type: number
+                inventory:
+                  type:
+                  - 'null'
+                  - object
+                  properties:
+                    totalQuantity:
+                      type:
+                      - 'null'
+                      - number
+                    quantityPerLocation:
+                      type:
+                      - 'null'
+                      - array
+                      items:
+                        type:
+                        - 'null'
+                        - object
+                        properties:
+                          quantity:
+                            type:
+                            - 'null'
+                            - number
+                          locationRef:
+                            type:
+                            - 'null'
+                            - object
+                            properties:
+                              id:
+                                type:
+                                - 'null'
+                                - string
+                                - integer
+                              name:
+                                type:
+                                - 'null'
+                                - string
+                isShippingRequired:
+                  type:
+                  - 'null'
+                  - boolean
+                createdDate:
+                  type: string
+                  format: date-time
+    $parameters:
+      name: "commerce_products"
+      path: "/commerce/products"
+      cursor_field: "createdDate"
+      serviceNames: ["shopify", "square", "myob"]
+    primary_key: "id"
+  commerce_transactions_stream:
+    $ref: "#/definitions/base_incremental_service_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+            - string
+            - integer
+          businessName:
+            type: string
+          serviceName:
+            type: string
+          orderId:
+            type:
+            - 'null'
+            - string
+          paymentMethodType:
+            type:
+            - 'null'
+            - string
+          totalAmount:
+            type:
+            - 'null'
+            - number
+            - string
+          currencyRef:
+            type:
+            - 'null'
+            - object
+            properties:
+              id:
+                type:
+                - 'null'
+                - string
+                - integer
+              name:
+                type: string
+              symbol:
+                type: string
+          transactionSourceRefs:
+            type:
+            - 'null'
+            - array
+            items:
+              type:
+              - 'null'
+              - object
+              properties:
+                id:
+                  type:
+                  - string
+                  - integer
+                type:
+                  type: string
+          transactionType:
+            type:
+            - string
+            - number
+          createdDate:
+            type: string
+            format: date-time
+          sourceModifiedDate:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          status:
+            type: string
+    $parameters:
+      name: "commerce_transactions"
+      path: "/commerce/transactions"
+      cursor_field: "createdDate"
+      serviceNames: ["shopify", "square", "myob"]
+    primary_key: "id"
+
+streams:
+  - "#/definitions/businesses_stream"
+  - "#/definitions/connections_stream"
+  - "#/definitions/customers_stream"
+  - "#/definitions/accounts_stream"
+  - "#/definitions/inventory_stream"
+  - "#/definitions/tax_rates_stream"
+  - "#/definitions/tracking_categories_stream"
+  - "#/definitions/vendors_stream"
+  - "#/definitions/bank_accounts_stream"
+  - "#/definitions/accounting_transactions_stream"
+  - "#/definitions/bank_transfers_stream"
+  - "#/definitions/bills_stream"
+  - "#/definitions/bills_credit_notes_stream"
+  - "#/definitions/bills_payments_stream"
+  - "#/definitions/deposits_stream"
+  - "#/definitions/estimates_stream"
+  - "#/definitions/invoices_stream"
+  - "#/definitions/invoices_credit_notes_stream"
+  - "#/definitions/invoices_payments_stream"
+  - "#/definitions/journal_entries_stream"
+  - "#/definitions/purchase_orders_stream"
+  - "#/definitions/refunds_stream"
+  - "#/definitions/commerce_disputes_stream"
+  - "#/definitions/commerce_orders_stream"
+  - "#/definitions/commerce_products_stream"
+  - "#/definitions/commerce_transactions_stream"
+
+check:
+  stream_names:
+    - "businesses"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - secret_key
+      - start_date
+    properties:
+      client_id:
+        type: string
+        title: Client ID
+        description: Client ID (client_id)
+        order: 0
+      secret_key:
+        type: string
+        title: Secret key
+        description: Secret key (secret_key)
+        order: 1
+        airbyte_secret: true
+      start_date:
+        type: string
+        title: Start date
+        description: Start date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        order: 2

@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "4.4.9"
+version = "4.5.0"
 name = "source-hubspot"
 description = "Source implementation for HubSpot."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -26,7 +26,7 @@ source-hubspot = "source_hubspot.run:run"
 requests-mock = "^1.9.3"
 mock = "^5.1.0"
 pytest-mock = "^3.6"
-pytest = "^6.2"
+pytest = "^8.0.0"
 pytz = "2024.1"
 freezegun = "0.3.4"
 

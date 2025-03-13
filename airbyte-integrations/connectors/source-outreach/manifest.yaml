@@ -191,7 +191,7 @@ definitions:
           request_parameters:
             count: "false"
             sort: updatedAt
-            page[size]: "1000"
+            page[size]: "100"
         record_selector:
           type: RecordSelector
           extractor:

@@ -19,7 +19,7 @@ class MSSqlSourceExceptionHandler : ConnectorExceptionHandler() {
         // adding connector specific error profiles
         add(
             ConnectorErrorProfile(
-                errorClass = "MS SQL Exception", // which should we use?
+                errorClass = "MS SQL Exception",
                 regexMatchingPattern =
                     ".*returned an incomplete response. The connection has been closed.*",
                 failureType = FailureType.TRANSIENT,

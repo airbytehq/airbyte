@@ -15,7 +15,7 @@ def local_dependency(name: str) -> str:
 MAIN_REQUIREMENTS = ["airbyte-cdk", "PyJWT", "cryptography", "requests", local_dependency("source-google-analytics-v4")]
 
 TEST_REQUIREMENTS = [
-    "pytest~=6.1",
+    "pytest~=8.0",
     "requests-mock",
     "pytest-mock",
     "freezegun",

@@ -7,11 +7,11 @@ data:
       - api-m.paypal.com
       - api-m.sandbox.paypal.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.10.0@sha256:58722e84dbd06bb2af9250e37d24d1c448e247fc3a84d75ee4407d52771b6f03
   connectorSubtype: api
   connectorType: source
   definitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
-  dockerImageTag: 2.5.8
+  dockerImageTag: 2.6.0
   dockerRepository: airbyte/source-paypal-transaction
   documentationUrl: https://docs.airbyte.com/integrations/sources/paypal-transaction
   githubIssueLabel: source-paypal-transaction
@@ -21,7 +21,7 @@ data:
   name: Paypal Transaction
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-paypal-transaction
   registryOverrides:
     cloud:
@@ -33,7 +33,12 @@ data:
   releases:
     breakingChanges:
       2.1.0:
-        message: 'Version 2.1.0 changes the format of the state. The format of the cursor changed from "2021-06-18T16:24:13+03:00" to "2021-06-18T16:24:13Z". The state key for the transactions stream changed to "transaction_updated_date" and the key for the balances stream change to "as_of_time". The upgrade is safe, but rolling back is not.'
+        message:
+          'Version 2.1.0 changes the format of the state. The format of the
+          cursor changed from "2021-06-18T16:24:13+03:00" to "2021-06-18T16:24:13Z".
+          The state key for the transactions stream changed to "transaction_updated_date"
+          and the key for the balances stream change to "as_of_time". The upgrade
+          is safe, but rolling back is not.'
         upgradeDeadline: "2023-09-18"
   suggestedStreams:
     streams:
@@ -42,7 +47,7 @@ data:
       - list_payments
   supportLevel: certified
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests

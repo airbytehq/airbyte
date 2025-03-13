@@ -30,7 +30,8 @@ import genson.schema.strategies as strategies
 from genson import SchemaBuilder
 from genson.schema.strategies.object import Object
 
-from airbyte_cdk.models import AirbyteMessage, Type
+
+# Import removed as we're using JSON dictionaries directly
 
 
 class NoRequiredObj(Object):
@@ -65,15 +66,15 @@ def infer_schemas():
 
     builders = {}
     for line in sys.stdin:
-        message = AirbyteMessage.parse_raw(line)
-        if message.type == Type.RECORD:
-            stream_name = message.record.stream
+        message_dict = json.loads(line)
+        if message_dict.get("type") == "RECORD":
+            stream_name = message_dict.get("record", {}).get("stream")
             if stream_name not in builders:
                 builder = NoRequiredSchemaBuilder()
                 builders[stream_name] = builder
             else:
                 builder = builders[stream_name]
-            builder.add_object(message.record.data)
+            builder.add_object(message_dict.get("record", {}).get("data", {}))
     for stream_name, builder in builders.items():
         schema = builder.to_schema()
         output_file_name = os.path.join(default_folder, stream_name + ".json")

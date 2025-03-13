@@ -29,7 +29,7 @@ sqlalchemy = "<2.0"
 pgvector = "0.3.2"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.2"
+pytest = "^8.0.0"
 ruff = "^0.3.2"
 mypy = "^1.9.0"
 coverage = "^7.5.3"

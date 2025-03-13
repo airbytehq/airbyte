@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-      - ${region}.babelforce.com
+      - "*.babelforce.com"
   remoteRegistries:
     pypi:
       enabled: false
@@ -10,11 +10,11 @@ data:
     oss:
       enabled: true
     cloud:
-      enabled: false
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 971c3e1e-78a5-411e-ad56-c4052b50876b
-  dockerImageTag: 0.3.13
+  dockerImageTag: 0.3.16
   dockerRepository: airbyte/source-babelforce
   githubIssueLabel: source-babelforce
   icon: babelforce.svg
@@ -31,5 +31,5 @@ data:
     ql: 100
   supportLevel: community
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.33.6@sha256:81af934a2136edf0521a71697938cea20d1c6eb36c944566b9455bdd2a47d2bd
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.38.3@sha256:fcba02266f262aabc2f37e4f14574aa1c8c5cffd018504bab28803e405c93afe
 metadataSpecVersion: "1.0"

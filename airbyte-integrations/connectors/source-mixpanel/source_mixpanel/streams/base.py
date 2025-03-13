@@ -39,7 +39,7 @@ class MixpanelStream(HttpStream, ABC):
     @property
     def url_base(self):
         prefix = "eu." if self.region == "EU" else ""
-        return f"https://{prefix}mixpanel.com/api/2.0/"
+        return f"https://{prefix}mixpanel.com/api/query/"
 
     @property
     def reqs_per_hour_limit(self):

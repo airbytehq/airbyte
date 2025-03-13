@@ -28,7 +28,7 @@ source-google-ads = "source_google_ads.run:run"
 pytest-mock = "^3.12.0"
 requests-mock = "^1.11.0"
 freezegun = "^1.4.0"
-pytest = "^7"
+pytest = "^8.0.0"
 
 
 [tool.poe]

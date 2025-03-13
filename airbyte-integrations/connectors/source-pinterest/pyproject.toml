@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "2.0.30"
+version = "2.0.31"
 name = "source-pinterest"
 description = "Source implementation for Pinterest."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -27,7 +27,7 @@ source-pinterest = "source_pinterest.run:run"
 requests-mock = "^1.11.0"
 pytest-mock = "^3.6.1"
 responses = "^0.13.3"
-pytest = "^6.1"
+pytest = "^8.0.0"
 
 
 [tool.poe]

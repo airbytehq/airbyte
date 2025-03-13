@@ -587,6 +587,12 @@ streams:
   - $ref: "#/definitions/streams/StoryInsights"
   - $ref: "#/definitions/streams/Api"
 
+# Instagram Rate limits are per app and our app have advanced access for Instagram endpoints.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 15) }}"
+  max_concurrency: 50
+
 metadata:
   autoImportSchema:
     Media: true

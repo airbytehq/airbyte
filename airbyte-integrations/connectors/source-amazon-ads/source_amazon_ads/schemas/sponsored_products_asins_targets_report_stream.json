@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "profileId": {
+      "type": ["null", "integer"]
+    },
+    "reportDate": {
+      "type": ["null", "string"]
+    },
+    "advertisedAsin": {
+      "type": ["null", "string"]
+    },
+
+    "campaignName": {
+      "type": ["null", "string"]
+    },
+    "campaignId": {
+      "type": ["null", "integer"]
+    },
+    "adGroupName": {
+      "type": ["null", "string"]
+    },
+    "adGroupId": {
+      "type": ["null", "integer"]
+    },
+    "purchasedAsin": {
+      "type": ["null", "string"]
+    },
+    "advertisedSku": {
+      "type": ["null", "string"]
+    },
+    "campaignBudgetCurrencyCode": {
+      "type": ["null", "string"]
+    },
+    "matchType": {
+      "type": ["null", "string"]
+    },
+    "unitsSoldClicks1d": {
+      "type": ["null", "integer"]
+    },
+    "unitsSoldClicks7d": {
+      "type": ["null", "integer"]
+    },
+    "unitsSoldClicks14d": {
+      "type": ["null", "integer"]
+    },
+    "unitsSoldClicks30d": {
+      "type": ["null", "integer"]
+    },
+    "unitsSoldOtherSku1d": {
+      "type": ["null", "integer"]
+    },
+    "unitsSoldOtherSku7d": {
+      "type": ["null", "integer"]
+    },
+    "unitsSoldOtherSku14d": {
+      "type": ["null", "integer"]
+    },
+    "unitsSoldOtherSku30d": {
+      "type": ["null", "integer"]
+    },
+    "salesOtherSku1d": {
+      "type": ["null", "number"]
+    },
+    "salesOtherSku7d": {
+      "type": ["null", "number"]
+    },
+    "salesOtherSku14d": {
+      "type": ["null", "number"]
+    },
+    "salesOtherSku30d": {
+      "type": ["null", "number"]
+    },
+    "keywordId": {
+      "type": ["null", "integer"]
+    },
+    "targeting": {
+      "type": ["null", "string"]
+    },
+    "keywordType": {
+      "type": ["null", "string"]
+    }
+  },
+  "title": "sponsored_products_asins_targets_report_stream",
+  "type": ["null", "object"]
+}

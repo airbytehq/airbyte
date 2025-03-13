@@ -827,6 +827,83 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/emails"
+    emails_scoped_fields:
+      type: DeclarativeStream
+      name: emails_scoped_fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /activities/emails
+          http_method: GET
+          request_parameters:
+            sort_direction: ASC
+            scoped_fields[]: "[\"subject\",\"body\"]"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    error_message_contains: required scope access not included
+                    error_message: >-
+                      Scoped Fields require a Premier Salesloft Plan - Requested
+                      scoped field(s) could not be returned, required scope
+                      access not included
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response['metadata']['paging']['next_page'] }}"
+            stop_condition: >-
+              {{ response['metadata']['paging'] is not defined or not
+              response['metadata']['paging'] or
+              response['metadata']['paging']['next_page'] is not defined or not
+              response['metadata']['paging']['next_page'] }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[gte]
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at[lte]
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/emails_scoped_fields"
     calls:
       type: DeclarativeStream
       name: calls
@@ -1561,6 +1638,7 @@ streams:
   - $ref: "#/definitions/streams/cadences"
   - $ref: "#/definitions/streams/cadence_memberships"
   - $ref: "#/definitions/streams/emails"
+  - $ref: "#/definitions/streams/emails_scoped_fields"
   - $ref: "#/definitions/streams/calls"
   - $ref: "#/definitions/streams/accounts"
   - $ref: "#/definitions/streams/account_stages"
@@ -1673,6 +1751,7 @@ metadata:
     cadences: true
     cadence_memberships: true
     emails: true
+    emails_scoped_fields: false
     calls: true
     accounts: true
     account_stages: true
@@ -3083,14 +3162,6 @@ schemas:
         type:
           - "null"
           - boolean
-      subject:
-        type:
-          - "null"
-          - string
-      body:
-        type:
-          - "null"
-          - string
       cadence:
         type:
           - "null"
@@ -3283,6 +3354,147 @@ schemas:
         type:
           - "null"
           - boolean
+  emails_scoped_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      additional_recipients:
+        type:
+          - array
+          - "null"
+      body:
+        type:
+          - string
+          - "null"
+      bounced:
+        type:
+          - boolean
+          - "null"
+      click_tracking:
+        type:
+          - boolean
+          - "null"
+      counts:
+        type:
+          - object
+          - "null"
+        properties:
+          attachments:
+            type:
+              - number
+              - "null"
+          clicks:
+            type:
+              - number
+              - "null"
+          replies:
+            type:
+              - number
+              - "null"
+          unique_devices:
+            type:
+              - number
+              - "null"
+          unique_locations:
+            type:
+              - number
+              - "null"
+          views:
+            type:
+              - number
+              - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      crm_activity:
+        type:
+          - object
+          - "null"
+        properties:
+          _href:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      headers:
+        type:
+          - object
+          - "null"
+      id:
+        type: number
+      mailing:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+      personalization:
+        type:
+          - string
+          - "null"
+      recipient:
+        type:
+          - object
+          - "null"
+        properties:
+          _href:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      recipient_email_address:
+        type:
+          - string
+          - "null"
+      send_after:
+        type:
+          - string
+          - "null"
+      sent_at:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          _href:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      view_tracking:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+      - updated_at
   calls:
     type: object
     $schema: http://json-schema.org/draft-07/schema#

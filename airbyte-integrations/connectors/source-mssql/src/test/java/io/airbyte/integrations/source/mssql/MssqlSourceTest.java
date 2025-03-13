@@ -15,12 +15,15 @@ import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadHandler;
+import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.*;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.*;
 
 class MssqlSourceTest {
@@ -124,10 +127,14 @@ class MssqlSourceTest {
     final AirbyteCatalog actual = source().discover(getConfig());
     assertEquals(CATALOG, actual);
     final var db = source().createDatabase(getConfig());
-    final String oc = MssqlInitialLoadHandler.discoverClusteredIndexForStream(db,
+    final Map<String, List<String>> oc = MssqlInitialLoadHandler.discoverClusteredIndexForStream(db,
         new AirbyteStream().withName(
             actual.getStreams().get(0).getName()).withNamespace(actual.getStreams().get(0).getNamespace()));
-    assertEquals(oc, "name");
+
+    String firstOcKey = oc.entrySet().iterator().next().getKey();
+    List<String> ocValues = oc.get(firstOcKey);
+    assertEquals(1, ocValues.size());
+    assertEquals("name", ocValues.get(0));
   }
 
   @Test
@@ -139,10 +146,114 @@ class MssqlSourceTest {
     final AirbyteCatalog actual = source().discover(getConfig());
     assertEquals(CATALOG, actual);
     final var db = source().createDatabase(getConfig());
-    final String oc = MssqlInitialLoadHandler.discoverClusteredIndexForStream(db,
+    final Map<String, List<String>> oc = MssqlInitialLoadHandler.discoverClusteredIndexForStream(db,
         new AirbyteStream().withName(
             actual.getStreams().get(0).getName()).withNamespace(actual.getStreams().get(0).getNamespace()));
+
     assertNull(oc);
+  }
+
+  @Test
+  void testDiscoverWithClusteredCompositeIndex() throws SQLException {
+    testdb
+        .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY NONCLUSTERED (id);")
+        .with("CREATE INDEX i1 ON id_and_name (id);")
+        .with("CREATE CLUSTERED INDEX n1 ON id_and_name (id, name)");
+    final AirbyteCatalog actual = source().discover(getConfig());
+    assertEquals(CATALOG, actual);
+    final var db = source().createDatabase(getConfig());
+
+    AirbyteStream stream = new AirbyteStream().withName(
+        actual.getStreams().get(0).getName()).withNamespace(actual.getStreams().get(0).getNamespace())
+        .withSourceDefinedPrimaryKey(actual.getStreams().get(0).getSourceDefinedPrimaryKey());
+
+    Map<String, List<String>> oc = MssqlInitialLoadHandler.discoverClusteredIndexForStream(db, stream);
+
+    String firstOcKey = oc.entrySet().iterator().next().getKey();
+    List<String> ocValues = oc.get(firstOcKey);
+    assertEquals(2, ocValues.size());
+
+  }
+
+  @Test
+  void testUsingPkWhenClusteredCompositeIndex() throws SQLException {
+    testdb
+        .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY NONCLUSTERED (id);")
+        .with("CREATE INDEX i1 ON id_and_name (id);")
+        .with("CREATE CLUSTERED INDEX n1 ON id_and_name (id, name)");
+    final AirbyteCatalog actual = source().discover(getConfig());
+    assertEquals(CATALOG, actual);
+    final var db = source().createDatabase(getConfig());
+
+    AirbyteStream stream = new AirbyteStream().withName(
+        actual.getStreams().getFirst().getName()).withNamespace(actual.getStreams().getFirst().getNamespace())
+        .withSourceDefinedPrimaryKey(actual.getStreams().getFirst().getSourceDefinedPrimaryKey());
+
+    ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream().withSyncMode(
+        SyncMode.INCREMENTAL)
+        .withCursorField(Lists.newArrayList("id"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withStream(stream);
+
+    final List<List<String>> primaryKey = configuredAirbyteStream.getStream().getSourceDefinedPrimaryKey();
+    Optional<String> oc = MssqlInitialReadUtil.selectOcFieldName(db, configuredAirbyteStream);
+
+    assertEquals(primaryKey.getFirst().getFirst(), oc.orElse("No oc"));
+
+  }
+
+  @Test
+  void testNonClusteredIndex() throws SQLException {
+    testdb
+        .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY NONCLUSTERED (id);")
+        .with("CREATE INDEX i1 ON id_and_name (id);");
+    final AirbyteCatalog actual = source().discover(getConfig());
+    assertEquals(CATALOG, actual);
+    final var db = source().createDatabase(getConfig());
+
+    AirbyteStream stream = new AirbyteStream().withName(
+        actual.getStreams().getFirst().getName()).withNamespace(actual.getStreams().getFirst().getNamespace())
+        .withSourceDefinedPrimaryKey(actual.getStreams().getFirst().getSourceDefinedPrimaryKey());
+
+    ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream().withSyncMode(
+        SyncMode.INCREMENTAL)
+        .withCursorField(Lists.newArrayList("id"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withStream(stream);
+
+    Optional<String> oc = MssqlInitialReadUtil.selectOcFieldName(db, configuredAirbyteStream);
+    final List<List<String>> primaryKey = configuredAirbyteStream.getStream().getSourceDefinedPrimaryKey();
+
+    assertEquals(primaryKey.getFirst().getFirst(), oc.orElse("No oc"));
+
+  }
+
+  @Test
+  void testNonClusteredIndexNoPK() throws SQLException {
+    testdb
+        .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY NONCLUSTERED (id);")
+        .with("CREATE INDEX i1 ON id_and_name (id);")
+        .with("CREATE NONCLUSTERED INDEX n1 ON id_and_name (name)");
+    final AirbyteCatalog actual = source().discover(getConfig());
+    assertEquals(CATALOG, actual);
+    final var db = source().createDatabase(getConfig());
+
+    AirbyteStream stream = new AirbyteStream().withName(
+        actual.getStreams().getFirst().getName()).withNamespace(actual.getStreams().getFirst().getNamespace());
+
+    ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream().withSyncMode(
+        SyncMode.INCREMENTAL)
+        .withCursorField(Lists.newArrayList("id"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withStream(stream);
+
+    Optional<String> oc = MssqlInitialReadUtil.selectOcFieldName(db, configuredAirbyteStream);
+
+    assert (oc.isEmpty());
+
   }
 
 }

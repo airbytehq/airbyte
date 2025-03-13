@@ -1,0 +1,25 @@
+#
+# Company vocabulary
+#
+
+Airbyte
+Airbyte's
+Self-Managed Community
+Self-Managed Enterprise
+[Cc]loud
+Cloud Teams
+Cloud Enterprise
+abctl
+PyAirbyte
+
+#
+# Common Terms and Trade Names
+#
+
+repo
+Vercel
+Docusaurus
+Kubernetes
+Helm
+kind
+Vale

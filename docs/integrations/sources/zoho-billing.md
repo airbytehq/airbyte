@@ -35,6 +35,8 @@ Docs : https://www.zoho.com/billing/api/v1/introduction/#overview
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.12 | 2025-03-09 | [55654](https://github.com/airbytehq/airbyte/pull/55654) | Update dependencies |
+| 0.0.11 | 2025-03-01 | [54639](https://github.com/airbytehq/airbyte/pull/54639) | Update dependencies |
 | 0.0.10 | 2025-02-15 | [54114](https://github.com/airbytehq/airbyte/pull/54114) | Update dependencies |
 | 0.0.9 | 2025-02-08 | [53590](https://github.com/airbytehq/airbyte/pull/53590) | Update dependencies |
 | 0.0.8 | 2025-02-01 | [53119](https://github.com/airbytehq/airbyte/pull/53119) | Update dependencies |

@@ -43,6 +43,13 @@ class DefaultJdbcPartitionFactory(
         val stream: Stream = streamFeedBootstrap.feed
         val streamState: DefaultJdbcStreamState = streamState(streamFeedBootstrap)
         val opaqueStateValue: OpaqueStateValue? = streamFeedBootstrap.currentState
+
+        // An empty table stream state will be marked as a nullNode. This prevents repeated attempt
+        // to read it
+        if (opaqueStateValue?.isNull == true) {
+            return null
+        }
+
         if (opaqueStateValue == null) {
             return coldStart(streamState)
         }

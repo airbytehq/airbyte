@@ -49,6 +49,7 @@ interface StreamLoader : BatchAccumulator, FileBatchAccumulator {
     val stream: DestinationStream
 
     suspend fun start() {}
+
     suspend fun createBatchAccumulator(): BatchAccumulator = this
     suspend fun createFileBatchAccumulator(
         outputQueue: MultiProducerChannel<BatchEnvelope<*>>,

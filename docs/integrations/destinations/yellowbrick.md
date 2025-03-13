@@ -17,7 +17,7 @@ You'll need the following information to configure the Yellowbrick destination:
 - **Database** - The database name. The default is to connect to a database with the same name as the user name.
 - **JDBC URL Params** (optional)
 
-[Refer to this guide for more details](https://docs.yellowbrick.com/6.9.0/client_tools/setup_database_connection.html)
+[Refer to this guide for more details](https://docs.yellowbrick.com/7.0.1/client_tools/setup_database_connection.html)
 
 #### Configure Network Access
 
@@ -27,6 +27,30 @@ may need to allow access from the IP you're using to expose Airbyte.
 ## Step 1: Set up Yellowbrick
 
 #### **Permissions**
+
+Check that JSON support is enabled in Yellowbrick:
+
+```
+SHOW show enable_full_json;
+```
+
+If `enable_full_json` is `off`, enable with:
+
+```
+ALTER SYSTEM SET enable_full_json TO TRUE;
+```
+
+or
+
+```
+ALTER USER "<user>" SET enable_full_json TO TRUE;
+```
+
+In either case, these commands should be followed by:
+
+```
+SELECT pg_reload_conf();
+```
 
 You need a Yellowbrick user with the following permissions:
 
@@ -155,8 +179,8 @@ Each table will contain 3 columns:
 | number                     | DECIMAL                  |
 | integer                    | BIGINT                   |
 | boolean                    | BOOLEAN                  |
-| object                     | VARCHAR                  |
-| array                      | VARCHAR                  |
+| object                     | JSONB                    |
+| array                      | JSONB                    |
 | timestamp_with_timezone    | TIMESTAMP WITH TIME ZONE |
 | timestamp_without_timezone | TIMESTAMP                |
 | time_with_timezone         | TIME WITH TIME ZONE      |
@@ -174,7 +198,8 @@ Each table will contain 3 columns:
 
 | Version | Date       | Pull Request                                               | Subject         |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------- |
-| 0.0.3 | 2024-08-06 | [\#43342](https://github.com/airbytehq/airbyte/pull/43342) | Remove explicit Kotlin dependency. |
+| 0.0.4   | 2024-03-17 | [\#48475](https://github.com/airbytehq/airbyte/pull/48475) | Use JSONB functionality behind the scenes. |
+| 0.0.3   | 2024-08-06 | [\#43342](https://github.com/airbytehq/airbyte/pull/43342) | Remove explicit Kotlin dependency. |
 | 0.0.2   | 2024-05-17 | [\#38329](https://github.com/airbytehq/airbyte/pull/38329) | Update CDK      |
 | 0.0.1   | 2024-03-02 | [\#35775](https://github.com/airbytehq/airbyte/pull/35775) | Initial release |
 

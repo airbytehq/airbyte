@@ -96,6 +96,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 0.13.0-rc.1 | 2025-02-22 | [53187](https://github.com/airbytehq/airbyte/pull/53187) | Update with latest CDK features, remove custom incremental sync components, update schema for conversation_parts  |
 | 0.12.2 | 2025-02-15 | [53835](https://github.com/airbytehq/airbyte/pull/53835) | Update dependencies |
 | 0.12.1 | 2025-02-08 | [53257](https://github.com/airbytehq/airbyte/pull/53257) | Update dependencies |
 | 0.12.0 | 2025-02-03 | [52687](https://github.com/airbytehq/airbyte/pull/52687) | New stream Tickets |

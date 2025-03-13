@@ -149,6 +149,7 @@ def validate_environment(is_local: bool) -> None:
         "publish": "pipelines.airbyte_ci.connectors.publish.commands.publish",
         "bump-version": "pipelines.airbyte_ci.connectors.bump_version.commands.bump_version",
         "migrate-to-manifest-only": "pipelines.airbyte_ci.connectors.migrate_to_manifest_only.commands.migrate_to_manifest_only",
+        "migrate-to-inline-schemas": "pipelines.airbyte_ci.connectors.migrate_to_inline_schemas.commands.migrate_to_inline_schemas",
         "generate-erd": "pipelines.airbyte_ci.connectors.generate_erd.commands.generate_erd",
         "upgrade-cdk": "pipelines.airbyte_ci.connectors.upgrade_cdk.commands.upgrade_cdk",
         "up-to-date": "pipelines.airbyte_ci.connectors.up_to_date.commands.up_to_date",

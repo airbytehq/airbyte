@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-simplecast
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.33.6@sha256:81af934a2136edf0521a71697938cea20d1c6eb36c944566b9455bdd2a47d2bd
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.38.3@sha256:fcba02266f262aabc2f37e4f14574aa1c8c5cffd018504bab28803e405c93afe
   connectorSubtype: api
   connectorType: source
   definitionId: 776ca64c-95eb-47ec-a54d-9db3d16435d0
-  dockerImageTag: 0.0.14
+  dockerImageTag: 0.0.16
   dockerRepository: airbyte/source-simplecast
   githubIssueLabel: source-simplecast
   icon: icon.svg

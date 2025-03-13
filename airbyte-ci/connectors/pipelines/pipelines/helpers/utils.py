@@ -35,7 +35,7 @@ METADATA_FILE_NAME = "metadata.yaml"
 MANIFEST_FILE_NAME = "manifest.yaml"
 METADATA_ICON_FILE_NAME = "icon.svg"
 DIFF_FILTER = "MADRT"  # Modified, Added, Deleted, Renamed, Type changed
-IGNORED_FILE_EXTENSIONS: List[str] = []
+IGNORED_FILE_EXTENSIONS: List[str] = [".md"]
 
 
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented

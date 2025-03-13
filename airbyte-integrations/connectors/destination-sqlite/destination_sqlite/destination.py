@@ -52,7 +52,9 @@ class DestinationSqlite(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
         streams = {s.stream.name for s in configured_catalog.streams}
-        path = config.get("destination_path")
+        path = config.get("destination_path", "")
+        if path is None:
+            path = ""
         path = self._get_destination_path(path)
         con = sqlite3.connect(path)
         with con:
@@ -128,7 +130,9 @@ class DestinationSqlite(Destination):
         """
         try:
             # parse the destination path
-            path = config.get("destination_path")
+            path = config.get("destination_path", "")
+            if path is None:
+                path = ""
             path = self._get_destination_path(path)
 
             os.makedirs(os.path.dirname(path), exist_ok=True)
