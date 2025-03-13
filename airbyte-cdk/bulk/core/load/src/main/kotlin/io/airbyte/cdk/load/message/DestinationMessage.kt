@@ -183,7 +183,7 @@ data class DestinationRecordRaw(
     private val serialized: String
 ) {
     fun asRawJson(): JsonNode {
-        return rawData.record.data as JsonNode
+        return rawData.record.data
     }
 
     fun asDestinationRecordAirbyteValue(): DestinationRecordAirbyteValue {
