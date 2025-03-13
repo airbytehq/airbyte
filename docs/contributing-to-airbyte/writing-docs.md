@@ -3,21 +3,21 @@ import TabItem from "@theme/TabItem";
 
 # Updating documentation
 
-Everyone is welcome to contribute to Airbyte's documentation! 
+Everyone is welcome to contribute to Airbyte's documentation.
 
-Our documentation is stored in the [Airbyte repository](https://github.com/airbytehq/airbyte/tree/master/docs) on GitHub. It's published at [docs.airbyte.com](https://docs.airbyte.com/) using [Vercel](https://vercel.com). Connector docs are also rendered within Airbyte itself when setting up new connectors. The docs are built on [Docusaurus](https://docusaurus.io/). Content is written in [Markdown](https://guides.github.com/features/mastering-markdown/) and all topics are in the `/docs` folder. Configuration files are in the `/docusaurus` folder.
+Airbyte's documentation is in the [Airbyte repository](https://github.com/airbytehq/airbyte/tree/master/docs) on GitHub. It's published at [docs.airbyte.com](https://docs.airbyte.com/) using [Vercel](https://vercel.com). Connector docs are also rendered within Airbyte itself when setting up new connectors. The docs are built on [Docusaurus](https://docusaurus.io/). Content is written in [Markdown](https://guides.github.com/features/mastering-markdown/) and all topics are in the `/docs` folder. Configuration files are in the `/docusaurus` folder.
 
 ## Open source contributions welcome
 
 Open source contributors are a vital part of Airbyte. Technical writers are welcome to use any content you author in your portfolio. 
 
-If you're interested in becoming a regular contributor, join Airbyte's [Contributor program](https://airbyte.com/community/contributor-program). We pay for high-quality work on select issues. AI-generated content isn't eligible for the contributor program. You're welcome to use AI as a research tool and editing partner, but paid submissions must be principally human-generated.
+If you're interested in becoming a regular contributor, join Airbyte's [Contributor program](https://airbyte.com/community/contributor-program). Airbyte pays for high-quality work on select issues. AI-generated content isn't eligible for the contributor program. You're welcome to use AI as a research tool and editing partner, but paid submissions must be principally human-generated.
 
 ## Before you start
 
 Before you contribute, familiarize yourself with these concepts.
 
-### Read our code of conduct
+### Read Airbyte's code of conduct
 
 Read the Airbyte Community [code of conduct](../community/code-of-conduct.md).
 
@@ -30,11 +30,11 @@ Even if you've never used it before, most developers and technical writers find 
 
 ### Style guide
 
-Follow the [Google developer documentation style guide](https://developers.google.com/style/highlights). It's a widely adopted style guide with good examples and easy-to-follow rules. We don't enforce these rules with automation, but might in the future. Fow now, just try to follow it to the best of your ability.
+Follow the [Google developer documentation style guide](https://developers.google.com/style/highlights). It's a widely adopted style guide with good examples and easy-to-follow rules. You can [lint your content with Vale](#linting) to ensure style compliance.
 
 ### Find a good first issue
 
-The Docs team maintains a list of [good first issues](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Aarea%2Fdocumentation+label%3A%22good+first+issue%22) for new contributors. If you'd like to start a complex documentation project, create or comment on a [GitHub issue](https://github.com/airbytehq/airbyte/issues) and tag [@ian-at-airbyte](https://github.com/ian-at-airbyte) so we can decide on an approach together.
+The Docs team maintains a list of [good first issues](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Aarea%2Fdocumentation+label%3A%22good+first+issue%22) for new contributors. If you'd like to start a complex documentation project, you can create or comment on a [GitHub issue](https://github.com/airbytehq/airbyte/issues) and tag [@ian-at-airbyte](https://github.com/ian-at-airbyte) to decide on an approach together.
 
 ## Edit files directly on GitHub
 
@@ -55,6 +55,10 @@ Install these tools on your local machine, first.
 2. [`pnpm`](https://pnpm.io/installation)
 3. A tool to work with GitHub, like [Git](https://git-scm.com/) or [GitHub Desktop](https://github.com/apps/desktop)
 4. A code editor, like [Visual Studio Code](https://code.visualstudio.com/).
+
+Optionally:
+
+1. [Vale](https://vale.sh/docs/install) so you can lint your content.
 
 ### Fork and clone the repo
 
@@ -95,7 +99,7 @@ cd docusaurus
 pnpm install
 ```
 
-To see changes as you make them in a dev build:
+To see changes as you make them in a development build:
 
 1. Run:
 
@@ -124,11 +128,11 @@ To create an optimized production build that does not update automatically:
 
 Every page must have a purpose. Bad documentation often has origins in:
 
-- Poorly-defined goals, or no goal
+- Poorly defined goals, or no goal
 - Failed execution of otherwise good goals
 - The intimidating effect of a blank page
 
-The [Good Docs Project](https://www.thegooddocsproject.dev/) maintains a collection of open-source docs templates you can use to help you write and update articles. Here are common patterns we see at Airbyte:
+The [Good Docs Project](https://www.thegooddocsproject.dev/) maintains a collection of open source docs templates you can use to help you write and update articles. Here are common patterns in Airbyte's docs.
 
 | Purpose         | Overview                                                                                            | Template                                                                  |
 | --------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
@@ -151,11 +155,11 @@ If you're writing docs for a data source or destination, there are special rules
 
 ## Common patterns and components
 
-Since the docs site is based on Docusaurus, it inherits all of Docusaurus' capabilities. There are also some Airbyte-specific elements to be aware of. Most of these customizations can be combined together.
+Since the docs site is based on Docusaurus, it inherits all of Docusaurus' capabilities. You should be aware of some Airbyte-specific elements. Most of these customizations can be combined together.
 
 ### Tabs
 
-Use tabs to display mutually-exclusive concepts in a concise way. See [Tabs](https://docusaurus.io/docs/markdown-features/tabs). 
+Use tabs to display mutually exclusive concepts in a concise way. See [Tabs](https://docusaurus.io/docs/markdown-features/tabs). 
 
 :::note
 We maintain a separate `Tabs` implementation to support rendering tabs in Airbyte's in-app documentation. Our in-app renderer creates some additional rules that aren't necessarily true in other Docusaurus implementations:
@@ -277,8 +281,88 @@ If you're adding a README to a code module, make sure the README has the followi
   - Any other information needed for local iteration
 
 :::tip
-AI tools like ChatGPT and GitHub Copilot are good at describing code. For open-source repositories, you might find it helpful to point one to your code module and ask it to generate a first draft for you. Airbyte employees working on a proprietary repository should follow Airbyte's AI usage policies.
+AI tools like ChatGPT and GitHub Copilot are good at describing code. For open source repositories, you might find it helpful to point one to your code module and ask it to generate a first draft for you. Airbyte employees working on a proprietary repository should follow Airbyte's AI usage policies.
 :::
+
+## Lint your content with Vale {#linting}
+
+Airbyte uses Vale to ensure standardization and minimum quality for docs content. Vale is an open source command-line tool that brings code-like linting to prose. It's not a general-purpose writing aid or an AI. It simply automates the identification of non-compliance with the style guide, principles for good writing, and other rules Airbyte defines as needed.
+
+:::note
+This Vale implementation is new, and it might still generate false positives. Currently, Airbyte doesn't enforce style compliance in pull requests. This might happen in the future. For now, just do your best to comply with Vale's recommendations.
+:::
+
+### How Vale works
+
+A configuration file, `//docusaurus/vale.ini`, controls Vale at the highest level. This file specifies the location of Vale's style rules, libraries, vocabularies, and other resources. Those styles and rules exist in `//docs/vale-styles`. Some of them are Airbyte-specific, but most rules come from the [Google](https://github.com/errata-ai/Google) and [Write Good](https://github.com/errata-ai/write-good) libraries. 
+
+The repository imports those libraries from an external source. Don't modify them, or a future update may overwrite your modifications. If you want to improve our rules, modify `//docs/vale-styles/airbyte` or our vocabularies in `//docs/vale-styles/config/airbyte`.
+
+### Install Vale
+
+The easiest way to install Vale is with a package manager. This ensures Vale is available in your PATH and allows you to keep up to date with new releases. For more options, see [Vale's documentation](https://vale.sh/docs/install).
+
+1. Install Vale.
+
+   <Tabs>
+   <TabItem value="Windows" label="Windows" default>
+      ```bash
+      choco install vale
+      ```
+   </TabItem>
+   <TabItem value="Mac" label="Mac">
+      ```bash
+      brew install vale
+      ```
+   </TabItem>
+   <TabItem value="Linux" label="Linux">
+      ```bash
+      snap install vale
+      ```
+   </TabItem>
+   </Tabs>
+
+2. Sync Vale to get the latest style packages.
+
+   ```bash title="bash"
+   vale sync
+   ```
+
+### Run Vale
+
+You can run Vale in a command line tool or you can install an extension for most common code editors.
+
+#### Command line tool
+
+1. Go to the Docusaurus directory.
+
+   ```bash
+   cd docusaurus
+   ```
+
+2. Lint your content. You can lint a single file or an entire directory and its subdirectories.
+
+   - To lint a file, type the relative path to the file.
+
+      ```bash
+      vale ../docs/myfolder/myfile.md
+      ```
+
+   - To lint a folder, type the relative path to that folder and end with a slash.
+
+      ```bash
+      vale ../docs/myfolder/
+      ```
+
+   - For more command-line tool help, see [Vale's docs](https://vale.sh/docs/cli).
+
+#### In your code editor
+
+Vale has extensions for many popular code editors. For the complete list, see [their docs (under Integrations)](https://vale.sh/docs).
+
+For example, if you use Visual Studio Code, you can install the [Visual Studio Code extension](https://github.com/chrischinchilla/vale-vscode). Once the extension runs, Visual Studio Code lists violations in the Problems tab, and highlights them on your screen as you type as if they were typos. You may need to adjust your [settings for Vale](https://code.visualstudio.com/docs/editor/settings) to specify the location of the `vale.ini` file on your computer.
+
+![alt text](assets/vale-in-vscode.png)
 
 ## Create a pull request
 

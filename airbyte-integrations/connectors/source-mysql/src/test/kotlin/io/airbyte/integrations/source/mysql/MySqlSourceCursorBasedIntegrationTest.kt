@@ -179,7 +179,7 @@ class MySqlSourceCursorBasedIntegrationTest {
 
     companion object {
         val log = KotlinLogging.logger {}
-        val dbContainer: MySQLContainer<*> = MySqlContainerFactory.shared(imageName = "mysql:8.0")
+        val dbContainer: MySQLContainer<*> = MySqlContainerFactory.shared(imageName = "mysql:9.2.0")
 
         val config: MySqlSourceConfigurationSpecification =
             MySqlContainerFactory.config(dbContainer)

@@ -23,7 +23,7 @@ airbyte-cdk = "^6"
 source-greenhouse = "source_greenhouse.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8"
+pytest = "^8.0.0"
 pytest-mock = "^3.6"
 requests-mock = "^1.9.3"
 
