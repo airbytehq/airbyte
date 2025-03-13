@@ -25,17 +25,11 @@ class CustomFieldTransformation(RecordTransformation):
 
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    cursor_datetime_formats: List[str] = None
-    datetime_format: str = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self.name = parameters.get("name")
         self._schema = self._get_schema_root_properties()
         self._date_and_date_time_fields = self._get_fields_with_property_formats_from_schema(("date", "date-time"))
-        
-        # Get datetime formats from parameters
-        self.cursor_datetime_formats = parameters.get("cursor_datetime_formats", ["%Y-%m-%d %H:%M:%S"])
-        self.datetime_format = parameters.get("datetime_format", "%Y-%m-%d %H:%M:%S")
 
     def _get_schema_root_properties(self):
         schema_loader = JsonFileSchemaLoader(config=self.config, parameters={"name": self.name})
@@ -85,11 +79,6 @@ class CustomFieldTransformation(RecordTransformation):
             '%Y-%m-%dT%H:%M:%SZ',
             '%Y-%m-%dT%H:%M:%S.%fZ',
         ]
-        
-        # Add specified formats from parameters
-        formats.extend(self.cursor_datetime_formats)
-        if self.datetime_format and self.datetime_format not in formats:
-            formats.append(self.datetime_format)
             
         # Try parsing with different formats
         for fmt in formats:
