@@ -8,7 +8,7 @@ check:
     - accounts
 
 definitions:
-# Base components
+  # Base components
   base_stream:
     type: DeclarativeStream
     primary_key:
@@ -108,7 +108,7 @@ definitions:
       field_name: "created[lte]"
       inject_into: "request_parameter"
 
-# Regular flow components
+  # Regular flow components
   created_stream:
     $ref: "#/definitions/base_stream"
     incremental_sync:
@@ -118,7 +118,7 @@ definitions:
     $ref: "#/definitions/base_incremental_sync"
     cursor_field: created
 
-# Entity flow components
+  # Entity flow components
   entity_stream:
     $ref: "#/definitions/base_stream"
     incremental_sync:
@@ -185,7 +185,7 @@ definitions:
       datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
-# Events flow components
+  # Events flow components
   events_based_stream:
     $ref: "#/definitions/base_stream"
     incremental_sync:
@@ -885,7 +885,7 @@ definitions:
                 $ref: "#/definitions/streams/payouts"
               incremental_dependency: true
               extra_fields:
-                - [ "updated" ]
+                - ["updated"]
         $parameters:
           path: balance_transactions
       incremental_sync:
@@ -922,9 +922,9 @@ definitions:
                 $ref: "#/definitions/streams/checkout_sessions"
               incremental_dependency: true
               extra_fields:
-                - [ "updated" ]
-                - [ "created" ]
-                - [ "expires_at" ]
+                - ["updated"]
+                - ["created"]
+                - ["expires_at"]
         $parameters:
           path: checkout/sessions/{{ stream_partition.checkout_session_id }}/line_items
       incremental_sync:
@@ -1056,10 +1056,10 @@ definitions:
                 parent_key: id
                 partition_field: invoice_id
                 extra_fields:
-                  - [ "id" ]
-                  - [ "created" ]
-                  - [ "updated" ]
-                lazy_read_pointer: [ "lines" ]
+                  - ["id"]
+                  - ["created"]
+                  - ["updated"]
+                lazy_read_pointer: ["lines"]
                 stream:
                   $ref: "#/definitions/streams/invoices"
         incremental_sync:
@@ -1123,8 +1123,8 @@ definitions:
                 parent_key: id
                 partition_field: application_fee_id
                 extra_fields:
-                  - [ "id" ]
-                lazy_read_pointer: [ "refunds" ]
+                  - ["id"]
+                lazy_read_pointer: ["refunds"]
                 stream:
                   $ref: "#/definitions/streams/application_fees"
         incremental_sync:
@@ -1176,9 +1176,9 @@ definitions:
               - type: ParentStreamConfig
                 parent_key: id
                 partition_field: subscription_id
-                lazy_read_pointer: [ "items" ]
+                lazy_read_pointer: ["items"]
                 extra_fields:
-                  - [ "updated" ]
+                  - ["updated"]
                 stream:
                   $ref: "#/definitions/streams/subscriptions"
         incremental_sync:
@@ -1232,8 +1232,8 @@ definitions:
                 parent_key: id
                 partition_field: customer_id
                 extra_fields:
-                  - [ "id" ]
-                lazy_read_pointer: [ "sources" ]
+                  - ["id"]
+                lazy_read_pointer: ["sources"]
                 stream:
                   type: StateDelegatingStream
                   $parameters:
@@ -1318,14 +1318,14 @@ definitions:
           path: subscription_items/{{ stream_partition.subscription_item_id }}/usage_record_summaries
 
 streams:
-# CreatedCursorIncrementalStripeStream
+  # CreatedCursorIncrementalStripeStream
   - $ref: "#/definitions/streams/events"
   - $ref: "#/definitions/streams/shipping_rates"
   - $ref: "#/definitions/streams/balance_transactions"
   - $ref: "#/definitions/streams/files"
   - $ref: "#/definitions/streams/file_links"
 
-# IncrementalStripeStream
+  # IncrementalStripeStream
   - $ref: "#/definitions/streams/application_fees"
   - $ref: "#/definitions/streams/authorizations"
   - $ref: "#/definitions/streams/cardholders"
@@ -1351,7 +1351,7 @@ streams:
   - $ref: "#/definitions/streams/transactions"
   - $ref: "#/definitions/streams/transfers"
 
-# UpdatedCursorIncrementalStripeStream
+  # UpdatedCursorIncrementalStripeStream
   - $ref: "#/definitions/streams/accounts"
   - $ref: "#/definitions/streams/checkout_sessions"
   - $ref: "#/definitions/streams/credit_notes"
@@ -1359,17 +1359,17 @@ streams:
   - $ref: "#/definitions/streams/external_account_bank_accounts"
   - $ref: "#/definitions/streams/external_account_cards"
 
-## ParentIncrementalStripeSubStream
+  ## ParentIncrementalStripeSubStream
   - $ref: "#/definitions/streams/checkout_sessions_line_items"
   - $ref: "#/definitions/streams/customer_balance_transactions"
   - $ref: "#/definitions/streams/payout_balance_transactions"
   - $ref: "#/definitions/streams/transfer_reversals"
 
-## UpdatedCursorIncrementalStripeSubStream
+  ## UpdatedCursorIncrementalStripeSubStream
   - $ref: "#/definitions/streams/payment_methods"
   - $ref: "#/definitions/streams/persons"
 
-## UpdatedCursorIncrementalStripeLazySubStream
+  ## UpdatedCursorIncrementalStripeLazySubStream
   - $ref: "#/definitions/streams/subscription_items"
   - $ref: "#/definitions/streams/invoice_line_items"
   - $ref: "#/definitions/streams/application_fees_refunds"

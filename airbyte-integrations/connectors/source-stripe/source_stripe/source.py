@@ -7,7 +7,6 @@ from typing import Any, Mapping, Optional
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
-
 from airbyte_cdk.sources.source import TState
 
 

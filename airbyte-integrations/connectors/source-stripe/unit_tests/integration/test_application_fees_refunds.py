@@ -222,17 +222,17 @@ class FullRefreshTest(TestCase):
         slice_datetime = start_date + slice_range
 
         http_mocker.get(
-            _application_fees_request().with_created_gte(start_date).with_created_lte(slice_datetime - _AVOIDING_INCLUSIVE_BOUNDARIES).with_limit(100).build(),
+            _application_fees_request()
+            .with_created_gte(start_date)
+            .with_created_lte(slice_datetime - _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_limit(100)
+            .build(),
             _application_fees_response()
             .with_record(_an_application_fee().with_field(_REFUNDS_FIELD, _as_dict(_refunds_response().with_record(_a_refund()))))
             .build(),
         )
         http_mocker.get(
-            _application_fees_request()
-            .with_created_gte(slice_datetime)
-            .with_created_lte(_NOW)
-            .with_limit(100)
-            .build(),
+            _application_fees_request().with_created_gte(slice_datetime).with_created_lte(_NOW).with_limit(100).build(),
             _application_fees_response()
             .with_record(_an_application_fee().with_field(_REFUNDS_FIELD, _as_dict(_refunds_response().with_record(_a_refund()))))
             .build(),
@@ -256,7 +256,11 @@ class FullRefreshTest(TestCase):
             _application_fees_response().build(),
         )  # catching subsequent slicing request that we don't really care for this test
         http_mocker.get(
-            _application_fees_request().with_created_gte(start_date).with_created_lte(slice_datetime - _AVOIDING_INCLUSIVE_BOUNDARIES).with_limit(100).build(),
+            _application_fees_request()
+            .with_created_gte(start_date)
+            .with_created_lte(slice_datetime - _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_limit(100)
+            .build(),
             _application_fees_response()
             .with_record(
                 _an_application_fee()
@@ -369,12 +373,7 @@ class IncrementalTest(TestCase):
         cursor_value = int(state_datetime.timestamp()) + 1
 
         http_mocker.get(
-            _events_request()
-            .with_created_gte(state_datetime)
-            .with_created_lte(_NOW)
-            .with_limit(100)
-            .with_types(_EVENT_TYPES)
-            .build(),
+            _events_request().with_created_gte(state_datetime).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
             _events_response().with_record(_an_event().with_cursor(cursor_value).with_field(_DATA_FIELD, _a_refund().build())).build(),
         )
 
@@ -391,12 +390,7 @@ class IncrementalTest(TestCase):
     def test_given_state_and_pagination_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         state_datetime = _NOW - timedelta(days=5)
         http_mocker.get(
-            _events_request()
-            .with_created_gte(state_datetime)
-            .with_created_lte(_NOW)
-            .with_limit(100)
-            .with_types(_EVENT_TYPES)
-            .build(),
+            _events_request().with_created_gte(state_datetime).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
             _events_response()
             .with_pagination()
             .with_record(_an_event().with_id("last_record_id_from_first_page").with_field(_DATA_FIELD, _a_refund().build()))
@@ -436,12 +430,7 @@ class IncrementalTest(TestCase):
             _events_response().with_record(self._a_refund_event()).build(),
         )
         http_mocker.get(
-            _events_request()
-            .with_created_gte(slice_datetime)
-            .with_created_lte(_NOW)
-            .with_limit(100)
-            .with_types(_EVENT_TYPES)
-            .build(),
+            _events_request().with_created_gte(slice_datetime).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
             _events_response().with_record(self._a_refund_event()).with_record(self._a_refund_event()).build(),
         )
 
