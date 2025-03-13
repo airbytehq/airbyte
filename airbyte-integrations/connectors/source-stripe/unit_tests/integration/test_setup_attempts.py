@@ -182,20 +182,11 @@ class IncrementalTest(TestCase):
         creation_datetime_of_setup_attempt = int(state_datetime.timestamp()) + 5
 
         http_mocker.get(
-            _events_request()
-            .with_created_gte(state_datetime)
-            .with_created_lte(_NOW)
-            .with_limit(100)
-            .with_types(_EVENT_TYPES)
-            .build(),
+            _events_request().with_created_gte(state_datetime).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
             _events_response().with_record(self._a_setup_intent_event(cursor_value, _SETUP_INTENT_ID_1)).build(),
         )
         http_mocker.get(
-            _setup_attempts_request(_SETUP_INTENT_ID_1)
-            .with_created_gte(state_datetime)
-            .with_created_lte(_NOW)
-            .with_limit(100)
-            .build(),
+            _setup_attempts_request(_SETUP_INTENT_ID_1).with_created_gte(state_datetime).with_created_lte(_NOW).with_limit(100).build(),
             _setup_attempts_response().with_record(_a_setup_attempt().with_cursor(creation_datetime_of_setup_attempt)).build(),
         )
 
