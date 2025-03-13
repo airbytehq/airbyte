@@ -1,6 +1,7 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-prestashop:dev
+test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
