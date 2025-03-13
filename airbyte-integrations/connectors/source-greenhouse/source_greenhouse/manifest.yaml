@@ -62,7 +62,7 @@ definitions:
       requester: "#/definitions/requester"
     incremental_sync:
       type: DatetimeBasedCursor
-      cursor_field: "{{ parameters.get('cursor_field', 'updated_at') }}"
+      cursor_field: "updated_at"
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%_msZ"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
@@ -73,14 +73,18 @@ definitions:
       start_time_option:
         type: RequestOption
         inject_into: request_parameter
-        field_name: "{{ parameters.get('cursor_request_option', 'updated_after') }}"
+        field_name: "updated_after"
   applications_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "applications"
       path: "applications"
+    incremental_sync:
+      $ref: "#/definitions/base_incremental_stream/incremental_sync"
       cursor_field: "applied_at"
-      cursor_request_option: "created_after"
+      start_time_option:
+        $ref: "#/definitions/base_incremental_stream/incremental_sync/start_time_option"
+        field_name: "created_after"
     retriever:
       $ref: "#/definitions/retriever"
       requester: "#/definitions/requester"
@@ -3217,12 +3221,16 @@ definitions:
     $parameters:
       name: "eeoc"
       path: "eeoc"
-      cursor_field: "submitted_at"
-      cursor_request_option: "submitted_after"
     primary_key: "application_id"
     retriever:
       $ref: "#/definitions/retriever"
       requester: "#/definitions/requester"
+    incremental_sync:
+      $ref: "#/definitions/base_incremental_stream/incremental_sync"
+      cursor_field: "submitted_at"
+      start_time_option:
+        $ref: "#/definitions/base_incremental_stream/incremental_sync/start_time_option"
+        field_name: "submitted_after"
     schema_loader:
       type: InlineSchemaLoader
       schema:
