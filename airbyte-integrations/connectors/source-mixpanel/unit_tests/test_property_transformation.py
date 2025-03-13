@@ -8,22 +8,12 @@ that will conflict in further data normalization, like:
 `userName` and `username`
 """
 
-from unittest.mock import MagicMock
-
 import pytest
-from source_mixpanel.source import SourceMixpanel
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
 
-from .utils import get_url_to_mock, setup_response
-
-
-def init_stream(name="", config=None):
-    streams = SourceMixpanel(MagicMock(), config, MagicMock()).streams(config)
-    for stream in streams:
-        if stream.name == name:
-            return stream
+from .utils import get_url_to_mock, setup_response, init_stream
 
 
 @pytest.fixture

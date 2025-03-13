@@ -7,22 +7,14 @@ import logging
 from unittest.mock import MagicMock
 
 import pytest
-from source_mixpanel.source import SourceMixpanel, TokenAuthenticatorBase64
+from source_mixpanel.source import SourceMixpanel
 
 from airbyte_cdk.utils import AirbyteTracedException
 
-from .utils import command_check, get_url_to_mock, setup_response
+from .utils import command_check, get_url_to_mock, setup_response, init_stream
 
 
 logger = logging.getLogger("airbyte")
-
-
-def init_stream(name="", config=None):
-    streams = SourceMixpanel(MagicMock(), config, MagicMock()).streams(config)
-    for stream in streams:
-        if stream.name == name:
-            return stream
-
 
 @pytest.fixture
 def check_connection_url(config_raw):

@@ -13,6 +13,10 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
+from source_mixpanel import SourceMixpanel
+from unittest.mock import MagicMock
+
+from airbyte_cdk.sources.streams.call_rate import APIBudget
 
 
 def setup_response(status, body):
@@ -46,3 +50,14 @@ def read_incremental(stream_instance: Stream, stream_state: MutableMapping[str, 
             stream_state = stream_instance.get_updated_state(stream_state, record)
             res.append(record)
     return res
+
+
+def init_stream(name="", config=None):
+    streams = SourceMixpanel(MagicMock(), config, MagicMock()).streams(config)
+    for stream in streams:
+        if stream.name == name:
+            # override Api Budget policies, as unit tests can fail due to full bucket
+            stream.retriever.requester._http_client._api_budget = APIBudget(policies=[])
+            # _request_session uses self._api_budget to set up session
+            stream.retriever.requester._http_client._session = stream.retriever.requester._http_client._request_session()
+            return stream

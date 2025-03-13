@@ -7,19 +7,16 @@ import logging
 from datetime import timedelta
 from unittest.mock import MagicMock
 
-import pendulum
 import pytest
-from source_mixpanel import SourceMixpanel
 from source_mixpanel.components import iter_dicts
 from source_mixpanel.streams import EngageSchema, ExportSchema, MixpanelStream
 from source_mixpanel.utils import read_full_refresh
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
-from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 
-from .utils import get_url_to_mock, read_incremental, setup_response
+from .utils import get_url_to_mock, read_incremental, setup_response, init_stream
 
 
 logger = logging.getLogger("airbyte")
@@ -78,17 +75,6 @@ def cohorts_response():
             },
         ],
     )
-
-
-def init_stream(name="", config=None):
-    streams = SourceMixpanel(MagicMock(), config, MagicMock()).streams(config)
-    for stream in streams:
-        if stream.name == name:
-            # override Api Budget policies, as unit tests can fail due to full bucket
-            stream.retriever.requester._http_client._api_budget = APIBudget(policies=[])
-            # _request_session uses self._api_budget to set up session
-            stream.retriever.requester._http_client._session = stream.retriever.requester._http_client._request_session()
-            return stream
 
 
 def test_cohorts_stream_incremental(requests_mock, cohorts_response, config_raw):
