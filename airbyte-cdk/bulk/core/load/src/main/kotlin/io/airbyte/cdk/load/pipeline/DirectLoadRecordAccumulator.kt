@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.pipeline
 
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.WithBatchState
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.write.DirectLoader
@@ -25,13 +26,13 @@ data class DirectLoadAccResult(override val state: Batch.State) : WithBatchState
 @Requires(bean = DirectLoaderFactory::class)
 class DirectLoadRecordAccumulator<S : DirectLoader, K : WithStream>(
     val directLoaderFactory: DirectLoaderFactory<S>
-) : BatchAccumulator<S, K, DestinationRecordAirbyteValue, DirectLoadAccResult> {
+) : BatchAccumulator<S, K, DestinationRecordRaw, DirectLoadAccResult> {
     override fun start(key: K, part: Int): S {
         return directLoaderFactory.create(key.stream, part)
     }
 
     override fun accept(
-        record: DestinationRecordAirbyteValue,
+        record: DestinationRecordRaw,
         state: S
     ): Pair<S, DirectLoadAccResult?> {
         state.accept(record).let {

@@ -147,7 +147,8 @@ data class DestinationRecord(
     fun asDestinationRecordRaw(): DestinationRecordRaw {
         return DestinationRecordRaw(
             stream,
-            message
+            message,
+            serialized
         )
     }
 }
@@ -182,8 +183,22 @@ data class EnrichedDestinationRecordAirbyteValue(
 
 data class DestinationRecordRaw(
     val stream: DestinationStream.Descriptor,
-    val rawData: AirbyteMessage
-)
+    private val rawData: AirbyteMessage,
+    private val serialized: String
+) {
+    fun asDestinationRecordAirbyteValue(): DestinationRecordAirbyteValue {
+        return DestinationRecordAirbyteValue(
+            stream,
+            rawData.record.data.toAirbyteValue(),
+            rawData.record.emittedAt,
+            Meta(
+                rawData.record.meta?.changes?.map { Meta.Change(it.field, it.change, it.reason) }
+                    ?: emptyList()
+            ),
+            serialized.length.toLong()
+        )
+    }
+}
 
 data class DestinationFile(
     override val stream: DestinationStream.Descriptor,

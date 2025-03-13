@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.message.DestinationFileStreamComplete
 import io.airbyte.cdk.load.message.DestinationFileStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
@@ -80,7 +81,7 @@ class DefaultInputConsumerTask(
     // Required by new interface
     @Named("recordQueue")
     private val recordQueueForPipeline:
-        PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>>,
+        PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
     private val loadPipeline: LoadPipeline? = null,
     private val partitioner: InputPartitioner,
     private val openStreamQueue: QueueWriter<DestinationStream>
@@ -310,7 +311,7 @@ interface InputConsumerTaskFactory {
 
         // Required by new interface
         recordQueueForPipeline:
-            PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>>,
+            PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
         loadPipeline: LoadPipeline?,
         partitioner: InputPartitioner,
         openStreamQueue: QueueWriter<DestinationStream>,
@@ -333,7 +334,7 @@ class DefaultInputConsumerTaskFactory(
 
         // Required by new interface
         recordQueueForPipeline:
-            PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>>,
+            PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
         loadPipeline: LoadPipeline?,
         partitioner: InputPartitioner,
         openStreamQueue: QueueWriter<DestinationStream>,
