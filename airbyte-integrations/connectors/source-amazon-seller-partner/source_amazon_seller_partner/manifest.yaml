@@ -1989,7 +1989,7 @@ definitions:
 
     polling_requester:
       type: HttpRequester
-      path: reports/2021-06-30/reports/{{creation_response['reportId']}}
+      path: "reports/2021-06-30/reports/{{ creation_response['reportId'] }}"
       url_base: "{{ config['endpoint'] }}"
       authenticator: "#/definitions/authenticator"
       http_method: GET
@@ -1998,7 +1998,7 @@ definitions:
 
     url_requester:
       type: HttpRequester
-      path: reports/2021-06-30/documents/{{polling_response['reportDocumentId']}}
+      path: "reports/2021-06-30/documents/{{ polling_response['reportDocumentId'] }}"
       url_base: "{{ config['endpoint'] }}"
       authenticator: "#/definitions/authenticator"
       http_method: GET
