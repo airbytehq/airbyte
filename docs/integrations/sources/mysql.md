@@ -226,6 +226,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.11.7      | 2025-02-12 | [51055](https://github.com/airbytehq/airbyte/pull/51055) | support PlanetScale MySQL |
 | 3.11.6 | 2025-03-06 | [55237](https://github.com/airbytehq/airbyte/pull/55237) | [Fix fetching binlog status for version >=8.4](https://github.com/airbytehq/airbyte/pull/55237#top) |
 | 3.11.5 | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234) | Update base image version for certified DB source connectors |
 | 3.11.4 | 2025-03-06 | [55214](https://github.com/airbytehq/airbyte/pull/55214) | Update default encryption method to 'required'.                                                                                                 | |
