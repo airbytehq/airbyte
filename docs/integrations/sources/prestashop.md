@@ -107,6 +107,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.2.0 | 2025-03-13 | [55739](https://github.com/airbytehq/airbyte/pull/55739) | Remove pendulum from dependency |
 | 1.1.1 | 2025-03-08 | [43831](https://github.com/airbytehq/airbyte/pull/43831) | Update dependencies |
 | 1.1.0 | 2025-03-03 | [47016](https://github.com/airbytehq/airbyte/pull/47016) | Migrate to manifest-only format |
 | 1.0.4 | 2024-04-19 | [37233](https://github.com/airbytehq/airbyte/pull/37233) | Updating to 0.80.0 CDK |
