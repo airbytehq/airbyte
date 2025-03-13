@@ -168,7 +168,7 @@ class PayoutBalanceTransactionsIncrementalTest(TestCase):
         catalog = _create_catalog(SyncMode.incremental)
         http_mocker.get(
             _events_request()
-            .with_created_gte(_STATE_DATE + _AVOIDING_INCLUSIVE_BOUNDARIES)
+            .with_created_gte(_STATE_DATE)
             .with_created_lte(_NOW)
             .with_limit(100)
             .with_types(_EVENT_TYPES)
