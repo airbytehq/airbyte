@@ -11,7 +11,7 @@ import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
@@ -95,7 +95,7 @@ class DestinationTaskLauncherUTest {
     private val openStreamQueue: MessageQueue<DestinationStream> = mockk(relaxed = true)
 
     private val recordQueueForPipeline:
-        PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>> =
+        PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordRaw>>> =
         mockk(relaxed = true)
     private val batchUpdateQueue: ChannelMessageQueue<BatchUpdate> = mockk(relaxed = true)
     private val partitioner: InputPartitioner = mockk(relaxed = true)
