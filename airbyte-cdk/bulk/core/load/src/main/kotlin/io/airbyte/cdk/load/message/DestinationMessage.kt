@@ -183,8 +183,8 @@ data class EnrichedDestinationRecordAirbyteValue(
 
 data class DestinationRecordRaw(
     val stream: DestinationStream.Descriptor,
-    private val rawData: AirbyteMessage,
-    private val serialized: String
+    val rawData: AirbyteMessage,
+    val serialized: String
 ) {
     fun asDestinationRecordAirbyteValue(): DestinationRecordAirbyteValue {
         return DestinationRecordAirbyteValue(
