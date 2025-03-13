@@ -1,4 +1,4 @@
-version: 5.17.0
+version: 5.18.0
 
 type: DeclarativeSource
 
@@ -6,7 +6,7 @@ description: >
   This is the Cin7 source that ingests data from the Cin7 API.
 
 
-  Cin7 (Connector Inventory Performance), If you’re a business that wants to
+  Cin7 (Connector Inventory Performance), If you're a business that wants to
   grow, you need an inventory solution you can count on - both now and in the
   future. With Cin7 you get a real-time picture of your products across systems,
   channels, marketplaces and regions, plus NEW ForesightAI advanced inventory
@@ -632,6 +632,45 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/product_family"
+    product_availability:
+      type: DeclarativeStream
+      name: product_availability
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/ref/productavailability
+          http_method: GET
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - ProductAvailabilityList
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product_availability"
   base_requester:
     type: HttpRequester
     url_base: https://inventory.dearsystems.com/externalapi/
@@ -653,6 +692,7 @@ streams:
   - $ref: "#/definitions/streams/taxes"
   - $ref: "#/definitions/streams/product_categories"
   - $ref: "#/definitions/streams/product_family"
+  - $ref: "#/definitions/streams/product_availability"
 
 spec:
   type: Spec
@@ -693,6 +733,7 @@ metadata:
     taxes: true
     product_categories: true
     product_family: true
+    product_availability: true
   testedStreams:
     bank_accounts:
       hasRecords: true
@@ -806,7 +847,6 @@ metadata:
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-  assist: {}
 
 schemas:
   bank_accounts:
@@ -2281,6 +2321,71 @@ schemas:
           - string
           - "null"
       UOM:
+        type:
+          - string
+          - "null"
+    required:
+      - ID
+  product_availability:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ID:
+        type: string
+      SKU:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      Barcode:
+        type:
+          - string
+          - "null"
+      Location:
+        type:
+          - string
+          - "null"
+      Bin:
+        type:
+          - string
+          - "null"
+      Batch:
+        type:
+          - number
+          - "null"
+      ExpiryDate:
+        type:
+          - string
+          - "null"
+      OnHand:
+        type:
+          - number
+          - "null"
+      Allocated:
+        type:
+          - number
+          - "null"
+      Available:
+        type:
+          - number
+          - "null"
+      OnOrder:
+        type:
+          - number
+          - "null"
+      StockOnHand:
+        type:
+          - number
+          - "null"
+      InTransit:
+        type:
+          - number
+          - "null"
+      NextDeliveryDate:
         type:
           - string
           - "null"
