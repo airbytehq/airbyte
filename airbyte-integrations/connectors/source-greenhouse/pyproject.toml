@@ -18,13 +18,12 @@ include = "source_greenhouse"
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
 airbyte-cdk = "^6"
-dataclasses-jsonschema = "==2.15.1"
 
 [tool.poetry.scripts]
 source-greenhouse = "source_greenhouse.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.1"
+pytest = "^8"
 pytest-mock = "^3.6"
 requests-mock = "^1.9.3"
 
