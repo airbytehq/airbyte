@@ -64,10 +64,6 @@ class SourceMixpanel(YamlDeclarativeSource):
         if not date_str:
             return
         try:
-            datetime.strptime(date_str, CONFIG_DATE_FORMAT)
-        except ValueError as e:
-            raise_config_error(f"Time data {date_str} does not match format {CONFIG_DATE_FORMAT}'", e)
-        try:
             pendulum.parse(date_str)
         except pendulum.parsing.exceptions.ParserError as e:
             raise_config_error(f"Could not parse {name}: {date_str}. Please enter a valid {name}.", e)

@@ -37,6 +37,25 @@ def config_raw(config):
     }
 
 
+@pytest.fixture
+def export_start_date():
+    return pendulum.parse("2024-01-25T00:00:00Z")
+
+
+@pytest.fixture
+def export_config(export_start_date):
+    return {
+        "credentials": {"api_secret": "unexisting-secret"},
+        "attribution_window": 5,
+        "project_timezone": pendulum.timezone("UTC").name,
+        "select_properties_by_default": True,
+        "start_date": "2024-01-25T00:00:00Z",
+        "end_date": str(export_start_date.add(days=31)),
+        "region": "US",
+        "page_size": 1000,
+    }
+
+
 @pytest.fixture(autouse=True)
 def patch_time(mocker):
     mocker.patch("time.sleep")

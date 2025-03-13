@@ -8,7 +8,6 @@ from unittest.mock import MagicMock
 
 import pytest
 from source_mixpanel.source import SourceMixpanel, TokenAuthenticatorBase64
-from source_mixpanel.streams import Export
 
 from airbyte_cdk.utils import AirbyteTracedException
 
@@ -18,10 +17,16 @@ from .utils import command_check, get_url_to_mock, setup_response
 logger = logging.getLogger("airbyte")
 
 
+def init_stream(name="", config=None):
+    streams = SourceMixpanel(MagicMock(), config, MagicMock()).streams(config)
+    for stream in streams:
+        if stream.name == name:
+            return stream
+
+
 @pytest.fixture
-def check_connection_url(config):
-    auth = TokenAuthenticatorBase64(token=config["credentials"]["api_secret"])
-    export_stream = Export(authenticator=auth, **config)
+def check_connection_url(config_raw):
+    export_stream = init_stream("export", config_raw)
     return get_url_to_mock(export_stream)
 
 
@@ -145,7 +150,7 @@ def test_config_validation(config, success, expected_error_message, requests_moc
     requests_mock.get("https://mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{"a": 1, "created": "2021-02-11T00:00:00Z"}])
     requests_mock.get("https://eu.mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{"a": 1, "created": "2021-02-11T00:00:00Z"}])
     try:
-        is_success, message = SourceMixpanel(MagicMock(), config, MagicMock()).check_connection(None, config)
+        is_success, message = SourceMixpanel(MagicMock(), config, MagicMock()).check_connection(MagicMock(), config)
     except AirbyteTracedException as e:
         is_success = False
         message = e.message

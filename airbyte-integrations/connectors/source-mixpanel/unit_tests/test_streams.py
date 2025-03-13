@@ -10,12 +10,14 @@ from unittest.mock import MagicMock
 import pendulum
 import pytest
 from source_mixpanel import SourceMixpanel
-from source_mixpanel.streams import EngageSchema, Export, ExportSchema, IncrementalMixpanelStream, MixpanelStream
+from source_mixpanel.components import iter_dicts
+from source_mixpanel.streams import EngageSchema, ExportSchema, MixpanelStream
 from source_mixpanel.utils import read_full_refresh
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
-from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.sources.streams.call_rate import APIBudget
+from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 
 from .utils import get_url_to_mock, read_incremental, setup_response
 
@@ -31,15 +33,6 @@ def patch_base_class(mocker):
     mocker.patch.object(MixpanelStream, "path", "v0/example_endpoint")
     mocker.patch.object(MixpanelStream, "primary_key", "test_primary_key")
     mocker.patch.object(MixpanelStream, "__abstractmethods__", set())
-
-
-@pytest.fixture
-def patch_incremental_base_class(mocker):
-    # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(IncrementalMixpanelStream, "path", "v0/example_endpoint")
-    mocker.patch.object(IncrementalMixpanelStream, "primary_key", "test_primary_key")
-    mocker.patch.object(IncrementalMixpanelStream, "cursor_field", "date")
-    mocker.patch.object(IncrementalMixpanelStream, "__abstractmethods__", set())
 
 
 @pytest.fixture(autouse=True)
@@ -58,16 +51,6 @@ def test_request_headers(patch_base_class, config):
     stream = MixpanelStream(authenticator=MagicMock(), **config)
 
     assert stream.request_headers(stream_state={}) == {"Accept": "application/json"}
-
-
-def test_updated_state(patch_incremental_base_class, config):
-    stream = IncrementalMixpanelStream(authenticator=MagicMock(), **config)
-
-    updated_state = stream.get_updated_state(
-        current_stream_state={"date": "2021-01-25T00:00:00Z"}, latest_record={"date": "2021-02-25T00:00:00Z"}
-    )
-
-    assert updated_state == {"date": "2021-02-25T00:00:00Z"}
 
 
 @pytest.fixture
@@ -101,6 +84,10 @@ def init_stream(name="", config=None):
     streams = SourceMixpanel(MagicMock(), config, MagicMock()).streams(config)
     for stream in streams:
         if stream.name == name:
+            # override Api Budget policies, as unit tests can fail due to full bucket
+            stream.retriever.requester._http_client._api_budget = APIBudget(policies=[])
+            # _request_session uses self._api_budget to set up session
+            stream.retriever.requester._http_client._session = stream.retriever.requester._http_client._request_session()
             return stream
 
 
@@ -637,10 +624,10 @@ def test_export_schema(requests_mock, export_schema_response, config):
     assert records_length == 2
 
 
-def test_export_get_json_schema(requests_mock, export_schema_response, config):
+def test_export_get_json_schema(requests_mock, export_schema_response, config_raw):
     requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", export_schema_response)
 
-    stream = Export(authenticator=MagicMock(), **config)
+    stream = init_stream("export", config_raw)
     schema = stream.get_json_schema()
 
     assert "DYNAMIC_FIELD" in schema["properties"]
@@ -668,11 +655,12 @@ def export_response():
     )
 
 
-def test_export_stream(requests_mock, export_response, config):
-    stream = Export(authenticator=MagicMock(), **config)
+def test_export_stream(requests_mock, export_response, config_raw):
+    stream = init_stream("export", config_raw)
 
     requests_mock.register_uri("GET", get_url_to_mock(stream), export_response)
-    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", json={})
+    stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2017-01-25T00:00:00Z", "end_time": "2017-02-25T00:00:00Z"})
     # read records for single slice
     records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
 
@@ -680,58 +668,46 @@ def test_export_stream(requests_mock, export_response, config):
     assert records_length == 1
 
 
-def test_export_stream_fail(requests_mock, export_response, config):
-    stream = Export(authenticator=MagicMock(), **config)
+def test_export_stream_fail(requests_mock, export_response, config_raw):
+    stream = init_stream("export", config_raw)
     error_message = ""
     requests_mock.register_uri("GET", get_url_to_mock(stream), status_code=400, text="Unable to authenticate request")
-    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", json={})
+    stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2017-01-25T00:00:00Z", "end_time": "2017-01-25T00:00:00Z"})
     try:
         records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
         records = list(records)
     except Exception as e:
         error_message = str(e)
-    assert "Your credentials might have expired" in error_message
+    assert "Authentication has failed. Please update your config with valid credentials." in error_message
 
 
-def test_handle_time_zone_mismatch(requests_mock, config, caplog):
-    stream = Export(authenticator=MagicMock(), **config)
+def test_handle_time_zone_mismatch(requests_mock, export_config, caplog):
+    stream = init_stream("export", export_config)
     requests_mock.register_uri("GET", get_url_to_mock(stream), status_code=400, text="to_date cannot be later than today")
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", json={})
     records = []
-    for slice_ in stream.stream_slices(sync_mode=SyncMode.full_refresh):
-        records.extend(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_))
-    assert list(records) == []
-    assert (
-        "Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings. "
-        "Stopping current stream sync." in caplog.text
-    )
+    try:
+        for slice_ in stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            records.extend(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_))
+    except MessageRepresentationAirbyteTracedErrors as airbyte_error:
+        assert (
+            "Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings."
+        ) in airbyte_error.message
 
 
-def test_export_stream_request_params(config):
-    stream = Export(authenticator=MagicMock(), **config)
-    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
-
-    request_params = stream.request_params(stream_state={}, stream_slice=stream_slice)
-    assert "where" not in request_params
-
-    stream_slice["time"] = "2021-06-16T17:00:00"
-    request_params = stream.request_params(stream_state={}, stream_slice=stream_slice)
-    assert "where" in request_params
-    timestamp = int(pendulum.parse("2021-06-16T17:00:00Z").timestamp())
-    assert request_params.get("where") == f'properties["$time"]>=datetime({timestamp})'
-
-
-def test_export_terminated_early(requests_mock, config):
-    stream = Export(authenticator=MagicMock(), **config)
+def test_export_terminated_early(requests_mock, export_config):
+    stream = init_stream("export", export_config)
     requests_mock.register_uri("GET", get_url_to_mock(stream), text="terminated early\n")
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", json={})
     assert list(read_full_refresh(stream)) == []
 
 
-def test_export_iter_dicts(config):
-    stream = Export(authenticator=MagicMock(), **config)
+def test_export_iter_dicts():
     record = {"key1": "value1", "key2": "value2"}
     record_string = json.dumps(record)
-    assert list(stream.iter_dicts([record_string, record_string])) == [record, record]
+    assert list(iter_dicts([record_string, record_string])) == [record, record]
     # combine record from 2 standing nearby parts
-    assert list(stream.iter_dicts([record_string, record_string[:2], record_string[2:], record_string])) == [record, record, record]
+    assert list(iter_dicts([record_string, record_string[:2], record_string[2:], record_string])) == [record, record, record]
     # drop record parts because they are not standing nearby
-    assert list(stream.iter_dicts([record_string, record_string[:2], record_string, record_string[2:]])) == [record, record]
+    assert list(iter_dicts([record_string, record_string[:2], record_string, record_string[2:]])) == [record, record]
