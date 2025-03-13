@@ -10,10 +10,15 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
+import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcess
 import io.airbyte.protocol.models.Jsons
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.nio.file.Path
 import java.security.SecureRandom
+import kotlin.random.Random
 
 /**
  * Single stream performance test.
@@ -147,6 +152,76 @@ class SingleStreamInsert(
             recordCount,
             byteCount,
             expectedRecordsCount = if (dedup) recordsToInsert else recordCount,
+        )
+}
+
+class SingleStreamFileTransfer(
+    private val randomizedNamespace: String,
+    private val streamName: String,
+    private val numFiles: Int,
+    private val fileSizeMb: Int,
+    private val stagingDirectory: Path,
+    private val seed: Long = 8656931613L
+) : PerformanceTestScenario {
+    private val log = KotlinLogging.logger {}
+
+    private val descriptor = DestinationStream.Descriptor(randomizedNamespace, streamName)
+
+    override val catalog: DestinationCatalog =
+        DestinationCatalog(
+            listOf(
+                DestinationStream(
+                    descriptor = descriptor,
+                    importType = Append,
+                    schema = ObjectTypeWithoutSchema,
+                    generationId = 1,
+                    minimumGenerationId = 1,
+                    syncId = 101
+                )
+            )
+        )
+
+    private fun makeFileName(index: Long): String =
+        "test_file__${randomizedNamespace}__${streamName}__$index.txt"
+
+    fun setup() {
+        // TODO: Maybe make these files different sizes?
+        val prng = Random(seed)
+        val randomMegabyte = ByteArray(1024 * 1024) { prng.nextInt().toByte() }
+        repeat(numFiles) {
+            val file = stagingDirectory.resolve(makeFileName(it.toLong()))
+            log.info { "Creating file $file with size ${fileSizeMb}mb" }
+            val outputStream = file.toFile().outputStream()
+            repeat(fileSizeMb) { outputStream.write(randomMegabyte) }
+            outputStream.close()
+        }
+    }
+
+    override fun send(destination: DestinationProcess) {
+        repeat(numFiles) {
+            val fileName = makeFileName(it.toLong())
+            val message =
+                DestinationFile(
+                    descriptor,
+                    System.currentTimeMillis(),
+                    "",
+                    DestinationFile.AirbyteRecordMessageFile(
+                        fileUrl = stagingDirectory.resolve(fileName).toString(),
+                        fileRelativePath = fileName,
+                        bytes = fileSizeMb * 1024 * 1024L,
+                        modified = System.currentTimeMillis(),
+                        sourceFileUrl = fileName,
+                    )
+                )
+            destination.sendMessage(message.asProtocolMessage())
+        }
+    }
+
+    override fun getSummary(): PerformanceTestScenario.Summary =
+        PerformanceTestScenario.Summary(
+            records = numFiles.toLong(),
+            size = numFiles * fileSizeMb * 1024 * 1024L,
+            expectedRecordsCount = numFiles.toLong()
         )
 }
 
