@@ -8,13 +8,13 @@ import pendulum
 import pytest
 from freezegun import freeze_time
 from pendulum import duration
-from source_facebook_marketing.streams import AdsInsights
 from source_facebook_marketing.spec import ValidBreakdowns
+from source_facebook_marketing.streams import AdsInsights
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 
 @pytest.fixture(name="api")
@@ -768,16 +768,18 @@ class TestBaseInsightsStream:
 
     def test_all_breakdowns_have_schemas(self):
         stream = AdsInsights(
-            api = None,
-            account_ids = ["act_123"],
-            start_date = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0),
-            end_date = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0),
+            api=None,
+            account_ids=["act_123"],
+            start_date=datetime.today().replace(hour=0, minute=0, second=0, microsecond=0),
+            end_date=datetime.today().replace(hour=0, minute=0, second=0, microsecond=0),
         )
         loader = ResourceSchemaLoader(package_name_from_class(stream.__class__))
         breakdowns_properties = loader.get_schema("ads_insights_breakdowns")["properties"]
-        
+
         valid_breakdowns = [breakdown.name for breakdown in ValidBreakdowns]
-        
+
         # Check for missing breakdowns
         missing_breakdowns = [b for b in valid_breakdowns if b not in breakdowns_properties]
-        assert not missing_breakdowns, f"Schema file 'ads_insights_breakdowns.json' is missing definitions for breakdowns: {missing_breakdowns}"
+        assert (
+            not missing_breakdowns
+        ), f"Schema file 'ads_insights_breakdowns.json' is missing definitions for breakdowns: {missing_breakdowns}"
