@@ -1989,7 +1989,7 @@ definitions:
 
     polling_requester:
       type: HttpRequester
-      path: reports/2021-06-30/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+      path: reports/2021-06-30/reports/{{creation_response['reportId']}}
       url_base: "{{ config['endpoint'] }}"
       authenticator: "#/definitions/authenticator"
       http_method: GET
@@ -1998,7 +1998,7 @@ definitions:
 
     url_requester:
       type: HttpRequester
-      path: reports/2021-06-30/documents/{{stream_slice['polling_job_response'].json()['reportDocumentId']}}
+      path: reports/2021-06-30/documents/{{polling_response['reportDocumentId']}}
       url_base: "{{ config['endpoint'] }}"
       authenticator: "#/definitions/authenticator"
       http_method: GET
@@ -2007,7 +2007,7 @@ definitions:
 
     download_requester:
       type: HttpRequester
-      path: "{{stream_slice.extra_fields['url'] }}"
+      path: "{{ download_target }}"
       url_base: "{{ config['endpoint'] }}"
       http_method: GET
       authenticator:
