@@ -2,15 +2,15 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.38.5.dev0"
+version = "6.39.2"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 groups = ["main"]
 markers = "python_version <= \"3.11\""
 files = [
-    {file = "airbyte_cdk-6.38.5.dev0-py3-none-any.whl", hash = "sha256:23abf29250fcc9848ffd925afefb2fc1d070a685177485d5bf5e2fc1dd5486a8"},
-    {file = "airbyte_cdk-6.38.5.dev0.tar.gz", hash = "sha256:9ec0b0e841c667d23190f76146d0a9f8571367d5b1e308d8d0e0d64ac15c9f46"},
+    {file = "airbyte_cdk-6.39.2-py3-none-any.whl", hash = "sha256:7a6a79ed6499a680bc6cfefc1a32f9bd0a483b02ee2959a4d383d98ad7960422"},
+    {file = "airbyte_cdk-6.39.2.tar.gz", hash = "sha256:733460a9e08a8d4d1efee2eb74c8502d37bcbd19f017290593c564b7a5741e3b"},
 ]
 
 [package.dependencies]
@@ -33,6 +33,7 @@ markdown = {version = "*", optional = true, markers = "extra == \"file-based\""}
 nltk = "3.9.1"
 numpy = "<2"
 orjson = ">=3.10.7,<4.0.0"
+packaging = "*"
 pandas = "2.2.2"
 pdf2image = {version = "1.16.3", optional = true, markers = "extra == \"file-based\""}
 "pdfminer.six" = {version = "20221105", optional = true, markers = "extra == \"file-based\""}
@@ -52,6 +53,7 @@ rapidfuzz = ">=3.10.1,<4.0.0"
 requests = "*"
 requests_cache = "*"
 serpyco-rs = ">=1.10.2,<2.0.0"
+typing-extensions = "*"
 unstructured = {version = "0.10.27", extras = ["docx", "pptx"], optional = true, markers = "extra == \"file-based\""}
 "unstructured.pytesseract" = {version = ">=0.3.12", optional = true, markers = "extra == \"file-based\""}
 wcmatch = "10.0"
@@ -3939,4 +3941,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.12"
-content-hash = "9923a26c22bc9568496dfd9f291ec1a3df6c2089e543a5daf281ff468a18cb39"
+content-hash = "50ecab2ba13c5098ea448596a04987be3f2dda4b115d08056a9ad6534d9c3d20"
