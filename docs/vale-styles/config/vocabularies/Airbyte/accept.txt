@@ -23,3 +23,5 @@ Kubernetes
 Helm
 kind
 Vale
+OpenTelemetry
+Datadog
