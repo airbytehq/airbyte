@@ -16,11 +16,12 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7b8b9550-331c-46c8-a299-943fb6ae2a72
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-workday
   githubIssueLabel: source-workday
   icon: icon.svg
   license: MIT
+  maxSecondsBetweenMessages: 10
   name: Workday
   releaseDate: 2021-01-01
   releaseStage: alpha
@@ -35,4 +36,5 @@ data:
     isEnterprise: true
   connectorTestSuitesOptions:
     - suite: unitTests
+    - suite: acceptanceTests
 metadataSpecVersion: "1.0"

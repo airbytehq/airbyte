@@ -51,6 +51,14 @@ from source_workday.schema_helper import ReportXMLSchemaHelper
                 "data": {"type": ["object", "null"]},
             },
         ),
+        (
+            "report_with_dates.xml",
+            {
+                "data": {"type": ["object", "null"]},
+                "SomeDate": {"type": ["string", "null"], "format": "date"},
+                "SomeDateTime": {"type": ["string", "null"], "format": "date-time"},
+            },
+        ),
     ],
 )
 def test_get_properties(xml_file, expected_output):
@@ -63,7 +71,6 @@ def test_get_properties(xml_file, expected_output):
     with patch.object(ReportXMLSchemaHelper, "_get_xml_tree", return_value=xml_tree):
         schema_helper = ReportXMLSchemaHelper({}, "")
         result = schema_helper.get_properties()
-
     assert result == expected_output
 
 

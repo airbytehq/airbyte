@@ -14,6 +14,13 @@ TYPE_MAP = {
     "xsd:decimal": "number",
     "xsd:string": "string",
     "xsd:boolean": "boolean",
+    "xsd:date": "string",
+    "xsd:dateTime": "string",
+}
+
+DATE_TIME_TYPES = {
+    "xsd:date": {"type": ["string", "null"], "format": "date"},
+    "xsd:dateTime": {"type": ["string", "null"], "format": "date-time"},
 }
 
 
@@ -156,6 +163,8 @@ class ReportXMLSchemaHelper:
             if isinstance(f_type, dict):
                 if f_type["type"] == "array":
                     final_properties[field] = self._create_array_type(f_type)
+            elif f_type in DATE_TIME_TYPES.keys():
+                final_properties[field] = DATE_TIME_TYPES[f_type]
             else:
                 final_properties[field] = {"type": [TYPE_MAP.get(f_type, "string"), "null"]}
 
