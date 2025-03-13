@@ -51,12 +51,12 @@ Copy your key and secret and paste them into the respective fields.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.2.0 | 2025-03-13 | [55738](https://github.com/airbytehq/airbyte/pull/55738) | add incremental for orders, shipments and fullfillments |
 | 0.1.5 | 2025-03-09 | [55648](https://github.com/airbytehq/airbyte/pull/55648) | Update dependencies |
 | 0.1.4 | 2025-03-01 | [55122](https://github.com/airbytehq/airbyte/pull/55122) | Update dependencies |
 | 0.1.3 | 2025-02-22 | [54511](https://github.com/airbytehq/airbyte/pull/54511) | Update dependencies |
 | 0.1.2 | 2025-02-15 | [54047](https://github.com/airbytehq/airbyte/pull/54047) | Update dependencies |
 | 0.1.1 | 2025-02-08 | [53551](https://github.com/airbytehq/airbyte/pull/53551) | Update dependencies |
-| 0.1.0 | 2025-03-13 | [55738](https://github.com/airbytehq/airbyte/pull/55738) | add incremental for orders, shipments and fullfillments |
 | 0.1.0 | 2025-02-03 | [52707](https://github.com/airbytehq/airbyte/pull/52707) | Change auth method |
 | 0.0.6 | 2025-02-01 | [53109](https://github.com/airbytehq/airbyte/pull/53109) | Update dependencies |
 | 0.0.5 | 2025-01-25 | [52405](https://github.com/airbytehq/airbyte/pull/52405) | Update dependencies |
