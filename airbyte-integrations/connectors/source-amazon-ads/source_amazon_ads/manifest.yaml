@@ -7,6 +7,8 @@ check:
   stream_names:
     - streams
 
+max_concurrent_async_job_count: 10
+
 definitions:
   sponsored_product_ad_group_error_handler:
     type: DefaultErrorHandler
@@ -2147,7 +2149,7 @@ definitions:
         - timeout
       completed:
         - COMPLETED
-    urls_extractor:
+    download_target_extractor:
       type: DpathExtractor
       field_path:
         - url

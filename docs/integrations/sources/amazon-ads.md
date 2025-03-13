@@ -53,7 +53,7 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 #### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source. 
+2. Set the name for your source.
 3. **Client ID** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 4. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 5. **Refresh Token**. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
@@ -153,6 +153,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.1.4 | 2025-03-14 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Increase max concurrent async job count to 10 |
 | 7.1.3 | 2025-03-08 | [55352](https://github.com/airbytehq/airbyte/pull/55352) | Update dependencies |
 | 7.1.2 | 2025-02-24 | [53692](https://github.com/airbytehq/airbyte/pull/53692) | Added handling 401 error for Polling Requester |
 | 7.1.1 | 2025-03-01 | [54895](https://github.com/airbytehq/airbyte/pull/54895) | Update dependencies |
