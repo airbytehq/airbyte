@@ -34,7 +34,7 @@ class S3DataLakePartitioner(catalog: DestinationCatalog) : InputPartitioner {
         }
 
         streamToPrimaryKeyFieldNames[record.stream]?.let { primaryKey ->
-            val jsonData = record.rawData.record.data as JsonNode
+            val jsonData = record.asRawJson()
 
             val primaryKeyValues = primaryKey.map { keys ->
                 keys.map { key ->

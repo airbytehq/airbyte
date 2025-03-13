@@ -183,9 +183,13 @@ data class EnrichedDestinationRecordAirbyteValue(
 
 data class DestinationRecordRaw(
     val stream: DestinationStream.Descriptor,
-    val rawData: AirbyteMessage,
-    val serialized: String
+    private val rawData: AirbyteMessage,
+    private val serialized: String
 ) {
+    fun asRawJson(): JsonNode {
+        return rawData.record.data as JsonNode
+    }
+
     fun asDestinationRecordAirbyteValue(): DestinationRecordAirbyteValue {
         return DestinationRecordAirbyteValue(
             stream,
@@ -197,6 +201,10 @@ data class DestinationRecordRaw(
             ),
             serialized.length.toLong()
         )
+    }
+
+    fun asEnrichedDestinationRecordAirbyteValue(): EnrichedDestinationRecordAirbyteValue {
+        TODO()
     }
 }
 
