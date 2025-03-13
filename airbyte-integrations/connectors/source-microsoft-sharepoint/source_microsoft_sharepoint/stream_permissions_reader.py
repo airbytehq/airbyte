@@ -19,7 +19,7 @@ from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from source_microsoft_sharepoint.exceptions import ErrorFetchingMetadata
 from source_microsoft_sharepoint.spec import RemoteIdentity, RemoteIdentityType, RemotePermissions, SourceMicrosoftSharePointSpec
 from source_microsoft_sharepoint.stream_reader import MicrosoftSharePointRemoteFile, SourceMicrosoftSharePointClient
-from source_microsoft_sharepoint.utils import execute_query_with_retry
+from source_microsoft_sharepoint.utils import execute_query_with_retry, execute_request_direct_with_retry
 
 
 class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPermissionsReader):
@@ -290,8 +290,7 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
                 yield rfp.dict()
 
     def get_devices(self):
-        devices = self.one_drive_client.execute_request_direct("devices")
-        devices.raise_for_status()
+        devices = execute_request_direct_with_retry(self.one_drive_client, "devices")
         return devices.json().get("value")
 
     def get_devices_identities(self) -> Iterator[Dict[str, Any]]:

@@ -1099,17 +1099,16 @@ def test_get_devices(setup_permissions_reader_class):
     mock_devices_response = Mock()
     mock_devices_response.json.return_value = {"value": [{"id": "device1"}, {"id": "device2"}]}
 
-    # Mock one_drive_client by setting the _one_drive_client attribute directly
-    mock_one_drive_client = Mock()
-    instance._one_drive_client = mock_one_drive_client
-    mock_one_drive_client.execute_request_direct.return_value = mock_devices_response
+    # Mock execute_request_direct_with_retry instead of directly mocking execute_request_direct
+    with patch("source_microsoft_sharepoint.stream_permissions_reader.execute_request_direct_with_retry") as mock_execute_with_retry:
+        # Set up mock_execute_with_retry to return the devices response
+        mock_execute_with_retry.return_value = mock_devices_response
 
-    # Call the method
-    result = instance.get_devices()
+        # Call the method
+        result = instance.get_devices()
 
-    # Verify calls
-    mock_one_drive_client.execute_request_direct.assert_called_once_with("devices")
-    mock_devices_response.raise_for_status.assert_called_once()
+        # Verify calls
+        mock_execute_with_retry.assert_called_once_with(instance._one_drive_client, "devices")
 
-    # Verify result
-    assert result == [{"id": "device1"}, {"id": "device2"}]
+        # Verify result
+        assert result == [{"id": "device1"}, {"id": "device2"}]
