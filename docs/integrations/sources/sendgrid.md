@@ -89,7 +89,7 @@ The connector is restricted by normal Sendgrid [requests limitation](https://doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.3.1 | 2025-03-13 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Increase max concurrent async job count to 2 |
+| 1.3.1 | 2025-03-13 | [55744](https://github.com/airbytehq/airbyte/pull/55744) | Increase max concurrent async job count to 2 |
 | 1.3.0 | 2025-03-04 | [55185](https://github.com/airbytehq/airbyte/pull/55185) | Update manifest for adapting changes with AsyncRetriever |
 | 1.2.9 | 2025-02-23 | [54625](https://github.com/airbytehq/airbyte/pull/54625) | Update dependencies |
 | 1.2.8 | 2025-02-15 | [54013](https://github.com/airbytehq/airbyte/pull/54013) | Update dependencies |
