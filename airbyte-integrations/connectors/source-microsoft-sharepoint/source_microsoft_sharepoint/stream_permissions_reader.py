@@ -122,8 +122,9 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
                 if member.get("id"):
                     # Extract the type from @odata.type which is in format "#microsoft.graph.user", "#microsoft.graph.group", etc.
                     odata_type = member.get("@odata.type", "")
-                    member_type = odata_type.split(".")[-1] if "." in odata_type else "user"  # Default to user if type not found
-
+                    member_type = odata_type.split(".")[-1] if "." in odata_type else None
+                    if not member_type:
+                        raise ValueError(f"Unrecognized member type for member ID {member.get('id')} in group {group_id}.")
                     # Try to get the identity type directly from RemoteIdentityType enum
                     try:
                         identity_type = RemoteIdentityType(member_type).value
@@ -272,7 +273,7 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
                     RemoteIdentity(
                         modified_at=datetime.now(),
                         remote_id=user_info.get("id"),
-                        name=user_info.get("displayName"),
+                        display_name=user_info.get("displayName"),
                         email_address=user_info.get("email"),
                         login_name=user_info.get("loginName"),
                         type=remote_identity_type,
@@ -310,11 +311,12 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
             for user in users:
                 rfp = RemoteIdentity(
                     remote_id=user.id,
-                    name=user.properties["displayName"],
-                    description=user.user_principal_name,
+                    display_name=user.properties["displayName"],
+                    user_principal_name=user.user_principal_name,
                     email_address=user.mail,
                     type=RemoteIdentityType.USER,
                     modified_at=datetime.now(),
+                    description=None,
                 )
                 yield rfp.dict()
 
@@ -326,7 +328,7 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
 
                 rfp = RemoteIdentity(
                     remote_id=group.id,
-                    name=group.display_name,
+                    display_name=group.display_name,
                     description=group.properties["description"],
                     email_address=group.mail,
                     type=RemoteIdentityType.GROUP,
@@ -340,8 +342,9 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
             for site_user in site_users:
                 rfp = RemoteIdentity(
                     remote_id=site_user.id,
-                    name=site_user.properties["Title"],
-                    description=site_user.user_principal_name,
+                    title=site_user.properties["Title"],
+                    login_name=site_user.login_name,
+                    user_principal_name=site_user.user_principal_name,
                     email_address=site_user.properties["Email"],
                     type=RemoteIdentityType.SITE_USER,
                     modified_at=datetime.now(),
@@ -356,7 +359,7 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
 
                 rfp = RemoteIdentity(
                     remote_id=site_group.id,
-                    name=site_group.properties["Title"],
+                    title=site_group.properties["Title"],
                     description=site_group.properties["Description"],
                     type=RemoteIdentityType.SITE_GROUP,
                     modified_at=datetime.now(),
@@ -369,7 +372,7 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
             for application in applications:
                 rfp = RemoteIdentity(
                     remote_id=application.id,
-                    name=application.display_name,
+                    display_name=application.display_name,
                     description=application.properties["description"],
                     type=RemoteIdentityType.APPLICATION,
                     modified_at=datetime.now(),
@@ -381,7 +384,7 @@ class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPe
             for device in devices:
                 rfp = RemoteIdentity(
                     remote_id=device.get("id"),
-                    name=device.get("displayName"),
+                    display_name=device.get("displayName"),
                     type=RemoteIdentityType.DEVICE,
                     modified_at=datetime.now(),
                 )

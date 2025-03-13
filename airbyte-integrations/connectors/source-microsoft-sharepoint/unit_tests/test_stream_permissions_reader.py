@@ -69,7 +69,7 @@ def setup_permissions_reader_class():
                 RemoteIdentity(
                     modified_at=datetime.now(),
                     remote_id="user1",
-                    name="Test User",
+                    display_name="Test User",
                     email_address="test@example.com",
                     login_name="testuser",
                     type=RemoteIdentityType.USER,
@@ -108,7 +108,7 @@ def setup_permissions_reader_class():
                 RemoteIdentity(
                     modified_at=datetime.now(),
                     remote_id="user1",
-                    name="Test User 1",
+                    display_name="Test User 1",
                     email_address="test1@example.com",
                     login_name="testuser1",
                     type=RemoteIdentityType.USER,
@@ -117,7 +117,7 @@ def setup_permissions_reader_class():
                 RemoteIdentity(
                     modified_at=datetime.now(),
                     remote_id="group1",
-                    name="Test Group",
+                    display_name="Test Group",
                     email_address="group@example.com",
                     login_name="testgroup",
                     type=RemoteIdentityType.GROUP,
@@ -163,7 +163,7 @@ def test_get_file_permissions(setup_permissions_reader_class, permissions_respon
             assert len(identities) == len(expected_identities)
             for actual, expected in zip(identities, expected_identities):
                 assert actual.remote_id == expected.remote_id
-                assert actual.name == expected.name
+                assert actual.display_name == expected.display_name
                 assert actual.email_address == expected.email_address
                 assert actual.login_name == expected.login_name
                 assert actual.type == expected.type
@@ -231,8 +231,8 @@ def test_load_identity_groups_users(setup_permissions_reader_class):
         assert len(identities) == 1
         identity = identities[0]
         assert identity["remote_id"] == "user1"
-        assert identity["name"] == "Test User"
-        assert identity["description"] == "test.user@example.com"
+        assert identity["display_name"] == "Test User"
+        assert identity["user_principal_name"] == "test.user@example.com"
         assert identity["email_address"] == "test.user@example.com"
         assert identity["type"] == RemoteIdentityType.USER
 
@@ -267,7 +267,7 @@ def test_load_identity_groups_groups(setup_permissions_reader_class):
         assert len(identities) == 1
         identity = identities[0]
         assert identity["remote_id"] == "group1"
-        assert identity["name"] == "Test Group"
+        assert identity["display_name"] == "Test Group"
         assert identity["description"] == "Test Group Description"
         assert identity["email_address"] == "group@example.com"
         assert identity["type"] == RemoteIdentityType.GROUP
@@ -286,6 +286,7 @@ def test_load_identity_groups_site_users(setup_permissions_reader_class):
         "Email": "site.user@example.com",
     }
     mock_site_user.user_principal_name = "site.user@example.com"
+    mock_site_user.login_name = "site.user@example.com"
 
     # Mock client context
     mock_client_context = Mock()
@@ -309,9 +310,10 @@ def test_load_identity_groups_site_users(setup_permissions_reader_class):
         assert len(identities) == 1
         identity = identities[0]
         assert identity["remote_id"] == "site_user1"
-        assert identity["name"] == "Test Site User"
-        assert identity["description"] == "site.user@example.com"
+        assert identity["title"] == "Test Site User"
+        assert identity["user_principal_name"] == "site.user@example.com"
         assert identity["email_address"] == "site.user@example.com"
+        assert identity["login_name"] == "site.user@example.com"
         assert identity["type"] == RemoteIdentityType.SITE_USER
 
 
@@ -350,7 +352,7 @@ def test_load_identity_groups_site_groups(setup_permissions_reader_class):
         assert len(identities) == 1
         identity = identities[0]
         assert identity["remote_id"] == "site_group1"
-        assert identity["name"] == "Test Site Group"
+        assert identity["title"] == "Test Site Group"
         assert identity["description"] == "Test Site Group Description"
         assert identity["type"] == RemoteIdentityType.SITE_GROUP
 
@@ -384,7 +386,7 @@ def test_load_identity_groups_applications(setup_permissions_reader_class):
         assert len(identities) == 1
         identity = identities[0]
         assert identity["remote_id"] == "app1"
-        assert identity["name"] == "Test Application"
+        assert identity["display_name"] == "Test Application"
         assert identity["description"] == "Test Application Description"
         assert identity["type"] == RemoteIdentityType.APPLICATION
 
@@ -420,7 +422,7 @@ def test_load_identity_groups_devices(setup_permissions_reader_class):
         assert len(identities) == 1
         identity = identities[0]
         assert identity["remote_id"] == "device1"
-        assert identity["name"] == "Test Device"
+        assert identity["display_name"] == "Test Device"
         assert identity["type"] == RemoteIdentityType.DEVICE
 
 
@@ -448,7 +450,7 @@ def test_load_identity_groups_all_types(setup_permissions_reader_class):
     mock_site_user.id = "site_user1"
     mock_site_user.properties = {"Title": "Test Site User", "Email": "site.user@example.com"}
     mock_site_user.user_principal_name = "site.user@example.com"
-
+    mock_site_user.login_name = "site.user@example.com"
     # Mock site group data
     mock_site_group = Mock()
     mock_site_group.id = "site_group1"
