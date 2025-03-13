@@ -7,6 +7,8 @@ check:
   stream_names:
     - Orders
 
+max_concurrent_async_job_count: 2
+
 definitions:
   authenticator:
     type: CustomAuthenticator
@@ -1957,7 +1959,7 @@ definitions:
         - CANCELLED
       completed:
         - DONE
-    urls_extractor:
+    download_target_extractor:
       type: DpathExtractor
       field_path:
         - url
