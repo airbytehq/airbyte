@@ -3,11 +3,110 @@
 #
 
 import copy
+import logging
 import typing
-from typing import Any, Mapping
+from typing import Any, Dict, Mapping, Optional, Set, Type
+
+from pydantic import BaseModel
+
+from .declarative_component_schema import (
+    ApiKeyAuthenticator,
+    BasicHttpAuthenticator,
+    BearerAuthenticator,
+    CompositeErrorHandler,
+    ConstantBackoffStrategy,
+    CursorPagination,
+    CustomAuthenticator,
+    CustomBackoffStrategy,
+    CustomErrorHandler,
+    CustomIncrementalSync,
+    CustomPaginationStrategy,
+    CustomPartitionRouter,
+    CustomRecordExtractor,
+    CustomRecordFilter,
+    CustomRequester,
+    CustomRetriever,
+    CustomSchemaLoader,
+    CustomStateMigration,
+    CustomTransformation,
+    DatetimeBasedCursor,
+    DeclarativeSource,
+    DeclarativeStream,
+    DefaultErrorHandler,
+    DefaultPaginator,
+    DpathExtractor,
+    ExponentialBackoffStrategy,
+    HttpRequester,
+    HttpResponseFilter,
+    JsonFileSchemaLoader,
+    JwtAuthenticator,
+    LegacySessionTokenAuthenticator,
+    ListPartitionRouter,
+    MinMaxDatetime,
+    OAuthAuthenticator,
+    OffsetIncrement,
+    PageIncrement,
+    ParentStreamConfig,
+    RecordFilter,
+    RecordSelector,
+    SelectiveAuthenticator,
+    SessionTokenAuthenticator,
+    SimpleRetriever,
+    SubstreamPartitionRouter,
+    WaitTimeFromHeader,
+    WaitUntilTimeFromHeader,
+)
 
 PARAMETERS_STR = "$parameters"
 
+# Mapping of component type to the class that implements it. This is used to fetch the Pydantic model class for a component type
+COMPONENT_TYPE_REGISTY: Dict[str, type] = {
+    "BasicHttpAuthenticator": BasicHttpAuthenticator,
+    "BearerAuthenticator": BearerAuthenticator,
+    "ConstantBackoffStrategy": ConstantBackoffStrategy,
+    "CustomAuthenticator": CustomAuthenticator,
+    "CustomBackoffStrategy": CustomBackoffStrategy,
+    "CustomErrorHandler": CustomErrorHandler,
+    "CustomIncrementalSync": CustomIncrementalSync,
+    "CustomPaginationStrategy": CustomPaginationStrategy,
+    "CustomRecordExtractor": CustomRecordExtractor,
+    "CustomRecordFilter": CustomRecordFilter,
+    "CustomRequester": CustomRequester,
+    "CustomRetriever": CustomRetriever,
+    "CustomPartitionRouter": CustomPartitionRouter,
+    "CustomSchemaLoader": CustomSchemaLoader,
+    "CustomStateMigration": CustomStateMigration,
+    "CustomTransformation": CustomTransformation,
+    "JwtAuthenticator": JwtAuthenticator,
+    "OAuthAuthenticator": OAuthAuthenticator,
+    "ExponentialBackoffStrategy": ExponentialBackoffStrategy,
+    "HttpResponseFilter": HttpResponseFilter,
+    "JsonFileSchemaLoader": JsonFileSchemaLoader,
+    "MinMaxDatetime": MinMaxDatetime,
+    "OffsetIncrement": OffsetIncrement,
+    "PageIncrement": PageIncrement,
+    "RecordFilter": RecordFilter,
+    "LegacySessionTokenAuthenticator": LegacySessionTokenAuthenticator,
+    "WaitTimeFromHeader": WaitTimeFromHeader,
+    "WaitUntilTimeFromHeader": WaitUntilTimeFromHeader,
+    "ApiKeyAuthenticator": ApiKeyAuthenticator,
+    "CursorPagination": CursorPagination,
+    "DatetimeBasedCursor": DatetimeBasedCursor,
+    "DefaultErrorHandler": DefaultErrorHandler,
+    "DefaultPaginator": DefaultPaginator,
+    "DpathExtractor": DpathExtractor,
+    "ListPartitionRouter": ListPartitionRouter,
+    "RecordSelector": RecordSelector,
+    "CompositeErrorHandler": CompositeErrorHandler,
+    "SelectiveAuthenticator": SelectiveAuthenticator,
+    "DeclarativeStream": DeclarativeStream,
+    "SessionTokenAuthenticator": SessionTokenAuthenticator,
+    "HttpRequester": HttpRequester,
+    "ParentStreamConfig": ParentStreamConfig,
+    "SimpleRetriever": SimpleRetriever,
+    "SubstreamPartitionRouter": SubstreamPartitionRouter,
+    "DeclarativeSource": DeclarativeSource,
+}
 
 DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     # CompositeErrorHandler
@@ -74,6 +173,15 @@ CUSTOM_COMPONENTS_MAPPING: Mapping[str, str] = {
     "SimpleRetriever.partition_router": "CustomPartitionRouter",
 }
 
+logger = logging.getLogger(__name__)
+
+
+def get_model_fields(model_class: Optional[Type[BaseModel]]) -> Set[str]:
+    """Fetches field names from a Pydantic model class if available."""
+    if model_class is not None:
+        return set(model_class.__fields__.keys())
+    return set()
+
 
 class ManifestComponentTransformer:
     def propagate_types_and_parameters(
@@ -112,6 +220,11 @@ class ManifestComponentTransformer:
         if "type" not in propagated_component or self._is_json_schema_object(propagated_component):
             return propagated_component
 
+        component_type = propagated_component.get("type", "")
+        model_class = COMPONENT_TYPE_REGISTY.get(component_type)
+        # Grab the list of expected fields for the component type
+        valid_fields = get_model_fields(model_class)
+
         # Combines parameters defined at the current level with parameters from parent components. Parameters at the current
         # level take precedence
         current_parameters = dict(copy.deepcopy(parent_parameters))
@@ -121,7 +234,8 @@ class ManifestComponentTransformer:
         # Parameters should be applied to the current component fields with the existing field taking precedence over parameters if
         # both exist
         for parameter_key, parameter_value in current_parameters.items():
-            propagated_component[parameter_key] = propagated_component.get(parameter_key) or parameter_value
+            if parameter_key in valid_fields:
+                propagated_component[parameter_key] = propagated_component.get(parameter_key) or parameter_value
 
         for field_name, field_value in propagated_component.items():
             if isinstance(field_value, dict):
@@ -147,4 +261,8 @@ class ManifestComponentTransformer:
 
     @staticmethod
     def _is_json_schema_object(propagated_component: Mapping[str, Any]) -> bool:
-        return propagated_component.get("type") == "object"
+        component_type = propagated_component.get("type")
+        if isinstance(component_type, list):
+            # Handle nullable types, ie ["null", "object"]
+            return "object" in component_type
+        return component_type == "object"

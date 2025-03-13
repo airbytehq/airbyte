@@ -62,7 +62,9 @@ constructor(
                         false,
                         true
                     )
-        LOGGER.info { "Avro schema for stream ${stream.name}: ${schema!!.toString(false)}" }
+        LOGGER.info {
+            "Avro schema for stream ${stream.name}: ${@Suppress("DEPRECATION")schema!!.toString(false)}"
+        }
 
         val outputFilename: String = getOutputFilename(uploadTimestamp, FileUploadFormat.AVRO)
         outputPath = java.lang.String.join("/", outputPrefix, outputFilename)

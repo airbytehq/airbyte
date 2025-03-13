@@ -56,6 +56,21 @@ This CLI is currently running nightly in GitHub Actions. The workflow can be fou
 
 ## Changelog
 
+### 0.3.7
+Update Python version requirement from 3.10 to 3.11.
+
+### 0.3.5
+Fix permissions issue when installing `pylint` in connector container.
+
+### 0.3.4
+Update `dagger` to `0.13.3`.
+
+### 0.3.3
+Use SBOM from the connector registry (SPDX format) instead of generating SBOM in the connector insights.
+
+### 0.3.2
+Bugfix: Ignore CI on master report if it's not accessible.
+
 ### 0.3.1
 Skip manifest inferred insights when the connector does not have a `manifest.yaml` file.
 

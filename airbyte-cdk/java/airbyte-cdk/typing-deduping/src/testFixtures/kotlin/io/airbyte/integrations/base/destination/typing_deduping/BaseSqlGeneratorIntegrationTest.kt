@@ -47,7 +47,7 @@ private val LOGGER = KotlinLogging.logger {}
  */
 @Execution(ExecutionMode.CONCURRENT)
 abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestinationState> {
-    protected var DIFFER: RecordDiffer = mock()
+    protected var DIFFER: LegacyRecordDiffer = mock()
 
     /** Subclasses may use these four StreamConfigs in their tests. */
     protected var incrementalDedupStream: StreamConfig = mock()
@@ -200,7 +200,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE
 
         DIFFER =
-            RecordDiffer(
+            LegacyRecordDiffer(
                 rawMetadataColumnNames,
                 finalMetadataColumnNames,
                 id1 to AirbyteProtocolType.INTEGER,
@@ -521,18 +521,39 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      * Verifies two behaviors:
      * 1. The isFinalTableEmpty method behaves correctly during a sync
      * 2. Column names with mixed case are handled correctly
-     *
+     * 3. Stream names with mixed case are handled correctly (under the assumption that destinations
+     * ```
+     *    that support this will also handle mixed-case namespaces, because this test is annoying
+     *    to set up with a different namespace).
+     * ```
      * The first behavior technically should be its own test, but we might as well just throw it
      * into a random testcase to avoid running test setup/teardown again.
      */
     @Test
     @Throws(java.lang.Exception::class)
     fun mixedCaseTest() {
+        fun toMixedCase(s: String): String =
+            s.mapIndexed { i, c ->
+                    if (i % 2 == 0) {
+                        c
+                    } else {
+                        c.uppercase()
+                    }
+                }
+                .joinToString(separator = "")
+        val streamId =
+            sqlGenerator.buildStreamId(
+                namespace = streamId.originalNamespace,
+                name = toMixedCase(streamId.originalName),
+                rawNamespaceOverride = streamId.rawNamespace,
+            )
+        val streamConfig = incrementalDedupStream.copy(id = streamId)
+
         // Add case-sensitive columnName to test json path querying
-        incrementalDedupStream.columns!![generator.buildColumnId("IamACaseSensitiveColumnName")] =
+        streamConfig.columns[generator.buildColumnId("IamACaseSensitiveColumnName")] =
             AirbyteProtocolType.STRING
         createRawTable(streamId)
-        createFinalTable(incrementalDedupStream, "")
+        createFinalTable(streamConfig, "")
         insertRawTableRecords(
             streamId,
             BaseTypingDedupingTest.readRecords(
@@ -540,20 +561,17 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             )
         )
 
-        var initialState =
-            getOnly(destinationHandler.gatherInitialState(listOf(incrementalDedupStream)))
+        var initialState = getOnly(destinationHandler.gatherInitialState(listOf(streamConfig)))
         Assertions.assertTrue(
             initialState.isFinalTableEmpty,
             "Final table should be empty before T+D"
         )
-
-        executeTypeAndDedupe(
-            generator,
-            destinationHandler,
-            incrementalDedupStream,
-            Optional.empty(),
-            ""
+        Assertions.assertTrue(
+            initialState.isFinalTablePresent,
+            "Final table should exist after we create it"
         )
+
+        executeTypeAndDedupe(generator, destinationHandler, streamConfig, Optional.empty(), "")
 
         verifyRecords(
             "sqlgenerator/mixedcasecolumnname_expectedrecords_raw.jsonl",
@@ -562,8 +580,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             dumpFinalTableRecords(streamId, "")
         )
 
-        initialState =
-            getOnly(destinationHandler.gatherInitialState(listOf(incrementalDedupStream)))
+        initialState = getOnly(destinationHandler.gatherInitialState(listOf(streamConfig)))
         assertFalse(initialState.isFinalTableEmpty, "Final table should not be empty after T+D")
     }
 

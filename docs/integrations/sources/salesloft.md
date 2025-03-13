@@ -69,6 +69,7 @@ This connector outputs the following streams:
 - [People](https://developers.salesloft.com/api.html#!/People/get_v2_people_json)
 - [Users](https://developers.salesloft.com/api.html#!/Users/get_v2_users_json)
 - [Emails](https://developers.salesloft.com/api.html#!/Emails/get_v2_activities_emails_json)
+- [Emails Scoped Fields](https://developers.salesloft.com/api.html#!/Emails/get_v2_activities_emails_json) **Warning:** This stream requires a Premier Salesloft Plan
 - [Account Stages](https://developers.salesloft.com/api.html#!/Account_Stages/get_v2_account_stages_json)
 - [Account Tiers](https://developers.salesloft.com/api.html#!/Account_Tiers/get_v2_account_tiers_json)
 - [Accounts](https://developers.salesloft.com/api.html#!/Accounts/get_v2_accounts_json)
@@ -103,8 +104,22 @@ Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Top
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                           |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| Version | Date       | Pull Request                                             | Subject                                                        |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
+| 1.5.0 | 2025-03-06 | [55229](https://github.com/airbytehq/airbyte/pull/55229) | Add emails_scoped_fields stream. Remove body and subject fields from email stream |
+| 1.4.0 | 2025-02-18 | [54136](https://github.com/airbytehq/airbyte/pull/54136) | add body and subject fields to email stream |
+| 1.3.1 | 2024-12-03 | [48770](https://github.com/airbytehq/airbyte/pull/48770) | Remove duplication in manifest, fix query param updated_at[gt] |
+| 1.3.0 | 2024-11-04 | [47298](https://github.com/airbytehq/airbyte/pull/47298) | Migrate to manifest only format |
+| 1.2.24 | 2024-10-29 | [47048](https://github.com/airbytehq/airbyte/pull/47048) | Update dependencies |
+| 1.2.23 | 2024-10-12 | [46833](https://github.com/airbytehq/airbyte/pull/46833) | Update dependencies |
+| 1.2.22 | 2024-10-05 | [46491](https://github.com/airbytehq/airbyte/pull/46491) | Update dependencies |
+| 1.2.21 | 2024-09-28 | [46186](https://github.com/airbytehq/airbyte/pull/46186) | Update dependencies |
+| 1.2.20 | 2024-09-21 | [45726](https://github.com/airbytehq/airbyte/pull/45726) | Update dependencies |
+| 1.2.19 | 2024-09-14 | [45500](https://github.com/airbytehq/airbyte/pull/45500) | Update dependencies |
+| 1.2.18 | 2024-09-07 | [45238](https://github.com/airbytehq/airbyte/pull/45238) | Update dependencies |
+| 1.2.17 | 2024-08-31 | [44967](https://github.com/airbytehq/airbyte/pull/44967) | Update dependencies |
+| 1.2.16 | 2024-08-24 | [44642](https://github.com/airbytehq/airbyte/pull/44642) | Update dependencies |
+| 1.2.15 | 2024-08-17 | [44301](https://github.com/airbytehq/airbyte/pull/44301) | Update dependencies |
 | 1.2.14 | 2024-08-12 | [43910](https://github.com/airbytehq/airbyte/pull/43910) | Update dependencies |
 | 1.2.13 | 2024-08-10 | [43524](https://github.com/airbytehq/airbyte/pull/43524) | Update dependencies |
 | 1.2.12 | 2024-08-03 | [43051](https://github.com/airbytehq/airbyte/pull/43051) | Update dependencies |

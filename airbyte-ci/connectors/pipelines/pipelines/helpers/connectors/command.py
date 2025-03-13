@@ -3,6 +3,7 @@
 from typing import TYPE_CHECKING, Any, Callable, List
 
 import asyncclick as click
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
@@ -37,6 +38,8 @@ def get_connector_contexts(ctx: click.Context, pipeline_description: str, enable
             docker_hub_password=ctx.obj.get("docker_hub_password"),
             s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
             s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
+            genai_api_key=ctx.obj.get("genai_api_key"),
+            dbdocs_token=ctx.obj.get("dbdocs_token"),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]

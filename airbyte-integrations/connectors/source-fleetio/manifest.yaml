@@ -1,0 +1,1957 @@
+version: 4.3.2
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - submitted_inspection_forms
+streams:
+  - name: submitted_inspection_forms
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: start_cursor
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
+      requester:
+        path: /v1/submitted_inspection_forms
+        type: HttpRequester
+        url_base: https://secure.fleetio.com/api/
+        http_method: GET
+        request_parameters:
+          per_page: "100"
+        authenticator:
+          type: NoAuth
+        request_headers:
+          Account-Token: "{{ config['account_token'] }}"
+          Authorization: Token {{ config['api_key'] }}
+          X-Api-Version: "2024-03-15"
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - records
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          date:
+            type: string
+          failed_items:
+            type: number
+          id:
+            type: number
+          inspection_form:
+            properties:
+              description:
+                type:
+                  - "null"
+                  - string
+              id:
+                type: number
+              title:
+                type: string
+            type: object
+          started_at:
+            type: string
+          starting_latitude:
+            type:
+              - "null"
+              - number
+          starting_longitude:
+            type:
+              - "null"
+              - number
+          submitted_at:
+            type: string
+          submitted_latitude:
+            type:
+              - "null"
+              - number
+          submitted_longitude:
+            type:
+              - "null"
+              - number
+          user:
+            type:
+              - string
+              - object
+          vehicle:
+            type:
+              - object
+              - "null"
+  - name: issues
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: start_cursor
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
+      requester:
+        path: /v2/issues
+        type: HttpRequester
+        url_base: https://secure.fleetio.com/api/
+        http_method: GET
+        request_parameters:
+          per_page: "100"
+        authenticator:
+          type: NoAuth
+        request_headers:
+          Account-Token: "{{ config['account_token'] }}"
+          Authorization: Token {{ config['api_key'] }}
+          X-Api-Version: "2024-03-15"
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - records
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          asset_type:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          closed_at:
+            type:
+              - "null"
+              - string
+          closed_by:
+            properties:
+              id:
+                type: number
+            type:
+              - object
+              - "null"
+          closed_note:
+            type:
+              - string
+              - "null"
+          comments_count:
+            type:
+              - number
+              - "null"
+          created_at:
+            type:
+              - string
+          creation_type:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          documents_count:
+            type: number
+          due_date:
+            type:
+              - "null"
+              - string
+          due_meter_value:
+            type:
+              - "null"
+              - number
+          due_secondary_meter_value:
+            type:
+              - "null"
+              - number
+              - string
+          equipment:
+            type:
+              - "null"
+              - object
+          attachment_permissions:
+            type:
+              - "null"
+              - object
+          external_id:
+            type:
+              - "null"
+              - number
+          fault_id:
+            type:
+              - "null"
+              - number
+          fault:
+            properties:
+              id:
+                type: number
+            type:
+              - object
+              - "null"
+          fault_rule:
+            type:
+              - "null"
+              - object
+          id:
+            type: number
+          images_count:
+            type: number
+          number:
+            type:
+              - "null"
+              - string
+          reported_at:
+            type: string
+          reported_by:
+            properties:
+              id:
+                type: number
+              name:
+                type:
+                  - "null"
+                  - string
+              default_image_url:
+                type:
+                  - "null"
+                  - string
+            type:
+              - object
+              - "null"
+          due_primary_meter_value:
+            type:
+              - string
+              - "null"
+          overdue:
+            type:
+              - boolean
+              - "null"
+          resolvable_id:
+            type:
+              - number
+              - "null"
+          resolvable:
+            properties:
+              id:
+                type: number
+            type:
+              - object
+              - "null"
+          resolvable_type:
+            type:
+              - "null"
+              - string
+          resolved_at:
+            type:
+              - "null"
+              - string
+          state:
+            type: string
+          submitted_inspection_form_id:
+            type:
+              - "null"
+              - number
+          submitted_inspection_form:
+            properties:
+              id:
+                type: number
+            type:
+              - object
+              - "null"
+          summary:
+            type:
+              - string
+              - "null"
+          vehicle:
+            type:
+              - "null"
+              - object
+          updated_at:
+            type:
+              - string
+              - "null"
+          watchers_count:
+            type:
+              - number
+              - "null"
+  - name: service_entries
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: start_cursor
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
+      requester:
+        path: /v2/service_entries
+        type: HttpRequester
+        url_base: https://secure.fleetio.com/api/
+        http_method: GET
+        request_parameters:
+          per_page: "100"
+        authenticator:
+          type: NoAuth
+        request_headers:
+          Account-Token: "{{ config['account_token'] }}"
+          Authorization: Token {{ config['api_key'] }}
+          X-Api-Version: "2024-03-15"
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - records
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          attachment_permissions:
+            type: object
+          auto_integrate_repair_order_status:
+            type:
+              - string
+              - "null"
+          invoice:
+            type:
+              - object
+              - "null"
+          warranty_credits_cents:
+            type:
+              - string
+              - number
+              - "null"
+          warranty_credits_percentage:
+            type:
+              - string
+              - "null"
+          warranty_credits_type:
+            type:
+              - string
+              - "null"
+          labor_subtotal_cents:
+            type:
+              - string
+              - number
+              - "null"
+          parts_subtotal_cents:
+            type:
+              - string
+              - number
+              - "null"
+          subtotal_cents:
+            type:
+              - string
+              - number
+              - "null"
+          discout_cents:
+            type:
+              - string
+              - number
+              - "null"
+          tax_1_cents:
+            type:
+              - string
+              - number
+              - "null"
+          tax_2_cents:
+            type:
+              - string
+              - number
+              - "null"
+          total_amount_cents:
+            type:
+              - string
+              - number
+              - "null"
+          warrant_credits_cents:
+            type:
+              - string
+              - number
+              - "null"
+          comments_count:
+            type: number
+          completed_at:
+            type: string
+          created_at:
+            type: string
+          discount:
+            type:
+              - "null"
+              - number
+          discount_percentage:
+            type:
+              - "null"
+              - string
+          fees_cents:
+            type:
+              - number
+              - "null"
+          discount_type:
+            type: string
+          discount_cents:
+            type:
+              - number
+              - string
+              - "null"
+          documents_count:
+            type: number
+          general_notes:
+            type:
+              - "null"
+              - string
+          id:
+            type: number
+          images_count:
+            type: number
+          is_sample:
+            type: boolean
+          labels:
+            items:
+              properties:
+                id:
+                  type: number
+                name:
+                  type: string
+              type: object
+            type: array
+          labor_subtotal:
+            type:
+              - "null"
+              - number
+          primary_meter_entry:
+            type:
+              - object
+              - "null"
+          secondary_meter_entry:
+            type:
+              - object
+              - "null"
+          parts_subtotal:
+            type:
+              - "null"
+              - number
+          reference:
+            type:
+              - "null"
+              - string
+          started_at:
+            type:
+              - "null"
+              - string
+          status:
+            type: string
+          tax_1:
+            type:
+              - "null"
+              - number
+          tax_1_percentage:
+            type:
+              - "null"
+              - string
+          tax_1_type:
+            type:
+              - "null"
+              - string
+          tax_2:
+            type:
+              - "null"
+              - number
+          tax_2_percentage:
+            type:
+              - "null"
+              - string
+          tax_2_type:
+            type:
+              - "null"
+              - string
+          updated_at:
+            type: string
+          vehicle_id:
+            type: number
+          vehicle:
+            type:
+              - object
+              - "null"
+          vendor_id:
+            type:
+              - "null"
+              - number
+          vendor_name:
+            type:
+              - "null"
+              - string
+          vendor:
+            type:
+              - object
+              - "null"
+          vmrs_repair_priority_class:
+            properties:
+              code:
+                type: string
+              color:
+                type: string
+              id:
+                type: number
+              name:
+                type: string
+            type:
+              - object
+              - "null"
+          work_order_id:
+            type:
+              - "null"
+              - number
+          work_order_number:
+            type:
+              - "null"
+              - number
+  - name: vehicles
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: start_cursor
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
+      requester:
+        path: /v1/vehicles
+        type: HttpRequester
+        url_base: https://secure.fleetio.com/api/
+        http_method: GET
+        request_parameters:
+          per_page: "100"
+        authenticator:
+          type: NoAuth
+        request_headers:
+          Account-Token: "{{ config['account_token'] }}"
+          Authorization: Token {{ config['api_key'] }}
+          X-Api-Version: "2024-03-15"
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - records
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          account_id:
+            type: number
+          archived_at:
+            type:
+              - string
+              - "null"
+          fuel_type_id:
+            type:
+              - number
+              - "null"
+          fuel_type_name:
+            type:
+              - string
+              - "null"
+          ai_enabled:
+            type: boolean
+          assetable_type:
+            type: string
+          color:
+            type:
+              - "null"
+              - string
+          comments_count:
+            type: number
+          created_at:
+            type: string
+          current_location_entry_id:
+            type:
+              - "null"
+              - number
+          default_image_url_small:
+            type:
+              - "null"
+              - string
+          external_ids:
+            type:
+              - object
+              - "null"
+          documents_count:
+            type: number
+          estimated_replacement_mileage:
+            type:
+              - "null"
+              - string
+          estimated_resale_price_cents:
+            type:
+              - "null"
+              - number
+          estimated_service_months:
+            type:
+              - "null"
+              - number
+          fuel_entries_count:
+            type: number
+          fuel_volume_units:
+            type: string
+          group_ancestry:
+            type:
+              - "null"
+              - string
+          group_id:
+            type:
+              - "null"
+              - number
+          group_name:
+            type:
+              - "null"
+              - string
+          id:
+            type: number
+          images_count:
+            type: number
+          in_service_date:
+            type:
+              - "null"
+              - string
+          in_service_meter_value:
+            type:
+              - "null"
+              - string
+          is_sample:
+            type: boolean
+          issues_count:
+            type: number
+          labels:
+            type: array
+          license_plate:
+            type:
+              - "null"
+              - string
+          make:
+            type:
+              - "null"
+              - string
+          model:
+            type:
+              - "null"
+              - string
+          name:
+            type: string
+          out_of_service_date:
+            type:
+              - "null"
+              - string
+          out_of_service_meter_value:
+            type:
+              - "null"
+              - string
+          ownership:
+            type: string
+          primary_meter_date:
+            type:
+              - "null"
+              - string
+          primary_meter_unit:
+            type: string
+          primary_meter_usage_per_day:
+            type:
+              - "null"
+              - string
+          secondary_meter_unit:
+            type:
+              - string
+              - "null"
+          secondary_meter_date:
+            type:
+              - string
+              - "null"
+          primary_meter_value:
+            type: string
+          registration_expiration_month:
+            type: number
+          secondary_meter_usage_per_day:
+            type:
+              - "null"
+              - string
+          secondary_meter_value:
+            type: string
+          service_entries_count:
+            type: number
+          service_reminders_count:
+            type: number
+          system_of_measurement:
+            type: string
+          trim:
+            type:
+              - "null"
+              - string
+          registration_state:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          vehicle_renewal_reminders_count:
+            type: number
+          vehicle_status_color:
+            type:
+              - string
+              - "null"
+          vehicle_status_id:
+            type: number
+          vehicle_status_name:
+            type: string
+          vehicle_type_id:
+            type: number
+          vehicle_type_name:
+            type: string
+          vin:
+            type:
+              - "null"
+              - string
+          work_orders_count:
+            type: number
+          year:
+            type:
+              - "null"
+              - number
+        type: object
+  - name: expense_entries
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: start_cursor
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
+      requester:
+        path: /v1/expense_entries
+        type: HttpRequester
+        url_base: https://secure.fleetio.com/api/
+        http_method: GET
+        request_parameters:
+          per_page: "100"
+        authenticator:
+          type: NoAuth
+        request_headers:
+          Account-Token: "{{ config['account_token'] }}"
+          Authorization: Token {{ config['api_key'] }}
+          X-Api-Version: "2024-03-15"
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - records
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          created_at:
+            type: string
+          custom_fields:
+            type:
+              - object
+              - "null"
+          expense_entry_type_id:
+            type:
+              - number
+              - "null"
+          expense_entry_type_name:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+          notes:
+            type:
+              - string
+              - "null"
+          occurred_at:
+            type:
+              - string
+              - "null"
+          total_amount:
+            type:
+              - number
+              - "null"
+          total_amount_cents:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type: string
+          vehicle_id:
+            type:
+              - number
+              - "null"
+          vehicle_name:
+            type:
+              - string
+              - "null"
+          vehicle:
+            type:
+              - object
+              - "null"
+          vendor_id:
+            type:
+              - number
+              - "null"
+          vendor_name:
+            type:
+              - string
+              - "null"
+          vendor:
+            type:
+              - object
+              - "null"
+        type: object
+  - name: contacts
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: start_cursor
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
+      requester:
+        path: /v2/contacts
+        type: HttpRequester
+        url_base: https://secure.fleetio.com/api/
+        http_method: GET
+        request_parameters:
+          per_page: "100"
+        authenticator:
+          type: NoAuth
+        request_headers:
+          Account-Token: "{{ config['account_token'] }}"
+          Authorization: Token {{ config['api_key'] }}
+          X-Api-Version: "2024-03-15"
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - records
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          comments_count:
+            type:
+              - number
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          custom_fields:
+            type:
+              - object
+              - "null"
+          documents_count:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          employee:
+            type:
+              - boolean
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          middle_name:
+            type:
+              - string
+              - "null"
+          group_id:
+            type:
+              - number
+              - "null"
+          group_name:
+            type:
+              - string
+              - "null"
+          group_hierarchy:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+          images_count:
+            type:
+              - number
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          technician:
+            type:
+              - boolean
+              - "null"
+          updated_at:
+            type: string
+          vehicle_operator:
+            type:
+              - boolean
+              - "null"
+          birth_date:
+            type:
+              - string
+              - "null"
+          street_address:
+            type:
+              - string
+              - "null"
+          street_address_line_2:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          employee_number:
+            type:
+              - string
+              - "null"
+          home_phone_number:
+            type:
+              - string
+              - "null"
+          job_title:
+            type:
+              - string
+              - "null"
+          leave_date:
+            type:
+              - string
+              - "null"
+          license_class:
+            type:
+              - string
+              - "null"
+          license_plate:
+            type:
+              - string
+              - "null"
+          license_number:
+            type:
+              - string
+              - "null"
+          license_state:
+            type:
+              - string
+              - "null"
+          mobile_phone_number:
+            type:
+              - string
+              - "null"
+          other_phone_number:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          region:
+            type:
+              - string
+              - "null"
+          start_date:
+            type:
+              - string
+              - "null"
+          work_phone_number:
+            type:
+              - string
+              - "null"
+          hourly_labor_rate_cents:
+            type:
+              - number
+              - "null"
+          attachment_permissions:
+            type:
+              - object
+              - "null"
+          default_image_url:
+            type:
+              - string
+              - "null"
+          account_membership_id:
+            type:
+              - number
+              - "null"
+        type: object
+  - name: fuel_entries
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: start_cursor
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
+      requester:
+        path: /v1/fuel_entries
+        type: HttpRequester
+        url_base: https://secure.fleetio.com/api/
+        http_method: GET
+        request_parameters:
+          per_page: "100"
+        authenticator:
+          type: NoAuth
+        request_headers:
+          Account-Token: "{{ config['account_token'] }}"
+          Authorization: Token {{ config['api_key'] }}
+          X-Api-Version: "2024-03-15"
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - records
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          attachment_permissions:
+            type: object
+          comments_count:
+            type:
+              - number
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          custom_fields:
+            type:
+              - object
+              - "null"
+          date:
+            type:
+              - string
+              - "null"
+          external_id:
+            type:
+              - string
+              - "null"
+          fuel_type_id:
+            type:
+              - number
+              - "null"
+          fuel_type_name:
+            type:
+              - string
+              - "null"
+          kpl:
+            type:
+              - string
+              - "null"
+          documents_count:
+            type:
+              - number
+              - "null"
+          fuel_economy_units_for_current_user:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+          images_count:
+            type:
+              - number
+              - "null"
+          is_sample:
+            type: boolean
+          liters:
+            type:
+              - string
+              - "null"
+          meter_entry:
+            properties:
+              created_at:
+                type:
+                  - string
+                  - "null"
+              date:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              meterable_id:
+                type:
+                  - number
+                  - "null"
+              meterable_type:
+                type:
+                  - string
+                  - "null"
+              updated_at:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+              vehicle_id:
+                type:
+                  - number
+                  - "null"
+              void:
+                type: boolean
+              auto_voided_at:
+                type:
+                  - string
+                  - "null"
+              category:
+                type:
+                  - string
+                  - "null"
+              meter_type:
+                type:
+                  - string
+                  - "null"
+              type:
+                type:
+                  - string
+                  - "null"
+            type: object
+          partial:
+            type:
+              - boolean
+              - "null"
+          personal:
+            type:
+              - boolean
+              - "null"
+          price_per_volume_unit:
+            type:
+              - string
+              - "null"
+          reference:
+            type:
+              - string
+              - "null"
+          region:
+            type:
+              - string
+              - "null"
+          reset:
+            type:
+              - boolean
+              - "null"
+          uk_gallons_per_hr:
+            type:
+              - string
+              - "null"
+          us_gallons_per_hr:
+            type:
+              - string
+              - "null"
+          usage_in_hr:
+            type:
+              - string
+              - "null"
+          usage_in_km:
+            type:
+              - string
+              - "null"
+          usage_in_mi:
+            type:
+              - string
+              - "null"
+          liters_per_hr:
+            type:
+              - string
+              - "null"
+          lp100k:
+            type:
+              - string
+              - "null"
+          mpg_uk:
+            type:
+              - string
+              - "null"
+          mpg_us:
+            type:
+              - string
+              - "null"
+          total_amount:
+            type:
+              - string
+              - "null"
+          total_amount_cents:
+            type:
+              - number
+              - "null"
+          uk_gallons:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          cost_per_hr:
+            type:
+              - string
+              - "null"
+          cost_per_km:
+            type:
+              - string
+              - "null"
+          cost_per_mi:
+            type:
+              - string
+              - "null"
+          us_gallons:
+            type:
+              - string
+              - "null"
+          vehicle_id:
+            type:
+              - number
+              - "null"
+          vehicle_name:
+            type:
+              - string
+              - "null"
+          vehicle:
+            type:
+              - object
+              - "null"
+          vendor_id:
+            type:
+              - number
+              - "null"
+          vendor:
+            type:
+              - object
+              - "null"
+          watchers_count:
+            type:
+              - number
+              - "null"
+        type: object
+  - name: parts
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: start_cursor
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
+      requester:
+        path: /v1/parts
+        type: HttpRequester
+        url_base: https://secure.fleetio.com/api/
+        http_method: GET
+        request_parameters:
+          per_page: "100"
+        authenticator:
+          type: NoAuth
+        request_headers:
+          Account-Token: "{{ config['account_token'] }}"
+          Authorization: Token {{ config['api_key'] }}
+          X-Api-Version: "2024-03-15"
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - records
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          attachment_permissions:
+            type: object
+          comments_count:
+            type: number
+          created_at:
+            type: string
+          custom_fields:
+            type:
+              - object
+              - "null"
+          default_image_url:
+            type:
+              - "null"
+              - string
+          default_image_url_large:
+            type:
+              - "null"
+              - string
+          default_image_url_medium:
+            type:
+              - "null"
+              - string
+          default_image_url_small:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - string
+              - "null"
+          documents_count:
+            type:
+              - number
+              - "null"
+          id:
+            type: number
+          images_count:
+            type:
+              - number
+              - "null"
+          manufacturer_part_number:
+            type:
+              - "null"
+              - string
+          measurement_unit_id:
+            type:
+              - "null"
+              - number
+          measurement_unit_name:
+            type:
+              - "null"
+              - string
+          number:
+            type: string
+          part_category:
+            properties:
+              id:
+                type: number
+              tire_category:
+                type:
+                  - boolean
+                  - "null"
+              account_id:
+                type:
+                  - number
+                  - "null"
+              default:
+                type:
+                  - boolean
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              description:
+                type:
+                  - string
+                  - "null"
+              tires_count:
+                type:
+                  - string
+                  - number
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              updated_at:
+                type:
+                  - string
+                  - "null"
+            type:
+              - object
+              - "null"
+          part_category_id:
+            type:
+              - "null"
+              - number
+          part_category_name:
+            type:
+              - "null"
+              - string
+          part_manufacturer:
+            type:
+              - object
+              - "null"
+          part_manufacturer_id:
+            type:
+              - "null"
+              - number
+          part_manufacturer_name:
+            type:
+              - "null"
+              - string
+          unit_cost:
+            type:
+              - "null"
+              - number
+          unit_cost_cents:
+            type:
+              - string
+              - number
+              - "null"
+          average_unit_cost_cents:
+            type:
+              - string
+              - number
+              - "null"
+          upc:
+            type:
+              - "null"
+              - string
+          archived_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+        type: object
+  - name: purchase_orders
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: start_cursor
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
+      requester:
+        path: /v1/purchase_orders
+        type: HttpRequester
+        url_base: https://secure.fleetio.com/api/
+        http_method: GET
+        request_parameters:
+          per_page: "100"
+        authenticator:
+          type: NoAuth
+        request_headers:
+          Account-Token: "{{ config['account_token'] }}"
+          Authorization: Token {{ config['api_key'] }}
+          X-Api-Version: "2024-03-15"
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - records
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          approved_at:
+            type:
+              - string
+              - "null"
+          approved_by:
+            type:
+              - string
+              - "null"
+          comments_count:
+            type:
+              - number
+              - "null"
+          created_at:
+            type: string
+          created_by:
+            type:
+              - string
+              - "null"
+          custom_fields:
+            type:
+              - object
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          discount:
+            type:
+              - number
+              - "null"
+          discount_percentage:
+            type:
+              - number
+              - "null"
+          discount_type:
+            type:
+              - string
+              - "null"
+          documents_count:
+            type:
+              - number
+              - "null"
+          id:
+            type: number
+          number:
+            type:
+              - number
+              - "null"
+          part_location_id:
+            type:
+              - number
+              - "null"
+          part_location_name:
+            type:
+              - string
+              - "null"
+          shipping:
+            type:
+              - number
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          subtotal:
+            type:
+              - number
+              - "null"
+          tax_1:
+            type:
+              - number
+              - "null"
+          tax_1_percentage:
+            type:
+              - string
+              - "null"
+          tax_1_type:
+            type:
+              - string
+              - "null"
+          tax_2:
+            type:
+              - number
+              - "null"
+          tax_2_percentage:
+            type:
+              - string
+              - "null"
+          tax_2_type:
+            type:
+              - string
+              - "null"
+          total_amount:
+            type:
+              - number
+              - "null"
+          watchers_count:
+            type:
+              - number
+              - string
+              - "null"
+          status_name:
+            type:
+              - string
+              - "null"
+          status_color:
+            type:
+              - string
+              - "null"
+          submitted_for_approval_at:
+            type:
+              - string
+              - "null"
+          rejected_at:
+            type:
+              - string
+              - "null"
+          purchased_at:
+            type:
+              - string
+              - "null"
+          received_partial_at:
+            type:
+              - string
+              - "null"
+          received_full_at:
+            type:
+              - string
+              - "null"
+          closed_at:
+            type:
+              - string
+              - "null"
+          discount_cents:
+            type:
+              - number
+              - string
+              - "null"
+          tax_1_cents:
+            type:
+              - number
+              - string
+              - "null"
+          tax_2_cents:
+            type:
+              - number
+              - string
+              - "null"
+          subtotal_cents:
+            type:
+              - number
+              - string
+              - "null"
+          shipping_cents:
+            type:
+              - number
+              - string
+              - "null"
+          total_amount_cents:
+            type:
+              - number
+              - string
+              - "null"
+          approved_by_id:
+            type:
+              - number
+              - "null"
+          created_by_id:
+            type:
+              - number
+              - "null"
+          closed_by_id:
+            type:
+              - number
+              - "null"
+          purchased_by_id:
+            type:
+              - number
+              - "null"
+          rejected_by_id:
+            type:
+              - number
+              - "null"
+          received_partial_by_id:
+            type:
+              - number
+              - "null"
+          received_full_by_id:
+            type:
+              - number
+              - "null"
+          purchase_order_status_id:
+            type:
+              - number
+              - "null"
+          submitted_for_approval_by_id:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type: string
+          vendor_id:
+            type:
+              - number
+              - "null"
+          vendor_name:
+            type:
+              - string
+              - "null"
+          vendor:
+            type:
+              - object
+              - "null"
+          labels:
+            type:
+              - array
+              - "null"
+        type: object
+  - name: vehicle_assignments
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: start_cursor
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_cursor", {}) }}'
+          stop_condition: '{{ not response.get("next_cursor", {}) }}'
+      requester:
+        path: /v1/vehicle_assignments
+        type: HttpRequester
+        url_base: https://secure.fleetio.com/api/
+        http_method: GET
+        request_parameters:
+          per_page: "100"
+        authenticator:
+          type: NoAuth
+        request_headers:
+          Account-Token: "{{ config['account_token'] }}"
+          Authorization: Token {{ config['api_key'] }}
+          X-Api-Version: "2024-03-15"
+          X-Client-Name: data_connector
+          X-Client-Platform: fleetio_airbyte
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - records
+      partition_router: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          attachment_permissions:
+            type: object
+          contact:
+            type:
+              - object
+              - "null"
+          vehicle:
+            type:
+              - object
+              - "null"
+          comments_count:
+            type:
+              - number
+              - "null"
+          contact_full_name:
+            type:
+              - string
+              - "null"
+          contact_id:
+            type:
+              - number
+              - "null"
+          started_at:
+            type:
+              - string
+              - "null"
+          ended_at:
+            type:
+              - string
+              - "null"
+          contact_image_url:
+            type:
+              - string
+              - "null"
+          created_at:
+            type: string
+          current:
+            type: boolean
+          custom_fields:
+            properties:
+              checkbox_type:
+                type:
+                  - string
+                  - "null"
+              department_using_vehicle:
+                type:
+                  - string
+                  - "null"
+              license_expiration_date:
+                type:
+                  - string
+                  - "null"
+              operator_id:
+                type:
+                  - string
+                  - "null"
+              test_restricted_custom_fields:
+                type:
+                  - string
+                  - "null"
+            type: object
+          future:
+            type: boolean
+          starting_meter_entry_value:
+            type:
+              - string
+              - "null"
+          ending_meter_entry_value:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type: string
+          vehicle_id:
+            type: number
+        type: object
+spec:
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - api_key
+      - account_token
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: api_key
+        airbyte_secret: true
+      account_token:
+        type: string
+        order: 1
+        title: account_token
+        airbyte_secret: true
+    additionalProperties: true
+  documentation_url: https://docs.airbyte.com/integrations/sources/fleetio
+  type: Spec
+metadata:
+  autoImportSchema:
+    submitted_inspection_forms: true
+    issues: true
+    service_entries: true
+    vehicles: true
+    expense_entries: true
+    contacts: true
+    fuel_entries: true
+    parts: true
+    purchase_orders: true
+    vehicle_assignments: true

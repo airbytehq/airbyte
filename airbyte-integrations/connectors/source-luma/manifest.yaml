@@ -1,0 +1,432 @@
+version: 4.5.4
+
+type: DeclarativeSource
+
+description: ""
+
+check:
+  type: CheckStream
+  stream_names:
+    - events
+
+definitions:
+  streams:
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - api_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /calendar/list-events
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+              - "*"
+              - event
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pagination_cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next_cursor') }}"
+            stop_condition: "{{ response.get('has_more', False) is false }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    event-guests:
+      type: DeclarativeStream
+      name: event-guests
+      primary_key:
+        - api_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /event/get-guests
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - entries
+              - "*"
+              - guest
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pagination_cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next_cursor') }}"
+            stop_condition: "{{ response.get('has_more', False) is false }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: api_id
+              request_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: event_api_id
+              partition_field: event_api_id
+              stream:
+                $ref: "#/definitions/streams/events"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - email_hash
+              value: '{{ record["email"] | hash("md5") }}'
+        - type: AddFields
+          fields:
+            - path:
+                - phone_number_hash
+              value: '{{ record["phone_number"] | hash("md5") }}'
+        - type: RemoveFields
+          field_pointers:
+            - - email
+        - type: RemoveFields
+          field_pointers:
+            - - phone_number
+        - type: RemoveFields
+          field_pointers:
+            - - user_email
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/event-guests"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.lu.ma/public/v1
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: '{{ config["api_key"] }}'
+      inject_into:
+        type: RequestOption
+        field_name: x-luma-api-key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/event-guests"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: Get your API key on lu.ma Calendars dashboard → Settings.
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    events: true
+    event-guests: false
+  testedStreams:
+    events:
+      streamHash: 8a6f27c568d93cc2d2ee606c6b4dbbccd5ad54c4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    event-guests:
+      streamHash: a4cf2b2e45ac4671ef03fce11080fe1e98f0afe3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://docs.lu.ma/reference/getting-started-with-your-api
+
+schemas:
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      api_id:
+        type: string
+      cover_url:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      description_md:
+        type:
+          - string
+          - "null"
+      duration_interval:
+        type:
+          - string
+          - "null"
+      end_at:
+        type:
+          - string
+          - "null"
+      event_type:
+        type:
+          - string
+          - "null"
+      geo_address_json:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          city_state:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          full_address:
+            type:
+              - string
+              - "null"
+          latitude:
+            type:
+              - string
+              - "null"
+          longitude:
+            type:
+              - string
+              - "null"
+          place_id:
+            type:
+              - string
+              - "null"
+          region:
+            type:
+              - string
+              - "null"
+      geo_latitude:
+        type:
+          - string
+          - "null"
+      geo_longitude:
+        type:
+          - string
+          - "null"
+      meeting_url:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      start_at:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      user_api_id:
+        type:
+          - string
+          - "null"
+      visibility:
+        type:
+          - string
+          - "null"
+      zoom_meeting_url:
+        type:
+          - string
+          - "null"
+    required:
+      - api_id
+  event-guests:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      api_id:
+        type: string
+      approval_status:
+        type:
+          - string
+          - "null"
+      check_in_qr_code:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      custom_source:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      eth_address:
+        type:
+          - string
+          - "null"
+      event_ticket:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          amount_discount:
+            type:
+              - number
+              - "null"
+          api_id:
+            type:
+              - string
+              - "null"
+          event_ticket_type_api_id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      event_tickets:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            amount:
+              type:
+                - number
+                - "null"
+            amount_discount:
+              type:
+                - number
+                - "null"
+            api_id:
+              type:
+                - string
+                - "null"
+            event_ticket_type_api_id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      invited_at:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phone_number:
+        type:
+          - string
+          - "null"
+      registered_at:
+        type:
+          - string
+          - "null"
+      registration_answers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            answer:
+              type:
+                - string
+                - "null"
+            label:
+              type:
+                - string
+                - "null"
+            question_id:
+              type:
+                - string
+                - "null"
+            question_type:
+              type:
+                - string
+                - "null"
+      user_api_id:
+        type:
+          - string
+          - "null"
+      user_email:
+        type:
+          - string
+          - "null"
+      user_name:
+        type:
+          - string
+          - "null"
+    required:
+      - api_id
+    additionalProperties: true

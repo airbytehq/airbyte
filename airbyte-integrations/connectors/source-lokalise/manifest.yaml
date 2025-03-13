@@ -1,0 +1,540 @@
+version: 4.5.4
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - keys
+    - languages
+    - comments
+    - contributors
+    - translations
+
+definitions:
+  streams:
+    keys:
+      type: DeclarativeStream
+      name: keys
+      primary_key:
+        - key_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api2/projects/{{ config['project_id'] }}/keys
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - keys
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/keys"
+    languages:
+      type: DeclarativeStream
+      name: languages
+      primary_key:
+        - lang_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api2/projects/{{ config['project_id'] }}/languages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - languages
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/languages"
+    comments:
+      type: DeclarativeStream
+      name: comments
+      primary_key:
+        - comment_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api2/projects/{{ config['project_id'] }}/comments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - comments
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/comments"
+    contributors:
+      type: DeclarativeStream
+      name: contributors
+      primary_key:
+        - user_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api2/projects/{{ config['project_id'] }}/contributors
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - contributors
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contributors"
+    translations:
+      type: DeclarativeStream
+      name: translations
+      primary_key:
+        - translation_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api2/projects/{{ config['project_id'] }}/translations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - translations
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/translations"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.lokalise.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: '{{ config["api_key"] }}'
+      inject_into:
+        type: RequestOption
+        field_name: X-Api-Token
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/keys"
+  - $ref: "#/definitions/streams/languages"
+  - $ref: "#/definitions/streams/comments"
+  - $ref: "#/definitions/streams/contributors"
+  - $ref: "#/definitions/streams/translations"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - project_id
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Lokalise API Key with read-access. Available at Profile settings > API
+          tokens. See <a
+          href="https://docs.lokalise.com/en/articles/1929556-api-tokens">here</a>.
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      project_id:
+        type: string
+        description: Lokalise project ID. Available at Project Settings > General.
+        title: Project Id
+        order: 1
+    additionalProperties: true
+
+schemas:
+  keys:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      base_words:
+        type: number
+      char_limit:
+        type: number
+      comments:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          properties:
+            added_at:
+              type: string
+            added_at_timestamp:
+              type: number
+            added_by:
+              type: number
+            added_by_email:
+              type: string
+            comment:
+              type: string
+            comment_id:
+              type: number
+      context:
+        type: string
+      created_at:
+        type:
+          - "null"
+          - string
+      created_at_timestamp:
+        type:
+          - "null"
+          - number
+      custom_attributes:
+        type: string
+      filenames:
+        type: object
+        properties:
+          android:
+            type:
+              - "null"
+              - string
+          ios:
+            type:
+              - "null"
+              - string
+          other:
+            type:
+              - "null"
+              - string
+          web:
+            type:
+              - "null"
+              - string
+      is_archived:
+        type: boolean
+      is_hidden:
+        type: boolean
+      is_plural:
+        type: boolean
+      key_id:
+        type:
+          - "null"
+          - number
+      key_name:
+        type: object
+        properties:
+          android:
+            type:
+              - "null"
+              - string
+          ios:
+            type:
+              - "null"
+              - string
+          other:
+            type:
+              - "null"
+              - string
+          web:
+            type:
+              - "null"
+              - string
+      modified_at:
+        type: string
+      modified_at_timestamp:
+        type: number
+      platforms:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      plural_name:
+        type: string
+      screenshots:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          properties:
+            description:
+              type: string
+            created_at:
+              type:
+                - "null"
+                - string
+            created_at_timestamp:
+              type:
+                - "null"
+                - number
+            height:
+              type:
+                - "null"
+                - number
+            key_ids:
+              type:
+                - "null"
+                - array
+              items:
+                type: number
+            screenshot_id:
+              type: number
+            screenshot_tags:
+              type:
+                - "null"
+                - array
+              items:
+                type: string
+            title:
+              type: string
+            url:
+              type: string
+            width:
+              type:
+                - "null"
+                - number
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      translations:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          properties:
+            custom_translation_statuses:
+              type: string
+            is_reviewed:
+              type: boolean
+            is_unverified:
+              type: boolean
+            key_id:
+              type: number
+            language_iso:
+              type: string
+            modified_at:
+              type: string
+            modified_at_timestamp:
+              type: number
+            modified_by:
+              type: number
+            modified_by_email:
+              type: string
+            task_id:
+              type: number
+            translation:
+              type: string
+            translation_id:
+              type: number
+            verified_by:
+              type: number
+            words:
+              type: number
+      translations_modified_at:
+        type: string
+      translations_modified_at_timestamp:
+        type: number
+    additionalProperties: true
+  languages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      is_rtl:
+        type:
+          - "null"
+          - boolean
+      lang_id:
+        type:
+          - "null"
+          - number
+      lang_iso:
+        type:
+          - "null"
+          - string
+      lang_name:
+        type:
+          - "null"
+          - string
+      plural_forms:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+    additionalProperties: true
+  comments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      added_at:
+        type: string
+      added_at_timestamp:
+        type: integer
+      added_by:
+        type: integer
+      added_by_email:
+        type: string
+      comment:
+        type: string
+      comment_id:
+        type: integer
+      key_id:
+        type: integer
+    additionalProperties: true
+  contributors:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      admin_rights:
+        type: array
+        items:
+          type: string
+      created_at:
+        type: string
+      created_at_timestamp:
+        type: integer
+      email:
+        type: string
+      fullname:
+        type: string
+      is_admin:
+        type: boolean
+      is_reviewer:
+        type: boolean
+      languages:
+        type: array
+        items:
+          type: object
+          properties:
+            is_writable:
+              type: boolean
+            lang_id:
+              type: integer
+            lang_iso:
+              type: string
+            lang_name:
+              type: string
+      user_id:
+        type: integer
+    additionalProperties: true
+  translations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      custom_translation_statuses:
+        type: array
+      is_fuzzy:
+        type: boolean
+      is_reviewed:
+        type: boolean
+      is_unverified:
+        type: boolean
+      key_id:
+        type: integer
+      language_iso:
+        type: string
+      modified_at:
+        type: string
+      modified_at_timestamp:
+        type: integer
+      modified_by:
+        type: integer
+      modified_by_email:
+        type: string
+      reviewed_by:
+        type: integer
+      segment_number:
+        type: integer
+      task_id:
+        type: "null"
+      translation:
+        type: string
+      translation_id:
+        type: integer
+      words:
+        type: integer
+    additionalProperties: true

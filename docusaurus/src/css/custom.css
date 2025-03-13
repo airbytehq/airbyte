@@ -25,13 +25,26 @@
   --ifm-hover-overlay: rgb(0 0 0 / 2%);
   --color-active-nav-item-background: #f4f4ff;
   --color-active-nav-item-text: var(--ifm-color-primary-darker);
+  --ifm-table-background: transparent;
+  --ifm-table-stripe-background: transparent;
+  --ifm-table-head-background: var(--ifm-color-primary);
+  --ifm-table-head-color: var(--color-white);
+  --ifm-table-border-color: var(--ifm-color-primary-lightest);
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.2);
 
+  --color-white: hsl(0, 0%, 100%);
   --color-grey-40: hsl(240, 25%, 98%);
   --color-grey-100: hsl(240, 12%, 92%);
   --color-grey-400: hsl(240, 10%, 59%);
+  --color-grey-500: hsl(240, 10%, 49%);
   --color-grey-900: hsl(240, 19%, 18%);
   --color-green-50: hsl(184, 67%, 92%);
   --color-blue-30: hsl(240, 100%, 98%);
+  --color-dark-blue-700: hsl(236, 43%, 31%);
+  --color-red-400: hsl(0, 73%, 50%);
+
+  --modal-overlay-background: hsla(241, 51%, 20%, 50%);
+  --icon-background: transparent;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -46,22 +59,27 @@ html[data-theme="dark"] {
   --ifm-color-primary-lightest: #c8c7ff;
   --color-active-nav-item-background: #272729;
   --color-active-nav-item-text: var(--ifm-color-primary-lighter);
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.8);
+
+  --ifm-table-background: transparent;
+  --ifm-table-stripe-background: transparent;
+  --ifm-table-head-background: var(--color-blue-30);
+  --ifm-table-head-color: hsl(240, 100%, 98%);
+  --ifm-table-border-color:hsl(240, 100%, 98%);
 
   --color-grey-40: hsl(240, 14%, 14%);
+  --color-grey-100: hsl(240, 15%, 15%);
   --color-grey-400: hsl(240, 13%, 72%);
+  --color-grey-500: hsl(240, 10%, 70%);
+  --color-grey-900: hsl(240, 10%, 90%);
   --color-green-50: hsl(184, 100%, 12%);
   --color-blue-30: hsl(252, 25%, 18%);
-}
+  --color-dark-blue-700: hsl(240, 100%, 98%);
+  --color-white: hsl(0, 0%, 16%);
+  --color-red-400: hsl(0, 81%, 71%);
 
-.docusaurus-highlight-code-line {
-  background-color: rgba(0, 0, 0, 0.1);
-  display: block;
-  margin: 0 calc(-1 * var(--ifm-pre-padding));
-  padding: 0 var(--ifm-pre-padding);
-}
-
-html[data-theme="dark"] .docusaurus-highlight-code-line {
-  background-color: rgba(0, 0, 0, 0.3);
+  --modal-overlay-background: hsla(236, 11%, 42%, 70%);
+  --icon-background: hsl(0, 0%, 100%);
 }
 
 .admonition-icon,
@@ -217,4 +235,53 @@ The variables for them have been added to :root at the top of this file */
 .menu__list-item-collapsible--active:hover {
   background: var(--color-active-nav-item-background);
   color: var(--color-active-nav-item-text);
+}
+
+
+table {
+  border-spacing: 0;
+  border-collapse: separate;
+  overflow-x: auto;
+}
+
+/* Add these new styles */
+table th:first-child {
+  border-top-left-radius: 10px;
+}
+
+table th:last-child {
+  border-top-right-radius: 10px;
+}
+
+table tr:last-child td:first-child {
+  border-bottom-left-radius: 10px;
+}
+
+table tr:last-child td:last-child {
+  border-bottom-right-radius: 10px;
+}
+
+table th code {
+  color: var(--ifm-color-content);
+}
+
+table td code {
+  background-color: var(--color-blue-30);
+  padding: 2px 8px;
+  border: none;
+  font-family: monospace;
+  border-radius: 4px;
+}
+
+table tr:hover {
+  background-color: var(--color-grey-40);
+  transition: background-color 0.2s ease;
+}
+table thead tr:hover {
+  background-color: transparent;
+}
+
+svg.inline-svg {
+  max-height: 1em;
+  max-width: 1em;
 }

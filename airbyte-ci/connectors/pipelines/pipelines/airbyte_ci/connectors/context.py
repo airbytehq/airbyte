@@ -15,6 +15,7 @@ import yaml  # type: ignore
 from asyncer import asyncify
 from dagger import Directory, Platform
 from github import PullRequest
+
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.consts import BUILD_PLATFORMS
 from pipelines.dagger.actions import secrets
@@ -60,12 +61,15 @@ class ConnectorContext(PipelineContext):
         should_save_report: bool = True,
         code_tests_only: bool = False,
         use_local_cdk: bool = False,
+        use_cdk_ref: Optional[str] = None,
         use_host_gradle_dist_tar: bool = False,
         enable_report_auto_open: bool = True,
         docker_hub_username: Optional[Secret] = None,
         docker_hub_password: Optional[Secret] = None,
         s3_build_cache_access_key_id: Optional[Secret] = None,
         s3_build_cache_secret_key: Optional[Secret] = None,
+        genai_api_key: Optional[Secret] = None,
+        dbdocs_token: Optional[Secret] = None,
         concurrent_cat: Optional[bool] = False,
         run_step_options: RunStepOptions = RunStepOptions(),
         targeted_platforms: Sequence[Platform] = BUILD_PLATFORMS,
@@ -108,12 +112,15 @@ class ConnectorContext(PipelineContext):
         self.should_save_report = should_save_report
         self.code_tests_only = code_tests_only
         self.use_local_cdk = use_local_cdk
+        self.use_cdk_ref = use_cdk_ref
         self.use_host_gradle_dist_tar = use_host_gradle_dist_tar
         self.enable_report_auto_open = enable_report_auto_open
         self.docker_hub_username = docker_hub_username
         self.docker_hub_password = docker_hub_password
         self.s3_build_cache_access_key_id = s3_build_cache_access_key_id
         self.s3_build_cache_secret_key = s3_build_cache_secret_key
+        self.genai_api_key = genai_api_key
+        self.dbdocs_token = dbdocs_token
         self.concurrent_cat = concurrent_cat
         self.targeted_platforms = targeted_platforms
         super().__init__(
@@ -166,6 +173,10 @@ class ConnectorContext(PipelineContext):
     @property
     def live_tests_dir(self) -> Directory:
         return self.get_repo_dir("airbyte-ci/connectors/live-tests")
+
+    @property
+    def erd_package_dir(self) -> Directory:
+        return self.get_repo_dir("airbyte-ci/connectors/erd")
 
     @property
     def should_save_updated_secrets(self) -> bool:

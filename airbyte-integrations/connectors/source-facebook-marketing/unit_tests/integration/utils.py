@@ -6,11 +6,12 @@
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode
 
-from airbyte_cdk.test.catalog_builder import ConfiguredAirbyteStreamBuilder
-from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_protocol.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
 from facebook_business.api import _top_level_param_json_encode
 from source_facebook_marketing import SourceFacebookMarketing
+
+from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.test.catalog_builder import ConfiguredAirbyteStreamBuilder
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 
 from .config import ConfigBuilder
 
@@ -34,7 +35,7 @@ def read_output(
     sync_mode: SyncMode,
     state: Optional[List[AirbyteStateMessage]] = None,
     expecting_exception: Optional[bool] = False,
-    json_schema: Optional[Dict[str, any]] = None
+    json_schema: Optional[Dict[str, any]] = None,
 ) -> EntrypointOutput:
     _catalog = catalog(stream_name, sync_mode, json_schema)
     _config = config_builder.build()

@@ -81,8 +81,16 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                          |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.0   | 2025-03-10 | [47319](https://github.com/airbytehq/airbyte/pull/47319) | Migrate to Manifest-only |
+| 1.1.1 | 2025-03-09 | [54110](https://github.com/airbytehq/airbyte/pull/54110) | Update dependencies |
+| 1.1.0 | 2025-03-03 | [54151](https://github.com/airbytehq/airbyte/pull/54151) | Migrate to incrementalcursors |
+| 1.0.4 | 2025-02-01 | [53081](https://github.com/airbytehq/airbyte/pull/53081) | Update dependencies |
+| 1.0.3 | 2025-01-25 | [51942](https://github.com/airbytehq/airbyte/pull/51942) | Update dependencies |
+| 1.0.2 | 2025-01-22 | [52065](https://github.com/airbytehq/airbyte/pull/52065) | Pinned `airbyte-cdk` version to `0.72.2` |
+| 1.0.1 | 2025-01-11 | [43728](https://github.com/airbytehq/airbyte/pull/43728) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 1.0.0 | 2024-11-04 | [44898](https://github.com/airbytehq/airbyte/pull/44898) | Migrate to [new base url](https://developer.zendesk.com/api-reference/live-chat/introduction/) |
 | 0.3.1 | 2024-06-06 | [39260](https://github.com/airbytehq/airbyte/pull/39260) | [autopull] Upgrade base image to v1.2.2 |
 | 0.3.0 | 2024-03-07 | [35867](https://github.com/airbytehq/airbyte/pull/35867) | Migrated to `YamlDeclarativeSource (Low-code)` Airbyte CDK |
 | 0.2.2 | 2024-02-12 | [35185](https://github.com/airbytehq/airbyte/pull/35185) | Manage dependencies with Poetry. |

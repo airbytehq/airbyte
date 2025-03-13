@@ -8,12 +8,12 @@ import com.fasterxml.jackson.module.kotlin.contains
 import com.kjetland.jackson.jsonSchema.JsonSchemaConfig
 import com.kjetland.jackson.jsonSchema.JsonSchemaDraft
 import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator
-import com.networknt.schema.JsonSchema
-import com.networknt.schema.JsonSchemaFactory
-import com.networknt.schema.SchemaValidatorsConfig
-import com.networknt.schema.SpecVersion
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.util.Jsons
+import org.openapi4j.core.validation.ValidationException
+import org.openapi4j.core.validation.ValidationResults
+import org.openapi4j.schema.validator.ValidationData
+import org.openapi4j.schema.validator.v3.SchemaValidator
 
 object ValidatedJsonUtils {
     fun <T> parseOne(
@@ -52,12 +52,16 @@ object ValidatedJsonUtils {
     ): List<T> {
         val jsonList: List<JsonNode> = if (tree.isArray) tree.toList() else listOf(tree)
         val schemaNode: JsonNode = generator.generateJsonSchema(elementClass)
-        val jsonSchema: JsonSchema = jsonSchemaFactory.getSchema(schemaNode, jsonSchemaConfig)
+        val schemaValidator = SchemaValidator(null, schemaNode)
         for (element in jsonList) {
-            val validationFailures = jsonSchema.validate(element)
-            if (validationFailures.isNotEmpty()) {
+            val validationData = ValidationData<Void>()
+            schemaValidator.validate(element, validationData)
+            val validationResults: ValidationResults = validationData.results()
+            if (!validationResults.isValid) {
+                val prefix = "$elementClass schema violation"
                 throw ConfigErrorException(
-                    "$elementClass json schema violation: ${validationFailures.first()}",
+                    displayMessage = "$prefix: $validationResults",
+                    exception = ValidationException(prefix, validationResults),
                 )
             }
         }
@@ -80,11 +84,6 @@ object ValidatedJsonUtils {
             .withFailOnUnknownProperties(false)
 
     private val generator = JsonSchemaGenerator(Jsons, generatorConfig)
-
-    val jsonSchemaConfig = SchemaValidatorsConfig()
-
-    val jsonSchemaFactory: JsonSchemaFactory =
-        JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7)
 
     /**
      * Generates a JSON schema suitable for use by the Airbyte Platform.

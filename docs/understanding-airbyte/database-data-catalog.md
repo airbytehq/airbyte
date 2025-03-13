@@ -2,100 +2,1084 @@
 
 ## Config Database
 
-- `workspace`
-  - Each record represents a logical workspace for an Airbyte user. In the open-source version of the product, only one workspace is allowed.
-- `actor_definition`
-  - Each record represents a connector that Airbyte supports, e.g. Postgres. This table represents all the connectors that is supported by the current running platform.
-  - The `actor_type` column tells us whether the record represents a Source or a Destination.
-  - The `spec` column is a JSON blob. The schema of this JSON blob matches the [spec](airbyte-protocol.md#actor-specification) model in the Airbyte Protocol. Because the protocol object is JSON, this has to be a JSON blob.
-  - The `support_level` describes the support level of the connector (e.g. `community`, `certified`, or `archived`).
-    - In the product UI, the Marketplace tab contains connectors with `community` support level, and Airbyte Connectors tab contains `certified` connectors.
-    - `support_level: archived` signals that this connector is no longer supported, and it's not available to install for any new connections. 
-  - The `docker_repository` field is the name of the docker image associated with the connector definition. `docker_image_tag` is the tag of the docker image and the version of the connector definition.
-  - The `source_type` field is only used for Sources, and represents the category of the connector definition (e.g. API, Database).
-  - The `resource_requirements` field sets a default resource requirement for any connector of this type. This overrides the default we set for all connector definitions, and it can be overridden by a connection-specific resource requirement. The column is a JSON blob with the schema defined in [ActorDefinitionResourceRequirements.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/config-models-oss/src/main/resources/types/ActorDefinitionResourceRequirements.yaml)
-  - The `public` boolean column, describes if a connector is available to all workspaces or not. For non, `public` connector definitions, they can be provisioned to a workspace using the `actor_definition_workspace_grant` table. `custom` means that the connector is written by a user of the platform (and not packaged into the Airbyte product).
-  - Each record contains additional metadata and display data about a connector (e.g. `name` and `icon`), and we should add additional metadata here over time.
-- `actor_definition_workspace_grant`
-  - Each record represents provisioning a non `public` connector definition to a workspace.
-  - todo (cgardens) - should this table have a `created_at` column?
-- `actor`
-  - Each record represents a configured connector. e.g. A Postgres connector configured to pull data from my database.
-  - The `actor_type` column tells us whether the record represents a Source or a Destination.
-  - The `actor_definition_id` column is a foreign key to the connector definition that this record is implementing.
-  - The `configuration` column is a JSON blob. The schema of this JSON blob matches the schema specified in the `spec` column in the `connectionSpecification` field of the JSON blob. Keep in mind this schema is specific to each connector (e.g. the schema of Postgres and Salesforce are different), which is why this column has to be a JSON blob.
-- `actor_catalog`
-  - Each record contains a catalog for an actor. The records in this table are meant to be immutable.
-  - The `catalog` column is a JSON blob. The schema of this JSON blob matches the [catalog](airbyte-protocol.md#catalog) model in the Airbyte Protocol. Because the protocol object is JSON, this has to be a JSON blob. The `catalog_hash` column is a 32-bit murmur3 hash ( x86 variant) of the `catalog` field to make comparisons easier.
-  - todo (cgardens) - should we remove the `modified_at` column? These records should be immutable.
-- `actor_catalog_fetch_event`
-  - Each record represents an attempt to fetch the catalog for an actor. The records in this table are meant to be immutable.
-  - The `actor_id` column represents the actor that the catalog is being fetched for. The `config_hash` represents a hash (32-bit murmur3 hash - x86 variant) of the `configuration` column of that actor, at the time the attempt to fetch occurred.
-  - The `catalog_id` is a foreign key to the `actor_catalog` table. It represents the catalog fetched by this attempt. We use the foreign key, because the catalogs are often large and often multiple fetch events result in retrieving the same catalog. Also understanding how often the same catalog is fetched is interesting from a product analytics point of view.
-  - The `actor_version` column represents the `actor_definition` version that was in use when the fetch event happened. This column is needed, because while we can infer the `actor_definition` from the foreign key relationship with the `actor` table, we cannot do the same for the version, as that can change over time.
-  - todo (cgardens) - should we remove the `modified_at` column? These records should be immutable.
-- `connection`
-  - Each record in this table configures a connection (`source_id`, `destination_id`, and relevant configuration).
-  - The `resource_requirements` field sets a default resource requirement for the connection. This overrides the default we set for all connector definitions and the default set for the connector definitions. The column is a JSON blob with the schema defined in [ResourceRequirements.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/config-models-oss/src/main/resources/types/ResourceRequirements.yaml).
-  - The `source_catalog_id` column is a foreign key that refers to `id` column in `actor_catalog` table and represents the catalog that was used to configure the connection. This should not be confused with the `catalog` column which contains the [ConfiguredCatalog](airbyte-protocol.md#catalog) for the connection.
-  - The `schedule_type` column defines what type of schedule is being used. If the `type` is manual, then `schedule_data` will be null. Otherwise, `schedule_data` column is a JSON blob with the schema of [StandardSync#scheduleData](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/config-models-oss/src/main/resources/types/StandardSync.yaml#L74) that defines the actual schedule. The columns `manual` and `schedule` are deprecated and should be ignored (they will be dropped soon).
-  - The `namespace_type` column configures whether the namespace for the connection should use that defined by the source, the destination, or a user-defined format (`custom`). If `custom` the `namespace_format` column defines the string that will be used as the namespace.
-  - The `status` column describes the activity level of the connector: `active` - current schedule is respected, `inactive` - current schedule is ignored (the connection does not run) but it could be switched back to active, and `deprecated` - the connection is permanently off (cannot be moved to active or inactive).
-- `state`
-  - The `state` table represents the current (last) state for a connection. For a connection with `stream` state, there will be a record per stream. For a connection with `global` state, there will be a record per stream and an additional record to store the shared (global) state. For a connection with `legacy` state, there will be one record per connection.
-  - In the `stream` and `global` state cases, the `stream_name` and `namespace` columns contains the name of the stream whose state is represented by that record. For the shared state in global `stream_name` and `namespace` will be null.
-  - The `state` column contains the state JSON blob. Depending on the type of the connection, the schema of the blob will be different.
-    - `stream` - for this type, this column is a JSON blob that is a blackbox to the platform and known only to the connector that generated it.
-    - `global` - for this type, this column is a JSON blob that is a blackbox to the platform and known only to the connector that generated it. This is true for both the states for each stream and the shared state.
-    - `legacy` - for this type, this column is a JSON blob with a top-level key called `state`. Within that `state` is a blackbox to the platform and known only to the connector that generated it.
-  - The `type` column describes the type of the state of the row. type can be `STREAM`, `GLOBAL` or `LEGACY`.
-  - The connection_id is a foreign key to the connection for which we are tracking state.
-- `stream_reset`
-  - Each record in this table represents a stream in a connection that is enqueued to be reset or is currently being reset. It can be thought of as a queue. Once the stream is reset, the record is removed from the table.
-- `operation`
-  - The `operation` table transformations for a connection beyond the raw output produced by the destination. The two options are: `normalization`, which outputs Airbyte's basic normalization. The second is `dbt`, which allows a user to configure their own custom dbt transformation. A connection can have multiple operations (e.g. it can do `normalization` and `dbt`).
-  - If the `operation` is `dbt`, then the `operator_dbt` column will be populated with a JSON blob with the schema from [OperatorDbt](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/config-models-oss/src/main/resources/types/OperatorDbt.yaml).
-  - If the `operation` is `normalization`, then the `operator_dbt` column will be populated with a JSON blob with the scehma from [OperatorNormalization](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/config-models-oss/src/main/resources/types/OperatorNormalization.yaml).
-  - Operations are scoped by workspace, using the `workspace_id` column.
-- `connection_operation`
-  - This table joins the `operation` table to the `connection` for which it is configured.
-- `workspace_service_account`
-  - This table is a WIP for an unfinished feature.
-- `actor_oauth_parameter`
-  - The name of this table is misleading. It refers to parameters to be used for any instance of an `actor_definition` (not an `actor`) within a given workspace. For OAuth, the model is that a user is provisioning access to their data to a third party tool (in this case the Airbyte Platform). Each record represents information (e.g. client id, client secret) for that third party that is getting access.
-  - These parameters can be scoped by workspace. If `workspace_id` is not present, then the scope of the parameters is to the whole deployment of the platform (e.g. all workspaces).
-  - The `actor_type` column tells us whether the record represents a Source or a Destination.
-  - The `configuration` column is a JSON blob. The schema of this JSON blob matches the schema specified in the `spec` column in the `advanced_auth` field of the JSON blob. Keep in mind this schema is specific to each connector (e.g. the schema of Hubspot and Salesforce are different), which is why this column has to be a JSON blob.
-- `secrets`
-  - This table is used to store secrets in open-source versions of the platform that have not set some other secrets store. This table allows us to use the same code path for secrets handling regardless of whether an external secrets store is set or not. This table is used by default for the open-source product.
-- `airbyte_configs_migrations` is metadata table used by Flyway (our database migration tool). It is not used for any application use cases.
-- `airbyte_configs`
-  - Legacy table for config storage. Should be dropped.
+### `active_declarative_manifest`
+
+| Column Name           | Datatype  | Description                                           |
+| --------------------- | --------- | ----------------------------------------------------- |
+| actor_definition_id   | UUID      | Primary key. References the `actor_definition` table. |
+| version              | BIGINT    | Version of the manifest.                              |
+| created_at           | TIMESTAMP | Timestamp when the record was created.               |
+| updated_at           | TIMESTAMP | Timestamp when the record was last updated.          |
+
+#### Indexes and Constraints
+
+- Primary Key: (`actor_definition_id`)
+- Foreign Key: `actor_definition_id` references `actor_definition(id)`
+
+---
+
+### `actor`
+
+| Column Name            | Datatype     | Description                                             |
+| ---------------------- | ------------ | ------------------------------------------------------- |
+| id                     | UUID         | Primary key. Unique identifier for the actor.          |
+| workspace_id           | UUID         | Foreign key referencing the `workspace` table.         |
+| actor_definition_id    | UUID         | Foreign key referencing `actor_definition` table.      |
+| name                   | VARCHAR(256) | Name of the actor.                                     |
+| configuration          | JSONB        | Configuration JSON blob specific to the actor.         |
+| actor_type             | ENUM         | Indicates whether the actor is a source or destination.|
+| tombstone              | BOOLEAN      | Soft delete flag.                                      |
+| created_at             | TIMESTAMP    | Timestamp when the record was created.                 |
+| updated_at             | TIMESTAMP    | Timestamp when the record was last updated.            |
+| resource_requirements  | JSONB        | Defines resource requirements for the actor.           |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `workspace_id` references `workspace(id)`
+- Foreign Key: `actor_definition_id` references `actor_definition(id)`
+- Index: `actor_definition_id_idx` on (`actor_definition_id`)
+- Index: `actor_workspace_id_idx` on (`workspace_id`)
+
+---
+
+### `actor_catalog`
+
+| Column Name   | Datatype    | Description                                     |
+| ------------- | ----------- | ----------------------------------------------- |
+| id            | UUID        | Primary key. Unique identifier for the catalog. |
+| catalog       | JSONB       | JSON representation of the catalog.             |
+| catalog_hash  | VARCHAR(32) | Hash of the catalog for quick comparison.       |
+| created_at    | TIMESTAMP   | Timestamp when the record was created.          |
+| modified_at   | TIMESTAMP   | Timestamp when the record was last modified.    |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Index: `actor_catalog_catalog_hash_id_idx` on (`catalog_hash`)
+
+---
+
+### `actor_catalog_fetch_event`
+
+| Column Name        | Datatype     | Description                                              |
+| ------------------ | ------------ | -------------------------------------------------------- |
+| id                 | UUID         | Primary key. Unique identifier for the fetch event.      |
+| actor_catalog_id   | UUID         | Foreign key referencing `actor_catalog(id)`.             |
+| actor_id           | UUID         | Foreign key referencing `actor(id)`.                     |
+| config_hash        | VARCHAR(32)  | Hash of the configuration at the time of the fetch.      |
+| actor_version      | VARCHAR(256) | Version of the actor definition when the fetch occurred. |
+| created_at         | TIMESTAMP    | Timestamp when the record was created.                   |
+| modified_at        | TIMESTAMP    | Timestamp when the record was last modified.             |
+
+#### `Indexes and Constraints`
+
+- Primary Key: (`id`)
+- Foreign Key: `actor_catalog_id` references `actor_catalog(id)`
+- Foreign Key: `actor_id` references `actor(id)`
+- Index: `actor_catalog_fetch_event_actor_catalog_id_idx` on (`actor_catalog_id`)
+- Index: `actor_catalog_fetch_event_actor_id_idx` on (`actor_id`)
+
+---
+
+### `actor_definition`
+
+| Column Name                     | Datatype     | Description                                              |
+| -------------------------------- | ------------ | -------------------------------------------------------- |
+| id                               | UUID         | Primary key. Unique identifier for the actor definition. |
+| name                             | VARCHAR(256) | Name of the connector.                                   |
+| icon                             | VARCHAR(256) | Icon for the connector.                                 |
+| actor_type                       | ENUM         | Indicates whether the actor is a source or destination. |
+| source_type                      | ENUM         | Source category (e.g., API, Database).                  |
+| created_at                       | TIMESTAMP    | Timestamp when the record was created.                   |
+| updated_at                       | TIMESTAMP    | Timestamp when the record was last modified.             |
+| tombstone                        | BOOLEAN      | Soft delete flag.                                        |
+| resource_requirements            | JSONB        | Defines default resource requirements.                   |
+| public                           | BOOLEAN      | Determines if the definition is publicly available.      |
+| custom                           | BOOLEAN      | Indicates if the connector is user-defined.              |
+| max_seconds_between_messages     | INT          | Maximum allowed seconds between messages.                |
+| default_version_id               | UUID         | Foreign key referencing `actor_definition_version(id)`.  |
+| icon_url                         | VARCHAR(256) | URL of the icon image.                                   |
+| metrics                          | JSONB        | Metadata about the connector.                            |
+| enterprise                       | BOOLEAN      | Whether the connector is part of the enterprise edition.|
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `default_version_id` references `actor_definition_version(id)`
+
+---
+
+### `actor_definition_breaking_change`
+
+| Column Name                     | Datatype     | Description                                                 |
+| -------------------------------- | ------------ | ----------------------------------------------------------- |
+| actor_definition_id              | UUID         | Foreign key referencing `actor_definition(id)`.              |
+| version                          | VARCHAR(256) | Version of the breaking change.                             |
+| migration_documentation_url      | VARCHAR(256) | URL linking to migration documentation.                     |
+| upgrade_deadline                 | DATE         | Deadline for upgrading to the new version.                   |
+| message                          | TEXT         | Description of the breaking change.                         |
+| created_at                       | TIMESTAMP    | Timestamp when the record was created.                      |
+| updated_at                       | TIMESTAMP    | Timestamp when the record was last modified.                |
+| scoped_impact                    | JSONB        | JSON object describing the impact scope.                    |
+| deadline_action                   | VARCHAR(256) | Action required before the deadline.                        |
+
+#### Indexes and Constraints
+
+- Primary Key: (`actor_definition_id`, `version`)
+- Foreign Key: `actor_definition_id` references `actor_definition(id)`
+
+---
+
+### `actor_definition_config_injection`
+
+| Column Name         | Datatype    | Description                                     |
+| ------------------ | ----------- | ----------------------------------------------- |
+| json_to_inject    | JSONB       | JSON configuration to inject.                   |
+| injection_path    | VARCHAR     | Path where the injection applies.               |
+| actor_definition_id | UUID        | Foreign key referencing `actor_definition(id)`.|
+| created_at        | TIMESTAMP   | Timestamp when the record was created.          |
+| updated_at        | TIMESTAMP   | Timestamp when the record was last modified.    |
+
+#### Indexes and Constraints
+
+- Primary Key: (`actor_definition_id`, `injection_path`)
+- Foreign Key: `actor_definition_id` references `actor_definition(id)`
+
+---
+
+### `actor_definition_version`
+
+| Column Name         | Datatype     | Description                                  |
+| ------------------- | ------------ | -------------------------------------------- |
+| id                 | UUID         | Primary key. Unique identifier for the version. |
+| actor_definition_id | UUID         | Foreign key referencing `actor_definition(id)`. |
+| created_at         | TIMESTAMP    | Timestamp when the record was created.       |
+| updated_at         | TIMESTAMP    | Timestamp when the record was last modified. |
+| documentation_url  | VARCHAR(256) | Documentation URL for this version.         |
+| docker_repository | VARCHAR(256) | Docker repository name.                      |
+| docker_image_tag  | VARCHAR(256) | Docker image tag for this version.           |
+| spec              | JSONB        | Specification JSON blob.                     |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `actor_definition_id` references `actor_definition(id)`
+- Unique Constraint: `actor_definition_id, docker_image_tag`
+
+---
+
+### `actor_definition_workspace_grant`
+
+| Column Name          | Datatype | Description                                    |
+| ------------------- | -------- | ---------------------------------------------- |
+| actor_definition_id | UUID     | Foreign key referencing `actor_definition(id)`. |
+| workspace_id       | UUID     | Foreign key referencing `workspace(id)`.       |
+| scope_id          | UUID     | Scope identifier.                             |
+
+#### Indexes and Constraints
+
+- Unique Constraint: `actor_definition_id, scope_id, scope_type`
+
+---
+
+### `actor_oauth_parameter`
+
+| Column Name          | Datatype  | Description                                    |
+| ------------------- | --------- | ---------------------------------------------- |
+| id                 | UUID      | Primary key. Unique identifier.               |
+| workspace_id       | UUID      | Foreign key referencing `workspace(id)`.       |
+| actor_definition_id | UUID      | Foreign key referencing `actor_definition(id)`. |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `workspace_id` references `workspace(id)`
+- Foreign Key: `actor_definition_id` references `actor_definition(id)`
+
+---
+
+### `airbyte_configs_migrations`
+
+| Column Name     | Datatype      | Description                                     |
+| --------------- | ------------- | ----------------------------------------------- |
+| installed_rank  | INT           | Primary key. Rank of the installed migration.   |
+| version        | VARCHAR(50)    | Version number of the migration.                |
+| description    | VARCHAR(200)   | Description of the migration.                   |
+| type          | VARCHAR(20)     | Type of migration.                              |
+| script        | VARCHAR(1000)   | Script executed for the migration.              |
+| checksum      | INT             | Checksum of the migration script.               |
+| installed_by  | VARCHAR(100)    | User who installed the migration.               |
+| installed_on  | TIMESTAMP       | Timestamp when the migration was installed.     |
+| execution_time | INT            | Time taken to execute the migration.            |
+| success       | BOOLEAN         | Indicates whether the migration was successful. |
+
+#### Indexes and Constraints
+- Primary Key: (`installed_rank`)
+
+---
+
+### `application`
+
+| Column Name    | Datatype  | Description                                         |
+| -------------- | --------- | --------------------------------------------------- |
+| id             | UUID      | Primary key. Unique identifier for the application. |
+| user_id       | UUID      | Foreign key referencing `user(id)`.                 |
+| name           | VARCHAR   | Name of the application.                            |
+| client_id     | VARCHAR   | Client ID for authentication.                       |
+| client_secret | VARCHAR   | Secret key for authentication.                      |
+| created_at    | TIMESTAMP | Timestamp when the record was created.              |
+
+#### Indexes and Constraints
+- Primary Key: (`id`)
+- Foreign Key: `user_id` references `user(id)`
+
+---
+
+### `auth_refresh_token`
+
+| Column Name  | Datatype  | Description                                     |
+| ------------ | --------- | ----------------------------------------------- |
+| value        | VARCHAR   | Primary key. Refresh token value.               |
+| session_id   | VARCHAR   | ID of the session associated with the token.    |
+| revoked      | BOOLEAN   | Indicates whether the token has been revoked.   |
+| created_at   | TIMESTAMP | Timestamp when the record was created.          |
+| updated_at   | TIMESTAMP | Timestamp when the record was last modified.    |
+
+#### Indexes and Constraints
+- Primary Key: (`value`)
+- Unique Constraint: (`session_id`, `value`)
+
+---
+
+### `auth_user`
+
+| Column Name    | Datatype  | Description                                       |
+| -------------- | --------- | ------------------------------------------------- |
+| id             | UUID      | Primary key. Unique identifier for the auth user. |
+| user_id       | UUID      | Foreign key referencing `user(id)`.               |
+| auth_user_id  | VARCHAR   | ID of the authenticated user.                     |
+| auth_provider | ENUM      | Authentication provider used.                     |
+| created_at    | TIMESTAMP | Timestamp when the record was created.            |
+| updated_at    | TIMESTAMP | Timestamp when the record was last modified.      |
+
+#### Indexes and Constraints
+- Primary Key: (`id`)
+- Foreign Key: `user_id` references `user(id)`
+- Unique Constraint: (`auth_user_id`, `auth_provider`)
+
+---
+
+### `connection`
+
+| Column Name            | Datatype  | Description                                        |
+| ---------------------- | --------- | -------------------------------------------------- |
+| id                     | UUID      | Primary key. Unique identifier for the connection. |
+| namespace_definition  | ENUM      | Defines how the namespace is set.                  |
+| namespace_format      | VARCHAR   | Format for the namespace when using `custom`.      |
+| prefix                 | VARCHAR   | Prefix added to destination tables.                |
+| source_id             | UUID      | Foreign key referencing `actor(id)`.               |
+| destination_id        | UUID      | Foreign key referencing `actor(id)`.               |
+| name                   | VARCHAR   | Name of the connection.                            |
+| catalog                | JSONB     | JSON blob defining the connection catalog.         |
+| status                 | ENUM      | Connection status (`active`, `inactive`, etc.).    |
+| schedule               | JSONB     | JSON blob defining the connection schedule.        |
+| manual                 | BOOLEAN   | Indicates if the connection runs manually.         |
+| resource_requirements | JSONB     | Resource requirements for the connection.          |
+| created_at            | TIMESTAMP | Timestamp when the record was created.             |
+| updated_at            | TIMESTAMP | Timestamp when the record was last modified.       |
+
+#### Indexes and Constraints
+- Primary Key: (`id`)
+- Foreign Key: `source_id` references `actor(id)`
+- Foreign Key: `destination_id` references `actor(id)`
+- Index: `connection_source_id_idx` on (`source_id`)
+- Index: `connection_destination_id_idx` on (`destination_id`)
+
+---
+
+### `connection_operation`
+
+| Column Name    | Datatype  | Description                                    |
+| -------------- | --------- | ---------------------------------------------- |
+| id             | UUID      | Primary key. Unique identifier for the record. |
+| connection_id | UUID      | Foreign key referencing `connection(id)`.      |
+| operation_id  | UUID      | Foreign key referencing `operation(id)`.       |
+| created_at    | TIMESTAMP | Timestamp when the record was created.         |
+| updated_at    | TIMESTAMP | Timestamp when the record was last modified.   |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`, `connection_id`, `operation_id`)
+- Foreign Key: `connection_id` references `connection(id)`
+- Foreign Key: `operation_id` references `operation(id)`
+- Index: `connection_operation_connection_id_idx` on (`connection_id`)
+
+---
+
+### `connection_tag`
+
+| Column Name    | Datatype  | Description                                      |
+| -------------- | --------- | ------------------------------------------------ |
+| id             | UUID      | Primary key. Unique identifier for the record.   |
+| tag_id         | UUID      | Foreign key referencing `tag(id)`.               |
+| connection_id  | UUID      | Foreign key referencing `connection(id)`.        |
+| created_at     | TIMESTAMP | Timestamp when the record was created.           |
+| updated_at     | TIMESTAMP | Timestamp when the record was last modified.     |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `tag_id` references `tag(id)`
+- Foreign Key: `connection_id` references `connection(id)`
+- Unique Constraint: (`tag_id`, `connection_id`)
+
+---
+
+### `connection_timeline_event`
+
+| Column Name   | Datatype  | Description                                         |
+| ------------- | --------- | --------------------------------------------------- |
+| id            | UUID      | Primary key. Unique identifier for the event.       |
+| connection_id | UUID      | Foreign key referencing `connection(id)`.           |
+| user_id       | UUID      | Foreign key referencing `user(id)`.                 |
+| event_type    | VARCHAR   | Type of event that occurred.                        |
+| summary       | JSONB     | JSON blob containing event details.                 |
+| created_at    | TIMESTAMP | Timestamp when the event occurred.                  |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `connection_id` references `connection(id)`
+- Foreign Key: `user_id` references `user(id)`
+- Index: `idx_connection_timeline_connection_id` on (`connection_id`, `created_at`, `event_type`)
+
+---
+
+### `connector_builder_project`
+
+| Column Name                     | Datatype  | Description                                       |
+| -------------------------------- | --------- | ------------------------------------------------- |
+| id                               | UUID      | Primary key. Unique identifier for the project.   |
+| workspace_id                     | UUID      | Foreign key referencing `workspace(id)`.         |
+| name                             | VARCHAR   | Name of the connector project.                    |
+| manifest_draft                   | JSONB     | JSON draft of the connector manifest.             |
+| actor_definition_id              | UUID      | Foreign key referencing `actor_definition(id)`.   |
+| tombstone                        | BOOLEAN   | Indicates if the project is deleted.              |
+| created_at                       | TIMESTAMP | Timestamp when the record was created.            |
+| updated_at                       | TIMESTAMP | Timestamp when the record was last modified.      |
+| testing_values                   | JSONB     | JSON containing test values for the connector.    |
+| base_actor_definition_version_id | UUID      | Foreign key referencing `actor_definition_version(id)`. |
+| contribution_pull_request_url    | VARCHAR   | URL for the contribution PR.                      |
+| contribution_actor_definition_id | UUID      | Foreign key referencing `actor_definition(id)`.   |
+| components_file_content          | TEXT      | Raw content of component files.                   |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `workspace_id` references `workspace(id)`
+- Foreign Key: `actor_definition_id` references `actor_definition(id)`
+- Foreign Key: `base_actor_definition_version_id` references `actor_definition_version(id)`
+- Foreign Key: `contribution_actor_definition_id` references `actor_definition(id)`
+- Index: `connector_builder_project_workspace_idx` on (`workspace_id`)
+
+---
+
+### `connector_rollout`
+
+| Column Name                  | Datatype  | Description                                      |
+| ---------------------------- | --------- | ------------------------------------------------ |
+| id                            | UUID      | Primary key. Unique identifier for the rollout. |
+| actor_definition_id           | UUID      | Foreign key referencing `actor_definition(id)`. |
+| release_candidate_version_id  | UUID      | Foreign key referencing `actor_definition_version(id)`. |
+| initial_version_id            | UUID      | Foreign key referencing `actor_definition_version(id)`. |
+| state                         | VARCHAR   | Current state of the rollout.                    |
+| initial_rollout_pct           | INT       | Initial rollout percentage.                      |
+| current_target_rollout_pct    | INT       | Current target rollout percentage.               |
+| final_target_rollout_pct      | INT       | Final target rollout percentage.                 |
+| has_breaking_changes          | BOOLEAN   | Indicates if the rollout has breaking changes.   |
+| max_step_wait_time_mins       | INT       | Maximum wait time between rollout steps.         |
+| updated_by                    | UUID      | Foreign key referencing `user(id)`.              |
+| created_at                    | TIMESTAMP | Timestamp when the rollout started.              |
+| updated_at                    | TIMESTAMP | Timestamp when the record was last modified.     |
+| completed_at                  | TIMESTAMP | Timestamp when the rollout was completed.        |
+| expires_at                    | TIMESTAMP | Timestamp when the rollout expires.              |
+| error_msg                     | VARCHAR   | Error message if the rollout failed.             |
+| failed_reason                 | VARCHAR   | Reason for failure.                              |
+| rollout_strategy              | VARCHAR   | Strategy used for the rollout.                   |
+| workflow_run_id               | VARCHAR   | Workflow run identifier.                         |
+| paused_reason                 | VARCHAR   | Reason for pausing the rollout.                  |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `actor_definition_id` references `actor_definition(id)`
+- Foreign Key: `release_candidate_version_id` references `actor_definition_version(id)`
+- Foreign Key: `initial_version_id` references `actor_definition_version(id)`
+- Foreign Key: `updated_by` references `user(id)`
+- Unique Index: `actor_definition_id_state_unique_idx` on `actor_definition_id`
+    - Condition: (`state` in ['errored', 'finalizing', 'in_progress', 'initialized', 'paused', 'workflow_started'])
+
+---
+
+### `dataplane`
+
+| Column Name        | Datatype  | Description                                      |
+| ------------------ | --------- | ------------------------------------------------ |
+| id                | UUID      | Primary key. Unique identifier for the dataplane. |
+| dataplane_group_id | UUID      | Foreign key referencing `dataplane_group(id)`.   |
+| name              | VARCHAR   | Name of the dataplane.                           |
+| enabled           | BOOLEAN   | Indicates if the dataplane is enabled.           |
+| created_at        | TIMESTAMP | Timestamp when the record was created.           |
+| updated_at        | TIMESTAMP | Timestamp when the record was last modified.     |
+| updated_by        | UUID      | Foreign key referencing `user(id)`.              |
+| tombstone         | BOOLEAN   | Indicates if the record is deleted.              |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `dataplane_group_id` references `dataplane_group(id)`
+- Foreign Key: `updated_by` references `user(id)`
+- Unique Constraint: (`dataplane_group_id`, `name`)
+
+---
+
+### `dataplane_group`
+
+| Column Name      | Datatype  | Description                                      |
+| --------------- | --------- | ------------------------------------------------ |
+| id             | UUID      | Primary key. Unique identifier for the group.    |
+| organization_id | UUID      | Foreign key referencing `organization(id)`.      |
+| name           | VARCHAR   | Name of the dataplane group.                     |
+| enabled        | BOOLEAN   | Indicates if the group is enabled.               |
+| created_at     | TIMESTAMP | Timestamp when the record was created.           |
+| updated_at     | TIMESTAMP | Timestamp when the record was last modified.     |
+| updated_by     | UUID      | Foreign key referencing `user(id)`.              |
+| tombstone      | BOOLEAN   | Indicates if the record is deleted.              |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `organization_id` references `organization(id)`
+- Foreign Key: `updated_by` references `user(id)`
+- Unique Constraint: (`organization_id`, `name`)
+
+---
+
+### `declarative_manifest`
+
+| Column Name          | Datatype  | Description                                      |
+| -------------------- | --------- | ------------------------------------------------ |
+| actor_definition_id  | UUID      | Foreign key referencing `actor_definition(id)`.  |
+| description         | VARCHAR   | Description of the manifest.                     |
+| manifest           | JSONB     | JSON representation of the manifest.            |
+| spec               | JSONB     | JSON specification for the manifest.            |
+| version            | BIGINT    | Version number of the manifest.                 |
+| created_at         | TIMESTAMP | Timestamp when the record was created.           |
+
+#### Indexes and Constraints
+
+- Primary Key: (`actor_definition_id`, `version`)
+
+---
+
+### `declarative_manifest_image_version`
+
+| Column Name    | Datatype  | Description                          |
+| ------------- | --------- | ------------------------------------ |
+| major_version | INT       | Primary key. Major version number.  |
+| image_version | VARCHAR   | Version of the image.               |
+| created_at    | TIMESTAMP | Timestamp when the record was created. |
+| updated_at    | TIMESTAMP | Timestamp when the record was last modified. |
+| image_sha     | VARCHAR   | SHA checksum of the image.          |
+
+#### Indexes and Constraints
+
+- Primary Key: (`major_version`)
+
+---
+
+### `notification_configuration`
+
+| Column Name         | Datatype  | Description                                      |
+| ------------------- | --------- | ------------------------------------------------ |
+| id                 | UUID      | Primary key. Unique identifier for the notification configuration. |
+| enabled            | BOOLEAN   | Indicates if the notification is enabled.        |
+| notification_type  | ENUM      | Type of notification.                            |
+| connection_id      | UUID      | Foreign key referencing `connection(id)`.        |
+| created_at         | TIMESTAMP | Timestamp when the record was created.           |
+| updated_at         | TIMESTAMP | Timestamp when the record was last modified.     |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `connection_id` references `connection(id)`
+
+---
+
+### `operation`
+
+| Column Name           | Datatype  | Description                                      |
+| --------------------- | --------- | ------------------------------------------------ |
+| id                    | UUID      | Primary key. Unique identifier for the operation. |
+| workspace_id          | UUID      | Foreign key referencing `workspace(id)`.         |
+| name                  | VARCHAR   | Name of the operation.                           |
+| operator_type         | ENUM      | Type of operator (`dbt`, `normalization`, etc.).|
+| operator_normalization | JSONB     | JSON blob defining normalization settings.       |
+| operator_dbt          | JSONB     | JSON blob defining dbt settings.                 |
+| tombstone             | BOOLEAN   | Indicates if the operation is deleted.           |
+| created_at            | TIMESTAMP | Timestamp when the record was created.           |
+| updated_at            | TIMESTAMP | Timestamp when the record was last modified.     |
+| operator_webhook      | JSONB     | JSON blob defining webhook settings.             |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `workspace_id` references `workspace(id)`
+
+---
+
+### `organization`
+
+| Column Name  | Datatype  | Description                                      |
+| ------------ | --------- | ------------------------------------------------ |
+| id          | UUID      | Primary key. Unique identifier for the organization. |
+| name        | VARCHAR   | Name of the organization.                         |
+| user_id     | UUID      | Foreign key referencing `user(id)`.               |
+| email       | VARCHAR   | Contact email for the organization.              |
+| created_at  | TIMESTAMP | Timestamp when the record was created.            |
+| updated_at  | TIMESTAMP | Timestamp when the record was last modified.      |
+| tombstone   | BOOLEAN   | Indicates if the organization is deleted.         |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `user_id` references `user(id)`
+
+---
+
+### `organization_email_domain`
+
+| Column Name      | Datatype  | Description                                     |
+| ---------------- | --------- | ----------------------------------------------- |
+| id              | UUID      | Primary key. Unique identifier for the record.  |
+| organization_id | UUID      | Foreign key referencing `organization(id)`.     |
+| email_domain   | VARCHAR   | Email domain associated with the organization.  |
+| created_at     | TIMESTAMP | Timestamp when the record was created.          |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `organization_id` references `organization(id)`
+- Unique Constraint: (`organization_id`, `email_domain`)
+- Index: `organization_email_domain_organization_id_idx` on (`organization_id`)
+
+---
+
+### `organization_payment_config`
+
+| Column Name               | Datatype  | Description                                    |
+| ------------------------- | --------- | ---------------------------------------------- |
+| organization_id           | UUID      | Primary key. Unique identifier for the organization payment configuration. |
+| payment_provider_id       | VARCHAR   | Payment provider ID.                          |
+| payment_status            | ENUM      | Status of the organization's payment.        |
+| grace_period_end_at       | TIMESTAMP | End timestamp for the grace period.          |
+| usage_category_override   | ENUM      | Override for usage category.                 |
+| created_at                | TIMESTAMP | Timestamp when the record was created.       |
+| updated_at                | TIMESTAMP | Timestamp when the record was last modified. |
+| subscription_status       | ENUM      | Status of the organization's subscription.   |
+
+#### Indexes and Constraints
+
+- Primary Key: (`organization_id`)
+- Unique Constraint: (`payment_provider_id`)
+- Foreign Key: `organization_id` references `organization(id)`
+- Index: `organization_payment_config_payment_status_idx` on (`payment_status`)
+- Index: `organization_payment_config_payment_provider_id_idx` on (`payment_provider_id`)
+
+---
+
+### `permission`
+
+| Column Name        | Datatype  | Description                                    |
+| ------------------ | --------- | ---------------------------------------------- |
+| id                | UUID      | Primary key. Unique identifier for the permission. |
+| user_id          | UUID      | Foreign key referencing `user(id)`.            |
+| workspace_id     | UUID      | Foreign key referencing `workspace(id)`.       |
+| created_at       | TIMESTAMP | Timestamp when the record was created.        |
+| updated_at       | TIMESTAMP | Timestamp when the record was last modified.  |
+| organization_id  | UUID      | Foreign key referencing `organization(id)`.    |
+| permission_type  | ENUM      | Type of permission assigned.                   |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `user_id` references `user(id)`
+- Foreign Key: `workspace_id` references `workspace(id)`
+- Foreign Key: `organization_id` references `organization(id)`
+- Unique Constraint: (`user_id`, `organization_id`)
+- Unique Constraint: (`user_id`, `workspace_id`)
+- Index: `permission_organization_id_idx` on (`organization_id`)
+- Index: `permission_workspace_id_idx` on (`workspace_id`)
+
+---
+
+### `schema_management`
+
+| Column Name                 | Datatype  | Description                                       |
+| --------------------------- | --------- | ------------------------------------------------- |
+| id                          | UUID      | Primary key. Unique identifier for schema management. |
+| connection_id               | UUID      | Foreign key referencing `connection(id)`.        |
+| created_at                  | TIMESTAMP | Timestamp when the record was created.           |
+| updated_at                  | TIMESTAMP | Timestamp when the record was last modified.     |
+| auto_propagation_status     | ENUM      | Status of automatic schema propagation.          |
+| backfill_preference         | ENUM      | User preference for backfill operations.         |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `connection_id` references `connection(id)`
+- Index: `connection_idx` on (`connection_id`)
+
+---
+
+### `scoped_configuration`
+
+| Column Name      | Datatype  | Description                                    |
+| --------------- | --------- | ---------------------------------------------- |
+| id              | UUID      | Primary key. Unique identifier for the scoped configuration. |
+| key            | VARCHAR   | Configuration key.                            |
+| resource_type  | ENUM      | Type of resource associated with the configuration. |
+| resource_id    | UUID      | Identifier of the associated resource.        |
+| scope_type     | ENUM      | Type of scope (e.g., workspace, organization). |
+| scope_id       | UUID      | Identifier for the scope of the configuration. |
+| value          | VARCHAR   | Value of the configuration.                   |
+| description    | TEXT      | Description of the configuration setting.     |
+| reference_url  | VARCHAR   | URL reference for more information.           |
+| origin_type    | ENUM      | Type of origin for the configuration setting. |
+| origin        | VARCHAR   | Source of the configuration setting.          |
+| expires_at     | DATE      | Expiration date of the configuration.         |
+| created_at     | TIMESTAMP | Timestamp when the record was created.        |
+| updated_at     | TIMESTAMP | Timestamp when the record was last modified.  |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Unique Constraint: (`key`, `resource_type`, `resource_id`, `scope_type`, `scope_id`)
+
+---
+
+### `secret_persistence_config`
+
+| Column Name                           | Datatype  | Description                                       |
+| ------------------------------------- | --------- | ------------------------------------------------- |
+| id                                    | UUID      | Primary key. Unique identifier for secret persistence configuration. |
+| scope_id                              | UUID      | Identifier for the scope of the secret.          |
+| scope_type                            | ENUM      | Scope type (`organization`, `workspace`, etc.).  |
+| secret_persistence_config_coordinate | VARCHAR   | Coordinate for secret persistence configuration. |
+| secret_persistence_type               | ENUM      | Type of secret persistence method.               |
+| created_at                            | TIMESTAMP | Timestamp when the record was created.           |
+| updated_at                            | TIMESTAMP | Timestamp when the record was last modified.     |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Unique Constraint: (`scope_id`, `scope_type`)
+
+---
+
+### `sso_config`
+
+| Column Name       | Datatype  | Description                                    |
+| ---------------- | --------- | ---------------------------------------------- |
+| id              | UUID      | Primary key. Unique identifier for the SSO configuration. |
+| organization_id | UUID      | Foreign key referencing `organization(id)`.    |
+| keycloak_realm | VARCHAR   | Keycloak realm associated with the organization. |
+| created_at     | TIMESTAMP | Timestamp when the record was created.         |
+| updated_at     | TIMESTAMP | Timestamp when the record was last modified.   |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `organization_id` references `organization(id)`
+- Unique Constraint: (`keycloak_realm`)
+- Unique Constraint: (`organization_id`)
+- Index: `sso_config_keycloak_realm_idx` on (`keycloak_realm`)
+- Index: `sso_config_organization_id_idx` on (`organization_id`)
+
+---
+
+### `state`
+
+| Column Name    | Datatype  | Description                                       |
+| ------------- | --------- | ------------------------------------------------- |
+| id            | UUID      | Primary key. Unique identifier for the state record. |
+| connection_id | UUID      | Foreign key referencing `connection(id)`.        |
+| state         | JSONB     | JSON blob storing the state information.         |
+| created_at    | TIMESTAMP | Timestamp when the record was created.           |
+| updated_at    | TIMESTAMP | Timestamp when the record was last modified.     |
+| stream_name   | TEXT      | Name of the stream associated with this state.   |
+| namespace     | TEXT      | Namespace of the stream.                         |
+| type          | ENUM      | Type of state (`STREAM`, `GLOBAL`, `LEGACY`).    |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`, `connection_id`)
+- Foreign Key: `connection_id` references `connection(id)`
+- Unique Constraint: (`connection_id`, `stream_name`, `namespace`)
+
+---
+
+### `stream_generation`
+
+| Column Name       | Datatype  | Description                                    |
+| ---------------- | --------- | ---------------------------------------------- |
+| id              | UUID      | Primary key. Unique identifier for the stream generation record. |
+| connection_id   | UUID      | Foreign key referencing `connection(id)`.      |
+| stream_name    | VARCHAR   | Name of the stream.                           |
+| stream_namespace | VARCHAR | Namespace of the stream.                      |
+| generation_id  | BIGINT    | Identifier for the stream generation.         |
+| start_job_id   | BIGINT    | Job ID that started this stream generation.   |
+| created_at     | TIMESTAMP | Timestamp when the record was created.        |
+| updated_at     | TIMESTAMP | Timestamp when the record was last modified.  |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `connection_id` references `connection(id)`
+- Index: `stream_generation_connection_id_stream_name_generation_id_idx` on (`connection_id`, `stream_name`, `generation_id`)
+- Index: `stream_generation_connection_id_stream_name_stream_namespace_idx` on (`connection_id`, `stream_name`, `stream_namespace`, `generation_id`)
+
+---
+
+### `stream_refreshes`
+
+| Column Name       | Datatype  | Description                                    |
+| ---------------- | --------- | ---------------------------------------------- |
+| id              | UUID      | Primary key. Unique identifier for the stream refresh record. |
+| connection_id   | UUID      | Foreign key referencing `connection(id)`.      |
+| stream_name    | VARCHAR   | Name of the stream.                           |
+| stream_namespace | VARCHAR | Namespace of the stream.                      |
+| created_at     | TIMESTAMP | Timestamp when the record was created.        |
+| refresh_type   | ENUM      | Type of refresh operation performed.          |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `connection_id` references `connection(id)`
+- Index: `stream_refreshes_connection_id_idx` on (`connection_id`)
+- Index: `stream_refreshes_connection_id_stream_name_idx` on (`connection_id`, `stream_name`)
+- Index: `stream_refreshes_connection_id_stream_name_stream_namespace_idx` on (`connection_id`, `stream_name`, `stream_namespace`)
+
+---
+
+### `stream_reset`
+
+| Column Name       | Datatype  | Description                                    |
+| ---------------- | --------- | ---------------------------------------------- |
+| id              | UUID      | Primary key. Unique identifier for the stream reset record. |
+| connection_id   | UUID      | Foreign key referencing `connection(id)`.      |
+| stream_namespace | TEXT     | Namespace of the stream.                      |
+| stream_name    | TEXT      | Name of the stream being reset.                |
+| created_at     | TIMESTAMP | Timestamp when the record was created.        |
+| updated_at     | TIMESTAMP | Timestamp when the record was last modified.  |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `connection_id` references `connection(id)`
+- Unique Constraint: (`connection_id`, `stream_name`, `stream_namespace`)
+- Index: `connection_id_stream_name_namespace_idx` on (`connection_id`, `stream_name`, `stream_namespace`)
+
+---
+
+### `tag`
+
+| Column Name   | Datatype  | Description                                        |
+| ------------ | --------- | -------------------------------------------------- |
+| id           | UUID      | Primary key. Unique identifier for the tag.        |
+| workspace_id | UUID      | Foreign key referencing `workspace(id)`.           |
+| name         | VARCHAR   | Name of the tag.                                   |
+| color        | CHAR(6)   | Hexadecimal color code for the tag.                |
+| created_at   | TIMESTAMP | Timestamp when the record was created.             |
+| updated_at   | TIMESTAMP | Timestamp when the record was last modified.       |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `workspace_id` references `workspace(id)`
+- Unique Constraint: (`name`, `workspace_id`)
+- Index: `tag_workspace_id_idx` on (`workspace_id`)
+
+---
+
+### `user`
+
+| Column Name           | Datatype  | Description                                      |
+| --------------------- | --------- | ------------------------------------------------ |
+| id                   | UUID      | Primary key. Unique identifier for the user.     |
+| name                 | VARCHAR   | Name of the user.                                |
+| default_workspace_id | UUID      | Foreign key referencing `workspace(id)`.        |
+| status              | ENUM      | Status of the user account.                     |
+| company_name        | VARCHAR   | Name of the company associated with the user.   |
+| email               | VARCHAR   | Email address of the user.                      |
+| news                | BOOLEAN   | Whether the user subscribes to newsletters.     |
+| ui_metadata         | JSONB     | UI metadata associated with the user.           |
+| created_at          | TIMESTAMP | Timestamp when the record was created.          |
+| updated_at          | TIMESTAMP | Timestamp when the record was last modified.    |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `default_workspace_id` references `workspace(id)`
+- Unique Constraint: (`email`)
+- Index: `user_email_idx` on (`email`)
+- Unique Index: `user_email_unique_key` on `lower(email)`
+
+---
+
+### `user_invitation`
+
+| Column Name       | Datatype  | Description                                         |
+| ---------------- | --------- | --------------------------------------------------- |
+| id              | UUID      | Primary key. Unique identifier for the invitation.  |
+| invite_code     | VARCHAR   | Unique code for the invitation.                     |
+| inviter_user_id | UUID      | Foreign key referencing `user(id)`.                 |
+| invited_email   | VARCHAR   | Email of the invited user.                          |
+| permission_type | ENUM      | Type of permission granted to the invited user.    |
+| status         | ENUM      | Status of the invitation (`pending`, `accepted`, etc.). |
+| created_at     | TIMESTAMP | Timestamp when the record was created.              |
+| updated_at     | TIMESTAMP | Timestamp when the record was last modified.        |
+| scope_id       | UUID      | Scope ID for the invitation.                        |
+| scope_type     | ENUM      | Type of scope (`organization`, `workspace`, etc.).  |
+| accepted_by_user_id | UUID  | Foreign key referencing `user(id)`.                 |
+| expires_at     | TIMESTAMP | Expiration timestamp of the invitation.             |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `inviter_user_id` references `user(id)`
+- Foreign Key: `accepted_by_user_id` references `user(id)`
+- Unique Constraint: (`invite_code`)
+- Index: `user_invitation_invite_code_idx` on (`invite_code`)
+- Index: `user_invitation_invited_email_idx` on (`invited_email`)
+- Index: `user_invitation_scope_id_index` on (`scope_id`)
+- Index: `user_invitation_scope_type_and_scope_id_index` on (`scope_type`, `scope_id`)
+- Index: `user_invitation_accepted_by_user_id_index` on (`accepted_by_user_id`)
+- Index: `user_invitation_expires_at_index` on (`expires_at`)
+
+---
+
+### `workload`
+
+| Column Name         | Datatype  | Description                                     |
+| ------------------ | --------- | ----------------------------------------------- |
+| id                | VARCHAR   | Primary key. Unique identifier for the workload. |
+| dataplane_id      | VARCHAR   | Identifier for the dataplane handling this workload. |
+| status           | ENUM      | Status of the workload (`pending`, `running`, etc.). |
+| created_at       | TIMESTAMP | Timestamp when the record was created.          |
+| updated_at       | TIMESTAMP | Timestamp when the record was last modified.    |
+| last_heartbeat_at | TIMESTAMP | Timestamp of the last heartbeat received.      |
+| input_payload    | TEXT      | Payload associated with the workload.           |
+| log_path        | TEXT      | Path to logs for the workload.                  |
+| geography       | VARCHAR   | Geography associated with the workload.         |
+| mutex_key       | VARCHAR   | Mutex key used for workload execution control.  |
+| type            | ENUM      | Type of workload being processed.               |
+| termination_source | VARCHAR | Source that terminated the workload.            |
+| termination_reason | TEXT    | Reason for workload termination.                |
+| auto_id         | UUID      | Auto-generated identifier for the workload.     |
+| deadline        | TIMESTAMP | Deadline for workload execution.                |
+| signal_input    | TEXT      | Signal input for the workload.                  |
+| dataplane_group | VARCHAR   | Dataplane group associated with the workload.   |
+| priority        | INT       | Priority level of the workload.                 |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Index: `active_workload_by_mutex_idx` on (`mutex_key`) where (`status` is active)
+- Index: `workload_deadline_idx` on (`deadline`) where (`deadline IS NOT NULL`)
+- Index: `workload_mutex_idx` on (`mutex_key`)
+- Index: `workload_status_idx` on (`status`)
+
+---
+
+### `workload_label`
+
+| Column Name    | Datatype  | Description                                    |
+| -------------- | --------- | ---------------------------------------------- |
+| id             | UUID      | Primary key. Unique identifier for the label. |
+| workload_id    | VARCHAR   | Foreign key referencing `workload(id)`.       |
+| key           | VARCHAR   | Label key.                                    |
+| value         | VARCHAR   | Label value.                                  |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `workload_id` references `workload(id)`
+- Unique Constraint: (`workload_id`, `key`)
+- Index: `workload_label_workload_id_idx` on (`workload_id`)
+
+---
+
+### `workspace`
+
+| Column Name               | Datatype  | Description                                   |
+| ------------------------ | --------- | --------------------------------------------- |
+| id                      | UUID      | Primary key. Unique identifier for the workspace. |
+| customer_id             | UUID      | Customer associated with the workspace.      |
+| name                    | VARCHAR   | Name of the workspace.                       |
+| slug                    | VARCHAR   | Slug identifier for the workspace.           |
+| email                   | VARCHAR   | Contact email for the workspace.             |
+| initial_setup_complete  | BOOLEAN   | Whether the initial setup is complete.       |
+| anonymous_data_collection | BOOLEAN | Whether anonymous data collection is enabled. |
+| send_newsletter         | BOOLEAN   | Whether the user is subscribed to newsletters. |
+| send_security_updates   | BOOLEAN   | Whether security updates are sent.           |
+| display_setup_wizard    | BOOLEAN   | Whether the setup wizard should be displayed. |
+| tombstone               | BOOLEAN   | Whether the workspace is deleted.            |
+| notifications           | JSONB     | Notification settings.                        |
+| first_sync_complete    | BOOLEAN   | Whether the first sync has completed.        |
+| feedback_complete      | BOOLEAN   | Whether feedback collection is completed.    |
+| created_at             | TIMESTAMP | Timestamp when the record was created.       |
+| updated_at             | TIMESTAMP | Timestamp when the record was last modified. |
+| geography              | ENUM      | Geography associated with the workspace.     |
+| webhook_operation_configs | JSONB  | Webhook operation configurations.            |
+| notification_settings  | JSONB     | Notification settings for the workspace.     |
+| organization_id        | UUID      | Foreign key referencing `organization(id)`.  |
+
+#### Indexes and Constraints
+
+- Primary Key: (`id`)
+- Foreign Key: `organization_id` references `organization(id)`
+
+---
+
+### `workspace_service_account`
+
+| Column Name            | Datatype  | Description                                      |
+| ---------------------- | --------- | ------------------------------------------------ |
+| workspace_id          | UUID      | Foreign key referencing `workspace(id)`.       |
+| service_account_id    | VARCHAR   | Service account ID.                             |
+| service_account_email | VARCHAR   | Email associated with the service account.      |
+| json_credential      | JSONB     | JSON blob storing credentials.                  |
+| hmac_key             | JSONB     | JSON blob storing HMAC keys.                    |
+| created_at           | TIMESTAMP | Timestamp when the record was created.          |
+| updated_at           | TIMESTAMP | Timestamp when the record was last modified.    |
+
+#### Indexes and Constraints
+
+- Primary Key: (`workspace_id`, `service_account_id`)
+- Foreign Key: `workspace_id` references `workspace(id)`
+
+
 
 ## Jobs Database
 
-- `jobs`
-  - Each record in this table represents a job.
-  - The `config_type` column captures the type of job. We only make jobs for `sync` and `reset` (we do not use them for `spec`, `check`, `discover`).
-  - A job represents an attempt to use a connector (or a pair of connectors). The goal of this model is to capture the input of that run. A job can have multiple attempts (see the `attempts` table). The guarantee across all attempts is that the input into each attempt will be the same.
-  - That input is captured in the `config` column. This column is a JSON Blob with the schema of a [JobConfig](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/config-models-oss/src/main/resources/types/JobConfig.yaml). Only `sync` and `resetConnection` are ever used in that model.
-    - The other top-level fields are vestigial from when `spec`, `check`, `discover` were used in this model (we will eventually remove them).
-  - The `scope` column contains the `connection_id` for the relevant connection of the job.
-    - Context: It is called `scope` and not `connection_id`, because, this table was originally used for `spec`, `check`, and `discover`, and in those cases the `scope` referred to the relevant actor or actor definition. At this point the scope is always a `connection_id`.
-  - The `status` column contains the job status. The lifecycle of a job is explained in detail in the [Jobs & Workers documentation](jobs.md#job-state-machine).
-- `attempts`
-  - Each record in this table represents an attempt.
-  - Each attempt belongs to a job--this is captured by the `job_id` column. All attempts for a job will run on the same input.
-  - The `id` column is a unique id across all attempts while the `attempt_number` is an ascending number of the attempts for a job.
-  - The output of each attempt, however, can be different. The `output` column is a JSON blob with the schema of a [JobOutput](ahttps://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/config-models-oss/src/main/resources/types/StandardSyncOutput.yaml). Only `sync` is used in that model. Reset jobs will also use the `sync` field, because under the hood `reset` jobs end up just doing a `sync` with special inputs. This object contains all the output info for a sync including stats on how much data was moved.
-    - The other top-level fields are vestigial from when `spec`, `check`, `discover` were used in this model (we will eventually remove them).
-  - The `status` column contains the attempt status. The lifecycle of a job / attempt is explained in detail in the [Jobs & Workers documentation](jobs.md#job-state-machine).
-  - If the attempt fails, the `failure_summary` column will be populated. The column is a JSON blob with the schema of [AttemptFailureReason](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/config-models-oss/src/main/resources/types/AttemptFailureSummary.yaml).
-  - The `log_path` column captures where logs for the attempt will be written.
-  - `created_at`, `started_at`, and `ended_at` track the run time.
-  - The `temporal_workflow_id` column keeps track of what temporal execution is associated with the attempt.
-- `airbyte_metadata`
-  - This table is a key-value store for various metadata about the platform. It is used to track information about what version the platform is currently on as well as tracking the upgrade history.
-  - Logically it does not make a lot of sense that it is in the jobs db. It would make sense if it were either in its own dbs or in the config dbs.
-  - The only two columns are `key` and `value`. It is truly just a key-value store.
-- `airbyte_jobs_migrations` is metadata table used by Flyway (our database migration tool). It is not used for any application use cases.
+### `jobs`
+
+| Column Name  | Datatype  | Description |
+|------------------|--------------|----------------|
+| `id`            | `bigint`      | Primary key, uniquely identifies a job. |
+| `config_type`   | `job_config_type` | Type of job (`sync`, `reset`). |
+| `scope`         | `varchar(255)` | Identifier for the connection or scope of the job. |
+| `config`        | `jsonb`       | JSON blob containing job configuration. |
+| `status`        | `job_status`  | Current status of the job (`running`, `failed`, `succeeded`, etc.). |
+| `started_at`    | `timestamp(6) with time zone` | Timestamp when the job started. |
+| `created_at`    | `timestamp(6) with time zone` | Timestamp when the job was created. |
+| `updated_at`    | `timestamp(6) with time zone` | Timestamp when the job was last updated. |
+| `metadata`      | `jsonb`       | JSON blob containing metadata for the job. |
+| `is_scheduled`  | `boolean`     | Whether the job was scheduled automatically (default: `true`). |
+
+#### Indexes & Constraints
+
+- Primary Key: `id`
+- Indexes:
+    - `jobs_config_type_idx` → (`config_type`)
+    - `jobs_scope_idx` → (`scope`)
+    - `jobs_status_idx` → (`status`)
+    - `jobs_updated_at_idx` → (`updated_at`)
+    - `scope_created_at_idx` → (`scope`, `created_at` DESC)
+    - `scope_non_terminal_status_idx` → (`scope`, `status`) (only for non-terminal statuses: not `failed`, `succeeded`, or `cancelled`)
+
+---
+
+### `attempts`
+
+| Column Name  | Datatype  | Description |
+|------------------|--------------|----------------|
+| `id`            | `bigint`      | Primary key, uniquely identifies an attempt. |
+| `job_id`        | `bigint`      | Foreign key to `jobs(id)`, linking the attempt to a job. |
+| `attempt_number` | `int`         | Number of the attempt for a given job. |
+| `log_path`      | `varchar(255)` | Path where logs for this attempt are stored. |
+| `output`        | `jsonb`       | JSON blob containing the attempt's output details. |
+| `status`        | `attempt_status` | Status of the attempt (`running`, `failed`, `succeeded`). |
+| `created_at`    | `timestamp(6) with time zone` | Timestamp when the attempt was created. |
+| `updated_at`    | `timestamp(6) with time zone` | Timestamp when the attempt was last updated. |
+| `ended_at`      | `timestamp(6) with time zone` | Timestamp when the attempt ended. |
+| `failure_summary` | `jsonb`       | JSON blob containing failure reason details. |
+| `processing_task_queue` | `varchar(255)` | Task queue identifier for processing. |
+| `attempt_sync_config` | `jsonb`   | JSON blob for sync configuration. |
+
+#### Indexes & Constraints
+
+- Primary Key: `id`
+- Foreign Key: `job_id` → `jobs(id)`
+- Indexes:
+    - `attempts_status_idx` → (`status`)
+    - `job_attempt_idx` → (`job_id`, `attempt_number`) (Unique)
+
+---
+
+### `airbyte_metadata`
+
+| Column Name  | Datatype  | Description |
+|------------------|--------------|----------------|
+| `key`           | `varchar(255)` | Primary key, uniquely identifies a metadata key. |
+| `value`         | `varchar(255)` | Value associated with the key. |
+
+#### Indexes & Constraints
+
+- Primary Key: `key`
+
+---
+
+### `airbyte_jobs_migrations`
+
+| Column Name  | Datatype  | Description |
+|------------------|--------------|----------------|
+| `installed_rank` | `int`        | Primary key, rank of migration execution. |
+| `version`       | `varchar(50)` | Version number of the migration. |
+| `description`   | `varchar(200)` | Description of the migration. |
+| `type`         | `varchar(20)`  | Type of migration. |
+| `script`       | `varchar(1000)` | Name of the migration script. |
+| `checksum`     | `int`         | Checksum of the migration script. |
+| `installed_by` | `varchar(100)` | User who installed the migration. |
+| `installed_on` | `timestamp(6)` | Timestamp when migration was installed. |
+| `execution_time` | `int`        | Execution time in milliseconds. |
+| `success`      | `boolean`     | Whether the migration succeeded. |
+
+#### Indexes & Constraints
+
+- Primary Key: `installed_rank`
+- Indexes:
+    - `airbyte_jobs_migrations_s_idx` → (`success`)
+
+---
+
+### `normalization_summaries`
+
+| Column Name  | Datatype  | Description |
+|------------------|--------------|----------------|
+| `id`            | `uuid`        | Primary key, uniquely identifies a normalization summary. |
+| `attempt_id`    | `bigint`      | Foreign key to `attempts(id)`. |
+| `start_time`    | `timestamp(6) with time zone` | Start time of the normalization process. |
+| `end_time`      | `timestamp(6) with time zone` | End time of the normalization process. |
+| `failures`      | `jsonb`       | JSON blob containing failure details. |
+| `created_at`    | `timestamp(6) with time zone` | Timestamp when the summary was created. |
+| `updated_at`    | `timestamp(6) with time zone` | Timestamp when the summary was last updated. |
+
+#### Indexes & Constraints
+
+- Primary Key: `id`
+- Foreign Key: `attempt_id` → `attempts(id)`
+- Indexes:
+    - `normalization_summary_attempt_id_idx` → (`attempt_id`)

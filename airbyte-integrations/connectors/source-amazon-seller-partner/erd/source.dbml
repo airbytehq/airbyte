@@ -1,0 +1,1085 @@
+Table "GET_AFN_INVENTORY_DATA" {
+    "seller-sku" string
+    "fulfillment-channel-sku" string
+    "asin" string
+    "condition-type" string
+    "Warehouse-Condition-code" string
+    "Quantity Available" string
+    "dataEndTime" string
+}
+
+Table "GET_AFN_INVENTORY_DATA_BY_COUNTRY" {
+    "seller-sku" string
+    "fulfillment-channel-sku" string
+    "asin" string
+    "condition-type" string
+    "country" string
+    "quantity-for-local-fulfillment" string
+    "dataEndTime" string
+}
+
+Table "GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA" {
+    "removal-date" string
+    "order-id" string
+    "shipment-date" string
+    "sku" string
+    "fnsku" string
+    "disposition" string
+    "quantity shipped" string
+    "carrier" string
+    "tracking-number" string
+    "dataEndTime" string
+}
+
+Table "GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT" {
+    "Country" string
+    "Product Name" string
+    "FNSKU" string
+    "Merchant SKU" string
+    "ASIN" string
+    "Condition" string
+    "Supplier" string
+    "Supplier part no." string
+    "Currency code" string
+    "Price" string
+    "Sales last 30 days" string
+    "Units Sold Last 30 Days" string
+    "Total Units" string
+    "Inbound" string
+    "Available" string
+    "FC transfer" string
+    "FC Processing" string
+    "Customer Order" string
+    "Unfulfillable" string
+    "Working" string
+    "Shipped" string
+    "Receiving" string
+    "Fulfilled by" string
+    "Total Days of Supply (including units from open shipments)" string
+    "Days of Supply at Amazon Fulfillment Network" string
+    "Alert" string
+    "Recommended replenishment qty" string
+    "Recommended ship date" string
+    "Recommended action" string
+    "Unit storage size" string
+    "dataEndTime" string
+}
+
+Table "GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING" {
+    "order-id" string
+    "order-item-id" string
+    "purchase-date" string
+    "payments-date" string
+    "reporting-date" string
+    "promise-date" string
+    "days-past-promise" string
+    "buyer-email" string
+    "buyer-phone-number" string
+    "is-business-order" string
+    "quantity-purchased" string
+    "quantity-shipped" string
+    "quantity-to-ship" string
+    "product-name" string
+    "purchase-order-number" string
+    "recipient-name" string
+    "ship-city" string
+    "ship-country" string
+    "ship-postal-code" string
+    "ship-promotion-discount" string
+    "ship-service-level" string
+    "ship-state" string
+    "shipping-price" string
+    "shipping-tax" string
+    "sku" string
+    "dataEndTime" string
+}
+
+Table "GET_FLAT_FILE_OPEN_LISTINGS_DATA" {
+    "sku" string
+    "asin" string
+    "price" string
+    "quantity" string
+    "Business Price" string
+    "Quantity Price Type" string
+    "Quantity Lower Bound 1" string
+    "Quantity Price 1" string
+    "Quantity Lower Bound 2" string
+    "Quantity Price 2" string
+    "Quantity Lower Bound 3" string
+    "Quantity Price 3" string
+    "Quantity Lower Bound 4" string
+    "Quantity Price 4" string
+    "Quantity Lower Bound 5" string
+    "Quantity Price 5" string
+    "Progressive Price Type" string
+    "Progressive Lower Bound 1" string
+    "Progressive Price 1" string
+    "Progressive Lower Bound 2" string
+    "Progressive Price 2" string
+    "Progressive Lower Bound 3" string
+    "Progressive Price 3" string
+    "dataEndTime" string
+}
+
+Table "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL" {
+    "amazon-order-id" string [pk]
+    "merchant-order-id" string
+    "purchase-date" string
+    "last-updated-date" string
+    "order-status" string
+    "fulfillment-channel" string
+    "sales-channel" string
+    "order-channel" string
+    "ship-service-level" string
+    "product-name" string
+    "sku" string
+    "asin" string
+    "item-status" string
+    "quantity" string
+    "currency" string
+    "item-price" string
+    "item-tax" string
+    "shipping-price" string
+    "shipping-tax" string
+    "gift-wrap-price" string
+    "gift-wrap-tax" string
+    "item-promotion-discount" string
+    "ship-promotion-discount" string
+    "ship-city" string
+    "ship-state" string
+    "ship-postal-code" string
+    "ship-country" string
+    "promotion-ids" string
+    "cpf" string
+    "is-business-order" string
+    "purchase-order-number" string
+    "price-designation" string
+    "signature-confirmation-recommended" string
+    "dataEndTime" string
+}
+
+Table "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE" {
+    "settlement-id" string
+    "settlement-start-date" string
+    "settlement-end-date" string
+    "deposit-date" string
+    "total-amount" string
+    "currency" string
+    "transaction-type" string
+    "order-id" string
+    "merchant-order-id" string
+    "adjustment-id" string
+    "shipment-id" string
+    "marketplace-name" string
+    "shipment-fee-type" string
+    "shipment-fee-amount" string
+    "order-fee-type" string
+    "order-fee-amount" string
+    "fulfillment-id" string
+    "posted-date" string
+    "order-item-code" string
+    "merchant-order-item-id" string
+    "merchant-adjustment-item-id" string
+    "sku" string
+    "quantity-purchased" string
+    "price-type" string
+    "price-amount" string
+    "item-related-fee-type" string
+    "item-related-fee-amount" string
+    "misc-fee-amount" string
+    "other-fee-amount" string
+    "other-fee-reason-description" string
+    "promotion-id" string
+    "promotion-type" string
+    "promotion-amount" string
+    "direct-payment-type" string
+    "direct-payment-amount" string
+    "other-amount" string
+    "report_id" string
+    "dataEndTime" string
+}
+
+Table "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL" {
+    "amazon-order-id" string
+    "merchant-order-id" string
+    "shipment-id" string
+    "shipment-item-id" string
+    "amazon-order-item-id" string
+    "merchant-order-item-id" string
+    "purchase-date" string
+    "payments-date" string
+    "shipment-date" string
+    "reporting-date" string
+    "buyer-email" string
+    "buyer-name" string
+    "buyer-phone-number" string
+    "sku" string
+    "product-name" string
+    "quantity-shipped" string
+    "currency" string
+    "item-price" string
+    "item-tax" string
+    "shipping-price" string
+    "shipping-tax" string
+    "gift-wrap-price" string
+    "gift-wrap-tax" string
+    "ship-service-level" string
+    "recipient-name" string
+    "ship-address-1" string
+    "ship-address-2" string
+    "ship-address-3" string
+    "ship-city" string
+    "ship-state" string
+    "ship-postal-code" string
+    "ship-country" string
+    "ship-phone-number" string
+    "bill-address-1" string
+    "bill-address-2" string
+    "bill-address-3" string
+    "bill-city" string
+    "bill-state" string
+    "bill-postal-code" string
+    "bill-country" string
+    "item-promotion-discount" string
+    "ship-promotion-discount" string
+    "carrier" string
+    "tracking-number" string
+    "estimated-arrival-date" string
+    "fulfillment-center-id" string
+    "fulfillment-channel" string
+    "sales-channel" string
+    "dataEndTime" string
+}
+
+Table "GET_MERCHANT_LISTINGS_ALL_DATA" {
+    "item-name" string
+    "item-description" string
+    "listing-id" string [pk]
+    "seller-sku" string
+    "price" string
+    "quantity" string
+    "open-date" string
+    "image-url" string
+    "item-is-marketplace" string
+    "product-id-type" string
+    "zshop-shipping-fee" string
+    "item-note" string
+    "item-condition" string
+    "zshop-category1" string
+    "zshop-browse-path" string
+    "zshop-storefront-feature" string
+    "asin1" string
+    "asin2" string
+    "asin3" string
+    "will-ship-internationally" string
+    "expedited-shipping" string
+    "zshop-boldface" string
+    "product-id" string
+    "bid-for-featured-placement" string
+    "add-delete" string
+    "pending-quantity" string
+    "fulfillment-channel" string
+    "merchant-shipping-group" string
+    "status" string
+    "dataEndTime" string
+}
+
+Table "VendorDirectFulfillmentShipping" {
+    "purchaseOrderNumber" string [pk]
+    "sellingParty" object
+    "shipFromParty" object
+    "labelFormat" string
+    "labelData" array
+    "createdBefore" string
+}
+
+Table "Orders" {
+    "seller_id" string
+    "AmazonOrderId" string [pk]
+    "BuyerInfo" object
+    "PurchaseDate" string
+    "LastUpdateDate" string
+    "OrderStatus" string
+    "SellerOrderId" string
+    "FulfillmentChannel" string
+    "SalesChannel" string
+    "AutomatedShippingSettings" object
+    "HasRegulatedItems" boolean
+    "ShipServiceLevel" string
+    "OrderTotal" object
+    "NumberOfItemsShipped" integer
+    "NumberOfItemsUnshipped" integer
+    "PaymentMethod" string
+    "PaymentMethodDetails" array
+    "IsAccessPointOrder" boolean
+    "IsReplacementOrder" string
+    "MarketplaceId" string
+    "ShipmentServiceLevelCategory" string
+    "OrderType" string
+    "EarliestShipDate" string
+    "LatestShipDate" string
+    "IsBusinessOrder" boolean
+    "IsSoldByAB" boolean
+    "IsPrime" boolean
+    "IsGlobalExpressEnabled" boolean
+    "IsPremiumOrder" boolean
+    "IsISPU" boolean
+    "DefaultShipFromLocationAddress" object
+    "EarliestDeliveryDate" string
+    "LatestDeliveryDate" string
+    "ShippingAddress" object
+}
+
+Table "OrderItems" {
+    "AmazonOrderId" string
+    "ASIN" string
+    "OrderItemId" string [pk]
+    "SellerSKU" string
+    "Title" string
+    "QuantityOrdered" integer
+    "ProductInfo" object
+    "QuantityShipped" integer
+    "PointsGranted" object
+    "ItemPrice" object
+    "PromotionIds" array
+    "ItemTax" object
+    "ShippingPrice" object
+    "ShippingTax" object
+    "ShippingDiscount" object
+    "ShippingDiscountTax" object
+    "PromotionDiscount" object
+    "PromotionDiscountTax" object
+    "ScheduledDeliveryEndDate" string
+    "ScheduledDeliveryStartDate" string
+    "CODFee" object
+    "IsGift" string
+    "ConditionNote" string
+    "ConditionId" string
+    "ConditionSubtypeId" string
+    "CODFeeDiscount" object
+    "TaxCollection" object
+    "IsTransparency" boolean
+    "IossNumber" string
+    "SerialNumberRequired" boolean
+    "StoreChainStoreId" string
+    "DeemedResellerCategory" string
+    "PriceDesignation" string
+    "BuyerInfo" object
+    "BuyerRequestedCancel" object
+    "SerialNumbers" array
+    "LastUpdateDate" string
+}
+
+Table "GET_ORDER_REPORT_DATA_SHIPPING" {
+    "AmazonOrderID" string
+    "AmazonSessionID" string
+    "OrderDate" string
+    "OrderPostedDate" string
+    "BillingData" object
+    "FulfillmentData" object
+    "IsBusinessOrder" string
+    "Item" object
+    "dataEndTime" string
+}
+
+Table "GET_SELLER_FEEDBACK_DATA" {
+    "date" string
+    "rating" number
+    "comments" string
+    "response" string
+    "order_id" string
+    "rater_email" string
+    "dataEndTime" string
+}
+
+Table "GET_XML_BROWSE_TREE_DATA" {
+    "browseNodeId" string [pk]
+    "browseNodeAttributes" object
+    "browseNodeName" string
+    "browseNodeStoreContextName" string
+    "browsePathById" string
+    "browsePathByName" string
+    "hasChildren" string
+    "childNodes" object
+    "productTypeDefinitions" string
+    "refinementsInformation" object
+    "dataEndTime" string
+}
+
+Table "ListFinancialEventGroups" {
+    "FinancialEventGroupId" string [pk]
+    "ProcessingStatus" string
+    "FundTransferStatus" string
+    "OriginalTotal" object
+    "ConvertedTotal" object
+    "FundTransferDate" string
+    "TraceId" string
+    "AccountTail" string
+    "BeginningBalance" object
+    "FinancialEventGroupStart" string
+    "FinancialEventGroupEnd" string
+}
+
+Table "ListFinancialEvents" {
+    "ShipmentEventList" array
+    "RefundEventList" array
+    "GuaranteeClaimEventList" array
+    "ChargebackEventList" array
+    "PayWithAmazonEventList" array
+    "ServiceProviderCreditEventList" array
+    "RetrochargeEventList" array
+    "RentalTransactionEventList" array
+    "PerformanceBondRefundEventList" array
+    "ProductAdsPaymentEventList" array
+    "ServiceFeeEventList" array
+    "SellerDealPaymentEventList" array
+    "DebtRecoveryEventList" array
+    "LoanServicingEventList" array
+    "AdjustmentEventList" array
+    "SAFETReimbursementEventList" array
+    "SellerReviewEnrollmentPaymentEventList" array
+    "FBALiquidationEventList" array
+    "CouponPaymentEventList" array
+    "ImagingServicesFeeEventList" array
+    "NetworkComminglingTransactionEventList" array
+    "AffordabilityExpenseEventList" array
+    "AffordabilityExpenseReversalEventList" array
+    "TrialShipmentEventList" array
+    "TDSReimbursementEventList" array
+    "AdhocDisbursementEventList" array
+    "ShipmentSettleEventList" array
+    "ChargeRefundEventList" array
+    "FailedAdhocDisbursementEventList" array
+    "ValueAddedServiceChargeEventList" array
+    "CapacityReservationBillingEventList" array
+    "TaxWithholdingEventList" array
+    "RemovalShipmentEventList" array
+    "RemovalShipmentAdjustmentEventList" array
+    "PostedBefore" string
+}
+
+Table "GET_LEDGER_DETAIL_VIEW_DATA" {
+    "Date" string
+    "FNSKU" string
+    "ASIN" string
+    "MSKU" string
+    "Title" string
+    "Event Type" string
+    "Reference ID" string
+    "Quantity" string
+    "Fulfillment Center" string
+    "Disposition" string
+    "Reason" string
+    "Country" string
+    "Reconciled Quantity" string
+    "Unreconciled Quantity" string
+    "Date and Time" string
+    "dataEndTime" string
+}
+
+Table "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA" {
+    "shipment-date" string
+    "currency" string
+    "item-promotion-discount" string
+    "item-promotion-id" string
+    "description" string
+    "promotion-rule-value" string
+    "amazon-order-id" string
+    "shipment-id" string
+    "shipment-item-id" string
+    "dataEndTime" string
+}
+
+Table "GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA" {
+    "sku" string
+    "fnsku" string
+    "asin" string
+    "product-name" string
+    "condition" string
+    "your-price" string
+    "mfn-listing-exists" string
+    "mfn-fulfillable-quantity" string
+    "afn-listing-exists" string
+    "afn-warehouse-quantity" string
+    "afn-fulfillable-quantity" string
+    "afn-unsellable-quantity" string
+    "afn-reserved-quantity" string
+    "afn-total-quantity" string
+    "per-unit-volume" string
+    "afn-inbound-working-quantity" string
+    "afn-inbound-shipped-quantity" string
+    "afn-inbound-receiving-quantity" string
+    "afn-researching-quantity" string
+    "afn-reserved-future-supply" string
+    "afn-future-supply-buyable" string
+    "dataEndTime" string
+}
+
+Table "GET_MERCHANT_CANCELLED_LISTINGS_DATA" {
+    "item-name" string
+    "item-description" string
+    "seller-sku" string
+    "price" string
+    "quantity" string
+    "image-url" string
+    "item-is-marketplace" string
+    "product-id-type" string
+    "zshop-shipping-fee" string
+    "item-note" string
+    "item-condition" string
+    "zshop-category1" string
+    "zshop-browse-path" string
+    "zshop-storefront-feature" string
+    "asin1" string
+    "asin2" string
+    "asin3" string
+    "will-ship-internationally" string
+    "expedited-shipping" string
+    "zshop-boldface" string
+    "product-id" string
+    "add-delete" string
+    "Business Price" string
+    "Quantity Price Type" string
+    "Quantity Lower Bound 1" string
+    "Quantity Price 1" string
+    "Quantity Lower Bound 2" string
+    "Quantity Price 2" string
+    "Quantity Lower Bound 3" string
+    "Quantity Price 3" string
+    "Quantity Lower Bound 4" string
+    "Quantity Price 4" string
+    "Quantity Lower Bound 5" string
+    "Quantity Price 5" string
+    "merchant-shipping-group" string
+    "Progressive Price Type" string
+    "Progressive Lower Bound 1" string
+    "Progressive Price 1" string
+    "Progressive Lower Bound 2" string
+    "Progressive Price 2" string
+    "Progressive Lower Bound 3" string
+    "Progressive Price 3" string
+    "dataEndTime" string
+}
+
+Table "GET_MERCHANT_LISTINGS_DATA" {
+    "item-name" string
+    "item-description" string
+    "listing-id" string [pk]
+    "seller-sku" string
+    "price" string
+    "quantity" string
+    "open-date" string
+    "image-url" string
+    "item-is-marketplace" string
+    "product-id-type" string
+    "zshop-shipping-fee" string
+    "item-note" string
+    "item-condition" string
+    "zshop-category1" string
+    "zshop-browse-path" string
+    "zshop-storefront-feature" string
+    "asin1" string
+    "asin2" string
+    "asin3" string
+    "will-ship-internationally" string
+    "expedited-shipping" string
+    "zshop-boldface" string
+    "product-id" string
+    "bid-for-featured-placement" string
+    "add-delete" string
+    "pending-quantity" string
+    "fulfillment-channel" string
+    "Business Price" string
+    "Quantity Price Type" string
+    "Quantity Lower Bound 1" string
+    "Quantity Price 1" string
+    "Quantity Lower Bound 2" string
+    "Quantity Price 2" string
+    "Quantity Lower Bound 3" string
+    "Quantity Price 3" string
+    "Quantity Lower Bound 4" string
+    "Quantity Price 4" string
+    "Quantity Lower Bound 5" string
+    "Quantity Price 5" string
+    "merchant-shipping-group" string
+    "Progressive Price Type" string
+    "Progressive Lower Bound 1" string
+    "Progressive Price 1" string
+    "Progressive Lower Bound 2" string
+    "Progressive Price 2" string
+    "Progressive Lower Bound 3" string
+    "Progressive Price 3" string
+    "dataEndTime" string
+}
+
+Table "GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT" {
+    "item-name" string
+    "item-description" string
+    "listing-id" string [pk]
+    "seller-sku" string
+    "price" string
+    "quantity" string
+    "open-date" string
+    "image-url" string
+    "item-is-marketplace" string
+    "product-id-type" string
+    "zshop-shipping-fee" string
+    "item-note" string
+    "item-condition" string
+    "zshop-category1" string
+    "zshop-browse-path" string
+    "zshop-storefront-feature" string
+    "asin1" string
+    "asin2" string
+    "asin3" string
+    "will-ship-internationally" string
+    "expedited-shipping" string
+    "zshop-boldface" string
+    "product-id" string
+    "bid-for-featured-placement" string
+    "add-delete" string
+    "pending-quantity" string
+    "Business Price" string
+    "Quantity Price Type" string
+    "Quantity Lower Bound 1" string
+    "Quantity Price 1" string
+    "Quantity Lower Bound 2" string
+    "Quantity Price 2" string
+    "Quantity Lower Bound 3" string
+    "Quantity Price 3" string
+    "Quantity Lower Bound 4" string
+    "Quantity Price 4" string
+    "Quantity Lower Bound 5" string
+    "Quantity Price 5" string
+    "merchant-shipping-group" string
+    "Progressive Price Type" string
+    "Progressive Lower Bound 1" string
+    "Progressive Price 1" string
+    "Progressive Lower Bound 2" string
+    "Progressive Price 2" string
+    "Progressive Lower Bound 3" string
+    "Progressive Price 3" string
+    "dataEndTime" string
+}
+
+Table "GET_MERCHANT_LISTINGS_INACTIVE_DATA" {
+    "item-name" string
+    "item-description" string
+    "listing-id" string [pk]
+    "seller-sku" string
+    "price" string
+    "quantity" string
+    "open-date" string
+    "image-url" string
+    "item-is-marketplace" string
+    "product-id-type" string
+    "zshop-shipping-fee" string
+    "item-note" string
+    "item-condition" string
+    "zshop-category1" string
+    "zshop-browse-path" string
+    "zshop-storefront-feature" string
+    "asin1" string
+    "asin2" string
+    "asin3" string
+    "will-ship-internationally" string
+    "expedited-shipping" string
+    "zshop-boldface" string
+    "product-id" string
+    "bid-for-featured-placement" string
+    "add-delete" string
+    "pending-quantity" string
+    "fulfillment-channel" string
+    "merchant-shipping-group" string
+    "dataEndTime" string
+}
+
+Table "GET_STRANDED_INVENTORY_UI_DATA" {
+    "primary-action" string
+    "date-stranded" string
+    "Date-to-take-auto-removal" string
+    "status-primary" string
+    "status-secondary" string
+    "error-message" string
+    "stranded-reason" string
+    "asin" string
+    "sku" string
+    "fnsku" string
+    "product-name" string
+    "condition" string
+    "fulfilled-by" string
+    "fulfillable-qty" string
+    "your-price" string
+    "unfulfillable-qty" string
+    "reserved-quantity" string
+    "inbound-shipped-qty" string
+    "dataEndTime" string
+}
+
+Table "GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL" {
+    "LastUpdatedDate" string
+    "SalesChannel" string
+    "OrderStatus" string
+    "AmazonOrderID" string [pk]
+    "PurchaseDate" string
+    "OrderItem" array
+    "FulfillmentData" object
+    "IsBusinessOrder" string
+    "MerchantOrderID" string
+    "dataEndTime" string
+}
+
+Table "GET_MERCHANTS_LISTINGS_FYP_REPORT" {
+    "Status" string
+    "Reason" string
+    "SKU" string
+    "ASIN" string
+    "Product name" string
+    "Condition" string
+    "Status Change Date" string
+    "Issue Description" string
+    "dataEndTime" string
+}
+
+Table "GET_FBA_SNS_FORECAST_DATA" {
+    "offer-state" string
+    "snapshot-date" string
+    "sku" string
+    "fnsku" string
+    "asin" string
+    "estimated-avg-sns-discount-next-8-weeks" string
+    "product-name" string
+    "country" string
+    "active-subscriptions" string
+    "week-1-start-date" string
+    "scheduled-sns-units-week-1" string
+    "scheduled-sns-units-week-2" string
+    "scheduled-sns-units-week-3" string
+    "scheduled-sns-units-week-4" string
+    "scheduled-sns-units-week-5" string
+    "scheduled-sns-units-week-6" string
+    "scheduled-sns-units-week-7" string
+    "scheduled-sns-units-week-8" string
+    "dataEndTime" string
+}
+
+Table "GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE" {
+    "amazon-order-id" string
+    "merchant-order-id" string
+    "purchase-date" string
+    "last-updated-date" string
+    "order-status" string
+    "fulfillment-channel" string
+    "sales-channel" string
+    "order-channel" string
+    "url" string
+    "ship-service-level" string
+    "product-name" string
+    "sku" string
+    "asin" string
+    "item-status" string
+    "quantity" string
+    "currency" string
+    "item-price" string
+    "item-tax" string
+    "shipping-price" string
+    "shipping-tax" string
+    "gift-wrap-price" string
+    "gift-wrap-tax" string
+    "item-promotion-discount" string
+    "ship-promotion-discount" string
+    "ship-country" string
+    "ship-promotion-id" string
+    "promotion-ids" string
+    "is-business-order" string
+    "purchase-order-number" string
+    "price-designation" string
+    "is-replacement-order" string
+    "dataEndTime" string
+}
+
+Table "GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE" {
+    "Order ID" string
+    "Order date" string
+    "Return request date" string
+    "Return request status" string
+    "Amazon RMA ID" string
+    "Merchant RMA ID" string
+    "Label type" string
+    "Label cost" string
+    "Currency code" string
+    "Return carrier" string
+    "Tracking ID" string
+    "Label to be paid by" string
+    "A-to-Z Claim" string
+    "Is prime" string
+    "ASIN" string
+    "Merchant SKU" string
+    "Item Name" string
+    "Return quantity" string
+    "Return Reason" string
+    "In policy" string
+    "Return type" string
+    "Resolution" string
+    "Invoice number" string
+    "Return delivery date" string
+    "Order Amount" string
+    "Order quantity" string
+    "SafeT Action reason" string
+    "SafeT claim id" string
+    "SafeT claim state" string
+    "SafeT claim creation time" string
+    "SafeT claim reimbursement amount" string
+    "Refunded Amount" string
+    "dataEndTime" string
+}
+
+Table "GET_FBA_INVENTORY_PLANNING_DATA" {
+    "snapshot-date" string
+    "sku" string
+    "fnsku" string
+    "asin" string
+    "product-name" string
+    "condition" string
+    "available" string
+    "pending-removal-quantity" string
+    "inv-age-0-to-90-days" string
+    "inv-age-91-to-180-days" string
+    "inv-age-181-to-270-days" string
+    "inv-age-271-to-365-days" string
+    "inv-age-365-plus-days" string
+    "currency" string
+    "qty-to-be-charged-ltsf-9-mo" string
+    "projected-ltsf-9-mo" string
+    "qty-to-be-charged-ltsf-12-mo" string
+    "estimated-ltsf-next-charge" string
+    "units-shipped-t7" string
+    "units-shipped-t30" string
+    "units-shipped-t60" string
+    "units-shipped-t90" string
+    "alert" string
+    "your-price" string
+    "sales-price" string
+    "lowest-price-new-plus-shipping" string
+    "lowest-price-used" string
+    "recommended-action" string
+    "healthy-inventory-level" string
+    "recommended-sales-price" string
+    "recommended-sale-duration-days" string
+    "recommended-removal-quantity" string
+    "estimated-cost-savings-of-recommended-actions" string
+    "sell-through" string
+    "item-volume" string
+    "volume-unit-measurement" string
+    "storage-type" string
+    "storage-volume" string
+    "marketplace" string
+    "product-group" string
+    "sales-rank" string
+    "days-of-supply" string
+    "estimated-excess-quantity" string
+    "weeks-of-cover-t30" string
+    "weeks-of-cover-t90" string
+    "featuredoffer-price" string
+    "sales-shipped-last-7-days" string
+    "sales-shipped-last-30-days" string
+    "sales-shipped-last-60-days" string
+    "sales-shipped-last-90-days" string
+    "inv-age-0-to-30-days" string
+    "inv-age-31-to-60-days" string
+    "inv-age-61-to-90-days" string
+    "inv-age-181-to-330-days" string
+    "inv-age-331-to-365-days" string
+    "estimated-storage-cost-next-month" string
+    "inbound-quantity" string
+    "inbound-working" string
+    "inbound-shipped" string
+    "inbound-received" string
+    "no-sale-last-6-months" string
+    "reserved-quantity" string
+    "unfulfillable-quantity" string
+    "estimated-ais-181-210-days" number
+    "estimated-ais-211-240-days" number
+    "estimated-ais-241-270-days" number
+    "estimated-ais-271-300-days" number
+    "estimated-ais-301-330-days" number
+    "estimated-ais-331-365-days" number
+    "estimated-ais-365-plus-days" number
+    "quantity-to-be-charged-ais-181-210-days" integer
+    "quantity-to-be-charged-ais-211-240-days" integer
+    "quantity-to-be-charged-ais-241-270-days" integer
+    "quantity-to-be-charged-ais-271-300-days" integer
+    "quantity-to-be-charged-ais-301-330-days" integer
+    "quantity-to-be-charged-ais-331-365-days" integer
+    "quantity-to-be-charged-ais-365-plus-days" integer
+    "dataEndTime" string
+}
+
+Table "GET_LEDGER_SUMMARY_VIEW_DATA" {
+    "Date" string
+    "FNSKU" string
+    "ASIN" string
+    "MSKU" string
+    "Title" string
+    "Disposition" string
+    "Starting Warehouse Balance" string
+    "In Transit Between Warehouses" string
+    "Receipts" string
+    "Customer Shipments" string
+    "Customer Returns" string
+    "Vendor Returns" string
+    "Warehouse Transfer In/Out" string
+    "Found" string
+    "Lost" string
+    "Damaged" string
+    "Disposed" string
+    "Other Events" string
+    "Ending Warehouse Balance" string
+    "Unknown Events" string
+    "Location" string
+    "dataEndTime" string
+}
+
+Table "VendorOrders" {
+    "purchaseOrderNumber" string [pk]
+    "purchaseOrderState" string
+    "orderDetails" object
+    "changedBefore" string
+}
+
+Table "GET_VENDOR_FORECASTING_FRESH_REPORT" {
+    "forecastGenerationDate" string
+    "asin" string
+    "startDate" string
+    "endDate" string
+    "meanForecastUnits" number
+    "p70ForecastUnits" number
+    "p80ForecastUnits" number
+    "p90ForecastUnits" number
+    "dataEndTime" string
+}
+
+Table "GET_VENDOR_FORECASTING_RETAIL_REPORT" {
+    "forecastGenerationDate" string
+    "asin" string
+    "startDate" string
+    "endDate" string
+    "meanForecastUnits" number
+    "p70ForecastUnits" number
+    "p80ForecastUnits" number
+    "p90ForecastUnits" number
+    "dataEndTime" string
+}
+
+Table "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT" {
+    "startDate" string
+    "endDate" string
+    "asin" string
+    "purchasedWithAsin" string
+    "purchasedWithRank" integer
+    "combinationPct" number
+    "dataEndTime" string
+    "queryEndDate" string
+}
+
+Table "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT" {
+    "departmentName" string
+    "searchTerm" string
+    "searchFrequencyRank" number
+    "clickedAsin" string
+    "clickShareRank" number
+    "clickShare" number
+    "conversionShare" number
+    "dataEndTime" string
+    "queryEndDate" string
+}
+
+Table "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT" {
+    "startDate" string
+    "endDate" string
+    "asin" string
+    "orders" integer
+    "uniqueCustomers" integer
+    "repeatCustomersPctTotal" number
+    "repeatPurchaseRevenue" object
+    "repeatPurchaseRevenuePctTotal" number
+    "dataEndTime" string
+    "queryEndDate" string
+}
+
+Table "GET_SALES_AND_TRAFFIC_REPORT" {
+    "queryEndDate" string
+    "parentAsin" string
+    "childAsin" string
+    "sku" string
+    "salesByAsin" object
+    "trafficByAsin" object
+}
+
+Table "GET_VENDOR_SALES_REPORT" {
+    "startDate" string
+    "endDate" string
+    "asin" string
+    "customerReturns" number
+    "orderedRevenue" object
+    "orderedUnits" number
+    "shippedCogs" object
+    "shippedRevenue" object
+    "shippedUnits" number
+}
+
+Table "GET_VENDOR_INVENTORY_REPORT" {
+    "startDate" string
+    "endDate" string
+    "asin" string
+    "vendorConfirmationRate" number
+    "netReceivedAmount" object
+    "netReceivedUnits" number
+    "openPurchaseOrderQuantity" number
+    "overallVendorLeadTime" number
+    "sellThroughRate" number
+    "sellableOnHandInventory" object
+    "sellableOnHandUnits" number
+    "unfilledCustomerOrderedUnits" number
+    "unsellableOnHandInventory" object
+    "aged90PlusDaysSellableUnits" number
+    "unhealthyInventory" object
+    "unhealthyUnits" number
+    "dataEndTime" string
+    "queryEndDate" string
+}
+
+Table "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT" {
+    "startDate" string
+    "endDate" string
+    "asin" string
+    "netPureProductMargin" number
+    "dataEndTime" string
+    "queryEndDate" string
+}
+
+Table "GET_VENDOR_REAL_TIME_INVENTORY_REPORT" {
+    "startTime" string
+    "endTime" string
+    "asin" string
+    "highlyAvailableInventory" integer
+    "dataEndTime" string
+    "queryEndDate" string
+}
+
+Table "GET_VENDOR_TRAFFIC_REPORT" {
+    "startDate" string
+    "endDate" string
+    "asin" string
+    "glanceViews" integer
+    "dataEndTime" string
+    "queryEndDate" string
+}
+
+Ref {
+    "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"."shipment-id" <> "VendorOrders"."purchaseOrderNumber"
+}
+
+Ref {
+    "OrderItems"."AmazonOrderId" <> "Orders"."AmazonOrderId"
+}

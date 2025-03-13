@@ -3,15 +3,17 @@
 import json
 from unittest import TestCase
 
+from source_github import SourceGithub
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.test.state_builder import StateBuilder
-from source_github import SourceGithub
 
 from .config import ConfigBuilder
+
 
 _CONFIG = ConfigBuilder().with_repositories(["airbytehq/mock-test-0", "airbytehq/mock-test-1", "airbytehq/mock-test-2"]).build()
 
@@ -162,12 +164,19 @@ class AssigneesTest(TestCase):
         per_partition_state_1 = {"partition": {"repository": "airbytehq/mock-test-1"}, "cursor": {"__ab_full_refresh_sync_complete": True}}
         per_partition_state_2 = {"partition": {"repository": "airbytehq/mock-test-2"}, "cursor": {"__ab_full_refresh_sync_complete": True}}
 
-        incoming_state = StateBuilder().with_stream_state("assignees", {
-            "states": [
-                {"partition": {"repository": "airbytehq/mock-test-0"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
-                {"partition": {"repository": "airbytehq/mock-test-1"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
-            ]
-        }).build()
+        incoming_state = (
+            StateBuilder()
+            .with_stream_state(
+                "assignees",
+                {
+                    "states": [
+                        {"partition": {"repository": "airbytehq/mock-test-0"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+                        {"partition": {"repository": "airbytehq/mock-test-1"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+                    ]
+                },
+            )
+            .build()
+        )
 
         source = SourceGithub()
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog(), state=incoming_state)

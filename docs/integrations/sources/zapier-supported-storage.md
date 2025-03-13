@@ -25,7 +25,23 @@ The Zapier Supported Storage Connector can be used to sync your [Zapier](https:/
 
 | Version | Date | Pull Request | Subject |
 |:--------|:-----------|:---------------------------------------------------------| |
-| 0.2.0  | 2024-08-09 | [43447](https://github.com/airbytehq/airbyte/pull/43447) | Refactor connector to manifest-only format |
+| 0.2.16 | 2025-03-09 | [55659](https://github.com/airbytehq/airbyte/pull/55659) | Update dependencies |
+| 0.2.15 | 2025-03-01 | [55168](https://github.com/airbytehq/airbyte/pull/55168) | Update dependencies |
+| 0.2.14 | 2025-02-23 | [54634](https://github.com/airbytehq/airbyte/pull/54634) | Update dependencies |
+| 0.2.13 | 2025-02-15 | [54115](https://github.com/airbytehq/airbyte/pull/54115) | Update dependencies |
+| 0.2.12 | 2025-02-08 | [53558](https://github.com/airbytehq/airbyte/pull/53558) | Update dependencies |
+| 0.2.11 | 2025-02-01 | [53107](https://github.com/airbytehq/airbyte/pull/53107) | Update dependencies |
+| 0.2.10 | 2025-01-25 | [52438](https://github.com/airbytehq/airbyte/pull/52438) | Update dependencies |
+| 0.2.9 | 2025-01-18 | [51955](https://github.com/airbytehq/airbyte/pull/51955) | Update dependencies |
+| 0.2.8 | 2025-01-11 | [51407](https://github.com/airbytehq/airbyte/pull/51407) | Update dependencies |
+| 0.2.7 | 2024-12-28 | [50793](https://github.com/airbytehq/airbyte/pull/50793) | Update dependencies |
+| 0.2.6 | 2024-12-21 | [50333](https://github.com/airbytehq/airbyte/pull/50333) | Update dependencies |
+| 0.2.5 | 2024-12-14 | [49783](https://github.com/airbytehq/airbyte/pull/49783) | Update dependencies |
+| 0.2.4 | 2024-12-12 | [48181](https://github.com/airbytehq/airbyte/pull/48181) | Update dependencies |
+| 0.2.3 | 2024-10-29 | [47798](https://github.com/airbytehq/airbyte/pull/47798) | Update dependencies |
+| 0.2.2 | 2024-10-28 | [47614](https://github.com/airbytehq/airbyte/pull/47614) | Update dependencies |
+| 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.2.0 | 2024-08-09 | [43447](https://github.com/airbytehq/airbyte/pull/43447) | Refactor connector to manifest-only format |
 | 0.1.14 | 2024-08-03 | [43273](https://github.com/airbytehq/airbyte/pull/43273) | Update dependencies |
 | 0.1.13 | 2024-07-27 | [42720](https://github.com/airbytehq/airbyte/pull/42720) | Update dependencies |
 | 0.1.12 | 2024-07-20 | [42253](https://github.com/airbytehq/airbyte/pull/42253) | Update dependencies |

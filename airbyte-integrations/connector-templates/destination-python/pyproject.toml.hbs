@@ -15,8 +15,8 @@ repository = "https://github.com/airbytehq/airbyte"
 packages = [ { include = "destination_{{snakeCase name}}" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+python = "^3.10,<3.12"
+airbyte-cdk = "^6.33.0"
 
 [tool.poetry.scripts]
 destination-{{dashCase name}} = "destination_{{snakeCase name}}.run:run"

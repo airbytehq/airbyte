@@ -57,4 +57,9 @@ public class IcebergConstants {
   public static final String CATALOG_NAME = "iceberg";
   public static final String DEFAULT_DATABASE = "default";
 
+  /**
+   * constant for QA checks to ignore http endpoint
+   */
+  public static final String HTTP_PREFIX = "http://"; // # ignore-https-check
+
 }

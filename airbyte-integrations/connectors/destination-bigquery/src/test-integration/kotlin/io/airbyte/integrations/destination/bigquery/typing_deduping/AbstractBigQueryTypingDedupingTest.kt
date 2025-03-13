@@ -26,6 +26,7 @@ import java.nio.file.Path
 import java.util.function.Function
 import java.util.stream.Collectors
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 abstract class AbstractBigQueryTypingDedupingTest : BaseTypingDedupingTest() {
@@ -288,6 +289,72 @@ abstract class AbstractBigQueryTypingDedupingTest : BaseTypingDedupingTest() {
                 "Expected two different values for loaded_at. If there is only 1 value, then we incorrectly triggered a soft reset. If there are more than 2, then something weird happened?"
             )
         }
+    }
+
+    @Test
+    fun testGenerationIdMigrationForOverwrite() {
+        // First sync
+        val catalog1 =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                            .withSyncId(41L)
+                            .withGenerationId(42L)
+                            .withMinimumGenerationId(0L)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(SCHEMA),
+                            ),
+                    ),
+                )
+        val messages1 = readMessages("dat/sync1_messages.jsonl")
+        runSync(
+            catalog1,
+            messages1,
+            "airbyte/destination-bigquery:2.4.20",
+            // Old connector version can't handle TRACE messages; disable the
+            // stream status message
+            streamStatus = null,
+        )
+
+        // Second sync
+        val catalog2 =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                            .withSyncId(42L)
+                            .withGenerationId(43L)
+                            .withMinimumGenerationId(43L)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(SCHEMA),
+                            ),
+                    ),
+                )
+        val messages2 = readMessages("dat/sync2_messages.jsonl")
+        runSync(catalog2, messages2)
+
+        val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_overwrite_raw.jsonl")
+        val expectedFinalRecords2 =
+            readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl")
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+    }
+
+    // Disabling until we can safely fetch generation ID
+    @Test
+    @Disabled
+    override fun interruptedOverwriteWithoutPriorData() {
+        super.interruptedOverwriteWithoutPriorData()
     }
 
     protected open val rawDataset: String

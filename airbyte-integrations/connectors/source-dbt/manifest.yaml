@@ -1,0 +1,1795 @@
+version: 4.3.2
+
+type: DeclarativeSource
+
+description: ""
+
+check:
+  type: CheckStream
+  stream_names:
+    - runs
+
+definitions:
+  streams:
+    runs:
+      type: DeclarativeStream
+      name: runs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/accounts/{{ config["account_id"] }}/runs/
+          http_method: GET
+          request_headers:
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/runs"
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/accounts/{{ config["account_id"] }}/projects
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    repositories:
+      type: DeclarativeStream
+      name: repositories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/accounts/{{ config["account_id"] }}/repositories
+          http_method: GET
+          request_headers:
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/repositories"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/accounts/{{ config["account_id"] }}/users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    environments:
+      type: DeclarativeStream
+      name: environments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v3/accounts/{{ config["account_id"] }}/environments
+          http_method: GET
+          request_headers:
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: false
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/environments"
+  base_requester:
+    type: HttpRequester
+    url_base: https://cloud.getdbt.com/api/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_key_2"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/runs"
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/repositories"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/environments"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key_2
+      - account_id
+    properties:
+      api_key_2:
+        type: string
+        order: 0
+        title: Token
+        airbyte_secret: true
+      account_id:
+        type: string
+        order: 1
+        title: account_id
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    runs: true
+    projects: true
+    repositories: true
+    users: true
+    environments: true
+  testedStreams:
+    runs:
+      streamHash: 37c31f7f3a7f905153d1513120747a5279d717dc
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    projects:
+      streamHash: 478eaa1bb19750ce7de02e0ae12b78a1df83a9e6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    repositories:
+      streamHash: 8bf5367aae8372606513eec215e8aeb3e81c4347
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: 43c61383e77ed0b5430639e445dcea47ee9296e8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    environments:
+      streamHash: 131f5ac659c0d6d8958b84c568cb1573278607b6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  runs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_id:
+        type:
+          - number
+          - "null"
+      artifact_s3_path:
+        type:
+          - string
+          - "null"
+      artifacts_saved:
+        type:
+          - boolean
+          - "null"
+      blocked_by:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      can_retry:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_at_humanized:
+        type:
+          - string
+          - "null"
+      dbt_version:
+        type:
+          - string
+          - "null"
+      dequeued_at:
+        type:
+          - string
+          - "null"
+      duration:
+        type:
+          - string
+          - "null"
+      duration_humanized:
+        type:
+          - string
+          - "null"
+      environment_id:
+        type:
+          - number
+          - "null"
+      executed_by_thread_id:
+        type:
+          - string
+          - "null"
+      finished_at:
+        type:
+          - string
+          - "null"
+      finished_at_humanized:
+        type:
+          - string
+          - "null"
+      git_branch:
+        type:
+          - string
+          - "null"
+      git_sha:
+        type:
+          - string
+          - "null"
+      has_docs_generated:
+        type:
+          - boolean
+          - "null"
+      has_sources_generated:
+        type:
+          - boolean
+          - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      in_progress:
+        type:
+          - boolean
+          - "null"
+      is_cancelled:
+        type:
+          - boolean
+          - "null"
+      is_complete:
+        type:
+          - boolean
+          - "null"
+      is_error:
+        type:
+          - boolean
+          - "null"
+      is_success:
+        type:
+          - boolean
+          - "null"
+      job_definition_id:
+        type:
+          - number
+          - "null"
+      job_id:
+        type:
+          - number
+          - "null"
+      last_checked_at:
+        type:
+          - string
+          - "null"
+      last_heartbeat_at:
+        type:
+          - string
+          - "null"
+      notifications_sent:
+        type:
+          - boolean
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      queued_duration:
+        type:
+          - string
+          - "null"
+      queued_duration_humanized:
+        type:
+          - string
+          - "null"
+      retry_not_supported_reason:
+        type:
+          - string
+          - "null"
+      run_duration:
+        type:
+          - string
+          - "null"
+      run_duration_humanized:
+        type:
+          - string
+          - "null"
+      run_steps:
+        type:
+          - array
+          - "null"
+      should_start_at:
+        type:
+          - string
+          - "null"
+      started_at:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      status_humanized:
+        type:
+          - string
+          - "null"
+      status_message:
+        type:
+          - string
+          - "null"
+      trigger_id:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      account_id:
+        type:
+          - number
+          - "null"
+      connection:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          account_id:
+            type:
+              - number
+              - "null"
+          adapter_version:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          created_by_id:
+            type:
+              - number
+              - "null"
+          details:
+            type:
+              - object
+              - "null"
+            properties:
+              account:
+                type:
+                  - string
+                  - "null"
+              allow_sso:
+                type:
+                  - boolean
+                  - "null"
+              auth_provider_x509_cert_url:
+                type:
+                  - string
+                  - "null"
+              auth_uri:
+                type:
+                  - string
+                  - "null"
+              client_email:
+                type:
+                  - string
+                  - "null"
+              client_id:
+                type:
+                  - string
+                  - "null"
+              client_session_keep_alive:
+                type:
+                  - boolean
+                  - "null"
+              client_x509_cert_url:
+                type:
+                  - string
+                  - "null"
+              database:
+                type:
+                  - string
+                  - "null"
+              is_configured_for_oauth:
+                type:
+                  - boolean
+                  - "null"
+              maximum_bytes_billed:
+                type:
+                  - number
+                  - "null"
+              private_key_id:
+                type:
+                  - string
+                  - "null"
+              project_id:
+                type:
+                  - string
+                  - "null"
+              retries:
+                type:
+                  - number
+                  - "null"
+              role:
+                type:
+                  - string
+                  - "null"
+              scopes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              timeout_seconds:
+                type:
+                  - number
+                  - "null"
+              token_uri:
+                type:
+                  - string
+                  - "null"
+              warehouse:
+                type:
+                  - string
+                  - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          oauth_redirect_uri:
+            type:
+              - string
+              - "null"
+          project_id:
+            type:
+              - number
+              - "null"
+          state:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      connection_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      dbt_project_subdirectory:
+        type:
+          - string
+          - "null"
+      docs_job:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          account_id:
+            type:
+              - number
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          deactivated:
+            type:
+              - boolean
+              - "null"
+          environment_id:
+            type:
+              - number
+              - "null"
+          errors_on_lint_failure:
+            type:
+              - boolean
+              - "null"
+          execute_steps:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          execution:
+            type:
+              - object
+              - "null"
+            properties:
+              timeout_seconds:
+                type:
+                  - number
+                  - "null"
+          generate_docs:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          job_type:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          project_id:
+            type:
+              - number
+              - "null"
+          run_compare_changes:
+            type:
+              - boolean
+              - "null"
+          run_failure_count:
+            type:
+              - number
+              - "null"
+          run_generate_sources:
+            type:
+              - boolean
+              - "null"
+          run_lint:
+            type:
+              - boolean
+              - "null"
+          schedule:
+            type:
+              - object
+              - "null"
+            properties:
+              cron:
+                type:
+                  - string
+                  - "null"
+              date:
+                type:
+                  - string
+                  - "null"
+              time:
+                type:
+                  - string
+                  - "null"
+          settings:
+            type:
+              - object
+              - "null"
+            properties:
+              target_name:
+                type:
+                  - string
+                  - "null"
+              threads:
+                type:
+                  - number
+                  - "null"
+          state:
+            type:
+              - number
+              - "null"
+          triggers:
+            type:
+              - object
+              - "null"
+            properties:
+              git_provider_webhook:
+                type:
+                  - boolean
+                  - "null"
+              github_webhook:
+                type:
+                  - boolean
+                  - "null"
+              schedule:
+                type:
+                  - boolean
+                  - "null"
+          triggers_on_draft_pr:
+            type:
+              - boolean
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      docs_job_id:
+        type:
+          - number
+          - "null"
+      group_permissions:
+        type:
+          - array
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      repository:
+        type:
+          - object
+          - "null"
+        properties:
+          account_id:
+            type:
+              - number
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          deploy_key:
+            type:
+              - object
+              - "null"
+            properties:
+              account_id:
+                type:
+                  - number
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              public_key:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - number
+                  - "null"
+          deploy_key_id:
+            type:
+              - number
+              - "null"
+          full_name:
+            type:
+              - string
+              - "null"
+          git_clone_strategy:
+            type:
+              - string
+              - "null"
+          git_provider_id:
+            type:
+              - number
+              - "null"
+          github_installation_id:
+            type:
+              - number
+              - "null"
+          github_repo:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          project_id:
+            type:
+              - number
+              - "null"
+          pull_request_url_template:
+            type:
+              - string
+              - "null"
+          remote_backend:
+            type:
+              - string
+              - "null"
+          remote_url:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      repository_id:
+        type:
+          - number
+          - "null"
+      skipped_setup:
+        type:
+          - boolean
+          - "null"
+      state:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  repositories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      deploy_key:
+        type:
+          - object
+          - "null"
+        properties:
+          account_id:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          public_key:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - number
+              - "null"
+      deploy_key_id:
+        type:
+          - number
+          - "null"
+      full_name:
+        type:
+          - string
+          - "null"
+      git_clone_strategy:
+        type:
+          - string
+          - "null"
+      git_provider_id:
+        type:
+          - number
+          - "null"
+      github_installation_id:
+        type:
+          - number
+          - "null"
+      github_repo:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      pull_request_url_template:
+        type:
+          - string
+          - "null"
+      remote_backend:
+        type:
+          - string
+          - "null"
+      remote_url:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      apitoken_last_used:
+        type:
+          - string
+          - "null"
+      auth_provider_infos:
+        type:
+          - object
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      email_verified:
+        type:
+          - boolean
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      fullname:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      is_active:
+        type:
+          - boolean
+          - "null"
+      is_staff:
+        type:
+          - boolean
+          - "null"
+      last_login:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      licenses:
+        type:
+          - object
+          - "null"
+        properties:
+          "16791":
+            type:
+              - object
+              - "null"
+            properties:
+              account_id:
+                type:
+                  - number
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              groups:
+                type:
+                  - array
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              license_type:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - number
+                  - "null"
+              updated_at:
+                type:
+                  - string
+                  - "null"
+              user_id:
+                type:
+                  - number
+                  - "null"
+          "112186":
+            type:
+              - object
+              - "null"
+            properties:
+              account_id:
+                type:
+                  - number
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              groups:
+                type:
+                  - array
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              license_type:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - number
+                  - "null"
+              updated_at:
+                type:
+                  - string
+                  - "null"
+              user_id:
+                type:
+                  - number
+                  - "null"
+          "150670":
+            type:
+              - object
+              - "null"
+            properties:
+              account_id:
+                type:
+                  - number
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              groups:
+                type:
+                  - array
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              license_type:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - number
+                  - "null"
+              updated_at:
+                type:
+                  - string
+                  - "null"
+              user_id:
+                type:
+                  - number
+                  - "null"
+          "193777":
+            type:
+              - object
+              - "null"
+            properties:
+              account_id:
+                type:
+                  - number
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              groups:
+                type:
+                  - array
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              license_type:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - number
+                  - "null"
+              updated_at:
+                type:
+                  - string
+                  - "null"
+              user_id:
+                type:
+                  - number
+                  - "null"
+          "257730":
+            type:
+              - object
+              - "null"
+            properties:
+              account_id:
+                type:
+                  - number
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              groups:
+                type:
+                  - array
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              license_type:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - number
+                  - "null"
+              updated_at:
+                type:
+                  - string
+                  - "null"
+              user_id:
+                type:
+                  - number
+                  - "null"
+      permissions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            account_id:
+              type:
+                - number
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            groups:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  account_id:
+                    type:
+                      - number
+                      - "null"
+                  assign_by_default:
+                    type:
+                      - boolean
+                      - "null"
+                  created_at:
+                    type:
+                      - string
+                      - "null"
+                  group_permissions:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        account_id:
+                          type:
+                            - number
+                            - "null"
+                        all_projects:
+                          type:
+                            - boolean
+                            - "null"
+                        created_at:
+                          type:
+                            - string
+                            - "null"
+                        group_id:
+                          type:
+                            - number
+                            - "null"
+                        id:
+                          type:
+                            - number
+                            - "null"
+                        permission_set:
+                          type:
+                            - string
+                            - "null"
+                        state:
+                          type:
+                            - number
+                            - "null"
+                        updated_at:
+                          type:
+                            - string
+                            - "null"
+                        writable_environment_categories:
+                          type:
+                            - array
+                            - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  sso_mapping_groups:
+                    type:
+                      - array
+                      - "null"
+                  state:
+                    type:
+                      - number
+                      - "null"
+                  updated_at:
+                    type:
+                      - string
+                      - "null"
+            id:
+              type:
+                - number
+                - "null"
+            license_type:
+              type:
+                - string
+                - "null"
+            permission_statements:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  all_resources:
+                    type:
+                      - boolean
+                      - "null"
+                  permission:
+                    type:
+                      - string
+                      - "null"
+                  target_resource:
+                    type:
+                      - number
+                      - "null"
+                  writable_environment_categories:
+                    type:
+                      - array
+                      - "null"
+            state:
+              type:
+                - number
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+            user_id:
+              type:
+                - number
+                - "null"
+      show_existing_user_email_verification:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  environments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      account_id:
+        type:
+          - number
+          - "null"
+      connection_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      credentials:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          account_id:
+            type:
+              - number
+              - "null"
+          adapter_version:
+            type:
+              - string
+              - "null"
+          auth_type:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          database:
+            type:
+              - string
+              - "null"
+          has_refresh_token:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          is_configured_for_oauth:
+            type:
+              - boolean
+              - "null"
+          project_id:
+            type:
+              - number
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          schema:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - number
+              - "null"
+          target_name:
+            type:
+              - string
+              - "null"
+          threads:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          user:
+            type:
+              - string
+              - "null"
+          warehouse:
+            type:
+              - string
+              - "null"
+      credentials_id:
+        type:
+          - number
+          - "null"
+      dbt_version:
+        type:
+          - string
+          - "null"
+      deployment_type:
+        type:
+          - string
+          - "null"
+      enable_model_query_history:
+        type:
+          - boolean
+          - "null"
+      extended_attributes_id:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          account_id:
+            type:
+              - number
+              - "null"
+          connection:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              account_id:
+                type:
+                  - number
+                  - "null"
+              adapter_version:
+                type:
+                  - string
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              created_by_id:
+                type:
+                  - number
+                  - "null"
+              details:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  account:
+                    type:
+                      - string
+                      - "null"
+                  allow_sso:
+                    type:
+                      - boolean
+                      - "null"
+                  auth_provider_x509_cert_url:
+                    type:
+                      - string
+                      - "null"
+                  auth_uri:
+                    type:
+                      - string
+                      - "null"
+                  client_email:
+                    type:
+                      - string
+                      - "null"
+                  client_id:
+                    type:
+                      - string
+                      - "null"
+                  client_session_keep_alive:
+                    type:
+                      - boolean
+                      - "null"
+                  client_x509_cert_url:
+                    type:
+                      - string
+                      - "null"
+                  database:
+                    type:
+                      - string
+                      - "null"
+                  is_configured_for_oauth:
+                    type:
+                      - boolean
+                      - "null"
+                  maximum_bytes_billed:
+                    type:
+                      - number
+                      - "null"
+                  private_key_id:
+                    type:
+                      - string
+                      - "null"
+                  project_id:
+                    type:
+                      - string
+                      - "null"
+                  retries:
+                    type:
+                      - number
+                      - "null"
+                  role:
+                    type:
+                      - string
+                      - "null"
+                  scopes:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                  timeout_seconds:
+                    type:
+                      - number
+                      - "null"
+                  token_uri:
+                    type:
+                      - string
+                      - "null"
+                  warehouse:
+                    type:
+                      - string
+                      - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              oauth_redirect_uri:
+                type:
+                  - string
+                  - "null"
+              project_id:
+                type:
+                  - number
+                  - "null"
+              state:
+                type:
+                  - number
+                  - "null"
+              updated_at:
+                type:
+                  - string
+                  - "null"
+          connection_id:
+            type:
+              - number
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          dbt_project_subdirectory:
+            type:
+              - string
+              - "null"
+          docs_job_id:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          repository:
+            type:
+              - object
+              - "null"
+            properties:
+              account_id:
+                type:
+                  - number
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              deploy_key:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  account_id:
+                    type:
+                      - number
+                      - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  public_key:
+                    type:
+                      - string
+                      - "null"
+                  state:
+                    type:
+                      - number
+                      - "null"
+              deploy_key_id:
+                type:
+                  - number
+                  - "null"
+              full_name:
+                type:
+                  - string
+                  - "null"
+              git_clone_strategy:
+                type:
+                  - string
+                  - "null"
+              git_provider_id:
+                type:
+                  - number
+                  - "null"
+              github_installation_id:
+                type:
+                  - number
+                  - "null"
+              github_repo:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              project_id:
+                type:
+                  - number
+                  - "null"
+              pull_request_url_template:
+                type:
+                  - string
+                  - "null"
+              remote_backend:
+                type:
+                  - string
+                  - "null"
+              remote_url:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - number
+                  - "null"
+              updated_at:
+                type:
+                  - string
+                  - "null"
+          repository_id:
+            type:
+              - number
+              - "null"
+          skipped_setup:
+            type:
+              - boolean
+              - "null"
+          state:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      raw_dbt_version:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - number
+          - "null"
+      supports_docs:
+        type:
+          - boolean
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      use_custom_branch:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id

@@ -33,15 +33,20 @@ internal class SnowflakeDestinationIntegrationTest {
     @Throws(Exception::class)
     fun testCheckFailsWithInvalidPermissions() {
         // TODO(sherifnada) this test case is assumes config.json does not have permission to access
-        // the
-        // schema
+        // the schema RESTRICTED_SCHEMA was created by the user AIRBYTETESTER, and then permissions
+        // were removed with
+        // 'REVOKE ALL ON SCHEMA restricted_schema FROM ROLE integration_tester_destination;'
         // this connector should be updated with multiple credentials, each with a clear purpose
-        // (valid,
-        // invalid: insufficient permissions, invalid: wrong password, etc..)
+        // (valid, invalid: insufficient permissions, invalid: wrong password, etc..)
         val credentialsJsonString = deserialize(Files.readString(Paths.get("secrets/config.json")))
         val check =
             SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS).check(credentialsJsonString)
         Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, check!!.status)
+        Assertions.assertEquals(
+            "Could not connect with provided configuration. Encountered Error with Snowflake Configuration: " +
+                "Current role does not have permissions on the target schema please verify your privileges",
+            check.message
+        )
     }
 
     @Test
@@ -93,7 +98,10 @@ internal class SnowflakeDestinationIntegrationTest {
     @get:Throws(IOException::class)
     private val config: JsonNode
         get() {
-            val config = deserialize(Files.readString(Paths.get("secrets/insert_config.json")))
+            val config =
+                deserialize(
+                    Files.readString(Paths.get("secrets/1s1t_internal_staging_config.json"))
+                )
             val schemaName =
                 "schemaName with whitespace " + addRandomSuffix("integration_test", "_", 5)
             (config as ObjectNode).put("schema", schemaName)

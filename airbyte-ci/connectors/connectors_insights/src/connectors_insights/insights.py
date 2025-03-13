@@ -8,12 +8,12 @@ import logging
 import re
 from typing import TYPE_CHECKING
 
+import requests
+
 from connectors_insights.hacks import get_ci_on_master_report
 from connectors_insights.models import ConnectorInsights
 from connectors_insights.pylint import get_pylint_output
 from connectors_insights.result_backends import FileToPersist, ResultBackend
-from connectors_insights.sbom import get_json_sbom
-from typing_extensions import Mapping
 
 if TYPE_CHECKING:
     from typing import Dict, List, Tuple
@@ -78,12 +78,17 @@ def get_sbom_inferred_insights(raw_sbom: str | None, connector: Connector) -> Di
     if not raw_sbom:
         return sbom_inferred_insights
     sbom = json.loads(raw_sbom)
-    python_artifacts = {artifact["name"]: artifact for artifact in sbom["artifacts"] if artifact["type"] == "python"}
-    for artifact in sbom["artifacts"]:
-        dependency = {"type": artifact["type"], "version": artifact["version"], "package_name": artifact["name"]}
+    python_artifacts = {package["name"]: package for package in sbom["packages"] if package["SPDXID"].startswith("SPDXRef-Package-python-")}
+    sbom_inferred_insights["cdk_version"] = python_artifacts.get("airbyte-cdk", {}).get("versionInfo")
+
+    for package in sbom["packages"]:
+        package_type = package["SPDXID"].split("-")[2]
+        try:
+            dependency = {"type": package_type, "version": package["versionInfo"], "package_name": package["name"]}
+        except KeyError:
+            continue
         if isinstance(sbom_inferred_insights["dependencies"], list) and dependency not in sbom_inferred_insights["dependencies"]:
             sbom_inferred_insights["dependencies"].append(dependency)
-    sbom_inferred_insights["cdk_version"] = python_artifacts.get("airbyte-cdk", {}).get("version")
     return sbom_inferred_insights
 
 
@@ -141,7 +146,7 @@ def should_skip_generation(
     return True
 
 
-async def fetch_sbom(dagger_client: dagger.Client, connector: Connector) -> str | None:
+def fetch_sbom(connector: Connector) -> str | None:
     """Fetch the SBOM for the connector if it is released.
     SBOM are generated from published Docker images. If the connector is not released it does not have a published Docker image.
 
@@ -152,8 +157,10 @@ async def fetch_sbom(dagger_client: dagger.Client, connector: Connector) -> str 
     Returns:
         str | None: The SBOM in JSON format if the connector is released, None otherwise.
     """
-    if connector.is_released:
-        return await get_json_sbom(dagger_client, connector)
+    if connector.sbom_url:
+        r = requests.get(connector.sbom_url)
+        r.raise_for_status()
+        return r.text
     return None
 
 
@@ -234,8 +241,7 @@ async def generate_insights_for_connector(
     """
     logger = logging.getLogger(__name__)
     insights_file = FileToPersist("insights.json")
-    sbom_file = FileToPersist("sbom.json")
-    files_to_persist = [insights_file, sbom_file]
+    files_to_persist = [insights_file]
 
     async with semaphore:
         if should_skip_generation(result_backends, connector, files_to_persist, rewrite):
@@ -246,10 +252,7 @@ async def generate_insights_for_connector(
         result_backends = result_backends or []
         try:
             pylint_output = await get_pylint_output(dagger_client, connector)
-            raw_sbom = await fetch_sbom(dagger_client, connector)
-            if raw_sbom:
-                sbom_file.set_file_content(raw_sbom)
-
+            raw_sbom = fetch_sbom(connector)
             insights = generate_insights(connector, raw_sbom, pylint_output)
             insights_file.set_file_content(insights.json())
             persist_files(connector, files_to_persist, result_backends, rewrite, logger)

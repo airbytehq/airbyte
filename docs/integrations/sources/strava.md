@@ -127,6 +127,22 @@ More information about Strava rate limits and adjustments to those limits can be
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.13 | 2025-03-08 | [55588](https://github.com/airbytehq/airbyte/pull/55588) | Update dependencies |
+| 0.3.12 | 2025-03-01 | [55095](https://github.com/airbytehq/airbyte/pull/55095) | Update dependencies |
+| 0.3.11 | 2025-02-22 | [54482](https://github.com/airbytehq/airbyte/pull/54482) | Update dependencies |
+| 0.3.10 | 2025-02-15 | [54087](https://github.com/airbytehq/airbyte/pull/54087) | Update dependencies |
+| 0.3.9 | 2025-02-08 | [53562](https://github.com/airbytehq/airbyte/pull/53562) | Update dependencies |
+| 0.3.8 | 2025-02-01 | [53075](https://github.com/airbytehq/airbyte/pull/53075) | Update dependencies |
+| 0.3.7 | 2025-01-25 | [52019](https://github.com/airbytehq/airbyte/pull/52019) | Update dependencies |
+| 0.3.6 | 2025-01-11 | [51460](https://github.com/airbytehq/airbyte/pull/51460) | Update dependencies |
+| 0.3.5 | 2024-12-28 | [50764](https://github.com/airbytehq/airbyte/pull/50764) | Update dependencies |
+| 0.3.4 | 2024-12-21 | [50337](https://github.com/airbytehq/airbyte/pull/50337) | Update dependencies |
+| 0.3.3 | 2024-12-14 | [49777](https://github.com/airbytehq/airbyte/pull/49777) | Update dependencies |
+| 0.3.2 | 2024-12-12 | [49432](https://github.com/airbytehq/airbyte/pull/49432) | Update dependencies |
+| 0.3.1 | 2024-10-28 | [47601](https://github.com/airbytehq/airbyte/pull/47601) | Update dependencies |
+| 0.3.0 | 2024-08-27 | [44820](https://github.com/airbytehq/airbyte/pull/44820) | Refactor connector to manifest-only format |
+| 0.2.17 | 2024-08-24 | [44667](https://github.com/airbytehq/airbyte/pull/44667) | Update dependencies |
+| 0.2.16 | 2024-08-17 | [44354](https://github.com/airbytehq/airbyte/pull/44354) | Update dependencies |
 | 0.2.15 | 2024-08-10 | [43588](https://github.com/airbytehq/airbyte/pull/43588) | Update dependencies |
 | 0.2.14 | 2024-08-03 | [43283](https://github.com/airbytehq/airbyte/pull/43283) | Update dependencies |
 | 0.2.13 | 2024-07-20 | [42131](https://github.com/airbytehq/airbyte/pull/42131) | Fix bug in start date format in manifest |

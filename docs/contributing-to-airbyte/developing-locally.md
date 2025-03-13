@@ -1,14 +1,14 @@
 # Developing Locally
 
 Airbyte development is broken into two activities, connector development and platform development. Connector development
-is largely done in Python by community contributors, though sometimes Java is used for performance reasons. Platform development is done in Java 
-and Kotlin. In addition to the Java and Kotlin code, the Platform also consists of the UI. The UI is developed in 
+is largely done in Python by community contributors, though sometimes Java is used for performance reasons. Platform development is done in Java
+and Kotlin. In addition to the Java and Kotlin code, the Platform also consists of the UI. The UI is developed in
 TypeScript using React.
 
 ## Submitting Code
 
-If you would like to submit code to Airbyte, please follow the [Pull Request Handbook](resources/pull-requests-handbook.md) 
-guide when creating Github Pull Requests. When you are ready to submit code, use the [Submit a New Connector](submit-new-connector.md) document to make 
+If you would like to submit code to Airbyte, please follow the [Pull Request Handbook](resources/pull-requests-handbook.md)
+guide when creating Github Pull Requests. When you are ready to submit code, use the [Submit a New Connector](submit-new-connector.md) document to make
 sure that the process can go as smoothly as possible.
 
 ## Prerequisites
@@ -22,21 +22,21 @@ Manually switching between different language versions can be difficult. We reco
 The following technologies are required to build Airbyte locally.
 
 1. [`Java 21`](https://jdk.java.net/archive/)
-2. `Node 20.`
+2. `Node 20`
 3. `Python 3.10`
 4. `Docker`
 5. `Jq`
 
-If you are looking to build connectors, you should also follow the installation instructions for [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
+If you are looking to build connectors, you should also follow the installation instructions for [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md).
 
 ### Using abctl for Airbyte development
 
-The guides in this document explain how to develop Connectors and the Airbyte Platform with `abctl`. You should 
-follow the [Quickstart](../using-airbyte/getting-started/oss-quickstart.md) instructions to install `abctl`. 
+The guides in this document explain how to develop Connectors and the Airbyte Platform with `abctl`. You should
+follow the [Quickstart](../using-airbyte/getting-started/oss-quickstart.md) instructions to install `abctl`.
 
-[Kubernetes in Docker](https://kind.sigs.k8s.io/) (`kind`) is used by `abctl` to create a local Kubernetes cluster as a docker container. 
+[Kubernetes in Docker](https://kind.sigs.k8s.io/) (`kind`) is used by `abctl` to create a local Kubernetes cluster as a docker container.
 Once the `kind` cluster has been created, `abctl` then uses [Helm](https://helm.sh/) along with the [Airbyte Chart](https://github.com/airbytehq/airbyte-platform/tree/main/charts)
-to deploy Airbyte. In order to view logs, debug issues, and managed your Airbyte deployment, you should install the 
+to deploy Airbyte. In order to view logs, debug issues, and managed your Airbyte deployment, you should install the
 [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installing-from-release-binaries) command line tools, as well as,
 [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) for interacting with the Kubernetes cluster.
 
@@ -127,7 +127,7 @@ Now when you run a sync with that connector, it will use your local docker image
 
 ### Connector Specification Caching
 
-The Airbyte Server caches connector specifications for performance reasons. If you update the specification of a 
+The Airbyte Server caches connector specifications for performance reasons. If you update the specification of a
 connector, you will need to clear this cache so the new changes are registered. To do this:
 
 - In your browser, visit [http://localhost:8000/](http://localhost:8000/)
@@ -197,8 +197,8 @@ Once you have successfully built the Platform images, you can load them into the
 kind load docker-image airbyte/server:dev --name airbyte-abctl
 ```
 
-Adjust the image for the Airbyte component that you would like to test. Then you can adjust your vaulues.yaml file to 
-use the `dev` tag for the component, e.g. 
+Adjust the image for the Airbyte component that you would like to test. Then you can adjust your vaulues.yaml file to
+use the `dev` tag for the component, e.g.
 
 ```shell
 server:
@@ -229,7 +229,7 @@ USE_EXTERNAL_DEPLOYMENT=true ./gradlew :oss:airbyte-tests:acceptanceTests
 
 ## Webapp Contributions
 
-To develop features in the Airbyte Webapp, you must first bring up an instance of Airbyte on TCP port 8001. To do this 
+To develop features in the Airbyte Webapp, you must first bring up an instance of Airbyte on TCP port 8001. To do this
 using `abctl`, first follow the [Quickstart](../using-airbyte/getting-started/oss-quickstart.md) to install `abctl`. Then run the following:
 
 ```bash
@@ -238,7 +238,7 @@ abctl local install --port 8001
 
 ### Disabling Authentication
 
-It may be convenient to turn off authentication. If you wish to turn off authentication, create a new text file named: 
+It may be convenient to turn off authentication. If you wish to turn off authentication, create a new text file named:
 `values.yaml` and copy the follow into the file:
 
 ```yaml
@@ -286,23 +286,21 @@ The command to run formatting varies slightly depending on which part of the cod
 
 ### Connector
 
-We wrapped all our code formatting tools in [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md).
-Follow the instructions on the `airbyte-ci` page to install `airbyte-ci`.
+We wrapped our code formatting tools in [pre-commit](https://pre-commit.com). You can install this and other local dev tools by running `make tools.install`.
 
-You can run `airbyte-ci format fix all` to format all the code your local `airbyte` repository.
-We wrapped this command in a pre-push hook so that you can't push code that is not formatted.
+You can run `pre-commit` to format modified files, or `pre-commit run --all-files` to format all the code your local `airbyte` repository.
 
-To install the pre-push hook, run:
+We wrapped this command in a pre-push hook which you can enable with:
 
 ```bash
-make tools.pre-commit.setup
+make tools.git-hooks.install
 ```
 
-This will install `airbyte-ci` and the pre-push hook.
+You can also uninstall git hooks with:
 
-The pre-push hook runs formatting on all the repo files.
-If the hook attempts to format a file that is not part of your contribution, it means that formatting is also broken in
-the master branch. Please open a separate PR to fix the formatting in the master branch.
+```bash
+make tools.git-hooks.clean
+```
 
 ### Platform
 

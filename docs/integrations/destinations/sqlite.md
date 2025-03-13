@@ -76,7 +76,10 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------- |
+|:--------| :--------- | :------------------------------------------------------- | :--------------------- |
+| 0.2.1 | 2025-03-08 | [43815](https://github.com/airbytehq/airbyte/pull/43815) | Update dependencies |
+| 0.2.0 | 2025-03-01 | [54897](https://github.com/airbytehq/airbyte/pull/54897) | Update to Airbyte CDK 6 and Python 3.11 |
+| 0.1.9 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
 | 0.1.8 | 2024-07-09 | [41098](https://github.com/airbytehq/airbyte/pull/41098) | Update dependencies |
 | 0.1.7 | 2024-07-06 | [40944](https://github.com/airbytehq/airbyte/pull/40944) | Update dependencies |
 | 0.1.6 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |

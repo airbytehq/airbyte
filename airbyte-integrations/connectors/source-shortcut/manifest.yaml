@@ -1,0 +1,4655 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://app.shortcut.com/
+  API Docs: https://developer.shortcut.com/api/rest/v3#Introduction
+  Authentication Docs: https://developer.shortcut.com/api/rest/v3#Authentication
+
+check:
+  type: CheckStream
+  stream_names:
+    - categories
+
+definitions:
+  streams:
+    categories:
+      type: DeclarativeStream
+      name: categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: categories
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+    categories_milestones:
+      type: DeclarativeStream
+      name: categories_milestones
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: categories/{{ stream_partition.category_id }}/milestones
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: category_id
+              stream:
+                $ref: "#/definitions/streams/categories"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories_milestones"
+    categories_objectives:
+      type: DeclarativeStream
+      name: categories_objectives
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: categories/{{ stream_partition.category_id }}/objectives
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: category_id
+              stream:
+                $ref: "#/definitions/streams/categories"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories_objectives"
+    custom-fields:
+      type: DeclarativeStream
+      name: custom-fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: custom-fields
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom-fields"
+    epic-workflow:
+      type: DeclarativeStream
+      name: epic-workflow
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: epic-workflow
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/epic-workflow"
+    epics:
+      type: DeclarativeStream
+      name: epics
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: epics
+          http_method: GET
+          request_parameters:
+            includes_description: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/epics"
+    epics_comments:
+      type: DeclarativeStream
+      name: epics_comments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: epics/{{ stream_partition.epic_id }}/comments
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: epic_id
+              stream:
+                $ref: "#/definitions/streams/epics"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/epics_comments"
+    epics_stories:
+      type: DeclarativeStream
+      name: epics_stories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: epics/{{ stream_partition.epic_id }}/stories
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: epic_id
+              stream:
+                $ref: "#/definitions/streams/epics"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/epics_stories"
+    files:
+      type: DeclarativeStream
+      name: files
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: files
+          http_method: GET
+          request_parameters:
+            includes_description: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/files"
+    groups:
+      type: DeclarativeStream
+      name: groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: groups
+          http_method: GET
+          request_parameters:
+            includes_description: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups"
+    groups_stories:
+      type: DeclarativeStream
+      name: groups_stories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: groups/{{ stream_partition.group_id }}/stories
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: group_id
+              stream:
+                $ref: "#/definitions/streams/groups"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups_stories"
+    iterations:
+      type: DeclarativeStream
+      name: iterations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: iterations
+          http_method: GET
+          request_parameters:
+            includes_description: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/iterations"
+    iterations_stories:
+      type: DeclarativeStream
+      name: iterations_stories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: iterations/{{ stream_partition.iteration_id }}/stories
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: iteration_id
+              stream:
+                $ref: "#/definitions/streams/iterations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/iterations_stories"
+    labels:
+      type: DeclarativeStream
+      name: labels
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: labels
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/labels"
+    member:
+      type: DeclarativeStream
+      name: member
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: member
+          http_method: GET
+          request_parameters:
+            includes_description: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/member"
+    members:
+      type: DeclarativeStream
+      name: members
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: members
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/members"
+    milestones:
+      type: DeclarativeStream
+      name: milestones
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: milestones
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/milestones"
+    milestones_epics:
+      type: DeclarativeStream
+      name: milestones_epics
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: milestones/{{ stream_partition.milestone_id }}/epics
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: milestone_id
+              stream:
+                $ref: "#/definitions/streams/milestones"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/milestones_epics"
+    objectives:
+      type: DeclarativeStream
+      name: objectives
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: objectives
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/objectives"
+    objectives_epics:
+      type: DeclarativeStream
+      name: objectives_epics
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: objectives/{{ stream_partition.objective_id }}/epics
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: objective_id
+              stream:
+                $ref: "#/definitions/streams/objectives"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/objectives_epics"
+    workflows:
+      type: DeclarativeStream
+      name: workflows
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: workflows
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workflows"
+    stories_comments:
+      type: DeclarativeStream
+      name: stories_comments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: stories/{{ stream_partition.story_id }}/comments
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: story_id
+              stream:
+                $ref: "#/definitions/streams/epics_stories"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stories_comments"
+    story_history:
+      type: DeclarativeStream
+      name: story_history
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: stories/{{ stream_partition.story_id }}/history
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: story_id
+              stream:
+                $ref: "#/definitions/streams/epics_stories"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: changed_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/story_history"
+    search_epics:
+      type: DeclarativeStream
+      name: search_epics
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: search/epics
+          http_method: GET
+          request_parameters:
+            query: "{{ config['query'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limit hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: next
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1
+            cursor_value: "{{ response.next | regex_search('next=([0-9a-fA-F~]+)') }}"
+            stop_condition: "{{ response.next is none }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/search_epics"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.app.shortcut.com/api/v3/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: '{{ config["api_key_2"] }}'
+      inject_into:
+        type: RequestOption
+        field_name: Shortcut-Token
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/categories_milestones"
+  - $ref: "#/definitions/streams/categories_objectives"
+  - $ref: "#/definitions/streams/custom-fields"
+  - $ref: "#/definitions/streams/epic-workflow"
+  - $ref: "#/definitions/streams/epics"
+  - $ref: "#/definitions/streams/epics_comments"
+  - $ref: "#/definitions/streams/epics_stories"
+  - $ref: "#/definitions/streams/files"
+  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/groups_stories"
+  - $ref: "#/definitions/streams/iterations"
+  - $ref: "#/definitions/streams/iterations_stories"
+  - $ref: "#/definitions/streams/labels"
+  - $ref: "#/definitions/streams/member"
+  - $ref: "#/definitions/streams/members"
+  - $ref: "#/definitions/streams/milestones"
+  - $ref: "#/definitions/streams/milestones_epics"
+  - $ref: "#/definitions/streams/objectives"
+  - $ref: "#/definitions/streams/objectives_epics"
+  - $ref: "#/definitions/streams/workflows"
+  - $ref: "#/definitions/streams/stories_comments"
+  - $ref: "#/definitions/streams/story_history"
+  - $ref: "#/definitions/streams/search_epics"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key_2
+      - start_date
+    properties:
+      api_key_2:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      query:
+        type: string
+        description: >-
+          Query for searching as defined in
+          `https://help.shortcut.com/hc/en-us/articles/360000046646-Searching-in-Shortcut-Using-Search-Operators`
+        title: Query
+        default: title:Our first Epic
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    categories: true
+    categories_milestones: true
+    categories_objectives: true
+    custom-fields: true
+    epic-workflow: true
+    epics: true
+    epics_comments: true
+    epics_stories: true
+    files: true
+    groups: true
+    groups_stories: true
+    iterations: true
+    iterations_stories: true
+    labels: true
+    member: true
+    members: true
+    milestones: true
+    milestones_epics: true
+    objectives: true
+    objectives_epics: true
+    workflows: true
+    stories_comments: true
+    story_history: true
+    search_epics: true
+  testedStreams:
+    categories:
+      hasRecords: true
+      streamHash: 27f791d3d91a876d7cdb97b3c27a12d4b66807ab
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    categories_milestones:
+      streamHash: 6b5d1c16068e230cbb4c712f7e2e3ca7338a42a1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    categories_objectives:
+      streamHash: 336b099dbaa1af0c8b3758ced0e71c25c3d9f669
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    custom-fields:
+      streamHash: 91a777c71159e858e1cec22b072c202478cc889d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    epic-workflow:
+      streamHash: dbad3b98ec58f1b10b8c602144f3454b5cab4494
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    epics:
+      streamHash: 252a61b246d2938f6edec3ba1d888e9d8cc29636
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    epics_comments:
+      streamHash: 0194533a5e3571676c484a50f589f17bbebe1495
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    epics_stories:
+      streamHash: 6bca25495845f18122ce7408e6483e1c56b694cf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    files:
+      streamHash: b3a729c3cd4bac5383fd14ee02bc2064af033152
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    groups:
+      streamHash: 3c9c98b5a7c881ae317fe901ca174652049fe304
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    groups_stories:
+      streamHash: 8417b97ebc75ca3bb9409fe96aa6bfe884645fd5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    iterations:
+      streamHash: 575cbb75e070bf85f57207eef781caf8fc9313e4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    iterations_stories:
+      streamHash: 03a5bf5ae9c63bf1eff008fc6d4fd31cc50a3f4d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    labels:
+      streamHash: 0f299b520584e327940cbdad60b7da8d870229d9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    member:
+      streamHash: 5546079625dc6a6881c14bd87c80efb9d6506914
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    members:
+      streamHash: 60b72c094a289f6a9ee0c6a9c36e3127b6a85f03
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    milestones:
+      streamHash: 0521a8b623c5e8a4122d78a6d57bdb240890c335
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    milestones_epics:
+      streamHash: 690a6caf8876b6f8a3391335a8b0aaeab1307a2e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    objectives:
+      streamHash: 679dafde34469a71ce9ee86d3625152a1b8fb127
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    objectives_epics:
+      streamHash: cc30c4dd7e3452a838a2bb2160ce698981af17bd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    workflows:
+      streamHash: e0a730ec7becca667e3916d5438a1975139f19b4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    stories_comments:
+      streamHash: a07f23ad594c01d7a50c10cf3a694fdb2919d034
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    story_history:
+      streamHash: 65a697e7ba63bdb9bf7ddc753c0851b8e4047fef
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    search_epics:
+      streamHash: 319a660be5a2df87fb76742e3de204d67a25b9fa
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      global_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  categories_milestones:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      app_url:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      categories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            archived:
+              type:
+                - boolean
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            entity_type:
+              type:
+                - string
+                - "null"
+            global_id:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+      completed:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      global_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      key_result_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      started:
+        type:
+          - boolean
+          - "null"
+      started_at_override:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      stats:
+        type:
+          - object
+          - "null"
+        properties:
+          num_related_documents:
+            type:
+              - number
+              - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  categories_objectives:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      app_url:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      categories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            archived:
+              type:
+                - boolean
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            entity_type:
+              type:
+                - string
+                - "null"
+            global_id:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+      completed:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      global_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      key_result_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      started:
+        type:
+          - boolean
+          - "null"
+      started_at_override:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      stats:
+        type:
+          - object
+          - "null"
+        properties:
+          num_related_documents:
+            type:
+              - number
+              - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  custom-fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      canonical_name:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      enabled:
+        type:
+          - boolean
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      field_type:
+        type:
+          - string
+          - "null"
+      fixed_position:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      story_types:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      updated_at:
+        type: string
+      values:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            color_key:
+              type:
+                - string
+                - "null"
+            enabled:
+              type:
+                - boolean
+                - "null"
+            entity_type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            position:
+              type:
+                - number
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+    required:
+      - id
+      - updated_at
+  epic-workflow:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      default_epic_state_id:
+        type:
+          - number
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      epic_states:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            entity_type:
+              type:
+                - string
+                - "null"
+            global_id:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            position:
+              type:
+                - number
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+      id:
+        type: number
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  epics:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      app_url:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      completed:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      deadline:
+        type:
+          - string
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      epic_state_id:
+        type:
+          - number
+          - "null"
+      follower_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      global_id:
+        type:
+          - string
+          - "null"
+      group_id:
+        type:
+          - string
+          - "null"
+      group_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      group_mention_ids:
+        type:
+          - array
+          - "null"
+      id:
+        type: number
+      label_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      labels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            app_url:
+              type:
+                - string
+                - "null"
+            archived:
+              type:
+                - boolean
+                - "null"
+            color:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            entity_type:
+              type:
+                - string
+                - "null"
+            global_id:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+      member_mention_ids:
+        type:
+          - array
+          - "null"
+      mention_ids:
+        type:
+          - array
+          - "null"
+      milestone_id:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      objective_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      owner_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      planned_start_date:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      project_ids:
+        type:
+          - array
+          - "null"
+      requested_by_id:
+        type:
+          - string
+          - "null"
+      started:
+        type:
+          - boolean
+          - "null"
+      started_at:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      stats:
+        type:
+          - object
+          - "null"
+        properties:
+          last_story_update:
+            type:
+              - string
+              - "null"
+          num_points:
+            type:
+              - number
+              - "null"
+          num_points_backlog:
+            type:
+              - number
+              - "null"
+          num_points_done:
+            type:
+              - number
+              - "null"
+          num_points_started:
+            type:
+              - number
+              - "null"
+          num_points_unstarted:
+            type:
+              - number
+              - "null"
+          num_related_documents:
+            type:
+              - number
+              - "null"
+          num_stories_backlog:
+            type:
+              - number
+              - "null"
+          num_stories_done:
+            type:
+              - number
+              - "null"
+          num_stories_started:
+            type:
+              - number
+              - "null"
+          num_stories_total:
+            type:
+              - number
+              - "null"
+          num_stories_unestimated:
+            type:
+              - number
+              - "null"
+          num_stories_unstarted:
+            type:
+              - number
+              - "null"
+      stories_without_projects:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  epics_comments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      app_url:
+        type:
+          - string
+          - "null"
+      author_id:
+        type:
+          - string
+          - "null"
+      comments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            app_url:
+              type:
+                - string
+                - "null"
+            author_id:
+              type:
+                - string
+                - "null"
+            comments:
+              type:
+                - array
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            deleted:
+              type:
+                - boolean
+                - "null"
+            entity_type:
+              type:
+                - string
+                - "null"
+            group_mention_ids:
+              type:
+                - array
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            member_mention_ids:
+              type:
+                - array
+                - "null"
+            mention_ids:
+              type:
+                - array
+                - "null"
+            text:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      group_mention_ids:
+        type:
+          - array
+          - "null"
+      id:
+        type: number
+      member_mention_ids:
+        type:
+          - array
+          - "null"
+      mention_ids:
+        type:
+          - array
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  epics_stories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      app_url:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      blocked:
+        type:
+          - boolean
+          - "null"
+      blocker:
+        type:
+          - boolean
+          - "null"
+      comment_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      completed:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      custom_fields:
+        type:
+          - array
+          - "null"
+      deadline:
+        type:
+          - string
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      epic_id:
+        type:
+          - number
+          - "null"
+      estimate:
+        type:
+          - number
+          - "null"
+      external_links:
+        type:
+          - array
+          - "null"
+      file_ids:
+        type:
+          - array
+          - "null"
+      follower_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      global_id:
+        type:
+          - string
+          - "null"
+      group_id:
+        type:
+          - string
+          - "null"
+      group_mention_ids:
+        type:
+          - array
+          - "null"
+      id:
+        type: number
+      iteration_id:
+        type:
+          - number
+          - "null"
+      label_ids:
+        type:
+          - array
+          - "null"
+      labels:
+        type:
+          - array
+          - "null"
+      linked_file_ids:
+        type:
+          - array
+          - "null"
+      member_mention_ids:
+        type:
+          - array
+          - "null"
+      mention_ids:
+        type:
+          - array
+          - "null"
+      moved_at:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      num_tasks_completed:
+        type:
+          - number
+          - "null"
+      owner_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      position:
+        type:
+          - number
+          - "null"
+      previous_iteration_ids:
+        type:
+          - array
+          - "null"
+      requested_by_id:
+        type:
+          - string
+          - "null"
+      started:
+        type:
+          - boolean
+          - "null"
+      started_at:
+        type:
+          - string
+          - "null"
+      stats:
+        type:
+          - object
+          - "null"
+        properties:
+          num_related_documents:
+            type:
+              - number
+              - "null"
+      story_links:
+        type:
+          - array
+          - "null"
+      story_type:
+        type:
+          - string
+          - "null"
+      task_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      updated_at:
+        type: string
+      workflow_id:
+        type:
+          - number
+          - "null"
+      workflow_state_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - updated_at
+  files:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      content_type:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      filename:
+        type:
+          - string
+          - "null"
+      group_mention_ids:
+        type:
+          - array
+          - "null"
+      id:
+        type: number
+      member_mention_ids:
+        type:
+          - array
+          - "null"
+      mention_ids:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      size:
+        type:
+          - number
+          - "null"
+      story_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      updated_at:
+        type: string
+      uploader_id:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - updated_at
+  groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      app_url:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      global_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      member_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      mention_name:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      num_epics_started:
+        type:
+          - number
+          - "null"
+      num_stories:
+        type:
+          - number
+          - "null"
+      num_stories_backlog:
+        type:
+          - number
+          - "null"
+      num_stories_started:
+        type:
+          - number
+          - "null"
+      workflow_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+    required:
+      - id
+  groups_stories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      app_url:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      blocked:
+        type:
+          - boolean
+          - "null"
+      blocker:
+        type:
+          - boolean
+          - "null"
+      comment_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      completed:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      custom_fields:
+        type:
+          - array
+          - "null"
+      deadline:
+        type:
+          - string
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      epic_id:
+        type:
+          - number
+          - "null"
+      estimate:
+        type:
+          - number
+          - "null"
+      external_links:
+        type:
+          - array
+          - "null"
+      file_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      follower_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      global_id:
+        type:
+          - string
+          - "null"
+      group_id:
+        type:
+          - string
+          - "null"
+      group_mention_ids:
+        type:
+          - array
+          - "null"
+      id:
+        type: number
+      iteration_id:
+        type:
+          - number
+          - "null"
+      label_ids:
+        type:
+          - array
+          - "null"
+      labels:
+        type:
+          - array
+          - "null"
+      linked_file_ids:
+        type:
+          - array
+          - "null"
+      member_mention_ids:
+        type:
+          - array
+          - "null"
+      mention_ids:
+        type:
+          - array
+          - "null"
+      moved_at:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      num_tasks_completed:
+        type:
+          - number
+          - "null"
+      owner_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      position:
+        type:
+          - number
+          - "null"
+      previous_iteration_ids:
+        type:
+          - array
+          - "null"
+      requested_by_id:
+        type:
+          - string
+          - "null"
+      started:
+        type:
+          - boolean
+          - "null"
+      started_at:
+        type:
+          - string
+          - "null"
+      stats:
+        type:
+          - object
+          - "null"
+        properties:
+          num_related_documents:
+            type:
+              - number
+              - "null"
+      story_links:
+        type:
+          - array
+          - "null"
+      story_type:
+        type:
+          - string
+          - "null"
+      task_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      updated_at:
+        type: string
+      workflow_id:
+        type:
+          - number
+          - "null"
+      workflow_state_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - updated_at
+  iterations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      app_url:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      follower_ids:
+        type:
+          - array
+          - "null"
+      global_id:
+        type:
+          - string
+          - "null"
+      group_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      group_mention_ids:
+        type:
+          - array
+          - "null"
+      id:
+        type: number
+      label_ids:
+        type:
+          - array
+          - "null"
+      labels:
+        type:
+          - array
+          - "null"
+      member_mention_ids:
+        type:
+          - array
+          - "null"
+      mention_ids:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      stats:
+        type:
+          - object
+          - "null"
+        properties:
+          num_points:
+            type:
+              - number
+              - "null"
+          num_points_backlog:
+            type:
+              - number
+              - "null"
+          num_points_done:
+            type:
+              - number
+              - "null"
+          num_points_started:
+            type:
+              - number
+              - "null"
+          num_points_unstarted:
+            type:
+              - number
+              - "null"
+          num_related_documents:
+            type:
+              - number
+              - "null"
+          num_stories_backlog:
+            type:
+              - number
+              - "null"
+          num_stories_done:
+            type:
+              - number
+              - "null"
+          num_stories_started:
+            type:
+              - number
+              - "null"
+          num_stories_unestimated:
+            type:
+              - number
+              - "null"
+          num_stories_unstarted:
+            type:
+              - number
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  iterations_stories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      app_url:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      blocked:
+        type:
+          - boolean
+          - "null"
+      blocker:
+        type:
+          - boolean
+          - "null"
+      comment_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      completed:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      custom_fields:
+        type:
+          - array
+          - "null"
+      deadline:
+        type:
+          - string
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      epic_id:
+        type:
+          - number
+          - "null"
+      estimate:
+        type:
+          - number
+          - "null"
+      external_links:
+        type:
+          - array
+          - "null"
+      file_ids:
+        type:
+          - array
+          - "null"
+      follower_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      global_id:
+        type:
+          - string
+          - "null"
+      group_id:
+        type:
+          - string
+          - "null"
+      group_mention_ids:
+        type:
+          - array
+          - "null"
+      id:
+        type: number
+      iteration_id:
+        type:
+          - number
+          - "null"
+      label_ids:
+        type:
+          - array
+          - "null"
+      labels:
+        type:
+          - array
+          - "null"
+      linked_file_ids:
+        type:
+          - array
+          - "null"
+      member_mention_ids:
+        type:
+          - array
+          - "null"
+      mention_ids:
+        type:
+          - array
+          - "null"
+      moved_at:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      num_tasks_completed:
+        type:
+          - number
+          - "null"
+      owner_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      position:
+        type:
+          - number
+          - "null"
+      previous_iteration_ids:
+        type:
+          - array
+          - "null"
+      requested_by_id:
+        type:
+          - string
+          - "null"
+      started:
+        type:
+          - boolean
+          - "null"
+      started_at:
+        type:
+          - string
+          - "null"
+      stats:
+        type:
+          - object
+          - "null"
+        properties:
+          num_related_documents:
+            type:
+              - number
+              - "null"
+      story_links:
+        type:
+          - array
+          - "null"
+      story_type:
+        type:
+          - string
+          - "null"
+      task_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      updated_at:
+        type: string
+      workflow_id:
+        type:
+          - number
+          - "null"
+      workflow_state_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - updated_at
+  labels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      app_url:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      global_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      stats:
+        type:
+          - object
+          - "null"
+        properties:
+          num_epics:
+            type:
+              - number
+              - "null"
+          num_epics_completed:
+            type:
+              - number
+              - "null"
+          num_epics_in_progress:
+            type:
+              - number
+              - "null"
+          num_epics_total:
+            type:
+              - number
+              - "null"
+          num_epics_unstarted:
+            type:
+              - number
+              - "null"
+          num_points_backlog:
+            type:
+              - number
+              - "null"
+          num_points_completed:
+            type:
+              - number
+              - "null"
+          num_points_in_progress:
+            type:
+              - number
+              - "null"
+          num_points_total:
+            type:
+              - number
+              - "null"
+          num_points_unstarted:
+            type:
+              - number
+              - "null"
+          num_related_documents:
+            type:
+              - number
+              - "null"
+          num_stories_backlog:
+            type:
+              - number
+              - "null"
+          num_stories_completed:
+            type:
+              - number
+              - "null"
+          num_stories_in_progress:
+            type:
+              - number
+              - "null"
+          num_stories_total:
+            type:
+              - number
+              - "null"
+          num_stories_unestimated:
+            type:
+              - number
+              - "null"
+          num_stories_unstarted:
+            type:
+              - number
+              - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  member:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      mention_name:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      workspace2:
+        type:
+          - object
+          - "null"
+        properties:
+          estimate_scale:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          url_slug:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+  members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      created_without_invite:
+        type:
+          - boolean
+          - "null"
+      disabled:
+        type:
+          - boolean
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      global_id:
+        type:
+          - string
+          - "null"
+      group_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type: string
+      profile:
+        type:
+          - object
+          - "null"
+        properties:
+          deactivated:
+            type:
+              - boolean
+              - "null"
+          email_address:
+            type:
+              - string
+              - "null"
+          entity_type:
+            type:
+              - string
+              - "null"
+          gravatar_hash:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          is_owner:
+            type:
+              - boolean
+              - "null"
+          mention_name:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          two_factor_auth_activated:
+            type:
+              - boolean
+              - "null"
+      role:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  milestones:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      app_url:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      categories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            archived:
+              type:
+                - boolean
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            entity_type:
+              type:
+                - string
+                - "null"
+            global_id:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+      completed:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      global_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      key_result_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      started:
+        type:
+          - boolean
+          - "null"
+      started_at_override:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      stats:
+        type:
+          - object
+          - "null"
+        properties:
+          num_related_documents:
+            type:
+              - number
+              - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  milestones_epics:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      app_url:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      completed:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      deadline:
+        type:
+          - string
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      epic_state_id:
+        type:
+          - number
+          - "null"
+      follower_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      global_id:
+        type:
+          - string
+          - "null"
+      group_id:
+        type:
+          - string
+          - "null"
+      group_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      group_mention_ids:
+        type:
+          - array
+          - "null"
+      id:
+        type: number
+      label_ids:
+        type:
+          - array
+          - "null"
+      labels:
+        type:
+          - array
+          - "null"
+      member_mention_ids:
+        type:
+          - array
+          - "null"
+      mention_ids:
+        type:
+          - array
+          - "null"
+      milestone_id:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      objective_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      owner_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      planned_start_date:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      project_ids:
+        type:
+          - array
+          - "null"
+      requested_by_id:
+        type:
+          - string
+          - "null"
+      started:
+        type:
+          - boolean
+          - "null"
+      started_at:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      stats:
+        type:
+          - object
+          - "null"
+        properties:
+          last_story_update:
+            type:
+              - string
+              - "null"
+          num_points:
+            type:
+              - number
+              - "null"
+          num_points_backlog:
+            type:
+              - number
+              - "null"
+          num_points_done:
+            type:
+              - number
+              - "null"
+          num_points_started:
+            type:
+              - number
+              - "null"
+          num_points_unstarted:
+            type:
+              - number
+              - "null"
+          num_related_documents:
+            type:
+              - number
+              - "null"
+          num_stories_backlog:
+            type:
+              - number
+              - "null"
+          num_stories_done:
+            type:
+              - number
+              - "null"
+          num_stories_started:
+            type:
+              - number
+              - "null"
+          num_stories_total:
+            type:
+              - number
+              - "null"
+          num_stories_unestimated:
+            type:
+              - number
+              - "null"
+          num_stories_unstarted:
+            type:
+              - number
+              - "null"
+      stories_without_projects:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  objectives:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      app_url:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      categories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            archived:
+              type:
+                - boolean
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            entity_type:
+              type:
+                - string
+                - "null"
+            global_id:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+      completed:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      global_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      key_result_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      started:
+        type:
+          - boolean
+          - "null"
+      started_at_override:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      stats:
+        type:
+          - object
+          - "null"
+        properties:
+          num_related_documents:
+            type:
+              - number
+              - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  objectives_epics:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      app_url:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      completed:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      deadline:
+        type:
+          - string
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      epic_state_id:
+        type:
+          - number
+          - "null"
+      follower_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      global_id:
+        type:
+          - string
+          - "null"
+      group_id:
+        type:
+          - string
+          - "null"
+      group_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      group_mention_ids:
+        type:
+          - array
+          - "null"
+      id:
+        type: number
+      label_ids:
+        type:
+          - array
+          - "null"
+      labels:
+        type:
+          - array
+          - "null"
+      member_mention_ids:
+        type:
+          - array
+          - "null"
+      mention_ids:
+        type:
+          - array
+          - "null"
+      milestone_id:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      objective_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      owner_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      planned_start_date:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      project_ids:
+        type:
+          - array
+          - "null"
+      requested_by_id:
+        type:
+          - string
+          - "null"
+      started:
+        type:
+          - boolean
+          - "null"
+      started_at:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      stats:
+        type:
+          - object
+          - "null"
+        properties:
+          last_story_update:
+            type:
+              - string
+              - "null"
+          num_points:
+            type:
+              - number
+              - "null"
+          num_points_backlog:
+            type:
+              - number
+              - "null"
+          num_points_done:
+            type:
+              - number
+              - "null"
+          num_points_started:
+            type:
+              - number
+              - "null"
+          num_points_unstarted:
+            type:
+              - number
+              - "null"
+          num_related_documents:
+            type:
+              - number
+              - "null"
+          num_stories_backlog:
+            type:
+              - number
+              - "null"
+          num_stories_done:
+            type:
+              - number
+              - "null"
+          num_stories_started:
+            type:
+              - number
+              - "null"
+          num_stories_total:
+            type:
+              - number
+              - "null"
+          num_stories_unestimated:
+            type:
+              - number
+              - "null"
+          num_stories_unstarted:
+            type:
+              - number
+              - "null"
+      stories_without_projects:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  workflows:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      auto_assign_owner:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      default_state_id:
+        type:
+          - number
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      project_ids:
+        type:
+          - array
+          - "null"
+      states:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            entity_type:
+              type:
+                - string
+                - "null"
+            global_id:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            num_stories:
+              type:
+                - number
+                - "null"
+            num_story_templates:
+              type:
+                - number
+                - "null"
+            position:
+              type:
+                - number
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+            verb:
+              type:
+                - string
+                - "null"
+      team_id:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  stories_comments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      app_url:
+        type:
+          - string
+          - "null"
+      author_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      group_mention_ids:
+        type:
+          - array
+          - "null"
+      id:
+        type: number
+      linked_to_slack:
+        type:
+          - boolean
+          - "null"
+      member_mention_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      mention_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      position:
+        type:
+          - number
+          - "null"
+      reactions:
+        type:
+          - array
+          - "null"
+      story_id:
+        type:
+          - number
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  story_history:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - string
+          - "null"
+      actions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            action:
+              type:
+                - string
+                - "null"
+            app_url:
+              type:
+                - string
+                - "null"
+            changes:
+              type:
+                - object
+                - "null"
+              properties:
+                workflow_state_id:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    new:
+                      type:
+                        - number
+                        - "null"
+                    old:
+                      type:
+                        - number
+                        - "null"
+            complete:
+              type:
+                - boolean
+                - "null"
+            deadline:
+              type:
+                - string
+                - "null"
+            entity_type:
+              type:
+                - string
+                - "null"
+            epic_id:
+              type:
+                - number
+                - "null"
+            estimate:
+              type:
+                - number
+                - "null"
+            follower_ids:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            group_id:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            iteration_id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            owner_ids:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            requested_by_id:
+              type:
+                - string
+                - "null"
+            started:
+              type:
+                - boolean
+                - "null"
+            story_type:
+              type:
+                - string
+                - "null"
+            task_ids:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - number
+                  - "null"
+            workflow_state_id:
+              type:
+                - number
+                - "null"
+      changed_at:
+        type: string
+      id:
+        type: string
+      member_id:
+        type:
+          - string
+          - "null"
+      primary_id:
+        type:
+          - number
+          - "null"
+      references:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            app_url:
+              type:
+                - string
+                - "null"
+            entity_type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+    required:
+      - id
+      - changed_at
+  search_epics:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      app_url:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      comments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            app_url:
+              type:
+                - string
+                - "null"
+            author_id:
+              type:
+                - string
+                - "null"
+            comments:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  app_url:
+                    type:
+                      - string
+                      - "null"
+                  author_id:
+                    type:
+                      - string
+                      - "null"
+                  comments:
+                    type:
+                      - array
+                      - "null"
+                  created_at:
+                    type:
+                      - string
+                      - "null"
+                  deleted:
+                    type:
+                      - boolean
+                      - "null"
+                  entity_type:
+                    type:
+                      - string
+                      - "null"
+                  group_mention_ids:
+                    type:
+                      - array
+                      - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  member_mention_ids:
+                    type:
+                      - array
+                      - "null"
+                  mention_ids:
+                    type:
+                      - array
+                      - "null"
+                  text:
+                    type:
+                      - string
+                      - "null"
+                  updated_at:
+                    type:
+                      - string
+                      - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            deleted:
+              type:
+                - boolean
+                - "null"
+            entity_type:
+              type:
+                - string
+                - "null"
+            group_mention_ids:
+              type:
+                - array
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            member_mention_ids:
+              type:
+                - array
+                - "null"
+            mention_ids:
+              type:
+                - array
+                - "null"
+            text:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+      completed:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      deadline:
+        type:
+          - string
+          - "null"
+      entity_type:
+        type:
+          - string
+          - "null"
+      epic_state_id:
+        type:
+          - number
+          - "null"
+      follower_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      global_id:
+        type:
+          - string
+          - "null"
+      group_id:
+        type:
+          - string
+          - "null"
+      group_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      group_mention_ids:
+        type:
+          - array
+          - "null"
+      id:
+        type: number
+      label_ids:
+        type:
+          - array
+          - "null"
+      labels:
+        type:
+          - array
+          - "null"
+      member_mention_ids:
+        type:
+          - array
+          - "null"
+      mention_ids:
+        type:
+          - array
+          - "null"
+      milestone_id:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      objective_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      owner_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      planned_start_date:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      project_ids:
+        type:
+          - array
+          - "null"
+      requested_by_id:
+        type:
+          - string
+          - "null"
+      started:
+        type:
+          - boolean
+          - "null"
+      started_at:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      stats:
+        type:
+          - object
+          - "null"
+        properties:
+          last_story_update:
+            type:
+              - string
+              - "null"
+          num_points:
+            type:
+              - number
+              - "null"
+          num_points_backlog:
+            type:
+              - number
+              - "null"
+          num_points_done:
+            type:
+              - number
+              - "null"
+          num_points_started:
+            type:
+              - number
+              - "null"
+          num_points_unstarted:
+            type:
+              - number
+              - "null"
+          num_related_documents:
+            type:
+              - number
+              - "null"
+          num_stories_backlog:
+            type:
+              - number
+              - "null"
+          num_stories_done:
+            type:
+              - number
+              - "null"
+          num_stories_started:
+            type:
+              - number
+              - "null"
+          num_stories_total:
+            type:
+              - number
+              - "null"
+          num_stories_unestimated:
+            type:
+              - number
+              - "null"
+          num_stories_unstarted:
+            type:
+              - number
+              - "null"
+      stories_without_projects:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at

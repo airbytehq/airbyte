@@ -3,7 +3,7 @@
 connector_image: airbyte/source-callrail:dev
 tests:
   spec:
-    - spec_path: "source_callrail/spec.yaml"
+    - spec_path: "manifest.yaml"
       timeout_seconds: 60
   connection:
     - config_path: "secrets/config.json"

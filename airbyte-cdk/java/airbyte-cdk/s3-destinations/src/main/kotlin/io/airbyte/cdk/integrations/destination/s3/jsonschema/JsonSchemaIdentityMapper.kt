@@ -6,11 +6,27 @@ package io.airbyte.cdk.integrations.destination.s3.jsonschema
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.commons.jackson.MoreMappers
+import io.airbyte.commons.json.Jsons
 
 open class JsonSchemaIdentityMapper : JsonSchemaMapper() {
+    private fun makeType(
+        typeName: String,
+        format: String? = null,
+        airbyteType: String? = null
+    ): ObjectNode {
+        val newSchema = MoreMappers.initMapper().createObjectNode()
+        newSchema.put("type", typeName)
+        if (format != null) {
+            newSchema.put("format", format)
+        }
+        if (airbyteType != null) {
+            newSchema.put("airbyte_type", airbyteType)
+        }
+        return newSchema
+    }
 
     override fun mapNull(schema: ObjectNode): ObjectNode {
-        return schema.deepCopy()
+        return makeType("null")
     }
 
     override fun mapObjectWithProperties(schema: ObjectNode): ObjectNode {
@@ -27,7 +43,7 @@ open class JsonSchemaIdentityMapper : JsonSchemaMapper() {
     }
 
     override fun mapObjectWithoutProperties(schema: ObjectNode): ObjectNode {
-        return schema.deepCopy()
+        return makeType("object")
     }
 
     override fun mapArrayWithItems(schema: ObjectNode): ObjectNode {
@@ -52,31 +68,31 @@ open class JsonSchemaIdentityMapper : JsonSchemaMapper() {
     }
 
     override fun mapArrayWithoutItems(schema: ObjectNode): ObjectNode {
-        return schema.deepCopy()
+        return makeType("array")
     }
 
     override fun mapDate(schema: ObjectNode): ObjectNode {
-        return schema.deepCopy()
+        return makeType("string", "date", "date")
     }
 
     override fun mapTimeWithoutTimezone(schema: ObjectNode): ObjectNode {
-        return schema.deepCopy()
+        return makeType("string", "time", "time_without_timezone")
     }
 
     override fun mapTimeWithTimezone(schema: ObjectNode): ObjectNode {
-        return schema.deepCopy()
+        return makeType("string", "time", "time_with_timezone")
     }
 
     override fun mapDateTimeWithTimezone(schema: ObjectNode): ObjectNode {
-        return schema.deepCopy()
+        return makeType("string", "date-time", "timestamp_with_timezone")
     }
 
     override fun mapDateTimeWithoutTimezone(schema: ObjectNode): ObjectNode {
-        return schema.deepCopy()
+        return makeType("string", "date-time", "timestamp_without_timezone")
     }
 
     override fun mapString(schema: ObjectNode): ObjectNode {
-        return schema.deepCopy()
+        return makeType("string")
     }
 
     override fun mapBinaryData(schema: ObjectNode): ObjectNode {
@@ -84,15 +100,15 @@ open class JsonSchemaIdentityMapper : JsonSchemaMapper() {
     }
 
     override fun mapBoolean(schema: ObjectNode): ObjectNode {
-        return schema.deepCopy()
+        return makeType("boolean")
     }
 
     override fun mapInteger(schema: ObjectNode): ObjectNode {
-        return schema.deepCopy()
+        return makeType("integer")
     }
 
     override fun mapNumber(schema: ObjectNode): ObjectNode {
-        return schema.deepCopy()
+        return makeType("number")
     }
 
     override fun mapCombined(schema: ObjectNode): ObjectNode {
@@ -103,6 +119,12 @@ open class JsonSchemaIdentityMapper : JsonSchemaMapper() {
         schema["type"].elements().forEach {
             val newTypeObj = MoreMappers.initMapper().createObjectNode()
             newTypeObj.put("type", it.asText())
+            // Denormalize the (non-type) properties from the parent onto each type
+            schema.fields().forEach { (key, value) ->
+                if (key != "type") {
+                    newTypeObj.set<ObjectNode>(key, value)
+                }
+            }
 
             val newOption = mapSchema(newTypeObj)
             newOptions.add(newOption)
@@ -124,5 +146,9 @@ open class JsonSchemaIdentityMapper : JsonSchemaMapper() {
         newUnionSchema.replace("oneOf", newOptions)
 
         return newUnionSchema
+    }
+
+    override fun mapUnknown(schema: ObjectNode): ObjectNode {
+        return Jsons.emptyObject() as ObjectNode
     }
 }

@@ -26,7 +26,9 @@ sealed interface SelectNode {
 
 data class SelectColumns(
     override val columns: List<Field>,
-) : SelectNode
+) : SelectNode {
+    constructor(vararg columns: Field) : this(columns.toList())
+}
 
 data class SelectColumnMaxValue(
     val column: Field,
@@ -87,6 +89,11 @@ sealed interface WhereClauseLeafNode : WhereClauseNode {
     val bindingValue: JsonNode
 }
 
+data class GreaterOrEqual(
+    override val column: Field,
+    override val bindingValue: JsonNode,
+) : WhereClauseLeafNode
+
 data class Greater(
     override val column: Field,
     override val bindingValue: JsonNode,
@@ -97,12 +104,12 @@ data class LesserOrEqual(
     override val bindingValue: JsonNode,
 ) : WhereClauseLeafNode
 
-data class Equal(
+data class Lesser(
     override val column: Field,
     override val bindingValue: JsonNode,
 ) : WhereClauseLeafNode
 
-data class Lesser(
+data class Equal(
     override val column: Field,
     override val bindingValue: JsonNode,
 ) : WhereClauseLeafNode
@@ -111,7 +118,9 @@ sealed interface OrderByNode
 
 data class OrderBy(
     val columns: List<Field>,
-) : OrderByNode
+) : OrderByNode {
+    constructor(vararg columns: Field) : this(columns.toList())
+}
 
 data object NoOrderBy : OrderByNode
 

@@ -25,4 +25,9 @@ class SortQueryParams:
             flow.request.url = sorted_url
 
 
-addons = [SortQueryParams()]
+# Disabling the addon.
+# It can alter the request URL when some connector URL are already encoded.
+# See discussion here https://github.com/airbytehq/airbyte-internal-issues/issues/9302#issuecomment-2311854334
+
+# addons = [SortQueryParams()]
+addons = []

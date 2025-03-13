@@ -107,6 +107,8 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 ### Error message `Request failed:  (UNAVAILABLE, RPC 'GET_WELCOME_PACK')`
 
 This error may indicate that you are connecting with a `0.10.x` DuckDB client (as per DuckDB Destination connector versions `>=0.4.0`) and your database has not yet been upgraded to a version `>=0.10.x`. To resolve this, you'll need to manually upgrade your database or revert to a previous version of the DuckDB Destination connector.
+For information about migrating between different versions of DuckDB, please see the [DuckDB Migration Guide](./duckdb-migrations.md).
+
 
 
 ## Changelog
@@ -115,7 +117,21 @@ This error may indicate that you are connecting with a `0.10.x` DuckDB client (a
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                                                                                                                                                                                                |
-| :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------| :--------- | :-------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.5.1 | 2025-03-07 | [55256](https://github.com/airbytehq/airbyte/pull/55256) | Version bump to align Docker and Poetry versions |
+| 0.5.0 | 2025-03-07 | [47861](https://github.com/airbytehq/airbyte/pull/47861) | Upgrade DuckDB engine version to [`v1.2.1`](https://github.com/duckdb/duckdb/releases/tag/v1.2.1) |
+| 0.4.26 | 2024-10-29 | [47861](https://github.com/airbytehq/airbyte/pull/47861) | Update dependencies |
+| 0.4.25 | 2024-10-28 | [47070](https://github.com/airbytehq/airbyte/pull/47070) | Update dependencies |
+| 0.4.24 | 2024-10-12 | [46845](https://github.com/airbytehq/airbyte/pull/46845) | Update dependencies |
+| 0.4.23 | 2024-10-05 | [46463](https://github.com/airbytehq/airbyte/pull/46463) | Update dependencies |
+| 0.4.22 | 2024-09-28 | [46145](https://github.com/airbytehq/airbyte/pull/46145) | Update dependencies |
+| 0.4.21 | 2024-09-21 | [45800](https://github.com/airbytehq/airbyte/pull/45800) | Update dependencies |
+| 0.4.20 | 2024-09-14 | [45480](https://github.com/airbytehq/airbyte/pull/45480) | Update dependencies |
+| 0.4.19 | 2024-09-07 | [45288](https://github.com/airbytehq/airbyte/pull/45288) | Update dependencies |
+| 0.4.18 | 2024-08-31 | [44952](https://github.com/airbytehq/airbyte/pull/44952) | Update dependencies |
+| 0.4.17 | 2024-08-24 | [44739](https://github.com/airbytehq/airbyte/pull/44739) | Update dependencies |
+| 0.4.16 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
+| 0.4.15 | 2024-08-17 | [44215](https://github.com/airbytehq/airbyte/pull/44215) | Update dependencies |
 | 0.4.14 | 2024-08-12 | [43755](https://github.com/airbytehq/airbyte/pull/43755) | Update dependencies |
 | 0.4.13 | 2024-08-10 | [43536](https://github.com/airbytehq/airbyte/pull/43536) | Update dependencies |
 | 0.4.12 | 2024-08-03 | [43151](https://github.com/airbytehq/airbyte/pull/43151) | Update dependencies |

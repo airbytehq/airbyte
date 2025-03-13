@@ -17,6 +17,7 @@ import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordM
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.string.Strings
 import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation.Companion.TMP_TABLE_SUFFIX
+import io.airbyte.integrations.base.destination.typing_deduping.ImportType
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts
@@ -27,7 +28,6 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlG
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGeneratorIntegrationTest
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Optional
@@ -62,7 +62,7 @@ class BigQueryDirectLoadingStorageOperationTest {
     private val streamConfig =
         StreamConfig(
             streamId,
-            DestinationSyncMode.APPEND,
+            ImportType.APPEND,
             emptyList(),
             Optional.empty(),
             LinkedHashMap(),

@@ -12,27 +12,29 @@ allprojects {
     }
 
     dependencies {
-        api platform('org.jetbrains.kotlin:kotlin-bom:2.0.0')
+        api platform('org.jetbrains.kotlin:kotlin-bom:2.0.10')
         api platform('org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.8.1')
-        api platform('com.fasterxml.jackson:jackson-bom:2.16.1')
-        api platform('io.micronaut:micronaut-core-bom:4.3.13')
+        api platform('com.fasterxml.jackson:jackson-bom:2.17.2')
+        api platform('io.micronaut:micronaut-core-bom:4.6.1')
         api platform('org.junit:junit-bom:5.10.2')
         api platform('org.slf4j:slf4j-bom:2.0.13')
         api platform('org.apache.logging.log4j:log4j-bom:2.21.1')
-        api platform('org.testcontainers:testcontainers-bom:1.19.8')
+        api platform('org.testcontainers:testcontainers-bom:1.20.1')
 
         api 'org.jetbrains.kotlin:kotlin-stdlib'
-        api 'com.google.dagger:dagger-compiler:2.51.1'
-        ksp 'com.google.dagger:dagger-compiler:2.51.1'
+        api 'com.google.dagger:dagger:2.51.1'
+        ksp 'com.google.dagger:dagger-compiler:2.52'
 
-        annotationProcessor platform('io.micronaut:micronaut-core-bom:4.3.13')
-        annotationProcessor 'info.picocli:picocli-codegen:4.7.5'
+        annotationProcessor platform('io.micronaut:micronaut-core-bom:4.6.1')
+        annotationProcessor 'info.picocli:picocli-codegen:4.7.6'
         annotationProcessor 'io.micronaut:micronaut-inject-kotlin'
 
-        ksp platform('io.micronaut:micronaut-core-bom:4.3.13')
+        ksp platform('io.micronaut:micronaut-core-bom:4.6.1')
         ksp 'io.micronaut:micronaut-inject-kotlin'
-        kspTest platform('io.micronaut:micronaut-core-bom:4.3.13')
+        kspTest platform('io.micronaut:micronaut-core-bom:4.6.1')
         kspTest 'io.micronaut:micronaut-inject-kotlin'
+
+        testImplementation("io.mockk:mockk:1.13.13")
     }
 
     if (buildNumberFile.exists()) {

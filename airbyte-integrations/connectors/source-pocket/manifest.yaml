@@ -1,0 +1,1010 @@
+version: "4.3.2"
+definitions:
+  selector:
+    extractor:
+      class_name: "source_declarative_manifest.components.PocketExtractor"
+  requester:
+    url_base: "https://getpocket.com/v3"
+    http_method: "POST"
+    request_parameters:
+      consumer_key: "{{ config['consumer_key'] }}"
+      access_token: "{{ config['access_token'] }}"
+      state: "{{ config['state'] }}"
+      favorite: "{% if config['favorite'] %}{{ 1 }}{% else %}{{ 0 }}{% endif %}"
+      tag: "{{ config['tag'] }}"
+      contentType: "{{ config['content_type'] }}"
+      sort: "{{ config['sort'] }}"
+      detailType: "{{ config['detail_type'] }}"
+      search: "{{ config['search'] }}"
+      domain: "{{ config['domain'] }}"
+      since: "{{ timestamp(config['since']) }}"
+    error_handler:
+      type: "DefaultErrorHandler"
+      error_handlers:
+      - response_filters:
+        - http_codes:
+          - 401
+          action: FAIL
+        - http_codes:
+          - 403
+          action: RETRY
+        backoff_strategies:
+        - type: "WaitTimeFromHeader"
+          header: "X-Limit-User-Reset"
+  retriever:
+    record_selector:
+      extractor:
+        class_name: "source_declarative_manifest.components.PocketExtractor"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "count"
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 10
+      page_token_option:
+        type: RequestOption
+        inject_into: "request_parameter"
+        field_name: "offset"
+    requester:
+      url_base: "https://getpocket.com/v3"
+      http_method: "POST"
+      request_parameters:
+        consumer_key: "{{ config['consumer_key'] }}"
+        access_token: "{{ config['access_token'] }}"
+        state: "{{ config['state'] }}"
+        favorite: "{% if config['favorite'] %}{{ 1 }}{% else %}{{ 0 }}{% endif %}"
+        tag: "{{ config['tag'] }}"
+        contentType: "{{ config['content_type'] }}"
+        sort: "{{ config['sort'] }}"
+        detailType: "{{ config['detail_type'] }}"
+        search: "{{ config['search'] }}"
+        domain: "{{ config['domain'] }}"
+        since: "{{ timestamp(config['since']) }}"
+      error_handler:
+        type: "DefaultErrorHandler"
+        error_handlers:
+        - response_filters:
+          - http_codes:
+            - 401
+            action: FAIL
+          - http_codes:
+            - 403
+            action: RETRY
+          backoff_strategies:
+          - type: "WaitTimeFromHeader"
+            header: "X-Limit-User-Reset"
+  base_stream:
+    retriever:
+      record_selector:
+        extractor:
+          class_name: "source_declarative_manifest.components.PocketExtractor"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          inject_into: "request_parameter"
+          field_name: "count"
+        pagination_strategy:
+          type: "OffsetIncrement"
+          page_size: 10
+        page_token_option:
+          type: RequestOption
+          inject_into: "request_parameter"
+          field_name: "offset"
+      requester:
+        url_base: "https://getpocket.com/v3"
+        http_method: "POST"
+        request_parameters:
+          consumer_key: "{{ config['consumer_key'] }}"
+          access_token: "{{ config['access_token'] }}"
+          state: "{{ config['state'] }}"
+          favorite: "{% if config['favorite'] %}{{ 1 }}{% else %}{{ 0 }}{% endif %}"
+          tag: "{{ config['tag'] }}"
+          contentType: "{{ config['content_type'] }}"
+          sort: "{{ config['sort'] }}"
+          detailType: "{{ config['detail_type'] }}"
+          search: "{{ config['search'] }}"
+          domain: "{{ config['domain'] }}"
+          since: "{{ timestamp(config['since']) }}"
+        error_handler:
+          type: "DefaultErrorHandler"
+          error_handlers:
+          - response_filters:
+            - http_codes:
+              - 401
+              action: FAIL
+            - http_codes:
+              - 403
+              action: RETRY
+            backoff_strategies:
+            - type: "WaitTimeFromHeader"
+              header: "X-Limit-User-Reset"
+    schema_loader:
+      type: "JsonFileSchemaLoader"
+  retrieve_stream:
+    retriever:
+      record_selector:
+        extractor:
+          class_name: "source_declarative_manifest.components.PocketExtractor"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          inject_into: "request_parameter"
+          field_name: "count"
+        pagination_strategy:
+          type: "OffsetIncrement"
+          page_size: 10
+        page_token_option:
+          type: RequestOption
+          inject_into: "request_parameter"
+          field_name: "offset"
+      requester:
+        url_base: "https://getpocket.com/v3"
+        http_method: "POST"
+        request_parameters:
+          consumer_key: "{{ config['consumer_key'] }}"
+          access_token: "{{ config['access_token'] }}"
+          state: "{{ config['state'] }}"
+          favorite: "{% if config['favorite'] %}{{ 1 }}{% else %}{{ 0 }}{% endif %}"
+          tag: "{{ config['tag'] }}"
+          contentType: "{{ config['content_type'] }}"
+          sort: "{{ config['sort'] }}"
+          detailType: "{{ config['detail_type'] }}"
+          search: "{{ config['search'] }}"
+          domain: "{{ config['domain'] }}"
+          since: "{{ timestamp(config['since']) }}"
+        error_handler:
+          type: "DefaultErrorHandler"
+          error_handlers:
+          - response_filters:
+            - http_codes:
+              - 401
+              action: FAIL
+            - http_codes:
+              - 403
+              action: RETRY
+            backoff_strategies:
+            - type: "WaitTimeFromHeader"
+              header: "X-Limit-User-Reset"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          item_id:
+            description: Unique identifier for the item.
+            type:
+            - "null"
+            - string
+            pattern: "[0-9]+"
+          resolved_id:
+            description: Resolved identifier for the item.
+            type:
+            - "null"
+            - string
+            pattern: "[0-9]+"
+          given_url:
+            description: URL provided for the item.
+            type:
+            - "null"
+            - string
+          given_title:
+            description: Title provided for the item.
+            type:
+            - "null"
+            - string
+          favorite:
+            description: Indicates if the item is marked as a favorite.
+            type:
+            - "null"
+            - string
+            pattern: 0|1
+          status:
+            description: Status of the item.
+            type:
+            - "null"
+            - string
+            pattern: 0|1|2
+          time_added:
+            description: Time when the item was added.
+            type:
+            - "null"
+            - string
+            pattern: "[0-9]+"
+          time_updated:
+            description: Time when the item was updated.
+            type:
+            - "null"
+            - string
+            pattern: "[0-9]+"
+          time_read:
+            description: Time when the item was read.
+            type:
+            - "null"
+            - string
+            pattern: "[0-9]+"
+          time_favorited:
+            description: Time when the item was favorited.
+            type:
+            - "null"
+            - string
+            pattern: "[0-9]+"
+          sort_id:
+            description: Sorting identifier.
+            type:
+            - "null"
+            - number
+          resolved_title:
+            description: Resolved title for the item.
+            type:
+            - "null"
+            - string
+          resolved_url:
+            description: Resolved URL for the item.
+            type:
+            - "null"
+            - string
+          excerpt:
+            description: Short summary of the content.
+            type:
+            - "null"
+            - string
+          is_article:
+            description: Indicates if the item is an article.
+            type:
+            - "null"
+            - string
+            pattern: 0|1
+          is_index:
+            description: Indicates if the item is an index.
+            type:
+            - "null"
+            - string
+            pattern: 0|1
+          has_image:
+            description: Indicates if the item has an image.
+            type:
+            - "null"
+            - string
+            pattern: 0|1|2
+          has_video:
+            description: Indicates if the item has a video.
+            type:
+            - "null"
+            - string
+            pattern: 0|1|2
+          word_count:
+            description: Number of words in the content.
+            type:
+            - "null"
+            - string
+            pattern: "[0-9]+"
+          lang:
+            description: Language of the content.
+            type:
+            - "null"
+            - string
+          time_to_read:
+            description: Estimated time to read the content.
+            type:
+            - "null"
+            - number
+          top_image_url:
+            description: Top image URL.
+            type:
+            - "null"
+            - string
+          tags:
+            description: Tags associated with the content
+            type:
+            - "null"
+            - object
+            patternProperties:
+              .+:
+                type:
+                - "null"
+                - object
+                properties:
+                  item_id:
+                    description: Unique identifier for the item associated with the
+                      tag.
+                    type:
+                    - "null"
+                    - string
+                    pattern: "[0-9]+"
+                  tag:
+                    description: Tag associated with the item.
+                    type:
+                    - "null"
+                    - string
+          authors:
+            description: Authors of the content
+            type:
+            - "null"
+            - object
+            patternProperties:
+              "[0-9]+":
+                type:
+                - "null"
+                - object
+                additionalProperties: true
+                properties:
+                  item_id:
+                    description: Unique identifier for the item associated with the
+                      author.
+                    type:
+                    - "null"
+                    - string
+                    pattern: "[0-9]+"
+                  author_id:
+                    description: Unique identifier for the author.
+                    type:
+                    - "null"
+                    - string
+                    pattern: "[0-9]+"
+                  name:
+                    description: Name of the author.
+                    type:
+                    - "null"
+                    - string
+                  url:
+                    description: URL of the author.
+                    type:
+                    - "null"
+                    - string
+          image:
+            description: Main image associated with the content
+            type:
+            - "null"
+            - object
+            properties:
+              item_id:
+                description: Unique identifier for the item associated with the image.
+                type:
+                - "null"
+                - string
+                pattern: "[0-9]+"
+              src:
+                description: URL of the image source.
+                type:
+                - "null"
+                - string
+              width:
+                description: Width of the image.
+                type:
+                - "null"
+                - string
+                pattern: "[0-9]+"
+              height:
+                description: Height of the image.
+                type:
+                - "null"
+                - string
+                pattern: "[0-9]+"
+          images:
+            description: Collection of images related to the content
+            type:
+            - "null"
+            - object
+            patternProperties:
+              "[0-9]+":
+                type:
+                - "null"
+                - object
+                additionalProperties: true
+                properties:
+                  item_id:
+                    description: Unique identifier for the item associated with the
+                      image.
+                    type:
+                    - "null"
+                    - string
+                    pattern: "[0-9]+"
+                  image_id:
+                    description: Unique identifier for the image.
+                    type:
+                    - "null"
+                    - string
+                    pattern: "[0-9]+"
+                  src:
+                    description: URL of the image source.
+                    type:
+                    - "null"
+                    - string
+                  width:
+                    description: Width of the image.
+                    type:
+                    - "null"
+                    - string
+                    pattern: "[0-9]+"
+                  height:
+                    description: Height of the image.
+                    type:
+                    - "null"
+                    - string
+                    pattern: "[0-9]+"
+                  credit:
+                    description: Credit for the image.
+                    type:
+                    - "null"
+                    - string
+                  caption:
+                    description: Caption for the image.
+                    type:
+                    - "null"
+                    - string
+          videos:
+            description: Videos related to the content
+            type:
+            - "null"
+            - object
+            patternProperties:
+              "[0-9]+":
+                type:
+                - "null"
+                - object
+                additionalProperties: true
+                properties:
+                  item_id:
+                    description: Unique identifier for the item associated with the
+                      video.
+                    type:
+                    - "null"
+                    - string
+                    pattern: "[0-9]+"
+                  video_id:
+                    description: Unique identifier for the video.
+                    type:
+                    - "null"
+                    - string
+                    pattern: "[0-9]+"
+                  src:
+                    description: URL of the video source.
+                    type:
+                    - "null"
+                    - string
+                  width:
+                    description: Width of the video.
+                    type:
+                    - "null"
+                    - string
+                    pattern: "[0-9]+"
+                  height:
+                    description: Height of the video.
+                    type:
+                    - "null"
+                    - string
+                    pattern: "[0-9]+"
+                  type:
+                    description: Type of the video.
+                    type:
+                    - "null"
+                    - string
+                  vid:
+                    description: Video ID.
+                    type:
+                    - "null"
+                    - string
+          domain_metadata:
+            description: Metadata related to the domain of the content
+            type:
+            - "null"
+            - object
+            properties:
+              name:
+                description: Name of the domain.
+                type:
+                - "null"
+                - string
+              logo:
+                description: URL of the logo.
+                type:
+                - "null"
+                - string
+              greyscale_logo:
+                description: URL of the greyscale logo.
+                type:
+                - "null"
+                - string
+          listen_duration_estimate:
+            description: Estimated time to listen to the content.
+            type:
+            - "null"
+            - number
+streams:
+- retriever:
+    record_selector:
+      extractor:
+        class_name: "source_declarative_manifest.components.PocketExtractor"
+        type: CustomRecordExtractor
+      type: RecordSelector
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "count"
+        type: RequestOption
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 10
+      page_token_option:
+        type: RequestOption
+        inject_into: "request_parameter"
+        field_name: "offset"
+    requester:
+      url_base: "https://getpocket.com/v3"
+      http_method: "POST"
+      request_parameters:
+        consumer_key: "{{ config['consumer_key'] }}"
+        access_token: "{{ config['access_token'] }}"
+        state: "{{ config['state'] }}"
+        favorite: "{% if config['favorite'] %}{{ 1 }}{% else %}{{ 0 }}{% endif %}"
+        tag: "{{ config['tag'] }}"
+        contentType: "{{ config['content_type'] }}"
+        sort: "{{ config['sort'] }}"
+        detailType: "{{ config['detail_type'] }}"
+        search: "{{ config['search'] }}"
+        domain: "{{ config['domain'] }}"
+        since: "{{ timestamp(config['since']) }}"
+      error_handler:
+        type: "DefaultErrorHandler"
+        error_handlers:
+        - response_filters:
+          - http_codes:
+            - 401
+            action: FAIL
+          - http_codes:
+            - 403
+            action: RETRY
+          backoff_strategies:
+          - type: "WaitTimeFromHeader"
+            header: "X-Limit-User-Reset"
+      type: HttpRequester
+      path: "/get"
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        item_id:
+          description: Unique identifier for the item.
+          type:
+          - "null"
+          - string
+          pattern: "[0-9]+"
+        resolved_id:
+          description: Resolved identifier for the item.
+          type:
+          - "null"
+          - string
+          pattern: "[0-9]+"
+        given_url:
+          description: URL provided for the item.
+          type:
+          - "null"
+          - string
+        given_title:
+          description: Title provided for the item.
+          type:
+          - "null"
+          - string
+        favorite:
+          description: Indicates if the item is marked as a favorite.
+          type:
+          - "null"
+          - string
+          pattern: 0|1
+        status:
+          description: Status of the item.
+          type:
+          - "null"
+          - string
+          pattern: 0|1|2
+        time_added:
+          description: Time when the item was added.
+          type:
+          - "null"
+          - string
+          pattern: "[0-9]+"
+        time_updated:
+          description: Time when the item was updated.
+          type:
+          - "null"
+          - string
+          pattern: "[0-9]+"
+        time_read:
+          description: Time when the item was read.
+          type:
+          - "null"
+          - string
+          pattern: "[0-9]+"
+        time_favorited:
+          description: Time when the item was favorited.
+          type:
+          - "null"
+          - string
+          pattern: "[0-9]+"
+        sort_id:
+          description: Sorting identifier.
+          type:
+          - "null"
+          - number
+        resolved_title:
+          description: Resolved title for the item.
+          type:
+          - "null"
+          - string
+        resolved_url:
+          description: Resolved URL for the item.
+          type:
+          - "null"
+          - string
+        excerpt:
+          description: Short summary of the content.
+          type:
+          - "null"
+          - string
+        is_article:
+          description: Indicates if the item is an article.
+          type:
+          - "null"
+          - string
+          pattern: 0|1
+        is_index:
+          description: Indicates if the item is an index.
+          type:
+          - "null"
+          - string
+          pattern: 0|1
+        has_image:
+          description: Indicates if the item has an image.
+          type:
+          - "null"
+          - string
+          pattern: 0|1|2
+        has_video:
+          description: Indicates if the item has a video.
+          type:
+          - "null"
+          - string
+          pattern: 0|1|2
+        word_count:
+          description: Number of words in the content.
+          type:
+          - "null"
+          - string
+          pattern: "[0-9]+"
+        lang:
+          description: Language of the content.
+          type:
+          - "null"
+          - string
+        time_to_read:
+          description: Estimated time to read the content.
+          type:
+          - "null"
+          - number
+        top_image_url:
+          description: Top image URL.
+          type:
+          - "null"
+          - string
+        tags:
+          description: Tags associated with the content
+          type:
+          - "null"
+          - object
+          patternProperties:
+            .+:
+              type:
+              - "null"
+              - object
+              properties:
+                item_id:
+                  description: Unique identifier for the item associated with the
+                    tag.
+                  type:
+                  - "null"
+                  - string
+                  pattern: "[0-9]+"
+                tag:
+                  description: Tag associated with the item.
+                  type:
+                  - "null"
+                  - string
+        authors:
+          description: Authors of the content
+          type:
+          - "null"
+          - object
+          patternProperties:
+            "[0-9]+":
+              type:
+              - "null"
+              - object
+              additionalProperties: true
+              properties:
+                item_id:
+                  description: Unique identifier for the item associated with the
+                    author.
+                  type:
+                  - "null"
+                  - string
+                  pattern: "[0-9]+"
+                author_id:
+                  description: Unique identifier for the author.
+                  type:
+                  - "null"
+                  - string
+                  pattern: "[0-9]+"
+                name:
+                  description: Name of the author.
+                  type:
+                  - "null"
+                  - string
+                url:
+                  description: URL of the author.
+                  type:
+                  - "null"
+                  - string
+        image:
+          description: Main image associated with the content
+          type:
+          - "null"
+          - object
+          properties:
+            item_id:
+              description: Unique identifier for the item associated with the image.
+              type:
+              - "null"
+              - string
+              pattern: "[0-9]+"
+            src:
+              description: URL of the image source.
+              type:
+              - "null"
+              - string
+            width:
+              description: Width of the image.
+              type:
+              - "null"
+              - string
+              pattern: "[0-9]+"
+            height:
+              description: Height of the image.
+              type:
+              - "null"
+              - string
+              pattern: "[0-9]+"
+        images:
+          description: Collection of images related to the content
+          type:
+          - "null"
+          - object
+          patternProperties:
+            "[0-9]+":
+              type:
+              - "null"
+              - object
+              additionalProperties: true
+              properties:
+                item_id:
+                  description: Unique identifier for the item associated with the
+                    image.
+                  type:
+                  - "null"
+                  - string
+                  pattern: "[0-9]+"
+                image_id:
+                  description: Unique identifier for the image.
+                  type:
+                  - "null"
+                  - string
+                  pattern: "[0-9]+"
+                src:
+                  description: URL of the image source.
+                  type:
+                  - "null"
+                  - string
+                width:
+                  description: Width of the image.
+                  type:
+                  - "null"
+                  - string
+                  pattern: "[0-9]+"
+                height:
+                  description: Height of the image.
+                  type:
+                  - "null"
+                  - string
+                  pattern: "[0-9]+"
+                credit:
+                  description: Credit for the image.
+                  type:
+                  - "null"
+                  - string
+                caption:
+                  description: Caption for the image.
+                  type:
+                  - "null"
+                  - string
+        videos:
+          description: Videos related to the content
+          type:
+          - "null"
+          - object
+          patternProperties:
+            "[0-9]+":
+              type:
+              - "null"
+              - object
+              additionalProperties: true
+              properties:
+                item_id:
+                  description: Unique identifier for the item associated with the
+                    video.
+                  type:
+                  - "null"
+                  - string
+                  pattern: "[0-9]+"
+                video_id:
+                  description: Unique identifier for the video.
+                  type:
+                  - "null"
+                  - string
+                  pattern: "[0-9]+"
+                src:
+                  description: URL of the video source.
+                  type:
+                  - "null"
+                  - string
+                width:
+                  description: Width of the video.
+                  type:
+                  - "null"
+                  - string
+                  pattern: "[0-9]+"
+                height:
+                  description: Height of the video.
+                  type:
+                  - "null"
+                  - string
+                  pattern: "[0-9]+"
+                type:
+                  description: Type of the video.
+                  type:
+                  - "null"
+                  - string
+                vid:
+                  description: Video ID.
+                  type:
+                  - "null"
+                  - string
+        domain_metadata:
+          description: Metadata related to the domain of the content
+          type:
+          - "null"
+          - object
+          properties:
+            name:
+              description: Name of the domain.
+              type:
+              - "null"
+              - string
+            logo:
+              description: URL of the logo.
+              type:
+              - "null"
+              - string
+            greyscale_logo:
+              description: URL of the greyscale logo.
+              type:
+              - "null"
+              - string
+        listen_duration_estimate:
+          description: Estimated time to listen to the content.
+          type:
+          - "null"
+          - number
+  type: DeclarativeStream
+  name: "retrieve"
+  primary_key: "item_id"
+check:
+  stream_names:
+  - "retrieve"
+  type: CheckStream
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/pocket
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Pocket Spec
+    type: object
+    required:
+    - consumer_key
+    - access_token
+    additionalProperties: true
+    properties:
+      consumer_key:
+        type: string
+        title: Consumer Key
+        description: Your application's Consumer Key.
+        airbyte_secret: true
+        order: 0
+      access_token:
+        type: string
+        title: Access Token
+        description: The user's Pocket access token.
+        airbyte_secret: true
+        order: 1
+      state:
+        type: string
+        title: State
+        description: Select the state of the items to retrieve.
+        order: 2
+        enum:
+        - unread
+        - archive
+        - all
+      favorite:
+        type: boolean
+        title: Is Favorite?
+        description: Retrieve only favorited items.
+        default: false
+        order: 3
+      tag:
+        type: string
+        title: Tag Name
+        description: Return only items tagged with this tag name. Use _untagged_ for
+          retrieving only untagged items.
+        order: 4
+      content_type:
+        type: string
+        title: Content Type
+        description: Select the content type of the items to retrieve.
+        order: 5
+        enum:
+        - article
+        - video
+        - image
+      sort:
+        type: string
+        title: Sort By
+        description: Sort retrieved items by the given criteria.
+        order: 6
+        enum:
+        - newest
+        - oldest
+        - title
+        - site
+      detail_type:
+        type: string
+        title: Detail Type
+        description: Select the granularity of the information about each item.
+        order: 7
+        enum:
+        - simple
+        - complete
+      search:
+        type: string
+        title: Search Query
+        description: Only return items whose title or url contain the `search` string.
+        order: 8
+      domain:
+        type: string
+        title: Domain
+        description: Only return items from a particular `domain`.
+        order: 9
+      since:
+        type: string
+        title: Since
+        description: Only return items modified since the given timestamp.
+        pattern: "[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}"
+        examples:
+        - "2022-10-20 14:14:14"
+        order: 10
+type: DeclarativeSource

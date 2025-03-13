@@ -1,0 +1,750 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  Finnworlds provides data related to finance for globally traded instruments.
+
+  With this connector we can easily fetch data from various streams such as
+  Dividends , Stock Splits , Candle Sticks etc
+
+  Docs : https://finnworlds.com/
+
+check:
+  type: CheckStream
+  stream_names:
+    - bonds
+
+definitions:
+  streams:
+    bonds:
+      type: DeclarativeStream
+      name: bonds
+      primary_key:
+        - country
+        - datetime
+        - type
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: bonds
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+        partition_router:
+          - type: ListPartitionRouter
+            values: "{{ config.countries }}"
+            cursor_field: country
+            request_option:
+              type: RequestOption
+              field_name: country
+              inject_into: request_parameter
+          - type: ListPartitionRouter
+            values: "{{ config.bond_type }}"
+            cursor_field: bond_type
+            request_option:
+              type: RequestOption
+              field_name: type
+              inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/bonds"
+    dividends:
+      type: DeclarativeStream
+      name: dividends
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: dividends
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+            date_to: "{{ today_utc() }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+              - dividends
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.tickers }}"
+          cursor_field: ticket
+          request_option:
+            type: RequestOption
+            field_name: ticker
+            inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - ticker
+              value: "{{ stream_slice.ticker }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/dividends"
+    stock_splits:
+      type: DeclarativeStream
+      name: stock_splits
+      primary_key:
+        - ticker
+        - date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: stocksplits
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+            date_to: "{{ today_utc() }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+              - stocksplits
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.tickers }}"
+          cursor_field: ticker
+          request_option:
+            type: RequestOption
+            field_name: ticker
+            inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - ticker
+              value: "{{ stream_partition.ticker }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stock_splits"
+    historical_candlestick:
+      type: DeclarativeStream
+      name: historical_candlestick
+      primary_key:
+        - ticker
+        - date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: historicalcandlestick
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+              - daily_stock_data
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.tickers }}"
+          cursor_field: ticker
+          request_option:
+            type: RequestOption
+            field_name: ticker
+            inject_into: request_parameter
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: date_from
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - ticker
+              value: "{{ stream_partition.ticker }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/historical_candlestick"
+    macro_calendar:
+      type: DeclarativeStream
+      name: macro_calendar
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: macrocalendar
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.countries }}"
+          cursor_field: country
+          request_option:
+            type: RequestOption
+            field_name: country
+            inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/macro_calendar"
+    macro_indicator:
+      type: DeclarativeStream
+      name: macro_indicator
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: macroindicator
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.countries }}"
+          cursor_field: country
+          request_option:
+            type: RequestOption
+            field_name: country
+            inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/macro_indicator"
+    commodities:
+      type: DeclarativeStream
+      name: commodities
+      primary_key:
+        - commodity_name
+        - datetime
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: commodities
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.commodities }}"
+          cursor_field: commodity
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: commodity_name
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/commodities"
+    benchmark:
+      type: DeclarativeStream
+      name: benchmark
+      primary_key:
+        - datetime
+        - country
+        - benchmark
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: benchmark
+          http_method: GET
+          request_parameters:
+            key: "{{ config[\"key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - output
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.countries }}"
+          cursor_field: country
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: country
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/benchmark"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.finnworlds.com/api/v1/
+
+streams:
+  - $ref: "#/definitions/streams/bonds"
+  - $ref: "#/definitions/streams/dividends"
+  - $ref: "#/definitions/streams/stock_splits"
+  - $ref: "#/definitions/streams/historical_candlestick"
+  - $ref: "#/definitions/streams/macro_calendar"
+  - $ref: "#/definitions/streams/macro_indicator"
+  - $ref: "#/definitions/streams/commodities"
+  - $ref: "#/definitions/streams/benchmark"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - key
+      - start_date
+    properties:
+      list:
+        type: string
+        description: Choose isin, ticker, reg_lei or cik
+        order: 0
+        title: List
+        default: ticker
+      list_countries_for_bonds:
+        type: string
+        order: 1
+        title: List Countries for Bonds
+        default: country
+      key:
+        type: string
+        order: 2
+        title: API Key
+        airbyte_secret: true
+      bond_type:
+        type: array
+        description: For example 10y, 5y, 2y...
+        order: 3
+        title: Bond Type
+      countries:
+        type: array
+        description: brazil, united states, italia, japan
+        order: 4
+        title: Countries
+      tickers:
+        type: array
+        description: AAPL, T, MU, GOOG
+        order: 5
+        title: Tickers
+      start_date:
+        type: string
+        order: 6
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      commodities:
+        type: array
+        description: "Options Available: beef, cheese, oil, ..."
+        order: 7
+        title: Commodities
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    bonds: true
+    dividends: true
+    stock_splits: true
+    historical_candlestick: true
+    macro_calendar: true
+    macro_indicator: true
+    commodities: true
+    benchmark: true
+  testedStreams:
+    bonds:
+      hasRecords: true
+      streamHash: 357fb7f57462d774ece7c5085554061f1bc6e85b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    dividends:
+      hasRecords: true
+      streamHash: 63c321ce2ead5cff97454e92149a19eefe6c7b22
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    stock_splits:
+      hasRecords: true
+      streamHash: 9c28d289b17af092b5aa56759d9adfea41053062
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    historical_candlestick:
+      hasRecords: true
+      streamHash: 567dbe7aa3bc15925ee48637b04598e48b1e1a8b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    macro_calendar:
+      hasRecords: true
+      streamHash: de60019c0a1af68baa501b2908385b6ff0869177
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    macro_indicator:
+      hasRecords: true
+      streamHash: 95831425814dd02b44730007faf85c625f61cc0b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    commodities:
+      streamHash: 95fbe6ac1ba1337b323c02b6e43cc9d3982b4ee2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    benchmark:
+      streamHash: a990d23f5f72c745c9f1ba74c358e91e397ef1fb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  bonds:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      country:
+        type: string
+      datetime:
+        type: string
+      percentage_month:
+        type:
+          - string
+          - "null"
+      percentage_week:
+        type:
+          - string
+          - "null"
+      percentage_year:
+        type:
+          - string
+          - "null"
+      price_change_day:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - string
+          - "null"
+      yield:
+        type:
+          - string
+          - "null"
+    required:
+      - country
+      - datetime
+      - type
+  dividends:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+          - "null"
+      dividend_rate:
+        type:
+          - string
+          - "null"
+      ticker:
+        type:
+          - string
+          - "null"
+  stock_splits:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type: string
+      stock_split:
+        type:
+          - string
+          - "null"
+      ticker:
+        type: string
+    required:
+      - ticker
+      - date
+  historical_candlestick:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      adjusted_close:
+        type:
+          - string
+          - "null"
+      close:
+        type:
+          - string
+          - "null"
+      closetime:
+        type:
+          - number
+          - "null"
+      date:
+        type: string
+      dividend_rate:
+        type:
+          - string
+          - "null"
+      high:
+        type:
+          - string
+          - "null"
+      low:
+        type:
+          - string
+          - "null"
+      open:
+        type:
+          - string
+          - "null"
+      opentime:
+        type:
+          - number
+          - "null"
+      stock_split:
+        type:
+          - string
+          - "null"
+      ticker:
+        type: string
+      trade_volume:
+        type:
+          - string
+          - "null"
+    required:
+      - ticker
+      - date
+  macro_calendar:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      actual:
+        type:
+          - string
+          - "null"
+      consensus:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      datetime:
+        type:
+          - string
+          - "null"
+      impact:
+        type:
+          - string
+          - "null"
+      iso_country_code:
+        type:
+          - string
+          - "null"
+      previous:
+        type:
+          - string
+          - "null"
+      report_date:
+        type:
+          - string
+          - "null"
+      report_name:
+        type:
+          - string
+          - "null"
+      unit:
+        type:
+          - string
+          - "null"
+  macro_indicator:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      actual:
+        type:
+          - string
+          - "null"
+      previous:
+        type:
+          - string
+          - "null"
+      report_date:
+        type:
+          - string
+          - "null"
+      report_name:
+        type:
+          - string
+          - "null"
+      unit:
+        type:
+          - string
+          - "null"
+  commodities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      commodity_name:
+        type: string
+      commodity_price:
+        type:
+          - string
+          - "null"
+      commodity_unit:
+        type:
+          - string
+          - "null"
+      datetime:
+        type: string
+      percentage_day:
+        type:
+          - string
+          - "null"
+      percentage_month:
+        type:
+          - string
+          - "null"
+      percentage_week:
+        type:
+          - string
+          - "null"
+      percentage_year:
+        type:
+          - string
+          - "null"
+      price_change_day:
+        type:
+          - string
+          - "null"
+      quarter1_25:
+        type:
+          - string
+          - "null"
+      quarter2_25:
+        type:
+          - string
+          - "null"
+      quarter3_25:
+        type:
+          - string
+          - "null"
+      quarter4_24:
+        type:
+          - string
+          - "null"
+    required:
+      - commodity_name
+      - datetime
+  benchmark:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      benchmark:
+        type: string
+      country:
+        type: string
+      datetime:
+        type: string
+      percentage_day:
+        type:
+          - string
+          - "null"
+      percentage_month:
+        type:
+          - string
+          - "null"
+      percentage_week:
+        type:
+          - string
+          - "null"
+      percentage_year:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - string
+          - "null"
+      price_change_day:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - string
+          - "null"
+    required:
+      - datetime
+      - country
+      - benchmark

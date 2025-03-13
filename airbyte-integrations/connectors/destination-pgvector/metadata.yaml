@@ -1,0 +1,53 @@
+data:
+  ab_internal:
+    ql: 300
+    sl: 200
+  allowedHosts:
+    hosts:
+      - api.openai.com
+      - api.cohere.ai
+      - ${embedding.api_base}
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+  connectorSubtype: vectorstore
+  connectorType: destination
+  definitionId: e0e06cd9-57a9-4d39-b032-bedd874ae875
+  dockerImageTag: 0.1.2
+  dockerRepository: airbyte/destination-pgvector
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/pgvector
+  githubIssueLabel: destination-pgvector
+  icon: pgvector.svg
+  license: MIT
+  name: PGVector
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-destination-pgvector
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseDate: 2024-09-25
+  releaseStage: beta
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
+  supportLevel: certified
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    # Temporarily disabled due to test coverage not passing
+    # - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-PGVECTOR__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

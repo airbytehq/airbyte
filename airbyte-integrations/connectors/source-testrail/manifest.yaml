@@ -1,0 +1,2200 @@
+version: 5.7.5
+
+type: DeclarativeSource
+
+description: >-
+  Website: https://www.testrail.com/
+
+  API Docs:
+  https://support.testrail.com/hc/en-us/articles/7077196481428-Attachments
+
+  Auth Docs:
+  https://support.testrail.com/hc/en-us/articles/7077039051284-Accessing-the-TestRail-API
+
+check:
+  type: CheckStream
+  stream_names:
+    - projects
+
+definitions:
+  streams:
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: index.php?/api/v2/get_projects
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - projects
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    priorities:
+      type: DeclarativeStream
+      name: priorities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: index.php?/api/v2/get_priorities
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/priorities"
+    plans:
+      type: DeclarativeStream
+      name: plans
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: index.php?/api/v2/get_plans/{{ stream_partition.project_id }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - plans
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_on
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/plans"
+    roles:
+      type: DeclarativeStream
+      name: roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: index.php?/api/v2/get_roles
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - roles
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/roles"
+    runs:
+      type: DeclarativeStream
+      name: runs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: index.php?/api/v2/get_runs/{{ stream_partition.project_id }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - runs
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_on
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/runs"
+    result_fields:
+      type: DeclarativeStream
+      name: result_fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: index.php?/api/v2/get_result_fields
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/result_fields"
+    suites:
+      type: DeclarativeStream
+      name: suites
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: index.php?/api/v2/get_suites/{{ stream_partition.project_id }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/suites"
+    templates:
+      type: DeclarativeStream
+      name: templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: index.php?/api/v2/get_templates/{{ stream_partition.project_id }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/templates"
+    runs_tests:
+      type: DeclarativeStream
+      name: runs_tests
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: index.php?/api/v2/get_tests/{{ stream_partition.run_id }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tests
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: run_id
+              stream:
+                $ref: "#/definitions/streams/runs"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/runs_tests"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: index.php?/api/v2/get_users
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    sections:
+      type: DeclarativeStream
+      name: sections
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            index.php?/api/v2/get_sections/{{ stream_partition.project_id
+            }}&suite_id={{ stream_partition.suite_id }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - sections
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  $ref: "#/definitions/streams/projects"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: suite_id
+                stream:
+                  $ref: "#/definitions/streams/suites"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sections"
+    case_statuses:
+      type: DeclarativeStream
+      name: case_statuses
+      primary_key:
+        - case_status_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: index.php?/api/v2/get_case_statuses
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/case_statuses"
+    milestones:
+      type: DeclarativeStream
+      name: milestones
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: index.php?/api/v2/get_milestones/{{ stream_partition.project_id }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - milestones
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: started_on
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/milestones"
+    datasets:
+      type: DeclarativeStream
+      name: datasets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: index.php?/api/v2/get_datasets/{{ stream_partition.project_id }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - datasets
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/datasets"
+    configs:
+      type: DeclarativeStream
+      name: configs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: index.php?/api/v2/get_configs/{{ stream_partition.project_id }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/configs"
+    case_types:
+      type: DeclarativeStream
+      name: case_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: index.php?/api/v2/get_case_types
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/case_types"
+    case_fields:
+      type: DeclarativeStream
+      name: case_fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: index.php?/api/v2/get_case_fields
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/case_fields"
+    cases:
+      type: DeclarativeStream
+      name: cases
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            index.php?/api/v2/get_cases/{{ stream_partition.project_id
+            }}&suite_id={{ stream_partition.suite_id }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - cases
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: project_id
+                stream:
+                  $ref: "#/definitions/streams/projects"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: suite_id
+                stream:
+                  $ref: "#/definitions/streams/suites"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_on
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/cases"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['domain_name'] }}.testrail.io/
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: '{{ config["password"] }}'
+      username: '{{ config["username"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/priorities"
+  - $ref: "#/definitions/streams/plans"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/runs"
+  - $ref: "#/definitions/streams/result_fields"
+  - $ref: "#/definitions/streams/suites"
+  - $ref: "#/definitions/streams/templates"
+  - $ref: "#/definitions/streams/runs_tests"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/sections"
+  - $ref: "#/definitions/streams/case_statuses"
+  - $ref: "#/definitions/streams/milestones"
+  - $ref: "#/definitions/streams/datasets"
+  - $ref: "#/definitions/streams/configs"
+  - $ref: "#/definitions/streams/case_types"
+  - $ref: "#/definitions/streams/case_fields"
+  - $ref: "#/definitions/streams/cases"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+      - start_date
+      - domain_name
+    properties:
+      username:
+        type: string
+        order: 0
+        title: Username
+      password:
+        type: string
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 2
+      domain_name:
+        type: string
+        description: The unique domain name for accessing testrail
+        title: Domain name
+        order: 3
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    projects: true
+    priorities: true
+    plans: true
+    roles: true
+    runs: true
+    result_fields: true
+    suites: true
+    templates: true
+    runs_tests: true
+    users: true
+    sections: true
+    case_statuses: true
+    milestones: true
+    datasets: true
+    configs: true
+    case_types: true
+    case_fields: true
+    cases: true
+  testedStreams:
+    projects:
+      streamHash: 8a33e82ec9f02621f90c113130aa8d62a28fe742
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    priorities:
+      streamHash: cbdb11b7671f12afa53c45d7f31500b1c13c502d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    plans:
+      streamHash: 03eefbe79460ee570224257081034a1ed18bc676
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    roles:
+      streamHash: c419e37d03b58643d1b3561d940a8493d92aa04f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    runs:
+      streamHash: 643c2592f876849aa9b173ef199c2889e5c504d3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    result_fields:
+      streamHash: e5e5b74b41e509c1f7ab1b461a03a8e8d8b989b3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    suites:
+      streamHash: d679b7ce819ccf73f3d2bd29202b391de06372f8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    templates:
+      streamHash: 4065bec2ab739220c049ee25bb5b3e6db47c6237
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    runs_tests:
+      streamHash: 4a413481ecc1a1238c414dfd54184e51b7b1954d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: 154d1d811e7893c4c7ff1beb82fac17f2ef5bd59
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    sections:
+      streamHash: 942c301086241666c0285ebebd30866c8e4c365f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    case_statuses:
+      streamHash: 1d51c864716dd4d1a523466740724f0348b9d807
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    milestones:
+      streamHash: 387164543c0ff9c62fc7e5ef4a56c859d5c98d26
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    datasets:
+      streamHash: 05aa5ca975b3b3dc8b2fe7d5646740207c7aeb03
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    configs:
+      streamHash: 7534a4bf69d7d509c7f776679c667171a8429768
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    case_types:
+      streamHash: c51433b07dd111a1a00d02ee864201312cd890c4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    case_fields:
+      streamHash: eea30eebf27f03993ecfccde0ded48d83312d555
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    cases:
+      streamHash: 4141e560efd5c617c99726af14346475dc875d94
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      case_statuses_enabled:
+        type:
+          - boolean
+          - "null"
+      groups:
+        type:
+          - array
+          - "null"
+      id:
+        type: number
+      is_completed:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      show_announcement:
+        type:
+          - boolean
+          - "null"
+      suite_mode:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      users:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+  priorities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      is_default:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      priority:
+        type:
+          - number
+          - "null"
+      short_name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  plans:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      blocked_count:
+        type:
+          - number
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      created_on:
+        type: number
+      custom_status1_count:
+        type:
+          - number
+          - "null"
+      custom_status2_count:
+        type:
+          - number
+          - "null"
+      custom_status3_count:
+        type:
+          - number
+          - "null"
+      custom_status4_count:
+        type:
+          - number
+          - "null"
+      custom_status5_count:
+        type:
+          - number
+          - "null"
+      custom_status6_count:
+        type:
+          - number
+          - "null"
+      custom_status7_count:
+        type:
+          - number
+          - "null"
+      failed_count:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      is_completed:
+        type:
+          - boolean
+          - "null"
+      milestone_id:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      passed_count:
+        type:
+          - number
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      refs:
+        type:
+          - string
+          - "null"
+      retest_count:
+        type:
+          - number
+          - "null"
+      untested_count:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_on
+  roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      is_default:
+        type:
+          - boolean
+          - "null"
+      is_project_admin:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  runs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      blocked_count:
+        type:
+          - number
+          - "null"
+      completed_on:
+        type:
+          - number
+          - "null"
+      config_ids:
+        type:
+          - array
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      created_on:
+        type: number
+      custom_status1_count:
+        type:
+          - number
+          - "null"
+      custom_status2_count:
+        type:
+          - number
+          - "null"
+      custom_status3_count:
+        type:
+          - number
+          - "null"
+      custom_status4_count:
+        type:
+          - number
+          - "null"
+      custom_status5_count:
+        type:
+          - number
+          - "null"
+      custom_status6_count:
+        type:
+          - number
+          - "null"
+      custom_status7_count:
+        type:
+          - number
+          - "null"
+      failed_count:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      include_all:
+        type:
+          - boolean
+          - "null"
+      is_completed:
+        type:
+          - boolean
+          - "null"
+      milestone_id:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      passed_count:
+        type:
+          - number
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      retest_count:
+        type:
+          - number
+          - "null"
+      suite_id:
+        type:
+          - number
+          - "null"
+      untested_count:
+        type:
+          - number
+          - "null"
+      updated_on:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_on
+  result_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      configs:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            context:
+              type:
+                - object
+                - "null"
+              properties:
+                is_global:
+                  type:
+                    - boolean
+                    - "null"
+                project_ids:
+                  type:
+                    - array
+                    - "null"
+            id:
+              type:
+                - string
+                - "null"
+            options:
+              type:
+                - object
+                - "null"
+              properties:
+                format:
+                  type:
+                    - string
+                    - "null"
+                has_actual:
+                  type:
+                    - boolean
+                    - "null"
+                has_expected:
+                  type:
+                    - boolean
+                    - "null"
+                is_required:
+                  type:
+                    - boolean
+                    - "null"
+                rows:
+                  type:
+                    - string
+                    - "null"
+      display_order:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      include_all:
+        type:
+          - boolean
+          - "null"
+      is_active:
+        type:
+          - boolean
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      system_name:
+        type:
+          - string
+          - "null"
+      template_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      type_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  suites:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      is_baseline:
+        type:
+          - boolean
+          - "null"
+      is_completed:
+        type:
+          - boolean
+          - "null"
+      is_master:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      is_default:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  runs_tests:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      assignedto_id:
+        type:
+          - number
+          - "null"
+      case_comments:
+        type:
+          - array
+          - "null"
+      case_id:
+        type:
+          - number
+          - "null"
+      cases_display_order:
+        type:
+          - number
+          - "null"
+      custom_automation_type:
+        type:
+          - number
+          - "null"
+      custom_expected:
+        type:
+          - string
+          - "null"
+      custom_goals:
+        type:
+          - string
+          - "null"
+      custom_mission:
+        type:
+          - string
+          - "null"
+      custom_preconds:
+        type:
+          - string
+          - "null"
+      custom_steps:
+        type:
+          - string
+          - "null"
+      estimate:
+        type:
+          - string
+          - "null"
+      estimate_forecast:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      priority_id:
+        type:
+          - number
+          - "null"
+      refs:
+        type:
+          - string
+          - "null"
+      run_id:
+        type:
+          - number
+          - "null"
+      sections_display_order:
+        type:
+          - number
+          - "null"
+      status_id:
+        type:
+          - number
+          - "null"
+      template_id:
+        type:
+          - number
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      type_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      assigned_projects:
+        type:
+          - array
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      email_notifications:
+        type:
+          - boolean
+          - "null"
+      group_ids:
+        type:
+          - array
+          - "null"
+      id:
+        type: number
+      is_active:
+        type:
+          - boolean
+          - "null"
+      is_admin:
+        type:
+          - boolean
+          - "null"
+      mfa_required:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+      role_id:
+        type:
+          - number
+          - "null"
+      sso_enabled:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  sections:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      depth:
+        type:
+          - number
+          - "null"
+      display_order:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      parent_id:
+        type:
+          - number
+          - "null"
+      suite_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  case_statuses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      case_status_id:
+        type: number
+      is_approved:
+        type:
+          - boolean
+          - "null"
+      is_default:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - case_status_id
+  milestones:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      completed_on:
+        type:
+          - number
+          - "null"
+      due_on:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      is_completed:
+        type:
+          - boolean
+          - "null"
+      is_started:
+        type:
+          - boolean
+          - "null"
+      milestones:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+      started_on:
+        type: number
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - started_on
+  datasets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      variables:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+  configs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      configs:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            group_id:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      project_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  case_types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      is_default:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  case_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      configs:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            context:
+              type:
+                - object
+                - "null"
+              properties:
+                is_global:
+                  type:
+                    - boolean
+                    - "null"
+                project_ids:
+                  type:
+                    - array
+                    - "null"
+            id:
+              type:
+                - string
+                - "null"
+            options:
+              type:
+                - object
+                - "null"
+              properties:
+                default_value:
+                  type:
+                    - string
+                    - "null"
+                format:
+                  type:
+                    - string
+                    - "null"
+                has_expected:
+                  type:
+                    - boolean
+                    - "null"
+                is_required:
+                  type:
+                    - boolean
+                    - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+                rows:
+                  type:
+                    - string
+                    - "null"
+      display_order:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      include_all:
+        type:
+          - boolean
+          - "null"
+      is_active:
+        type:
+          - boolean
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      system_name:
+        type:
+          - string
+          - "null"
+      template_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      type_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  cases:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      comments:
+        type:
+          - array
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      created_on:
+        type:
+          - number
+          - "null"
+      custom_automation_type:
+        type:
+          - number
+          - "null"
+      custom_expected:
+        type:
+          - string
+          - "null"
+      custom_goals:
+        type:
+          - string
+          - "null"
+      custom_mission:
+        type:
+          - string
+          - "null"
+      custom_preconds:
+        type:
+          - string
+          - "null"
+      custom_steps:
+        type:
+          - string
+          - "null"
+      display_order:
+        type:
+          - number
+          - "null"
+      estimate:
+        type:
+          - string
+          - "null"
+      estimate_forecast:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      is_deleted:
+        type:
+          - number
+          - "null"
+      priority_id:
+        type:
+          - number
+          - "null"
+      refs:
+        type:
+          - string
+          - "null"
+      section_id:
+        type:
+          - number
+          - "null"
+      suite_id:
+        type:
+          - number
+          - "null"
+      template_id:
+        type:
+          - number
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      type_id:
+        type:
+          - number
+          - "null"
+      updated_by:
+        type:
+          - number
+          - "null"
+      updated_on:
+        type: number
+    required:
+      - id
+      - updated_on

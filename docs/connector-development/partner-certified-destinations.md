@@ -4,36 +4,37 @@
 
 **Thank you for contributing and committing to maintain your Airbyte destination connector 🥂**
 
-This document outlines the minimum expectations for partner-certified destination.  We will **strongly** recommend that partners use the relevant CDK, but also want to support developers that *need* to develop in a different language.  This document covers concepts implicitly built into our CDKs for this use-case. 
+This document outlines the minimum expectations for partner-certified destination.  We will **strongly** recommend that partners use the relevant CDK, but also want to support developers that *need* to develop in a different language.  This document covers concepts implicitly built into our CDKs for this use-case.
 
 ## Definitions
 **Partner Certified Destination:** A destination which is fully supported by the maintainers of the platform that is being loaded to. These connectors are not guaranteed by Airbyte directly, but instead the maintainers of the connector contribute fixes and improvements to ensure a quality experience for Airbyte users. Partner destinations are noted as such with a special “Partner” badge on the Integrations page, distinguishing them from other community maintained connectors on the Marketplace.
 
 
-**Bulk Destinations:** A destination which accepts tables and columns as input, files, or otherwise unconstrained content. The majority of bulk destinations are database-like tabular (warehouses, data lakes, databases), but may also include file or blob destinations.  The defining characteristic of bulk destinations is that they accept data in the shape of the source (e.g. tables, columns or content doesn’t change much from the representation of the source).  These destinations can usually hold large amounts of data, and are the fastest to load. 
+**Bulk Destinations:** A destination which accepts tables and columns as input, files, or otherwise unconstrained content. The majority of bulk destinations are database-like tabular (warehouses, data lakes, databases), but may also include file or blob destinations.  The defining characteristic of bulk destinations is that they accept data in the shape of the source (e.g. tables, columns or content doesn’t change much from the representation of the source).  These destinations can usually hold large amounts of data, and are the fastest to load.
 
-**Publish Destinations:** A publish-type destination, often called a “reverse ETL” destination loads data to an external service or API. These destinations may be “picky”, having specific schema requirements for incoming streams. Common publish-type use cases include: publishing data to a REST API, publishing data to a messaging endpoint (e.g email, push notifications, etc.), and publishing data to an LLM vector store. Specific examples include: Destination-Pinecone, Destination-Vectara, and Destination-Weaviate.  These destinations can usually hold finite amounts of data, and slower to load. 
+**Publish Destinations:** A publish-type destination, often called a “reverse ETL” destination loads data to an external service or API. These destinations may be “picky”, having specific schema requirements for incoming streams. Common publish-type use cases include: publishing data to a REST API, publishing data to a messaging endpoint (e.g email, push notifications, etc.), and publishing data to an LLM vector store. Specific examples include: Destination-Pinecone, Destination-Vectara, and Destination-Weaviate.  These destinations can usually hold finite amounts of data, and slower to load.
 
 ## “Partner-Certified" Listing Requirements:
 
-### Issue Tracking: 
+### Issue Tracking:
 Create a public Github repo/project to be shared with Airbyte and it's users.
 
-### Airbyte Communications: 
+### Airbyte Communications:
 Monitor a Slack channel for communications directly from the Airbyte Support and Development teams.
 
-### SLAs: 
+### SLAs:
 Respect a 3 business day first response maximum to customer inquries or bug reports.
-### Metrics: 
+
+### Metrics:
 Maintain >=95% first-sync success and >=95% overall sync success on your destination connector. _Note: config_errors are not counted against this metric._
 
-### Platform Updates: 
+### Platform Updates:
 Adhere to a regular update cadence for either the relevant Airbyte-managed CDK, or a commit to updating your connector to meet any new platform requirements at least once every 6 months.
 
-### Connector Updates: 
+### Connector Updates:
 Important bugs are audited and major problems are solved within a reasonable timeframe.
 
-### Security: 
+### Security:
 Validate that the connector is using HTTPS and secure-only access to customer data.
 
 
@@ -46,11 +47,11 @@ We won’t call out every requirement of the Airbyte Protocol (link) but below a
 * Destinations must capture state messages from sources, and must emit those state messages to STDOUT only after all preceding records have been durably committed to the destination
   * The Airbyte platform interprets state messages emitted from the destination as a logical checkpoint. Destinations must emit all of the state messages they receive, and only after records have been durably written and/or committed to the destination’s long-term storage.
   * If a destination emits the source’s state message before preceding records are finalized, this is an error.
-  * _Note: In general, state handling should always be handled by the respective CDK. Destination authors should not attempt to handle this themselves._ 
+  * _Note: In general, state handling should always be handled by the respective CDK. Destination authors should not attempt to handle this themselves._
 
 * Destinations must append record counts to the Source’s state message before emitting (New for Airbyte 1.0)
   * For each state record emitted, the destination should attach to the state message the count of records processed and associated with that state message.
-  * This should always be handled by the Python or Java CDK. Destination authors should not attempt to handle this themselves. 
+  * This should always be handled by the Python or Java CDK. Destination authors should not attempt to handle this themselves.
 
 * State messages should be emitted with no gap longer than 15 minutes
   * Checkpointing requires commit and return state every 15 minutes. When batching records for efficiency, destination should also include logic to finalize batches approximately every 10 minutes, or whatever interval is appropriate to meet the minimum 15 minute checkpoint frequency.
@@ -77,7 +78,7 @@ _Note: Because **Publish Destinations** have little control over table structure
 
 * Bulk Destinations must utilize _airbyte_meta.changes[] to record in-flight fixes or changes
   * This includes logging information on any fields that had to be nullified due to destination capacity restrictions (e.g. data could not fit), and/or problematic input data (e.g. impossible date or out-of-range date).
-  * It’s also OK for the destination to make record changes (e.g. property too large to fit) as long as the change doesn’t apply to the PK or cursor, and the change is record in _airbyte_meta.changes[] as well. 
+  * It’s also OK for the destination to make record changes (e.g. property too large to fit) as long as the change doesn’t apply to the PK or cursor, and the change is record in _airbyte_meta.changes[] as well.
 
 * Bulk Destinations must accept new columns arriving from the source. (“Schema Evolution”)
   * Tabular destinations should be consistent in how they handle schema evolutions over the period of a connection’s lifecycle, including gracefully handling expected organic schema evolutions, including the addition of new columns after the initial sync.

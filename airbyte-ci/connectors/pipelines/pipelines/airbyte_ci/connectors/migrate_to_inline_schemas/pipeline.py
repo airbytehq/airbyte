@@ -12,13 +12,13 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, List
 
 from connector_ops.utils import ConnectorLanguage  # type: ignore
+
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.reports import Report
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.helpers.connectors.command import run_connector_steps
-from pipelines.helpers.connectors.format import format_prettier
 from pipelines.helpers.connectors.yaml import read_yaml, write_yaml
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import Step, StepResult, StepStatus
@@ -198,7 +198,7 @@ class InlineSchemas(Step):
             _update_inline_schema(schema_loader, json_streams, stream_name)
 
         write_yaml(data, manifest_path)
-        await format_prettier([manifest_path], logger=logger)
+        # await format_prettier([manifest_path], logger=logger)
 
         for json_stream in json_streams.values():
             logger.info(f"     !! JSON schema not found: {json_stream.name}")

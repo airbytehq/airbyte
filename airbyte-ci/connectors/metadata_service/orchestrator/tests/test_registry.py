@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 from unittest import mock
 from uuid import UUID
 
@@ -11,6 +12,7 @@ from google.cloud import storage
 from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
 from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
+from orchestrator.assets import registry
 from orchestrator.assets.registry_entry import (
     get_connector_type_from_registry_entry,
     get_registry_entry_write_path,
@@ -339,6 +341,28 @@ def test_erd_url():
     assert result["erdUrl"] == "https://an-erd.com"
 
 
+def test_sbom_url():
+    """
+    Test that if when defined in the metadata, the sbom url will be populated in the registry
+    """
+    mock_metadata_entry = mock.Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = {
+        "data": {
+            "connectorType": "source",
+            "definitionId": "test-id",
+            "registryOverrides": {"oss": {"enabled": True}},
+            "dockerRepository": "test-connector",
+            "dockerImageTag": "test-tag",
+            "generated": {"sbomUrl": "test-sbom-url"},
+        }
+    }
+    mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
+
+    result = metadata_to_registry_entry(mock_metadata_entry, "oss")
+    assert result["generated"]["sbomUrl"] == "test-sbom-url"
+
+
 def test_support_level_default():
     """
     Test if supportLevel is defaulted to alpha in the registry entry.
@@ -421,3 +445,98 @@ def test_icon_url():
 
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["iconUrl"] == "test-icon-url"
+
+
+def test_set_language_from_tags():
+    """
+    Test if the language is set from the tags in the registry entry.
+    """
+    metadata = {
+        "data": {
+            "connectorType": "source",
+            "definitionId": "test-id",
+            "registryOverrides": {"oss": {"enabled": True}},
+            "tags": ["language:manifest-only", "key:value"],
+        }
+    }
+
+    mock_metadata_entry = mock.Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = metadata
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
+
+    result = metadata_to_registry_entry(mock_metadata_entry, "oss")
+    assert result["language"] == "manifest-only"
+
+
+def test_language_from_tags_does_not_override_top_level_language():
+    """
+    Test if the language is not set from the tags if it is already set in the registry entry.
+    """
+    metadata = {
+        "data": {
+            "connectorType": "source",
+            "definitionId": "test-id",
+            "registryOverrides": {"oss": {"enabled": True}},
+            "language": "python",
+            "tags": ["language:manifest-only", "key:value"],
+        }
+    }
+
+    mock_metadata_entry = mock.Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = metadata
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
+    result = metadata_to_registry_entry(mock_metadata_entry, "oss")
+    assert result["language"] == "python"
+
+
+def test_apply_release_candidates_with_older_rc(mocker):
+    uuid = UUID(int=1)
+    latest_registry_entry = {
+        "name": "source-test",
+        "sourceDefinitionId": str(uuid),
+        "dockerRepository": "test-repo",
+        "documentationUrl": "https://test_documentation_url.com",
+        "spec": {},
+        "dockerImageTag": "1.1.0",
+        "releases": {},
+    }
+    rc_registry_entry = ConnectorRegistrySourceDefinition.parse_obj(
+        {
+            "name": "source-test",
+            "sourceDefinitionId": str(uuid),
+            "dockerRepository": "test-repo",
+            "documentationUrl": "https://test_documentation_url.com",
+            "spec": {},
+            "dockerImageTag": "1.1.0-rc.1",
+            "releases": {"rolloutConfiguration": {"enableProgressiveRollout": True}},
+        }
+    )
+
+    result = registry.apply_release_candidates(latest_registry_entry, rc_registry_entry)
+    assert not result["releases"]
+
+
+def test_apply_release_candidates_newer_version(mocker):
+    uuid = UUID(int=1)
+    latest_registry_entry = {
+        "name": "source-test",
+        "sourceDefinitionId": str(uuid),
+        "dockerRepository": "test-repo",
+        "documentationUrl": "https://test_documentation_url.com",
+        "spec": {},
+        "dockerImageTag": "1.0.0",
+        "releases": {},
+    }
+    rc_registry_entry = ConnectorRegistrySourceDefinition.parse_obj(
+        {
+            "name": "source-test",
+            "sourceDefinitionId": str(uuid),
+            "dockerRepository": "test-repo",
+            "documentationUrl": "https://test_documentation_url.com",
+            "spec": {},
+            "dockerImageTag": "1.1.0-rc.1",
+            "releases": {"rolloutConfiguration": {"enableProgressiveRollout": True}},
+        }
+    )
+    result = registry.apply_release_candidates(latest_registry_entry, rc_registry_entry)
+    assert "1.1.0-rc.1" in result["releases"]["releaseCandidates"]

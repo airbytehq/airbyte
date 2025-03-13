@@ -1,0 +1,919 @@
+version: 5.10.3
+
+type: DeclarativeSource
+
+description: >
+  This is the setup guide for the Campaign Monitor source.
+
+
+  Campaign Monitor is an email marketing and services platform
+  https://www.campaignmonitor.com/
+
+  This connector ingests a variety of endpoints from the Campaign Monitor API.
+
+  In order to use the API, you must first create an account. You can generate
+  your API key in the account settings.
+
+  https://www.campaignmonitor.com/api/v3-3/getting-started/ 
+
+check:
+  type: CheckStream
+  stream_names:
+    - clients
+
+definitions:
+  streams:
+    clients:
+      type: DeclarativeStream
+      name: clients
+      primary_key:
+        - ClientID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: clients.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/clients"
+    admins:
+      type: DeclarativeStream
+      name: admins
+      primary_key:
+        - EmailAddress
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: admins.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/admins"
+    client_details:
+      type: DeclarativeStream
+      name: client_details
+      primary_key:
+        - ClientID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: clients/{{ stream_partition.client }}.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - ClientID
+              value: "{{ record['BasicDetails']['ClientID'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - BasicDetails
+              - ClientID
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/client_details"
+    segments:
+      type: DeclarativeStream
+      name: segments
+      primary_key:
+        - SegmentID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: clients/{{ stream_partition.client }}/segments.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/segments"
+    templates:
+      type: DeclarativeStream
+      name: templates
+      primary_key:
+        - TemplateID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: clients/{{ stream_partition.client }}/templates.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/templates"
+    people:
+      type: DeclarativeStream
+      name: people
+      primary_key:
+        - EmailAddress
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: clients/{{ stream_partition.client }}/people.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/people"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - Name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: clients/{{ stream_partition.client }}/tags.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    subscriber_lists:
+      type: DeclarativeStream
+      name: subscriber_lists
+      primary_key:
+        - ListID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: clients/{{ stream_partition.client }}/lists.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/subscriber_lists"
+    suppression_lists:
+      type: DeclarativeStream
+      name: suppression_lists
+      primary_key:
+        - EmailAddress
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: clients/{{ stream_partition.client }}/suppressionlist.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pagesize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/suppression_lists"
+    sent_campaigns:
+      type: DeclarativeStream
+      name: sent_campaigns
+      primary_key:
+        - CampaignID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: clients/{{ stream_partition.client }}/campaigns.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pagesize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: SentDate
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          field_name: sentFromDate
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sent_campaigns"
+    draft_campaigns:
+      type: DeclarativeStream
+      name: draft_campaigns
+      primary_key:
+        - CampaignID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: clients/{{ stream_partition.client }}/drafts.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/draft_campaigns"
+    scheduled_campaigns:
+      type: DeclarativeStream
+      name: scheduled_campaigns
+      primary_key:
+        - CampaignID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: clients/{{ stream_partition.client }}/scheduled.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: ClientID
+              partition_field: client
+              stream:
+                $ref: "#/definitions/streams/clients"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/scheduled_campaigns"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.createsend.com/api/v3.3/
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"username\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/clients"
+  - $ref: "#/definitions/streams/admins"
+  - $ref: "#/definitions/streams/client_details"
+  - $ref: "#/definitions/streams/segments"
+  - $ref: "#/definitions/streams/templates"
+  - $ref: "#/definitions/streams/people"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/subscriber_lists"
+  - $ref: "#/definitions/streams/suppression_lists"
+  - $ref: "#/definitions/streams/sent_campaigns"
+  - $ref: "#/definitions/streams/draft_campaigns"
+  - $ref: "#/definitions/streams/scheduled_campaigns"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+    properties:
+      username:
+        type: string
+        order: 0
+        title: Username
+      password:
+        type: string
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+      start_date:
+        type: string
+        description: Date from when the sync should start
+        order: 2
+        title: start_date
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    clients: true
+    admins: true
+    client_details: true
+    segments: true
+    templates: true
+    people: true
+    tags: true
+    subscriber_lists: true
+    suppression_lists: true
+    sent_campaigns: true
+    draft_campaigns: true
+    scheduled_campaigns: true
+  testedStreams:
+    clients:
+      hasRecords: true
+      streamHash: 94dac85b511a5ac97e21301d8e5b1058fe85693f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    admins:
+      hasRecords: true
+      streamHash: 98d12e6061d4a1dae696088e7363d642f38a2b9d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    client_details:
+      streamHash: 3cd55a694d57629f4b8f3e20e77abf609542652b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    segments:
+      hasRecords: true
+      streamHash: 37115d05f4739801cae156adc01caa844b56ccd9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    templates:
+      hasRecords: true
+      streamHash: b5bde153fcd637ffef8ca78caf79d67a59f8227d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    people:
+      hasRecords: true
+      streamHash: 989c65aaee1a276464d92d9ed36db9510372277a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tags:
+      hasRecords: true
+      streamHash: ac01a61c7ea13a604f2c0ce1e0482a298d9c432e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    subscriber_lists:
+      hasRecords: true
+      streamHash: 290d9668664152c199172a5febcea3ade8ac48d3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    suppression_lists:
+      hasRecords: true
+      streamHash: 473290834046dec6ec6a9346658b1edb92a87c51
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sent_campaigns:
+      hasRecords: true
+      streamHash: 35ca7056cd3848b286e4c9e2a2e26f56cc79480f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    draft_campaigns:
+      hasRecords: true
+      streamHash: a98c8a83835e3f9ea6b02564ea790985683755fe
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    scheduled_campaigns:
+      streamHash: 2cf08000013f8b0c3df0942b9e01fbd16fdd96ca
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  clients:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ClientID:
+        type: string
+      Name:
+        type:
+          - string
+          - "null"
+    required:
+      - ClientID
+  admins:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      EmailAddress:
+        type: string
+      Name:
+        type:
+          - string
+          - "null"
+      Status:
+        type:
+          - string
+          - "null"
+    required:
+      - EmailAddress
+  client_details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ApiKey:
+        type:
+          - string
+          - "null"
+      BasicDetails:
+        type:
+          - object
+          - "null"
+        properties:
+          CompanyName:
+            type:
+              - string
+              - "null"
+          ContactName:
+            type:
+              - string
+              - "null"
+          Country:
+            type:
+              - string
+              - "null"
+          EmailAddress:
+            type:
+              - string
+              - "null"
+          TimeZone:
+            type:
+              - string
+              - "null"
+      BillingDetails:
+        type:
+          - object
+          - "null"
+        properties:
+          BaseDeliveryRate:
+            type:
+              - number
+              - "null"
+          BaseDesignSpamTestRate:
+            type:
+              - number
+              - "null"
+          BaseRatePerRecipient:
+            type:
+              - number
+              - "null"
+          CanPurchaseCredits:
+            type:
+              - boolean
+              - "null"
+          ClientPays:
+            type:
+              - boolean
+              - "null"
+          Credits:
+            type:
+              - number
+              - "null"
+          Currency:
+            type:
+              - string
+              - "null"
+          MarkupOnDelivery:
+            type:
+              - number
+              - "null"
+          MarkupOnDesignSpamTest:
+            type:
+              - number
+              - "null"
+          MarkupPerRecipient:
+            type:
+              - number
+              - "null"
+      ClientID:
+        type: string
+    required:
+      - ClientID
+  segments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ListID:
+        type:
+          - string
+          - "null"
+      SegmentID:
+        type: string
+      Title:
+        type:
+          - string
+          - "null"
+    required:
+      - SegmentID
+  templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Name:
+        type:
+          - string
+          - "null"
+      PreviewURL:
+        type:
+          - string
+          - "null"
+      ScreenshotURL:
+        type:
+          - string
+          - "null"
+      TemplateID:
+        type: string
+    required:
+      - TemplateID
+  people:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      AccessLevel:
+        type:
+          - number
+          - "null"
+      EmailAddress:
+        type: string
+      Name:
+        type:
+          - string
+          - "null"
+      Status:
+        type:
+          - string
+          - "null"
+    required:
+      - EmailAddress
+  tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Name:
+        type: string
+      NumberOfCampaigns:
+        type:
+          - number
+          - "null"
+    required:
+      - Name
+  subscriber_lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ListID:
+        type: string
+      Name:
+        type:
+          - string
+          - "null"
+    required:
+      - ListID
+  suppression_lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      Date:
+        type:
+          - string
+          - "null"
+      EmailAddress:
+        type: string
+      State:
+        type:
+          - string
+          - "null"
+      SuppressionReason:
+        type:
+          - string
+          - "null"
+    required:
+      - EmailAddress
+  sent_campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      CampaignID:
+        type: string
+      FromEmail:
+        type:
+          - string
+          - "null"
+      FromName:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      ReplyTo:
+        type:
+          - string
+          - "null"
+      SentDate:
+        type: string
+      Subject:
+        type:
+          - string
+          - "null"
+      Tags:
+        type:
+          - array
+          - "null"
+      TotalRecipients:
+        type:
+          - number
+          - "null"
+      WebVersionTextURL:
+        type:
+          - string
+          - "null"
+      WebVersionURL:
+        type:
+          - string
+          - "null"
+    required:
+      - CampaignID
+      - SentDate
+  draft_campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      CampaignID:
+        type: string
+      DateCreated:
+        type:
+          - string
+          - "null"
+      FromEmail:
+        type:
+          - string
+          - "null"
+      FromName:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      PreviewTextURL:
+        type:
+          - string
+          - "null"
+      PreviewURL:
+        type:
+          - string
+          - "null"
+      ReplyTo:
+        type:
+          - string
+          - "null"
+      Subject:
+        type:
+          - string
+          - "null"
+      Tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - CampaignID
+  scheduled_campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      CampaignID:
+        type: string
+      DateCreated:
+        type:
+          - string
+          - "null"
+      DateScheduled:
+        type:
+          - string
+          - "null"
+      FromEmail:
+        type:
+          - string
+          - "null"
+      FromName:
+        type:
+          - string
+          - "null"
+      Name:
+        type:
+          - string
+          - "null"
+      PreviewTextURL:
+        type:
+          - string
+          - "null"
+      PreviewURL:
+        type:
+          - string
+          - "null"
+      ReplyTo:
+        type:
+          - string
+          - "null"
+      ScheduledTimeZone:
+        type:
+          - string
+          - "null"
+      Subject:
+        type:
+          - string
+          - "null"
+      Tags:
+        type:
+          - array
+          - "null"
+    required:
+      - CampaignID

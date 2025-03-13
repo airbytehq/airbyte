@@ -9,6 +9,8 @@ import io.airbyte.cdk.integrations.destination.s3.jsonschema.JsonSchemaIdentityM
 import io.airbyte.cdk.integrations.destination.s3.jsonschema.JsonSchemaUnionMerger
 import io.airbyte.cdk.integrations.destination.s3.parquet.JsonSchemaParquetPreprocessor
 import io.airbyte.commons.jackson.MoreMappers
+import io.airbyte.commons.json.Jsons
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -34,21 +36,17 @@ class JsonSchemaTransformerTest {
 
     @Test
     fun testSchemaNoopTransformation() {
-        // Load resource file complex_schema.json
-        val schema = javaClass.getResource("/avro/complex_schema.json")?.readText()
-        val jsonSchema = MoreMappers.initMapper().readTree(schema)
+        // Load resource file complex_schema_in.json
+        val schemaIn = javaClass.getResource("/avro/complex_schema_in.json")?.readText()
+        val schemaOut = javaClass.getResource("/avro/complex_schema_out.json")?.readText()
+        val jsonSchemaIn = MoreMappers.initMapper().readTree(schemaIn)
+        val jsonSchemaOut = MoreMappers.initMapper().readTree(schemaOut)
 
         // Create a JsonSchemaTransformer object
         val transformer = JsonSchemaIdentityMapper()
-        val transformedSchema = transformer.mapSchema(jsonSchema as ObjectNode) as ObjectNode
+        val transformedSchema = transformer.mapSchema(jsonSchemaIn as ObjectNode) as ObjectNode
 
-        // Assert transformedSchema is equal to jsonSchema, accounting for a little normalization
-        transformedSchema.remove("type")
-        mangleAltCombined(jsonSchema["properties"]["combined_type_alt"] as ObjectNode)
-        mangleAltCombined(jsonSchema["properties"]["combined_null_string"] as ObjectNode, "null")
-        mangleAltCombined(jsonSchema["properties"]["redundant_null"] as ObjectNode, "null", "null")
-
-        Assertions.assertEquals(jsonSchema, transformedSchema)
+        Assertions.assertEquals(jsonSchemaOut, transformedSchema)
     }
 
     @Test
@@ -132,15 +130,75 @@ class JsonSchemaTransformerTest {
 
     @Test
     fun testMergingNulls() {
-        val inputSchemaStr = javaClass.getResource("/avro/complex_schema.json")?.readText()
+        val inputSchemaStr = javaClass.getResource("/avro/complex_schema_in.json")?.readText()
         val inputSchema = MoreMappers.initMapper().readTree(inputSchemaStr) as ObjectNode
         val merged = JsonSchemaUnionMerger().mapSchema(inputSchema)
 
         val properties = merged["properties"] as ObjectNode
         val nullType = MoreMappers.initMapper().createObjectNode().put("type", "null")
         val stringType = MoreMappers.initMapper().createObjectNode().put("type", "string")
-        Assertions.assertEquals(properties["null_type"], nullType)
-        Assertions.assertEquals(properties["redundant_null"], nullType)
-        Assertions.assertEquals(properties["combined_null_string"], stringType)
+        Assertions.assertEquals(nullType, properties["null_type"])
+        Assertions.assertEquals(nullType, properties["redundant_null"])
+        Assertions.assertEquals(stringType, properties["combined_null_string"])
+    }
+
+    @Test
+    fun testJsonType() {
+        val inputSchema =
+            Jsons.deserialize(
+                """
+            {
+              "type": "object",
+              "properties": {
+                "foo": {},
+                "bar": {
+                  "type": "array",
+                  "items": {}
+                }
+              }
+            }
+            """.trimIndent()
+            ) as ObjectNode
+        val mapped = JsonSchemaAvroPreprocessor().mapSchema(inputSchema)
+
+        assertEquals(
+            Jsons.deserialize(
+                """
+                {
+                  "type": "object",
+                  "properties": {
+                    "foo": {"type": "string"},
+                    "bar": {
+                      "type": "array",
+                      "items": {"type": "string"}
+                    }
+                  }
+                }
+                """.trimIndent()
+            ),
+            mapped
+        )
+    }
+
+    @Test
+    fun testUnionHandlesNonstandardProperties() {
+        val inputSchema =
+            Jsons.deserialize(
+                """
+                    {
+                      "type": [
+                        "string",
+                        "integer"
+                      ],
+                      "description": "foo",
+                      "some_random_other_property": "lol, lmao, isn't jsonschema great"
+                    }
+                """.trimIndent()
+            ) as ObjectNode
+        val mapped = JsonSchemaAvroPreprocessor().mapSchema(inputSchema)
+        assertEquals(
+            Jsons.deserialize("""{"oneOf":[{"type":"string"},{"type":"integer"}]}"""),
+            mapped
+        )
     }
 }

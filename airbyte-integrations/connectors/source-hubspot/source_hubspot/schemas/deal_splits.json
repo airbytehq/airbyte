@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the deal split",
+      "type": ["null", "string"]
+    },
+    "properties": {
+      "description": "Deal Split properties",
+      "type": ["null", "object"],
+      "properties": {
+        "hs_deal_split_amount": {
+          "description": "Total amount of the deal split",
+          "type": ["null", "string"]
+        },
+        "hs_deal_split_percentage": {
+          "description": "Total percentage of the deal split",
+          "type": ["null", "string"]
+        },
+        "hs_createdate": {
+          "description": "Creation date of the deal",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_deal_id": {
+          "description": "Object id of the deal",
+          "type": ["null", "string"]
+        },
+        "hs_object_id": {
+          "description": "Unique object ID for the deal split",
+          "type": ["null", "string"]
+        },
+        "hs_lastmodifieddate": {
+          "description": "Last modified date of the deal",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hubspot_owner_id": {
+          "description": "Owner ID of the deal split",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "properties_hs_deal_split_amount": {
+      "description": "Total amount of the deal split",
+      "type": ["null", "string"]
+    },
+    "properties_hs_deal_split_percentage": {
+      "description": "Total percentage of the deal split",
+      "type": ["null", "string"]
+    },
+    "properties_hs_createdate": {
+      "description": "Creation date of the deal",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hs_deal_id": {
+      "description": "Object id of the deal",
+      "type": ["null", "string"]
+    },
+    "properties_hs_object_id": {
+      "description": "Unique object ID for the deal split",
+      "type": ["null", "string"]
+    },
+    "properties_hs_lastmodifieddate": {
+      "description": "Last modified date of the deal",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "properties_hubspot_owner_id": {
+      "description": "Owner ID of the deal split",
+      "type": ["null", "string"]
+    },
+    "createdAt": {
+      "description": "The date and time when the deal split was created",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "description": "The date and time when the deal split was last updated",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "archived": {
+      "description": "Indicates if the deal is archived",
+      "type": ["null", "boolean"]
+    }
+  }
+}

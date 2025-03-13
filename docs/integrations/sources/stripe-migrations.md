@@ -1,5 +1,46 @@
 # Stripe Migration Guide
 
+###  Upgrading to 5.6.0
+
+The `Payment Methods` stream previously sync data from Treasury flows. This version will now provide data about customers' payment methods.
+
+We bumped this in a minor version because we didn't want to pause all connection, but still want to document the process of moving to this latest version.
+
+### Summary of changes:
+
+- The stream `Payment Methods` will now provide data about customers' payment methods.
+- The stream `Payment Methods` now incrementally syncs using the `events` endpoint.
+- `customer` field type will be changed from `object` to `string`.
+
+### Refresh affected schemas and reset data
+
+1. Select **Connections** in the main navbar.
+   1. Select the connection(s) affected by the update.
+2. Select the **Replication** tab.
+   1. Select **Refresh source schema**.
+   2. Select **OK**.
+
+```note
+Any detected schema changes will be listed for your review.
+```
+
+3. Select **Save changes** at the bottom of the page.
+   1. Ensure the **Reset affected streams** option is checked.
+
+```note
+Depending on destination type you may not be prompted to reset your data.
+```
+
+4. Select **Save connection**.
+
+```note
+This will reset the data in your destination and initiate a fresh sync.
+```
+
+For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
+
+
+
 ## Upgrading to 5.4.0
 
 The `Refunds` stream previously did not sync incrementally correctly. Incremental syncs are now resolved, and the `Refunds` stream now receives the correct updates using the `events` endpoint. This version resolves incremental sync issues with the `Refunds` stream.

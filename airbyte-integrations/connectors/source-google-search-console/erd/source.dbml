@@ -1,0 +1,257 @@
+Table "sites" {
+    "siteUrl" string
+    "permissionLevel" string
+}
+
+Table "sitemaps" {
+    "path" string
+    "lastSubmitted" string
+    "isPending" boolean
+    "isSitemapsIndex" boolean
+    "type" string
+    "lastDownloaded" string
+    "warnings" string
+    "errors" string
+    "contents" array
+}
+
+Table "search_analytics_by_country" {
+    "site_url" string
+    "search_type" string
+    "date" string
+    "country" string
+    "clicks" integer
+    "impressions" integer
+    "ctr" number
+    "position" number
+
+    indexes {
+        (site_url, date, country, search_type) [pk]
+    }
+}
+
+Table "search_analytics_by_device" {
+    "site_url" string
+    "search_type" string
+    "date" string
+    "device" string
+    "clicks" integer
+    "impressions" integer
+    "ctr" number
+    "position" number
+
+    indexes {
+        (site_url, date, device, search_type) [pk]
+    }
+}
+
+Table "search_analytics_by_date" {
+    "site_url" string
+    "search_type" string
+    "date" string
+    "clicks" integer
+    "impressions" integer
+    "ctr" number
+    "position" number
+
+    indexes {
+        (site_url, date, search_type) [pk]
+    }
+}
+
+Table "search_analytics_by_query" {
+    "site_url" string
+    "search_type" string
+    "date" string
+    "query" string
+    "clicks" integer
+    "impressions" integer
+    "ctr" number
+    "position" number
+
+    indexes {
+        (site_url, date, query, search_type) [pk]
+    }
+}
+
+Table "search_analytics_by_page" {
+    "site_url" string
+    "search_type" string
+    "date" string
+    "page" string
+    "clicks" integer
+    "impressions" integer
+    "ctr" number
+    "position" number
+
+    indexes {
+        (site_url, date, page, search_type) [pk]
+    }
+}
+
+Table "search_analytics_all_fields" {
+    "site_url" string
+    "search_type" string
+    "date" string
+    "country" string
+    "device" string
+    "page" string
+    "query" string
+    "clicks" integer
+    "impressions" integer
+    "ctr" number
+    "position" number
+
+    indexes {
+        (site_url, date, country, device, query, page, search_type) [pk]
+    }
+}
+
+Table "search_analytics_keyword_page_report" {
+    "site_url" string
+    "search_type" string
+    "date" string
+    "country" string
+    "device" string
+    "page" string
+    "query" string
+    "clicks" integer
+    "impressions" integer
+    "ctr" number
+    "position" number
+
+    indexes {
+        (site_url, date, country, device, query, page, search_type) [pk]
+    }
+}
+
+Table "search_analytics_page_report" {
+    "site_url" string
+    "search_type" string
+    "date" string
+    "country" string
+    "page" string
+    "device" string
+    "clicks" integer
+    "impressions" integer
+    "ctr" number
+    "position" number
+
+    indexes {
+        (site_url, date, country, device, search_type, page) [pk]
+    }
+}
+
+Table "search_analytics_site_report_by_site" {
+    "site_url" string
+    "search_type" string
+    "date" string
+    "country" string
+    "device" string
+    "clicks" integer
+    "impressions" integer
+    "ctr" number
+    "position" number
+
+    indexes {
+        (site_url, date, country, device, search_type) [pk]
+    }
+}
+
+Table "search_analytics_site_report_by_page" {
+    "site_url" string
+    "search_type" string
+    "date" string
+    "country" string
+    "device" string
+    "clicks" integer
+    "impressions" integer
+    "ctr" number
+    "position" number
+
+    indexes {
+        (site_url, date, country, device, search_type) [pk]
+    }
+}
+
+Table "search_analytics_keyword_site_report_by_page" {
+    "site_url" string
+    "search_type" string
+    "date" string
+    "country" string
+    "device" string
+    "query" string
+    "clicks" integer
+    "impressions" integer
+    "ctr" number
+    "position" number
+
+    indexes {
+        (site_url, date, country, device, query, search_type) [pk]
+    }
+}
+
+Table "search_analytics_keyword_site_report_by_site" {
+    "site_url" string
+    "search_type" string
+    "date" string
+    "country" string
+    "device" string
+    "query" string
+    "clicks" integer
+    "impressions" integer
+    "ctr" number
+    "position" number
+
+    indexes {
+        (site_url, date, country, device, query, search_type) [pk]
+    }
+}
+
+Ref {
+    "search_analytics_by_country"."site_url" <> "sites"."siteUrl"
+}
+
+Ref {
+    "search_analytics_by_device"."site_url" <> "sites"."siteUrl"
+}
+
+Ref {
+    "search_analytics_by_date"."site_url" <> "sites"."siteUrl"
+}
+
+Ref {
+    "search_analytics_by_query"."site_url" <> "sites"."siteUrl"
+}
+
+Ref {
+    "search_analytics_by_page"."site_url" <> "sites"."siteUrl"
+}
+
+Ref {
+    "search_analytics_all_fields"."site_url" <> "sites"."siteUrl"
+}
+
+Ref {
+    "search_analytics_keyword_page_report"."site_url" <> "sites"."siteUrl"
+}
+
+Ref {
+    "search_analytics_page_report"."site_url" <> "sites"."siteUrl"
+}
+
+Ref {
+    "search_analytics_site_report_by_site"."site_url" <> "sites"."siteUrl"
+}
+
+Ref {
+    "search_analytics_site_report_by_page"."site_url" <> "sites"."siteUrl"
+}
+
+Ref {
+    "search_analytics_keyword_site_report_by_page"."site_url" <> "sites"."siteUrl"
+}
+
+Ref {
+    "search_analytics_keyword_site_report_by_site"."site_url" <> "sites"."siteUrl"
+}

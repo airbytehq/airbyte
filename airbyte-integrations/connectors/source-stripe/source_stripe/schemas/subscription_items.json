@@ -217,6 +217,10 @@
     "price": {
       "description": "Price of the subscription item.",
       "$ref": "price.json"
+    },
+    "subscription_updated": {
+      "description": "The timestamp at which the subscription was last updated.",
+      "type": ["null", "integer"]
     }
   }
 }

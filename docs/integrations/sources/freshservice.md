@@ -57,6 +57,23 @@ Please read [How to find your API key](https://api.freshservice.com/#authenticat
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- |:---------------------------------------------------------------------------------------|
+| 1.4.17 | 2025-03-08 | [55272](https://github.com/airbytehq/airbyte/pull/55272) | Update dependencies |
+| 1.4.16 | 2025-03-01 | [54928](https://github.com/airbytehq/airbyte/pull/54928) | Update dependencies |
+| 1.4.15 | 2025-02-22 | [54438](https://github.com/airbytehq/airbyte/pull/54438) | Update dependencies |
+| 1.4.14 | 2025-02-15 | [53758](https://github.com/airbytehq/airbyte/pull/53758) | Update dependencies |
+| 1.4.13 | 2025-02-08 | [53333](https://github.com/airbytehq/airbyte/pull/53333) | Update dependencies |
+| 1.4.12 | 2025-02-01 | [52816](https://github.com/airbytehq/airbyte/pull/52816) | Update dependencies |
+| 1.4.11 | 2025-01-25 | [52313](https://github.com/airbytehq/airbyte/pull/52313) | Update dependencies |
+| 1.4.10 | 2025-01-18 | [51684](https://github.com/airbytehq/airbyte/pull/51684) | Update dependencies |
+| 1.4.9 | 2025-01-11 | [51075](https://github.com/airbytehq/airbyte/pull/51075) | Update dependencies |
+| 1.4.8 | 2024-12-28 | [50574](https://github.com/airbytehq/airbyte/pull/50574) | Update dependencies |
+| 1.4.7 | 2024-12-21 | [50026](https://github.com/airbytehq/airbyte/pull/50026) | Update dependencies |
+| 1.4.6 | 2024-12-14 | [49519](https://github.com/airbytehq/airbyte/pull/49519) | Update dependencies |
+| 1.4.5 | 2024-12-12 | [49187](https://github.com/airbytehq/airbyte/pull/49187) | Update dependencies |
+| 1.4.4 | 2024-12-11 | [48939](https://github.com/airbytehq/airbyte/pull/48939) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 1.4.3 | 2024-10-29 | [47732](https://github.com/airbytehq/airbyte/pull/47732) | Update dependencies |
+| 1.4.2 | 2024-10-28 | [47449](https://github.com/airbytehq/airbyte/pull/47449) | Update dependencies |
+| 1.4.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
 | 1.4.0 | 2024-08-15 | [44148](https://github.com/airbytehq/airbyte/pull/44148) | Refactor connector to manifest-only format |
 | 1.3.17 | 2024-08-10 | [43545](https://github.com/airbytehq/airbyte/pull/43545) | Update dependencies |
 | 1.3.16 | 2024-08-03 | [43254](https://github.com/airbytehq/airbyte/pull/43254) | Update dependencies |

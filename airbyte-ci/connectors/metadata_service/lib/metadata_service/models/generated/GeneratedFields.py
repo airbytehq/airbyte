@@ -14,10 +14,22 @@ class GitInfo(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    commit_sha: Optional[str] = Field(None, description="The git commit sha of the last commit that modified this file.")
-    commit_timestamp: Optional[datetime] = Field(None, description="The git commit timestamp of the last commit that modified this file.")
-    commit_author: Optional[str] = Field(None, description="The git commit author of the last commit that modified this file.")
-    commit_author_email: Optional[str] = Field(None, description="The git commit author email of the last commit that modified this file.")
+    commit_sha: Optional[str] = Field(
+        None,
+        description="The git commit sha of the last commit that modified this file.",
+    )
+    commit_timestamp: Optional[datetime] = Field(
+        None,
+        description="The git commit timestamp of the last commit that modified this file.",
+    )
+    commit_author: Optional[str] = Field(
+        None,
+        description="The git commit author of the last commit that modified this file.",
+    )
+    commit_author_email: Optional[str] = Field(
+        None,
+        description="The git commit author email of the last commit that modified this file.",
+    )
 
 
 class SourceFileInfo(BaseModel):
@@ -47,3 +59,4 @@ class GeneratedFields(BaseModel):
     git: Optional[GitInfo] = None
     source_file_info: Optional[SourceFileInfo] = None
     metrics: Optional[ConnectorMetrics] = None
+    sbomUrl: Optional[str] = Field(None, description="URL to the SBOM file")

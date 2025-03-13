@@ -99,6 +99,20 @@
                       "id": {
                         "description": "A globally-unique ID of an image representation of the swatch.",
                         "type": ["null", "string"]
+                      },
+                      "image": {
+                        "description": "An image associated with the product variant.",
+                        "type": ["null", "object"],
+                        "properties": {
+                          "src": {
+                            "description": "The location of the image as URL associated with the product variant option.",
+                            "type": ["null", "string"]
+                          },
+                          "url": {
+                            "description": "The image URL associated with the product variant option.",
+                            "type": ["null", "string"]
+                          }
+                        }
                       }
                     }
                   }
@@ -134,6 +148,14 @@
     "image_id": {
       "description": "The unique identifier for the image associated with the variant",
       "type": ["null", "integer"]
+    },
+    "image_src": {
+      "description": "The location of the image as URL.",
+      "type": ["null", "string"]
+    },
+    "image_url": {
+      "description": "The location of the image as URL.",
+      "type": ["null", "string"]
     },
     "weight": {
       "description": "The weight of the variant",

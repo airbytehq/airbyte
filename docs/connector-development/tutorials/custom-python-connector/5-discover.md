@@ -38,7 +38,7 @@ The command should succeed, but the schema will be wrong:
 }
 ```
 
-We'll need to replace the schema with a json_schema representation of the records yielded by the
+We'll need to replace the schema `surveys.json` with a json_schema representation of the records yielded by the
 stream.
 
 The easiest way to extract the schema from a HTTP response is to use the Connector Builder. You can

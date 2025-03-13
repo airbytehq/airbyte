@@ -10,14 +10,17 @@ from abc import ABC, abstractmethod
 from datetime import timedelta
 from functools import cached_property, lru_cache
 from http import HTTPStatus
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import backoff
 import pendulum as pendulum
 import requests
+from requests import HTTPError, codes
+
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
@@ -28,7 +31,7 @@ from airbyte_cdk.sources.utils import casing
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
-from requests import HTTPError, codes
+from source_hubspot.components import NewtoLegacyFieldTransformation
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
 from source_hubspot.helpers import (
@@ -41,6 +44,7 @@ from source_hubspot.helpers import (
     IURLPropertyRepresentation,
     StoreAsIs,
 )
+
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
@@ -72,6 +76,18 @@ CUSTOM_FIELD_TYPE_TO_VALUE = {
 }
 
 CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
+
+CONTACTS_NEW_TO_LEGACY_FIELDS_MAPPING = {
+    "hs_lifecyclestage_": "hs_v2_date_entered_",
+    "hs_date_exited_": "hs_v2_date_exited_",
+    "hs_time_in_": "hs_v2_latest_time_in_",
+}
+
+DEALS_NEW_TO_LEGACY_FIELDS_MAPPING = {
+    "hs_date_entered_": "hs_v2_date_entered_",
+    "hs_date_exited_": "hs_v2_date_exited_",
+    "hs_time_in_": "hs_v2_latest_time_in_",
+}
 
 
 def retry_token_expired_handler(**kwargs):
@@ -318,6 +334,7 @@ class Stream(HttpStream, ABC):
     """Base class for all streams. Responsible for data fetching and pagination"""
 
     entity: str = None
+    cast_fields: List = None
     updated_at_field: str = None
     created_at_field: str = None
 
@@ -336,6 +353,7 @@ class Stream(HttpStream, ABC):
     properties_scopes: Set = None
     unnest_fields: Optional[List[str]] = None
     checkpoint_by_page = False
+    _transformations: Optional[List[RecordTransformation]] = None
 
     @cached_property
     def record_unnester(self):
@@ -658,36 +676,96 @@ class Stream(HttpStream, ABC):
 
         return casted_value
 
+    def _cast_record(
+        self,
+        record: Mapping,
+        properties: Mapping[str, Any] = None,
+        properties_key: str = None,
+        logging_message: str = "",
+        field_validation: Callable = None,
+    ):
+        """
+        Cast record fields by provided properties schema.
+        They can be either fields in record root or in properties key provided.
+        :param record: record to cast
+
+        :param properties: properties schema to cast record by
+        :param properties_key: key in record where properties are stored
+        :param logging_message: message to log when field is discarded
+        :param field_validation: function to validate field before casting
+        :return: record
+        """
+
+        def get_record_items():
+            if properties_key:
+                return record[properties_key].items()
+            return record.items()
+
+        for field_name, field_value in get_record_items():
+            if field_validation and not field_validation(field_name, field_value):
+                continue
+            if field_name not in properties:
+                self.logger.info("{}: record id:{}, property_value: {}".format(logging_message, record.get("id"), field_name))
+                continue
+            declared_field_types = properties[field_name].get("type", [])
+            if not isinstance(declared_field_types, Iterable):
+                declared_field_types = [declared_field_types]
+            declared_format = properties[field_name].get("format")
+            record_to_cast = record[properties_key] if properties_key else record
+            record_to_cast[field_name] = self._cast_value(
+                declared_field_types=declared_field_types, field_name=field_name, field_value=field_value, declared_format=declared_format
+            )
+        return record
+
     def _cast_record_fields_if_needed(self, record: Mapping, properties: Mapping[str, Any] = None) -> Mapping:
+        """
+        Cast fields in properties key in record to the Schema returned by "/properties/v2/{self.entity}/properties" endpoint.
+        Properties request (self.properties) is cached, so it is not called for each record.
+        """
         if not self.entity or not record.get("properties"):
             return record
 
         properties = properties or self.properties
 
-        for field_name, field_value in record["properties"].items():
-            if field_name not in properties:
-                self.logger.info(
-                    "Property discarded: not maching with properties schema: record id:{}, property_value: {}".format(
-                        record.get("id"), field_name
-                    )
-                )
-                continue
-            declared_field_types = properties[field_name].get("type", [])
-            if not isinstance(declared_field_types, Iterable):
-                declared_field_types = [declared_field_types]
-            format = properties[field_name].get("format")
-            record["properties"][field_name] = self._cast_value(
-                declared_field_types=declared_field_types, field_name=field_name, field_value=field_value, declared_format=format
-            )
+        return self._cast_record(
+            record=record,
+            properties=properties,
+            logging_message="Property discarded: not matching with properties schema",
+            properties_key="properties",
+        )
 
-        return record
+    def _cast_record_fields_with_schema_if_needed(self, record: Mapping) -> Mapping:
+        """
+        Cast specific record items from the response to the JSON Schema type.
+        We've found hubspot changing types and not properly documented, then we cast to expected schema.
+        For now, we just cast specific fields.
+        """
+        if not self.cast_fields:
+            return record
+
+        properties = self.get_json_schema().get("properties")
+
+        def field_validation(field_name: str, field_value: Any):
+            # properties fields is cast by _cast_record_fields_if_needed
+            return field_name in self.cast_fields and field_name != "properties"
+
+        return self._cast_record(
+            record=record,
+            properties=properties,
+            logging_message="Property discarded: not matching with stream schema",
+            field_validation=field_validation,
+        )
 
     def _transform(self, records: Iterable) -> Iterable:
         """Preprocess record before emitting"""
         for record in records:
             record = self._cast_record_fields_if_needed(record)
+            record = self._cast_record_fields_with_schema_if_needed(record)
             if self.created_at_field and self.updated_at_field and record.get(self.updated_at_field) is None:
                 record[self.updated_at_field] = record[self.created_at_field]
+            if self._transformations:
+                for transformation in self._transformations:
+                    transformation.transform(record_or_schema=record)
             yield record
 
     @staticmethod
@@ -794,7 +872,7 @@ class Stream(HttpStream, ABC):
 
         if not converted_type:
             converted_type = "string"
-            logger.warn(f"Unsupported type {field_type} found")
+            logger.warning(f"Unsupported type {field_type} found")
 
         field_props = {
             "type": ["null", converted_type or field_type],
@@ -821,6 +899,10 @@ class Stream(HttpStream, ABC):
         data, response = self._api.get(f"/properties/v2/{self.entity}/properties")
         for row in data:
             props[row["name"]] = self._get_field_props(row["type"])
+
+        if self._transformations:
+            for transformation in self._transformations:
+                transformation.transform(record_or_schema=props)
 
         return props
 
@@ -1092,7 +1174,7 @@ class CRMSearchStream(IncrementalStream, ABC):
     state_pk = "updatedAt"
     updated_at_field = "updatedAt"
     last_modified_field: str = None
-    associations: List[str] = None
+    associations: List[str] = []
     fully_qualified_name: str = None
 
     # added to guarantee the data types, declared for the stream's schema
@@ -1128,13 +1210,31 @@ class CRMSearchStream(IncrementalStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
+        last_id=None,
     ) -> Tuple[List, requests.Response]:
         stream_records = {}
         properties_list = list(self.properties.keys())
+        if last_id == None:
+            last_id = 0
+        # The search query below uses the following criteria:
+        #   - Last modified >= timestemp of previous sync
+        #   - Last modified <= timestamp of current sync to avoid open ended queries
+        #   - Object primary key <= last_id with initial value 0, then max(last_id) returned from previous pagination loop
+        #   - Sort results by primary key ASC
+        # Note: Although results return out of chronological order, sorting on primary key ensures retrieval of *all* records
+        #     once the final pagination loop completes. This is preferable to sorting by a non-unique value, such as
+        #     last modified date, which may result in an infinite loop in some edge cases.
+        key = self.primary_key
+        if key == "id":
+            key = "hs_object_id"
         payload = (
             {
-                "filters": [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}],
-                "sorts": [{"propertyName": self.last_modified_field, "direction": "ASCENDING"}],
+                "filters": [
+                    {"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"},
+                    {"value": int(self._init_sync.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "LTE"},
+                    {"value": last_id, "propertyName": key, "operator": "GTE"},
+                ],
+                "sorts": [{"propertyName": key, "direction": "ASCENDING"}],
                 "properties": properties_list,
                 "limit": 100,
             }
@@ -1168,6 +1268,16 @@ class CRMSearchStream(IncrementalStream, ABC):
                 current_record[_slice] = associations_list
         return records_by_pk.values()
 
+    def get_max(self, val1, val2):
+        try:
+            # Try to convert both values to integers
+            int_val1 = int(val1)
+            int_val2 = int(val2)
+            return max(int_val1, int_val2)
+        except ValueError:
+            # If conversion fails, fall back to string comparison
+            return max(str(val1), str(val2))
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -1178,16 +1288,16 @@ class CRMSearchStream(IncrementalStream, ABC):
         stream_state = stream_state or {}
         pagination_complete = False
         next_page_token = None
+        last_id = None
+        max_last_id = None
 
-        latest_cursor = None
         while not pagination_complete:
             if self.state:
                 records, raw_response = self._process_search(
-                    next_page_token=next_page_token,
-                    stream_state=stream_state,
-                    stream_slice=stream_slice,
+                    next_page_token=next_page_token, stream_state=stream_state, stream_slice=stream_slice, last_id=max_last_id
                 )
-                records = self._read_associations(records)
+                if self.associations:
+                    records = self._read_associations(records)
             else:
                 records, raw_response = self._read_stream_records(
                     stream_slice=stream_slice,
@@ -1199,8 +1309,7 @@ class CRMSearchStream(IncrementalStream, ABC):
             records = self.record_unnester.unnest(records)
 
             for record in records:
-                cursor = self._field_to_datetime(record[self.updated_at_field])
-                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+                last_id = self.get_max(record[self.primary_key], last_id) if last_id else record[self.primary_key]
                 yield record
 
             next_page_token = self.next_page_token(raw_response)
@@ -1210,13 +1319,13 @@ class CRMSearchStream(IncrementalStream, ABC):
                 # Hubspot documentation states that the search endpoints are limited to 10,000 total results
                 # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
                 # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
-                # start a new search query with the latest state that has been collected.
-                self._update_state(latest_cursor=latest_cursor)
+                # start a new search query with the latest id that has been collected.
+                max_last_id = self.get_max(max_last_id, last_id) if max_last_id else last_id
                 next_page_token = None
 
         # Since Search stream does not have slices is safe to save the latest
         # state as the initial sync date
-        self._update_state(latest_cursor=latest_cursor, is_last_record=True)
+        self._update_state(latest_cursor=self._init_sync, is_last_record=True)
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
@@ -1466,14 +1575,12 @@ class ContactsListMemberships(ContactsAllBase, ClientSideIncrementalStream):
 
 
 class ContactsFormSubmissions(ContactsAllBase, ResumableFullRefreshMixin, ABC):
-
     records_field = "form-submissions"
     filter_field = "formSubmissionMode"
     filter_value = "all"
 
 
 class ContactsMergedAudit(ContactsAllBase, ResumableFullRefreshMixin, ABC):
-
     records_field = "merge-audits"
     unnest_fields = ["merged_from_email", "merged_to_email"]
 
@@ -1486,6 +1593,7 @@ class Deals(CRMSearchStream):
     associations = ["contacts", "companies", "line_items"]
     primary_key = "id"
     scopes = {"contacts", "crm.objects.deals.read"}
+    _transformations = [NewtoLegacyFieldTransformation(field_mapping=DEALS_NEW_TO_LEGACY_FIELDS_MAPPING)]
 
 
 class DealsArchived(ClientSideIncrementalStream):
@@ -1499,6 +1607,7 @@ class DealsArchived(ClientSideIncrementalStream):
     cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
     primary_key = "id"
     scopes = {"contacts", "crm.objects.deals.read"}
+    _transformations = [NewtoLegacyFieldTransformation(field_mapping=DEALS_NEW_TO_LEGACY_FIELDS_MAPPING)]
 
     def request_params(
         self,
@@ -1523,6 +1632,15 @@ class DealPipelines(ClientSideIncrementalStream):
     cursor_field_datetime_format = "x"
     primary_key = "pipelineId"
     scopes = {"crm.objects.contacts.read"}
+
+
+class DealSplits(CRMSearchStream):
+    """Deal splits, API v3"""
+
+    entity = "deal_split"
+    last_modified_field = "hs_lastmodifieddate"
+    primary_key = "id"
+    scopes = {"crm.objects.deals.read"}
 
 
 class TicketPipelines(ClientSideIncrementalStream):
@@ -1832,6 +1950,7 @@ class MarketingEmails(Stream):
     created_at_field = "created"
     primary_key = "id"
     scopes = {"content"}
+    cast_fields = ["rootMicId"]
 
 
 class Owners(ClientSideIncrementalStream):
@@ -2077,7 +2196,6 @@ class PropertyHistoryV3(PropertyHistory):
 
 
 class CompaniesPropertyHistory(PropertyHistoryV3):
-
     scopes = {"crm.objects.companies.read"}
     properties_scopes = {"crm.schemas.companies.read"}
     entity = "companies"
@@ -2162,12 +2280,13 @@ class Contacts(CRMSearchStream):
     associations = ["contacts", "companies"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read"}
+    _transformations = [NewtoLegacyFieldTransformation(field_mapping=CONTACTS_NEW_TO_LEGACY_FIELDS_MAPPING)]
 
 
 class EngagementsCalls(CRMSearchStream):
     entity = "calls"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company", "tickets"]
+    associations = ["contacts", "deals", "companies", "tickets"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read"}
 
@@ -2175,7 +2294,7 @@ class EngagementsCalls(CRMSearchStream):
 class EngagementsEmails(CRMSearchStream):
     entity = "emails"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company", "tickets"]
+    associations = ["contacts", "deals", "companies", "tickets"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read", "sales-email-read"}
 
@@ -2183,7 +2302,7 @@ class EngagementsEmails(CRMSearchStream):
 class EngagementsMeetings(CRMSearchStream):
     entity = "meetings"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company", "tickets"]
+    associations = ["contacts", "deals", "companies", "tickets"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read"}
 
@@ -2191,7 +2310,7 @@ class EngagementsMeetings(CRMSearchStream):
 class EngagementsNotes(CRMSearchStream):
     entity = "notes"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company", "tickets"]
+    associations = ["contacts", "deals", "companies", "tickets"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read"}
 
@@ -2199,7 +2318,7 @@ class EngagementsNotes(CRMSearchStream):
 class EngagementsTasks(CRMSearchStream):
     entity = "tasks"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company", "tickets"]
+    associations = ["contacts", "deals", "companies", "tickets"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read"}
 
@@ -2219,10 +2338,18 @@ class Goals(CRMObjectIncrementalStream):
     scopes = {"crm.objects.goals.read"}
 
 
+class Leads(CRMSearchStream):
+    entity = "leads"
+    last_modified_field = "hs_lastmodifieddate"
+    associations = ["contacts", "companies"]
+    primary_key = "id"
+    scopes = {"crm.objects.contacts.read", "crm.objects.companies.read", "crm.objects.leads.read"}
+
+
 class LineItems(CRMObjectIncrementalStream):
     entity = "line_item"
     primary_key = "id"
-    scopes = {"e-commerce"}
+    scopes = {"e-commerce", "crm.objects.line_items.read"}
 
 
 class Products(CRMObjectIncrementalStream):
@@ -2241,7 +2368,6 @@ class Tickets(CRMSearchStream):
 
 class CustomObject(CRMSearchStream, ABC):
     last_modified_field = "hs_lastmodifieddate"
-    associations = []
     primary_key = "id"
     scopes = {"crm.schemas.custom.read", "crm.objects.custom.read"}
 
@@ -2351,7 +2477,6 @@ class WebAnalyticsStream(CheckpointMixin, HttpSubStream, Stream):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         now = pendulum.now(tz="UTC")
         for parent_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
-
             object_id = parent_slice["parent"][self.object_id_field]
 
             # We require this workaround to shorten the duration of the acceptance test run.

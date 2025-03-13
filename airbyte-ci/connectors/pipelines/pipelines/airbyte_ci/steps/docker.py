@@ -1,10 +1,11 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from pathlib import Path
 from typing import Dict, List, Optional
 
 import dagger
+
 from pipelines.dagger.actions.python.pipx import with_installed_pipx_package
 from pipelines.dagger.containers.python import with_python_base
 from pipelines.models.contexts.pipeline_context import PipelineContext
@@ -55,13 +56,21 @@ class SimpleDockerStep(Step):
             if path_to_mount.optional and not path_to_mount.get_path().exists():
                 continue
 
-            path_string = str(path_to_mount)
-            destination_path = f"/{path_string}"
-            if path_to_mount.is_file:
-                file_to_load = self.context.get_repo_file(path_string)
-                container = container.with_mounted_file(destination_path, file_to_load)
-            else:
-                container = container.with_mounted_directory(destination_path, self.context.get_repo_dir(path_string))
+            if path_to_mount.get_path().is_symlink():
+                container = self._mount_path(container, path_to_mount.get_path().readlink())
+
+            container = self._mount_path(container, path_to_mount.get_path())
+        return container
+
+    def _mount_path(self, container: dagger.Container, path: Path) -> dagger.Container:
+        path_string = str(path)
+        destination_path = f"/{path_string}"
+        if path.is_file():
+            file_to_load = self.context.get_repo_file(path_string)
+            container = container.with_mounted_file(destination_path, file_to_load)
+        else:
+            dir_to_load = self.context.get_repo_dir(path_string)
+            container = container.with_mounted_directory(destination_path, dir_to_load)
         return container
 
     async def _install_internal_tools(self, container: dagger.Container) -> dagger.Container:

@@ -1,21 +1,14 @@
 target-version = "py310"
-
-ignore = ["ANN101", "ANN002", "ANN003"]
-
-  
+line-length = 140
 
 [lint]
 
+ignore = ["ANN003"]
 extend-select = [
-
-"ANN", # flake8-annotations
-
+    "ANN", # flake8-annotations
 ]
 
-  
-
 [lint.pydocstyle]
-
 convention = "google"
 
 [lint.flake8-annotations]

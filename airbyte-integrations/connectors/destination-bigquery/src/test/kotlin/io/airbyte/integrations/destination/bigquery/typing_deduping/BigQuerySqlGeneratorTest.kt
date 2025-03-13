@@ -33,7 +33,7 @@ class BigQuerySqlGeneratorTest {
         Assertions.assertEquals(
             StreamConfig(
                 StreamId("bar", "foo", "airbyte_internal", "bar_raw__stream_foo", "bar", "foo"),
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 emptyList(),
                 Optional.empty(),
                 columns,

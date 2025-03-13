@@ -2,5 +2,5 @@
 {"type": "RECORD", "record": {"stream": "users", "emitted_at": 1721428634000, "data": { "id" : "two", "name": "George" }}}
 {"type": "RECORD", "record": {"meta": { "changes": [ { "field": "name", "change": "TRUNCATED", "reason": "SOURCE_FIELD_SIZE_LIMITATION" } ] }, "stream": "users", "emitted_at": 1721428635000, "data": { "id" : 3, "name": "Harry" }}}
 {"type": "RECORD", "record": {"meta": { "changes": [ { "field": "name", "change": "NULLED", "reason": "SOURCE_SERIALIZATION_ERROR" } ] }, "stream": "users", "emitted_at": 1721428634000, "data": { "id" : { "id" : 4 } }, "name": null }}}
-{"type": "STATE", "state": { "data": {"start_date": "2022-02-14"}}}
+{"type": "STATE", "state": { "type": "GLOBAL", "global": {"shared_state": {"start_date": "2022-02-14"}}}}
 {"type": "TRACE", "trace": { "type": "STREAM_STATUS", "stream_status": {"stream_descriptor": {"name": "users"}, "status": "COMPLETE"}, "emitted_at": 1721428636000}}

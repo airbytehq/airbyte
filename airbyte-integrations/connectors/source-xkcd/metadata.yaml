@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 80fddd16-17bd-4c0c-bf4a-80df7863fc9d
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.6
   dockerRepository: airbyte/source-xkcd
   githubIssueLabel: source-xkcd
   icon: xkcd.svg
@@ -45,5 +45,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:3.10.2@sha256:1fddfb5c4bdbec7806894b845078e5208a8e38eedbe15dc8072bd3584388ea42
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.38.3@sha256:fcba02266f262aabc2f37e4f14574aa1c8c5cffd018504bab28803e405c93afe
 metadataSpecVersion: "1.0"

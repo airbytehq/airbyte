@@ -7,6 +7,8 @@ import logging
 from logging import getLogger
 from typing import Any, Iterable, Mapping
 
+from timeplus import Environment, Stream
+
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
@@ -17,7 +19,7 @@ from airbyte_cdk.models import (
     Status,
     Type,
 )
-from timeplus import Environment, Stream
+
 
 logger = getLogger("airbyte")
 
@@ -114,7 +116,10 @@ class DestinationTimeplus(Destination):
                 if t != "null":
                     type_def = {"type": t}
                     if t == "array":
-                        type_def["items"] = v["items"]
+                        if "items" in v:
+                            type_def["items"] = v["items"]
+                        else:
+                            type_def["type"] = "string"
                     return DestinationTimeplus.type_mapping(type_def)
         if airbyte_type == "number":
             return "float"
@@ -144,8 +149,6 @@ class DestinationTimeplus(Destination):
         try:
             endpoint = config["endpoint"]
             apikey = config["apikey"]
-            if not endpoint.startswith("http"):
-                return AirbyteConnectionStatus(status=Status.FAILED, message="Endpoint must start with http or https")
             if len(apikey) != 60:
                 return AirbyteConnectionStatus(status=Status.FAILED, message="API Key must be 60 characters")
             if endpoint[-1] == "/":

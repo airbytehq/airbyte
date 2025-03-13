@@ -1,0 +1,51 @@
+[
+  {
+    "type": "TRACE",
+    "trace": {
+      "type": "STREAM_STATUS",
+      "emitted_at": 3.1336416e12,
+      "stream_status": {
+        "stream_descriptor": {
+          "name": "EVENTS",
+          "namespace": "PUBLIC"
+        },
+        "status": "STARTED"
+      }
+    }
+  },
+  {
+    "type": "STATE",
+    "state": {
+      "type": "STREAM",
+      "stream": {
+        "stream_descriptor": {
+          "name": "EVENTS",
+          "namespace": "PUBLIC"
+        },
+        "stream_state": {
+          "primary_key": {},
+          "cursors": {
+            "TS": "2024-04-30T00:00:00.000000-04:00"
+          }
+        }
+      },
+      "sourceStats": {
+        "recordCount": 0.0
+      }
+    }
+  },
+  {
+    "type": "TRACE",
+    "trace": {
+      "type": "STREAM_STATUS",
+      "emitted_at": 3.1336416e12,
+      "stream_status": {
+        "stream_descriptor": {
+          "name": "EVENTS",
+          "namespace": "PUBLIC"
+        },
+        "status": "COMPLETE"
+      }
+    }
+  }
+]

@@ -6,9 +6,9 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     id 'base'
-    id 'com.github.spotbugs' version '6.0.7' apply false
-    id 'org.jetbrains.kotlin.jvm' version '2.0.0' apply false
-    id 'com.google.devtools.ksp' version '2.0.0-1.0.24' apply false
+    id 'com.github.spotbugs' version '6.0.7'
+    id 'org.jetbrains.kotlin.jvm' version '2.0.0'
+    id 'com.google.devtools.ksp' version '2.0.0-1.0.24'
 }
 
 allprojects {
@@ -55,16 +55,16 @@ allprojects {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
         compileJava {
-            options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing"]
+            options.compilerArgs += ["-Xlint:all,-serial,-processing"] + getJavaCompilerArgs()
         }
         compileTestJava {
             //rawtypes and unchecked are necessary for mockito
             //deprecation and removal are removed from error since we should still test those constructs.
-            options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing,-rawtypes,-unchecked,-deprecation,-removal"]
+            options.compilerArgs += ["-Xlint:all,-serial,-processing,-rawtypes,-unchecked,-deprecation,-removal"] + getJavaCompilerArgs()
         }
         compileTestFixturesJava {
             //rawtypes and unchecked are necessary for mockito
-            options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing,-rawtypes,-unchecked"]
+            options.compilerArgs += ["-Xlint:all,-serial,-processing,-rawtypes,-unchecked"] + getJavaCompilerArgs()
         }
     }
 
@@ -76,7 +76,7 @@ allprojects {
         compilerOptions {
             jvmTarget = JvmTarget.JVM_21
             languageVersion = KotlinVersion.KOTLIN_1_9
-            allWarningsAsErrors = true
+            allWarningsAsErrors = isInCi()
             freeCompilerArgs = ["-Xjvm-default=all"]
         }
         dependsOn {
@@ -87,7 +87,7 @@ allprojects {
         compilerOptions {
             jvmTarget = JvmTarget.JVM_21
             languageVersion = KotlinVersion.KOTLIN_1_9
-            allWarningsAsErrors = true
+            allWarningsAsErrors = isInCi()
             freeCompilerArgs = ["-Xjvm-default=all"]
         }
         dependsOn {
@@ -98,11 +98,17 @@ allprojects {
         compilerOptions {
             jvmTarget = JvmTarget.JVM_21
             languageVersion = KotlinVersion.KOTLIN_1_9
-            allWarningsAsErrors = true
+            allWarningsAsErrors = isInCi()
             freeCompilerArgs = ["-Xjvm-default=all"]
         }
         dependsOn {
             tasks.matching { it.name == 'generate' }
+        }
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            preferProjectModules()
         }
     }
 
@@ -127,8 +133,7 @@ allprojects {
         testLogging() {
             events 'skipped', 'started', 'passed', 'failed'
             exceptionFormat 'full'
-            // Swallow the logs when running in airbyte-ci, rely on test reports instead.
-            showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
+            showStandardStreams = true
         }
         reports {
             junitXml {
@@ -228,5 +233,17 @@ allprojects {
 
     javadoc {
         options.addStringOption('Xdoclint:none', '-quiet')
+    }
+}
+
+static def isInCi() {
+    return System.getenv("CI") == "true"
+}
+
+static def getJavaCompilerArgs() {
+    if (isInCi()) {
+        return ["-Werror"]
+    } else {
+        return []
     }
 }

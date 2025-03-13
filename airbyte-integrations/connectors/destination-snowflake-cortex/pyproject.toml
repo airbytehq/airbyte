@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-snowflake-cortex"
-version = "0.2.16"
+version = "0.2.24"
 description = "Airbyte destination implementation for Snowflake cortex."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -28,7 +28,7 @@ airbyte = "^0.12.0"
 sqlalchemy = "<2.0"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.2"
+pytest = "^8.3.2"
 ruff = "^0.3.2"
 mypy = "^1.9.0"
 coverage = "^7.5.3"
@@ -71,16 +71,9 @@ exclude_also = [
     "\\.\\.\\."
 ]
 
-[tool.poe.tasks]
-test = { shell = "pytest" }
-
-coverage = { shell = "coverage run -m pytest && coverage report" }
-coverage-report = { shell = "coverage report" }
-coverage-html = { shell = "coverage html -d htmlcov || open htmlcov/index.html" }
-coverage-reset = { shell = "coverage erase" }
-
-check = { shell = "ruff check . && mypy ." }
-
-fix = { shell = "ruff format . && ruff check --fix -s || ruff format ." }
-fix-unsafe = { shell = "ruff format . && ruff check --fix --unsafe-fixes . && ruff format ." }
-fix-and-check = { shell = "poe fix && poe check" }
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

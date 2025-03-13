@@ -7,17 +7,18 @@ import logging
 from typing import Any, Iterable, List, Mapping, Optional
 
 import requests
-from airbyte_cdk.sources.streams.http import HttpClient
 from requests.exceptions import InvalidURL, JSONDecodeError
+
+from airbyte_cdk.sources.streams.http import HttpClient
 
 from .http_request import ShopifyErrorHandler
 from .utils import ShopifyAccessScopesError, ShopifyBadJsonError, ShopifyWrongShopNameError
+
 
 SCOPES_MAPPING: Mapping[str, set[str]] = {
     # SCOPE: read_customers
     "Customers": ("read_customers",),
     "MetafieldCustomers": ("read_customers",),
-    "CustomerSavedSearch": ("read_customers",),
     "CustomerAddress": ("read_customers",),
     # SCOPE: read_orders
     "OrderAgreements": ("read_orders",),
@@ -36,14 +37,13 @@ SCOPES_MAPPING: Mapping[str, set[str]] = {
     "MetafieldDraftOrders": ("read_draft_orders",),
     # SCOPE: read_products
     "Products": ("read_products",),
-    "ProductsGraphQl": ("read_products",),
     "MetafieldProducts": ("read_products",),
     "ProductImages": ("read_products",),
     "MetafieldProductImages": ("read_products",),
     "MetafieldProductVariants": ("read_products",),
     "CustomCollections": ("read_products",),
     "Collects": ("read_products",),
-    "ProductVariants": ("read_products",),
+    "ProductVariants": ("read_products", "read_inventory"),
     "MetafieldCollections": ("read_products",),
     "SmartCollections": ("read_products",),
     "MetafieldSmartCollections": ("read_products",),
@@ -82,7 +82,6 @@ ALWAYS_PERMITTED_STREAMS: List[str] = [
 
 
 class ShopifyScopes:
-
     # define default logger
     logger = logging.getLogger("airbyte")
 

@@ -5,6 +5,7 @@
 
 from setuptools import find_packages, setup
 
+
 MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1",
     "faunadb~=4.2",
@@ -13,7 +14,7 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = [
     "requests-mock~=1.9.3",
     "pytest-mock~=3.6.1",
-    "pytest~=6.1",
+    "pytest~=8.0",
 ]
 
 setup(

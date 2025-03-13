@@ -17,6 +17,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Array
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
+import io.airbyte.integrations.base.destination.typing_deduping.ImportType
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
@@ -28,10 +29,9 @@ import io.airbyte.integrations.destination.databricks.jdbc.DatabricksDestination
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksNamingTransformer
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksSqlGenerator
 import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorConfig
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.sql.Connection
 import java.sql.ResultSet
-import java.util.*
+import java.util.Optional
 import java.util.concurrent.TimeUnit
 import kotlin.streams.asSequence
 import org.junit.jupiter.api.BeforeAll
@@ -356,7 +356,7 @@ class DatabricksSqlGeneratorIntegrationTest :
         val tmpStream =
             StreamConfig(
                 buildStreamId("sql_generator_test_svcnfgcqaz", "users_final", "users_raw"),
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 listOf(),
                 Optional.empty(),
                 columns,

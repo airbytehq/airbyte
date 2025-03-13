@@ -29,5 +29,5 @@ dependencies {
     implementation 'mysql:mysql-connector-java:8.0.22'
 
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-mysql')
-    integrationTestJavaImplementation libs.testcontainers.mysql
+    integrationTestJavaImplementation 'org.testcontainers:mysql:1.19.0'
 }

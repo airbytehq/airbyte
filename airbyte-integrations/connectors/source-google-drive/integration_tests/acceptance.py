@@ -7,6 +7,7 @@ from typing import Iterable
 
 import pytest
 
+
 pytest_plugins = ("connector_acceptance_test.plugin",)
 
 

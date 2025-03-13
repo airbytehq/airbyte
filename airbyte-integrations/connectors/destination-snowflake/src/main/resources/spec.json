@@ -181,6 +181,13 @@
         "description": "The number of days of Snowflake Time Travel to enable on the tables. See <a href=\"https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period\">Snowflake's documentation</a> for more information. Setting a nonzero value will incur increased storage costs in your Snowflake instance.",
         "title": "Data Retention Period (days)",
         "order": 13
+      },
+      "use_merge_for_upsert": {
+        "type": "boolean",
+        "default": false,
+        "description": "Use MERGE for de-duplication of final tables. This option no effect if Final tables are disabled or Sync mode is not DEDUPE",
+        "title": "Use MERGE for De-duplication of final tables",
+        "order": 14
       }
     }
   },
