@@ -20,6 +20,7 @@ from .auth import OutbrainAmplifyAuthenticator
 DEFAULT_END_DATE = pendulum.now()
 DEFAULT_GEO_LOCATION_BREAKDOWN = "region"
 DEFAULT_REPORT_GRANULARITY = "daily"
+DEFAULT_REPORT_CONVERSION_COUNT_BY_CLICK_DATE = 'conversion_time'
 
 
 # Basic full refresh stream
@@ -60,8 +61,16 @@ class OutbrainAmplifyStream(HttpStream, ABC):
         if end_date < start_date:
             raise ValueError(f"Specified start date: {start_date} is later than the end date: {end_date}")
         return start_date, end_date
-
-
+    
+    @staticmethod
+    def _get_bool_conversion_count_by_click_date(value: str) -> str:
+        if value.lower() == 'click/view_time':
+            return "true"
+        elif value.lower() == 'conversion_time':
+            return "false"
+        else:
+            raise ValueError(f"Invalid value for conversion count by click date: {value}")
+    
 class Marketers(OutbrainAmplifyStream):
     primary_key = "id"
 
@@ -401,6 +410,7 @@ class PerformanceReportCampaignsByMarketers(OutbrainAmplifyStream, HttpSubStream
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        stream_conversion_count = self._get_bool_conversion_count_by_click_date(self.config.get("conversion_count", DEFAULT_REPORT_CONVERSION_COUNT_BY_CLICK_DATE))
         return (
             f"reports/marketers/{stream_slice['marketer_id']}/campaigns?from="
             + str(stream_start.date())
@@ -408,6 +418,8 @@ class PerformanceReportCampaignsByMarketers(OutbrainAmplifyStream, HttpSubStream
             + str(stream_end.date())
             + "&limit=500"
             + "&includeVideoStats=true"
+            + "&conversionsByClickDate="
+            + str(stream_conversion_count)
         )
 
 
@@ -461,6 +473,7 @@ class PerformanceReportPeriodicByMarketers(OutbrainAmplifyStream, HttpSubStream)
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        stream_conversion_count = self._get_bool_conversion_count_by_click_date(self.config.get("conversion_count", DEFAULT_REPORT_CONVERSION_COUNT_BY_CLICK_DATE))
         return (
             f"reports/marketers/{stream_slice['marketer_id']}/periodic?from="
             + str(stream_start.date())
@@ -470,6 +483,8 @@ class PerformanceReportPeriodicByMarketers(OutbrainAmplifyStream, HttpSubStream)
             + str(self.config.get("report_granularity", DEFAULT_REPORT_GRANULARITY))
             + "&limit=500"
             + "&includeVideoStats=true"
+            + "&conversionsByClickDate="
+            + str(stream_conversion_count)
         )
 
 
@@ -525,6 +540,7 @@ class PerformanceReportPeriodicByMarketersCampaign(OutbrainAmplifyStream, HttpSu
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        stream_conversion_count = self._get_bool_conversion_count_by_click_date(self.config.get("conversion_count", DEFAULT_REPORT_CONVERSION_COUNT_BY_CLICK_DATE))
         return (
             f"reports/marketers/{stream_slice['marketer_id']}/campaigns/periodic?from="
             + str(stream_start.date())
@@ -534,6 +550,8 @@ class PerformanceReportPeriodicByMarketersCampaign(OutbrainAmplifyStream, HttpSu
             + str(self.config.get("report_granularity", DEFAULT_REPORT_GRANULARITY))
             + "&limit=500"
             + "&includeVideoStats=true"
+            + "&conversionsByClickDate="
+            + str(stream_conversion_count)
         )
 
 
@@ -594,6 +612,7 @@ class PerformanceReportPeriodicContentByPromotedLinksCampaign(OutbrainAmplifyStr
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        stream_conversion_count = self._get_bool_conversion_count_by_click_date(self.config.get("conversion_count", DEFAULT_REPORT_CONVERSION_COUNT_BY_CLICK_DATE))
         return (
             f"reports/marketers/{stream_slice['marketer_id']}/campaigns/{stream_slice['campaign_id']}/periodicContent?from="
             + str(stream_start.date())
@@ -603,6 +622,8 @@ class PerformanceReportPeriodicContentByPromotedLinksCampaign(OutbrainAmplifyStr
             + str(self.config.get("report_granularity", DEFAULT_REPORT_GRANULARITY))
             + "&limit=500"
             + "&includeVideoStats=true"
+            + "&conversionsByClickDate="
+            + str(stream_conversion_count)
         )
 
 
@@ -656,6 +677,7 @@ class PerformanceReportMarketersByPublisher(OutbrainAmplifyStream, HttpSubStream
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        stream_conversion_count = self._get_bool_conversion_count_by_click_date(self.config.get("conversion_count", DEFAULT_REPORT_CONVERSION_COUNT_BY_CLICK_DATE))
         return (
             f"reports/marketers/{stream_slice['marketer_id']}/publishers?from="
             + str(stream_start.date())
@@ -663,6 +685,8 @@ class PerformanceReportMarketersByPublisher(OutbrainAmplifyStream, HttpSubStream
             + str(stream_end.date())
             + "&limit=500"
             + "&includeVideoStats=true"
+            + "&conversionsByClickDate="
+            + str(stream_conversion_count)
         )
 
 
@@ -718,6 +742,7 @@ class PerformanceReportPublishersByCampaigns(OutbrainAmplifyStream, HttpSubStrea
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        stream_conversion_count = self._get_bool_conversion_count_by_click_date(self.config.get("conversion_count", DEFAULT_REPORT_CONVERSION_COUNT_BY_CLICK_DATE))
         return (
             f"reports/marketers/{stream_slice['marketer_id']}/campaigns/publishers?from="
             + str(stream_start.date())
@@ -725,6 +750,8 @@ class PerformanceReportPublishersByCampaigns(OutbrainAmplifyStream, HttpSubStrea
             + str(stream_end.date())
             + "&limit=500"
             + "&includeVideoStats=true"
+            + "&conversionsByClickDate="
+            + str(stream_conversion_count)
         )
 
 
@@ -778,6 +805,7 @@ class PerformanceReportMarketersByPlatforms(OutbrainAmplifyStream, HttpSubStream
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        stream_conversion_count = self._get_bool_conversion_count_by_click_date(self.config.get("conversion_count", DEFAULT_REPORT_CONVERSION_COUNT_BY_CLICK_DATE))
         return (
             f"reports/marketers/{stream_slice['marketer_id']}/platforms?from="
             + str(stream_start.date())
@@ -785,6 +813,8 @@ class PerformanceReportMarketersByPlatforms(OutbrainAmplifyStream, HttpSubStream
             + str(stream_end.date())
             + "&limit=500"
             + "&includeVideoStats=true"
+            + "&conversionsByClickDate="
+            + str(stream_conversion_count)
         )
 
 
@@ -840,6 +870,7 @@ class PerformanceReportMarketersCampaignsByPlatforms(OutbrainAmplifyStream, Http
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        stream_conversion_count = self._get_bool_conversion_count_by_click_date(self.config.get("conversion_count", DEFAULT_REPORT_CONVERSION_COUNT_BY_CLICK_DATE))
         return (
             f"reports/marketers/{stream_slice['marketer_id']}/campaigns/platforms?from="
             + str(stream_start.date())
@@ -847,6 +878,8 @@ class PerformanceReportMarketersCampaignsByPlatforms(OutbrainAmplifyStream, Http
             + str(stream_end.date())
             + "&limit=500"
             + "&includeVideoStats=true"
+            + "&conversionsByClickDate="
+            + str(stream_conversion_count)
         )
 
 
@@ -900,6 +933,7 @@ class PerformanceReportMarketersByGeoPerformance(OutbrainAmplifyStream, HttpSubS
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        stream_conversion_count = self._get_bool_conversion_count_by_click_date(self.config.get("conversion_count", DEFAULT_REPORT_CONVERSION_COUNT_BY_CLICK_DATE))
         return (
             f"reports/marketers/{stream_slice['marketer_id']}/geo?from="
             + str(stream_start.date())
@@ -909,6 +943,8 @@ class PerformanceReportMarketersByGeoPerformance(OutbrainAmplifyStream, HttpSubS
             + str(self.config.get("geo_location_breakdown", DEFAULT_GEO_LOCATION_BREAKDOWN))
             + "&limit=500"
             + "&includeVideoStats=true"
+            + "&conversionsByClickDate="
+            + str(stream_conversion_count)
         )
 
 
@@ -964,6 +1000,7 @@ class PerformanceReportMarketersCampaignsByGeo(OutbrainAmplifyStream, HttpSubStr
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        stream_conversion_count = self._get_bool_conversion_count_by_click_date(self.config.get("conversion_count", DEFAULT_REPORT_CONVERSION_COUNT_BY_CLICK_DATE))
         return (
             f"reports/marketers/{stream_slice['marketer_id']}/campaigns/geo?from="
             + str(stream_start.date())
@@ -973,6 +1010,8 @@ class PerformanceReportMarketersCampaignsByGeo(OutbrainAmplifyStream, HttpSubStr
             + str(self.config.get("geo_location_breakdown", DEFAULT_GEO_LOCATION_BREAKDOWN))
             + "&limit=500"
             + "&includeVideoStats=true"
+            + "&conversionsByClickDate="
+            + str(stream_conversion_count)
         )
 
 
@@ -1026,6 +1065,7 @@ class PerformanceReportMarketersByInterest(OutbrainAmplifyStream, HttpSubStream)
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        stream_conversion_count = self._get_bool_conversion_count_by_click_date(self.config.get("conversion_count", DEFAULT_REPORT_CONVERSION_COUNT_BY_CLICK_DATE))
         return (
             f"reports/marketers/{stream_slice['marketer_id']}/interests?from="
             + str(stream_start.date())
@@ -1033,6 +1073,8 @@ class PerformanceReportMarketersByInterest(OutbrainAmplifyStream, HttpSubStream)
             + str(stream_end.date())
             + "&limit=500"
             + "&includeVideoStats=true"
+            + "&conversionsByClickDate="
+            + str(stream_conversion_count)
         )
 
 
