@@ -32,24 +32,14 @@ class MySqlSourceMetadataQuerier(
         base.extraChecks()
         if (base.config.global) {
             // Extra checks for CDC
-            var cdcVariableCheckQueries: List<Triple<String, String, String>> =
+            var cdcVariables: List<Pair<String, String>> =
                 listOf(
-                    Triple("log_bin", "show variables where Variable_name = 'log_bin'", "ON"),
-                    Triple(
-                        "binlog_format",
-                        "show variables where Variable_name = 'binlog_format'",
-                        "ROW"
-                    ),
-                    Triple(
-                        "binlog_row_image",
-                        "show variables where Variable_name = 'binlog_row_image'",
-                        "FULL"
-                    ),
+                    Pair("log_bin", "ON"),
+                    Pair("binlog_format", "ROW"),
+                    Pair("binlog_row_image", "FULL"),
                 )
 
-            cdcVariableCheckQueries.forEach {
-                runVariableCheckSql(it.first, it.second, it.third, base.conn)
-            }
+            cdcVariables.forEach { runVariableCheckSql(it.first, it.second, base.conn) }
 
             // Note: SHOW MASTER STATUS has been deprecated in latest mysql (8.4) and going forward
             // it should be SHOW BINARY LOG STATUS. We will run both - if both have been failed we
@@ -72,14 +62,10 @@ class MySqlSourceMetadataQuerier(
         }
     }
 
-    private fun runVariableCheckSql(
-        variable: String,
-        sql: String,
-        expectedValue: String,
-        conn: Connection
-    ) {
+    private fun runVariableCheckSql(variable: String, expectedValue: String, conn: Connection) {
         try {
             conn.createStatement().use { stmt: Statement ->
+                val sql: String = "show variables where Variable_name = '$variable'"
                 stmt.executeQuery(sql).use { rs: ResultSet ->
                     if (!rs.next()) {
                         throw ConfigErrorException("Could not query the variable $sql")
