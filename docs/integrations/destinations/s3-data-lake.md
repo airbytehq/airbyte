@@ -2,7 +2,7 @@
 
 This page guides you through setting up the S3 Data Lake destination connector. 
 
-This connector writes the Iceberg table format to S3 or an S3-compatible storage backend using a supported Iceberg catalog. This is Airbyte's preferred Iceberg integration. It replaces the older [Iceberg](iceberg) destination, performs better, and implements Airbyte's newer core features. You should switch to this destination when you can.
+This connector writes the Iceberg table format to S3 or an S3-compatible storage backend using a supported Iceberg catalog. This is Airbyte's preferred Iceberg integration. It replaces the older [Iceberg](iceberg) and [S3-Glue](s3-glue) destinations, performs better, and implements Airbyte's newer core features. You should switch to this destination when you can.
 
 ## Prerequisites
 
@@ -86,39 +86,18 @@ Use an existing or new [Access Key ID and Secret Access Key](https://docs.aws.am
 </details>
 
 <!-- env:cloud -->
-  <details>
-    <summary>Authenticate with an IAM role (Cloud with Glue catalog only)</summary>
+<details>
+<summary>Authenticate with an IAM role (Cloud with Glue catalog only)</summary>
 
 :::note
 To use S3 authentication with an IAM role, an Airbyte team member must enable it. If you'd like to use this feature, [contact the Sales team](https://airbyte.com/company/talk-to-sales).
 :::
 
 1. In the IAM dashboard, click **Roles**, then **Create role**.
-2. Choose the appropriate trust entity and attach the policy you created.
-3. Set up a trust relationship for the role. For example, for **AWS account** trusted entity use the default AWS account on your instance (Airbyte uses it to assume the role). To use an **External ID**, set it to environment variables: `export AWS_ASSUME_ROLE_EXTERNAL_ID="{your-external-id}"`. Edit the trust relationship policy to reflect this.
-
-    ```json
-    {
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-                "Effect": "Allow",
-                "Principal": {
-                    "AWS": "arn:aws:iam::{your-aws-account-id}:user/{your-username}"
-                },
-                "Action": "sts:AssumeRole",
-                "Condition": {
-                    "StringEquals": {
-                        "sts:ExternalId": "{your-external-id}"
-                    }
-                }
-            }
-        ]
-    }
-    ```
 
 2. Choose the **AWS account** trusted entity type.
-3. Set up a trust relationship for the role. This allows the Airbyte instance's AWS account to assume this role. You will also need to specify an external ID, which is a secret key that the trusting service (Airbyte) and the trusted role (the role you're creating) both know. This ID is used to prevent the "confused deputy" problem. The External ID should be your Airbyte workspace ID, which can be found in the URL of your workspace page. Edit the trust relationship policy to include the external ID:
+
+3. Set up a trust relationship for the role. This allows the Airbyte instance's AWS account to assume this role. You also need to specify an external ID, which is a secret key that the trusting service (Airbyte) and the trusted role (the role you're creating) both know. This ID prevents the "confused deputy" problem. The External ID should be your Airbyte workspace ID, which you can find in the URL of your workspace page. Edit the trust relationship policy to include the external ID:
 
     ```json
     {
@@ -141,9 +120,13 @@ To use S3 authentication with an IAM role, an Airbyte team member must enable it
     ```
 
 4. Complete the role creation and save the Role ARN for later.
+
 5. Select **Attach policies directly**, then find and check the box for your new policy. Click **Next**, then **Add permissions**.
+
 6. In Airbyte, select **Glue** as the catalog and enter the Role ARN into the **Role ARN** field.
-  </details>
+
+</details>
+
 <!-- /env:cloud -->
 
 ### Iceberg catalog setup and permissions
