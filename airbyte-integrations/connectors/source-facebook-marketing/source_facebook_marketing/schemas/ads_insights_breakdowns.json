@@ -105,6 +105,10 @@
       "description": "The ID of the URL linked to by the ad.",
       "type": ["null", "string"]
     },
+    "mmm": {
+      "description": "The Marketing Mix Model (MMM) used to measure the ad campaign.",
+      "type": ["null", "string"]
+    },
     "link_url_asset": {
       "description": "The URL linked to by the ad.",
       "type": ["null", "object"],
@@ -163,6 +167,126 @@
         "video_name": { "type": ["null", "string"] },
         "id": { "type": ["null", "string"] }
       }
+    },
+    "breakdown_reporting_ad_id": {
+      "type": ["null", "string"],
+      "description": "The ID of the ad for breakdown reporting."
+    },
+    "coarse_conversion_value": {
+      "type": ["null", "string"],
+      "description": "Coarse conversion value for the ad."
+    },
+    "conversion_destination": {
+      "type": ["null", "string"],
+      "description": "The destination of the conversion."
+    },
+    "fidelity_type": {
+      "type": ["null", "string"],
+      "description": "The fidelity type of the ad."
+    },
+    "hsid": {
+      "type": ["null", "string"],
+      "description": "HSID for the ad."
+    },
+    "is_conversion_id_modeled": {
+      "type": ["null", "boolean"],
+      "description": "Indicates if the conversion ID is modeled."
+    },
+    "is_rendered_as_delayed_skip_ad": {
+      "type": ["null", "boolean"],
+      "description": "Indicates if the ad is rendered as a delayed skip ad."
+    },
+    "landing_destination": {
+      "type": ["null", "string"],
+      "description": "The landing destination of the ad."
+    },
+    "marketing_messages_btn_name": {
+      "type": ["null", "string"],
+      "description": "The button name for marketing messages."
+    },
+    "mdsa_landing_destination": {
+      "type": ["null", "string"],
+      "description": "MDSA landing destination."
+    },
+    "media_asset_url": {
+      "type": ["null", "string"],
+      "description": "URL of the media asset."
+    },
+    "media_creator": {
+      "type": ["null", "string"],
+      "description": "Creator of the media."
+    },
+    "media_destination_url": {
+      "type": ["null", "string"],
+      "description": "Destination URL of the media."
+    },
+    "media_format": {
+      "type": ["null", "string"],
+      "description": "Format of the media."
+    },
+    "media_origin_url": {
+      "type": ["null", "string"],
+      "description": "Origin URL of the media."
+    },
+    "media_text_content": {
+      "type": ["null", "string"],
+      "description": "Text content of the media."
+    },
+    "media_type": {
+      "type": ["null", "string"],
+      "description": "Type of the media."
+    },
+    "postback_sequence_index": {
+      "type": ["null", "integer"],
+      "description": "Index of the postback sequence."
+    },
+    "redownload": {
+      "type": ["null", "boolean"],
+      "description": "Indicates if the ad is a redownload."
+    },
+    "signal_source_bucket": {
+      "type": ["null", "string"],
+      "description": "Signal source bucket."
+    },
+    "skan_campaign_id": {
+      "type": ["null", "string"],
+      "description": "SKAN campaign ID."
+    },
+    "skan_version": {
+      "type": ["null", "string"],
+      "description": "SKAN version."
+    },
+    "sot_attribution_model_type": {
+      "type": ["null", "string"],
+      "description": "Type of the SOT attribution model."
+    },
+    "sot_attribution_window": {
+      "type": ["null", "string"],
+      "description": "Attribution window for SOT."
+    },
+    "sot_channel": {
+      "type": ["null", "string"],
+      "description": "Channel for SOT."
+    },
+    "sot_event_type": {
+      "type": ["null", "string"],
+      "description": "Event type for SOT."
+    },
+    "sot_source": {
+      "type": ["null", "string"],
+      "description": "Source for SOT."
+    },
+    "standard_event_content_type": {
+      "type": ["null", "string"],
+      "description": "Content type for standard events."
+    },
+    "user_persona_id": {
+      "type": ["null", "string"],
+      "description": "ID of the user persona."
+    },
+    "user_persona_name": {
+      "type": ["null", "string"],
+      "description": "Name of the user persona."
     }
   }
 }
