@@ -3,7 +3,7 @@
 This page guides you through the process of setting up the S3 Data Lake destination connector.
 
 This connector writes the Iceberg table format to S3, or an S3-compatible storage backend.
-Currently it supports the REST, AWS Glue, and Nessie catalogs.
+Currently, it supports the REST, AWS Glue, and Nessie catalogs.
 
 ## Setup Guide
 
@@ -114,7 +114,7 @@ The S3 Data Lake connector assumes that one of two things is true:
   in cursor order (oldest to newest)
 
 If these conditions are not met, you may see inaccurate data in the destination (i.e. older records
-taking precendence over newer records). If this happens, you should use the `append` or `overwrite`
+taking precedence over newer records). If this happens, you should use the `append` or `overwrite`
 sync mode.
 
 :::caution
@@ -139,7 +139,7 @@ This connector leverages those semantics to provide resilient syncs:
 ### AWS Glue
 
 If you have an existing Glue table, and you want to replace that table with an Airbyte-managed Iceberg table,
-you must first drop the Glue table. Otherwise you will encounter an error `Input Glue table is not an iceberg table: <your table name>`.
+you must first drop the Glue table. Otherwise, you will encounter an error `Input Glue table is not an iceberg table: <your table name>`.
 
 Note that dropping Glue tables from the console [may not immediately delete them](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glue/client/batch_delete_table.html).
 You must either wait for AWS to finish their background processing, or manually call the AWS API to
