@@ -24,6 +24,8 @@ Kubernetes
 Helm
 kind
 Vale
+OpenTelemetry
+Datadog
 [Dd]eduplication
 
 # Common acronyms and initialisms that don't need definitions
