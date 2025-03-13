@@ -9,4 +9,4 @@ class ItemsRecordBuilder(MondayRecordBuilder):
     @classmethod
     def items_record(cls) -> "ItemsRecordBuilder":
         record_template = cls.extract_record("items", __file__, NestedPath(["data", "boards", 0, "items_page", "items", 0]))
-        return cls(record_template, FieldPath("id"), None) 
+        return cls(record_template, FieldPath("id"), None)

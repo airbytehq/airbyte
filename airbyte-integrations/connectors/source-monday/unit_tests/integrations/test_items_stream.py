@@ -1,9 +1,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import json
+from typing import List
 from unittest import TestCase
 from unittest.mock import patch
-from typing import List
 
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_protocol.models import Level as LogLevel
@@ -18,7 +18,6 @@ from .utils import get_log_messages_by_log_level, read_stream
 
 
 class TestItemsStreamFullRefresh(TestCase):
-
     def get_authenticator(self, config):
         return ApiTokenAuthenticator(api_token=config["credentials"]["api_token"])
 
@@ -29,7 +28,7 @@ class TestItemsStreamFullRefresh(TestCase):
         """
         config = ConfigBuilder().with_api_token_credentials("api-token").build()
         api_token_authenticator = self.get_authenticator(config)
-        
+
         http_mocker.get(
             ItemsRequestBuilder.items_endpoint(api_token_authenticator).build(),
             ItemsResponseBuilder.items_response().with_record(ItemsRecordBuilder.items_record()).build(),

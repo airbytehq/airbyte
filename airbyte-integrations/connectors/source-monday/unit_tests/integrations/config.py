@@ -24,7 +24,7 @@ class ConfigBuilder:
     def with_board_ids(self, board_ids: List[int]) -> "ConfigBuilder":
         self._board_ids = board_ids
         return self
-    
+
     def build(self) -> Dict[str, Any]:
         config = {}
         if self._credentials:

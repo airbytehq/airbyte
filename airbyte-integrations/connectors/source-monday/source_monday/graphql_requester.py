@@ -81,7 +81,7 @@ class MondayGraphqlRequester(HttpRequester):
             # If they are present, don't override them.
             if "ids" not in object_arguments:
                 object_arguments["ids"] = self.config.get("board_ids")
-        
+
         arguments = self._get_object_arguments(**object_arguments)
         arguments = f"({arguments})" if arguments else ""
 
@@ -169,7 +169,7 @@ class MondayGraphqlRequester(HttpRequester):
         if "board_ids" in self.config and "ids" not in object_arguments:
             object_arguments["ids"] = self.config.get("board_ids")
         arguments = self._get_object_arguments(**object_arguments)
-        
+
         return f"boards({arguments}){{{query}}}"
 
     def get_request_headers(
