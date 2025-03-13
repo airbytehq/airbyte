@@ -80,8 +80,6 @@ class S3V2Specification :
     val numObjectLoaders: Int? = null
     @get:JsonProperty("part_size_mb")
     val partSizeMb: Int? = null
-    @get:JsonProperty("total_data_mb")
-    val totalDataMb: Int? = null
     @get:JsonProperty("use_legacy_client")
     val useLegacyClient: Boolean? = null
 }
