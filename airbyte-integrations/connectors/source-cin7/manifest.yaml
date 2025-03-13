@@ -6,7 +6,7 @@ description: >
   This is the Cin7 source that ingests data from the Cin7 API.
 
 
-  Cin7 (Connector Inventory Performance), If you're a business that wants to
+  Cin7 (Connector Inventory Performance), If you’re a business that wants to
   grow, you need an inventory solution you can count on - both now and in the
   future. With Cin7 you get a real-time picture of your products across systems,
   channels, marketplaces and regions, plus NEW ForesightAI advanced inventory
@@ -847,6 +847,7 @@ metadata:
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
+  assist: {}
 
 schemas:
   bank_accounts:
