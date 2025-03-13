@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.data.iceberg.parquet.IcebergParquetPipelineFactory
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableWriterFactory
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
@@ -92,7 +91,8 @@ class S3DataLakeDirectLoader(
             )
         writer.write(icebergRecord)
 
-        dataSize += recordAirbyteValue.serializedSizeBytes // TODO: use icebergRecord.size() instead?
+        dataSize +=
+            recordAirbyteValue.serializedSizeBytes // TODO: use icebergRecord.size() instead?
         if (dataSize < batchSize) {
             return DirectLoader.Incomplete
         }

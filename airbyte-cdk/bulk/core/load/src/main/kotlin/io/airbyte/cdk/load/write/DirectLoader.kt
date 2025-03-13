@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.write
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 
 /**

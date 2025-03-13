@@ -145,11 +145,7 @@ data class DestinationRecord(
         )
     }
     fun asDestinationRecordRaw(): DestinationRecordRaw {
-        return DestinationRecordRaw(
-            stream,
-            message,
-            serialized
-        )
+        return DestinationRecordRaw(stream, message, serialized)
     }
 }
 

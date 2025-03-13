@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.pipeline
 
 import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.WithBatchState
 import io.airbyte.cdk.load.message.WithStream
@@ -31,10 +30,7 @@ class DirectLoadRecordAccumulator<S : DirectLoader, K : WithStream>(
         return directLoaderFactory.create(key.stream, part)
     }
 
-    override fun accept(
-        record: DestinationRecordRaw,
-        state: S
-    ): Pair<S, DirectLoadAccResult?> {
+    override fun accept(record: DestinationRecordRaw, state: S): Pair<S, DirectLoadAccResult?> {
         state.accept(record).let {
             return when (it) {
                 is Incomplete -> Pair(state, null)
