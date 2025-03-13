@@ -33,18 +33,9 @@ definitions:
       - type: ConstantBackoffStrategy
         backoff_time_in_seconds: 120
     response_filters:
-      - http_codes: [400]
-        action: FAIL
-        error_message: Authentication has failed. Please update your config with valid credentials.
       - error_message_contains: "Unable to authenticate request"
         action: FAIL
         error_message: Authentication has failed. Please update your config with valid credentials.
-      - http_codes: [402]
-        action: FAIL
-        error_message: Unable to perform a request. Payment Required.
-      - predicate: "{{ 'Retry-After' in headers }}"
-        action: RATE_LIMITED
-        error_message: Query rate limit exceeded.
       - error_message_contains: "Query rate limit exceeded"
         action: RATE_LIMITED
         error_message: Query rate limit exceeded.
@@ -55,6 +46,15 @@ definitions:
       - error_message_contains: "to_date cannot be later than today"
         action: FAIL
         error_message: Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings.
+      - http_codes: [400]
+        action: FAIL
+        error_message: Authentication has failed. Please update your config with valid credentials.
+      - http_codes: [402]
+        action: FAIL
+        error_message: Unable to perform a request. Payment Required.
+      - predicate: "{{ 'Retry-After' in headers }}"
+        action: RATE_LIMITED
+        error_message: Query rate limit exceeded.
 
   requester:
     type: CustomRequester
@@ -383,6 +383,67 @@ definitions:
               - name
             value: "{{ stream_slice.get('funnel_name') }}"
 
+  # https://developer.mixpanel.com/reference/raw-event-export
+  export_stream:
+    type: DeclarativeStream
+    name: export
+    $parameters:
+      name: export
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        path: export
+        http_method: GET
+        url_base: "https://data-{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/2.0/"
+        request_parameters:
+          where:
+        error_handler:
+          type: CustomErrorHandler
+          class_name: "source_mixpanel.components.ExportErrorHandler"
+          max_retries: 10
+          backoff_strategies:
+            $ref: "#/definitions/default_error_handler/backoff_strategies"
+          response_filters:
+            $ref: "#/definitions/default_error_handler/response_filters"
+      record_selector:
+        type: RecordSelector
+        schema_normalization: Default
+        extractor:
+          class_name: "source_mixpanel.components.ExportDpathExtractor"
+          field_path: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: time
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%d %H:%M:%S"
+        - "%Y-%m-%d"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      lookback_window: 'P{{ config["attribution_window"] or 5 }}D'
+      step: 'P{{ config["date_window_size"] or 30 }}D'
+      cursor_granularity: PT1S
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.start_date or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: from_date
+      end_time_option:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: to_date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    schema_loader:
+      type: CustomSchemaLoader
+      class_name: "source_mixpanel.components.ExportJsonFileSchemaLoader"
+      file_path: "./source_mixpanel/schemas/{{ parameters['name'] }}.json"
+
 streams:
   - "#/definitions/cohorts_stream"
   - "#/definitions/engage_stream"
@@ -390,6 +451,7 @@ streams:
   - "#/definitions/annotations_stream"
   - "#/definitions/cohort_members_stream"
   - "#/definitions/funnels_stream"
+  - "#/definitions/export_stream"
 
 check:
   type: CheckStream
