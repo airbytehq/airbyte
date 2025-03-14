@@ -122,7 +122,8 @@ definitions:
         schema:
           $ref: "#/schemas/calls"
       incremental_sync:
-        type: DatetimeBasedCursor
+        type: CustomIncrementalSync
+        class_name: source_declarative_manifest.components.FreshcallerCallsIncrementalSync
         cursor_field: created_time
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
