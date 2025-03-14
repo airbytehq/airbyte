@@ -69,6 +69,7 @@ This connector outputs the following streams:
 - [People](https://developers.salesloft.com/api.html#!/People/get_v2_people_json)
 - [Users](https://developers.salesloft.com/api.html#!/Users/get_v2_users_json)
 - [Emails](https://developers.salesloft.com/api.html#!/Emails/get_v2_activities_emails_json)
+- [Emails Scoped Fields](https://developers.salesloft.com/api.html#!/Emails/get_v2_activities_emails_json) **Warning:** This stream requires a Premier Salesloft Plan
 - [Account Stages](https://developers.salesloft.com/api.html#!/Account_Stages/get_v2_account_stages_json)
 - [Account Tiers](https://developers.salesloft.com/api.html#!/Account_Tiers/get_v2_account_tiers_json)
 - [Accounts](https://developers.salesloft.com/api.html#!/Accounts/get_v2_accounts_json)
@@ -105,6 +106,7 @@ Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Top
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
+| 1.5.0 | 2025-03-06 | [55229](https://github.com/airbytehq/airbyte/pull/55229) | Add emails_scoped_fields stream. Remove body and subject fields from email stream |
 | 1.4.0 | 2025-02-18 | [54136](https://github.com/airbytehq/airbyte/pull/54136) | add body and subject fields to email stream |
 | 1.3.1 | 2024-12-03 | [48770](https://github.com/airbytehq/airbyte/pull/48770) | Remove duplication in manifest, fix query param updated_at[gt] |
 | 1.3.0 | 2024-11-04 | [47298](https://github.com/airbytehq/airbyte/pull/47298) | Migrate to manifest only format |

@@ -47,6 +47,6 @@ class CustomIncrementalSync(DatetimeBasedCursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = {}
-        if self.cursor_field in stream_state:
-            params[f"filter[{self.cursor_field}]"] = stream_state[self.cursor_field] + "..inf"
+        if self.cursor_field.string in stream_state:
+            params[f"filter[{self.cursor_field.string}]"] = stream_state[self.cursor_field.string] + "..inf"
         return params

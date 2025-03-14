@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.pipeline
 
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.QueueWriter
@@ -24,8 +24,7 @@ import jakarta.inject.Singleton
 class DirectLoadPipelineStep<S : DirectLoader>(
     val accumulator: DirectLoadRecordAccumulator<S, StreamKey>,
     @Named("recordQueue")
-    val inputQueue:
-        PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>>,
+    val inputQueue: PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
     @Named("batchStateUpdateQueue") val batchQueue: QueueWriter<BatchUpdate>,
     @Value("\${airbyte.destination.core.record-batch-size-override:null}")
     val batchSizeOverride: Long? = null,

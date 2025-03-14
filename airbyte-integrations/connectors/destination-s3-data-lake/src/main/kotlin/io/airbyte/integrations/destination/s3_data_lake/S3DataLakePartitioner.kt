@@ -6,8 +6,7 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.pipeline.InputPartitioner
 import jakarta.inject.Singleton
 import kotlin.math.abs
@@ -25,14 +24,18 @@ class S3DataLakePartitioner(catalog: DestinationCatalog) : InputPartitioner {
         }
     private val random = Random(System.currentTimeMillis())
 
-    override fun getPartition(record: DestinationRecordAirbyteValue, numParts: Int): Int {
+    override fun getPartition(record: DestinationRecordRaw, numParts: Int): Int {
         if (numParts == 1) {
             return 0
         }
 
         streamToPrimaryKeyFieldNames[record.stream]?.let { primaryKey ->
+            val jsonData = record.asRawJson()
+
             val primaryKeyValues =
-                primaryKey.map { it.map { key -> (record.data as ObjectValue).values[key] } }
+                primaryKey.map { keys ->
+                    keys.map { key -> if (jsonData.has(key)) jsonData.get(key) else null }
+                }
             val hash = primaryKeyValues.hashCode()
             /** abs(MIN_VALUE) == MIN_VALUE, so we need to handle this case separately */
             if (hash == Int.MIN_VALUE) {

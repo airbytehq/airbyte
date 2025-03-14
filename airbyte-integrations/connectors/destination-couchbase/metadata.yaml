@@ -1,0 +1,26 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*" # Couchbase can be hosted anywhere
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 7312e2d5-3067-455c-ab45-c7f3a5c78003
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/destination-couchbase
+  githubIssueLabel: destination-couchbase
+  icon: couchbase.svg
+  license: MIT
+  name: Couchbase
+  releaseDate: "2024-10-30"
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/couchbase
+  tags:
+    - language:python
+    - cdk:python
+metadataSpecVersion: "1.0"

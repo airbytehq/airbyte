@@ -45,6 +45,7 @@ class CdcPartitionsCreator<T : Comparable<T>>(
                 "Triggering reset. Incumbent CDC state is invalid, reason: ${reason}."
             )
         }
+        var allStreams: List<Stream> = feedBootstrap.feed.streams
         val activeStreams: List<Stream> by lazy {
             feedBootstrap.feed.streams.filter { feedBootstrap.currentState(it) != null }
         }
@@ -68,7 +69,7 @@ class CdcPartitionsCreator<T : Comparable<T>>(
         val startingSchemaHistory: DebeziumSchemaHistory?
         when (warmStartState) {
             null -> {
-                debeziumProperties = creatorOps.generateColdStartProperties()
+                debeziumProperties = creatorOps.generateColdStartProperties(allStreams)
                 startingOffset = syntheticOffset
                 startingSchemaHistory = null
             }
@@ -97,7 +98,7 @@ class CdcPartitionsCreator<T : Comparable<T>>(
                 resetReason.set(warmStartState.reason)
                 log.info { "Resetting invalid incumbent CDC state with synthetic state." }
                 feedBootstrap.resetAll()
-                debeziumProperties = creatorOps.generateColdStartProperties()
+                debeziumProperties = creatorOps.generateColdStartProperties(allStreams)
                 startingOffset = syntheticOffset
                 startingSchemaHistory = null
             }

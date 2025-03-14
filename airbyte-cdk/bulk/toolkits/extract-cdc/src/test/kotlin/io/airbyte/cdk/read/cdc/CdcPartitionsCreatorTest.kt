@@ -50,8 +50,8 @@ class CdcPartitionsCreatorTest {
             configuredPrimaryKey = null,
             configuredCursor = TestMetaFieldDecorator.GlobalCursor,
         )
-
-    val global = Global(listOf(stream))
+    val streams = listOf(stream)
+    val global = Global(streams)
 
     val lowerBoundReference = AtomicReference<CreatorPosition>(null)
     val upperBoundReference = AtomicReference<CreatorPosition>(null)
@@ -80,8 +80,8 @@ class CdcPartitionsCreatorTest {
         every { creatorOps.position(syntheticOffset) } returns 123L
         every { creatorOps.position(incumbentOffset) } returns 123L
         every { creatorOps.generateColdStartOffset() } returns syntheticOffset
-        every { creatorOps.generateColdStartProperties() } returns emptyMap()
-        every { creatorOps.generateWarmStartProperties(listOf(stream)) } returns emptyMap()
+        every { creatorOps.generateColdStartProperties(streams) } returns emptyMap()
+        every { creatorOps.generateWarmStartProperties(streams) } returns emptyMap()
     }
 
     @Test

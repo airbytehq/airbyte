@@ -31,6 +31,7 @@ Docs : https://api.salesflare.com/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.14 | 2025-03-08 | [55051](https://github.com/airbytehq/airbyte/pull/55051) | Update dependencies |
 | 0.0.13 | 2025-02-23 | [54568](https://github.com/airbytehq/airbyte/pull/54568) | Update dependencies |
 | 0.0.12 | 2025-02-15 | [53948](https://github.com/airbytehq/airbyte/pull/53948) | Update dependencies |
 | 0.0.11 | 2025-02-08 | [53489](https://github.com/airbytehq/airbyte/pull/53489) | Update dependencies |

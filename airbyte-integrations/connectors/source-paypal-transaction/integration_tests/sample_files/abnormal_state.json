@@ -36,7 +36,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_time_cut": "2033-06-09T00:00:00.000Z"
+        "updated_time_cut": "2033-06-09T00:00:00.000000Z"
       },
       "stream_descriptor": {
         "name": "list_disputes"

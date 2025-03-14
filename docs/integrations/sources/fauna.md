@@ -232,6 +232,7 @@ FQL [`Select`](https://docs.fauna.com/fauna/current/api/fql/functions/select) is
 
 | Version | Date       | Pull Request                                             | Subject                         |
 | ------- | ---------- | -------------------------------------------------------- | ------------------------------- |
+| 0.1.2   | 2024-07-10 | [41051](https://github.com/airbytehq/airbyte/pull/41051) | Migrate to poetry               |
 | 0.1.1   | 2022-12-12 | [20275](https://github.com/airbytehq/airbyte/pull/20275) | Fix index lookup with no values |
 | 0.1.0   | 2022-11-17 | [15274](https://github.com/airbytehq/airbyte/pull/15274) | Add Fauna Source                |
 

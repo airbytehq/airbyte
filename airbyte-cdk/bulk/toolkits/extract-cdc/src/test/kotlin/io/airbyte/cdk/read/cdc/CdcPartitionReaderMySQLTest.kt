@@ -113,7 +113,7 @@ class CdcPartitionReaderMySQLTest :
             return DebeziumOffset(mapOf(key to value))
         }
 
-        override fun generateColdStartProperties(): Map<String, String> =
+        override fun generateColdStartProperties(streams: List<Stream>): Map<String, String> =
             DebeziumPropertiesBuilder()
                 .with(generateWarmStartProperties(emptyList()))
                 .with("snapshot.mode", "recovery")

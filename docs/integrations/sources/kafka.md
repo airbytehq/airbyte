@@ -15,20 +15,35 @@ To use the Kafka source connector, you'll need:
 
 You'll need the following information to configure the Kafka source:
 
-- **Group ID** - The Group ID is how you distinguish different consumer groups. (e.g. group.id)
-- **Protocol** - The Protocol used to communicate with brokers.
-- **Client ID** - An ID string to pass to the server when making requests. The purpose of this is to be able to track the source of requests beyond just ip/port by allowing a logical application name to be included in server-side request logging. (e.g. airbyte-consumer)
-- **Test Topic** - The Topic to test in case the Airbyte can consume messages. (e.g. test.topic)
-- **Subscription Method** - You can choose to manually assign a list of partitions, or subscribe to all topics matching specified pattern to get dynamically assigned partitions.
-- **List of topic**
 - **Bootstrap Servers** - A list of host/port pairs to use for establishing the initial connection to the Kafka cluster.
-- **Schema Registry** - Host/port to connect schema registry server. Note: It supports for AVRO format only.
+- **MessageFormat** - How to deserialize messages; choose either:
+  - **JSON**
+  - **AVRO** if choosing avro, several other options are available
+    - Deserialization strategy - To deserialize Avro binary, set the [_subject name strategy_][subject-name-strategy] for choosing the schema from the registry
+    - Schema Registry URL - Host/port to connect to the schema registry server
+    - Username and password, optional to authenticate to the schema registry server
+- **Protocol** - The Protocol used to communicate with brokers. If using SASL, this includes how to authenticate to the brokers.
+  - **PLAINTEXT** - no authentication and no encryption
+  - **SASL PLAINTEXT** - no encryption; a `SASL JAAS Config` is needed to authenticate
+  - **SASL SSL** - encrypted
+    - **SASL JAAS Config** configures authentication to the brokers
+    - **SASL Mechanism** appropriate to your brokers' auth mechanism
+    - **OAUTHBEARER token endpoint URL** Optional; If using SASL Mechanism `OAUTHBEARER`, set to the token endpoint URL; note this does not apply to schema registry auth
+- **Subscription Method** - You can choose to manually assign a list of partitions, or subscribe to all topics matching specified pattern to get dynamically assigned partitions.
+  - **List of topic** - comma separated `topic:partition`s, each partition becomes a stream in the connection
+  - **Topic pattern** - a pattern to use, each matching topic becomes a stream in the connection
+
+Some optional fields that are recommended to set according to your use
+- **Client ID** - An ID string to pass to the brokers when making requests. The purpose of this is to be able to track the source of requests beyond just ip/port by allowing a logical application name to be included in server-side request logging. (e.g. airbyte-consumer)
+- **Group ID** - The Group ID is how you distinguish different consumer groups. (e.g. group.id)
+- **Test Topic** - The Topic to test whether Airbyte can consume messages. (e.g. test.topic)
+- **Polling Time** - Amount of time in milliseconds Kafka connector should try to poll for messages, per sync
 
 ### For Airbyte Open Source:
 
 1. Go to the Airbyte UI and in the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 2. On the Set up the source page, enter the name for the Kafka connector and select **Kafka** from the Source type dropdown.
-3. Follow the [Setup the Kafka source in Airbyte](kafka.md#Setup-the-Kafka-Source-in-Airbyte)
+3. Follow the [Setup the Kafka source in Airbyte](kafka.md#step-2-setup-the-kafka-source-in-airbyte)
 
 ## Supported sync modes
 
@@ -53,6 +68,7 @@ AVRO - deserialize Using confluent API. Please refer (https://docs.confluent.io/
 
 | Version | Date       | Pull Request                                                                                       | Subject                                                              |
 | :------ | :--------- |:---------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------|
+| 0.3.0   | 2025-02-18 | [53231](https://github.com/airbytehq/airbyte/pull/53231)                                           | Add configurations for OAUTHBEARER SASL Mechanism                    |
 | 0.2.8 | 2025-02-07 | [53221](https://github.com/airbytehq/airbyte/pull/53221)                                           | For AVRO MessageFormat, schema_registry_password is a secret         |
 | 0.2.7 | 2025-01-10 | [51480](https://github.com/airbytehq/airbyte/pull/51480)                                           | Use a non root base image                                            |
 | 0.2.6 | 2024-12-18 | [49907](https://github.com/airbytehq/airbyte/pull/49907)                                           | Use a base image: airbyte/java-connector-base:1.0.0                  |

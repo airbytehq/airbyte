@@ -126,7 +126,7 @@ definitions:
     $ref: "#/definitions/stream_base"
     $parameters:
       name: cohorts
-      path: 2.0/cohorts/list
+      path: query/cohorts/list
       field_path: []
     retriever:
       $ref: "#/definitions/retriever"
@@ -177,7 +177,7 @@ definitions:
         type: CustomRequester
         class_name: "source_mixpanel.components.EngagesHttpRequester"
         url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/"
-        path: 2.0/engage
+        path: query/engage
         authenticator: "#/definitions/authenticator"
         error_handler:
           $ref: "#/definitions/default_error_handler"
@@ -217,7 +217,7 @@ definitions:
       - cohort_id
     $parameters:
       name: cohort_members
-      path: 2.0/engage
+      path: query/engage
       field_path: results
     retriever:
       $ref: "#/definitions/retriever"
@@ -260,7 +260,7 @@ definitions:
     primary_key: "date"
     $parameters:
       name: revenue
-      path: 2.0/engage/revenue
+      path: query/engage/revenue
       field_path: results
     retriever:
       $ref: "#/definitions/retriever"
@@ -288,7 +288,7 @@ definitions:
         url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/"
         path: |
           {% set project_id = config.credentials.project_id %}
-          {% if project_id %}app/projects/{{project_id}}{% else %}2.0{% endif %}/annotations
+          {% if project_id %}app/projects/{{project_id}}{% else %}query{% endif %}/annotations
         authenticator: "#/definitions/authenticator"
         error_handler:
           $ref: "#/definitions/default_error_handler"
@@ -309,7 +309,7 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
-        path: 2.0/funnels/list
+        path: query/funnels/list
         http_method: GET
         request_parameters:
           project_id: "{{ config['credentials']['project_id'] }}"
@@ -342,7 +342,7 @@ definitions:
         type: CustomRequester
         class_name: "source_mixpanel.components.FunnelsHttpRequester"
         url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/"
-        path: 2.0/funnels
+        path: query/funnels
         authenticator: "#/definitions/authenticator"
         error_handler:
           $ref: "#/definitions/default_error_handler"

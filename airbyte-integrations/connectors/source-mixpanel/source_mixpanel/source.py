@@ -83,6 +83,7 @@ class SourceMixpanel(YamlDeclarativeSource):
             date_window_size,
             project_id,
             page_size,
+            export_lookback_window,
         ) = (
             config.get("project_timezone", "US/Pacific"),
             config.get("start_date"),
@@ -93,6 +94,7 @@ class SourceMixpanel(YamlDeclarativeSource):
             config.get("date_window_size", 30),
             config.get("credentials", dict()).get("project_id"),
             config.get("page_size", 1000),
+            config.get("export_lookback_window", 0),
         )
         try:
             project_timezone = pendulum.timezone(project_timezone)
@@ -109,6 +111,8 @@ class SourceMixpanel(YamlDeclarativeSource):
             raise_config_error("Please provide a valid integer for the `Attribution window` parameter.")
         if not isinstance(date_window_size, int) or date_window_size < 1:
             raise_config_error("Please provide a valid integer for the `Date slicing window` parameter.")
+        if not isinstance(export_lookback_window, int) or export_lookback_window < 0:
+            raise_config_error("Please provide a valid integer for the `Export Lookback Window` parameter.")
 
         auth = self.get_authenticator(config)
         if isinstance(auth, TokenAuthenticatorBase64) and project_id:
@@ -126,5 +130,6 @@ class SourceMixpanel(YamlDeclarativeSource):
         config["date_window_size"] = date_window_size
         config["project_id"] = project_id
         config["page_size"] = page_size
+        config["export_lookback_window"] = export_lookback_window
 
         return config

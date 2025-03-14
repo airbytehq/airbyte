@@ -32,9 +32,9 @@ Airbyte sends specific metrics to provide you with health insight in the followi
 
 1. Deploy an OpenTelemetry collector if you don't already have one. See the [OpenTelemetry documentation](https://opentelemetry.io/docs/collector/getting-started/#kubernetes) for help doing this. If you use Datadog as your monitoring tool, they have an excellent guide to [set up a collector and exporter](https://docs.datadoghq.com/opentelemetry/collector_exporter/).
 
-2. Update your `values.yaml` file to enable OpenTelemetry.
+2. Update Airbyte's `values.yaml` file to enable OpenTelemetry.
 
-    ```yaml
+    ```yaml title="values.yaml"
     global:
         edition: enterprise # This is an enterprise-only feature
         metrics:
@@ -62,7 +62,7 @@ The following metrics are available. They're published every minute.
   </thead>
   <tbody>
     <tr>
-      <td rowspan="8"><code>airbyte.syncs</code></td>
+      <td rowspan="9"><code>airbyte.syncs</code></td>
       <td><code>connection_id</code></td>
       <td>653a067e-cd0b-4cab-96b5-5e5cb03f159b</td>
     </tr>
@@ -83,10 +83,6 @@ The following metrics are available. They're published every minute.
       <td>3</td>
     </tr>
     <tr>
-      <td><code>version</code></td>
-      <td>1.5.0</td>
-    </tr>
-    <tr>
       <td><code>source_connector_id</code></td>
       <td>82c7fb2d-7de1-4d4e-b12e-510b0d61e374</td>
     </tr>
@@ -95,7 +91,15 @@ The following metrics are available. They're published every minute.
       <td>3cb42982-755b-4644-9ed4-19651b53ebdd</td>
     </tr>
     <tr>
-      <td rowspan="6"><code>airbyte.gb_moved</code></td>
+      <td><code>version</code></td>
+      <td>1.5.0</td>
+    </tr>
+    <tr>
+      <td><code>service</code></td>
+      <td>airbyte-worker</td>
+    </tr>
+    <tr>
+      <td rowspan="7"><code>airbyte.gb_moved</code></td>
       <td><code>connection_id</code></td>
       <td>653a067e-cd0b-4cab-96b5-5e5cb03f159b</td>
     </tr>
@@ -120,7 +124,11 @@ The following metrics are available. They're published every minute.
       <td>1.5.0</td>
     </tr>
     <tr>
-      <td rowspan="6"><code>airbyte.sync_duration</code></td>
+      <td><code>service</code></td>
+      <td>airbyte-worker</td>
+    </tr>
+    <tr>
+      <td rowspan="7"><code>airbyte.sync_duration</code></td>
       <td><code>connection_id</code></td>
       <td>653a067e-cd0b-4cab-96b5-5e5cb03f159b</td>
     </tr>
@@ -145,17 +153,33 @@ The following metrics are available. They're published every minute.
       <td>1.5.0</td>
     </tr>
     <tr>
-      <td rowspan="3"><code>airbyte.api_requests</code></td>
-      <td><code>workspace_id</code></td>
-      <td>bed3b473-1518-4461-a37f-730ea3d3a848</td>
+      <td><code>service</code></td>
+      <td>airbyte-worker</td>
     </tr>
     <tr>
-      <td><code>endpoint</code></td>
-      <td>/v1/connections/sync</td>
+      <td rowspan="7"><code>airbyte.api_requests</code></td>
+      <td><code>uri</code></td>
+      <td>/v1/applications/create</td>
     </tr>
     <tr>
       <td><code>status</code></td>
       <td>200</td>
+    </tr>
+    <tr>
+      <td><code>exception</code></td>
+      <td>NullPointerException</td>
+    </tr>
+    <tr>
+      <td><code>method</code></td>
+      <td>GET, POST</td>
+    </tr>
+    <tr>
+      <td><code>version</code></td>
+      <td>1.5.0</td>
+    </tr>
+    <tr>
+      <td><code>service</code></td>
+      <td>airbyte-server</td>
     </tr>
   </tbody>
 </table>

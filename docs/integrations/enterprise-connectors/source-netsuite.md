@@ -7,7 +7,7 @@ provide enhanced capabilities and support for critical enterprise systems.
 To learn more about enterprise connectors, please [talk to our sales team](https://airbyte.com/company/talk-to-sales).
 :::
 
-Airbyte’s incubating SAP HANA enterprise source connector currently offers Full Refresh and cursosr-based Incremental syncs for streams.
+Airbyte’s incubating Netsuite enterprise source connector currently offers Full Refresh and cursosr-based Incremental syncs for streams.
 
 ## Features
 

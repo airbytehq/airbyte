@@ -120,7 +120,7 @@ class CdcPartitionReaderMongoTest :
             return DebeziumOffset(mapOf(key to value))
         }
 
-        override fun generateColdStartProperties(): Map<String, String> =
+        override fun generateColdStartProperties(streams: List<Stream>): Map<String, String> =
             DebeziumPropertiesBuilder()
                 .withDefault()
                 .withConnector(MongoDbConnector::class.java)
@@ -141,7 +141,7 @@ class CdcPartitionReaderMongoTest :
                 .buildMap()
 
         override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> =
-            generateColdStartProperties()
+            generateColdStartProperties(streams)
 
         fun currentResumeToken(): BsonDocument =
             container.withMongoDatabase { mongoDatabase: MongoDatabase ->
