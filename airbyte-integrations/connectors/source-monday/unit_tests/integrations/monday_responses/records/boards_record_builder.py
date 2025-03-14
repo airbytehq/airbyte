@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from airbyte_cdk.test.mock_http.response_builder import FieldPath, NestedPath
 
 from .record_builder import MondayRecordBuilder

@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from airbyte_cdk.test.mock_http.response_builder import HttpResponseBuilder, NestedPath, find_template
 
 

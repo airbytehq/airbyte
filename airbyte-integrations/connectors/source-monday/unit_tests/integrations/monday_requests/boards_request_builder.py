@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from typing import List
 
 from .base_requests_builder import MondayBaseRequestBuilder
