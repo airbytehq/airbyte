@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-      - TODO # Please change to the hostname of the source.
+      - graph.instagram.com
   registries:
     oss:
       enabled: true
