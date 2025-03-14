@@ -32,7 +32,9 @@ Common examples include analytics report generation, large data exports (like Se
 
 ## Configuring an Asynchronous Stream
 
-To make a stream asynchronous, just select the `Asynchronous Job` option in `Request type` dropdown at the top-right of the stream configuration, or in the `New stream` menu.
+To make an existing stream asynchronous, at the top-right of the stream configuration, select `Request type` > `Asynchronous Job`.
+
+To create a new stream as an asynchronous stream, click the `+` add stream button, and select `Request type`> `Asynchronous Job`.
 
 An asynchronous stream in the Connector Builder UI is divided into three main tabs:
 
@@ -52,7 +54,7 @@ The Creation tab configures how to request that a job be created on the server.
 
 #### Example Configuration (SendGrid):
 
-In the UI, for the [SendGrid contacts stream](https://www.twilio.com/docs/sendgrid/api-reference/contacts/export-contacts), you would configure:
+In the UI, for the [SendGrid contacts export](https://www.twilio.com/docs/sendgrid/api-reference/contacts/export-contacts), you would configure:
 
 - **URL** field: `https://api.sendgrid.com/v3/marketing/contacts/exports`
 - **HTTP Method** dropdown: `POST`
@@ -96,7 +98,7 @@ The **Download Target Extractor** works similarly to the Status Extractor but ex
 
 #### Example Configuration (SendGrid):
 
-In the UI, for the [SendGrid contacts stream](https://www.twilio.com/docs/sendgrid/api-reference/contacts/export-contacts), you would configure:
+In the UI, for the [SendGrid contacts export](https://www.twilio.com/docs/sendgrid/api-reference/contacts/export-contacts), you would configure:
 
 - **URL** field: `https://api.sendgrid.com/v3/marketing/contacts/exports/{{creation_response['id']}}`
 - **HTTP Method** dropdown: `GET`
@@ -115,6 +117,7 @@ In the UI, for the [SendGrid contacts stream](https://www.twilio.com/docs/sendgr
 The Download tab configures how to retrieve the results once the job is complete.
 
 ![Download Tab](./assets/connector_builder_async_download_tab.png)
+
 #### Key Components:
 
 - **URL**: The full URL that the request should be sent to to download the results. Use the `{{ download_target }}` variable to reference the value extracted by the Download Target Extractor in the Polling tab.
@@ -126,7 +129,7 @@ The Download tab configures how to retrieve the results once the job is complete
 
 #### Example Configuration (SendGrid):
 
-In the UI, for the [SendGrid contacts stream](https://www.twilio.com/docs/sendgrid/api-reference/contacts/export-contacts), you would configure:
+In the UI, for the [SendGrid contacts export](https://www.twilio.com/docs/sendgrid/api-reference/contacts/export-contacts), you would configure:
 
 - **URL** field: `{{ download_target }}`
 - **HTTP Method** dropdown: `GET`
@@ -160,10 +163,12 @@ For the SendGrid example, the main Request tab would show a GET request to the U
 The **Other Requests** panel can be helpful for debugging asynchronous streams. This panel shows the intermediate requests and responses that occurred during the asynchronous process:
 
 1. **Creation Requests**: Shows the request sent to create the job and the API's response, including any job ID or token returned.
-![Other Requests Panel](./assets/connector_builder_async_other_requests_create.png)
+
+   ![Other Requests Panel](./assets/connector_builder_async_other_requests_create.png)
 
 2. **Polling Requests**: Shows each polling request sent to check the job status and the API's response, including the status values returned.
-![Other Requests Panel](./assets/connector_builder_async_other_requests_polling.png)
+
+   ![Other Requests Panel](./assets/connector_builder_async_other_requests_polling.png)
 
 To view the details of the creation and polling stages:
 
@@ -173,9 +178,9 @@ To view the details of the creation and polling stages:
     - Request tab: The request URL, method, headers, and body
     - Response tab: The response status, headers, and body
 
-## How Asynchronous Data Extraction Works (SendGrid Example)
+## How Asynchronous Data Extraction Works
 
-Let's walk through the complete flow using the SendGrid example:
+Let's walk through the complete flow using the [SendGrid contacts export](https://www.twilio.com/docs/sendgrid/api-reference/contacts/export-contacts) example:
 
 1. **Job Creation**:
    - The connector sends a POST request to the exports endpoint with the user's API key
