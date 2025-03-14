@@ -227,6 +227,7 @@ const buildAConnector = {
         "connector-development/connector-builder-ui/overview",
         "connector-development/connector-builder-ui/tutorial",
         "connector-development/connector-builder-ui/ai-assist",
+        "connector-development/connector-builder-ui/custom-components",
         {
           type: "category",
           label: "Concepts",
