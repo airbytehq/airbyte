@@ -1,6 +1,6 @@
-# Asynchronous Job streams in Connector Builder
+# Asynchronous Job streams
 
-In the Connector Builder UI, you can create two types of streams: **Synchronous Request (Sync)** and **Asynchronous Job (Async)**. Understanding the difference is important for efficiently extracting data from APIs that use asynchronous processing.
+In the Connector Builder UI, you can create two types of streams: **Synchronous Request** and **Asynchronous Job**. Understanding the difference is important for efficiently extracting data from APIs that use asynchronous processing.
 
 ## Synchronous Streams
 
@@ -22,7 +22,7 @@ This approach is necessary for APIs that handle large datasets or resource-inten
 
 ## When to Use Asynchronous Streams
 
-Use async streams when:
+Use asynchronous streams when:
 - The API requires you to trigger a job and wait for it to complete
 - You're working with large datasets that need server-side processing
 - The API documentation mentions job creation, status checking, and result download
@@ -34,7 +34,7 @@ Common examples include analytics report generation, large data exports (like Se
 
 To make a stream asynchronous, just select the `Asynchronous Job` option in `Request type` dropdown at the top-right of the stream configuration, or in the `New stream` menu.
 
-An async stream in the Connector Builder UI is divided into three main tabs:
+An asynchronous stream in the Connector Builder UI is divided into three main tabs:
 
 ### 1. Creation Tab
 
@@ -135,17 +135,17 @@ In the UI, for the [SendGrid contacts stream](https://www.twilio.com/docs/sendgr
   - Leave the **Field Path** empty since we want to use the entire CSV content
 - Set **Primary Key** to: `CONTACT_ID`
 
-## Testing Async Streams in the UI
+## Testing Asynchronous Streams in the UI
 
 Click the "Test" button in the top right corner of the Connector Builder UI to test your connector.
 
-Async streams can take longer to test than sync streams, so be patient. However, you can use the `Cancel` button to stop the test at any time.
+Asynchronous streams can take longer to test than synchronous streams, so be patient. However, you can use the `Cancel` button to stop the test at any time.
 
-After the test completes, you'll see several important panels that help you understand what's happening during the async process:
+After the test completes, you'll see several important panels that help you understand what's happening during the asynchronous process:
 
 ### Main Records / Request / Response Tabs
 
-The main Records / Request / Response tabs in the testing panel show the **final download phase** of your async stream:
+The main Records / Request / Response tabs in the testing panel show the **final download phase** of your asynchronous stream:
 
 1. **Records Tab**: Shows the records that were created from the final download response.
 
@@ -157,7 +157,7 @@ For the SendGrid example, the main Request tab would show a GET request to the U
 
 ### Other Requests Panel
 
-The **Other Requests** panel can be helpful for debugging async streams. This panel shows the intermediate requests and responses that occurred during the async process:
+The **Other Requests** panel can be helpful for debugging asynchronous streams. This panel shows the intermediate requests and responses that occurred during the asynchronous process:
 
 1. **Creation Requests**: Shows the request sent to create the job and the API's response, including any job ID or token returned.
 ![Other Requests Panel](./assets/connector_builder_async_other_requests_create.png)
@@ -202,7 +202,7 @@ Let's walk through the complete flow using the SendGrid example:
    - SendGrid returns a CSV file with the contacts data
    - In the main Request/Response tabs, you'll see this download request and the resulting data
 
-## Best Practices for Async Streams
+## Best Practices for Asynchronous Streams
 
 1. **Verify Each Stage**: Use the Other Requests panel to verify that each stage is working correctly:
    - Confirm the job creation request is successful
@@ -215,4 +215,4 @@ Let's walk through the complete flow using the SendGrid example:
 
 4. **Check for Rate Limits**: Many APIs limit how frequently you can poll for job status. Configure appropriate error handling if you hit these limits.
 
-Remember that async streams often take longer to test than sync streams, especially if the API takes time to process jobs. 
+Remember that asynchronous streams often take longer to test than synchronous streams, especially if the API takes time to process jobs. 
