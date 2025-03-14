@@ -26,7 +26,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
 )
 from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
-from integration.helpers import assert_stream_did_not_run, assert_stream_incomplete
+from integration.helpers import assert_stream_did_not_run, assert_stream_did_not_run
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
 from integration.response_builder import a_response_with_status
@@ -190,7 +190,7 @@ class PersonsTest(TestCase):
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
         # For Stripe, streams that get back a 400 or 403 response code are skipped over silently
-        assert_stream_incomplete(actual_messages, _STREAM_NAME, "Your account is not set up to use Issuing")
+        assert_stream_did_not_run(actual_messages, _STREAM_NAME, "Your account is not set up to use Issuing")
 
     @HttpMocker()
     def test_persons_400_error(self, http_mocker: HttpMocker):
@@ -209,7 +209,7 @@ class PersonsTest(TestCase):
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         # For Stripe, streams that get back a 400 or 403 response code are skipped over silently
-        assert_stream_incomplete(actual_messages, _STREAM_NAME, "Your account is not set up to use Issuing")
+        assert_stream_did_not_run(actual_messages, _STREAM_NAME, "Your account is not set up to use Issuing")
 
     @HttpMocker()
     def test_accounts_401_error(self, http_mocker: HttpMocker):

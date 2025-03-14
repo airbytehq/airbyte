@@ -57,12 +57,21 @@ definitions:
         - type: DefaultErrorHandler
           response_filters:
             - type: HttpResponseFilter
-              action: FAIL
+              action: IGNORE
               http_codes:
                 - 400
               error_message: >-
                 {{ response['error']['message'] }}
-
+        - type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 404
+              error_message: >-
+                Data was not found. Error message: {{ response['error']['message'] }} If this is a path for getting 
+                child attributes like /v1/checkout/sessions/<session_id>/line_items when running the incremental sync, 
+                you may safely ignore this warning.
   bearer_authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['client_secret'] }}"
