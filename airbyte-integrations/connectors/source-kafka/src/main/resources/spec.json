@@ -120,7 +120,7 @@
       },
       "polling_time": {
         "title": "Polling Time",
-        "description": "Amount of time Kafka connector should try to poll for messages.",
+        "description": "Amount of time in milliseconds Kafka connector should try to poll for messages.",
         "type": "integer",
         "default": 100
       },
@@ -197,6 +197,12 @@
                 "type": "string",
                 "default": "",
                 "airbyte_secret": true
+              },
+              "oauthbearer_token_endpoint_url": {
+                "title": "OAUTHBEARER token endpoint URL",
+                "type": "string",
+                "description": "Endpoint for requesting tokens if setting SASL Mechanism to OAUTHBEARER",
+                "default": ""
               }
             }
           }
