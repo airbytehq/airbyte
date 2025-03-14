@@ -1,12 +1,8 @@
 # Asynchronous Job streams in Connector Builder
 
-## Introduction to Asynchronous Streams
-
 In the Connector Builder UI, you can create two types of streams: **Synchronous Request (Sync)** and **Asynchronous Job (Async)**. Understanding the difference is important for efficiently extracting data from APIs that use asynchronous processing.
 
-## Sync vs. Async Streams: What's the Difference?
-
-### Synchronous Streams
+## Synchronous Streams
 
 Synchronous streams operate in real-time, where:
 - The connector makes a request to an API endpoint
@@ -15,7 +11,7 @@ Synchronous streams operate in real-time, where:
 
 This is the simpler, more common pattern used for most APIs that can return data immediately.
 
-### Asynchronous Streams
+## Asynchronous Streams
 
 Asynchronous streams handle scenarios where data extraction happens over multiple steps:
 1. **Creation**: You request a job to be created (like a report generation)
@@ -56,7 +52,7 @@ The Creation tab configures how to request that a job be created on the server.
 
 #### Example Configuration (SendGrid):
 
-In the UI, for the SendGrid contacts stream, you would configure:
+In the UI, for the [SendGrid contacts stream](https://www.twilio.com/docs/sendgrid/api-reference/contacts/export-contacts), you would configure:
 
 - **URL** field: `https://api.sendgrid.com/v3/marketing/contacts/exports`
 - **HTTP Method** dropdown: `POST`
@@ -100,7 +96,7 @@ The **Download Target Extractor** works similarly to the Status Extractor but ex
 
 #### Example Configuration (SendGrid):
 
-In the UI, for the SendGrid contacts stream, you would configure:
+In the UI, for the [SendGrid contacts stream](https://www.twilio.com/docs/sendgrid/api-reference/contacts/export-contacts), you would configure:
 
 - **URL** field: `https://api.sendgrid.com/v3/marketing/contacts/exports/{{creation_response['id']}}`
 - **HTTP Method** dropdown: `GET`
@@ -130,7 +126,7 @@ The Download tab configures how to retrieve the results once the job is complete
 
 #### Example Configuration (SendGrid):
 
-In the UI, for the SendGrid contacts stream, you would configure:
+In the UI, for the [SendGrid contacts stream](https://www.twilio.com/docs/sendgrid/api-reference/contacts/export-contacts), you would configure:
 
 - **URL** field: `{{ download_target }}`
 - **HTTP Method** dropdown: `GET`
