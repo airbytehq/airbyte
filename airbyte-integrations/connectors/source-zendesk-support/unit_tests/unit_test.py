@@ -243,20 +243,6 @@ def test_check_start_time_param():
     assert output == expected
 
 
-@pytest.mark.parametrize(
-    "stream_state, expected",
-    [
-        # valid state, expect the value of the state
-        ({"generated_timestamp": 1648771200}, 1648771200),
-        (None, 1622505600),
-    ],
-    ids=["state present", "state is None"],
-)
-def test_check_stream_state(stream_state, expected):
-    result = Tickets(**STREAM_ARGS).get_stream_state_value(stream_state)
-    assert result == expected
-
-
 def test_parse_response_from_empty_json(requests_mock):
     requests_mock.get(STREAM_URL, text="", status_code=403)
     test_response = requests.get(STREAM_URL)
@@ -302,7 +288,6 @@ class TestAllStreams:
             (StatelessTicketMetrics, "ticket_metrics"),
             (TicketSkips, "skips.json"),
             (TicketMetricEvents, "incremental/ticket_metric_events"),
-            (Tickets, "incremental/tickets/cursor.json"),
             (Topics, "community/topics"),
             (Brands, "brands"),
             (CustomRoles, "custom_roles"),
@@ -331,7 +316,6 @@ class TestAllStreams:
             "StatelessTicketMetrics",
             "TicketSkips",
             "TicketMetricEvents",
-            "Tickets",
             "Topics",
             "Brands",
             "CustomRoles",
@@ -692,91 +676,6 @@ class TestSourceZendeskSupportCursorPaginationStream:
         assert expected == result
 
 
-class TestSourceZendeskIncrementalExportStream:
-    @pytest.mark.parametrize(
-        "stream_cls",
-        [
-            (Tickets),
-        ],
-        ids=[
-            "Tickets",
-        ],
-    )
-    def test_check_start_time_param(self, stream_cls):
-        expected = int(dict(parse_qsl(urlparse(STREAM_URL).query)).get("start_time"))
-        stream = stream_cls(**STREAM_ARGS)
-        result = stream.validate_start_time(expected)
-        assert result == expected
-
-    @pytest.mark.parametrize(
-        "stream_cls",
-        [
-            (Tickets),
-        ],
-        ids=[
-            "Tickets",
-        ],
-    )
-    def test_next_page_token(self, requests_mock, stream_cls):
-        stream = stream_cls(**STREAM_ARGS)
-        stream_name = snake_case(stream.__class__.__name__)
-        requests_mock.get(STREAM_URL, json={stream_name: {}})
-        test_response = requests.get(STREAM_URL)
-        output = stream.next_page_token(test_response)
-        assert output == {}
-
-    @pytest.mark.parametrize(
-        "stream_cls, expected",
-        [
-            (Tickets, {"start_time": 1622505600}),
-            (Articles, {"sort_by": "updated_at", "sort_order": "asc", "start_time": 1622505600}),
-        ],
-        ids=[
-            "Tickets",
-            "Articles",
-        ],
-    )
-    def test_request_params(self, stream_cls, expected):
-        stream = stream_cls(**STREAM_ARGS)
-        result = stream.request_params(next_page_token=None, stream_state=None)
-        assert expected == result
-
-    @pytest.mark.parametrize(
-        "stream_cls",
-        [
-            (Tickets),
-        ],
-        ids=[
-            "Tickets",
-        ],
-    )
-    def test_parse_response(self, requests_mock, stream_cls):
-        stream = stream_cls(**STREAM_ARGS)
-        stream_name = snake_case(stream.__class__.__name__)
-        expected = [{"updated_at": "2022-03-17T16:03:07Z"}]
-        requests_mock.get(STREAM_URL, json={stream_name: expected})
-        test_response = requests.get(STREAM_URL)
-        output = list(stream.parse_response(test_response))
-        assert expected == output
-
-    @pytest.mark.parametrize(
-        "stream_cls, stream_slice, expected_path",
-        [
-            (ArticleVotes, {"parent": {"id": 1}}, "help_center/articles/1/votes"),
-            (ArticleComments, {"parent": {"id": 1}}, "help_center/articles/1/comments"),
-            (ArticleCommentVotes, {"parent": {"id": 1, "source_id": 1}}, "help_center/articles/1/comments/1/votes"),
-        ],
-        ids=[
-            "ArticleVotes_path",
-            "ArticleComments_path",
-            "ArticleCommentVotes_path",
-        ],
-    )
-    def test_path(self, stream_cls, stream_slice, expected_path):
-        stream = stream_cls(**STREAM_ARGS)
-        assert stream.path(stream_slice=stream_slice) == expected_path
-
-
 class TestSourceZendeskSupportTicketEventsExportStream:
     @pytest.mark.parametrize(
         "stream_cls, expected",
@@ -880,42 +779,6 @@ class TestSourceZendeskSupportTicketEventsExportStream:
         assert result == expected
 
 
-def test_read_tickets_stream(requests_mock):
-    requests_mock.get(
-        "https://subdomain.zendesk.com/api/v2/incremental/tickets/cursor.json",
-        json={
-            "tickets": [
-                {"custom_fields": []},
-                {},
-                {
-                    "custom_fields": [
-                        {"id": 360023382300, "value": None},
-                        {"id": 360004841380, "value": "customer_tickets"},
-                        {"id": 360022469240, "value": "5"},
-                        {"id": 360023712840, "value": False},
-                    ]
-                },
-            ],
-            "end_of_stream": True,
-        },
-    )
-
-    stream = Tickets(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
-    records = read_full_refresh(stream)
-    assert records == [
-        {"custom_fields": []},
-        {},
-        {
-            "custom_fields": [
-                {"id": 360023382300, "value": None},
-                {"id": 360004841380, "value": "customer_tickets"},
-                {"id": 360022469240, "value": "5"},
-                {"id": 360023712840, "value": "False"},
-            ]
-        },
-    ]
-
-
 def test_read_ticket_metric_events_request_params(requests_mock):
     first_page_response = {
         "ticket_metric_events": [
@@ -990,16 +853,6 @@ def test_read_tickets_comment(requests_mock, status_code):
     stream = TicketComments(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
     read_full_refresh(stream)
     assert request_history.call_count == 1
-
-
-def test_read_non_json_error(requests_mock, caplog):
-    requests_mock.get("https://subdomain.zendesk.com/api/v2/incremental/tickets/cursor.json", text="not_json_response")
-    stream = Tickets(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
-    expected_message = (
-        "Skipping stream tickets: Non-JSON response received. Please ensure that you have enough permissions for this stream."
-    )
-    read_full_refresh(stream)
-    assert expected_message in (record.message for record in caplog.records if record.levelname == "ERROR")
 
 
 class TestTicketMetrics:
