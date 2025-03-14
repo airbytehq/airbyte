@@ -432,8 +432,7 @@ class SearchAnalyticsKeywordPageReport(SearchByKeyword):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
-            yield stream_slice
+        return super(SearchByKeyword, self).stream_slices(sync_mode, cursor_field, stream_state)
 
     def request_body_json(
         self,
@@ -441,19 +440,17 @@ class SearchAnalyticsKeywordPageReport(SearchByKeyword):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Dict[str, Any], str]]:
-        data = super().request_body_json(stream_state, stream_slice, next_page_token)
-        return data
+        return super(SearchByKeyword, self).request_body_json(stream_state, stream_slice, next_page_token)
 
 
 class SearchAnalyticsKeywordSiteReportByPage(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
     dimensions = ["date", "country", "device", "query"]
     aggregation_type = QueryAggregationType.by_page
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
-            yield stream_slice
+
+    def stream_slices(self, sync_mode, cursor_field=None, stream_state=None):
+        for stream_slice in super(SearchByKeyword, self).stream_slices(sync_mode, cursor_field, stream_state):
+                yield stream_slice
 
     def request_body_json(
         self,
@@ -461,9 +458,7 @@ class SearchAnalyticsKeywordSiteReportByPage(SearchByKeyword):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Dict[str, Any], str]]:
-        data = super().request_body_json(stream_state, stream_slice, next_page_token)
-        return data
-
+        return super(SearchByKeyword, self).request_body_json(stream_state, stream_slice, next_page_token)
 
 class SearchAnalyticsKeywordSiteReportBySite(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
@@ -472,17 +467,16 @@ class SearchAnalyticsKeywordSiteReportBySite(SearchByKeyword):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
-            yield stream_slice
-
+        return super(SearchByKeyword, self).stream_slices(sync_mode, cursor_field, stream_state)
+    
     def request_body_json(
         self,
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Dict[str, Any], str]]:
-        data = super().request_body_json(stream_state, stream_slice, next_page_token)
-        return data
+        return super(SearchByKeyword, self).request_body_json(stream_state, stream_slice, next_page_token)
+
 
 
 class SearchAnalyticsSiteReportBySite(SearchAnalytics):
