@@ -75,10 +75,10 @@ class MondayGraphqlRequester(HttpRequester):
             else:
                 fields.append(field)
 
-        # when querying boards, filter by board_ids if provided in the config
+        # when querying the boards stream (object_name == "boards"), filter by board_ids if they provided in the config
         if object_name == "boards" and "board_ids" in self.config:
-            # sometimes board_ids are already present under 'ids' key in object_arguments because of how we execute incremental syncs for source monday by first querying activity_logs.
-            # If they are present, don't override them.
+            # if we are building a query for incremental syncs, board ids are already present under 'ids' key in object_arguments (as a result of fetching the activity_logs stream first)
+            # These ids are already an intersection of the board_ids provided in the config and the ones that must be fetched for the incremental sync and need not be overridden
             if "ids" not in object_arguments:
                 object_arguments["ids"] = self.config.get("board_ids")
 
