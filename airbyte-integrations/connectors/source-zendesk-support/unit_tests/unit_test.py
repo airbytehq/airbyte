@@ -37,9 +37,6 @@ from source_zendesk_support.streams import (
     Macros,
     OrganizationMemberships,
     Organizations,
-    PostCommentVotes,
-    Posts,
-    PostVotes,
     SatisfactionRatings,
     Schedules,
     Sections,
@@ -294,7 +291,6 @@ class TestAllStreams:
             (Groups, "groups"),
             (Macros, "macros"),
             (Organizations, "incremental/organizations.json"),
-            (Posts, "community/posts"),
             (OrganizationMemberships, "organization_memberships"),
             (SatisfactionRatings, "satisfaction_ratings"),
             (SlaPolicies, "slas/policies.json"),
@@ -325,7 +321,6 @@ class TestAllStreams:
             "Groups",
             "Macros",
             "Organizations",
-            "Posts",
             "OrganizationMemberships",
             "SatisfactionRatings",
             "SlaPolicies",
@@ -360,8 +355,8 @@ class TestAllStreams:
 class TestSourceZendeskSupportStream:
     @pytest.mark.parametrize(
         "stream_cls",
-        [(Macros), (Posts), (Groups), (SatisfactionRatings), (TicketFields), (Topics)],
-        ids=["Macros", "Posts", "Groups", "SatisfactionRatings", "TicketFields", "Topics"],
+        [(Macros), (Groups), (SatisfactionRatings), (TicketFields), (Topics)],
+        ids=["Macros", "Groups", "SatisfactionRatings", "TicketFields", "Topics"],
     )
     def test_parse_response(self, requests_mock, stream_cls):
         stream = stream_cls(**STREAM_ARGS)
@@ -407,8 +402,8 @@ class TestSourceZendeskSupportStream:
 
     @pytest.mark.parametrize(
         "stream_cls",
-        [(Macros), (Organizations), (Posts), (Groups), (SatisfactionRatings), (TicketFields), (StatefulTicketMetrics), (Topics)],
-        ids=["Macros", "Organizations", "Posts", "Groups", "SatisfactionRatings", "TicketFields", "StatefulTicketMetrics", "Topics"],
+        [(Macros), (Organizations), (Groups), (SatisfactionRatings), (TicketFields), (StatefulTicketMetrics), (Topics)],
+        ids=["Macros", "Organizations", "Groups", "SatisfactionRatings", "TicketFields", "StatefulTicketMetrics", "Topics"],
     )
     def test_url_base(self, stream_cls):
         stream = get_stream_instance(stream_cls, STREAM_ARGS)
@@ -419,7 +414,6 @@ class TestSourceZendeskSupportStream:
         "stream_cls, current_state, last_record, expected",
         [
             (Macros, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
-            (Posts, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (
                 Organizations,
                 {"updated_at": "2022-03-17T16:03:07Z"},
@@ -431,7 +425,7 @@ class TestSourceZendeskSupportStream:
             (TicketFields, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (Topics, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
         ],
-        ids=["Macros", "Posts", "Organizations", "Groups", "SatisfactionRatings", "TicketFields", "Topics"],
+        ids=["Macros", "Organizations", "Groups", "SatisfactionRatings", "TicketFields", "Topics"],
     )
     def test_get_updated_state(self, stream_cls, current_state, last_record, expected):
         stream = get_stream_instance(stream_cls, STREAM_ARGS)
@@ -442,14 +436,12 @@ class TestSourceZendeskSupportStream:
         "stream_cls, expected",
         [
             (Macros, None),
-            (Posts, None),
             (Organizations, {}),
             (Groups, None),
             (TicketFields, None),
         ],
         ids=[
             "Macros",
-            "Posts",
             "Organizations",
             "Groups",
             "TicketFields",
@@ -457,9 +449,9 @@ class TestSourceZendeskSupportStream:
     )
     def test_next_page_token(self, stream_cls, expected, mocker):
         stream = stream_cls(**STREAM_ARGS)
-        posts_response = mocker.Mock()
-        posts_response.json.return_value = {"next_page": None}
-        result = stream.next_page_token(response=posts_response)
+        response = mocker.Mock()
+        response.json.return_value = {"next_page": None}
+        result = stream.next_page_token(response=response)
         assert expected == result
 
     @pytest.mark.parametrize(
@@ -933,56 +925,6 @@ def test_read_tickets_stream(requests_mock):
             ]
         },
     ]
-
-
-def test_read_post_votes_stream(requests_mock):
-    post_response = {
-        "posts": [{"id": 7253375870607, "title": "Test_post", "created_at": "2023-01-01T00:00:00Z", "updated_at": "2023-01-01T00:00:00Z"}]
-    }
-    requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts", json=post_response)
-
-    post_votes_response = {
-        "votes": [
-            {
-                "author_id": 89567,
-                "body": "Test_comment for Test_post",
-                "id": 35467,
-                "post_id": 7253375870607,
-                "updated_at": "2023-01-02T00:00:00Z",
-            }
-        ]
-    }
-    requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts/7253375870607/votes", json=post_votes_response)
-
-    stream = PostVotes(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
-    records = read_full_refresh(stream)
-    assert records == post_votes_response.get("votes")
-
-
-def test_read_post_comment_votes_stream(requests_mock):
-    post_response = {
-        "posts": [{"id": 7253375870607, "title": "Test_post", "created_at": "2023-01-01T00:00:00Z", "updated_at": "2023-01-01T00:00:00Z"}]
-    }
-    requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts", json=post_response)
-
-    post_comments_response = {
-        "comments": [
-            {
-                "author_id": 89567,
-                "body": "Test_comment for Test_post",
-                "id": 35467,
-                "post_id": 7253375870607,
-                "updated_at": "2023-01-02T00:00:00Z",
-            }
-        ]
-    }
-    requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts/7253375870607/comments", json=post_comments_response)
-
-    votes = [{"id": 35467, "user_id": 888887, "value": -1, "updated_at": "2023-01-03T00:00:00Z"}]
-    requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts/7253375870607/comments/35467/votes", json={"votes": votes})
-    stream = PostCommentVotes(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
-    records = read_full_refresh(stream)
-    assert records == votes
 
 
 def test_read_ticket_metric_events_request_params(requests_mock):
