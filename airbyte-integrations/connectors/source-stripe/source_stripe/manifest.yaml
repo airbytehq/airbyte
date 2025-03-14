@@ -882,7 +882,7 @@ definitions:
       transformations:
         - type: RemoveFields
           field_pointers:
-            - - updated  # Remove filed that added in entity_stream
+            - - updated # Remove filed that added in entity_stream
 
     payout_balance_transactions:
       $ref: "#/definitions/entity_stream"
@@ -988,7 +988,7 @@ definitions:
       transformations:
         - type: RemoveFields
           field_pointers:
-            - - updated  # Remove filed that added in entity_stream
+            - - updated # Remove filed that added in entity_stream
 
     payment_methods:
       type: StateDelegatingStream
