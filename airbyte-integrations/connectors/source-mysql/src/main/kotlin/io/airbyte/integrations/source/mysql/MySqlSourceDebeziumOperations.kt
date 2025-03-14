@@ -342,7 +342,7 @@ class MySqlSourceDebeziumOperations(
         }
     }
 
-    override fun generateColdStartProperties(): Map<String, String> =
+    override fun generateColdStartProperties(streams: List<Stream>): Map<String, String> =
         DebeziumPropertiesBuilder()
             .with(commonProperties)
             // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
