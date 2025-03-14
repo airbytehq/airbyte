@@ -1,0 +1,34 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-instagram-api
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+  connectorSubtype: api
+  connectorType: source
+  definitionId: c5b8deb4-1e3f-435b-a5d3-4275080898dd
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-instagram-api
+  githubIssueLabel: source-instagram-api
+  icon: instagram-api.svg
+  license: MIT
+  name: Instagram Api
+  releaseDate: TODO
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/instagram-api
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"
