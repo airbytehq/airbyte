@@ -36,6 +36,8 @@ Common examples include analytics report generation, large data exports (like Se
 
 ## Configuring an Asynchronous Stream
 
+To make a stream asynchronous, just select the `Asynchronous Job` option in `Request type` dropdown at the top-right of the stream configuration, or in the `New stream` menu.
+
 An async stream in the Connector Builder UI is divided into three main tabs:
 
 ### 1. Creation Tab
