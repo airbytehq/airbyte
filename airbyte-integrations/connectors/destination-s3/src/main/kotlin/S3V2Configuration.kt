@@ -44,11 +44,13 @@ data class S3V2Configuration<T : OutputStream>(
 
     /** Below has no effect until [S3V2ObjectLoader] is enabled. */
     val numPartWorkers: Int = 2,
-    val numUploadWorkers: Int = 10,
+    val numUploadWorkers: Int = 5,
     val maxMemoryRatioReservedForParts: Double = 0.2,
     val objectSizeBytes: Long = 200L * 1024 * 1024,
     val partSizeBytes: Long = 10L * 1024 * 1024,
     val useLegacyClient: Boolean = false,
+    val approach: String,
+    val completeAtEnd: Boolean
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
@@ -73,11 +75,12 @@ class S3V2ConfigurationFactory :
             objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
-            numPartWorkers = pojo.numPartWorkers ?: 2,
-            numUploadWorkers = pojo.numObjectLoaders ?: 3,
-            maxMemoryRatioReservedForParts = pojo.maxMemoryRatioReservedForParts ?: 0.2,
-            partSizeBytes = (pojo.partSizeMb ?: 10) * 1024L * 1024L,
+            numUploadWorkers = pojo.numObjectLoaders ?: 25,
+            partSizeBytes = (pojo.partSizeMb ?: 50) * 1024L * 1024L,
             useLegacyClient = pojo.useLegacyClient ?: false,
+            objectSizeBytes = (pojo.totalDataMb ?: 2024) * 1024L * 1024L,
+            approach = pojo.approach ?: "distributed_parts",
+            completeAtEnd = pojo.completeAtEnd ?: true
         )
     }
 }

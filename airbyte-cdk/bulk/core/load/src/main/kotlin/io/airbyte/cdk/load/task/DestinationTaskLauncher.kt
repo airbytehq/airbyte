@@ -44,6 +44,7 @@ import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
 import io.airbyte.cdk.load.task.internal.UpdateBatchStateTaskFactory
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.airbyte.cdk.load.util.setOnce
+import io.airbyte.cdk.load.write.WriteOpOverride
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.annotation.Value
@@ -153,6 +154,7 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     private val loadPipeline: LoadPipeline?,
     private val partitioner: InputPartitioner,
     private val updateBatchTaskFactory: UpdateBatchStateTaskFactory,
+    private val writeOpOverride: WriteOpOverride? = null
 ) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
 
@@ -200,6 +202,13 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     }
 
     override suspend fun run() {
+        if (writeOpOverride != null) {
+            log.info { "Write operation override found, running override task." }
+            return
+        } else {
+            log.info { "No write operation override found, continuing with normal operation." }
+        }
+
         // Start the input consumer ASAP
         log.info { "Starting input consumer task" }
         val inputConsumerTask =
