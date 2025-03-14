@@ -1,0 +1,37 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*.salesforce.com"
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 1Gi
+          memory_request: 1Gi
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+  connectorSubtype: api
+  connectorType: destination
+  definitionId: 227f7285-74af-44cf-9055-66d24695aee6
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/destination-cobra
+  githubIssueLabel: destination-cobra
+  icon: cobra.svg
+  license: MIT
+  name: Cobra
+  releaseDate: 2025-02-14
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/destination-salesforce
+  tags:
+    - language:python
+    - cdk:python
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+metadataSpecVersion: "1.0"

@@ -1,0 +1,31 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "destination-cobra"
+version = "0.0.1"
+description = "Airbyte destination implementation for cobra."
+authors = ["Airbyte <contact@airbyte.io>"]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destinations/cobra"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+
+[[tool.poetry.packages]]
+include = "destination_cobra"
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.12"
+airbyte-cdk = {version = "^6", extras = ["vector-db-based"]}  # FIXME this extra is required because importing the destination package imports the vector one
+
+[tool.poetry.group.dev.dependencies]
+freezegun = "*"
+mypy = "^1.9.0"
+pytest = "^8.3.2"
+requests-mock = "*"
+ruff = "^0.3.2"
+
+[tool.poetry.scripts]
+destination-cobra = "destination_cobra.run:run"

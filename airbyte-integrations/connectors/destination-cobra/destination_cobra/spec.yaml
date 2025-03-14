@@ -1,0 +1,137 @@
+documentationUrl: https://docs.airbyte.com/integrations/destination/cobra
+supported_destination_sync_modes:
+  - append
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Cobra Destination Spec
+  type: object
+  required:
+    - client_id
+    - client_secret
+    - refresh_token
+  additionalProperties: true
+  properties:
+    is_sandbox:
+      title: Sandbox
+      description: >-
+        Toggle if you're using a <a
+        href="https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5">Salesforce Sandbox</a>
+      type: boolean
+      default: false
+      order: 1
+    auth_type:
+      type: string
+      const: Client
+    client_id:
+      title: Client ID
+      description: Enter your Salesforce developer application's <a
+        href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client ID</a>
+      type: string
+      order: 2
+    client_secret:
+      title: Client Secret
+      description: Enter your Salesforce developer application's <a
+        href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client secret</a>
+      type: string
+      airbyte_secret: true
+      order: 3
+    refresh_token:
+      title: Refresh Token
+      description: >-
+        Enter your application's <a
+        href="https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account.
+      type: string
+      airbyte_secret: true
+      order: 4
+    stream_mappings:
+      title: Mapping where input stream should be sync and how
+      type: array
+      items:
+        type: object
+        title: Stream Mapping
+        description: "Describes the relationship between a source stream and a destination table and how to update the information."
+        # TODO should we support namespace at some point?
+        required:
+          - source_stream
+          - destination_table
+          - update_mode
+        properties:
+          source_stream:
+            title: Source stream
+            description: "The name for the input stream."
+            type: string
+          destination_table:
+            title: Destination table
+            description: "The name for the table to update the data in the destination."
+            type: string
+          update_mode:
+            title: Update mode
+            description: "How to update the data in the destination."
+            type: string
+            enum:
+              - INSERT
+              - UPDATE
+              - UPSERT
+          upsert_key:
+            title: Upsert key
+            description: "Given the operation is an upsert, a field representing an external ID needs to be provided"
+            type: string
+      default: []
+      order: 5
+    stream_order:
+      title: Stream order
+      description: >-
+        The order in which the streams should be synced. Streams are synced in the order they are listed. Only those streams will be synced so make sure all the input streams are configured here.
+      type: array
+      items:
+        type: string
+      default: []
+      order: 6
+    print_record_content_on_error:
+      title: Whether to print the records content in the logs on error or not
+      description: If enable, the records content will be printed as part of the log in case of failure which allows for easier debugging.
+      type: boolean
+      default: false
+      order: 7
+advanced_auth:
+  auth_flow_type: oauth2.0
+  predicate_key:
+    - auth_type
+  predicate_value: Client
+  oauth_config_specification:
+    oauth_user_input_from_connector_config_specification:
+      type: object
+      additionalProperties: false
+      properties:
+        is_sandbox:
+          type: boolean
+          path_in_connector_config:
+            - is_sandbox
+    complete_oauth_output_specification:
+      type: object
+      additionalProperties: false
+      properties:
+        refresh_token:
+          type: string
+          path_in_connector_config:
+            - refresh_token
+    complete_oauth_server_input_specification:
+      type: object
+      additionalProperties: false
+      properties:
+        client_id:
+          type: string
+        client_secret:
+          type: string
+    complete_oauth_server_output_specification:
+      type: object
+      additionalProperties: false
+      properties:
+        client_id:
+          type: string
+          path_in_connector_config:
+            - client_id
+        client_secret:
+          type: string
+          path_in_connector_config:
+            - client_secret
