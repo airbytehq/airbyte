@@ -1,0 +1,195 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "archived": {
+      "type": "boolean"
+    },
+    "companies": {
+      "description": "Information about companies associated with the invoice",
+      "items": {
+        "type": ["null", "string"]
+      },
+      "type": ["null", "array"]
+    },
+    "contacts": {
+      "description": "Information about contacts associated with the invoice",
+      "items": {
+        "type": ["null", "string"]
+      },
+      "type": ["null", "array"]
+    },
+    "createdAt": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "deals": {
+      "description": "Information about deals associated with the invoice",
+      "items": {
+        "type": ["null", "string"]
+      },
+      "type": ["null", "array"]
+    },
+    "id": {
+      "type": "string"
+    },
+    "properties": {
+      "properties": {
+        "hs_allow_partial_payments": {
+          "description": "Allow your customer to pay less than the balance due",
+          "type": ["null", "boolean"]
+        },
+        "hs_allowed_payment_methods": {
+          "description": "The payment methods to be used (e.g., credit_or_debit_card, ach)",
+          "items": {
+            "type": "string"
+          },
+          "type": ["null", "array"]
+        },
+        "hs_amount_billed": {
+          "description": "The total amount billed on the invoice",
+          "type": ["null", "string"]
+        },
+        "hs_balance_due": {
+          "description": "The balance due on the invoice",
+          "type": ["null", "string"]
+        },
+        "hs_collect_address_types": {
+          "description": "The types of addresses that are collected while paying the invoice",
+          "items": {
+            "enum": ["billing_address", "shipping_address"],
+            "type": "string"
+          },
+          "type": ["null", "array"]
+        },
+        "hs_comments": {
+          "description": "Add comments to the invoice for the buyer to see",
+          "type": ["null", "string"]
+        },
+        "hs_createdate": {
+          "description": "The date and time when the invoice was created",
+          "format": "date-time",
+          "type": ["null", "string"]
+        },
+        "hs_currency": {
+          "description": "Currency of the invoice",
+          "type": ["null", "string"]
+        },
+        "hs_custom_fields": {
+          "description": "The custom fields that have been added to the invoice",
+          "type": ["null", "object"]
+        },
+        "hs_due_date": {
+          "description": "Due date of the invoice. Autoset if one is not provided",
+          "format": "date-time",
+          "type": ["null", "string"]
+        },
+        "hs_invoice_billable": {
+          "description": "Whether the invoice is billable",
+          "type": ["null", "boolean"]
+        },
+        "hs_invoice_date": {
+          "description": "Date of the invoice. Autoset if one is not provided",
+          "format": "date-time",
+          "type": ["null", "string"]
+        },
+        "hs_invoice_link": {
+          "description": "The URL of the invoice",
+          "type": ["null", "string"]
+        },
+        "hs_invoice_payment_collection_method": {
+          "description": "Set to manual for digital payment capability, none for no digital payment capability",
+          "enum": ["manual", "none", null],
+          "type": ["null", "string"]
+        },
+        "hs_invoice_status": {
+          "description": "The current status of the invoice",
+          "enum": ["draft", "open", "paid", "voided", null],
+          "type": ["null", "string"]
+        },
+        "hs_language": {
+          "description": "Language of the invoice",
+          "type": ["null", "string"]
+        },
+        "hs_lastmodifieddate": {
+          "description": "The date and time when the invoice was last modified",
+          "format": "date-time",
+          "type": ["null", "string"]
+        },
+        "hs_locale": {
+          "description": "Locale of the invoice",
+          "type": ["null", "string"]
+        },
+        "hs_number": {
+          "description": "The invoice number (e.g., INV_1003)",
+          "type": ["null", "string"]
+        },
+        "hs_object_id": {
+          "description": "The unique identifier of the invoice",
+          "type": ["null", "string"]
+        },
+        "hs_pdf_download_link": {
+          "description": "PDF download link",
+          "type": ["null", "string"]
+        },
+        "hs_purchase_order_number": {
+          "description": "Add an associated PO number",
+          "type": ["null", "string"]
+        },
+        "hs_recipient_company_address": {
+          "description": "The address of the recipient's company",
+          "type": ["null", "string"]
+        },
+        "hs_recipient_company_address2": {
+          "description": "The second line of the address of the recipient's company",
+          "type": ["null", "string"]
+        },
+        "hs_recipient_company_city": {
+          "description": "The city of the recipient's company",
+          "type": ["null", "string"]
+        },
+        "hs_recipient_company_state": {
+          "description": "The state or region of the recipient's company",
+          "type": ["null", "string"]
+        },
+        "hs_recipient_company_zip": {
+          "description": "The postal or zip code of the recipient's company",
+          "type": ["null", "string"]
+        },
+        "hs_recipient_shipping_address": {
+          "description": "The shipping address of the recipient",
+          "type": ["null", "string"]
+        },
+        "hs_recipient_shipping_address2": {
+          "description": "The second line of the shipping address of the recipient",
+          "type": ["null", "string"]
+        },
+        "hs_recipient_shipping_city": {
+          "description": "The shipping city of the recipient",
+          "type": ["null", "string"]
+        },
+        "hs_recipient_shipping_country": {
+          "description": "The shipping country of the recipient",
+          "type": ["null", "string"]
+        },
+        "hs_recipient_shipping_state": {
+          "description": "The shipping state or region of the recipient",
+          "type": ["null", "string"]
+        },
+        "hs_recipient_shipping_zip": {
+          "description": "The shipping postal or zip code of the recipient",
+          "type": ["null", "string"]
+        },
+        "hs_tax_id": {
+          "description": "The account tax ID listed on this invoice",
+          "type": ["null", "string"]
+        }
+      },
+      "type": "object"
+    },
+    "updatedAt": {
+      "format": "date-time",
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

@@ -2527,3 +2527,16 @@ class ProductsWebAnalytics(WebAnalyticsStream):
 class FeedbackSubmissionsWebAnalytics(WebAnalyticsStream):
     def __init__(self, **kwargs: Any):
         super().__init__(parent=FeedbackSubmissions(**kwargs), **kwargs)
+
+
+class Invoices(CRMSearchStream):
+    """ Invoices, API v3
+    Docs: https://developers.hubspot.com/docs/reference/api/crm/commerce/invoices
+    """
+
+    entity = "invoices"
+    last_modified_field = "hs_lastmodifieddate"
+    primary_key = "id"
+    associations = ["contacts", "companies", "deals"]
+    # Only the invoice read scope is needed - associated objects will use their respective scopes
+    scopes = {"crm.objects.invoices.read"}
