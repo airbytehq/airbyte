@@ -37,7 +37,7 @@ def test_export_stream_conflict_names(requests_mock, export_response, config_raw
     stream = init_stream("export", config_raw)
     # Remove requests limit for test
     requests_mock.register_uri("GET", get_url_to_mock(stream), export_response)
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", json={})
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", json={})
 
     cursor_slice = {"start_time": "2017-01-25", "end_time": "2017-02-25"}
     stream_slice = StreamSlice(cursor_slice=cursor_slice, partition={})

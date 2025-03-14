@@ -21,7 +21,7 @@ from .utils import get_url_to_mock, read_incremental, setup_response, init_strea
 
 logger = logging.getLogger("airbyte")
 
-MIXPANEL_BASE_URL = "https://mixpanel.com/api/2.0/"
+MIXPANEL_BASE_URL = "https://mixpanel.com/api/query/"
 
 
 @pytest.fixture
@@ -41,7 +41,7 @@ def time_sleep_mock(mocker):
 def test_url_base(patch_base_class, config):
     stream = MixpanelStream(authenticator=MagicMock(), **config)
 
-    assert stream.url_base == "https://mixpanel.com/api/2.0/"
+    assert stream.url_base == "https://mixpanel.com/api/query/"
 
 
 def test_request_headers(patch_base_class, config):
@@ -551,7 +551,7 @@ def annotations_response():
 
 def test_annotations_stream(requests_mock, annotations_response, config_raw):
     stream = init_stream("annotations", config=config_raw)
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/annotations", annotations_response)
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/annotations", annotations_response)
 
     stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-25", "end_time": "2021-07-25"})
     # read records for single slice
@@ -580,7 +580,7 @@ def revenue_response():
 
 def test_revenue_stream(requests_mock, revenue_response, config_raw):
     stream = init_stream("revenue", config=config_raw)
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/revenue", revenue_response)
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/revenue", revenue_response)
     stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-25", "end_time": "2021-07-25"})
     # read records for single slice
     records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
@@ -611,7 +611,7 @@ def test_export_schema(requests_mock, export_schema_response, config):
 
 
 def test_export_get_json_schema(requests_mock, export_schema_response, config_raw):
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", export_schema_response)
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", export_schema_response)
 
     stream = init_stream("export", config_raw)
     schema = stream.get_json_schema()
@@ -645,7 +645,7 @@ def test_export_stream(requests_mock, export_response, config_raw):
     stream = init_stream("export", config_raw)
 
     requests_mock.register_uri("GET", get_url_to_mock(stream), export_response)
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", json={})
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", json={})
     stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2017-01-25T00:00:00Z", "end_time": "2017-02-25T00:00:00Z"})
     # read records for single slice
     records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
@@ -658,7 +658,7 @@ def test_export_stream_fail(requests_mock, export_response, config_raw):
     stream = init_stream("export", config_raw)
     error_message = ""
     requests_mock.register_uri("GET", get_url_to_mock(stream), status_code=400, text="Unable to authenticate request")
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", json={})
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", json={})
     stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2017-01-25T00:00:00Z", "end_time": "2017-01-25T00:00:00Z"})
     try:
         records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
@@ -671,7 +671,7 @@ def test_export_stream_fail(requests_mock, export_response, config_raw):
 def test_handle_time_zone_mismatch(requests_mock, export_config, caplog):
     stream = init_stream("export", export_config)
     requests_mock.register_uri("GET", get_url_to_mock(stream), status_code=400, text="to_date cannot be later than today")
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", json={})
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", json={})
     records = []
     try:
         for slice_ in stream.stream_slices(sync_mode=SyncMode.full_refresh):
@@ -685,7 +685,7 @@ def test_handle_time_zone_mismatch(requests_mock, export_config, caplog):
 def test_export_terminated_early(requests_mock, export_config):
     stream = init_stream("export", export_config)
     requests_mock.register_uri("GET", get_url_to_mock(stream), text="terminated early\n")
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", json={})
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", json={})
     assert list(read_full_refresh(stream)) == []
 
 
