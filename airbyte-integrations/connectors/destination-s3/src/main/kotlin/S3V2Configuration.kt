@@ -41,9 +41,9 @@ data class S3V2Configuration<T : OutputStream>(
     override val processEmptyFiles: Boolean = true,
 
     /** Below has no effect until [S3V2ObjectLoader] is enabled. */
-    val numPartWorkers: Int = 10,
-    val numUploadWorkers: Int = 50,
-    val maxMemoryRatioReservedForParts: Double = 0.5,
+    val numPartWorkers: Int = 2,
+    val numUploadWorkers: Int = 5,
+    val maxMemoryRatioReservedForParts: Double = 0.4,
     val objectSizeBytes: Long = 200L * 1024 * 1024,
     val partSizeBytes: Long = 10L * 1024 * 1024,
 ) :

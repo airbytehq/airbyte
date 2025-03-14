@@ -30,7 +30,7 @@ import java.io.OutputStream
 
 @Singleton
 @Requires(bean = ObjectLoader::class)
-class ObjectLoaderRecordToPartAccumulator<T : OutputStream>(
+class ObjectLoaderPartFormatter<T : OutputStream>(
     private val pathFactory: PathFactory,
     private val catalog: DestinationCatalog,
     private val writerFactory: BufferedFormattingWriterFactory<T>,
@@ -42,7 +42,11 @@ class ObjectLoaderRecordToPartAccumulator<T : OutputStream>(
     val batchSizeOverride: Long? = null,
 ) :
     BatchAccumulator<
-        ObjectLoaderRecordToPartAccumulator.State<T>, StreamKey, DestinationRecordRaw, Part> {
+        ObjectLoaderPartFormatter.State<T>,
+        StreamKey,
+        DestinationRecordRaw,
+        ObjectLoaderPartFormatter.FormattedPart
+    > {
     private val log = KotlinLogging.logger {}
 
     private val objectSizeBytes = loader.objectSizeBytes
@@ -58,6 +62,8 @@ class ObjectLoaderRecordToPartAccumulator<T : OutputStream>(
         }
     }
 
+    @JvmInline value class FormattedPart(val part: Part)
+
     private suspend fun newState(stream: DestinationStream): State<T> {
         // Determine unique file name.
         val pathOnly = pathFactory.getFinalDirectory(stream)
@@ -71,7 +77,7 @@ class ObjectLoaderRecordToPartAccumulator<T : OutputStream>(
         return State(stream, writerFactory.create(stream), partFactory)
     }
 
-    private fun makePart(state: State<T>, forceFinish: Boolean = false): Part {
+    private fun makePart(state: State<T>, forceFinish: Boolean = false): FormattedPart {
         state.writer.flush()
         val newSize = state.partFactory.totalSize + state.writer.bufferSize
         val isFinal =
@@ -86,7 +92,7 @@ class ObjectLoaderRecordToPartAccumulator<T : OutputStream>(
             }
         val part = state.partFactory.nextPart(bytes, isFinal)
         log.info { "Creating part $part" }
-        return part
+        return FormattedPart(part)
     }
 
     override suspend fun start(key: StreamKey, part: Int): State<T> {
@@ -97,12 +103,12 @@ class ObjectLoaderRecordToPartAccumulator<T : OutputStream>(
     override suspend fun accept(
         input: DestinationRecordRaw,
         state: State<T>
-    ): BatchAccumulatorResult<State<T>, Part> {
+    ): BatchAccumulatorResult<State<T>, FormattedPart> {
         state.writer.accept(input.asDestinationRecordAirbyteValue())
         val dataSufficient = state.writer.bufferSize >= partSizeBytes || batchSizeOverride != null
         return if (dataSufficient) {
             val part = makePart(state)
-            if (part.isFinal) {
+            if (part.part.isFinal) {
                 FinalOutput(part)
             } else {
                 IntermediateOutput(state, part)
@@ -112,7 +118,7 @@ class ObjectLoaderRecordToPartAccumulator<T : OutputStream>(
         }
     }
 
-    override suspend fun finish(state: State<T>): FinalOutput<State<T>, Part> {
+    override suspend fun finish(state: State<T>): FinalOutput<State<T>, FormattedPart> {
         return FinalOutput(makePart(state, true))
     }
 }

@@ -45,18 +45,20 @@ interface BatchAccumulator<S, K : WithStream, T, U> {
 
 sealed interface BatchAccumulatorResult<S, U> {
     val nextState: S?
-        get() = null
     val output: U?
-        get() = null
 }
 
 data class NoOutput<S, U>(
     override val nextState: S,
-) : BatchAccumulatorResult<S, U>
+) : BatchAccumulatorResult<S, U> {
+    override val output: U? = null
+}
 
 data class IntermediateOutput<S, U>(
     override val nextState: S,
     override val output: U,
 ) : BatchAccumulatorResult<S, U>
 
-data class FinalOutput<S, U>(override val output: U) : BatchAccumulatorResult<S, U>
+data class FinalOutput<S, U>(override val output: U) : BatchAccumulatorResult<S, U> {
+    override val nextState: S? = null
+}

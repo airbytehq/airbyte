@@ -30,13 +30,18 @@ import io.airbyte.cdk.load.write.LoadStrategy
  * uploadable parts. (This is typically CPU-bound).
  * - [numUploadWorkers] is the number of threads (coroutines) devoted to uploading parts to the
  * object storage. (This is typically Network IO-bound).
+ * - [numUploadCompleters] in practice is simpler and more efficient to complete the uploads async
+ * than to try to have the loaders coordinate to determine when all parts are done. This is the
+ * number of workers devoted to that task. In practice there's very little to gain here. Two is a
+ * good number.
  * - [maxMemoryRatioReservedForParts] is proportion of the total heap reserved for parts in memory.
  * This is used to calculate the size of the work queue, which when full will cause the part workers
  * to suspend until the upload workers have processed some parts.
- * - [partSizeBytes] is the approximate desired part size in bytes. When this much part data has
+ * - [partSizeBytes] is the desired approximate part size in bytes. When this much part data has
  * been accumulated by a part worker, it will be forwarded to an upload worker and uploaded to the
- * destination.
- * - [objectSizeBytes] is the approximate desired file size in bytes. When this much part data has
+ * destination. 10MB is a good default. Try up to 50 when tuning, but be aware of memory
+ * requirements.
+ * - [objectSizeBytes] is the desired approximate file size in bytes. When this much part data has
  * been accumulated, the upload will be completed, and the file will become visible to the end user.
  *
  * Partitioning:
@@ -46,15 +51,16 @@ import io.airbyte.cdk.load.write.LoadStrategy
  * declare a bean implementing [io.airbyte.cdk.load.pipeline.InputPartitioner], however it should be
  * fine for most purposes.
  *
- * The parts are also distributed round-robin to the upload workers using
- * [io.airbyte.cdk.load.pipeline.object_storage.ObjectLoaderPartPartitioner]. This is not currently
- * configurable.
+ * The parts are distributed evenly across the loading and completing workers w/o regard to object
+ * key or stream. This is currently not configurable, but tests have shown it is optimal.
  */
 interface ObjectLoader : LoadStrategy {
     val numPartWorkers: Int
-        get() = 1
+        get() = 2
     val numUploadWorkers: Int
         get() = 5
+    val numUploadCompleters: Int
+        get() = 1
     val maxMemoryRatioReservedForParts: Double
         get() = 0.2
     val partSizeBytes: Long

@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.pipline.object_storage
 
-import io.airbyte.cdk.load.file.object_storage.Part
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
@@ -19,30 +19,37 @@ import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 
 @Singleton
 @Requires(bean = ObjectLoader::class)
-class ObjectLoaderPartStep(
+class ObjectLoaderPartFormatterStep(
     private val objectLoader: ObjectLoader,
-    private val recordToPartAccumulator: ObjectLoaderRecordToPartAccumulator<*>,
+    private val recordToPartAccumulator: ObjectLoaderPartFormatter<*>,
     @Named("recordQueue")
     val inputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     @Named("batchStateUpdateQueue") val batchQueue: QueueWriter<BatchUpdate>,
-    @Named("objectLoaderPartQueue") val partQueue: PartitionedQueue<PipelineEvent<ObjectKey, Part>>,
+    @Named("objectLoaderPartQueue")
+    val outputQueue:
+        PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
     @Value("\${airbyte.destination.core.record-batch-size-override:null}")
     val batchSizeOverride: Long? = null,
 ) : LoadPipelineStep {
     override val numWorkers: Int = objectLoader.numPartWorkers
+    private val streamCompletionMap = ConcurrentHashMap<DestinationStream.Descriptor, AtomicLong>()
 
     override fun taskForPartition(partition: Int): LoadPipelineStepTask<*, *, *, *, *> {
         return LoadPipelineStepTask(
             recordToPartAccumulator,
             inputQueue.consume(partition),
             batchQueue,
-            ObjectLoaderPartPartitioner(),
-            partQueue,
+            ObjectLoaderFormattedPartPartitioner(),
+            outputQueue,
             batchSizeOverride?.let { RecordCountFlushStrategy(it) },
-            partition
+            partition,
+            numWorkers,
+            streamCompletionMap
         )
     }
 }

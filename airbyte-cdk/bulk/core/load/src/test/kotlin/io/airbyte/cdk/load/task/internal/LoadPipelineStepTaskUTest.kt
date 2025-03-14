@@ -6,25 +6,33 @@ package io.airbyte.cdk.load.task.internal
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEndOfStream
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.WithBatchState
+import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.BatchAccumulator
 import io.airbyte.cdk.load.pipeline.BatchStateUpdate
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.pipeline.FinalOutput
 import io.airbyte.cdk.load.pipeline.NoOutput
+import io.airbyte.cdk.load.pipeline.OutputPartitioner
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.util.setOnce
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.impl.annotations.MockK
+import io.mockk.mockk
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -52,7 +60,7 @@ class LoadPipelineStepTaskUTest {
 
     private fun <T : Any> createTask(
         part: Int,
-        batchAccumulator: BatchAccumulator<AutoCloseable, StreamKey, String, T>
+        batchAccumulator: BatchAccumulator<AutoCloseable, StreamKey, String, T>,
     ): LoadPipelineStepTask<AutoCloseable, StreamKey, String, StreamKey, T> =
         LoadPipelineStepTask(
             batchAccumulator,
@@ -62,7 +70,9 @@ class LoadPipelineStepTaskUTest {
             null,
             null,
             null,
-            part
+            part,
+            part,
+            ConcurrentHashMap()
         )
 
     private fun messageEvent(
@@ -143,8 +153,11 @@ class LoadPipelineStepTaskUTest {
             val part = 5
             val task = createTask(part, batchAccumulatorNoUpdate)
 
+            val stateToClose = mockk<Closeable>()
+            coEvery { stateToClose.close() } returns Unit
+
             coEvery { batchAccumulatorNoUpdate.start(any(), any()) } returns Closeable()
-            coEvery { batchAccumulatorNoUpdate.accept(any(), any()) } returns NoOutput(Closeable())
+            coEvery { batchAccumulatorNoUpdate.accept(any(), any()) } returns NoOutput(stateToClose)
             coEvery { batchAccumulatorNoUpdate.finish(any()) } returns FinalOutput(true)
             coEvery { batchUpdateQueue.publish(any()) } returns Unit
 
@@ -163,6 +176,7 @@ class LoadPipelineStepTaskUTest {
             coVerify(exactly = 10) { batchAccumulatorNoUpdate.accept(any(), any()) }
             coVerify(exactly = 1) { batchAccumulatorNoUpdate.finish(any()) }
             coVerify(exactly = 1) { batchUpdateQueue.publish(any()) }
+            coVerify(exactly = 1) { stateToClose.close() }
         }
 
     @Test
@@ -377,4 +391,69 @@ class LoadPipelineStepTaskUTest {
         coVerify(exactly = 1) { batchUpdateQueue.publish(expectedBatchUpdateStream1) }
         coVerify(exactly = 1) { batchUpdateQueue.publish(expectedBatchUpdateStream2) }
     }
+
+    private fun runEndOfStreamTest(sendBoth: Boolean) = runTest {
+        data class TestKey(val output: Boolean, override val stream: DestinationStream.Descriptor) :
+            WithStream
+        val outputQueue = mockk<PartitionedQueue<PipelineEvent<TestKey, Boolean>>>()
+        val completionMap = ConcurrentHashMap<DestinationStream.Descriptor, AtomicLong>()
+        val inputFlows =
+            arrayOf<Flow<PipelineEvent<StreamKey, String>>>(
+                mockk(relaxed = true),
+                mockk(relaxed = true)
+            )
+        val tasks =
+            (0 until 2).map {
+                LoadPipelineStepTask(
+                    batchAccumulatorNoUpdate,
+                    inputFlows[it],
+                    batchUpdateQueue,
+                    object : OutputPartitioner<StreamKey, String, TestKey, Boolean> {
+                        override fun getOutputKey(inputKey: StreamKey, output: Boolean): TestKey {
+                            return TestKey(output, inputKey.stream)
+                        }
+
+                        override fun getPart(outputKey: TestKey, numParts: Int): Int {
+                            if (outputKey.output) return 1
+                            return 0
+                        }
+                    },
+                    outputQueue,
+                    null,
+                    it,
+                    2,
+                    completionMap
+                )
+            }
+
+        coEvery { batchAccumulatorNoUpdate.start(any(), any()) } returns Closeable()
+        coEvery { batchAccumulatorNoUpdate.accept(any(), any()) } returns NoOutput(Closeable())
+        coEvery { batchAccumulatorNoUpdate.finish(any()) } returns FinalOutput(true)
+        coEvery { batchUpdateQueue.publish(any()) } returns Unit
+        coEvery { outputQueue.partitions } returns 2
+        coEvery { outputQueue.publish(any(), any()) } returns Unit
+        coEvery { outputQueue.broadcast(any()) } returns Unit
+
+        val eosSignals = if (sendBoth) 0 until 2 else listOf(0)
+        eosSignals.forEach {
+            coEvery { inputFlows[it].collect(any()) } coAnswers
+                {
+                    val collector = firstArg<FlowCollector<PipelineEvent<StreamKey, String>>>()
+                    collector.emit(
+                        endOfStreamEvent(
+                            StreamKey(DestinationStream.Descriptor("namespace", "stream"))
+                        )
+                    )
+                }
+        }
+
+        listOf(launch { tasks[0].execute() }, launch { tasks[1].execute() }).joinAll()
+
+        coVerify(exactly = eosSignals.sum()) { outputQueue.broadcast(any()) }
+    }
+
+    @Test
+    fun `end-of-stream not forwarded if all tasks do not receive it`() = runEndOfStreamTest(false)
+
+    @Test fun `end-of-stream forwarded to all tasks if all receive it`() = runEndOfStreamTest(true)
 }

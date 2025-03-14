@@ -4,11 +4,10 @@
 
 package io.airbyte.cdk.load.pipline.object_storage
 
-import io.airbyte.cdk.load.file.object_storage.Part
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.QueueWriter
-import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.pipeline.LoadPipelineStep
 import io.airbyte.cdk.load.task.internal.LoadPipelineStepTask
@@ -16,31 +15,35 @@ import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 
 @Singleton
 @Requires(bean = ObjectLoader::class)
-class ObjectLoaderUploadStep(
+class ObjectLoaderPartLoaderStep(
     val loader: ObjectLoader,
-    val accumulator: ObjectLoaderPartToObjectAccumulator,
-    @Named("objectLoaderPartQueue") val partQueue: PartitionedQueue<PipelineEvent<ObjectKey, Part>>,
+    val accumulator: ObjectLoaderPartLoader,
+    @Named("objectLoaderPartQueue")
+    val inputQueue:
+        PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
+    @Named("objectLoaderLoadedPartQueue")
+    val outputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult>>,
     @Named("batchStateUpdateQueue") val batchQueue: QueueWriter<BatchUpdate>,
 ) : LoadPipelineStep {
     override val numWorkers: Int = loader.numUploadWorkers
+    private val streamCompletionMap = ConcurrentHashMap<DestinationStream.Descriptor, AtomicLong>()
 
     override fun taskForPartition(partition: Int): LoadPipelineStepTask<*, *, *, *, *> {
         return LoadPipelineStepTask(
             accumulator,
-            partQueue.consume(partition),
+            inputQueue.consume(partition),
             batchQueue,
-            outputPartitioner = null,
-            outputQueue =
-                null
-                    as
-                    PartitionedQueue<
-                        PipelineEvent<StreamKey, ObjectLoaderPartToObjectAccumulator.ObjectResult>
-                    >?,
+            outputPartitioner = ObjectLoaderLoadedPartPartitioner(),
+            outputQueue = outputQueue,
             flushStrategy = null,
-            partition
+            partition,
+            numWorkers,
+            streamCompletionMap
         )
     }
 }

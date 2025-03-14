@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.pipeline
 
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
@@ -17,6 +18,8 @@ import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 
 @Singleton
 @Requires(bean = DirectLoaderFactory::class)
@@ -32,6 +35,7 @@ class DirectLoadPipelineStep<S : DirectLoader>(
     private val log = KotlinLogging.logger {}
 
     override val numWorkers: Int = directLoaderFactory.inputPartitions
+    private val streamCompletionMap = ConcurrentHashMap<DestinationStream.Descriptor, AtomicLong>()
 
     override fun taskForPartition(partition: Int): LoadPipelineStepTask<*, *, *, *, *> {
         log.info { "Creating DirectLoad pipeline step task for partition $partition" }
@@ -42,7 +46,9 @@ class DirectLoadPipelineStep<S : DirectLoader>(
             outputPartitioner = null,
             outputQueue = null as PartitionedQueue<PipelineEvent<StreamKey, DirectLoadAccResult>>?,
             batchSizeOverride?.let { RecordCountFlushStrategy(it) },
-            partition
+            partition,
+            numWorkers,
+            streamCompletionMap
         )
     }
 }
