@@ -248,10 +248,13 @@ definitions:
         $ref: "#/definitions/retriever/requester"
         path: "help_center/incremental/articles"
       paginator:
-        $ref: "#/definitions/end_of_stream_paginator"
+        type: DefaultPaginator
         pagination_strategy:
-          $ref: "#/definitions/end_of_stream_paginator/pagination_strategy"
-          stop_condition: "{{ config.get('ignore_pagination', False) or response.get('end_of_stream') }}"
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_page", {}) }}'
+          stop_condition: "{{ config.get('ignore_pagination', False) or last_page_size == 0 }}"
+        page_token_option:
+          type: RequestPath
       record_selector:
         extractor:
           type: DpathExtractor
@@ -281,8 +284,8 @@ definitions:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
-            parent_key: id
-            partition_field: article_id
+            parent_key: "id"
+            partition_field: "article_id"
             stream:
               $ref: "#/definitions/articles_stream"
             incremental_dependency: true
@@ -321,8 +324,8 @@ definitions:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
-            parent_key: id
-            partition_field: article_id
+            parent_key: "id"
+            partition_field: "article_id"
             stream:
               $ref: "#/definitions/articles_stream"
             incremental_dependency: true
@@ -355,8 +358,8 @@ definitions:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
-            parent_key: _airbyte_parent_id
-            partition_field: id
+            parent_key: "_airbyte_parent_id"
+            partition_field: "id"
             stream:
               $ref: "#/definitions/article_comments_stream"
             incremental_dependency: true
@@ -612,7 +615,7 @@ definitions:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
-            parent_key: _airbyte_parent_id
+            parent_key: "_airbyte_parent_id"
             partition_field: id
             stream:
               $ref: "#/definitions/post_comments_stream"
