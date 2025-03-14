@@ -3,15 +3,17 @@
 #
 
 import json
+from unittest.mock import MagicMock
 
 import pytest
 import requests
+from airbyte_protocol_dataclasses.models import FailureType
 from source_greenhouse.source import SourceGreenhouse
 
 
 @pytest.fixture
 def applications_stream():
-    source = SourceGreenhouse()
+    source = SourceGreenhouse(MagicMock(), {"api_key": "123"}, MagicMock())
     streams = source.streams({})
 
     return [s for s in streams if s.name == "applications"][0]
@@ -28,22 +30,28 @@ def create_response(headers):
 def test_next_page_token_has_next(applications_stream):
     headers = {"link": '<https://harvest.greenhouse.io/v1/applications?per_page=100&since_id=123456789>; rel="next"'}
     response = create_response(headers)
-    next_page_token = applications_stream.retriever._next_page_token(response=response)
+    next_page_token = applications_stream.retriever._next_page_token(
+        response=response, last_page_size=100, last_record={"data": "data"}, last_page_token_value=response.json()["next"]
+    )
     assert next_page_token == {"next_page_token": "https://harvest.greenhouse.io/v1/applications?per_page=100&since_id=123456789"}
 
 
 def test_next_page_token_has_not_next(applications_stream):
     response = create_response({})
-    next_page_token = applications_stream.retriever._next_page_token(response=response)
+    next_page_token = applications_stream.retriever._next_page_token(
+        response=response, last_page_size=100, last_record={"data": "data"}, last_page_token_value=response.json()["next"]
+    )
 
     assert next_page_token is None
 
 
 def test_request_params_next_page_token_is_not_none(applications_stream):
     response = create_response({"link": f'<https://harvest.greenhouse.io/v1/applications?per_page={100}&since_id=123456789>; rel="next"'})
-    next_page_token = applications_stream.retriever._next_page_token(response=response)
+    next_page_token = applications_stream.retriever._next_page_token(
+        response=response, last_page_size=100, last_record={"data": "data"}, last_page_token_value=response.json()["next"]
+    )
     request_params = applications_stream.retriever._request_params(next_page_token=next_page_token, stream_state={})
-    path = applications_stream.retriever._paginator_path()
+    path = applications_stream.retriever.paginator.path(next_page_token=next_page_token)
     assert "applications?per_page=100&since_id=123456789" == path
     assert request_params == {"per_page": 100}
 
@@ -155,7 +163,7 @@ def test_parse_response_empty_content(applications_stream):
 
 
 def test_number_of_streams():
-    source = SourceGreenhouse()
+    source = SourceGreenhouse(MagicMock(), {"api_key": "123"}, MagicMock())
     streams = source.streams({})
     assert len(streams) == 36
 
@@ -173,5 +181,5 @@ def test_retry_429(applications_stream):
     response = requests.Response()
     response.status_code = 429
     response._content = b"{}"
-    should_retry = applications_stream.retriever.requester._should_retry(response)
-    assert should_retry is True
+    error = applications_stream.retriever.requester.error_handler.interpret_response(response)
+    assert error.failure_type == FailureType.transient_error
