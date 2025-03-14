@@ -734,6 +734,28 @@ definitions:
       cursor_filter: "start_time"
       primary_key: "id"
 
+  users_identities_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      paginator:
+        $ref: "#/definitions/after_url_paginator"
+        pagination_strategy:
+          $ref: "#/definitions/after_url_paginator/pagination_strategy"
+          stop_condition: "{{ config.get('ignore_pagination', False) or response.get('end_of_stream') }}"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          include: "identities"
+    $parameters:
+      name: "user_identities"
+      data_path: "identities"
+      path: "incremental/users/cursor.json"
+      cursor_field: "updated_at"
+      cursor_filter: "start_time"
+      primary_key: "id"
+
 streams:
   # Full refresh streams
   - $ref: "#/definitions/account_attributes_stream"
@@ -770,6 +792,7 @@ streams:
   - $ref: "#/definitions/ticket_skips_stream"
   - $ref: "#/definitions/triggers_stream"
   - $ref: "#/definitions/users_stream"
+  - $ref: "#/definitions/users_identities_stream"
 
 # Zendesk Support offers four tiers of rate limits:
 # - Team: 200 req/min (3.3 req/sec)
