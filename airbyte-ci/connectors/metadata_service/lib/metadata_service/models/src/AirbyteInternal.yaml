@@ -26,3 +26,7 @@ properties:
   isEnterprise:
     type: boolean
     default: false
+  requireVersionIncrementsInPullRequests:
+    type: boolean
+    default: true
+    description: When false, version increment checks will be skipped for this connector

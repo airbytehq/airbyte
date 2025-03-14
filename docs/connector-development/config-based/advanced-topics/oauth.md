@@ -301,7 +301,7 @@ Imagine that the OAuth flow is updated so that the client secret is a request he
 +          https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&code={{auth_code_value}}
 +        access_token_headers:
 -          SECRETHEADER: "{{ client_secret_value }}"
-+          SECRETHEADER: "{{ {{client_id_value}}:{{client_secret_value}} | base64Encoder }}"
++          SECRETHEADER: "{{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
        complete_oauth_output_specification:
          required:
 ```
@@ -546,7 +546,7 @@ Imagine that the OAuth flow is updated so that you need to mention the `state` q
 
 
 ##### Example using an url-encoded / url-decoded `scope` parameter
-You can make the `scope` paramter `url-encoded` by specifying the `pipe` ( | ) + `urlEncoder` or `urlDecoder` in the target url.
+You can make the `scope` paramter `url-encoded` by specifying the `pipe` ( | ) + `urlencode` or `urldecode` in the target url.
 It would be pre-formatted and resolved into the `url-encoded` string before being replaced for the final resolved URL.
 
   <details>
@@ -567,7 +567,7 @@ It would be pre-formatted and resolved into the `url-encoded` string before bein
          consent_url: >-
 -          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
 -          redirect_uri_value }}&state={{ state_value }}&scope={{scope_value}}
-+          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{ redirect_uri_value }}&state={{ state_value }}&scope={{ {{scope_value}} | urlEncoder }}
++          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{ redirect_uri_value }}&state={{ state_value }}&scope={{ scope_value | urlencode }}
          access_token_url: >-
            https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
 -        scope: my_scope_A:read,my_scope_B:read
@@ -595,7 +595,7 @@ Imagine that the OAuth flow is updated so that you need to generate the `code ch
 -          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
 -          redirect_uri_value }}&state={{ state_value }}
 +          https://yourconnectorservice.com/oauth/consent?client_id={{client_id_value}}&redirect_uri={{
-+          redirect_uri_value }}&state={{ state_value }}&code_challenge={{ {{state_value}} | codeChallengeS256 }}
++          redirect_uri_value }}&state={{ state_value }}&code_challenge={{ state_value | codechallengeS256 }}
          access_token_url: >-
            https://yourconnectorservice.com/oauth/token?client_id={{client_id_value}}&client_secret={{client_secret_value}}&code={{auth_code_value}}
        complete_oauth_output_specification:
@@ -795,16 +795,69 @@ code_value}}
 
 ### Available Template Variables PIPE methods
 
-You can apply the `in-vatiable` tranformations based on your use-case and use the following interpolation methods available:
+You can apply the `in-variable` tranformations based on your use-case and use the following interpolation methods available:
 
-| Method | Description | Input Value | Output Value |
-|----------|-------------|------|------|
-| `base64Encoder` | The variable method to encode the input string into `base64-encoded` string | "client_id_123:client_secret_456" | "Y2xpZW50X2lkXzEyMzpjbGllbnRfc2VjcmV0XzQ1Ng" |
-| `base64Encoder` | The variable method to decode the `base64-encoded` input string into `base64-decoded` string | "Y2xpZW50X2lkXzEyMzpjbGllbnRfc2VjcmV0XzQ1Ng" | "client_id_123:client_secret_456" |
-| `codeChallengeS256` | The variable method to encode the input string into `SHA-256` hashed-string | "id_123:secret_456" | "kdlBQTTftIOzHnzQoqp3dQ5jBsSehFTjg1meg1gL3OY" |
-| `urlEncoder` | The variable method to encode the input string as `URL-string` | "my string input" | "my%20string%20input" |
-| `urlDecoder` | The variable method to decode the input `URL-string` into decoded string | "my%20string%20input" | "my string input" |
+#### Most useful interpolation methods used for OAuth
 
+| Name              | Description                                    | Example Input                                      | Example Output                                                                 |
+|-------------------|------------------------------------------------|----------------------------------------------------|--------------------------------------------------------------------------------|
+| urlencode         | URL-encodes a string.                          | `{{ 'hello world'\|urlencode }}`                   | `'hello%20world'`                                                           |
+| urldecode         | URL-decodes a string.                          | `{{ 'hello%20world'\|urlencode }}`                 | `'hello world'`                                                           |
+| b64encode         | Encodes a string using Base64.                 | `{{ 'hello'\|b64encode }}`                         | `aGVsbG8=`                                                                     |
+| b64decode         | Decodes a Base64 encoded string.               | `{{ 'aGVsbG8='\|b64decode }}`                      | `hello`                                                                        |
+| codechallengeS256 | Encodes the input string using `base64` + `SHA-256`. | `{{ 'id_123:secret_456'\|codechallengeS256 }}` | `kdlBQTTftIOzHnzQoqp3dQ5jBsSehFTjg1meg1gL3OY` |
+
+#### Commonly used `Jinja2` in-variables interpolation methods available (the list is not exhaustive)
+
+| Name              | Description                                    | Example Input                                      | Example Output                                                                 |
+|-------------------|------------------------------------------------|----------------------------------------------------|--------------------------------------------------------------------------------|
+| abs             | Returns the absolute value of a number.        | `{{ -3\|abs }}`                                    | `3`                                                                            |
+| batch           | Batches items.                                 | `{{ [1, 2, 3, 4, 5, 6]\|batch(2) }}`              | `[[1, 2], [3, 4], [5, 6]]`                                                     |
+| capitalize      | Capitalizes a string.                          | `{{ 'hello'\|capitalize }}`                        | `Hello`                                                                        |
+| center          | Centers a string.                              | `{{ 'hello'\|center(9) }}`                         | `'  hello  '`                                                                  |
+| default         | Returns the default value if undefined.        | `{{ undefined_variable\|default('default') }}`     | `default`                                                                      |
+| dictsort        | Sorts a dictionary.                            | `{{ {'b': 1, 'a': 2}\|dictsort }}`                 | `{'a': 2, 'b': 1}`                                                             |
+| escape          | Escapes a string.                              | `{{ '<div>'\|escape }}`                           | `&lt;div&gt;`                                                                  |
+| filesizeformat  | Formats a number as a file size.               | `{{ 123456789\|filesizeformat }}`                  | `117.7 MB`                                                                     |
+| first           | Returns the first item of a sequence.          | `{{ [1, 2, 3]\|first }}`                           | `1`                                                                            |
+| float           | Converts a value to a float.                   | `{{ '42'\|float }}`                               | `42.0`                                                                         |
+| forceescape     | Forces escaping of a string.                   | `{{ '<div>'\|forceescape }}`                      | `&lt;div&gt;`                                                                  |
+| format          | Formats a string.                              | `{{ 'Hello %s'\|format('world') }}`                | `Hello world`                                                                  |
+| groupby         | Groups items by a common attribute.            | `{{ [{'name': 'a'}, {'name': 'b'}]\|groupby('name') }}` | `{'a': [{'name': 'a'}], 'b': [{'name': 'b'}]}`                               |
+| indent          | Indents a string.                              | `{{ 'hello'\|indent(4) }}`                         | `'    hello'`                                                                  |
+| int             | Converts a value to an integer.                | `{{ '42'\|int }}`                                 | `42`                                                                           |
+| join            | Joins a sequence of strings.                   | `{{ ['a', 'b', 'c']\|join(', ') }}`                | `'a, b, c'`                                                                    |
+| last            | Returns the last item of a sequence.           | `{{ [1, 2, 3]\|last }}`                            | `3`                                                                            |
+| length          | Returns the length of a sequence.              | `{{ [1, 2, 3]\|length }}`                          | `3`                                                                            |
+| list            | Converts a value to a list.                    | `{{ 'abc'\|list }}`                               | `['a', 'b', 'c']`                                                              |
+| lower           | Converts a string to lowercase.                | `{{ 'HELLO'\|lower }}`                            | `'hello'`                                                                      |
+| map             | Applies a filter to a sequence of objects.     | `{{ [{'name': 'a'}, {'name': 'b'}]\|map(attribute='name') }}` | `['a', 'b']`                                                       |
+| max             | Returns the maximum value of a sequence.       | `{{ [1, 2, 3]\|max }}`                             | `3`                                                                            |
+| min             | Returns the minimum value of a sequence.       | `{{ [1, 2, 3]\|min }}`                             | `1`                                                                            |
+| random          | Returns a random item from a sequence.         | `{{ [1, 2, 3]\|random }}`                          | `2`                                                                            |
+| replace         | Replaces occurrences of a substring.           | `{{ 'hello'\|replace('l', 'x') }}`                 | `'hexxo'`                                                                      |
+| reverse         | Reverses a sequence.                           | `{{ [1, 2, 3]\|reverse }}`                         | `[3, 2, 1]`                                                                    |
+| round           | Rounds a number.                               | `{{ 2.7\|round }}`                                | `3`                                                                            |
+| safe            | Marks a string as safe.                        | `{{ '<div>'\|safe }}`                             | `<div>`                                                                        |
+| slice           | Slices a sequence.                             | `{{ [1, 2, 3, 4]\|slice(2) }}`                     | `[[1, 2], [3, 4]]`                                                             |
+| sort            | Sorts a sequence.                              | `{{ [3, 2, 1]\|sort }}`                            | `[1, 2, 3]`                                                                    |
+| string          | Converts a value to a string.                  | `{{ 42\|string }}`                                | `'42'`                                                                         |
+| striptags       | Strips HTML tags from a string.                | `{{ '<div>hello</div>'\|striptags }}`              | `'hello'`                                                                      |
+| sum             | Sums a sequence of numbers.                    | `{{ [1, 2, 3]\|sum }}`                             | `6`                                                                            |
+| title           | Converts a string to title case.               | `{{ 'hello world'\|title }}`                       | `'Hello World'`                                                                |
+| trim            | Trims whitespace from a string.                | `{{ '  hello  '\|trim }}`                          | `'hello'`                                                                      |
+| truncate        | Truncates a string.                            | `{{ 'hello world'\|truncate(5) }}`                 | `'hello...'`                                                                |
+| unique          | Returns unique items from a sequence.          | `{{ [1, 2, 2, 3]\|unique }}`                       | `[1, 2, 3]`                                                                 |
+| upper           | Converts a string to uppercase.                | `{{ 'hello'\|upper }}`                            | `'HELLO'`                                                                    |
+| urlize          | Converts URLs in a string to clickable links.  | `{{ 'Check this out: http://example.com'\|urlize }}` | `'Check this out: <a href="http://example.com">http://example.com</a>'`   |
+| wordcount       | Counts the words in a string.                  | `{{ 'hello world'\|wordcount }}`                   | `2`                                                                            |
+| wordwrap        | Wraps words in a string.                       | `{{ 'hello world'\|wordwrap(5) }}`                 | `'hello\nworld'`                                                               |
+| xmlattr         | Creates an XML attribute string.               | `{{ {'class': 'my-class', 'id': 'my-id'}\|xmlattr }}` | `'class="my-class" id="my-id"'`                                                |
+| dateformat      | Formats a date.                                | `{{ date\|dateformat('%Y-%m-%d') }}`               | `'2023-10-01'`                                                                 |
+| datetimeformat  | Formats a datetime.                            | `{{ datetime\|datetimeformat('%Y-%m-%d %H:%M:%S') }}` | `'2023-10-01 12:00:00'`                                                        |
+| time            | Formats a time.                                | `{{ time\|time('%H:%M:%S') }}`                     | `'12:00:00'`                                                                   |
+| timesince       | Returns the time since a date.                 | `{{ date\|timesince }}`                            | `'2 days ago'`                                                                 |
+| timeuntil       | Returns the time until a date.                 | `{{ date\|timeuntil }}`                            | `'in 2 days'`                                                                  |
 
 ### Common Use-Cases and Examples:
 The following section stands to describe common use-cases. Assuming that there are no overides provided over the `default` keys, the common specification parts (properties) like: `complete_oauth_server_input_specification` and `complete_oauth_server_output_specification` remain unchanged

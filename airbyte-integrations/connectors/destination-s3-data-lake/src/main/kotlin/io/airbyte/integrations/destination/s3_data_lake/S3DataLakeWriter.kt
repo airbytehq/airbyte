@@ -7,25 +7,25 @@ package io.airbyte.integrations.destination.s3_data_lake
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.iceberg.parquet.IcebergParquetPipelineFactory
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
-import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableWriterFactory
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
-import io.github.oshai.kotlinlogging.KotlinLogging
 import javax.inject.Singleton
 import org.apache.iceberg.catalog.TableIdentifier
 
-private val logger = KotlinLogging.logger {}
-
 @Singleton
 class S3DataLakeWriter(
-    private val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory,
     private val icebergConfiguration: S3DataLakeConfiguration,
     private val s3DataLakeUtil: S3DataLakeUtil,
-    private val s3DataLakeTableSynchronizer: S3DataLakeTableSynchronizer,
+    private val icebergUtil: IcebergUtil,
+    private val icebergTableSynchronizer: IcebergTableSynchronizer,
     private val catalog: DestinationCatalog,
     private val tableIdGenerator: TableIdGenerator,
+    private val streamStateStore: StreamStateStore<S3DataLakeStreamState>
 ) : DestinationWriter {
     override suspend fun setup() {
         super.setup()
@@ -60,39 +60,15 @@ class S3DataLakeWriter(
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
-        val properties = s3DataLakeUtil.toCatalogProperties(config = icebergConfiguration)
-        val catalog = s3DataLakeUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
-        val pipeline = IcebergParquetPipelineFactory().create(stream)
-        val incomingSchema = s3DataLakeUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
-        val table =
-            s3DataLakeUtil.createTable(
-                streamDescriptor = stream.descriptor,
-                catalog = catalog,
-                schema = incomingSchema,
-                properties = properties
-            )
-
-        s3DataLakeTableSynchronizer.applySchemaChanges(table, incomingSchema)
-
-        try {
-            logger.info {
-                "maybe creating branch $DEFAULT_STAGING_BRANCH for stream ${stream.descriptor}"
-            }
-            table.manageSnapshots().createBranch(DEFAULT_STAGING_BRANCH).commit()
-        } catch (e: IllegalArgumentException) {
-            logger.info {
-                "branch $DEFAULT_STAGING_BRANCH already exists for stream ${stream.descriptor}"
-            }
-        }
-
         return S3DataLakeStreamLoader(
-            stream = stream,
-            table = table,
-            s3DataLakeTableWriterFactory = s3DataLakeTableWriterFactory,
-            s3DataLakeUtil = s3DataLakeUtil,
-            pipeline = pipeline,
+            icebergConfiguration,
+            stream,
+            icebergTableSynchronizer,
+            s3DataLakeUtil,
+            icebergUtil,
             stagingBranchName = DEFAULT_STAGING_BRANCH,
             mainBranchName = icebergConfiguration.icebergCatalogConfiguration.mainBranchName,
+            streamStateStore = streamStateStore,
         )
     }
 }

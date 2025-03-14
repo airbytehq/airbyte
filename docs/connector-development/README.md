@@ -14,7 +14,7 @@ If you need support along the way, visit the [Slack channel](https://airbytehq.s
 
 ### Process overview
 
-1. **Pick the technology and build**. The first step in creating a new connector is to choose the tools you’ll use to build it. For _most_ cases, you should start in Connector Builder. To understand which approach you should take, review the [compatibility guide](./connector-builder-ui/connector-builder-compatibility.md).
+1. **Pick the technology and build**. The first step in creating a new connector is to choose the tools you’ll use to build it. For _most_ cases, you should start in Connector Builder.
 2. **Publish as a custom connector**.After building and testing your connector, you’ll need to publish it. This makes it available in your workspace. At that point, you can use the connector you’ve built to move some data!
 3. **Contribute back to Airbyte**. If you want to contribute what you’ve built to the Airbyte Cloud and OSS connector catalog, follow the steps provided in the [contribution guide for submitting new connectors](../contributing-to-airbyte/submit-new-connector.md).
 
