@@ -81,4 +81,9 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-PINTEREST_ACCOUNT_ID__CREDS
+          fileName: config_account_id.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
