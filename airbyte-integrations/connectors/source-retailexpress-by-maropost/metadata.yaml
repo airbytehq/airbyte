@@ -17,13 +17,13 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 73c01e46-6b1d-434f-8f15-b9a0e67c8999
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.9
   dockerRepository: airbyte/source-retailexpress-by-maropost
   githubIssueLabel: source-retailexpress-by-maropost
   icon: icon.svg
   license: MIT
   name: Retail Express by Maropost
-  releaseDate: 2025-03-14
+  releaseDate: 2025-01-17
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/retailexpress-by-maropost
