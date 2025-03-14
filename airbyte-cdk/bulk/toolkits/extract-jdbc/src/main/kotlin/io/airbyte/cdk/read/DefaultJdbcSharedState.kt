@@ -36,7 +36,7 @@ class DefaultJdbcSharedState(
     val maxPartitionThroughputBytesPerSecond: Long =
         constants.expectedThroughputBytesPerSecond / configuration.maxConcurrency
 
-    override val targetPartitionByteSize: Long = 1000L shl 20 // TEMP: hardcode partition size to 1GB
+    override val targetPartitionByteSize: Long = 400L shl 20 // TEMP: hardcode partition size to 1GB
 //        maxPartitionThroughputBytesPerSecond * configuration.checkpointTargetInterval.seconds
 
     override fun jdbcFetchSizeEstimator(): JdbcSharedState.JdbcFetchSizeEstimator =
@@ -73,7 +73,7 @@ class DefaultJdbcSharedState(
                 .mapToLong { it.toFile().length() }
                 .sum()
 //            log.info { "Total size of files in /staging/files: $size bytes" }
-            if (size > 3L shl 30) { // 3GB
+            if (size > (3.5 * (1L shl 30)).toLong()) { // 3.5GB
                 log.info { "staging dir too full $size" }
                 return null
             }
