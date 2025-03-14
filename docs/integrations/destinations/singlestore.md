@@ -7,11 +7,9 @@ high-throughput transactions (inserts and upserts), low-latency analytics and co
 vector data
 
 :::info
-
 Airbyte SingleStore destination is implemented as Destination V2
 with [Typing and Deduping](https://docs.airbyte.com/using-airbyte/core-concepts/typing-deduping) support. Legacy V1 is
 not supported.
-
 :::
 
 ## Features
@@ -89,12 +87,10 @@ Any encountered casting errors are tracked and recorded in the `_airbyte_meta` c
 issues encountered during the normalization process.
 
 Final table schema:
+* `data columns`: normalized data columns from raw table _airbyte_data JSON column.
+* `_airbyte_extracted_at`: a timestamp representing when the event was pulled from the data source. The column type in SingleStore is TIMESTAMP(6).
+* `_airbyte_meta`: column containing the warnings occurred during data normalization. 
 
-- `‘data columns’`: normalized data columns from raw table _airbyte_data JSON column.
-- `_airbyte_extracted_at`: a timestamp representing when the event was pulled from the data source. The column type in
-  SingleStore is TIMESTAMP(6).
-- `_airbyte_meta: metadata`: column containing the warnings occurred during data normalization. (Example:
-  {\"warnings\":\"[Incorrect 'bigint' format for column 'bigintColumn'(forced casting applied)]\"}")
 
 ### Final Table Data type mapping
 
