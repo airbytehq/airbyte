@@ -351,12 +351,13 @@ definitions:
 
   posts_stream:
     $ref: "#/definitions/base_incremental_stream"
-    name: posts
+    name: "posts"
     primary_key: "id"
     incremental_sync:
       $ref: "#/definitions/cursor_incremental_sync"
       start_time_option:
-        $ref: "#/definitions/cursor_incremental_sync/start_time_option"
+        type: RequestOption
+        inject_into: request_parameter
         field_name: "start_time"
     retriever:
       $ref: "#/definitions/retriever"
