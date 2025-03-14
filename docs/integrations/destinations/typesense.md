@@ -42,8 +42,19 @@ To connect a Typesense with HA, you can type multiple hosts on the host field us
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                       |
-|:--------| :--------- | :------------------------------------------------------- | :---------------------------- |
+| Version | Date       | Pull Request                                             | Subject                                                                                     |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------ |
+| 0.1.43 | 2025-03-08 | [55373](https://github.com/airbytehq/airbyte/pull/55373) | Update dependencies |
+| 0.1.42 | 2025-03-01 | [54910](https://github.com/airbytehq/airbyte/pull/54910) | Update dependencies |
+| 0.1.41 | 2025-02-22 | [53929](https://github.com/airbytehq/airbyte/pull/53929) | Update dependencies |
+| 0.1.40 | 2025-02-08 | [53387](https://github.com/airbytehq/airbyte/pull/53387) | Update dependencies |
+| 0.1.39 | 2025-02-04 | [49984](https://github.com/airbytehq/airbyte/pull/49984) | Typo default port |
+| 0.1.38 | 2025-02-04 | [53131](https://github.com/airbytehq/airbyte/pull/53131) | Document id is overwritten by writer |
+| 0.1.37 | 2025-02-01 | [52945](https://github.com/airbytehq/airbyte/pull/52945) | Update dependencies |
+| 0.1.36 | 2025-01-25 | [52170](https://github.com/airbytehq/airbyte/pull/52170) | Update dependencies |
+| 0.1.35 | 2025-01-18 | [51734](https://github.com/airbytehq/airbyte/pull/51734) | Update dependencies |
+| 0.1.34 | 2025-01-11 | [51253](https://github.com/airbytehq/airbyte/pull/51253) | Update dependencies |
+| 0.1.33 | 2024-12-28 | [50501](https://github.com/airbytehq/airbyte/pull/50501) | Update dependencies |
 | 0.1.32 | 2024-12-21 | [50175](https://github.com/airbytehq/airbyte/pull/50175) | Update dependencies |
 | 0.1.31 | 2024-12-14 | [49282](https://github.com/airbytehq/airbyte/pull/49282) | Update dependencies |
 | 0.1.30 | 2024-11-25 | [48676](https://github.com/airbytehq/airbyte/pull/48676) | Update dependencies |

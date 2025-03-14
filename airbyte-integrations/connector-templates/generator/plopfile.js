@@ -33,7 +33,6 @@ module.exports = function (plop) {
     "../connector_acceptance_test_files";
 
   const pythonSourceInputRoot = "../source-python";
-  const lowCodeSourceInputRoot = "../source-low-code";
   const pythonDestinationInputRoot = "../destination-python";
 
   const outputDir = "../../connectors";
@@ -146,33 +145,4 @@ module.exports = function (plop) {
     ],
   });
 
-  plop.setGenerator("Low-code Source", {
-    description:
-      "Generate a source based on the low-code CDK.",
-    prompts: [
-      {
-        type: "input",
-        name: "name",
-        message: 'Source name e.g: "google-analytics"',
-      },
-    ],
-    actions: [
-      {
-        abortOnFail: true,
-        type: "addMany",
-        destination: pythonSourceOutputRoot,
-        base: lowCodeSourceInputRoot,
-        templateFiles: `${lowCodeSourceInputRoot}/**/**`,
-      },
-      // common acceptance tests
-      {
-        abortOnFail: true,
-        type: "addMany",
-        destination: pythonSourceOutputRoot,
-        base: connectorAcceptanceTestFilesInputRoot,
-        templateFiles: `${connectorAcceptanceTestFilesInputRoot}/**/**`,
-      },
-      { type: "emitSuccess", outputPath: pythonSourceOutputRoot },
-    ],
-  });
 };

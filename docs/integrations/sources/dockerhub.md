@@ -39,6 +39,16 @@ This connector has been tested for the Airbyte organization, which has 266 repos
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.17 | 2025-03-08 | [55293](https://github.com/airbytehq/airbyte/pull/55293) | Update dependencies |
+| 0.3.16 | 2025-03-01 | [54922](https://github.com/airbytehq/airbyte/pull/54922) | Update dependencies |
+| 0.3.15 | 2025-02-22 | [54448](https://github.com/airbytehq/airbyte/pull/54448) | Update dependencies |
+| 0.3.14 | 2025-02-15 | [53783](https://github.com/airbytehq/airbyte/pull/53783) | Update dependencies |
+| 0.3.13 | 2025-02-08 | [53356](https://github.com/airbytehq/airbyte/pull/53356) | Update dependencies |
+| 0.3.12 | 2025-02-01 | [52836](https://github.com/airbytehq/airbyte/pull/52836) | Update dependencies |
+| 0.3.11 | 2025-01-25 | [52359](https://github.com/airbytehq/airbyte/pull/52359) | Update dependencies |
+| 0.3.10 | 2025-01-18 | [51663](https://github.com/airbytehq/airbyte/pull/51663) | Update dependencies |
+| 0.3.9 | 2025-01-11 | [51063](https://github.com/airbytehq/airbyte/pull/51063) | Update dependencies |
+| 0.3.8 | 2024-12-28 | [50541](https://github.com/airbytehq/airbyte/pull/50541) | Update dependencies |
 | 0.3.7 | 2024-12-21 | [50011](https://github.com/airbytehq/airbyte/pull/50011) | Update dependencies |
 | 0.3.6 | 2024-12-14 | [49515](https://github.com/airbytehq/airbyte/pull/49515) | Update dependencies |
 | 0.3.5 | 2024-12-12 | [49151](https://github.com/airbytehq/airbyte/pull/49151) | Update dependencies |

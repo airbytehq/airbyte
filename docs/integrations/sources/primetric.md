@@ -60,6 +60,15 @@ your employees to the right projects.
 
 | Version | Date       | Pull Request                                             | Subject                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------- |
+| 1.1.12 | 2025-03-08 | [55553](https://github.com/airbytehq/airbyte/pull/55553) | Update dependencies |
+| 1.1.11 | 2025-03-01 | [55045](https://github.com/airbytehq/airbyte/pull/55045) | Update dependencies |
+| 1.1.10 | 2025-02-23 | [54592](https://github.com/airbytehq/airbyte/pull/54592) | Update dependencies |
+| 1.1.9 | 2025-02-15 | [53975](https://github.com/airbytehq/airbyte/pull/53975) | Update dependencies |
+| 1.1.8 | 2025-02-08 | [52958](https://github.com/airbytehq/airbyte/pull/52958) | Update dependencies |
+| 1.1.7 | 2025-01-25 | [52523](https://github.com/airbytehq/airbyte/pull/52523) | Update dependencies |
+| 1.1.6 | 2025-01-18 | [51891](https://github.com/airbytehq/airbyte/pull/51891) | Update dependencies |
+| 1.1.5 | 2025-01-11 | [51339](https://github.com/airbytehq/airbyte/pull/51339) | Update dependencies |
+| 1.1.4 | 2025-01-04 | [50287](https://github.com/airbytehq/airbyte/pull/50287) | Update dependencies |
 | 1.1.3 | 2024-12-14 | [49670](https://github.com/airbytehq/airbyte/pull/49670) | Update dependencies |
 | 1.1.2 | 2024-12-12 | [43808](https://github.com/airbytehq/airbyte/pull/43808) | Update dependencies |
 | 1.1.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |

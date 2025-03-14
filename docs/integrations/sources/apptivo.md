@@ -24,6 +24,16 @@ Apptivo connector  seamless data integration between Apptivo and various data wa
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.14 | 2025-03-08 | [55356](https://github.com/airbytehq/airbyte/pull/55356) | Update dependencies |
+| 0.0.13 | 2025-03-01 | [54903](https://github.com/airbytehq/airbyte/pull/54903) | Update dependencies |
+| 0.0.12 | 2025-02-22 | [54225](https://github.com/airbytehq/airbyte/pull/54225) | Update dependencies |
+| 0.0.11 | 2025-02-15 | [53902](https://github.com/airbytehq/airbyte/pull/53902) | Update dependencies |
+| 0.0.10 | 2025-02-08 | [53401](https://github.com/airbytehq/airbyte/pull/53401) | Update dependencies |
+| 0.0.9 | 2025-02-01 | [52887](https://github.com/airbytehq/airbyte/pull/52887) | Update dependencies |
+| 0.0.8 | 2025-01-25 | [52184](https://github.com/airbytehq/airbyte/pull/52184) | Update dependencies |
+| 0.0.7 | 2025-01-18 | [51755](https://github.com/airbytehq/airbyte/pull/51755) | Update dependencies |
+| 0.0.6 | 2025-01-11 | [51228](https://github.com/airbytehq/airbyte/pull/51228) | Update dependencies |
+| 0.0.5 | 2024-12-28 | [50496](https://github.com/airbytehq/airbyte/pull/50496) | Update dependencies |
 | 0.0.4 | 2024-12-21 | [50193](https://github.com/airbytehq/airbyte/pull/50193) | Update dependencies |
 | 0.0.3 | 2024-12-14 | [49544](https://github.com/airbytehq/airbyte/pull/49544) | Update dependencies |
 | 0.0.2 | 2024-12-12 | [49004](https://github.com/airbytehq/airbyte/pull/49004) | Update dependencies |

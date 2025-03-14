@@ -12,7 +12,11 @@ from unittest.mock import ANY
 import pytest
 from source_sftp_bulk import SourceSFTPBulk
 
-from airbyte_cdk import AirbyteTracedException, ConfiguredAirbyteCatalog, Status
+from airbyte_cdk import AirbyteTracedException, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import (
+    FailureType,
+    Status,
+)
 from airbyte_cdk.sources.declarative.models import FailureType
 from airbyte_cdk.test.entrypoint_wrapper import read
 
@@ -133,3 +137,62 @@ def test_get_all_file_csv_file_transfer(
     for file_path in files_paths:
         assert os.path.exists(file_path), f"File not found at path: {file_path}"
     assert total_bytes == 233_771_330
+
+
+def test_default_mirroring_paths_works_for_not_present_config_file_transfer(
+    configured_catalog: ConfiguredAirbyteCatalog, config_fixture_not_duplicates: Mapping[str, Any]
+):
+    """
+    If delivery_options is not provided in the config we fall back preserve directories (mirroring paths).
+    """
+    expected_directory_path = "files/not_duplicates/data/"
+    expected_uniqueness_count = 3
+    source = SourceSFTPBulk(catalog=configured_catalog, config=config_fixture_not_duplicates, state=None)
+    output = read(source=source, config=config_fixture_not_duplicates, catalog=configured_catalog)
+    assert len(output.records) == expected_uniqueness_count
+    files_paths = set(map(lambda record: record.record.file["file_url"], output.records))
+    files_relative_paths = set(map(lambda record: record.record.file["file_relative_path"], output.records))
+    assert len(files_relative_paths) == expected_uniqueness_count
+    assert len(files_paths) == expected_uniqueness_count
+    for file_path, files_relative_path in zip(files_paths, files_relative_paths):
+        assert expected_directory_path in file_path, f"File not found at path: {file_path}"
+        assert expected_directory_path in files_relative_path, f"File not found at path: {files_relative_path}"
+
+
+def test_not_mirroring_paths_not_duplicates_file_transfer(
+    configured_catalog: ConfiguredAirbyteCatalog, config_fixture_not_mirroring_paths_not_duplicates: Mapping[str, Any]
+):
+    """
+    Delivery options is present and preserve_directory_structure is False so we should not preserve directories (mirroring paths).
+    """
+    source_directory_path = "files/not_duplicates/data/"
+    expected_uniqueness_count = 3
+    source = SourceSFTPBulk(catalog=configured_catalog, config=config_fixture_not_mirroring_paths_not_duplicates, state=None)
+    output = read(source=source, config=config_fixture_not_mirroring_paths_not_duplicates, catalog=configured_catalog)
+    assert len(output.records) == expected_uniqueness_count
+    files_paths = set(map(lambda record: record.record.file["file_url"], output.records))
+    files_relative_paths = set(map(lambda record: record.record.file["file_relative_path"], output.records))
+    assert len(files_relative_paths) == expected_uniqueness_count
+    assert len(files_paths) == expected_uniqueness_count
+    for file_path, files_relative_path in zip(files_paths, files_relative_paths):
+        assert source_directory_path not in file_path, f"Source path found but mirroring is off: {file_path}"
+        assert source_directory_path not in files_relative_path, f"Source path found but mirroring is off: {files_relative_path}"
+
+
+def test_not_mirroring_paths_with_duplicates_file_transfer_fails_sync(
+    configured_catalog: ConfiguredAirbyteCatalog, config_fixture_not_mirroring_paths_with_duplicates: Mapping[str, Any]
+):
+    """
+    Delivery options is present and preserve_directory_structure is False so we should not preserve directories (mirroring paths),
+    but, there are duplicates so the sync fails.
+    """
+
+    source = SourceSFTPBulk(catalog=configured_catalog, config=config_fixture_not_mirroring_paths_with_duplicates, state=None)
+    output = read(source=source, config=config_fixture_not_mirroring_paths_with_duplicates, catalog=configured_catalog)
+
+    # assert error_message in output.errors[-1].trace.error.message
+    assert "3 duplicates found for file name monthly-kickoff.mpeg" in output.errors[-1].trace.error.message
+    assert "/files/duplicates/data/feb/monthly-kickoff.mpeg" in output.errors[-1].trace.error.message
+    assert "/files/duplicates/data/jan/monthly-kickoff.mpeg" in output.errors[-1].trace.error.message
+    assert "/files/duplicates/data/mar/monthly-kickoff.mpeg" in output.errors[-1].trace.error.message
+    assert not output.records

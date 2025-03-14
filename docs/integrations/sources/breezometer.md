@@ -39,6 +39,15 @@ The Breezometer connector supports full sync refresh.
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
+| 0.2.16 | 2025-03-08 | [55389](https://github.com/airbytehq/airbyte/pull/55389) | Update dependencies |
+| 0.2.15 | 2025-03-01 | [54884](https://github.com/airbytehq/airbyte/pull/54884) | Update dependencies |
+| 0.2.14 | 2025-02-22 | [54277](https://github.com/airbytehq/airbyte/pull/54277) | Update dependencies |
+| 0.2.13 | 2025-02-15 | [53931](https://github.com/airbytehq/airbyte/pull/53931) | Update dependencies |
+| 0.2.12 | 2025-02-08 | [52936](https://github.com/airbytehq/airbyte/pull/52936) | Update dependencies |
+| 0.2.11 | 2025-01-25 | [52160](https://github.com/airbytehq/airbyte/pull/52160) | Update dependencies |
+| 0.2.10 | 2025-01-18 | [51747](https://github.com/airbytehq/airbyte/pull/51747) | Update dependencies |
+| 0.2.9 | 2025-01-11 | [51250](https://github.com/airbytehq/airbyte/pull/51250) | Update dependencies |
+| 0.2.8 | 2024-12-28 | [50488](https://github.com/airbytehq/airbyte/pull/50488) | Update dependencies |
 | 0.2.7 | 2024-12-21 | [50219](https://github.com/airbytehq/airbyte/pull/50219) | Update dependencies |
 | 0.2.6 | 2024-12-14 | [49559](https://github.com/airbytehq/airbyte/pull/49559) | Update dependencies |
 | 0.2.5 | 2024-12-12 | [49280](https://github.com/airbytehq/airbyte/pull/49280) | Update dependencies |

@@ -276,6 +276,15 @@ The Google Analytics connector should not run into the "requests per 100 seconds
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------| :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.4.13 | 2025-03-08 | [55305](https://github.com/airbytehq/airbyte/pull/55305) | Update dependencies |
+| 0.4.12 | 2025-03-01 | [54944](https://github.com/airbytehq/airbyte/pull/54944) | Update dependencies |
+| 0.4.11 | 2025-02-22 | [54405](https://github.com/airbytehq/airbyte/pull/54405) | Update dependencies |
+| 0.4.10 | 2025-02-01 | [52803](https://github.com/airbytehq/airbyte/pull/52803) | Update dependencies |
+| 0.4.9 | 2025-01-25 | [52318](https://github.com/airbytehq/airbyte/pull/52318) | Update dependencies |
+| 0.4.8 | 2025-01-18 | [51687](https://github.com/airbytehq/airbyte/pull/51687) | Update dependencies |
+| 0.4.7 | 2025-01-11 | [51120](https://github.com/airbytehq/airbyte/pull/51120) | Update dependencies |
+| 0.4.6 | 2025-01-04 | [50921](https://github.com/airbytehq/airbyte/pull/50921) | Update dependencies |
+| 0.4.5 | 2024-12-28 | [50589](https://github.com/airbytehq/airbyte/pull/50589) | Update dependencies |
 | 0.4.4 | 2024-12-21 | [50063](https://github.com/airbytehq/airbyte/pull/50063) | Update dependencies |
 | 0.4.3 | 2024-12-14 | [49507](https://github.com/airbytehq/airbyte/pull/49507) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.4.2 | 2024-11-04 | [48206](https://github.com/airbytehq/airbyte/pull/48206) | Update dependencies |

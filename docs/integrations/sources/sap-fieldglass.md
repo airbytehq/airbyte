@@ -25,6 +25,16 @@ This page contains the setup guide and reference information for the SAP Fieldgl
 
 | Version | Date       | Pull Request                                    | Subject                                     |
 | :------ | :--------- | :---------------------------------------------- |:--------------------------------------------|
+| 0.2.16 | 2025-03-08 | [55538](https://github.com/airbytehq/airbyte/pull/55538) | Update dependencies |
+| 0.2.15 | 2025-03-01 | [55037](https://github.com/airbytehq/airbyte/pull/55037) | Update dependencies |
+| 0.2.14 | 2025-02-23 | [54563](https://github.com/airbytehq/airbyte/pull/54563) | Update dependencies |
+| 0.2.13 | 2025-02-15 | [53950](https://github.com/airbytehq/airbyte/pull/53950) | Update dependencies |
+| 0.2.12 | 2025-02-08 | [53444](https://github.com/airbytehq/airbyte/pull/53444) | Update dependencies |
+| 0.2.11 | 2025-02-01 | [52962](https://github.com/airbytehq/airbyte/pull/52962) | Update dependencies |
+| 0.2.10 | 2025-01-25 | [52520](https://github.com/airbytehq/airbyte/pull/52520) | Update dependencies |
+| 0.2.9 | 2025-01-18 | [51900](https://github.com/airbytehq/airbyte/pull/51900) | Update dependencies |
+| 0.2.8 | 2025-01-11 | [51355](https://github.com/airbytehq/airbyte/pull/51355) | Update dependencies |
+| 0.2.7 | 2024-12-28 | [50678](https://github.com/airbytehq/airbyte/pull/50678) | Update dependencies |
 | 0.2.6 | 2024-12-21 | [50225](https://github.com/airbytehq/airbyte/pull/50225) | Update dependencies |
 | 0.2.5 | 2024-12-14 | [49719](https://github.com/airbytehq/airbyte/pull/49719) | Update dependencies |
 | 0.2.4 | 2024-12-12 | [49043](https://github.com/airbytehq/airbyte/pull/49043) | Update dependencies |

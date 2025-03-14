@@ -11,12 +11,14 @@ class UnionTypeToDisjointRecord : AirbyteSchemaIdentityMapper {
         }
         /* Create a schema of { "type": "string", "<typename(option1)>": <type(option1)>, etc... } */
         val properties = linkedMapOf("type" to FieldType(StringType, nullable = false))
-        schema.options.forEach {
-            val name = typeName(it)
+        schema.options.forEach { unmappedType ->
+            /* Necessary because the type might contain a nested union that needs mapping to a disjoint record. */
+            val mappedType = map(unmappedType)
+            val name = typeName(mappedType)
             if (name in properties) {
                 throw IllegalArgumentException("Union of types with same name: $name")
             }
-            properties[typeName(it)] = FieldType(it, nullable = true)
+            properties[typeName(mappedType)] = FieldType(mappedType, nullable = true)
         }
         return ObjectType(properties)
     }

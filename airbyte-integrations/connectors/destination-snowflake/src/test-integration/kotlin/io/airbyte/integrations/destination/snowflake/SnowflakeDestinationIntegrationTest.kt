@@ -98,7 +98,10 @@ internal class SnowflakeDestinationIntegrationTest {
     @get:Throws(IOException::class)
     private val config: JsonNode
         get() {
-            val config = deserialize(Files.readString(Paths.get("secrets/insert_config.json")))
+            val config =
+                deserialize(
+                    Files.readString(Paths.get("secrets/1s1t_internal_staging_config.json"))
+                )
             val schemaName =
                 "schemaName with whitespace " + addRandomSuffix("integration_test", "_", 5)
             (config as ObjectNode).put("schema", schemaName)

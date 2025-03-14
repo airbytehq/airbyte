@@ -42,6 +42,16 @@ By default Gong limits your company's access to the service to 3 API calls per s
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.15 | 2025-03-08 | [55269](https://github.com/airbytehq/airbyte/pull/55269) | Update dependencies |
+| 0.3.14 | 2025-03-01 | [54962](https://github.com/airbytehq/airbyte/pull/54962) | Update dependencies |
+| 0.3.13 | 2025-02-22 | [54394](https://github.com/airbytehq/airbyte/pull/54394) | Update dependencies |
+| 0.3.12 | 2025-02-15 | [53718](https://github.com/airbytehq/airbyte/pull/53718) | Update dependencies |
+| 0.3.11 | 2025-02-08 | [53334](https://github.com/airbytehq/airbyte/pull/53334) | Update dependencies |
+| 0.3.10 | 2025-02-01 | [52824](https://github.com/airbytehq/airbyte/pull/52824) | Update dependencies |
+| 0.3.9 | 2025-01-25 | [52342](https://github.com/airbytehq/airbyte/pull/52342) | Update dependencies |
+| 0.3.8 | 2025-01-18 | [51704](https://github.com/airbytehq/airbyte/pull/51704) | Update dependencies |
+| 0.3.7 | 2025-01-11 | [51059](https://github.com/airbytehq/airbyte/pull/51059) | Update dependencies |
+| 0.3.6 | 2024-12-28 | [50521](https://github.com/airbytehq/airbyte/pull/50521) | Update dependencies |
 | 0.3.5 | 2024-12-21 | [50017](https://github.com/airbytehq/airbyte/pull/50017) | Update dependencies |
 | 0.3.4 | 2024-12-14 | [49538](https://github.com/airbytehq/airbyte/pull/49538) | Update dependencies |
 | 0.3.3 | 2024-12-12 | [49155](https://github.com/airbytehq/airbyte/pull/49155) | Update dependencies |

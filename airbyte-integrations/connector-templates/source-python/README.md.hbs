@@ -7,7 +7,7 @@ For information about how to use this connector within Airbyte, see [the documen
 
 ### Prerequisites
 
-* Python (`^3.9`)
+* Python (`^3.10`)
 * Poetry (`^1.7`) - installation instructions [here](https://python-poetry.org/docs/#installation)
 
 

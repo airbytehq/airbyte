@@ -1,4 +1,4 @@
-FROM python:3.10.12 as base
+FROM python:3.11.9 as base
 
 
 ENV ACCEPTANCE_TEST_DOCKER_CONTAINER 1
@@ -12,8 +12,7 @@ RUN apt-get update \
 RUN curl -fsSL https://get.docker.com | sh
 
 
-
-RUN pip install poetry==1.5.1
+RUN pip install poetry==1.8.4
 RUN poetry config virtualenvs.create false
 RUN echo "Etc/UTC" > /etc/timezone
 

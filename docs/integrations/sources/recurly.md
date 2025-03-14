@@ -66,6 +66,15 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 1.3.13 | 2025-03-08 | [55054](https://github.com/airbytehq/airbyte/pull/55054) | Update dependencies |
+| 1.3.12 | 2025-02-23 | [54550](https://github.com/airbytehq/airbyte/pull/54550) | Update dependencies |
+| 1.3.11 | 2025-02-15 | [54010](https://github.com/airbytehq/airbyte/pull/54010) | Update dependencies |
+| 1.3.10 | 2025-02-08 | [53507](https://github.com/airbytehq/airbyte/pull/53507) | Update dependencies |
+| 1.3.9 | 2025-02-01 | [52982](https://github.com/airbytehq/airbyte/pull/52982) | Update dependencies |
+| 1.3.8 | 2025-01-25 | [52493](https://github.com/airbytehq/airbyte/pull/52493) | Update dependencies |
+| 1.3.7 | 2025-01-18 | [51864](https://github.com/airbytehq/airbyte/pull/51864) | Update dependencies |
+| 1.3.6 | 2025-01-11 | [51351](https://github.com/airbytehq/airbyte/pull/51351) | Update dependencies |
+| 1.3.5 | 2024-12-28 | [50684](https://github.com/airbytehq/airbyte/pull/50684) | Update dependencies |
 | 1.3.4 | 2024-12-21 | [50289](https://github.com/airbytehq/airbyte/pull/50289) | Update dependencies |
 | 1.3.3 | 2024-12-14 | [49718](https://github.com/airbytehq/airbyte/pull/49718) | Update dependencies |
 | 1.3.2 | 2024-12-12 | [49333](https://github.com/airbytehq/airbyte/pull/49333) | Update dependencies |

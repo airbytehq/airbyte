@@ -3,7 +3,7 @@
 #
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, List, Union
+from typing import Callable, List, Union
 
 import dpath.util
 import jsonschema
