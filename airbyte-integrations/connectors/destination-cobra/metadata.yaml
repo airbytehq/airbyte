@@ -18,12 +18,12 @@ data:
   connectorSubtype: api
   connectorType: destination
   definitionId: 227f7285-74af-44cf-9055-66d24695aee6
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/destination-cobra
   githubIssueLabel: destination-cobra
-  icon: cobra.svg
+  icon: salesforce.svg
   license: MIT
-  name: Cobra
+  name: Salesforce
   releaseDate: 2025-02-14
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/destination-salesforce
@@ -33,5 +33,6 @@ data:
   ab_internal:
     sl: 100
     ql: 100
+    isEnterprise: true
   supportLevel: community
 metadataSpecVersion: "1.0"
