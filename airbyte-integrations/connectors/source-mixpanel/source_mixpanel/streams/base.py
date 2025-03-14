@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import time
 from abc import ABC
 from datetime import timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -13,9 +12,11 @@ from pendulum import Date
 from requests.auth import AuthBase
 
 from airbyte_cdk import BackoffStrategy
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ConstantBackoffStrategy
+from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
-from source_mixpanel.backoff_strategy import MixpanelStreamBackoffStrategy
+from source_mixpanel.backoff_strategy import DEFAULT_API_BUDGET
 from source_mixpanel.errors_handlers import MixpanelStreamErrorHandler
 from source_mixpanel.utils import fix_date_time
 
@@ -26,8 +27,6 @@ class MixpanelStream(HttpStream, ABC):
       A maximum of 5 concurrent queries
       60 queries per hour.
     """
-
-    DEFAULT_REQS_PER_HOUR_LIMIT = 60
 
     @property
     def state_checkpoint_interval(self) -> int:
@@ -41,19 +40,11 @@ class MixpanelStream(HttpStream, ABC):
         prefix = "eu." if self.region == "EU" else ""
         return f"https://{prefix}mixpanel.com/api/query/"
 
-    @property
-    def reqs_per_hour_limit(self):
-        # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
-        return self._reqs_per_hour_limit
-
-    @reqs_per_hour_limit.setter
-    def reqs_per_hour_limit(self, value):
-        self._reqs_per_hour_limit = value
-
     def __init__(
         self,
         authenticator: AuthBase,
         region: str,
+        api_budget: APIBudget = DEFAULT_API_BUDGET,
         project_timezone: Optional[str] = "US/Pacific",
         start_date: Optional[Date] = None,
         end_date: Optional[Date] = None,
@@ -61,7 +52,6 @@ class MixpanelStream(HttpStream, ABC):
         attribution_window: int = 0,  # in days
         select_properties_by_default: bool = True,
         project_id: int = None,
-        reqs_per_hour_limit: int = DEFAULT_REQS_PER_HOUR_LIMIT,
         **kwargs,
     ):
         self.start_date = start_date
@@ -72,8 +62,7 @@ class MixpanelStream(HttpStream, ABC):
         self.region = region
         self.project_timezone = project_timezone
         self.project_id = project_id
-        self._reqs_per_hour_limit = reqs_per_hour_limit
-        super().__init__(authenticator=authenticator)
+        super().__init__(authenticator=authenticator, api_budget=api_budget)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """Define abstract method"""
@@ -106,14 +95,8 @@ class MixpanelStream(HttpStream, ABC):
         # parse the whole response
         yield from self.process_response(response, stream_state=stream_state, **kwargs)
 
-        if self.reqs_per_hour_limit > 0:
-            # we skip this block, if self.reqs_per_hour_limit = 0,
-            # in all other cases wait for X seconds to match API limitations
-            self.logger.info(f"Sleep for {3600 / self.reqs_per_hour_limit} seconds to match API limitations after reading from {self.name}")
-            time.sleep(3600 / self.reqs_per_hour_limit)
-
     def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
-        return MixpanelStreamBackoffStrategy(stream=self)
+        return ConstantBackoffStrategy(backoff_time_in_seconds=60 * 2, config={}, parameters={})
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
         return MixpanelStreamErrorHandler(logger=self.logger)
@@ -126,7 +109,6 @@ class MixpanelStream(HttpStream, ABC):
             "authenticator": self._http_client._session.auth,
             "region": self.region,
             "project_timezone": self.project_timezone,
-            "reqs_per_hour_limit": self.reqs_per_hour_limit,
         }
         if self.project_id:
             params["project_id"] = self.project_id
@@ -141,71 +123,3 @@ class MixpanelStream(HttpStream, ABC):
         if self.project_id:
             return {"project_id": str(self.project_id)}
         return {}
-
-
-class DateSlicesMixin:
-    raise_on_http_errors = True
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._timezone_mismatch = False
-
-    def parse_response(self, *args, **kwargs):
-        if self._timezone_mismatch:
-            return []
-        yield from super().parse_response(*args, **kwargs)
-
-    def stream_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        # use the latest date between self.start_date and stream_state
-        start_date = self.start_date
-        cursor_value = None
-
-        if stream_state and self.cursor_field and self.cursor_field in stream_state:
-            # Remove time part from state because API accept 'from_date' param in date format only ('YYYY-MM-DD')
-            # It also means that sync returns duplicated entries for the date from the state (date range is inclusive)
-            cursor_value = stream_state[self.cursor_field]
-            stream_state_date = pendulum.parse(stream_state[self.cursor_field]).date()
-            start_date = max(start_date, stream_state_date)
-
-        # move start_date back <attribution_window> days to sync data since that time as well
-        start_date = start_date - timedelta(days=self.attribution_window)
-
-        # end_date cannot be later than today
-        end_date = min(self.end_date, pendulum.today(tz=self.project_timezone).date())
-
-        while start_date <= end_date:
-            if self._timezone_mismatch:
-                return
-            current_end_date = start_date + timedelta(days=self.date_window_size - 1)  # -1 is needed because dates are inclusive
-            stream_slice = {
-                "start_date": str(start_date),
-                "end_date": str(min(current_end_date, end_date)),
-            }
-            if cursor_value:
-                stream_slice[self.cursor_field] = cursor_value
-            yield stream_slice
-            # add 1 additional day because date range is inclusive
-            start_date = current_end_date + timedelta(days=1)
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice, next_page_token)
-        return {
-            **params,
-            "from_date": stream_slice["start_date"],
-            "to_date": stream_slice["end_date"],
-        }
-
-
-class IncrementalMixpanelStream(MixpanelStream, ABC):
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
-        updated_state = latest_record.get(self.cursor_field)
-        if updated_state:
-            state_value = current_stream_state.get(self.cursor_field)
-            if state_value:
-                updated_state = max(updated_state, state_value)
-            current_stream_state[self.cursor_field] = updated_state
-        return current_stream_state
