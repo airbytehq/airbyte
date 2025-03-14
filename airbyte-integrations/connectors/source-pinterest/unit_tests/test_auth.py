@@ -8,10 +8,8 @@ import pendulum
 import pytest
 import requests
 from requests import Response
-from source_pinterest.python_stream_auth import PinterestOauthAuthenticator
+from source_pinterest.components.auth import PinterestOauthAuthenticator
 
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
@@ -34,11 +32,18 @@ class TestPinterestOauthAuthenticator:
     def oauth(self):
         return PinterestOauthAuthenticator(
             token_refresh_endpoint=self.refresh_endpoint,
+            config={
+                "refresh_endpoint": "refresh_end",
+                "client_id": "client_id",
+                "client_secret": "client_secret",
+                "refresh_token": "refresh_token",
+            },
+            parameters={},
             client_id=self.client_id,
             client_secret=self.client_secret,
             refresh_token=self.refresh_token,
             scopes=["scope1", "scope2"],
-            token_expiry_date=pendulum.now().add(days=3),
+            token_expiry_date=pendulum.now().add(days=3).to_rfc3339_string(),
             refresh_request_body={"custom_field": "in_outbound_request", "another_field": "exists_in_body", "scopes": ["no_override"]},
         )
 

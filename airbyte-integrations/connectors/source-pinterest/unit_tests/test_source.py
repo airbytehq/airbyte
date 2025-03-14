@@ -39,4 +39,4 @@ def test_get_authenticator(test_config):
     source = SourcePinterest()
     auth = source.get_authenticator(test_config)
     expected = test_config.get("refresh_token")
-    assert auth._refresh_token == expected
+    assert auth.get_refresh_token() == expected

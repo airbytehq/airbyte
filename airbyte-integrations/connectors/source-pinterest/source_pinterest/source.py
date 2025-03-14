@@ -12,11 +12,10 @@ import pendulum
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from airbyte_cdk.utils import AirbyteTracedException
+from source_pinterest.components.auth import PinterestOauthAuthenticator
 from source_pinterest.reports import CampaignAnalyticsReport
 
-from .python_stream_auth import PinterestOauthAuthenticator
 from .reports.reports import (
     AdGroupReport,
     AdGroupTargetingReport,
@@ -71,18 +70,15 @@ class SourcePinterest(YamlDeclarativeSource):
         return config
 
     @staticmethod
-    def get_authenticator(config) -> Oauth2Authenticator:
+    def get_authenticator(config) -> PinterestOauthAuthenticator:
         config = config.get("credentials") or config
-        credentials_base64_encoded = standard_b64encode(
-            (config.get("client_id") + ":" + config.get("client_secret")).encode("ascii")
-        ).decode("ascii")
-        auth = f"Basic {credentials_base64_encoded}"
 
         return PinterestOauthAuthenticator(
             token_refresh_endpoint=f"{PinterestStream.url_base}oauth/token",
+            config=config,
+            parameters={},
             client_secret=config.get("client_secret"),
             client_id=config.get("client_id"),
-            refresh_access_token_headers={"Authorization": auth},
             refresh_token=config.get("refresh_token"),
         )
 
