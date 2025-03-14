@@ -83,7 +83,8 @@ definitions:
       $ref: "#/definitions/base_incremental_stream/incremental_sync"
       cursor_field: "applied_at"
       start_time_option:
-        $ref: "#/definitions/base_incremental_stream/incremental_sync/start_time_option"
+        type: RequestOption
+        inject_into: request_parameter
         field_name: "created_after"
     retriever:
       $ref: "#/definitions/retriever"
@@ -851,7 +852,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "jobs/{{ stream_slice.parent_id }}/openings"
+        path: "jobs/{{ stream_partition.parent_id }}/openings"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -1054,7 +1055,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "applications/{{ stream_slice.application_id }}/scheduled_interviews"
+        path: "applications/{{ stream_partition.application_id }}/scheduled_interviews"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -1424,7 +1425,7 @@ definitions:
         $ref: "#/definitions/retriever"
         requester:
           $ref: "#/definitions/requester"
-          path: "demographics/questions/{{ stream_slice.parent_id }}/answer_options"
+          path: "demographics/questions/{{ stream_partition.parent_id }}/answer_options"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1527,7 +1528,7 @@ definitions:
         $ref: "#/definitions/retriever"
         requester:
           $ref: "#/definitions/requester"
-          path: "demographics/question_sets/{{ stream_slice.parent_id }}/questions"
+          path: "demographics/question_sets/{{ stream_partition.parent_id }}/questions"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1976,7 +1977,7 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "jobs/{{ stream_slice.job_id }}/stages"
+        path: "jobs/{{ stream_partition.job_id }}/stages"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -2620,7 +2621,7 @@ definitions:
       $ref: "#/definitions/no_pagination_retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "users/{{ stream_slice.parent_id }}/permissions/jobs"
+        path: "users/{{ stream_partition.parent_id }}/permissions/jobs"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -2777,7 +2778,7 @@ definitions:
       $ref: "#/definitions/no_pagination_retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "candidates/{{ stream_slice.parent_id }}/activity_feed"
+        path: "candidates/{{ stream_partition.parent_id }}/activity_feed"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -3017,7 +3018,7 @@ definitions:
       $ref: "#/definitions/no_pagination_retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "jobs/{{ stream_slice.parent_id }}/approval_flows"
+        path: "jobs/{{ stream_partition.parent_id }}/approval_flows"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -3229,7 +3230,8 @@ definitions:
       $ref: "#/definitions/base_incremental_stream/incremental_sync"
       cursor_field: "submitted_at"
       start_time_option:
-        $ref: "#/definitions/base_incremental_stream/incremental_sync/start_time_option"
+        type: RequestOption
+        inject_into: request_parameter
         field_name: "submitted_after"
     schema_loader:
       type: InlineSchemaLoader
