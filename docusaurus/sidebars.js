@@ -237,6 +237,7 @@ const buildAConnector = {
             "connector-development/connector-builder-ui/incremental-sync",
             "connector-development/connector-builder-ui/partitioning",
             "connector-development/connector-builder-ui/error-handling",
+            "connector-development/connector-builder-ui/async-streams",
           ],
         },
       ],
