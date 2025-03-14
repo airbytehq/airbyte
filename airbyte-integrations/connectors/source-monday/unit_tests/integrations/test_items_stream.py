@@ -31,11 +31,11 @@ class TestItemsStreamFullRefresh(TestCase):
 
         http_mocker.get(
             ItemsRequestBuilder.items_endpoint(api_token_authenticator).build(),
-            ItemsResponseBuilder.items_response().with_record(ItemsRecordBuilder.items_record()).build(),
+            ItemsResponseBuilder.items_response().with_record(ItemsRecordBuilder.items_record()).with_record(ItemsRecordBuilder.items_record()).build(),
         )
 
         output = read_stream("items", SyncMode.full_refresh, config)
-        assert len(output.records) == 1
+        assert len(output.records) == 2
 
     @HttpMocker()
     def test_read_with_board_ids_filter(self, http_mocker):
