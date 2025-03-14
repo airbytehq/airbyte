@@ -54,40 +54,50 @@ public class TeradataSqlOperationsTest {
   }
 
   @Test
+  void testIsSchemaExists() throws Exception {
+    doReturn(1).when(database).queryInt(anyString());
+    teradataSqlOperations.isSchemaExists(database, "schema");
+    verify(database, times(1)).queryInt(stringCaptor.capture());
+    assertTrue(stringCaptor.getValue().contains("SELECT COUNT(1) FROM DBC.Databases"));
+  }
+
+  @Test
+  void testIsSchemaNotExists() throws Exception {
+    doReturn(0).when(database).queryInt(anyString());
+    teradataSqlOperations.isSchemaExists(database, "schema");
+    verify(database, times(1)).queryInt(stringCaptor.capture());
+    assertTrue(stringCaptor.getValue().contains("SELECT COUNT(1) FROM DBC.Databases"));
+  }
+
+  @Test
   void testCreateSchemaIfNotExists() throws Exception {
     // Test case where schema does not exist
     doNothing().when(database).execute(anyString());
-
+    doReturn(0).when(database).queryInt(anyString());
     teradataSqlOperations.createSchemaIfNotExists(database, "schema");
-
+    verify(database, times(1)).queryInt(stringCaptor.capture());
+    assertTrue(stringCaptor.getValue().contains("SELECT COUNT(1) FROM DBC.Databases"));
     verify(database, times(1)).execute(stringCaptor.capture());
-    assertTrue(stringCaptor.getValue().contains("CREATE DATABASE \"schema\""));
-
-    // Test case where schema already exists
-    doThrow(new SQLException("Database already exists")).when(database).execute(anyString());
-    teradataSqlOperations.createSchemaIfNotExists(database, "schema");
-
-    verify(database, times(2)).execute(stringCaptor.capture());
     assertTrue(stringCaptor.getValue().contains("CREATE DATABASE \"schema\""));
   }
 
   @Test
-  void testCreateTableIfNotExists() throws SQLException {
-    // Test case where table does not exist
+  void testCreateSchemaIfExists() throws Exception {
+    // Test case where schema already exists
     doNothing().when(database).execute(anyString());
+    doReturn(1).when(database).queryInt(anyString());
+    teradataSqlOperations.createSchemaIfNotExists(database, "schema");
+    verify(database, times(1)).queryInt(stringCaptor.capture());
+    assertTrue(stringCaptor.getValue().contains("SELECT COUNT(1) FROM DBC.Databases"));
+    verify(database, times(0)).execute("");
+  }
 
+  @Test
+  void testIsTableExists() throws Exception {
+    doReturn(1).when(database).queryInt(anyString());
     teradataSqlOperations.createTableIfNotExists(database, "schema", "table");
-
-    verify(database, times(1)).execute(stringCaptor.capture());
-    assertTrue(stringCaptor.getValue().contains("CREATE SET TABLE schema.table"));
-
-    // Test case where table already exists
-    doThrow(new SQLException("Table already exists")).when(database).execute(anyString());
-
-    teradataSqlOperations.createTableIfNotExists(database, "schema", "table");
-
-    verify(database, times(2)).execute(stringCaptor.capture());
-    assertTrue(stringCaptor.getValue().contains("CREATE SET TABLE schema.table"));
+    verify(database, times(1)).queryInt(stringCaptor.capture());
+    assertTrue(stringCaptor.getValue().contains("SELECT COUNT(1) FROM DBC.TABLES"));
   }
 
   @Test
