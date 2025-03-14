@@ -10,12 +10,11 @@ from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 
-
 @dataclass
 class FreshcallerCallsIncrementalSync(DatetimeBasedCursor):
     """
     This class is created for Calls stream.
-    
+
     According to the API docs, the endpoint is not configured for filtering using by_time[from] and by_time[to] parameters.
     Luckily it works when the parameters are specified. However, the filtering doesn't work as expected.
     Records with the specified by_time[from] are included which duplicates the record on successive reads.
@@ -30,7 +29,6 @@ class FreshcallerCallsIncrementalSync(DatetimeBasedCursor):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        
         options = super().get_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         option_type = RequestOptionType.request_parameter
 
