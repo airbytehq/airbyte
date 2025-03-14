@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 58e6f9da-904e-11ed-a1eb-0242ac120002
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.8
   dockerRepository: airbyte/destination-teradata
   githubIssueLabel: destination-teradata
   icon: teradata.svg

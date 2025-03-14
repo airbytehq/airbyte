@@ -13,10 +13,16 @@ import io.airbyte.cdk.load.command.MockDestinationConfiguration
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
+import io.airbyte.cdk.load.message.PartitionedQueue
+import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.QueueWriter
+import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.pipeline.InputPartitioner
+import io.airbyte.cdk.load.pipeline.LoadPipeline
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTask
@@ -152,6 +158,11 @@ class DestinationTaskLauncherTest {
             checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
             destinationTaskLauncher: DestinationTaskLauncher,
             fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
+            recordQueueForPipeline:
+                PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
+            loadPipeline: LoadPipeline?,
+            partitioner: InputPartitioner,
+            openStreamQueue: QueueWriter<DestinationStream>,
         ): InputConsumerTask {
             return object : InputConsumerTask {
                 override val terminalCondition: TerminalCondition = SelfTerminating

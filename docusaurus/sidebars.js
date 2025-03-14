@@ -553,6 +553,10 @@ module.exports = {
     },
     {
       type: "doc",
+      id: "using-airbyte/getting-started/academy",
+    },
+    {
+      type: "doc",
       label: "Quickstart",
       id: "using-airbyte/getting-started/oss-quickstart",
     },
@@ -611,6 +615,10 @@ module.exports = {
     {
       type: "doc",
       id: "using-airbyte/tagging",
+    },
+    {
+      type: "doc",
+      id: "understanding-airbyte/airbyte-metadata-fields",
     },
     sectionHeader("Managing Airbyte"),
     deployAirbyte,
@@ -745,7 +753,6 @@ module.exports = {
       id: "using-airbyte/pyairbyte/getting-started",
     },
     understandingAirbyte,
-    contributeToAirbyte,
     {
       type: "category",
       label: "Licenses",
@@ -761,6 +768,7 @@ module.exports = {
       ],
     },
     sectionHeader("Community"),
+    contributeToAirbyte,
     "community/getting-support",
     "community/code-of-conduct",
     sectionHeader("Product Updates"),

@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
+import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
@@ -139,8 +140,12 @@ data class DestinationRecord(
             Meta(
                 message.record.meta?.changes?.map { Meta.Change(it.field, it.change, it.reason) }
                     ?: emptyList()
-            )
+            ),
+            serialized.length.toLong()
         )
+    }
+    fun asDestinationRecordRaw(): DestinationRecordRaw {
+        return DestinationRecordRaw(stream, message, serialized)
     }
 }
 
@@ -159,7 +164,45 @@ data class DestinationRecordAirbyteValue(
     val data: AirbyteValue,
     val emittedAtMs: Long,
     val meta: Meta?,
+    val serializedSizeBytes: Long = 0L
 )
+
+data class EnrichedDestinationRecordAirbyteValue(
+    val stream: DestinationStream.Descriptor,
+    val declaredFields: Map<String, EnrichedAirbyteValue>,
+    val airbyteMetaFields: Map<String, EnrichedAirbyteValue>,
+    val undeclaredFields: Map<String, JsonNode>,
+    val emittedAtMs: Long,
+    val meta: Meta?,
+    val serializedSizeBytes: Long = 0L
+)
+
+data class DestinationRecordRaw(
+    val stream: DestinationStream.Descriptor,
+    private val rawData: AirbyteMessage,
+    private val serialized: String
+) {
+    fun asRawJson(): JsonNode {
+        return rawData.record.data
+    }
+
+    fun asDestinationRecordAirbyteValue(): DestinationRecordAirbyteValue {
+        return DestinationRecordAirbyteValue(
+            stream,
+            rawData.record.data.toAirbyteValue(),
+            rawData.record.emittedAt,
+            Meta(
+                rawData.record.meta?.changes?.map { Meta.Change(it.field, it.change, it.reason) }
+                    ?: emptyList()
+            ),
+            serialized.length.toLong()
+        )
+    }
+
+    fun asEnrichedDestinationRecordAirbyteValue(): EnrichedDestinationRecordAirbyteValue {
+        TODO()
+    }
+}
 
 data class DestinationFile(
     override val stream: DestinationStream.Descriptor,
