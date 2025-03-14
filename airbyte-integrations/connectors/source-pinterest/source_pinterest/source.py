@@ -9,11 +9,11 @@ from typing import Any, List, Mapping
 
 import pendulum
 
+from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
-from source_pinterest.components.auth import PinterestOauthAuthenticator
 from source_pinterest.reports import CampaignAnalyticsReport
 
 from .reports.reports import (
@@ -70,16 +70,19 @@ class SourcePinterest(YamlDeclarativeSource):
         return config
 
     @staticmethod
-    def get_authenticator(config) -> PinterestOauthAuthenticator:
+    def get_authenticator(config) -> DeclarativeOauth2Authenticator:
         config = config.get("credentials") or config
 
-        return PinterestOauthAuthenticator(
+        return DeclarativeOauth2Authenticator(
             token_refresh_endpoint=f"{PinterestStream.url_base}oauth/token",
             config=config,
             parameters={},
             client_secret=config.get("client_secret"),
             client_id=config.get("client_id"),
             refresh_token=config.get("refresh_token"),
+            refresh_request_headers={
+                "Authorization": "Basic {{ [config['client_id'], config['client_secret']] | join(':') | base64binascii_decode }}"
+            }
         )
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

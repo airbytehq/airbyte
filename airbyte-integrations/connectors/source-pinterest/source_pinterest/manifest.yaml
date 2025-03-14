@@ -4,12 +4,14 @@ type: DeclarativeSource
 definitions:
   # Authenticator
   authenticator:
-    type: CustomAuthenticator
-    class_name: source_pinterest.components.auth.PinterestOauthAuthenticator
+    type: OAuthAuthenticator
     client_id: "{{ config.get('credentials', {}).get('client_id', config['client_id']) }}"
     client_secret: "{{ config.get('credentials', {}).get('client_secret', config['client_secret']) }}"
     refresh_token: "{{ config.get('credentials', {}).get('refresh_token', config['refresh_token']) }}"
     token_refresh_endpoint: "https://api.pinterest.com/v5/oauth/token"
+    refresh_request_headers:
+      Authorization: "Basic {{ [config.get('credentials', {}).get('client_id', config['client_id']), config.get('credentials', {}).get('client_secret', config['client_secret'])] | join(':') | base64binascii_decode }}"
+
 
   # Error handlers
   base_error_handler:
@@ -3163,3 +3165,10 @@ check:
   type: CheckStream
   stream_names:
     - boards
+
+# https://developers.pinterest.com/docs/reference/rate-limits/
+# We assume that customer is on Standard access (100 requests per minute per user per app)
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 40
