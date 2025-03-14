@@ -11,8 +11,6 @@ definitions:
   # Base components
   base_stream:
     type: DeclarativeStream
-    primary_key:
-      - id
     retriever:
       $ref: "#/definitions/base_retriever"
     schema_loader:
@@ -120,6 +118,8 @@ definitions:
   # Regular flow components
   created_stream:
     $ref: "#/definitions/base_stream"
+    primary_key:
+      - id
     incremental_sync:
       $ref: "#/definitions/created_incremental_sync"
 
@@ -130,6 +130,8 @@ definitions:
   # Entity flow components
   entity_stream:
     $ref: "#/definitions/base_stream"
+    primary_key:
+      - id
     incremental_sync:
       $ref: "#/definitions/entity_with_slice_cursor"
     transformations:
@@ -142,6 +144,8 @@ definitions:
 
   entity_restricted_stream:
     $ref: "#/definitions/base_stream"
+    primary_key:
+      - id
     incremental_sync:
       $ref: "#/definitions/entity_single_slice_cursor"
     transformations:
@@ -197,6 +201,8 @@ definitions:
   # Events flow components
   events_based_stream:
     $ref: "#/definitions/base_stream"
+    primary_key:
+      - id
     incremental_sync:
       $ref: "#/definitions/events_read_slice_cursor"
     retriever:
@@ -873,6 +879,10 @@ definitions:
       incremental_sync:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: created
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - updated  # Remove filed that added in entity_stream
 
     payout_balance_transactions:
       $ref: "#/definitions/entity_stream"
@@ -975,6 +985,10 @@ definitions:
       incremental_sync:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: created
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - updated  # Remove filed that added in entity_stream
 
     payment_methods:
       type: StateDelegatingStream
@@ -1040,6 +1054,8 @@ definitions:
         name: invoice_line_items
       full_refresh_stream:
         type: DeclarativeStream
+        primary_key:
+          - id
         schema_loader:
           type: JsonFileSchemaLoader
           file_path: "./source_stripe/schemas/{{ parameters['name'] }}.json"
@@ -1107,6 +1123,8 @@ definitions:
         name: application_fees_refunds
       full_refresh_stream:
         type: DeclarativeStream
+        primary_key:
+          - id
         schema_loader:
           type: JsonFileSchemaLoader
           file_path: "./source_stripe/schemas/{{ parameters['name'] }}.json"
@@ -1159,6 +1177,8 @@ definitions:
         name: subscription_items
       full_refresh_stream:
         type: DeclarativeStream
+        primary_key:
+          - id
         schema_loader:
           type: JsonFileSchemaLoader
           file_path: "./source_stripe/schemas/{{ parameters['name'] }}.json"
@@ -1214,6 +1234,8 @@ definitions:
         name: bank_accounts
       full_refresh_stream:
         type: DeclarativeStream
+        primary_key:
+          - id
         schema_loader:
           type: JsonFileSchemaLoader
           file_path: "./source_stripe/schemas/{{ parameters['name'] }}.json"
@@ -1327,14 +1349,16 @@ definitions:
           path: subscription_items/{{ stream_partition.subscription_item_id }}/usage_record_summaries
 
 streams:
-  # CreatedCursorIncrementalStripeStream
+  # These streams are base incremental streams
   - $ref: "#/definitions/streams/events"
   - $ref: "#/definitions/streams/shipping_rates"
   - $ref: "#/definitions/streams/balance_transactions"
   - $ref: "#/definitions/streams/files"
   - $ref: "#/definitions/streams/file_links"
 
-  # IncrementalStripeStream
+  ## These streams are state condition streams and have two behaviors depending on whether the state is set:
+  # - No State: Runs the base stream.
+  # - State: Uses the event stream to call events related to streams (event types provided by params).
   - $ref: "#/definitions/streams/application_fees"
   - $ref: "#/definitions/streams/authorizations"
   - $ref: "#/definitions/streams/cardholders"
@@ -1360,7 +1384,9 @@ streams:
   - $ref: "#/definitions/streams/transactions"
   - $ref: "#/definitions/streams/transfers"
 
-  # UpdatedCursorIncrementalStripeStream
+  ## These streams are state condition streams with stricter behavior:
+  # - No State: Runs the base stream (endpoints strictly define allowed query params and return an error if unexpected params are present).
+  # - State: Uses the event stream to call events related to streams (event types provided by params).
   - $ref: "#/definitions/streams/accounts"
   - $ref: "#/definitions/streams/checkout_sessions"
   - $ref: "#/definitions/streams/credit_notes"
@@ -1368,23 +1394,28 @@ streams:
   - $ref: "#/definitions/streams/external_account_bank_accounts"
   - $ref: "#/definitions/streams/external_account_cards"
 
-  ## ParentIncrementalStripeSubStream
+  # These streams are base incremental partition streams, with state condition streams as parents:
   - $ref: "#/definitions/streams/checkout_sessions_line_items"
   - $ref: "#/definitions/streams/customer_balance_transactions"
   - $ref: "#/definitions/streams/payout_balance_transactions"
+  - $ref: "#/definitions/streams/setup_attempts"
   - $ref: "#/definitions/streams/transfer_reversals"
 
-  ## UpdatedCursorIncrementalStripeSubStream
+  ## These streams are state condition streams with partition behavior:
+  # - No State: Runs the partition stream that shares the same parent state condition stream.
+  # - State: Uses the event stream to call events related to streams (event types provided by params).
   - $ref: "#/definitions/streams/payment_methods"
   - $ref: "#/definitions/streams/persons"
 
-  ## UpdatedCursorIncrementalStripeLazySubStream
-  - $ref: "#/definitions/streams/subscription_items"
-  - $ref: "#/definitions/streams/invoice_line_items"
+  ## These streams are state condition streams with lazy read logic:
+  # - No State: Runs lazy read logic where the first N records are fetched from the parent, and pagination continues with the original logic if needed.
+  # - State: Uses the event stream to call events related to streams (event types provided by params).
   - $ref: "#/definitions/streams/application_fees_refunds"
   - $ref: "#/definitions/streams/bank_accounts"
+  - $ref: "#/definitions/streams/invoice_line_items"
+  - $ref: "#/definitions/streams/subscription_items"
 
-  - $ref: "#/definitions/streams/setup_attempts"
+  # These streams are base incremental partition streams with state condition streams as parents using lazy read logic:
   - $ref: "#/definitions/streams/usage_records"
 
 spec:

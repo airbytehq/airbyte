@@ -21,7 +21,7 @@
       "type": ["null", "integer"]
     },
     "delivery_estimate": {
-      "description": "Estimated delivery time for the shipping rate. (This field is specified as a string for backward compatibility but should be an object.)",
+      "description": "Estimated delivery time for the shipping rate",
       "type": ["null", "string"]
     },
     "display_name": {
