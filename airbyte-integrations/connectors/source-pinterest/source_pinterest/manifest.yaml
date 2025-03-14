@@ -12,7 +12,6 @@ definitions:
     refresh_request_headers:
       Authorization: "Basic {{ [config.get('credentials', {}).get('client_id', config['client_id']), config.get('credentials', {}).get('client_secret', config['client_secret'])] | join(':') | base64binascii_decode }}"
 
-
   # Error handlers
   base_error_handler:
     type: DefaultErrorHandler
