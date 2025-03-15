@@ -544,9 +544,6 @@ const understandingAirbyte = {
     "understanding-airbyte/supported-data-types",
     "understanding-airbyte/secrets",
     "understanding-airbyte/cdc",
-    "understanding-airbyte/file-transfer",
-    "understanding-airbyte/permission-sync",
-    "understanding-airbyte/unstructured-documents",
     "understanding-airbyte/resumability",
     "understanding-airbyte/json-avro-conversion",
     "understanding-airbyte/schemaless-sources-and-destinations",
@@ -605,7 +602,6 @@ module.exports = {
       type: "doc",
       id: "using-airbyte/mappings",
     },
-    understandingAirbyte,
     {
       type: "category",
       label: "Transformations",
@@ -764,6 +760,7 @@ module.exports = {
       label: "Using PyAirbyte",
       id: "using-airbyte/pyairbyte/getting-started",
     },
+    understandingAirbyte,
     {
       type: "category",
       label: "Licenses",
