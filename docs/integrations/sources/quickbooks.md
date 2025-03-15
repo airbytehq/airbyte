@@ -108,6 +108,7 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 
 | Version     | Date       | Pull Request                                             | Subject                                                            |
 |:------------|:-----------|:---------------------------------------------------------| :----------------------------------------------------------------- |
+| 4.1.0 | 2025-03-14 | [55776](https://github.com/airbytehq/airbyte/pull/55776) | Promoting release candidate 4.1.0-rc.1 to a main version. |
 | 4.1.0-rc.1 | 2025-03-10 | [55263](https://github.com/airbytehq/airbyte/pull/55263) | Migrate to manifest-only |
 | 4.0.4 | 2025-03-08 | [55527](https://github.com/airbytehq/airbyte/pull/55527) | Update dependencies |
 | 4.0.3 | 2025-03-01 | [55075](https://github.com/airbytehq/airbyte/pull/55075) | Update dependencies |
