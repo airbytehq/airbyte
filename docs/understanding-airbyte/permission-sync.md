@@ -6,10 +6,10 @@ Permission Sync is a capability in Airbyte that allows you to transfer access co
 
 When transferring data between systems, it's often important to maintain not just the data itself but also the permission structures that govern access to that data. Permission Sync addresses this need by:
 
-- Preserving user and group access controls
-- Maintaining role-based permissions
-- Transferring ownership information
-- Replicating sharing settings
+- Preserving user and group access controls.
+- Maintaining role-based permissions.
+- Transferring ownership information.
+- Replicating sharing settings.
 
 This ensures that when data is moved between systems, the appropriate access controls are maintained.
 
@@ -17,10 +17,10 @@ This ensures that when data is moved between systems, the appropriate access con
 
 When using Permission Sync:
 
-1. The source connector extracts both data and associated permission metadata
-2. Permission structures are mapped between source and destination systems
-3. The destination connector applies compatible permission settings
-4. User and group mappings are maintained where possible
+1. The source connector extracts both data and associated permission metadata.
+2. Permission structures are mapped between source and destination systems.
+3. The destination connector applies compatible permission settings.
+4. User and group mappings are maintained where possible.
 
 Permission Sync can work alongside regular data synchronization or File Sync operations.
 
@@ -29,11 +29,13 @@ Permission Sync can work alongside regular data synchronization or File Sync ope
 Permission Sync is currently in early development with limited connector support. The following connectors are planned to support Permission Sync:
 
 ### Sources
+
 - Microsoft SharePoint (in development)
 - Google Drive (planned)
 - Box (planned)
 
 ### Destinations
+
 - S3 (in development)
 - Google Cloud Storage (planned)
 - Azure Blob Storage (planned)

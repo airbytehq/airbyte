@@ -17,10 +17,10 @@ File Sync addresses these needs by copying files exactly as they appear in the s
 
 When using File Sync:
 
-1. The source connector identifies files to be transferred
-2. Instead of parsing file contents into records, the file is transferred as-is
-3. The destination connector writes the raw file to the target location
-4. File metadata (name, path, size, etc.) is preserved
+1. The source connector identifies files to be transferred.
+2. Instead of parsing file contents into records, the file is transferred as-is.
+3. The destination connector writes the raw file to the target location.
+4. File metadata (name, path, size, etc.) is preserved.
 
 This differs from standard Airbyte syncs where files would be parsed into individual records.
 
@@ -29,13 +29,14 @@ This differs from standard Airbyte syncs where files would be parsed into indivi
 File Sync is currently supported by the following connectors:
 
 ### Sources
-- [SFTP Bulk](../integrations/sources/sftp-bulk.md)
+
+- [SFTP (Gen 2)](../integrations/sources/sftp-bulk.md)
 - [Microsoft SharePoint](../integrations/sources/microsoft-sharepoint.md)
 - [S3](../integrations/sources/s3.md)
 
 ### Destinations
+
 - [S3](../integrations/destinations/s3.md)
-- [Deepset](../integrations/destinations/deepset.md)
 
 ## Using File Sync
 
@@ -49,19 +50,23 @@ To use File Sync:
 
 When configuring a connection between SFTP Bulk (source) and S3 (destination):
 
-1. Set up the SFTP Bulk source with your server credentials and file paths
-2. Configure the S3 destination with your bucket information
-3. The connection will automatically use File Sync mode
+1. Set up the SFTP Bulk source with your server credentials and file paths.
+2. Configure the S3 destination with your bucket information.
+3. The connection will automatically use File Sync mode.
 
 ## Limitations
 
-- Both the source and destination must support File Sync
-- File Sync is designed for raw file movement, not for transforming data
-- Maximum file size limits may apply depending on the connectors
+- Both the source and destination must support File Sync.
+- File Sync is designed for raw file movement, not for transforming data.
+- Maximum file size limits may apply depending on the connectors.
 
 ## Technical Implementation
 
-File Sync is implemented in the Airbyte CDK (Connector Development Kit) version 0.48.0 and above. Connectors that support this feature have the `supportsFileTransfer: true` flag in their metadata.yaml file.
+File Sync is implemented in two Airbyte CDKs:
+- Python Files CDK: Provides file transfer capabilities for Python-based connectors
+- Java/Kotlin Bulk Destination CDK: Supports file transfer for Java-based connectors
+
+Connectors that support this feature have the `supportsFileTransfer: true` flag in their metadata.yaml file.
 
 ## Future Enhancements
 
