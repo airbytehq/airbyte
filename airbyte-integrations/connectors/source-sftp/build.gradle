@@ -12,7 +12,19 @@ application {
     mainClass = 'io.airbyte.integrations.source.sftp.SftpSource'
 }
 
+repositories {
+    maven {
+        url "https://maven.pkg.github.com/airbytehq/airbyte-cdk"
+        credentials {
+            username = "devin-ai-integration"
+            password = System.getenv("GITHUB_TOKEN") ?: ""
+        }
+    }
+}
+
 dependencies {
+    // TODO: Re-pin to the published CDK version once PR https://github.com/airbytehq/airbyte-python-cdk/pull/426 has merged
+    implementation 'io.airbyte:airbyte-cdk:0.20.4-SNAPSHOT'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.13.2'
     implementation 'com.jcraft:jsch:0.1.55'
 
