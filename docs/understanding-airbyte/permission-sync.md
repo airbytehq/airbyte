@@ -26,7 +26,7 @@ Permission Sync can work alongside regular data synchronization or File Sync ope
 
 ## Supported Connectors
 
-Permission Sync is currently in early development with limited connector support. The following connectors are planned to support Permission Sync:
+Permission Sync is currently in early development with limited connector support. The following source connectors are planned to support Permission Sync:
 
 ### Sources
 
@@ -36,9 +36,7 @@ Permission Sync is currently in early development with limited connector support
 
 ### Destinations
 
-- S3 (in development)
-- Google Cloud Storage (planned)
-- Azure Blob Storage (planned)
+Permission Sync uses standard record-type processing, making it compatible with all Airbyte destinations.
 
 ## Using Permission Sync
 
