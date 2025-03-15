@@ -605,6 +605,7 @@ module.exports = {
       type: "doc",
       id: "using-airbyte/mappings",
     },
+    understandingAirbyte,
     {
       type: "category",
       label: "Transformations",
@@ -763,7 +764,6 @@ module.exports = {
       label: "Using PyAirbyte",
       id: "using-airbyte/pyairbyte/getting-started",
     },
-    understandingAirbyte,
     {
       type: "category",
       label: "Licenses",
