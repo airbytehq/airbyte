@@ -265,7 +265,7 @@ class Client:
         self._provider = provider
         self._reader_format = format or "csv"
         self._reader_options = reader_options or {}
-        self._is_zip = url.endswith(".zip")
+        self._is_zip = url.lower().endswith(".zip")
         self.binary_source = self._reader_format in self.binary_formats or self._is_zip
         self.encoding = self._reader_options.get("encoding")
 

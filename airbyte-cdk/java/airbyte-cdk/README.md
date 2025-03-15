@@ -174,6 +174,7 @@ corresponds to that version.
 
 | Version    | Date       | Pull Request                                                | Subject                                                                                                                                                        |
 |:-----------|:-----------|:------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.48.8     | 2025-03-11 | [\#55709](https://github.com/airbytehq/airbyte/pull/55709)  | Filter unwanted tables in discover to prevent null table issues                                                                                               |
 | 0.48.7     | 2025-01-26 | [\#51596](https://github.com/airbytehq/airbyte/pull/51596)  | Make efficient table discovery during read                                                                                                                     |
 | 0.48.6     | 2025-01-26 | [\#51596](https://github.com/airbytehq/airbyte/pull/51596)  | Fix flaky source mssql tests                                                                                                                                   |
 | 0.48.5     | 2025-01-16 | [\#51583](https://github.com/airbytehq/airbyte/pull/51583)  | Also save SSL key to /tmp in destination-postgres                                                                                                              |

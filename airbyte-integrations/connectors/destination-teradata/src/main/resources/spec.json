@@ -105,7 +105,7 @@
       },
       "ssl": {
         "title": "SSL Connection",
-        "description": "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
+        "description": "Encrypt data using SSL. When activating SSL, please select one of the SSL modes.",
         "type": "boolean",
         "default": false,
         "order": 3
@@ -231,7 +231,7 @@
         "order": 5
       },
       "query_band": {
-        "description": "Specifies the custom session query band",
+        "description": "Defines the custom session query band using name-value pairs. For example, 'org=Finance;report=Fin123;'",
         "title": "Query Band",
         "type": "string",
         "order": 6
