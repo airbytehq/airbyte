@@ -31,6 +31,8 @@ definitions:
             - predicate: "{{ 'error_code' in response and response['error_code'] == 'complexityBudgetExhausted' }}"
               action: RETRY
           backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: retry-after
             - type: ConstantBackoffStrategy
               backoff_time_in_seconds: 60
         - type: "DefaultErrorHandler"
