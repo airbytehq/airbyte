@@ -443,7 +443,7 @@ metadata:
     invoices: false
     coupons: false
     transactions: false
-    products: false
+    products: true
   yamlComponents:
     streams:
       subscriptions:
