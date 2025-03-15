@@ -6,11 +6,11 @@ Airbyte provides capabilities for extracting and processing unstructured text do
 
 Traditional data integration typically focuses on structured data with well-defined schemas. However, many organizations need to extract value from unstructured documents such as:
 
-- Text documents (Word, PDF, TXT)
-- Emails and email attachments
-- Web pages and HTML content
-- Presentations and spreadsheets
-- Scanned documents with OCR text
+- Text documents (Word, PDF, TXT).
+- Emails and email attachments.
+- Web pages and HTML content.
+- Presentations and spreadsheets.
+- Scanned documents with OCR text.
 
 Airbyte's unstructured document parsing capabilities address these needs by extracting text content from various document formats and making it available for analysis, search, or AI processing.
 
