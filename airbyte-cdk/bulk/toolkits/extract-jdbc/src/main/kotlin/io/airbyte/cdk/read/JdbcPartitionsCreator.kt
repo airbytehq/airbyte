@@ -73,6 +73,7 @@ sealed class JdbcPartitionsCreator<
             streamState.cursorUpperBound = Jsons.nullNode()
             return
         }
+        // user value to tree
         val cursorUpperBound: JsonNode? = Jsons.valueToTree(record.fields().asSequence().firstOrNull()?.value)
         if (cursorUpperBound == null) {
             log.warn { "No cursor column value found in '${stream.label}'." }
