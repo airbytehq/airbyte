@@ -3,11 +3,13 @@
 #
 
 import copy
+import hashlib
 import math
 import os
 from abc import ABC, abstractmethod
+from datetime import datetime, timedelta
 from itertools import chain
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import pendulum
 import requests
@@ -702,6 +704,12 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
             legacy_cursor_field=legacy_cursor_field,
             event_types=event_types,
             response_filter=response_filter,
+            record_extractor=UpdatedCursorIncrementalRecordExtractor(
+                cursor_field=cursor_field,
+                legacy_cursor_field=legacy_cursor_field,
+                response_filter=response_filter,
+                slice_data_retriever=kwargs.get("slice_data_retriever"),
+            ),
             **kwargs,
         )
         self.lazy_substream = StripeLazySubStream(
@@ -808,3 +816,96 @@ class UpdatedCursorIncrementalStripeSubStream(UpdatedCursorIncrementalStripeStre
             )
         else:
             yield from UpdatedCursorIncrementalStripeStream.stream_slices(self, sync_mode, cursor_field, stream_state)
+
+
+class CustomerBalanceTransactions(ParentIncrementalStripeSubStream):
+    """
+    Custom connector that incrementally collects the id from customers and customer from invoices.
+    It collects these customer IDs and makes a call to retrieve the customer balance transactions.
+    It implements a 2 day window to catch transactions created during previous run or right before
+    the invoice/customer event. To move the cursor along it will also cap to 7 days ago after initial
+    sync.
+    API docs: https://stripe.com/docs/api/customer_balance_transactions/list
+    """
+
+    def __init__(self, cursor_field: str, parents: List[StripeSubStream], *args, **kwargs):
+        self._cursor_field = cursor_field
+        self.parent_streams = parents
+        super().__init__(cursor_field=cursor_field, parent=parents[0], *args, **kwargs)
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        Generate stream slices for the child stream by combining slices from all parent streams.
+        """
+        stream_state = stream_state or {}
+        seen = set()
+
+        for parent in self.parent_streams:
+            parent_stream_state = {parent.cursor_field: stream_state.get(parent.cursor_field, 0)}
+            parent_cursor = parent.cursor_field
+            self.logger.info(f"Starting Parent Stream {parent.name} with parent cursor_field {parent_cursor}")
+            parent_slices = parent.stream_slices(sync_mode=sync_mode, cursor_field=parent_cursor, stream_state=parent_stream_state)
+
+            for stream_slice in parent_slices:
+                parent_records = parent.read_records(
+                    sync_mode=sync_mode, cursor_field=parent_cursor, stream_slice=stream_slice, stream_state=parent_stream_state
+                )
+                for record in parent_records:
+                    parent_id = record.get("customer") or record.get("id")
+                    if parent_id and parent_id not in seen:
+                        seen.add(parent_id)
+                        yield {"parent": {"id": parent_id}}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        created_filter = max(stream_state.get(self.cursor_field, 0) - int(timedelta(days=2).total_seconds()), self.start_date)
+        for record in super().read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        ):
+            if record.get("created") > created_filter:
+                yield record
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        This is responsible for handling the parent and child cursors. It implements a default 2 day lookback window with a minimum cursor
+        floored to 7 days from runtime. The 2 day lookback will catch customer balance transactions that occured during sync or created/updated
+        right before the customer/invoice events. The 7 day floor will make sure the parent streams are moving forward on subsequent syncs even
+        if no new CBTs are generated in source.
+        """
+        current_stream_state = current_stream_state or {}
+
+        # Track the latest cursor for each parent stream
+        latest_child_cursor = latest_record.get(self.cursor_field, 0) or 0
+        latest_parent_cursors = {
+            parent.name: current_stream_state.get(parent.name, {}).get(parent.cursor_field, 0) or 0 for parent in self.parent_streams
+        }
+
+        # Determine the max cursor value across all parent and child streams
+        latest_cursor_value = max(latest_child_cursor, max(latest_parent_cursors.values(), default=0), self.start_date)
+
+        latest_cursor_value_minus_2 = latest_cursor_value - int(timedelta(days=2).total_seconds())
+        current_time_minus_7 = int(datetime.utcnow().timestamp()) - int(timedelta(days=7).total_seconds())
+
+        # Set the new stream cursor the latest cursor across the streams minus 2 or the current runtime minus 7
+        new_stream_cursor = max(latest_cursor_value_minus_2, current_time_minus_7)
+        self.logger.info(
+            f"Latest cursor value across all streams: {latest_cursor_value}, New stream cursor after adjustments: {new_stream_cursor}"
+        )
+
+        updated_state = {self.name: {"created": new_stream_cursor, "updated": new_stream_cursor}}
+        # Update all parent states
+        for parent in self.parent_streams:
+            latest_parent_cursor = latest_parent_cursors.get(parent.name, 0)
+            updated_state[parent.name] = {
+                "created": max(latest_parent_cursor, new_stream_cursor),
+                "updated": max(latest_parent_cursor, new_stream_cursor),
+            }
+
+        return updated_state
