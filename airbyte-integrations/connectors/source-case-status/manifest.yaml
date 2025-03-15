@@ -1,0 +1,670 @@
+version: 6.36.3
+
+type: DeclarativeSource
+
+description: >-
+  Source Connector for the Case Status app allowing the export of cases,
+  messages, and files. 
+
+
+  https://www.casestatus.com/
+
+check:
+  type: CheckStream
+  stream_names:
+    - Messages
+
+definitions:
+  streams:
+    Cases:
+      type: DeclarativeStream
+      name: Cases
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page[number]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reporting/cases
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Cases"
+    Files:
+      type: DeclarativeStream
+      name: Files
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[number]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 10
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/api/files
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Files"
+    Messages:
+      type: DeclarativeStream
+      name: Messages
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[number]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 10
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/api/messages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Messages"
+    Firm Reporting:
+      type: DeclarativeStream
+      name: Firm Reporting
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[number]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 10
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reporting/firm
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Firm Reporting"
+  base_requester:
+    type: HttpRequester
+    url_base: https://sandbox.creativebriefcase.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: Authorization
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/Messages"
+  - $ref: "#/definitions/streams/Cases"
+  - $ref: "#/definitions/streams/Firm Reporting"
+  - $ref: "#/definitions/streams/Files"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - base_url
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: Prefix with 'ApiKey ' then insert your API Key
+        order: 1
+        title: API Key
+        airbyte_secret: true
+      base_url:
+        type: string
+        description: Base URL
+        order: 0
+        title: Base Url
+        default: https://app.casestatus.com
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://documentation.casestatus.com
+    openapiSpecUrl: https://sandbox.creativebriefcase.com/openapi/spec.json
+  testedStreams:
+    Cases:
+      hasRecords: true
+      streamHash: 21cba55d91776d252c1fb071a78b4a213e8600eb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Files:
+      hasRecords: true
+      streamHash: ff9bc91689dd77b7d2653556730d78ee294db1f9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Messages:
+      hasRecords: true
+      streamHash: ba30d197a079df4fd59d1507f2a871aa9aaed121
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Firm Reporting:
+      hasRecords: true
+      streamHash: f00877a5be8775a2a96e24c167def317a19142dc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    Cases: true
+    Files: true
+    Messages: true
+    Firm Reporting: true
+
+schemas:
+  Cases:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      Status:
+        type:
+          - string
+          - "null"
+      Clients:
+        type:
+          - object
+          - "null"
+        properties:
+          Client 1 ID:
+            type:
+              - number
+              - "null"
+          Client 2 ID:
+            type:
+              - number
+              - "null"
+          Client 3 ID:
+            type:
+              - number
+              - "null"
+          Client 1 Email:
+            type:
+              - string
+              - "null"
+          Client 3 Email:
+            type:
+              - string
+              - "null"
+          Client 1 Last Name:
+            type:
+              - string
+              - "null"
+          Client 2 Last Name:
+            type:
+              - string
+              - "null"
+          Client 3 Last Name:
+            type:
+              - string
+              - "null"
+          Client 1 Cell Phone:
+            type:
+              - string
+              - "null"
+          Client 1 First Name:
+            type:
+              - string
+              - "null"
+          Client 2 Cell Phone:
+            type:
+              - string
+              - "null"
+          Client 2 First Name:
+            type:
+              - string
+              - "null"
+          Client 3 Cell Phone:
+            type:
+              - string
+              - "null"
+          Client 3 First Name:
+            type:
+              - string
+              - "null"
+          Client 1 Device Type:
+            type:
+              - string
+              - "null"
+          Client 1 Last Opened:
+            type:
+              - string
+              - "null"
+          Client 2 Device Type:
+            type:
+              - string
+              - "null"
+          Client 2 Last Opened:
+            type:
+              - string
+              - "null"
+          Client 3 Last Opened:
+            type:
+              - string
+              - "null"
+          Client 1 Last Used Web App:
+            type:
+              - string
+              - "null"
+          Client 1 Last Used iOS App:
+            type:
+              - string
+              - "null"
+          Client 1 Mobile OS Version:
+            type:
+              - string
+              - "null"
+          Client 2 Last Used Web App:
+            type:
+              - string
+              - "null"
+          Client 2 Mobile OS Version:
+            type:
+              - string
+              - "null"
+          Client 3 Last Used Web App:
+            type:
+              - string
+              - "null"
+          Client 1 Mobile App Version:
+            type:
+              - string
+              - "null"
+          Client 2 Mobile App Version:
+            type:
+              - string
+              - "null"
+          Client 1 Last Used Android App:
+            type:
+              - string
+              - "null"
+      Attorneys:
+        type:
+          - object
+          - "null"
+        properties:
+          Attorney 1 Id:
+            type:
+              - number
+              - "null"
+          Attorney 2 Id:
+            type:
+              - number
+              - "null"
+          Attorney 3 Id:
+            type:
+              - number
+              - "null"
+          Attorney 4 Id:
+            type:
+              - number
+              - "null"
+          Attorney 1 Email:
+            type:
+              - string
+              - "null"
+          Attorney 2 Email:
+            type:
+              - string
+              - "null"
+          Attorney 3 Email:
+            type:
+              - string
+              - "null"
+          Attorney 4 Email:
+            type:
+              - string
+              - "null"
+          Attorney 1 Last Name:
+            type:
+              - string
+              - "null"
+          Attorney 2 Last Name:
+            type:
+              - string
+              - "null"
+          Attorney 3 Last Name:
+            type:
+              - string
+              - "null"
+          Attorney 4 Last Name:
+            type:
+              - string
+              - "null"
+          Attorney 1 First Name:
+            type:
+              - string
+              - "null"
+          Attorney 2 First Name:
+            type:
+              - string
+              - "null"
+          Attorney 3 First Name:
+            type:
+              - string
+              - "null"
+          Attorney 4 First Name:
+            type:
+              - string
+              - "null"
+      Case Name:
+        type:
+          - string
+          - "null"
+      Last Login:
+        type:
+          - string
+          - "null"
+      Attorney Id:
+        type:
+          - number
+          - "null"
+      Internal ID:
+        type:
+          - number
+          - "null"
+      Last Updated:
+        type:
+          - string
+          - "null"
+      Incident Date:
+        type:
+          - string
+          - "null"
+      Practice Area:
+        type:
+          - string
+          - "null"
+      Attorney Email:
+        type:
+          - string
+          - "null"
+      Case Closed At:
+        type:
+          - string
+          - "null"
+      Integration ID:
+        type:
+          - string
+          - "null"
+      Review Sent At:
+        type:
+          - string
+          - "null"
+      Case Created At:
+        type:
+          - string
+          - "null"
+      Case Deleted At:
+        type:
+          - string
+          - "null"
+      Most Recent NPS:
+        type:
+          - number
+          - "null"
+      Target Language:
+        type:
+          - string
+          - "null"
+      Total Documents:
+        type:
+          - number
+          - "null"
+      Client Last Name:
+        type:
+          - string
+          - "null"
+      Total Activities:
+        type:
+          - number
+          - "null"
+      Case Manager 1 ID:
+        type:
+          - number
+          - "null"
+      Case Manager 2 ID:
+        type:
+          - number
+          - "null"
+      Client First Name:
+        type:
+          - string
+          - "null"
+      Last Message Sent:
+        type:
+          - string
+          - "null"
+      Attorney Last Name:
+        type:
+          - string
+          - "null"
+      Attorney First Name:
+        type:
+          - string
+          - "null"
+      Case Activated Date:
+        type:
+          - string
+          - "null"
+      Total Documents Sent:
+        type:
+          - number
+          - "null"
+      Last Message Received:
+        type:
+          - string
+          - "null"
+      Total Checklist Items:
+        type:
+          - number
+          - "null"
+      Total Activities Login:
+        type:
+          - number
+          - "null"
+      Case Manager 1 Last Name:
+        type:
+          - string
+          - "null"
+      Case Manager 2 Last Name:
+        type:
+          - string
+          - "null"
+      Total Activities Message:
+        type:
+          - number
+          - "null"
+      Total Documents Received:
+        type:
+          - number
+          - "null"
+      Case Manager 1 First Name:
+        type:
+          - string
+          - "null"
+      Case Manager 2 First Name:
+        type:
+          - string
+          - "null"
+      Most Recent Message Sent At:
+        type:
+          - string
+          - "null"
+      Total Activities Engagement:
+        type:
+          - number
+          - "null"
+      Total Checklist Items Completed:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  Files:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      size:
+        type:
+          - number
+          - "null"
+      case_id:
+        type:
+          - string
+          - "null"
+      extension:
+        type:
+          - string
+          - "null"
+      file_name:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      content_type:
+        type:
+          - string
+          - "null"
+      case_readable_id:
+        type:
+          - string
+          - "null"
+      case_practice_area:
+        type:
+          - string
+          - "null"
+      case_integration_id:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  Messages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      content:
+        type:
+          - string
+          - "null"
+      sent_at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      readable_id:
+        type:
+          - string
+          - "null"
+      sender_name:
+        type:
+          - string
+          - "null"
+      integration_id:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  Firm Reporting:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      Average Response Time:
+        type:
+          - string
+          - "null"
+      Cases Per Active User:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
