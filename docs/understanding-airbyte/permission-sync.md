@@ -74,3 +74,8 @@ The Permission Sync capability is being actively developed with plans to support
 - Support for complex role-based access control (RBAC) systems.
 - Automated user/group identity mapping.
 - Audit logging for permission changes during sync.
+
+## Related Topics
+
+- [File Sync](./file-transfer.md) - Learn about transferring files between systems without parsing
+- [Parsing Unstructured Documents](./unstructured-documents.md) - Learn about extracting text from unstructured documents

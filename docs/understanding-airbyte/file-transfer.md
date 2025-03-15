@@ -71,3 +71,8 @@ Connectors that support this feature have the `supportsFileTransfer: true` flag 
 ## Future Enhancements
 
 The File Sync capability is being expanded to support more source and destination connectors. Check the documentation of specific connectors to see if they support File Sync.
+
+## Related Topics
+
+- [Permission Sync](./permission-sync.md) - Learn about transferring access control information between systems
+- [Parsing Unstructured Documents](./unstructured-documents.md) - Learn about extracting text from unstructured documents

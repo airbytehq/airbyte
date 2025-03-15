@@ -76,3 +76,8 @@ The unstructured document parsing capability is being actively developed with pl
 - Enhanced metadata extraction.
 - Support for more document formats.
 - Integration with AI models for content analysis.
+
+## Related Topics
+
+- [File Sync](./file-transfer.md) - Learn about transferring files between systems without parsing
+- [Permission Sync](./permission-sync.md) - Learn about transferring access control information between systems
