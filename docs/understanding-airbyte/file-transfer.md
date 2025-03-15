@@ -6,10 +6,10 @@ Airbyte File Sync is a capability that allows you to move unstructured data, non
 
 Traditional data integration in Airbyte involves extracting structured data as individual records, which are then processed and loaded into a destination. However, many use cases require transferring raw files without parsing their contents:
 
-- Moving binary files (images, videos, PDFs)
-- Transferring compressed files (ZIP, GZIP)
-- Migrating unstructured text data
-- Preserving file formats for specialized processing
+- Moving binary files (images, videos, PDFs).
+- Transferring compressed files (ZIP, GZIP).
+- Migrating unstructured text data.
+- Preserving file formats for specialized processing.
 
 File Sync addresses these needs by copying files exactly as they appear in the source to the destination, preserving their original format and content.
 
@@ -42,9 +42,9 @@ File Sync is currently supported by the following connectors:
 
 To use File Sync:
 
-1. Configure a connection using a source and destination that both support File Sync
-2. The File Sync mode will be automatically enabled when compatible connectors are used
-3. Files will be transferred without parsing their contents
+1. Configure a connection using a source and destination that both support File Sync.
+2. The File Sync mode will be automatically enabled when compatible connectors are used.
+3. Files will be transferred without parsing their contents.
 
 ### Configuration Example
 
@@ -63,8 +63,8 @@ When configuring a connection between SFTP Bulk (source) and S3 (destination):
 ## Technical Implementation
 
 File Sync is implemented in two Airbyte CDKs:
-- Python Files CDK: Provides file transfer capabilities for Python-based connectors
-- Java/Kotlin Bulk Destination CDK: Supports file transfer for Java-based connectors
+- Python Files CDK: Provides file transfer capabilities for Python-based connectors.
+- Java/Kotlin Bulk Destination CDK: Supports file transfer for Java-based connectors.
 
 Connectors that support this feature have the `supportsFileTransfer: true` flag in their metadata.yaml file.
 

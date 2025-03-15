@@ -44,25 +44,25 @@ Permission Sync is currently in early development with limited connector support
 
 To use Permission Sync:
 
-1. Configure a connection using a source and destination that both support Permission Sync
-2. Enable the Permission Sync option in the connection settings
-3. Configure user/group mapping if needed for cross-system synchronization
+1. Configure a connection using a source and destination that both support Permission Sync.
+2. Enable the Permission Sync option in the connection settings.
+3. Configure user/group mapping if needed for cross-system synchronization.
 
 ### Configuration Example
 
 When configuring a connection between Microsoft SharePoint (source) and S3 (destination):
 
-1. Set up the SharePoint source with your tenant credentials
-2. Configure the S3 destination with your bucket information and IAM settings
-3. Enable Permission Sync in the advanced options
-4. Configure user mapping between SharePoint users and AWS IAM roles/users
+1. Set up the SharePoint source with your tenant credentials.
+2. Configure the S3 destination with your bucket information and IAM settings.
+3. Enable Permission Sync in the advanced options.
+4. Configure user mapping between SharePoint users and AWS IAM roles/users.
 
 ## Limitations
 
-- Permission structures vary significantly between systems, so perfect mapping is not always possible
-- Some permission types may not have equivalents in destination systems
-- User and group identity mapping may require manual configuration
-- Permission Sync is most effective between systems with similar access control models
+- Permission structures vary significantly between systems, so perfect mapping is not always possible.
+- Some permission types may not have equivalents in destination systems.
+- User and group identity mapping may require manual configuration.
+- Permission Sync is most effective between systems with similar access control models.
 
 ## Technical Implementation
 
@@ -72,7 +72,7 @@ Permission Sync is implemented as an extension to the Airbyte protocol, allowing
 
 The Permission Sync capability is being actively developed with plans to support more source and destination connectors. Future enhancements will include:
 
-- More granular permission mapping options
-- Support for complex role-based access control (RBAC) systems
-- Automated user/group identity mapping
-- Audit logging for permission changes during sync
+- More granular permission mapping options.
+- Support for complex role-based access control (RBAC) systems.
+- Automated user/group identity mapping.
+- Audit logging for permission changes during sync.
