@@ -793,6 +793,15 @@ class ParentIncrementalStripeSubStream(StripeSubStream):
         )
 
 
+class TaxRates(CreatedCursorIncrementalStripeStream):
+    """
+    API docs: https://docs.stripe.com/api/tax_rates/list
+    """
+
+    def path(self, **kwargs):
+        return "tax_rates"
+    
+
 class UpdatedCursorIncrementalStripeSubStream(UpdatedCursorIncrementalStripeStream, HttpSubStream):
     """
     This class behaves exactly the same as its parent, UpdatedCursorIncrementalStripeStream, but the initial/full refresh sync is performed using the parent stream.
