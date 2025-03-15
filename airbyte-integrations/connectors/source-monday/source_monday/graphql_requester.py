@@ -75,6 +75,13 @@ class MondayGraphqlRequester(HttpRequester):
             else:
                 fields.append(field)
 
+        # when querying the boards stream (object_name == "boards"), filter by board_ids if they provided in the config
+        if object_name == "boards" and "board_ids" in self.config:
+            # if we are building a query for incremental syncs, board ids are already present under 'ids' key in object_arguments (as a result of fetching the activity_logs stream first)
+            # These ids are already an intersection of the board_ids provided in the config and the ones that must be fetched for the incremental sync and need not be overridden
+            if "ids" not in object_arguments:
+                object_arguments["ids"] = self.config.get("board_ids")
+
         arguments = self._get_object_arguments(**object_arguments)
         arguments = f"({arguments})" if arguments else ""
 
@@ -113,6 +120,9 @@ class MondayGraphqlRequester(HttpRequester):
             query = self._build_query("next_items_page", field_schema, limit=nested_limit, cursor=f'"{sub_page}"')
         else:
             query = self._build_query("items_page", field_schema, limit=nested_limit)
+            # since items are a subresource of boards, when querying items, filter by board_ids if provided in the config
+            if "board_ids" in self.config and "ids" not in object_arguments:
+                object_arguments["ids"] = self.config.get("board_ids")
             arguments = self._get_object_arguments(**object_arguments)
             query = f"boards({arguments}){{{query}}}"
 
@@ -156,7 +166,10 @@ class MondayGraphqlRequester(HttpRequester):
             created_at = datetime.fromtimestamp(created_at).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         query = self._build_query(object_name, field_schema, limit=nested_limit, page=sub_page, fromt=created_at)
+        if "board_ids" in self.config and "ids" not in object_arguments:
+            object_arguments["ids"] = self.config.get("board_ids")
         arguments = self._get_object_arguments(**object_arguments)
+
         return f"boards({arguments}){{{query}}}"
 
     def get_request_headers(
