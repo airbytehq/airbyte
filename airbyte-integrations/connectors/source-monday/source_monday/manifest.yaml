@@ -120,9 +120,11 @@ definitions:
   activity_logs_stream:
     description: "https://developers.intercom.com/intercom-api-reference/reference/scroll-over-all-companies"
     incremental_sync:
-      type: CustomIncrementalSync
-      class_name: source_monday.components.IncrementalSingleSlice
+      type: DatetimeBasedCursor
       cursor_field: "created_at_int"
+      datetime_format: "%s"
+      start_datetime: "0"
+      is_client_side_incremental: true
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       record_selector:

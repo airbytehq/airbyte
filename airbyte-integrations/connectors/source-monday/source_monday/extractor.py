@@ -37,31 +37,32 @@ class MondayActivityExtractor(RecordExtractor):
     decoder: Decoder = JsonDecoder(parameters={})
 
     def extract_records(self, response: requests.Response) -> List[Record]:
-        response_body = self.decoder.decode(response)
-        result = []
-        if not response_body["data"]["boards"]:
-            return result
+        response_body_generator = self.decoder.decode(response)
+        for response_body in response_body_generator:
+            result = []
+            if not response_body["data"]["boards"]:
+                yield from result
 
-        for board_data in response_body["data"]["boards"]:
-            if not isinstance(board_data, dict) or not board_data.get("activity_logs"):
-                continue
-            for record in board_data.get("activity_logs", []):
-                json_data = json.loads(record["data"])
-                new_record = record
-                if record.get("created_at"):
-                    new_record.update({"created_at_int": int(record.get("created_at", 0)) // 10_000_000})
-                else:
+            for board_data in response_body["data"]["boards"]:
+                if not isinstance(board_data, dict) or not board_data.get("activity_logs"):
                     continue
+                for record in board_data.get("activity_logs", []):
+                    json_data = json.loads(record["data"])
+                    new_record = record
+                    if record.get("created_at"):
+                        new_record.update({"created_at_int": int(record.get("created_at", 0)) // 10_000_000})
+                    else:
+                        continue
 
-                if record.get("entity") == "pulse" and json_data.get("pulse_id"):
-                    new_record.update({"pulse_id": json_data.get("pulse_id")})
+                    if record.get("entity") == "pulse" and json_data.get("pulse_id"):
+                        new_record.update({"pulse_id": json_data.get("pulse_id")})
 
-                if record.get("entity") == "board" and json_data.get("board_id"):
-                    new_record.update({"board_id": json_data.get("board_id")})
+                    if record.get("entity") == "board" and json_data.get("board_id"):
+                        new_record.update({"board_id": json_data.get("board_id")})
 
-                result.append(new_record)
+                    result.append(new_record)
 
-        return result
+            yield from result
 
 
 @dataclass
