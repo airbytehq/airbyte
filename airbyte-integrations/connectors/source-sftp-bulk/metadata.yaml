@@ -13,7 +13,7 @@ data:
   githubIssueLabel: source-sftp-bulk
   icon: sftp.svg
   license: MIT
-  name: SFTP Bulk
+  name: SFTP (Gen 2)
   remoteRegistries:
     pypi:
       enabled: true
@@ -21,8 +21,10 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      name: SFTP
     oss:
       enabled: true
+      name: SFTP
   releaseStage: alpha
   releases:
     rolloutConfiguration:

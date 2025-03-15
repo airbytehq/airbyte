@@ -11,7 +11,7 @@ data:
   githubIssueLabel: source-sftp
   icon: sftp.svg
   license: MIT
-  name: SFTP
+  name: SFTP (Legacy)
   registryOverrides:
     cloud:
       enabled: true

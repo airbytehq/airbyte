@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 version = "1.7.4"
 name = "source-sftp-bulk"
-description = "Source implementation for SFTP Bulk."
+description = "Source implementation for SFTP (Gen 2)."
 authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
 readme = "README.md"

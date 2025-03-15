@@ -2,6 +2,10 @@
 
 This page contains the setup guide and reference information for the SFTP source connector.
 
+:::note
+This connector has been renamed to "SFTP (Legacy)" and is being deprecated. For new SFTP connections, please use the newer SFTP (Gen 2) connector (previously named "SFTP Bulk"). This legacy connector will be removed in a future release. The connector's programmatic name remains `source-sftp`.
+:::
+
 ## Prerequisites
 
 - Access to a remote server that supports SFTP

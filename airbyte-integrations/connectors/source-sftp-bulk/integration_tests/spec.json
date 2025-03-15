@@ -1,7 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/sftp-bulk",
   "connectionSpecification": {
-    "title": "SFTP Bulk Source Spec",
+    "title": "SFTP (Gen 2) Source Spec",
     "description": "Used during spec; allows the developer to configure the cloud provider specific options\nthat are needed when users configure a file-based source.",
     "type": "object",
     "properties": {

@@ -6,6 +6,10 @@ This page contains the setup guide and reference information for the [SFTP Bulk]
 
 </HideInUI>
 
+:::note
+This connector was previously named "SFTP Bulk". It has been renamed to "SFTP (Gen 2)" as it is the recommended connector for creating new SFTP connections. The connector's programmatic name remains `source-sftp-bulk`.
+:::
+
 The SFTP Bulk connector offers several features that are not available in the standard SFTP source connector:
 
 - **Bulk ingestion of files**: This connector can consolidate and process multiple files as a single data stream in your destination system.

@@ -29,7 +29,7 @@ class PrivateKeyCredentials(BaseModel):
 
 class SourceSFTPBulkSpec(AbstractFileBasedSpec):
     class Config:
-        title = "SFTP Bulk Source Spec"
+        title = "SFTP (Gen 2) Source Spec"
 
     host: str = Field(title="Host Address", description="The server host address", examples=["www.host.com", "192.0.2.1"], order=2)
     username: str = Field(title="User Name", description="The server user", order=3)
