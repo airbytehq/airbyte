@@ -8,7 +8,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.data.iceberg.parquet.IcebergParquetPipelineFactory
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableWriterFactory
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.DirectLoader
@@ -79,17 +79,20 @@ class S3DataLakeDirectLoader(
         val commitLock: Any = Any()
     }
 
-    override fun accept(record: DestinationRecordAirbyteValue): DirectLoader.DirectLoadResult {
+    override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
+        val recordAirbyteValue = record.asDestinationRecordAirbyteValue()
+
         val icebergRecord =
             icebergUtil.toRecord(
-                record = record,
+                record = recordAirbyteValue,
                 stream = stream,
                 tableSchema = schema,
                 pipeline = pipeline
             )
         writer.write(icebergRecord)
 
-        dataSize += record.serializedSizeBytes // TODO: use icebergRecord.size() instead?
+        dataSize +=
+            recordAirbyteValue.serializedSizeBytes // TODO: use icebergRecord.size() instead?
         if (dataSize < batchSize) {
             return DirectLoader.Incomplete
         }
