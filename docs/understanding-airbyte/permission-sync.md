@@ -18,11 +18,11 @@ This ensures that when data is moved between systems, the appropriate access con
 When using Permission Sync:
 
 1. The source connector extracts both data and associated permission metadata.
-2. Permission structures are mapped between source and destination systems.
-3. The destination connector applies compatible permission settings.
-4. User and group mappings are maintained where possible.
+2. Permission structures are replicated from the source and sent as records.
+3. The destination connector receives permission information as incoming records.
+4. Permission logic allows restrictions to be reconstructed in downstream applications.
 
-Permission Sync can work alongside regular data synchronization or File Sync operations.
+While Permission Sync and File Sync connections can often complement each other, they are distinct and separate features and should be set up as separate connections.
 
 ## Supported Connectors
 
