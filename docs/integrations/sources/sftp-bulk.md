@@ -6,6 +6,10 @@ This page contains the setup guide and reference information for the [SFTP Bulk]
 
 </HideInUI>
 
+:::note
+This connector was previously named "SFTP Bulk". It has been renamed to "SFTP (Gen 2)" as it is the recommended connector for creating new SFTP connections. The connector's programmatic name remains `source-sftp-bulk`.
+:::
+
 The SFTP Bulk connector offers several features that are not available in the standard SFTP source connector:
 
 - **Bulk ingestion of files**: This connector can consolidate and process multiple files as a single data stream in your destination system.
@@ -147,6 +151,7 @@ This source provides a single stream per file with a dynamic schema. The current
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
+| 1.7.5 | 2025-03-15 | [55780](https://github.com/airbytehq/airbyte/pull/55780) | chore(connectors): Rename SFTP connectors |
 | 1.7.4 | 2025-02-08 | [53570](https://github.com/airbytehq/airbyte/pull/53570) | Update dependencies |
 | 1.7.3 | 2025-02-01 | [52971](https://github.com/airbytehq/airbyte/pull/52971) | Update dependencies |
 | 1.7.2 | 2025-01-25 | [52470](https://github.com/airbytehq/airbyte/pull/52470) | Update dependencies |
