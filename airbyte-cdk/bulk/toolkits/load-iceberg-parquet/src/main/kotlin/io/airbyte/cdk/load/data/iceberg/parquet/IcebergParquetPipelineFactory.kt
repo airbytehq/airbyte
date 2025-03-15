@@ -11,7 +11,9 @@ import io.airbyte.cdk.load.data.AirbyteValueNoopMapper
 import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.data.MapperPipelineFactory
 import io.airbyte.cdk.load.data.MergeUnions
+import javax.inject.Singleton
 
+@Singleton
 class IcebergParquetPipelineFactory : MapperPipelineFactory {
     override fun create(stream: DestinationStream): MapperPipeline =
         MapperPipeline(

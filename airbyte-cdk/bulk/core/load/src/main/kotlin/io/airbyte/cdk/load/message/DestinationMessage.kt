@@ -161,7 +161,9 @@ data class DestinationRecordSerialized(
 /** Represents a record both deserialized AND marshaled to airbyte value. The marshaling */
 data class DestinationRecordAirbyteValue(
     val stream: DestinationStream.Descriptor,
-    val data: AirbyteValue,
+    val declaredFields: Map<String, EnrichedAirbyteValue>,
+    val airbyteMetaFields: Map<String, EnrichedAirbyteValue>,
+    val undeclaredFields: Map<String, JsonNode>,
     val emittedAtMs: Long,
     val meta: Meta?,
     val serializedSizeBytes: Long = 0L
