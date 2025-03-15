@@ -546,6 +546,7 @@ const understandingAirbyte = {
     "understanding-airbyte/cdc",
     "understanding-airbyte/file-transfer",
     "understanding-airbyte/permission-sync",
+    "understanding-airbyte/unstructured-documents",
     "understanding-airbyte/resumability",
     "understanding-airbyte/json-avro-conversion",
     "understanding-airbyte/schemaless-sources-and-destinations",

@@ -41,6 +41,8 @@
   to: /understanding-airbyte/file-transfer
 - from: /permission-sync
   to: /understanding-airbyte/permission-sync
+- from: /unstructured-data
+  to: /understanding-airbyte/unstructured-documents
 # November 2023 documentation restructure:
 - from:
     - /project-overview/product-support-levels
