@@ -3,7 +3,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.23"
+version = "0.1.25"
 name = "source-microsoft-dataverse"
 description = "Source implementation for Microsoft Dataverse."
 authors = ["Airbyte <contact@airbyte.io>"]

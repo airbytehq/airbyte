@@ -3,7 +3,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "3.4.19"
+version = "3.5.0"
 name = "source-mixpanel"
 description = "Source implementation for Mixpanel."
 authors = ["Airbyte <contact@airbyte.io>"]
@@ -25,7 +25,7 @@ source-mixpanel = "source_mixpanel.run:run"
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6"
-pytest = "^6.1"
+pytest = "^8.0.0"
 
 
 [tool.poe]

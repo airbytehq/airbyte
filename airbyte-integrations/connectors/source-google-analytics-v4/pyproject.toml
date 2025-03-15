@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.4.11"
+version = "0.4.13"
 name = "source-google-analytics-v4"
 description = "Source implementation for Google Analytics V4."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -26,7 +26,7 @@ cryptography = "==41.0.4"
 source-google-analytics-v4 = "source_google_analytics_v4.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.1"
+pytest = "^8.0.0"
 requests-mock = "^1.11.0"
 pytest-mock = "^3.12.0"
 freezegun = "^1.4.0"

@@ -6,10 +6,10 @@ data:
       - oauth.platform.intuit.com
   connectorSubtype: api
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.38.3@sha256:fcba02266f262aabc2f37e4f14574aa1c8c5cffd018504bab28803e405c93afe
   connectorType: source
   definitionId: cf9c4355-b171-4477-8f2d-6c5cc5fc8b7e
-  dockerImageTag: 4.0.2
+  dockerImageTag: 4.1.0
   dockerRepository: airbyte/source-quickbooks
   githubIssueLabel: source-quickbooks
   icon: quickbooks.svg
@@ -17,7 +17,7 @@ data:
   name: QuickBooks
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-quickbooks
   registryOverrides:
     cloud:
@@ -39,15 +39,16 @@ data:
         upgradeDeadline: "2023-10-04"
       4.0.0:
         message:
-          "The config no longer has a nested credentials field, while the config fields remain the same,
-          they are now at the root level instead of being nested inside a credentials object
-          You will need to repopulate the config fields to make the connector work again.
-          This is done to fix the refresh token issue where it wasn't getting updated after 24 hours."
+          "The config no longer has a nested credentials field, while the config
+          fields remain the same, they are now at the root level instead of being
+          nested inside a credentials object You will need to repopulate the config
+          fields to make the connector work again. This is done to fix the refresh
+          token issue where it wasn't getting updated after 24 hours."
         upgradeDeadline: "2025-02-15"
   documentationUrl: https://docs.airbyte.com/integrations/sources/quickbooks
   tags:
     - cdk:low-code
-    - language:python
+    - language:manifest-only
   ab_internal:
     sl: 100
     ql: 100

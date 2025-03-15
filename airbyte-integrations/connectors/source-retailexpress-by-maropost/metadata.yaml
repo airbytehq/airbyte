@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-retailexpress-by-maropost
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.39.3@sha256:ff59661ef3ad9e87da0ff35c36230acb138a5fb0900608b61449bef25d5ebc7b
   connectorSubtype: api
   connectorType: source
   definitionId: 73c01e46-6b1d-434f-8f15-b9a0e67c8999
-  dockerImageTag: 0.0.6
+  dockerImageTag: 0.0.9
   dockerRepository: airbyte/source-retailexpress-by-maropost
   githubIssueLabel: source-retailexpress-by-maropost
   icon: icon.svg

@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-piwik
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.38.3@sha256:fcba02266f262aabc2f37e4f14574aa1c8c5cffd018504bab28803e405c93afe
   connectorSubtype: api
   connectorType: source
   definitionId: 09f894a4-d2fb-488f-b0eb-640205314296
-  dockerImageTag: 0.0.16
+  dockerImageTag: 0.0.18
   dockerRepository: airbyte/source-piwik
   githubIssueLabel: source-piwik
   icon: icon.svg

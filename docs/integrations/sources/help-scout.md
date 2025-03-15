@@ -32,6 +32,8 @@ Auth Overview: https://developer.helpscout.com/mailbox-api/overview/authenticati
 
 | Version          | Date              | Pull Request                                         | Subject        |
 |------------------|-------------------|------------------------------------------------------|----------------|
+| 0.0.7 | 2025-03-08 | [55474](https://github.com/airbytehq/airbyte/pull/55474) | Update dependencies |
+| 0.0.6 | 2025-03-01 | [54798](https://github.com/airbytehq/airbyte/pull/54798) | Update dependencies |
 | 0.0.5 | 2025-02-22 | [54330](https://github.com/airbytehq/airbyte/pull/54330) | Update dependencies |
 | 0.0.4 | 2025-02-15 | [53833](https://github.com/airbytehq/airbyte/pull/53833) | Update dependencies |
 | 0.0.3 | 2025-02-08 | [53281](https://github.com/airbytehq/airbyte/pull/53281) | Update dependencies |

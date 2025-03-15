@@ -254,16 +254,16 @@ files = [
 
 [[package]]
 name = "databend-driver"
-version = "0.26.1"
+version = "0.26.2"
 description = "Databend Driver Python Binding"
 optional = false
 python-versions = "<3.14,>=3.8"
 files = [
-    {file = "databend_driver-0.26.1-cp37-abi3-macosx_10_12_x86_64.whl", hash = "sha256:48ea479096f4ffff3c8cbb14b9574c1308553e97e748b252beb44e4897b9ab10"},
-    {file = "databend_driver-0.26.1-cp37-abi3-macosx_11_0_arm64.whl", hash = "sha256:b717415d87c808eecc04331193986d1cee76e3173c86bd955901439300489364"},
-    {file = "databend_driver-0.26.1-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a22901c123b6f8949b1b1fd7c0f6e4c6d28b2ec01f3220d127b1d96ee6b54923"},
-    {file = "databend_driver-0.26.1-cp37-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:6b79213a922569c0755ddb9dcde6fc083fb1f0bc7e7daf918d96d06598f46782"},
-    {file = "databend_driver-0.26.1-cp37-abi3-win_amd64.whl", hash = "sha256:5f1ee9eb5bfc19412dfe7b482fd226515ee9e1a49c5551fb3762a64a021e7020"},
+    {file = "databend_driver-0.26.2-cp37-abi3-macosx_10_12_x86_64.whl", hash = "sha256:663b968a2c3146d5b4ac2e6b3b9ef670d159ec7849e353977029f9f7ad479dfb"},
+    {file = "databend_driver-0.26.2-cp37-abi3-macosx_11_0_arm64.whl", hash = "sha256:1522220653a43581fef8446605a3028029fa44869da6a0ee04d4ee3bbbc6ed0f"},
+    {file = "databend_driver-0.26.2-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:65f57989a9a5da821fe1f092d641701ddec4f97c588e20f8e03bfe0b2483f362"},
+    {file = "databend_driver-0.26.2-cp37-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:1072e8e23440571e1ed8251ab5dc951e6e5740a5803b4fe4dc5489dc267a30c0"},
+    {file = "databend_driver-0.26.2-cp37-abi3-win_amd64.whl", hash = "sha256:bbf06205aee8fc4ae35e0d1a5c0e673cb1b14aa2613ded572dc1320404b9aa2d"},
 ]
 
 [[package]]
@@ -464,13 +464,13 @@ six = "*"
 
 [[package]]
 name = "jinja2"
-version = "3.1.5"
+version = "3.1.6"
 description = "A very fast and expressive template engine."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "jinja2-3.1.5-py3-none-any.whl", hash = "sha256:aba0f4dc9ed8013c424088f68a5c226f7d6097ed89b246d7749c2ec4175c6adb"},
-    {file = "jinja2-3.1.5.tar.gz", hash = "sha256:8fefff8dc3034e27bb80d67c671eb8a9bc424c0ef4c0826edbff304cceff43bb"},
+    {file = "jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67"},
+    {file = "jinja2-3.1.6.tar.gz", hash = "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d"},
 ]
 
 [package.dependencies]
@@ -781,13 +781,13 @@ files = [
 
 [[package]]
 name = "pytest"
-version = "8.3.4"
+version = "8.3.5"
 description = "pytest: simple powerful testing with Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pytest-8.3.4-py3-none-any.whl", hash = "sha256:50e16d954148559c9a74109af1eaf0c945ba2d8f30f0a3d3335edde19788b6f6"},
-    {file = "pytest-8.3.4.tar.gz", hash = "sha256:965370d062bce11e73868e0335abac31b4d3de0e82f4007408d242b4f8610761"},
+    {file = "pytest-8.3.5-py3-none-any.whl", hash = "sha256:c69214aa47deac29fad6c2a4f590b9c4a9fdb16a403176fe154b79c0b4d4d820"},
+    {file = "pytest-8.3.5.tar.gz", hash = "sha256:f4efe70cc14e511565ac476b57c279e12a855b11f48f212af1080ef2263d3845"},
 ]
 
 [package.dependencies]
@@ -941,13 +941,13 @@ yaml = ["pyyaml (>=6.0.1)"]
 
 [[package]]
 name = "setuptools"
-version = "75.8.0"
+version = "75.8.2"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "setuptools-75.8.0-py3-none-any.whl", hash = "sha256:e3982f444617239225d675215d51f6ba05f845d4eec313da4418fdbb56fb27e3"},
-    {file = "setuptools-75.8.0.tar.gz", hash = "sha256:c5afc8f407c626b8313a86e10311dd3f661c6cd9c09d4bf8c15c0e11f9f2b0e6"},
+    {file = "setuptools-75.8.2-py3-none-any.whl", hash = "sha256:558e47c15f1811c1fa7adbd0096669bf76c1d3f433f58324df69f3f5ecac4e8f"},
+    {file = "setuptools-75.8.2.tar.gz", hash = "sha256:4880473a969e5f23f2a2be3646b2dfd84af9028716d398e46192f84bc36900d2"},
 ]
 
 [package.extras]
