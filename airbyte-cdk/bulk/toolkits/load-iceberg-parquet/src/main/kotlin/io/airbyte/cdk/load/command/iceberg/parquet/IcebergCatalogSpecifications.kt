@@ -12,8 +12,6 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
-import io.airbyte.cdk.load.command.aws.AWSArnRoleConfiguration
-import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AWSArnRoleSpecification
 
 /**
@@ -58,12 +56,12 @@ interface IcebergCatalogSpecifications {
     /**
      * The catalog type.
      *
-     * Indicates the type of catalog used (e.g., Nessie or Glue) and provides configuration details
-     * specific to that type.
+     * Indicates the type of catalog used (e.g., NESSIE, GLUE, REST) and provides configuration
+     * details specific to that type.
      */
     @get:JsonSchemaTitle("Catalog Type")
     @get:JsonPropertyDescription(
-        "Specifies the type of Iceberg catalog (e.g., NESSIE or GLUE) and its associated configuration."
+        "Specifies the type of Iceberg catalog (e.g., NESSIE, GLUE, REST) and its associated configuration."
     )
     @get:JsonProperty("catalog_type")
     val catalogType: CatalogType
@@ -88,6 +86,11 @@ interface IcebergCatalogSpecifications {
                         (catalogType as NessieCatalogSpecification).accessToken,
                         (catalogType as NessieCatalogSpecification).namespace,
                     )
+                is RestCatalogSpecification ->
+                    RestCatalogConfiguration(
+                        (catalogType as RestCatalogSpecification).serverUri,
+                        (catalogType as RestCatalogSpecification).namespace
+                    )
             }
 
         return IcebergCatalogConfiguration(warehouseLocation, mainBranchName, catalogConfiguration)
@@ -108,6 +111,7 @@ interface IcebergCatalogSpecifications {
 @JsonSubTypes(
     JsonSubTypes.Type(value = NessieCatalogSpecification::class, name = "NESSIE"),
     JsonSubTypes.Type(value = GlueCatalogSpecification::class, name = "GLUE"),
+    JsonSubTypes.Type(value = RestCatalogSpecification::class, name = "REST"),
 )
 @JsonSchemaTitle("Iceberg Catalog Type")
 @JsonSchemaDescription(
@@ -118,6 +122,7 @@ sealed class CatalogType(@JsonSchemaTitle("Catalog Type") open val catalogType: 
     enum class Type(@get:JsonValue val catalogTypeName: String) {
         NESSIE("NESSIE"),
         GLUE("GLUE"),
+        REST("REST"),
     }
 }
 
@@ -174,14 +179,14 @@ class NessieCatalogSpecification(
      * `Destination Namespace` setting for the connection is set to `Destination-defined` or
      * `Source-defined`
      */
-    @get:JsonSchemaTitle("Namespace")
+    @get:JsonSchemaTitle("Default namespace")
     @get:JsonPropertyDescription(
         """The Nessie namespace to be used in the Table identifier. 
-            |This will ONLY be used if the `Destination Namespace` setting for the connection is set to
-            | `Destination-defined` or `Source-defined`"""
+           This will ONLY be used if the `Destination Namespace` setting for the connection is set to
+           `Destination-defined` or `Source-defined`"""
     )
     @get:JsonProperty("namespace")
-    val namespace: String?
+    val namespace: String
 ) : CatalogType(catalogType)
 
 /**
@@ -219,94 +224,45 @@ class GlueCatalogSpecification(
      * `Destination Namespace` setting for the connection is set to `Destination-defined` or
      * `Source-defined`
      */
-    @get:JsonSchemaTitle("Database Name")
+    @get:JsonSchemaTitle("Default database")
     @get:JsonPropertyDescription(
         """The Glue database name. This will ONLY be used if the `Destination Namespace` setting for the connection is set to `Destination-defined` or `Source-defined`"""
     )
     @get:JsonProperty("database_name")
-    val databaseName: String?
+    val databaseName: String
 ) : CatalogType(catalogType), AWSArnRoleSpecification
 
 /**
- * Represents a unified Iceberg catalog configuration.
+ * Rest catalog specifications.
  *
- * This class encapsulates the warehouse location, main branch, and a generic catalog configuration
- * (e.g., Nessie or Glue), providing a standardized way to work with various catalog backends.
+ * Provides configuration details required to connect to the Rest catalog service and manage Iceberg
+ * table metadata.
  */
-@JsonSchemaTitle("Iceberg Catalog Configuration")
-@JsonSchemaDescription(
-    "A unified configuration object for an Iceberg catalog, including warehouse location, main branch name, and backend-specific settings."
-)
-data class IcebergCatalogConfiguration(
-    @JsonSchemaTitle("Warehouse Location")
-    @JsonPropertyDescription("The root location of the data warehouse used by the Iceberg catalog.")
-    val warehouseLocation: String,
-    @JsonSchemaTitle("Main Branch Name")
-    @JsonPropertyDescription("The primary or default branch name in the catalog repository.")
-    val mainBranchName: String,
-    @JsonSchemaTitle("Catalog Configuration")
-    @JsonPropertyDescription(
-        "The specific configuration details of the chosen Iceberg catalog type."
-    )
-    val catalogConfiguration: CatalogConfiguration
-)
+@JsonSchemaTitle("Rest Catalog")
+@JsonSchemaDescription("Configuration details for connecting to a REST catalog.")
+class RestCatalogSpecification(
+    @JsonSchemaTitle("Catalog Type")
+    @JsonProperty("catalog_type")
+    @JsonSchemaInject(json = """{"order":0}""")
+    override val catalogType: Type = Type.REST,
 
-/**
- * A marker interface for catalog configuration details.
- *
- * Implementations of this interface contain the specific information needed to connect to a
- * particular type of catalog backend.
- */
-sealed interface CatalogConfiguration
-
-/**
- * Glue catalog configuration details.
- *
- * Stores information required to connect to an AWS Glue catalog.
- */
-@JsonSchemaTitle("Glue Catalog Configuration")
-@JsonSchemaDescription("AWS Glue-specific configuration details for connecting an Iceberg catalog.")
-data class GlueCatalogConfiguration(
-    @JsonSchemaTitle("AWS Account ID")
-    @JsonPropertyDescription("The AWS Account ID associated with the Glue service.")
-    val glueId: String,
-    override val awsArnRoleConfiguration: AWSArnRoleConfiguration,
-    @get:JsonSchemaTitle("Database Name")
+    /**
+     * The URI of the Rest server.
+     *
+     * This is required to establish a connection.
+     */
+    @get:JsonSchemaTitle("Rest Server URI")
     @get:JsonPropertyDescription(
-        """The Glue database name. This will ONLY be used if the `Destination Namespace` setting for the connection is set to `Destination-defined` or `Source-defined`"""
+        "The base URL of the Rest server used to connect to the Rest catalog."
     )
-    val databaseName: String?
-) : CatalogConfiguration, AWSArnRoleConfigurationProvider
-
-/**
- * Nessie catalog configuration details.
- *
- * Stores information required to connect to a Nessie server.
- */
-@JsonSchemaTitle("Nessie Catalog Configuration")
-@JsonSchemaDescription("Nessie-specific configuration details for connecting an Iceberg catalog.")
-data class NessieCatalogConfiguration(
-    @JsonSchemaTitle("Nessie Server URI")
-    @JsonPropertyDescription("The base URL of the Nessie server.")
+    @get:JsonProperty("server_uri")
+    @JsonSchemaInject(json = """{"order":1}""")
     val serverUri: String,
-    @JsonSchemaTitle("Nessie Access Token")
-    @JsonPropertyDescription("An optional token for authentication with the Nessie server.")
-    val accessToken: String?,
-    @get:JsonSchemaTitle("Namespace")
+    @get:JsonSchemaTitle("Default namespace")
     @get:JsonPropertyDescription(
-        """The Nessie namespace to be used in the Table identifier. 
-                |This will ONLY be used if the `Destination Namespace` setting for the connection is set to
-                | `Destination-defined` or `Source-defined`"""
+        """The namespace to be used in the Table identifier. 
+           This will ONLY be used if the `Destination Namespace` setting for the connection is set to
+           `Destination-defined` or `Source-defined`"""
     )
-    val namespace: String?
-) : CatalogConfiguration
-
-/**
- * Provides a way to retrieve the unified Iceberg catalog configuration.
- *
- * Classes implementing this interface should supply the IcebergCatalogConfiguration instance
- * representing the fully resolved configuration for the Iceberg catalog.
- */
-interface IcebergCatalogConfigurationProvider {
-    val icebergCatalogConfiguration: IcebergCatalogConfiguration
-}
+    val namespace: String
+) : CatalogType(catalogType)

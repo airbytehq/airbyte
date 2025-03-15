@@ -66,13 +66,14 @@ For more information on SSH key pair authentication, please refer to the
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select SFTP Bulk from the Source type dropdown.
 4. Enter a name for the SFTP Bulk connector.
-5. Enter the **Host Address**.
-6. Enter your **Username**
-7. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If you are authenticating with a private key, you can upload the file containing the private key (usually named `rsa_id`) using the Upload file button.
-8. In the section titled "The list of streams to sync", enter a **Stream Name**. This will be the name of the stream that will be created in your destination. Add additional streams by clicking "Add". 
-9. For each stream, select in the dropdown menu the **File Type** you wish to sync. Depending on the format chosen, you'll see a set of options specific to the file type. You can read more about specifics to each file type below.
-12. (Optional) Provide a **Start Date** using the provided datepicker, or by entering the date in the format `YYYY-MM-DDTHH:mm:ss.SSSSSSZ`. Incremental syncs will only sync files modified/added after this date.
-13. (Optional) Specify the **Host Address**. The default port for SFTP is 2​2. If your remote server is using a different port, enter it here.
+5. Choose a [delivery method](../../using-airbyte/delivery-methods) for your data.
+6. Enter the **Host Address**.
+7. Enter your **Username**
+8. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If you are authenticating with a private key, you can upload the file containing the private key (usually named `rsa_id`) using the Upload file button.
+9. In the section titled "The list of streams to sync", enter a **Stream Name**. This will be the name of the stream that will be created in your destination. Add additional streams by clicking "Add". 
+10. For each stream, select in the dropdown menu the **File Type** you wish to sync. Depending on the format chosen, you'll see a set of options specific to the file type. You can read more about specifics to each file type below.
+11. (Optional) Provide a **Start Date** using the provided datepicker, or by entering the date in the format `YYYY-MM-DDTHH:mm:ss.SSSSSSZ`. Incremental syncs will only sync files modified/added after this date.
+12. (Optional) Specify the **Host Address**. The default port for SFTP is 2​2. If your remote server is using a different port, enter it here.
 (Optional) Determine the **Folder Path**. This determines the directory to search for files in, and defaults to "/". If you prefer to specify a specific folder path, specify the directory on the remote server to be synced. For example, given the file structure:
 
 ```
@@ -103,6 +104,18 @@ This pattern will filter for files that match the format `log-YYYYMMDD`, where `
 3. On the Set up the source page, select SFTP Bulk from the Source type dropdown.
 4. Enter a name for the SFTP Bulk connector.
 
+#### Delivery Method
+
+<FieldAnchor field="delivery_method.delivery_type">
+
+Choose a [delivery method](../../using-airbyte/delivery-methods) for your data. 
+
+</FieldAnchor>
+
+##### Preserve Sub-Directories in File Paths
+
+If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files will be synced by their names only. This option is ignored when file-based replication is not enabled.
+
 #### File-specific Configuration
 
 Depending on your **File Type** selection, you will be presented with a few configuration options specific to that file type. 
@@ -112,32 +125,6 @@ For JSONL, Parquet, and Document File Type formats, you can specify the **Glob**
 For example, assuming your folder path is not set in the connector configuration and your files are located in the root folder, use a glob pattern like `//my_prefix_*.csv` to specify your file. If your files are in a folder, include the folder in your glob pattern, like `//my_folder/my_prefix_*.csv`.
 
 If your files are in a folder, include the folder in your glob pattern, like `my_folder/my_prefix_*.csv`.
-
-#### Copy Raw Files Configuration
-
-<FieldAnchor field="delivery_method.delivery_type">
-
-:::info
-
-The raw file replication feature has the following requirements and limitations:
-- **Supported Airbyte Versions:**
-  - Cloud: All Workspaces
-  - OSS / Enterprise: `v1.2.0` or later
-- **Max File Size:** `1GB` per file
-- **Supported Destinations:**
-  - S3: `v1.4.0` or later
-
-:::
-
-Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files.
-
-Format options will not be taken into account. Instead, files will be transferred to the file-based destination without parsing underlying data.
-
-</FieldAnchor>
-
-##### Preserve Sub-Directories in File Paths
-
-If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files will be synced by their names only. This option is ignored when file-based replication is not enabled.
 
 ## Supported sync modes
 
@@ -160,6 +147,8 @@ This source provides a single stream per file with a dynamic schema. The current
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
+| 1.7.4 | 2025-02-08 | [53570](https://github.com/airbytehq/airbyte/pull/53570) | Update dependencies |
+| 1.7.3 | 2025-02-01 | [52971](https://github.com/airbytehq/airbyte/pull/52971) | Update dependencies |
 | 1.7.2 | 2025-01-25 | [52470](https://github.com/airbytehq/airbyte/pull/52470) | Update dependencies |
 | 1.7.1 | 2025-01-18 | [43821](https://github.com/airbytehq/airbyte/pull/43821) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 1.7.0 | 2025-01-17 | [51611](https://github.com/airbytehq/airbyte/pull/51611) | Promoting release candidate 1.7.0-rc.1 to a main version. |

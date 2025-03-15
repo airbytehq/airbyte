@@ -50,7 +50,7 @@ class FilePartAccumulatorTest {
     fun testFilePartAccumulatorExactlyPartSize() = runTest {
         val finalDirectory = "finalDirectory"
         every { pathFactory.getFinalDirectory(stream) } returns finalDirectory
-        val file = createFile(ObjectStorageUploadConfiguration.DEFAULT_FILE_SIZE_BYTES.toInt())
+        val file = createFile(ObjectStorageUploadConfiguration.DEFAULT_PART_SIZE_BYTES.toInt())
         val index = 21L
         val fileMessage = createFileMessage(file)
 
@@ -64,7 +64,7 @@ class FilePartAccumulatorTest {
         val finalDirectory = "finalDirectory"
         every { pathFactory.getFinalDirectory(stream) } returns finalDirectory
         val file =
-            createFile(ObjectStorageUploadConfiguration.DEFAULT_FILE_SIZE_BYTES.toInt() + 1000)
+            createFile(ObjectStorageUploadConfiguration.DEFAULT_PART_SIZE_BYTES.toInt() + 1000)
         val index = 21L
         val fileMessage = createFileMessage(file)
 

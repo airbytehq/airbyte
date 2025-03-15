@@ -69,7 +69,10 @@ class AirbyteValueToIcebergRecord {
             is StringValue -> return airbyteValue.value
             is TimeWithTimezoneValue ->
                 return when (type.typeId()) {
-                    Type.TypeID.TIME -> airbyteValue.value.toLocalTime()
+                    // Iceberg doesn't have a time_tz type.
+                    // So just convert this value to UTC, and then drop the offset.
+                    Type.TypeID.TIME ->
+                        airbyteValue.value.withOffsetSameInstant(ZoneOffset.UTC).toLocalTime()
                     else ->
                         throw IllegalArgumentException(
                             "${type.typeId()} type is not allowed for TimeValue"

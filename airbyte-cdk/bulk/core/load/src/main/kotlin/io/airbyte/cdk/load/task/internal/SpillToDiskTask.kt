@@ -243,7 +243,7 @@ class DefaultSpillToDiskTaskFactory(
 
 @Singleton
 class FileAccumulatorFactory(
-    @Value("\${airbyte.flush.window-ms}") private val windowWidthMs: Long,
+    @Value("\${airbyte.destination.core.flush.window-ms}") private val windowWidthMs: Long,
     private val spillFileProvider: SpillFileProvider,
     private val clock: Clock,
 ) {

@@ -34,7 +34,10 @@ object AvroExpectedRecordMapper : ExpectedRecordMapper {
     ): DestinationStream.Descriptor {
         // Map the special character but not the '+', because only the former is replaced in file
         // paths.
-        return descriptor.copy(name = descriptor.name.replace("é", "e"))
+        return descriptor.copy(
+            namespace = descriptor.namespace?.replace("ø", "o"),
+            name = descriptor.name.replace("é", "e")
+        )
     }
 
     private fun fieldNameMangler(value: AirbyteValue): AirbyteValue =

@@ -13,10 +13,16 @@ import io.airbyte.cdk.load.command.MockDestinationConfiguration
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
+import io.airbyte.cdk.load.message.PartitionedQueue
+import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.QueueWriter
+import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.pipeline.InputPartitioner
+import io.airbyte.cdk.load.pipeline.LoadPipeline
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTask
@@ -47,7 +53,6 @@ import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
 import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
 import io.airbyte.cdk.load.task.internal.SpillToDiskTask
 import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
-import io.airbyte.cdk.load.task.internal.TimedForcedCheckpointFlushTask
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Replaces
@@ -88,7 +93,6 @@ class DestinationTaskLauncherTest {
     @Inject lateinit var closeStreamTaskFactory: MockCloseStreamTaskFactory
     @Inject lateinit var teardownTaskFactory: MockTeardownTaskFactory
     @Inject lateinit var flushCheckpointsTaskFactory: MockFlushCheckpointsTaskFactory
-    @Inject lateinit var mockForceFlushTask: MockForceFlushTask
     @Inject lateinit var updateCheckpointsTask: MockUpdateCheckpointsTask
     @Inject lateinit var inputFlow: ReservingDeserializingInputFlow
     @Inject lateinit var queueWriter: MockQueueWriter
@@ -154,6 +158,11 @@ class DestinationTaskLauncherTest {
             checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
             destinationTaskLauncher: DestinationTaskLauncher,
             fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
+            recordQueueForPipeline:
+                PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
+            loadPipeline: LoadPipeline?,
+            partitioner: InputPartitioner,
+            openStreamQueue: QueueWriter<DestinationStream>,
         ): InputConsumerTask {
             return object : InputConsumerTask {
                 override val terminalCondition: TerminalCondition = SelfTerminating
@@ -282,19 +291,6 @@ class DestinationTaskLauncherTest {
     @Singleton
     @Primary
     @Requires(env = ["DestinationTaskLauncherTest"])
-    class MockForceFlushTask : TimedForcedCheckpointFlushTask {
-        override val terminalCondition: TerminalCondition = SelfTerminating
-
-        val didRun = Channel<Boolean>(Channel.UNLIMITED)
-
-        override suspend fun execute() {
-            didRun.send(true)
-        }
-    }
-
-    @Singleton
-    @Primary
-    @Requires(env = ["DestinationTaskLauncherTest"])
     class MockUpdateCheckpointsTask : UpdateCheckpointsTask {
         override val terminalCondition: TerminalCondition = SelfTerminating
 
@@ -366,9 +362,6 @@ class DestinationTaskLauncherTest {
 
         coVerify(exactly = config.numProcessBatchWorkers) { processBatchTaskFactory.make(any()) }
 
-        // Verify that we kicked off the timed force flush w/o a specific delay
-        Assertions.assertTrue(mockForceFlushTask.didRun.receive())
-
         Assertions.assertTrue(
             updateCheckpointsTask.didRun.receive(),
             "update checkpoints task was started"
@@ -382,7 +375,7 @@ class DestinationTaskLauncherTest {
         val range = TreeRangeSet.create(listOf(Range.closed(0L, 100L)))
         val stream1 = MockDestinationCatalogFactory.stream1
         val streamManager = syncManager.getStreamManager(stream1.descriptor)
-        repeat(100) { streamManager.countRecordIn() }
+        repeat(100) { streamManager.incrementReadCount() }
 
         streamManager.markEndOfStream(true)
 

@@ -1,0 +1,3352 @@
+version: 6.33.4
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - metrics
+
+definitions:
+  streams:
+    profiles:
+      type: DeclarativeStream
+      name: profiles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: profiles
+          http_method: GET
+          request_parameters:
+            additional-fields[profile]: >-
+              {{ 'predictive_analytics' if not
+              config['disable_fetching_predictive_analytics'] else '' }}
+            filter: >-
+              greater-than(updated,{{
+              stream_interval.start_time }})
+            sort: "updated"
+          request_headers:
+            Accept: application/json
+            Revision: "2024-10-15"
+          error_handler:
+            type: CustomErrorHandler
+            class_name: >-
+              source_declarative_manifest.components.KlaviyoErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Please provide a valid API key and make sure it has
+                  permissions to read specified streams.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('links', {}).get('next') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%d %H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated
+              value: "{{ record.get('attributes', {}).get('updated') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/profiles"
+    global_exclusions:
+      type: DeclarativeStream
+      name: global_exclusions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: profiles
+          http_method: GET
+          request_parameters:
+            additional-fields[profile]: subscriptions
+          request_headers:
+            Accept: application/json
+            Revision: "2024-10-15"
+          error_handler:
+            type: CustomErrorHandler
+            class_name: >-
+              source_declarative_manifest.components.KlaviyoErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Please provide a valid API key and make sure it has
+                  permissions to read specified streams.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+          record_filter:
+            type: RecordFilter
+            condition: >-
+              {{
+              record['attributes']['subscriptions']['email']['marketing']['suppression']
+              }}
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('links', {}).get('next') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%d %H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated
+              value: "{{ record.get('attributes', {}).get('updated') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - attributes
+                - subscriptions
+                - email
+                - marketing
+                - suppressions
+              value: >-
+                {{
+                record['attributes']['subscriptions']['email']['marketing']['suppression']
+                }}
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+              - subscriptions
+              - email
+              - marketing
+              - suppression
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/global_exclusions"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: events
+          http_method: GET
+          request_parameters:
+            fields[event]: event_properties,timestamp,uuid,datetime
+            fields[metric]: name,created,updated,integration
+            include: metric,attributions
+            filter: >-
+              greater-or-equal(datetime,{{
+              stream_interval.start_time }}),less-or-equal(datetime,{{ stream_interval.end_time }})
+            sort: "datetime"
+          request_headers:
+            Accept: application/json
+            Revision: "2024-10-15"
+          error_handler:
+            type: CustomErrorHandler
+            class_name: >-
+              source_declarative_manifest.components.KlaviyoErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Please provide a valid API key and make sure it has
+                  permissions to read specified streams.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('links', {}).get('next') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: datetime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%d %H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        step: P7D
+        cursor_granularity: PT1S
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - datetime
+              value: "{{ record.get('attributes', {}).get('datetime') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    events_detailed:
+      type: DeclarativeStream
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: >-
+            source_declarative_manifest.components.PerPartitionToSingleStateMigration
+      name: events_detailed
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: events
+          http_method: GET
+          request_parameters:
+            include: metric,attributions
+            fields[metric]: name
+            filter: >-
+              greater-than(datetime,{{
+              stream_interval.start_time }})
+            sort: "datetime"
+          request_headers:
+            Accept: application/json
+            Revision: "2024-10-15"
+          error_handler:
+            type: CustomErrorHandler
+            class_name: >-
+              source_declarative_manifest.components.KlaviyoErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Please provide a valid API key and make sure it has
+                  permissions to read specified streams.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: >-
+              source_declarative_manifest.components.KlaviyoIncludedFieldExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('links', {}).get('next') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: "datetime"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%d %H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - datetime
+              value: "{{ record.get('attributes', {}).get('datetime') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events_detailed"
+    email_templates:
+      type: DeclarativeStream
+      name: email_templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: templates
+          http_method: GET
+          request_parameters:
+            filter: >-
+              greater-than(updated,{{
+              stream_interval.start_time }})
+            sort: "updated"
+          request_headers:
+            Accept: application/json
+            Revision: "2024-10-15"
+          error_handler:
+            type: CustomErrorHandler
+            class_name: >-
+              source_declarative_manifest.components.KlaviyoErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Please provide a valid API key and make sure it has
+                  permissions to read specified streams.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('links', {}).get('next') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%d %H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated
+              value: "{{ record.get('attributes', {}).get('updated') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/email_templates"
+    campaigns:
+      type: DeclarativeStream
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: >-
+            source_declarative_manifest.components.CampaignsStateMigration
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: campaigns
+          http_method: GET
+          request_parameters:
+            filter: >-
+              and(greater-or-equal(updated_at,{{
+              stream_interval.start_time }}),less-or-equal(updated_at,{{ stream_interval.end_time
+              }}),equals(messages.channel,'{{ stream_partition['campaign_type']
+              }}'),equals(archived,{{ stream_partition['archived'] }}))
+            sort: "updated_at"
+          request_headers:
+            Accept: application/json
+            Revision: "2024-10-15"
+          error_handler:
+            type: CustomErrorHandler
+            class_name: >-
+              source_declarative_manifest.components.KlaviyoErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Please provide a valid API key and make sure it has
+                  permissions to read specified streams.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('links', {}).get('next') }}"
+        partition_router:
+          - type: ListPartitionRouter
+            values:
+              - sms
+              - email
+            cursor_field: campaign_type
+          - type: ListPartitionRouter
+            values:
+              - "true"
+              - "false"
+            cursor_field: archived
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%d %H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        step: P60D
+        cursor_granularity: PT1S
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated_at
+              value: "{{ record.get('attributes', {}).get('updated_at') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - attributes
+                - channel
+              value: "{{ stream_partition['campaign_type'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    campaigns_detailed:
+      type: DeclarativeStream
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: >-
+            source_declarative_manifest.components.CampaignsStateMigration
+      name: campaigns_detailed
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: campaigns
+          http_method: GET
+          request_parameters:
+            filter: >-
+              and(greater-or-equal(updated_at,{{
+              stream_interval.start_time }}),less-or-equal(updated_at,{{ stream_interval.end_time
+              }}),equals(messages.channel,'{{ stream_partition['campaign_type']
+              }}'),equals(archived,{{ stream_partition['archived'] }}))
+            sort: "updated_at"
+          request_headers:
+            Accept: application/json
+            Revision: "2024-10-15"
+          error_handler:
+            type: CustomErrorHandler
+            class_name: >-
+              source_declarative_manifest.components.KlaviyoErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Please provide a valid API key and make sure it has
+                  permissions to read specified streams.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('links', {}).get('next') }}"
+        partition_router:
+          - type: ListPartitionRouter
+            values:
+              - sms
+              - email
+            cursor_field: campaign_type
+          - type: ListPartitionRouter
+            values:
+              - "true"
+              - "false"
+            cursor_field: archived
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%d %H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - updated_at
+              value: "{{ record.get('attributes', {}).get('updated_at') }}"
+        - type: CustomTransformation
+          class_name: >-
+            source_declarative_manifest.components.CampaignsDetailedTransformation
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns_detailed"
+    flows:
+      type: DeclarativeStream
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: >-
+            source_declarative_manifest.components.ArchivedToPerPartitionStateMigration
+      name: flows
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: flows
+          http_method: GET
+          request_parameters:
+            filter: >-
+              and(greater-or-equal(updated,{{
+              stream_interval.start_time }}),less-or-equal(updated,{{ stream_interval.end_time
+              }}),equals(archived,{{ stream_partition['archived'] }}))
+            sort: "updated"
+          request_headers:
+            Accept: application/json
+            Revision: "2024-10-15"
+          error_handler:
+            type: CustomErrorHandler
+            class_name: >-
+              source_declarative_manifest.components.KlaviyoErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Please provide a valid API key and make sure it has
+                  permissions to read specified streams.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('links', {}).get('next') }}"
+        partition_router:
+          type: ListPartitionRouter
+          values:
+            - "true"
+            - "false"
+          cursor_field: archived
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%d %H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        step: P30D
+        cursor_granularity: PT1S
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated
+              value: "{{ record.get('attributes', {}).get('updated') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/flows"
+    metrics:
+      type: DeclarativeStream
+      name: metrics
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: metrics
+          http_method: GET
+          request_headers:
+            Accept: application/json
+            Revision: "2024-10-15"
+          error_handler:
+            type: CustomErrorHandler
+            class_name: >-
+              source_declarative_manifest.components.KlaviyoErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Please provide a valid API key and make sure it has
+                  permissions to read specified streams.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('links', {}).get('next') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+        is_client_side_incremental: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated
+              value: "{{ record.get('attributes', {}).get('updated') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/metrics"
+    lists:
+      type: DeclarativeStream
+      name: lists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: lists
+          http_method: GET
+          request_headers:
+            Accept: application/json
+            Revision: "2024-10-15"
+          error_handler:
+            type: CustomErrorHandler
+            class_name: >-
+              source_declarative_manifest.components.KlaviyoErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Please provide a valid API key and make sure it has
+                  permissions to read specified streams.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('links', {}).get('next') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+        is_client_side_incremental: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated
+              value: "{{ record.get('attributes', {}).get('updated') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lists"
+    lists_detailed:
+      type: DeclarativeStream
+      name: lists_detailed
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: lists/{{ stream_slice.id }}
+          http_method: GET
+          request_parameters:
+            additional-fields[list]: profile_count
+          request_headers:
+            Accept: application/json
+            Revision: "2024-10-15"
+          error_handler:
+            type: CustomErrorHandler
+            class_name: >-
+              source_declarative_manifest.components.KlaviyoErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Please provide a valid API key and make sure it has
+                  permissions to read specified streams.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('links', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/lists"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+        is_client_side_incremental: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated
+              value: "{{ record.get('attributes', {}).get('updated') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lists_detailed"
+  base_requester:
+    type: HttpRequester
+    url_base: https://a.klaviyo.com/api/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: Klaviyo-API-Key {{ config['api_key'] }}
+      inject_into:
+        type: RequestOption
+        field_name: Authorization
+        inject_into: header
+
+streams:
+  # Incremental streams
+  - $ref: "#/definitions/streams/profiles"
+  - $ref: "#/definitions/streams/global_exclusions"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/events_detailed"
+  - $ref: "#/definitions/streams/email_templates"
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/campaigns_detailed"
+  - $ref: "#/definitions/streams/flows"
+  # Semi-Incremental streams
+  - $ref: "#/definitions/streams/metrics"
+  - $ref: "#/definitions/streams/lists"
+  - $ref: "#/definitions/streams/lists_detailed"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Klaviyo API Key. See our <a
+          href="https://docs.airbyte.com/integrations/sources/klaviyo">docs</a>
+          if you need help finding this key.
+        title: Api Key
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        description: >-
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
+          this date will not be replicated. This field is optional - if not
+          provided, all data will be replicated.
+        title: Start Date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2017-01-25T00:00:00Z"
+        format: date-time
+        order: 1
+      disable_fetching_predictive_analytics:
+        type: boolean
+        description: >-
+          Certain streams like the profiles stream can retrieve predictive
+          analytics data from Klaviyo's API. However, at high volume, this can
+          lead to service availability issues on the API which can be improved
+          by not fetching this field. WARNING: Enabling this setting will stop
+          the  "predictive_analytics" column from being populated in your
+          downstream destination.
+        title: Disable Fetching Predictive Analytics
+        order: 2
+      num_workers:
+        type: integer
+        description: >-
+          The number of worker threads to use for the sync. The performance
+          upper boundary is based on the limit of your Klaviyo plan. More info
+          about the rate limit plan tiers can be found on Klaviyo's API <a
+          href="https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling">docs</a>.
+        title: Number of concurrent workers
+        minimum: 1
+        maximum: 50
+        default: 10
+        examples:
+          - 1
+          - 2
+          - 3
+        order: 3
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    profiles: false
+    global_exclusions: false
+    events: false
+    events_detailed: false
+    email_templates: false
+    campaigns: false
+    campaigns_detailed: false
+    flows: false
+    metrics: false
+    lists: false
+    lists_detailed: false
+  yamlComponents:
+    streams:
+      profiles:
+        - errorHandler
+      global_exclusions:
+        - errorHandler
+      events:
+        - errorHandler
+      events_detailed:
+        - errorHandler
+        - recordSelector
+      email_templates:
+        - errorHandler
+      campaigns:
+        - errorHandler
+      campaigns_detailed:
+        - errorHandler
+        - transformations
+      flows:
+        - errorHandler
+      metrics:
+        - errorHandler
+        - incrementalSync
+      lists:
+        - errorHandler
+        - incrementalSync
+      lists_detailed:
+        - errorHandler
+        - incrementalSync
+    global:
+      - authenticator
+  testedStreams:
+    profiles:
+      streamHash: 7d27c2aee801ec7d0038722136c6b7e06b14a9ed
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    global_exclusions:
+      streamHash: 7e7633526c2855390903d6e60973bb13b23272d7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    events:
+      streamHash: af0180236001cbacc0788046bdc916026e1f82f6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    email_templates:
+      streamHash: 4c12cf304ffe3cd0fcaba1479498ad19c18c6f32
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    metrics:
+      streamHash: 96e06644c47a223a29c85dc4318ec5f7da1cc414
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    lists:
+      streamHash: 9edcccbf069463bf70bdc40db756e0f81eba032b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    lists_detailed:
+      streamHash: 34e4a9f1fb0c879b915d8558d67feb887d76f8e5
+      hasResponse: true
+      responsesAreSuccessful: false
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  profiles:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      attributes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          anonymous_id:
+            type:
+              - "null"
+              - string
+          created:
+            type:
+              - "null"
+              - string
+            format: date-time
+          email:
+            type:
+              - "null"
+              - string
+          external_id:
+            type:
+              - "null"
+              - string
+          first_name:
+            type:
+              - "null"
+              - string
+          image:
+            type:
+              - "null"
+              - string
+          last_event_date:
+            type:
+              - "null"
+              - string
+            format: date-time
+          last_name:
+            type:
+              - "null"
+              - string
+          locale:
+            type:
+              - "null"
+              - string
+          location:
+            type:
+              - "null"
+              - object
+            properties:
+              address1:
+                type:
+                  - "null"
+                  - string
+              address2:
+                type:
+                  - "null"
+                  - string
+              city:
+                type:
+                  - "null"
+                  - string
+              country:
+                type:
+                  - "null"
+                  - string
+              ip:
+                type:
+                  - "null"
+                  - string
+              latitude:
+                oneOf:
+                  - type: "null"
+                  - type: number
+                  - type: string
+              longitude:
+                oneOf:
+                  - type: "null"
+                  - type: number
+                  - type: string
+              region:
+                type:
+                  - "null"
+                  - string
+              timezone:
+                type:
+                  - "null"
+                  - string
+              zip:
+                type:
+                  - "null"
+                  - string
+          organization:
+            type:
+              - "null"
+              - string
+          phone_number:
+            type:
+              - "null"
+              - string
+          predictive_analytics:
+            type:
+              - "null"
+              - object
+            properties:
+              average_days_between_orders:
+                type:
+                  - "null"
+                  - number
+              average_order_value:
+                type:
+                  - "null"
+                  - number
+              churn_probability:
+                type:
+                  - "null"
+                  - number
+              expected_date_of_next_order:
+                type:
+                  - "null"
+                  - string
+              historic_clv:
+                type:
+                  - "null"
+                  - number
+              historic_number_of_orders:
+                type:
+                  - "null"
+                  - integer
+              predicted_clv:
+                type:
+                  - "null"
+                  - number
+              predicted_number_of_orders:
+                type:
+                  - "null"
+                  - number
+              total_clv:
+                type:
+                  - "null"
+                  - number
+          properties:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          subscriptions:
+            type:
+              - "null"
+              - object
+            properties:
+              email:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  marketing:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      can_receive_email_marketing:
+                        type: boolean
+                      consent:
+                        type: string
+                      consent_timestamp:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      custom_method_detail:
+                        type:
+                          - "null"
+                          - string
+                      double_optin:
+                        type:
+                          - "null"
+                          - boolean
+                      last_updated:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      list_suppressions:
+                        type:
+                          - "null"
+                          - array
+                        items:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            list_id:
+                              type: string
+                            reason:
+                              type: string
+                            timestamp:
+                              type: string
+                              format: date-time
+                      method:
+                        type:
+                          - "null"
+                          - string
+                      method_detail:
+                        type:
+                          - "null"
+                          - string
+                      suppressions:
+                        type:
+                          - "null"
+                          - array
+                        items:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            reason:
+                              type: string
+                            timestamp:
+                              type: string
+                              format: date-time
+                      timestamp:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+              mobile_push:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  marketing:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      can_receive_sms_marketing:
+                        type:
+                          - "null"
+                          - boolean
+                      consent:
+                        type:
+                          - "null"
+                          - string
+                      consent_timestamp:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+              sms:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  marketing:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      can_receive_sms_marketing:
+                        type:
+                          - "null"
+                          - boolean
+                      consent:
+                        type:
+                          - "null"
+                          - string
+                      consent_timestamp:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      last_updated:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      method:
+                        type:
+                          - "null"
+                          - string
+                      method_detail:
+                        type:
+                          - "null"
+                          - string
+                      timestamp:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                  transactional:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      can_receive_sms_marketing:
+                        type:
+                          - "null"
+                          - boolean
+                      consent:
+                        type:
+                          - "null"
+                          - string
+                      consent_timestamp:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      last_updated:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      method:
+                        type:
+                          - "null"
+                          - string
+                      method_detail:
+                        type:
+                          - "null"
+                          - string
+                      timestamp:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+          title:
+            type:
+              - "null"
+              - string
+          updated:
+            type:
+              - "null"
+              - string
+            format: date-time
+      id:
+        type: string
+      links:
+        type:
+          - "null"
+          - object
+        properties:
+          self:
+            type:
+              - "null"
+              - string
+      relationships:
+        type:
+          - "null"
+          - object
+        properties:
+          lists:
+            type:
+              - "null"
+              - object
+            properties:
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type:
+                      - "null"
+                      - string
+                  self:
+                    type:
+                      - "null"
+                      - string
+          segments:
+            type:
+              - "null"
+              - object
+            properties:
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type:
+                      - "null"
+                      - string
+                  self:
+                    type:
+                      - "null"
+                      - string
+      segments:
+        type:
+          - "null"
+          - object
+      updated:
+        type:
+          - "null"
+          - string
+        format: date-time
+  global_exclusions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      attributes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          anonymous_id:
+            type:
+              - "null"
+              - string
+          created:
+            type:
+              - "null"
+              - string
+            format: date-time
+          email:
+            type:
+              - "null"
+              - string
+          external_id:
+            type:
+              - "null"
+              - string
+          first_name:
+            type:
+              - "null"
+              - string
+          image:
+            type:
+              - "null"
+              - string
+          last_event_date:
+            type:
+              - "null"
+              - string
+            format: date-time
+          last_name:
+            type:
+              - "null"
+              - string
+          locale:
+            type:
+              - "null"
+              - string
+          location:
+            type:
+              - "null"
+              - object
+            properties:
+              address1:
+                type:
+                  - "null"
+                  - string
+              address2:
+                type:
+                  - "null"
+                  - string
+              city:
+                type:
+                  - "null"
+                  - string
+              country:
+                type:
+                  - "null"
+                  - string
+              ip:
+                type:
+                  - "null"
+                  - string
+              latitude:
+                oneOf:
+                  - type: "null"
+                  - type: number
+                  - type: string
+              longitude:
+                oneOf:
+                  - type: "null"
+                  - type: number
+                  - type: string
+              region:
+                type:
+                  - "null"
+                  - string
+              timezone:
+                type:
+                  - "null"
+                  - string
+              zip:
+                type:
+                  - "null"
+                  - string
+          organization:
+            type:
+              - "null"
+              - string
+          phone_number:
+            type:
+              - "null"
+              - string
+          predictive_analytics:
+            type:
+              - "null"
+              - object
+            properties:
+              average_days_between_orders:
+                type:
+                  - "null"
+                  - number
+              average_order_value:
+                type:
+                  - "null"
+                  - number
+              churn_probability:
+                type:
+                  - "null"
+                  - number
+              expected_date_of_next_order:
+                type:
+                  - "null"
+                  - string
+              historic_clv:
+                type:
+                  - "null"
+                  - number
+              historic_number_of_orders:
+                type:
+                  - "null"
+                  - integer
+              predicted_clv:
+                type:
+                  - "null"
+                  - number
+              predicted_number_of_orders:
+                type:
+                  - "null"
+                  - number
+              total_clv:
+                type:
+                  - "null"
+                  - number
+          properties:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          subscriptions:
+            type:
+              - "null"
+              - object
+            properties:
+              email:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  marketing:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      can_receive_email_marketing:
+                        type: boolean
+                      consent:
+                        type: string
+                      consent_timestamp:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      custom_method_detail:
+                        type:
+                          - "null"
+                          - string
+                      double_optin:
+                        type:
+                          - "null"
+                          - boolean
+                      last_updated:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      list_suppressions:
+                        type:
+                          - "null"
+                          - array
+                        items:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            list_id:
+                              type: string
+                            reason:
+                              type: string
+                            timestamp:
+                              type: string
+                              format: date-time
+                      method:
+                        type:
+                          - "null"
+                          - string
+                      method_detail:
+                        type:
+                          - "null"
+                          - string
+                      suppressions:
+                        type:
+                          - "null"
+                          - array
+                        items:
+                          type:
+                            - "null"
+                            - object
+                          properties:
+                            reason:
+                              type: string
+                            timestamp:
+                              type: string
+                              format: date-time
+                      timestamp:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+              mobile_push:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  marketing:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      can_receive_sms_marketing:
+                        type:
+                          - "null"
+                          - boolean
+                      consent:
+                        type:
+                          - "null"
+                          - string
+                      consent_timestamp:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+              sms:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  marketing:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      can_receive_sms_marketing:
+                        type:
+                          - "null"
+                          - boolean
+                      consent:
+                        type:
+                          - "null"
+                          - string
+                      consent_timestamp:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      last_updated:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      method:
+                        type:
+                          - "null"
+                          - string
+                      method_detail:
+                        type:
+                          - "null"
+                          - string
+                      timestamp:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                  transactional:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      can_receive_sms_marketing:
+                        type:
+                          - "null"
+                          - boolean
+                      consent:
+                        type:
+                          - "null"
+                          - string
+                      consent_timestamp:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      last_updated:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      method:
+                        type:
+                          - "null"
+                          - string
+                      method_detail:
+                        type:
+                          - "null"
+                          - string
+                      timestamp:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+          title:
+            type:
+              - "null"
+              - string
+          updated:
+            type:
+              - "null"
+              - string
+            format: date-time
+      id:
+        type: string
+      links:
+        type:
+          - "null"
+          - object
+        properties:
+          self:
+            type:
+              - "null"
+              - string
+      relationships:
+        type:
+          - "null"
+          - object
+        properties:
+          lists:
+            type:
+              - "null"
+              - object
+            properties:
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type:
+                      - "null"
+                      - string
+                  self:
+                    type:
+                      - "null"
+                      - string
+          segments:
+            type:
+              - "null"
+              - object
+            properties:
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type:
+                      - "null"
+                      - string
+                  self:
+                    type:
+                      - "null"
+                      - string
+      segments:
+        type:
+          - "null"
+          - object
+      updated:
+        type:
+          - "null"
+          - string
+        format: date-time
+  events:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      attributes:
+        type:
+          - "null"
+          - object
+        properties:
+          datetime:
+            type: string
+            format: date-time
+          event_properties:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          timestamp:
+            type: integer
+          uuid:
+            type: string
+      datetime:
+        type: string
+        format: date-time
+      id:
+        type: string
+      links:
+        type:
+          - "null"
+          - object
+        properties:
+          self:
+            type: string
+      relationships:
+        type:
+          - "null"
+          - object
+        properties:
+          attributions:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+          metric:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  type:
+                    type: string
+                  id:
+                    type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+          profile:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  type:
+                    type: string
+                  id:
+                    type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+  events_detailed:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      attributes:
+        type:
+          - "null"
+          - object
+        properties:
+          datetime:
+            type: string
+            format: date-time
+          event_properties:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          timestamp:
+            type: integer
+          uuid:
+            type: string
+      datetime:
+        type: string
+        format: date-time
+      id:
+        type: string
+      links:
+        type:
+          - "null"
+          - object
+        properties:
+          self:
+            type: string
+      relationships:
+        type:
+          - "null"
+          - object
+        properties:
+          metric:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  type:
+                    type: string
+                  id:
+                    type: string
+                  name:
+                    type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+          profile:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  type:
+                    type: string
+                  id:
+                    type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+  email_templates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      attributes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          company_id:
+            type:
+              - "null"
+              - string
+          created:
+            type:
+              - "null"
+              - string
+            format: date-time
+          editor_type:
+            type:
+              - "null"
+              - string
+          html:
+            type: string
+          name:
+            type: string
+          text:
+            type:
+              - "null"
+              - string
+          updated:
+            type:
+              - "null"
+              - string
+            format: date-time
+      id:
+        type: string
+      links:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          self:
+            type: string
+      updated:
+        type:
+          - "null"
+          - string
+        format: date-time
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      attributes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          archived:
+            type: boolean
+          audiences:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              excluded:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+              included:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+          channel:
+            type: string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          message:
+            type: string
+          name:
+            type: string
+          scheduled_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          send_options:
+            type:
+              - "null"
+              - object
+            properties:
+              ignore_unsubscribes:
+                type:
+                  - "null"
+                  - boolean
+              use_smart_sending:
+                type:
+                  - "null"
+                  - boolean
+          send_strategy:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              method:
+                type: string
+              options_static:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  datetime:
+                    type: string
+                    airbyte_type: timestamp_without_timezone
+                    format: date-time
+                  is_local:
+                    type:
+                      - "null"
+                      - boolean
+                  send_past_recipients_immediately:
+                    type:
+                      - "null"
+                      - boolean
+              options_sto:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  date:
+                    type: string
+                    format: date
+              options_throttled:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  datetime:
+                    type: string
+                    airbyte_type: timestamp_without_timezone
+                    format: date-time
+                  throttle_percentage:
+                    type: integer
+          send_time:
+            type:
+              - "null"
+              - string
+            format: date-time
+          status:
+            type: string
+          tracking_options:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              add_tracking_params:
+                type:
+                  - "null"
+                  - boolean
+              is_add_utm:
+                type:
+                  - "null"
+                  - boolean
+              is_tracking_clicks:
+                type:
+                  - "null"
+                  - boolean
+              is_tracking_opens:
+                type:
+                  - "null"
+                  - boolean
+              utm_params:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+      id:
+        type: string
+      links:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          self:
+            type: string
+      relationships:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          campaign-messages:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+          tags:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+  campaigns_detailed:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      attributes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          archived:
+            type: boolean
+          audiences:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              excluded:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+              included:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - string
+          channel:
+            type: string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          message:
+            type: string
+          name:
+            type: string
+          scheduled_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          send_options:
+            type:
+              - "null"
+              - object
+            properties:
+              ignore_unsubscribes:
+                type:
+                  - "null"
+                  - boolean
+              use_smart_sending:
+                type:
+                  - "null"
+                  - boolean
+          send_strategy:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              method:
+                type: string
+              options_static:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  datetime:
+                    type: string
+                    airbyte_type: timestamp_without_timezone
+                    format: date-time
+                  is_local:
+                    type:
+                      - "null"
+                      - boolean
+                  send_past_recipients_immediately:
+                    type:
+                      - "null"
+                      - boolean
+              options_sto:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  date:
+                    type: string
+                    format: date
+              options_throttled:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  datetime:
+                    type: string
+                    airbyte_type: timestamp_without_timezone
+                    format: date-time
+                  throttle_percentage:
+                    type: integer
+          send_time:
+            type:
+              - "null"
+              - string
+            format: date-time
+          status:
+            type: string
+          tracking_options:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              add_tracking_params:
+                type:
+                  - "null"
+                  - boolean
+              is_add_utm:
+                type:
+                  - "null"
+                  - boolean
+              is_tracking_clicks:
+                type:
+                  - "null"
+                  - boolean
+              is_tracking_opens:
+                type:
+                  - "null"
+                  - boolean
+              utm_params:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+      campaign_messages:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            attributes:
+              type:
+                - "null"
+                - object
+              properties:
+                channel:
+                  type:
+                    - "null"
+                    - string
+                content:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    bcc_email:
+                      type:
+                        - "null"
+                        - string
+                    cc_email:
+                      type:
+                        - "null"
+                        - string
+                    from_email:
+                      type:
+                        - "null"
+                        - string
+                    from_label:
+                      type:
+                        - "null"
+                        - string
+                    preview_text:
+                      type:
+                        - "null"
+                        - string
+                    reply_to_email:
+                      type:
+                        - "null"
+                        - string
+                    subject:
+                      type:
+                        - "null"
+                        - string
+                created_at:
+                  type:
+                    - "null"
+                    - string
+                  airbyte_type: timestamp_without_timezone
+                  format: date-time
+                label:
+                  type:
+                    - "null"
+                    - string
+                render_options:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    add_info_link:
+                      type:
+                        - "null"
+                        - boolean
+                    add_opt_out_language:
+                      type:
+                        - "null"
+                        - boolean
+                    add_org_prefix:
+                      type:
+                        - "null"
+                        - boolean
+                    shorten_links:
+                      type:
+                        - "null"
+                        - boolean
+                send_times:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      datetime:
+                        type:
+                          - "null"
+                          - string
+                        format: date-time
+                      is_local:
+                        type:
+                          - "null"
+                          - boolean
+                updated_at:
+                  type:
+                    - "null"
+                    - string
+                  airbyte_type: timestamp_without_timezone
+                  format: date-time
+            id:
+              type:
+                - "null"
+                - string
+            links:
+              type:
+                - "null"
+                - object
+              properties:
+                self:
+                  type:
+                    - "null"
+                    - string
+            relationships:
+              type:
+                - "null"
+                - object
+              properties:
+                campaign:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    data:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        type:
+                          type:
+                            - "null"
+                            - string
+                        id:
+                          type:
+                            - "null"
+                            - string
+                    links:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        related:
+                          type:
+                            - "null"
+                            - string
+                        self:
+                          type:
+                            - "null"
+                            - string
+                template:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    data:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        type:
+                          type:
+                            - "null"
+                            - string
+                        id:
+                          type:
+                            - "null"
+                            - string
+                    links:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        related:
+                          type:
+                            - "null"
+                            - string
+                        self:
+                          type:
+                            - "null"
+                            - string
+      estimated_recipient_count:
+        type:
+          - "null"
+          - integer
+      id:
+        type: string
+      links:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          self:
+            type: string
+      relationships:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          campaign-messages:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+          tags:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+  flows:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      attributes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          archived:
+            type: boolean
+          created:
+            type: string
+            format: date-time
+          name:
+            type: string
+          status:
+            type: string
+          trigger_type:
+            type: string
+          updated:
+            type: string
+            format: date-time
+      id:
+        type: string
+      links:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          self:
+            type: string
+      relationships:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          flow-actions:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+          tags:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+      updated:
+        type: string
+        format: date-time
+  metrics:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      attributes:
+        type:
+          - "null"
+          - object
+        properties:
+          created:
+            type: string
+            format: date-time
+          integration:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          name:
+            type: string
+          updated:
+            type: string
+            format: date-time
+      id:
+        type: string
+      links:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          self:
+            type: string
+      relationships:
+        type:
+          - "null"
+          - object
+        properties:
+          flow-triggers:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  type:
+                    type:
+                      - "null"
+                      - string
+                  id:
+                    type:
+                      - "null"
+                      - string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type:
+                      - "null"
+                      - string
+                  self:
+                    type:
+                      - "null"
+                      - string
+      updated:
+        type: string
+        format: date-time
+  lists:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      attributes:
+        type:
+          - "null"
+          - object
+        properties:
+          created:
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            type: string
+          opt_in_process:
+            type:
+              - "null"
+              - string
+          updated:
+            type:
+              - "null"
+              - string
+            format: date-time
+      id:
+        type: string
+      links:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          self:
+            type: string
+      relationships:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          flow-triggers:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  type:
+                    type:
+                      - "null"
+                      - string
+                  id:
+                    type:
+                      - "null"
+                      - string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type:
+                      - "null"
+                      - string
+                  self:
+                    type:
+                      - "null"
+                      - string
+          profiles:
+            type:
+              - "null"
+              - object
+            properties:
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+          tags:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+      updated:
+        type:
+          - "null"
+          - string
+        format: date-time
+  lists_detailed:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      attributes:
+        type:
+          - "null"
+          - object
+        properties:
+          created:
+            type:
+              - "null"
+              - string
+            format: date-time
+          name:
+            type: string
+          opt_in_process:
+            type:
+              - "null"
+              - string
+          profile_count:
+            type:
+              - "null"
+              - integer
+          updated:
+            type:
+              - "null"
+              - string
+            format: date-time
+      id:
+        type: string
+      links:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          self:
+            type: string
+      relationships:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          flow-triggers:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  type:
+                    type:
+                      - "null"
+                      - string
+                  id:
+                    type:
+                      - "null"
+                      - string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type:
+                      - "null"
+                      - string
+                  self:
+                    type:
+                      - "null"
+                      - string
+          profiles:
+            type:
+              - "null"
+              - object
+            properties:
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+          tags:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+      updated:
+        type:
+          - "null"
+          - string
+        format: date-time
+
+api_budget:
+  type: HTTPAPIBudget
+  # Each policy here uses a MovingWindowCallRatePolicy with two rates:
+  # one for burst (per-second) and one for steady (per-minute).
+  policies:
+    # Campaigns and Campaigns Detailed
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10 # burst: 10 calls per second
+          interval: PT1S
+        - limit: 150 # steady: 150 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/campaigns($|/)" # matches '/campaigns'
+    # Flows
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 3 # burst: 3 calls per second
+          interval: PT1S
+        - limit: 60 # steady: 60 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/flows($|/)" # matches '/flows'
+    # Profiles (and global_exclusions share the same endpoint)
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10 # burst: 10 calls per second
+          interval: PT1S
+        - limit: 150 # steady: 150 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/profiles($|/)" # matches '/profiles' (exact or with trailing slash/extra)
+    # Events (and events_detailed share the same endpoint)
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 350 # burst: 350 calls per second
+          interval: PT1S
+        - limit: 3500 # steady: 3500 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/events($|/)" # matches '/events' and '/events_detailed' if using same endpoint
+    # Email Templates
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10 # burst: 10 calls per second
+          interval: PT1S
+        - limit: 150 # steady: 150 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/templates($|/)" # matches '/templates'
+    # Metrics
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10 # burst: 10 calls per second
+          interval: PT1S
+        - limit: 150 # steady: 150 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/metrics($|/)"
+    # Lists (the parent endpoint for lists streams)
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 75 # burst: 75 calls per second
+          interval: PT1S
+        - limit: 700 # steady: 700 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/lists$" # exactly '/lists'
+    # Lists Detailed (uses a different URL path – note the extra segment)
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1 # burst: 1 call per second
+          interval: PT1S
+        - limit: 15 # steady: 15 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/lists/" # matches any path beginning with '/lists/' (e.g. '/lists/123')
+          params:
+            "additional-fields[list]": "profile_count" # Other API budget settings:
+  status_codes_for_ratelimit_hit: [429]
+
+# Klaviyo's rate limiting is different by endpoints:
+# - XS: 1/s burst; 15/m steady
+# - S: 3/s burst; 60/m steady
+# - M: 10/s burst; 150/m steady
+# - L: 75/s burst; 700/m steady
+# - XL: 350/s burst; 3500/m steady
+# - `lists_detailed`: 1/s burst, 15/m steady (Rate limits when using the additional-fields[list]=profile_count parameter in your API request)
+
+# As of 2024-11-11, we have the following streams:
+# | Stream            | Endpoint                                                             | Klaviyo Rate Limit Size | Source Concurrency Between Streams | Source Concurrency Within Stream                  | Source Max Number of Threads Sharing Rate Limits                 |                                                                                 |
+#|-------------------|----------------------------------------------------------------------|-------------------------|------------------------------------|---------------------------------------------------|------------------------------------------------------------------|---------------------------------------------------------------------------------|
+#| profiles          | https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles | M                       | Yes, shared with global_exclusions | No as `step` is not defined in `incremental_sync` | 2                                                                | With other streams (global_exclusions), not within stream as `step` not defined |
+#| global_exclusions | https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles | M                       | Yes, shared with profiles          | No as `step` is not defined in `incremental_sync` | 2                                                                | With other streams (profiles), not within stream as `step` not defined          |
+#| events            | https://developers.klaviyo.com/en/reference/get_events               | XL                      | Yes, shared with events_detailed   | Yes                                               | number of steps for events + number of steps for events_detailed | With other streams (events_detailed) and within stream as sliced on `datetime`  |
+#| events_detailed   | https://developers.klaviyo.com/en/reference/get_events               | XL                      | Yes, shared with events            | Yes                                               | number of steps for events + number of steps for events_detailed | With other streams (events) and within stream as sliced on `datetime`           |
+#| email_templates   | https://developers.klaviyo.com/en/reference/get_templates            | M                       | None                               | No as `step` is not defined in `incremental_sync` | 1                                                                | None                                                                            |
+#| metrics           | https://developers.klaviyo.com/en/reference/get_metrics              | M                       | None                               | No as `step` is not defined in `incremental_sync` | 1                                                                | None                                                                            |
+#| lists             | https://developers.klaviyo.com/en/reference/get_lists                | L                       | Yes, shared with lists_detailed    | No as `step` is not defined in `incremental_sync` | 2                                                                | With other streams (lists_detailed), not within stream as `step` not defined    |
+#| lists_detailed    | https://developers.klaviyo.com/en/reference/get_lists                | 1/s                     | Yes, shared with lists             | No as `step` is not defined in `incremental_sync` | 1                                                                | With other streams (lists), not within stream as `step` not defined             |
+# Note: As of 2024-11-11, `metrics`, `lists` and `lists_detailed` are not supported by the Concurrent CDK as they do client side-filtering.
+
+# Based on the above, the only threads that allow for slicing and hence might perform more concurrent HTTP requests are `events` and `events_detailed`. There are no slicing for the others and hence the concurrency is limited by the number of streams querying the same endpoint. Given that the event endpoint is XL, we will set a default concurrency to 10.
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 25) }}"
+  max_concurrency: 50

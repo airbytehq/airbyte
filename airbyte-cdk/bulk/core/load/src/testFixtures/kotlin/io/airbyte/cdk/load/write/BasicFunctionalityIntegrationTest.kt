@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
@@ -35,6 +36,7 @@ import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.InputFile
+import io.airbyte.cdk.load.message.InputGlobalCheckpoint
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
 import io.airbyte.cdk.load.message.Meta.Change
@@ -141,12 +143,14 @@ enum class UnionBehavior {
 
 abstract class BasicFunctionalityIntegrationTest(
     /** The config to pass into the connector, as a serialized JSON blob */
-    val configContents: String,
+    configContents: String,
     val configSpecClass: Class<out ConfigurationSpecification>,
     dataDumper: DestinationDataDumper,
     destinationCleaner: DestinationCleaner,
     recordMangler: ExpectedRecordMapper = NoopExpectedRecordMapper,
     nameMapper: NameMapper = NoopNameMapper,
+    additionalMicronautEnvs: List<String> = emptyList(),
+    micronautProperties: Map<Property, String> = emptyMap(),
     /**
      * Whether to actually verify that the connector wrote data to the destination. This should only
      * ever be disabled for test destinations (dev-null, etc.).
@@ -182,19 +186,21 @@ abstract class BasicFunctionalityIntegrationTest(
     val nullUnknownTypes: Boolean = false,
     nullEqualsUnset: Boolean = false,
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
-    envVars: Map<String, String> = emptyMap(),
 ) :
     IntegrationTest(
+        additionalMicronautEnvs = additionalMicronautEnvs,
         dataDumper = dataDumper,
         destinationCleaner = destinationCleaner,
         recordMangler = recordMangler,
         nameMapper = nameMapper,
         nullEqualsUnset = nullEqualsUnset,
         configUpdater = configUpdater,
-        envVars = envVars,
+        micronautProperties = micronautProperties,
     ) {
-    val parsedConfig =
-        ValidatedJsonUtils.parseOne(configSpecClass, configUpdater.update(configContents))
+
+    // Update config with any replacements.  This may be necessary when using testcontainers.
+    val updatedConfig = configUpdater.update(configContents)
+    val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
 
     @Test
     open fun testBasicWrite() {
@@ -209,7 +215,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         val messages =
             runSync(
-                configContents,
+                updatedConfig,
                 stream,
                 listOf(
                     InputRecord(
@@ -260,7 +266,7 @@ abstract class BasicFunctionalityIntegrationTest(
             {
                 if (verifyDataWriting) {
                     dumpAndDiffRecords(
-                        ValidatedJsonUtils.parseOne(configSpecClass, configContents),
+                        ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig),
                         listOf(
                             OutputRecord(
                                 extractedAt = 1234,
@@ -321,7 +327,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
         val messages =
             runSync(
-                configContents,
+                updatedConfig,
                 stream,
                 listOf(
                     InputFile(
@@ -359,7 +365,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         })
 
-        val config = ValidatedJsonUtils.parseOne(configSpecClass, configContents)
+        val config = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
         val fileContent = dataDumper.dumpFile(config, stream)
 
         assertEquals(listOf("123"), fileContent)
@@ -380,7 +386,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             val stateMessage =
                 runSyncUntilStateAck(
-                    configContents,
+                    this@BasicFunctionalityIntegrationTest.updatedConfig,
                     stream,
                     listOf(
                         InputRecord(
@@ -398,7 +404,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     ),
                     allowGracefulShutdown = false,
                 )
-            runSync(configContents, stream, emptyList())
+            runSync(this@BasicFunctionalityIntegrationTest.updatedConfig, stream, emptyList())
 
             val streamName = stateMessage.stream.streamDescriptor.name
             val streamNamespace = stateMessage.stream.streamDescriptor.namespace
@@ -449,9 +455,13 @@ abstract class BasicFunctionalityIntegrationTest(
     @Test
     open fun testNamespaces() {
         assumeTrue(verifyDataWriting)
-        fun makeStream(namespace: String) =
+        fun makeStream(namespace: String?) =
             DestinationStream(
-                DestinationStream.Descriptor(namespace, "test_stream"),
+                // We need to randomize the stream name for destinations which support
+                // namespace=null natively.
+                // Otherwise, multiple test runs would write to `<null>.test_stream`.
+                // Now, they instead write to `<null>.test_stream_test20250123abcd`.
+                DestinationStream.Descriptor(namespace, "test_stream_$randomizedNamespace"),
                 Append,
                 ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
@@ -460,12 +470,16 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         val stream1 = makeStream(randomizedNamespace + "_1")
         val stream2 = makeStream(randomizedNamespace + "_2")
+        val streamWithDefaultNamespace = makeStream(null)
+        val (configWithRandomizedDefaultNamespace, actualDefaultNamespace) =
+            configUpdater.setDefaultNamespace(updatedConfig, randomizedNamespace + "_default")
         runSync(
-            configContents,
+            configWithRandomizedDefaultNamespace,
             DestinationCatalog(
                 listOf(
                     stream1,
                     stream2,
+                    streamWithDefaultNamespace,
                 )
             ),
             listOf(
@@ -479,6 +493,12 @@ abstract class BasicFunctionalityIntegrationTest(
                     namespace = stream2.descriptor.namespace,
                     name = stream2.descriptor.name,
                     data = """{"id": 5678}""",
+                    emittedAtMs = 1234,
+                ),
+                InputRecord(
+                    namespace = streamWithDefaultNamespace.descriptor.namespace,
+                    name = streamWithDefaultNamespace.descriptor.name,
+                    data = """{"id": 91011}""",
                     emittedAtMs = 1234,
                 ),
             )
@@ -515,6 +535,27 @@ abstract class BasicFunctionalityIntegrationTest(
                     listOf(listOf("id")),
                     cursor = null
                 )
+            },
+            {
+                dumpAndDiffRecords(
+                    parsedConfig,
+                    listOf(
+                        OutputRecord(
+                            extractedAt = 1234,
+                            generationId = 0,
+                            data = mapOf("id" to 91011),
+                            airbyteMeta = OutputRecord.Meta(syncId = 42)
+                        )
+                    ),
+                    streamWithDefaultNamespace.copy(
+                        descriptor =
+                            streamWithDefaultNamespace.descriptor.copy(
+                                namespace = actualDefaultNamespace
+                            )
+                    ),
+                    listOf(listOf("id")),
+                    cursor = null
+                )
             }
         )
     }
@@ -525,9 +566,10 @@ abstract class BasicFunctionalityIntegrationTest(
         fun makeStream(
             name: String,
             schema: LinkedHashMap<String, FieldType> = linkedMapOf("id" to intType),
+            namespaceSuffix: String = "",
         ) =
             DestinationStream(
-                DestinationStream.Descriptor(randomizedNamespace, name),
+                DestinationStream.Descriptor(randomizedNamespace + namespaceSuffix, name),
                 Append,
                 ObjectType(schema),
                 generationId = 0,
@@ -569,6 +611,11 @@ abstract class BasicFunctionalityIntegrationTest(
                         "groups",
                         linkedMapOf("id" to intType, "authorization" to stringType)
                     ),
+                    makeStream(
+                        "streamWithSpecialCharactersInNamespace",
+                        namespaceSuffix = "_spøcial"
+                    ),
+                    makeStream("streamWithOperatorInNamespace", namespaceSuffix = "_operator-1"),
                 )
             )
         // For each stream, generate a record containing every field in the schema.
@@ -590,7 +637,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     serialized = "",
                 )
             }
-        runSync(configContents, catalog, messages)
+        runSync(updatedConfig, catalog, messages)
         assertAll(
             catalog.streams.map { stream ->
                 {
@@ -630,7 +677,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId,
             )
         runSync(
-            configContents,
+            updatedConfig,
             makeStream(generationId = 12, minimumGenerationId = 0, syncId = 42),
             listOf(
                 InputRecord(
@@ -643,7 +690,7 @@ abstract class BasicFunctionalityIntegrationTest(
         )
         val finalStream = makeStream(generationId = 13, minimumGenerationId = 13, syncId = 43)
         runSync(
-            configContents,
+            updatedConfig,
             finalStream,
             listOf(
                 InputRecord(
@@ -725,7 +772,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 41,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream1,
             listOf(
                 makeInputRecord(1, "2024-01-23T01:00:00Z", 100),
@@ -764,7 +811,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         // Run a sync, but emit a status incomplete. This should not delete any existing data.
         runSyncUntilStateAck(
-            configContents,
+            updatedConfig,
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
@@ -813,7 +860,7 @@ abstract class BasicFunctionalityIntegrationTest(
         // Run a third sync, this time with a successful status.
         // This should delete the first sync's data, and retain the second+third syncs' data.
         runSync(
-            configContents,
+            updatedConfig,
             stream2,
             listOf(makeInputRecord(2, "2024-01-23T03:00:00Z", 300)),
         )
@@ -894,7 +941,7 @@ abstract class BasicFunctionalityIntegrationTest(
             )
         // Run a sync, but emit a stream status incomplete.
         runSyncUntilStateAck(
-            configContents,
+            updatedConfig,
             stream,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
@@ -929,7 +976,7 @@ abstract class BasicFunctionalityIntegrationTest(
         // Run a second sync, this time with a successful status.
         // This should retain the first syncs' data.
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             listOf(makeInputRecord(2, "2024-01-23T03:00:00Z", 300)),
         )
@@ -1015,7 +1062,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 41,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream1,
             listOf(
                 makeInputRecord(1, "2024-01-23T01:00:00Z", 100),
@@ -1055,7 +1102,7 @@ abstract class BasicFunctionalityIntegrationTest(
         // Run a sync, but emit a stream status incomplete. This should not delete any existing
         // data.
         runSyncUntilStateAck(
-            configContents,
+            updatedConfig,
             stream2,
             listOf(makeInputRecord(1, "2024-01-23T02:00:00Z", 200)),
             StreamCheckpoint(
@@ -1110,7 +1157,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 43,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream3,
             listOf(makeInputRecord(2, "2024-01-23T03:00:00Z", 300)),
         )
@@ -1170,7 +1217,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId,
             )
         runSync(
-            configContents,
+            updatedConfig,
             makeStream(syncId = 42),
             listOf(
                 InputRecord(
@@ -1183,7 +1230,7 @@ abstract class BasicFunctionalityIntegrationTest(
         )
         val finalStream = makeStream(syncId = 43)
         runSync(
-            configContents,
+            updatedConfig,
             finalStream,
             listOf(
                 InputRecord(
@@ -1236,7 +1283,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId,
             )
         runSync(
-            configContents,
+            updatedConfig,
             makeStream(
                 syncId = 42,
                 linkedMapOf("id" to intType, "to_drop" to stringType, "to_change" to intType)
@@ -1256,7 +1303,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 linkedMapOf("id" to intType, "to_change" to stringType, "to_add" to stringType)
             )
         runSync(
-            configContents,
+            updatedConfig,
             finalStream,
             listOf(
                 InputRecord(
@@ -1291,6 +1338,120 @@ abstract class BasicFunctionalityIntegrationTest(
             finalStream,
             primaryKey = listOf(listOf("id")),
             cursor = null,
+        )
+    }
+
+    /**
+     * Some destinations have better support for schema evolution in single-generation truncate
+     * syncs. For example, if a destination imposes limitations on column type changes, we can
+     * actually ignore those limits in a truncate sync (because we're dropping all older data
+     * anyway).
+     */
+    @Test
+    open fun testOverwriteSchemaEvolution() {
+        assumeTrue(verifyDataWriting)
+        fun makeStream(
+            syncId: Long,
+            schema: LinkedHashMap<String, FieldType>,
+            generationId: Long,
+            minimumGenerationId: Long,
+        ) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(schema),
+                generationId = generationId,
+                minimumGenerationId = minimumGenerationId,
+                syncId,
+            )
+        runSync(
+            updatedConfig,
+            makeStream(
+                syncId = 42,
+                linkedMapOf("id" to intType, "to_drop" to stringType, "to_change" to intType),
+                generationId = 1,
+                minimumGenerationId = 0,
+            ),
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "to_drop": "val1", "to_change": 42}""",
+                    emittedAtMs = 1234L,
+                )
+            )
+        )
+        val changedStream =
+            makeStream(
+                syncId = 43,
+                linkedMapOf("id" to intType, "to_change" to stringType, "to_add" to stringType),
+                generationId = 2,
+                minimumGenerationId = 2,
+            )
+        runSync(
+            updatedConfig,
+            changedStream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "to_change": "val2", "to_add": "val3"}""",
+                    emittedAtMs = 1234L,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 2,
+                    data = mapOf("id" to 42, "to_change" to "val2", "to_add" to "val3"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                )
+            ),
+            changedStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            reason = "Records were incorrect when trying to change the schema."
+        )
+
+        // Run a third sync, to verify that the schema is stable after evolution
+        // (this is relevant for e.g. iceberg, where every column has an ID,
+        // and we need to be able to match the new columns to their ID)
+        val finalStream = changedStream.copy(minimumGenerationId = 0, syncId = 44)
+        runSync(
+            updatedConfig,
+            finalStream,
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "to_change": "val4", "to_add": "val5"}""",
+                    emittedAtMs = 5678L,
+                )
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 2,
+                    data = mapOf("id" to 42, "to_change" to "val2", "to_add" to "val3"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                ),
+                OutputRecord(
+                    extractedAt = 5678,
+                    generationId = 2,
+                    data = mapOf("id" to 42, "to_change" to "val4", "to_add" to "val5"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 44),
+                ),
+            ),
+            finalStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+            reason = "Records were incorrect after running a second sync with the updated schema."
         )
     }
 
@@ -1330,7 +1491,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
         val sync1Stream = makeStream(syncId = 42)
         runSync(
-            configContents,
+            updatedConfig,
             sync1Stream,
             listOf(
                 // emitted_at:1000 is equal to 1970-01-01 00:00:01Z.
@@ -1391,7 +1552,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
         val sync2Stream = makeStream(syncId = 43)
         runSync(
-            configContents,
+            updatedConfig,
             sync2Stream,
             listOf(
                 // Update both Alice and Bob
@@ -1422,6 +1583,148 @@ abstract class BasicFunctionalityIntegrationTest(
                     data =
                         mapOf(
                             "id1" to 1,
+                            "id2" to 200,
+                            "updated_at" to TimestampWithTimezoneValue("2000-01-02T00:00:00Z"),
+                            "name" to "Alice3",
+                            "_ab_cdc_deleted_at" to null
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                )
+            ),
+            sync2Stream,
+            primaryKey = listOf(listOf("id1"), listOf("id2")),
+            cursor = listOf("updated_at"),
+        )
+    }
+
+    @Test
+    open fun testDedupWithStringKey() {
+        assumeTrue(supportsDedup)
+        fun makeStream(syncId: Long) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                importType =
+                    Dedupe(
+                        primaryKey = listOf(listOf("id1"), listOf("id2")),
+                        cursor = listOf("updated_at"),
+                    ),
+                schema =
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "id1" to stringType,
+                                "id2" to intType,
+                                "updated_at" to timestamptzType,
+                                "name" to stringType,
+                                "_ab_cdc_deleted_at" to timestamptzType,
+                            )
+                    ),
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = syncId,
+            )
+        fun makeRecord(data: String, extractedAt: Long) =
+            InputRecord(
+                randomizedNamespace,
+                "test_stream",
+                data,
+                emittedAtMs = extractedAt,
+            )
+
+        val sync1Stream = makeStream(syncId = 42)
+        runSync(
+            updatedConfig,
+            sync1Stream,
+            listOf(
+                // emitted_at:1000 is equal to 1970-01-01 00:00:01Z.
+                // This obviously makes no sense in relation to updated_at being in the year 2000,
+                // but that's OK because (from destinations POV) updated_at has no relation to
+                // extractedAt.
+                makeRecord(
+                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 200, "updated_at": "2000-01-01T00:00:00Z", "name": "Alice1", "_ab_cdc_deleted_at": null}""",
+                    extractedAt = 1000,
+                ),
+                // Emit a second record for id=(1,200) with a different updated_at.
+                makeRecord(
+                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 200, "updated_at": "2000-01-01T00:01:00Z", "name": "Alice2", "_ab_cdc_deleted_at": null}""",
+                    extractedAt = 1000,
+                ),
+                // Emit a record with no _ab_cdc_deleted_at field. CDC sources typically emit an
+                // explicit null, but we should handle both cases.
+                makeRecord(
+                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 201, "updated_at": "2000-01-01T00:02:00Z", "name": "Bob1"}""",
+                    extractedAt = 1000,
+                ),
+            ),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                // Alice has only the newer record, and Bob also exists
+                OutputRecord(
+                    extractedAt = 1000,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id1" to "9cf974de-52cf-4194-9f3d-7efa76ba4d84",
+                            "id2" to 200,
+                            "updated_at" to TimestampWithTimezoneValue("2000-01-01T00:01:00Z"),
+                            "name" to "Alice2",
+                            "_ab_cdc_deleted_at" to null
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 1000,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id1" to "9cf974de-52cf-4194-9f3d-7efa76ba4d84",
+                            "id2" to 201,
+                            "updated_at" to TimestampWithTimezoneValue("2000-01-01T00:02:00Z"),
+                            "name" to "Bob1"
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+            ),
+            sync1Stream,
+            primaryKey = listOf(listOf("id1"), listOf("id2")),
+            cursor = listOf("updated_at"),
+        )
+
+        val sync2Stream = makeStream(syncId = 43)
+        runSync(
+            updatedConfig,
+            sync2Stream,
+            listOf(
+                // Update both Alice and Bob
+                makeRecord(
+                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 200, "updated_at": "2000-01-02T00:00:00Z", "name": "Alice3", "_ab_cdc_deleted_at": null}""",
+                    extractedAt = 2000,
+                ),
+                makeRecord(
+                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 201, "updated_at": "2000-01-02T00:00:00Z", "name": "Bob2"}""",
+                    extractedAt = 2000,
+                ),
+                // And delete Bob. Again, T+D doesn't check the actual _value_ of deleted_at (i.e.
+                // the fact that it's in the past is irrelevant). It only cares whether deleted_at
+                // is non-null. So the destination should delete Bob.
+                makeRecord(
+                    """{"id1": "9cf974de-52cf-4194-9f3d-7efa76ba4d84", "id2": 201, "updated_at": "2000-01-02T00:01:00Z", "_ab_cdc_deleted_at": "1970-01-01T00:00:00Z"}""",
+                    extractedAt = 2000,
+                ),
+            ),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                // Alice still exists (and has been updated to the latest version), but Bob is gone
+                OutputRecord(
+                    extractedAt = 2000,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id1" to "9cf974de-52cf-4194-9f3d-7efa76ba4d84",
                             "id2" to 200,
                             "updated_at" to TimestampWithTimezoneValue("2000-01-02T00:00:00Z"),
                             "name" to "Alice3",
@@ -1475,9 +1778,9 @@ abstract class BasicFunctionalityIntegrationTest(
                 // instead of being able to fallback onto extractedAt.
                 emittedAtMs = 100,
             )
-        runSync(configContents, makeStream("cursor1"), listOf(makeRecord("cursor1")))
+        runSync(updatedConfig, makeStream("cursor1"), listOf(makeRecord("cursor1")))
         val stream2 = makeStream("cursor2")
-        runSync(configContents, stream2, listOf(makeRecord("cursor2")))
+        runSync(updatedConfig, stream2, listOf(makeRecord("cursor2")))
         dumpAndDiffRecords(
             parsedConfig,
             listOf(
@@ -1534,7 +1837,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 )
             }
         // Just verify that we don't crash.
-        assertDoesNotThrow { runSync(configContents, DestinationCatalog(streams), messages) }
+        assertDoesNotThrow { runSync(updatedConfig, DestinationCatalog(streams), messages) }
     }
 
     /**
@@ -1587,7 +1890,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 emittedAtMs = 100,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             listOf(
                 // A record with valid values for all fields
@@ -1599,9 +1902,9 @@ abstract class BasicFunctionalityIntegrationTest(
                           "number": 42.1,
                           "integer": 42,
                           "boolean": true,
-                          "timestamp_with_timezone": "2023-01-23T12:34:56Z",
+                          "timestamp_with_timezone": "2023-01-23T11:34:56-01:00",
                           "timestamp_without_timezone": "2023-01-23T12:34:56",
-                          "time_with_timezone": "12:34:56Z",
+                          "time_with_timezone": "11:34:56-01:00",
                           "time_without_timezone": "12:34:56",
                           "date": "2023-01-23"
                         }
@@ -1773,10 +2076,10 @@ abstract class BasicFunctionalityIntegrationTest(
                             "integer" to 42,
                             "boolean" to true,
                             "timestamp_with_timezone" to
-                                OffsetDateTime.parse("2023-01-23T12:34:56Z"),
+                                OffsetDateTime.parse("2023-01-23T11:34:56-01:00"),
                             "timestamp_without_timezone" to
                                 LocalDateTime.parse("2023-01-23T12:34:56"),
-                            "time_with_timezone" to OffsetTime.parse("12:34:56Z"),
+                            "time_with_timezone" to OffsetTime.parse("11:34:56-01:00"),
                             "time_without_timezone" to LocalTime.parse("12:34:56"),
                             "date" to LocalDate.parse("2023-01-23"),
                         ),
@@ -1871,7 +2174,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             listOf(
                 InputRecord(
@@ -2050,7 +2353,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             listOf(
                 InputRecord(
@@ -2221,7 +2524,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             listOf(
                 InputRecord(
@@ -2403,6 +2706,7 @@ abstract class BasicFunctionalityIntegrationTest(
      * happens sometimes.
      */
     open fun testNoColumns() {
+        assumeTrue(verifyDataWriting)
         val stream =
             DestinationStream(
                 DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
@@ -2413,7 +2717,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId = 42,
             )
         runSync(
-            configContents,
+            updatedConfig,
             stream,
             listOf(
                 InputRecord(
@@ -2445,6 +2749,44 @@ abstract class BasicFunctionalityIntegrationTest(
         )
     }
 
+    @Test
+    open fun testNoData() {
+        assumeTrue(verifyDataWriting)
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        assertDoesNotThrow { runSync(updatedConfig, stream, messages = emptyList()) }
+        dumpAndDiffRecords(
+            parsedConfig,
+            canonicalExpectedRecords = emptyList(),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    @Test
+    open fun testClear() {
+        val stream =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 1,
+                minimumGenerationId = 1,
+                syncId = 42,
+            )
+        assertDoesNotThrow {
+            runSync(updatedConfig, stream, messages = listOf(InputGlobalCheckpoint(null)))
+        }
+    }
+
     private fun schematizedObject(
         fullObject: LinkedHashMap<String, Any?>,
         coercedObject: LinkedHashMap<String, Any?> = fullObject
@@ -2463,9 +2805,9 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     companion object {
-        private val intType = FieldType(IntegerType, nullable = true)
+        val intType = FieldType(IntegerType, nullable = true)
         private val numberType = FieldType(NumberType, nullable = true)
-        private val stringType = FieldType(StringType, nullable = true)
+        val stringType = FieldType(StringType, nullable = true)
         private val timestamptzType = FieldType(TimestampTypeWithTimezone, nullable = true)
     }
 }

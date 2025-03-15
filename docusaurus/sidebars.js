@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const {
   parseMarkdownContentTitle,
-  parseFrontMatter,
+  parseMarkdownFile,
 } = require("@docusaurus/utils");
 
 const connectorsDocsRoot = "../docs/integrations";
@@ -26,17 +26,23 @@ function getFilenamesInDir(prefix, dir, excludes) {
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
     .map((filename) => {
       // Get the first header of the markdown document
-      const { contentTitle } = parseMarkdownContentTitle(
-        parseFrontMatter(fs.readFileSync(path.join(dir, `${filename}.md`)))
-          .content
-      );
-      if (!contentTitle) {
-        throw new Error(
-          `Could not parse title from ${path.join(
-            prefix,
-            filename
-          )}. Make sure there's no content above the first heading!`
-        );
+      try {
+        const filePath = path.join(dir, `${filename}.md`);
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+        const firstLine = fileContent.split('\n').find(line => line.trim().startsWith('# '));
+        const contentTitle = firstLine ? firstLine.replace(/^#\s*/, '').trim() : filename;
+        return {
+          type: 'doc',
+          id: prefix + filename,
+          label: contentTitle || filename
+        };
+      } catch (error) {
+        console.warn(`Warning: Using filename as title for ${path.join(prefix, filename)}`);
+        return {
+          type: 'doc',
+          id: prefix + filename,
+          label: filename
+        };
       }
 
       // If there is a migration doc for this connector nest this under the original doc as "Migration Guide"
@@ -219,7 +225,6 @@ const buildAConnector = {
       label: "No-Code Connector Builder",
       items: [
         "connector-development/connector-builder-ui/overview",
-        "connector-development/connector-builder-ui/connector-builder-compatibility",
         "connector-development/connector-builder-ui/tutorial",
         "connector-development/connector-builder-ui/ai-assist",
         {
@@ -232,6 +237,7 @@ const buildAConnector = {
             "connector-development/connector-builder-ui/incremental-sync",
             "connector-development/connector-builder-ui/partitioning",
             "connector-development/connector-builder-ui/error-handling",
+            "connector-development/connector-builder-ui/async-streams",
           ],
         },
       ],
@@ -282,11 +288,25 @@ const buildAConnector = {
             "connector-development/config-based/understanding-the-yaml-file/incremental-syncs",
             "connector-development/config-based/understanding-the-yaml-file/pagination",
             "connector-development/config-based/understanding-the-yaml-file/partition-router",
+            "connector-development/config-based/understanding-the-yaml-file/rate-limit-api-budget",
             "connector-development/config-based/understanding-the-yaml-file/record-selector",
             "connector-development/config-based/understanding-the-yaml-file/reference",
           ],
         },
-        "connector-development/config-based/advanced-topics",
+        {
+          type: "category",
+          label: "Advanced Topics",
+          items: [
+            "connector-development/config-based/advanced-topics/component-schema-reference",
+            "connector-development/config-based/advanced-topics/custom-components",
+            "connector-development/config-based/advanced-topics/oauth",
+            "connector-development/config-based/advanced-topics/how-framework-works",
+            "connector-development/config-based/advanced-topics/object-instantiation",
+            "connector-development/config-based/advanced-topics/parameters",
+            "connector-development/config-based/advanced-topics/references",
+            "connector-development/config-based/advanced-topics/string-interpolation",
+          ]
+        },
       ],
     },
 
@@ -301,9 +321,11 @@ const buildAConnector = {
         "connector-development/cdk-python/basic-concepts",
         "connector-development/cdk-python/schemas",
         "connector-development/cdk-python/full-refresh-stream",
+        "connector-development/cdk-python/resumable-full-refresh-stream",
         "connector-development/cdk-python/incremental-stream",
         "connector-development/cdk-python/http-streams",
         "connector-development/cdk-python/python-concepts",
+        "connector-development/cdk-python/migration-to-base-image",
         "connector-development/cdk-python/stream-slices",
         {
           type: "category",
@@ -341,6 +363,8 @@ const buildAConnector = {
       ],
     },
     "connector-development/connector-specification-reference",
+    "connector-development/partner-certified-destinations",
+    "connector-development/debugging-docker",
     "connector-development/writing-connector-docs",
     "connector-development/schema-reference",
     "connector-development/connector-metadata-file",
@@ -370,7 +394,11 @@ const connectorCatalog = {
         sourceMysql,
         sourceMssql,
         ...getSourceConnectors(),
-      ].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
+      ].sort((itemA, itemB) => {
+        const labelA = itemA?.label || '';
+        const labelB = itemB?.label || '';
+        return labelA.localeCompare(labelB);
+      }),
     },
     {
       type: "category",
@@ -383,7 +411,11 @@ const connectorCatalog = {
         destinationS3,
         destinationPostgres,
         ...getDestinationConnectors(),
-      ].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
+      ].sort((itemA, itemB) => {
+        const labelA = itemA?.label || '';
+        const labelB = itemB?.label || '';
+        return labelA.localeCompare(labelB);
+      }),
     },
     {
       type: "doc",
@@ -505,6 +537,7 @@ const understandingAirbyte = {
     "understanding-airbyte/high-level-view",
     "understanding-airbyte/airbyte-protocol",
     "understanding-airbyte/airbyte-protocol-docker",
+    "understanding-airbyte/airbyte-protocol-versioning",
     "understanding-airbyte/jobs",
     "understanding-airbyte/database-data-catalog",
     "understanding-airbyte/beginners-guide-to-catalog",
@@ -524,6 +557,10 @@ module.exports = {
     {
       type: "doc",
       id: "using-airbyte/getting-started/readme",
+    },
+    {
+      type: "doc",
+      id: "using-airbyte/getting-started/academy",
     },
     {
       type: "doc",
@@ -547,11 +584,19 @@ module.exports = {
     connectorCatalog,
     buildAConnector,
     "integrations/connector-support-levels",
+    {
+      type: "doc",
+      id: "using-airbyte/oauth",
+    },
     sectionHeader("Using Airbyte"),
     connectionConfigurations,
     {
       type: "doc",
       id: "using-airbyte/core-concepts/typing-deduping",
+    },
+    {
+      type: "doc",
+      id: "using-airbyte/delivery-methods",
     },
     {
       type: "doc",
@@ -571,8 +616,17 @@ module.exports = {
         "operator-guides/refreshes",
         "operator-guides/clear",
         "operator-guides/browsing-output-logs",
+        "integrations/locating-files-local-destination",
         "cloud/managing-airbyte-cloud/manage-connection-state",
       ],
+    },
+    {
+      type: "doc",
+      id: "using-airbyte/tagging",
+    },
+    {
+      type: "doc",
+      id: "understanding-airbyte/airbyte-metadata-fields",
     },
     sectionHeader("Managing Airbyte"),
     deployAirbyte,
@@ -595,9 +649,11 @@ module.exports = {
             type: "doc",
             id: "integrations/enterprise-connectors/README",
           },
-          items: [...getEnterpriseConnectors()].sort((itemA, itemB) =>
-            itemA.label.localeCompare(itemB.label)
-          ),
+          items: [...getEnterpriseConnectors()].sort((itemA, itemB) => {
+            const labelA = itemA?.label || '';
+            const labelB = itemB?.label || '';
+            return labelA.localeCompare(labelB);
+          }),
         },
       ],
     },
@@ -649,9 +705,9 @@ module.exports = {
             id: "access-management/rbac",
           },
           items: [
-            { 
-              type: "doc", 
-              id: "access-management/role-mapping" 
+            {
+              type: "doc",
+              id: "access-management/role-mapping"
             },
           ],
         },
@@ -705,7 +761,6 @@ module.exports = {
       id: "using-airbyte/pyairbyte/getting-started",
     },
     understandingAirbyte,
-    contributeToAirbyte,
     {
       type: "category",
       label: "Licenses",
@@ -721,6 +776,7 @@ module.exports = {
       ],
     },
     sectionHeader("Community"),
+    contributeToAirbyte,
     "community/getting-support",
     "community/code-of-conduct",
     sectionHeader("Product Updates"),
@@ -737,37 +793,48 @@ module.exports = {
         description: "We release new self-managed versions of Airbyte regularly. Airbyte Cloud customers always have the latest enhancements.",
       },
       items: [
+        "release_notes/v-1.5",
         "release_notes/v-1.4",
         "release_notes/v-1.3",
         "release_notes/v-1.2",
         "release_notes/v-1.1",
         "release_notes/v-1.0",
-        "release_notes/aug_2024",
-        "release_notes/july_2024",
-        "release_notes/june_2024",
-        "release_notes/may_2024",
-        "release_notes/april_2024",
-        "release_notes/march_2024",
-        "release_notes/february_2024",
-        "release_notes/january_2024",
-        "release_notes/december_2023",
-        "release_notes/november_2023",
-        "release_notes/october_2023",
-        "release_notes/upgrading_to_destinations_v2",
-        "release_notes/september_2023",
-        "release_notes/july_2023",
-        "release_notes/june_2023",
-        "release_notes/may_2023",
-        "release_notes/april_2023",
-        "release_notes/march_2023",
-        "release_notes/february_2023",
-        "release_notes/january_2023",
-        "release_notes/december_2022",
-        "release_notes/november_2022",
-        "release_notes/october_2022",
-        "release_notes/september_2022",
-        "release_notes/august_2022",
-        "release_notes/july_2022",
+        {
+          type: "category",
+          label: "Historical release notes",
+          link: {
+            type: "generated-index",
+            description: "Historical release notes from before Airbyte 1.0 are preserved here for posterity."
+          },
+          items: [
+            "release_notes/aug_2024",
+            "release_notes/july_2024",
+            "release_notes/june_2024",
+            "release_notes/may_2024",
+            "release_notes/april_2024",
+            "release_notes/march_2024",
+            "release_notes/february_2024",
+            "release_notes/january_2024",
+            "release_notes/december_2023",
+            "release_notes/november_2023",
+            "release_notes/october_2023",
+            "release_notes/upgrading_to_destinations_v2",
+            "release_notes/september_2023",
+            "release_notes/july_2023",
+            "release_notes/june_2023",
+            "release_notes/may_2023",
+            "release_notes/april_2023",
+            "release_notes/march_2023",
+            "release_notes/february_2023",
+            "release_notes/january_2023",
+            "release_notes/december_2022",
+            "release_notes/november_2022",
+            "release_notes/october_2022",
+            "release_notes/september_2022",
+            "release_notes/august_2022",
+            "release_notes/july_2022",
+          ]
+        },
       ],
     },
   ],

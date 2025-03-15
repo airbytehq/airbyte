@@ -3,67 +3,63 @@
 #
 
 
-import logging
 from unittest.mock import MagicMock
 
-import pytest
-from source_airtable.source import SourceAirtable
-
-from airbyte_cdk.models import AirbyteCatalog
+from source_airtable import SourceAirtable
 
 
-@pytest.mark.parametrize(
-    "status, check_passed",
-    [
-        (200, (True, None)),
-        (401, (False, "Unauthorized. Please ensure you are authenticated correctly.")),
-    ],
-    ids=["success", "fail"],
-)
-def test_check_connection(config, status, check_passed, fake_bases_response, fake_tables_response, requests_mock):
-    source = SourceAirtable()
-    # fake the bases
-    requests_mock.get("https://api.airtable.com/v0/meta/bases", status_code=status, json=fake_bases_response)
-    fake_base_id = fake_bases_response.get("bases")[0].get("id")
-    # fake the tables based on faked bases
-    requests_mock.get(f"https://api.airtable.com/v0/meta/bases/{fake_base_id}/tables", status_code=status, json=fake_tables_response)
-    assert source.check_connection(MagicMock(), config) == check_passed
+class TestSourceAirtable:
+    config = {"credentials": {"auth_method": "api_key", "api_key": "api key value"}}
 
+    def test_streams(self, tables_requests_mock):
+        streams = SourceAirtable(catalog={}, config=self.config, state={}).streams(config=self.config)
+        assert len(streams) == 2
+        assert [stream.name for stream in streams] == ["base_1/table_1/table_id_1", "base_1/table_2/table_id_2"]
 
-def test_discover(config, fake_bases_response, fake_tables_response, expected_discovery_stream_name, requests_mock):
-    source = SourceAirtable()
-    # fake the bases
-    requests_mock.get("https://api.airtable.com/v0/meta/bases", status_code=200, json=fake_bases_response)
-    fake_base_id = fake_bases_response.get("bases")[0].get("id")
-    # fake the tables based on faked bases
-    requests_mock.get(f"https://api.airtable.com/v0/meta/bases/{fake_base_id}/tables", status_code=200, json=fake_tables_response)
-    # generate fake catalog
-    airbyte_catalog = source.discover(MagicMock(), config)
-    assert [stream.name for stream in airbyte_catalog.streams] == expected_discovery_stream_name
-    assert isinstance(airbyte_catalog, AirbyteCatalog)
+    def test_streams_schema(self, tables_requests_mock):
+        catalog = SourceAirtable(catalog={}, config=self.config, state={}).discover(logger=MagicMock(), config=self.config)
 
+        schema = catalog.streams[0].json_schema["properties"]
+        assert schema == {
+            "_airtable_created_time": {"type": ["null", "string"]},
+            "_airtable_id": {"type": ["null", "string"]},
+            "_airtable_table_name": {"type": ["null", "string"]},
+            "attachments": {"type": ["null", "string"]},
+            "clo_with_empty_strings": {"type": ["null", "string"]},
+            "name": {"type": ["null", "string"]},
+            "notes": {"type": ["null", "string"]},
+            "status": {"type": ["null", "string"]},
+        }
 
-def test_streams(config, fake_bases_response, fake_tables_response, expected_discovery_stream_name, requests_mock):
-    source = SourceAirtable()
-    # fake the bases
-    requests_mock.get("https://api.airtable.com/v0/meta/bases", status_code=200, json=fake_bases_response)
-    fake_base_id = fake_bases_response.get("bases")[0].get("id")
-    # fake the tables based on faked bases
-    requests_mock.get(f"https://api.airtable.com/v0/meta/bases/{fake_base_id}/tables", status_code=200, json=fake_tables_response)
-    streams = list(source.streams(config))
-    assert len(streams) == 1
-    assert [stream.name for stream in streams] == expected_discovery_stream_name
+        schema = catalog.streams[1].json_schema["properties"]
+        assert schema == {
+            "_airtable_created_time": {"type": ["null", "string"]},
+            "_airtable_id": {"type": ["null", "string"]},
+            "_airtable_table_name": {"type": ["null", "string"]},
+            "assignee": {"type": ["null", "number"]},
+            "assignee_(from_table_6)": {"type": ["null", "array"], "items": {"type": ["null", "number"]}},
+            "barcode": {"type": ["null", "string"]},
+            "float": {"type": ["null", "number"]},
+            "integer": {"type": ["null", "number"]},
+            "name": {"type": ["null", "string"]},
+            "status": {"type": ["null", "string"]},
+            "table_6": {"type": ["null", "array"], "items": {"type": ["null", "string"]}},
+        }
 
+    def test_check_connection(self, tables_requests_mock, airtable_streams_requests_mock):
+        status = SourceAirtable(catalog={}, config=self.config, state={}).check_connection(logger=MagicMock(), config=self.config)
+        assert status == (True, None)
 
-def test_remove_missed_streams_from_catalog(mocker, config, fake_catalog, fake_streams, caplog):
-    logger = logging.getLogger(__name__)
-    source = SourceAirtable()
-    mocker.patch("source_airtable.source.SourceAirtable.streams", return_value=fake_streams)
-    streams_before = len(fake_catalog.streams)
-    catalog = source._remove_missed_streams_from_catalog(logger=logger, config=config, catalog=fake_catalog)
-    assert streams_before - len(catalog.streams) == 1
-    assert len(caplog.messages) == 1
-    assert caplog.text.startswith("WARNING")
+    def test_check_connection_failed(self, tables_requests_mock, airtable_streams_403_status_code_requests_mock):
+        status = SourceAirtable(catalog={}, config=self.config, state={}).check_connection(logger=MagicMock(), config=self.config)
+        assert status == (False, "Permission denied or entity is unprocessable.")
 
-
-#
+    def test_check_connection_no_streams_available(self, requests_mock):
+        requests_mock.get(
+            "https://api.airtable.com/v0/meta/bases",
+            status_code=200,
+            json={"bases": []},
+        )
+        status, reason = SourceAirtable(catalog={}, config=self.config, state={}).check_connection(logger=MagicMock(), config=self.config)
+        assert "No streams to connect to from source" in reason
+        assert status is False

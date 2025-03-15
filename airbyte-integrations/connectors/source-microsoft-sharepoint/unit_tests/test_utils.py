@@ -4,9 +4,10 @@
 from datetime import datetime, timedelta
 from http import HTTPStatus
 from unittest.mock import Mock, patch
+from urllib.parse import parse_qs, urlparse
 
 import pytest
-from source_microsoft_sharepoint.utils import execute_query_with_retry, filter_http_urls
+from source_microsoft_sharepoint.utils import PlaceholderUrlBuilder, execute_query_with_retry, filter_http_urls
 
 from airbyte_cdk import AirbyteTracedException
 
@@ -91,3 +92,95 @@ def test_filter_http_urls():
 
     assert len(filtered_files) == 2
     mock_logger.error.assert_called_once_with("Cannot open file file3.txt. The URL returned by SharePoint is not secure.")
+
+
+@pytest.mark.parametrize(
+    "steps, expected_url",
+    [
+        (
+            # steps is a list of (method_name, argument)
+            [
+                ("set_scheme", "https"),
+                ("set_host", "accounts.google.com"),
+                ("set_path", "/o/oauth2/v2/auth"),
+                ("add_key_value_placeholder_param", "client_id"),
+                ("add_key_value_placeholder_param", "redirect_uri"),
+                ("add_literal_param", "response_type=code"),
+                ("add_key_value_placeholder_param", "scope"),
+                ("add_literal_param", "access_type=offline"),
+                ("add_key_value_placeholder_param", "state"),
+                ("add_literal_param", "include_granted_scopes=true"),
+                ("add_literal_param", "prompt=consent"),
+            ],
+            # And this is the expected URL for these steps
+            "https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scope_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent",
+        ),
+        (
+            # steps is a list of (method_name, argument)
+            [
+                ("set_scheme", "https"),
+                ("set_host", "login.microsoftonline.com"),
+                ("set_path", "/TENANT_ID/oauth2/v2.0/authorize"),
+                ("add_key_value_placeholder_param", "client_id"),
+                ("add_key_value_placeholder_param", "redirect_uri"),
+                ("add_key_value_placeholder_param", "state"),
+                ("add_key_value_placeholder_param", "scope"),
+                ("add_literal_param", "response_type=code"),
+            ],
+            # And this is the expected URL for these steps
+            "https://login.microsoftonline.com/TENANT_ID/oauth2/v2.0/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}&{{scope_param}}&response_type=code",
+        ),
+        (
+            [
+                ("set_scheme", "https"),
+                ("set_host", "oauth2.googleapis.com"),
+                ("set_path", "/token"),
+                ("add_key_value_placeholder_param", "client_id"),
+                ("add_key_value_placeholder_param", "client_secret"),
+                ("add_key_value_placeholder_param", "auth_code"),
+                ("add_key_value_placeholder_param", "redirect_uri"),
+                ("add_literal_param", "grant_type=authorization_code"),
+            ],
+            "https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&grant_type=authorization_code",
+        ),
+        (
+            [
+                ("set_scheme", "https"),
+                ("set_host", "login.microsoftonline.com"),
+                ("set_path", "/TENANT_ID/oauth2/v2.0/token"),
+                ("add_key_value_placeholder_param", "client_id"),
+                ("add_key_value_placeholder_param", "auth_code"),
+                ("add_key_value_placeholder_param", "redirect_uri"),
+                ("add_key_value_placeholder_param", "client_secret"),
+                ("add_literal_param", "grant_type=authorization_code"),
+            ],
+            "https://login.microsoftonline.com/TENANT_ID/oauth2/v2.0/token?{{client_id_param}}&{{auth_code_param}}&{{redirect_uri_param}}&{{client_secret_param}}&grant_type=authorization_code",
+        ),
+    ],
+)
+def test_url_builder_for_key_pair_value_pair(steps, expected_url):
+    """
+    Demonstrates building a URL in a specified order,
+    using a list of (method_name, argument) tuples.
+    """
+
+    builder = PlaceholderUrlBuilder()
+
+    # We'll call each builder method in the order given by steps
+    for method_name, arg in steps:
+        if method_name == "set_scheme":
+            builder.set_scheme(arg)
+        elif method_name == "set_host":
+            builder.set_host(arg)
+        elif method_name == "set_path":
+            builder.set_path(arg)
+        elif method_name == "add_key_value_placeholder_param":
+            builder.add_key_value_placeholder_param(arg)
+        elif method_name == "add_literal_param":
+            builder.add_literal_param(arg)
+        else:
+            raise ValueError(f"Unknown method_name: {method_name}")
+
+    # Finally, build the URL and compare to expected
+    url = builder.build()
+    assert url == expected_url, f"Expected {expected_url}, but got {url}"
