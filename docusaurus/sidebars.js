@@ -544,6 +544,8 @@ const understandingAirbyte = {
     "understanding-airbyte/supported-data-types",
     "understanding-airbyte/secrets",
     "understanding-airbyte/cdc",
+    "understanding-airbyte/file-transfer",
+    "understanding-airbyte/permission-sync",
     "understanding-airbyte/resumability",
     "understanding-airbyte/json-avro-conversion",
     "understanding-airbyte/schemaless-sources-and-destinations",

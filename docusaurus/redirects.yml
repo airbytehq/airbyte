@@ -37,6 +37,10 @@
   to: /cloud/managing-airbyte-cloud/configuring-connections
 - from: /cloud/managing-airbyte-cloud/manage-schema-changes
   to: /using-airbyte/schema-change-management
+- from: /file-sync
+  to: /understanding-airbyte/file-transfer
+- from: /permission-sync
+  to: /understanding-airbyte/permission-sync
 # November 2023 documentation restructure:
 - from:
     - /project-overview/product-support-levels
