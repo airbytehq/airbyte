@@ -80,7 +80,7 @@ class DefaultInputConsumerTask(
     // Required by new interface
     @Named("recordQueue")
     private val recordQueueForPipeline:
-        PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
+        PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val loadPipeline: LoadPipeline? = null,
     private val partitioner: InputPartitioner,
     private val openStreamQueue: QueueWriter<DestinationStream>
@@ -165,20 +165,20 @@ class DefaultInputConsumerTask(
                         mapOf(manager.getCurrentCheckpointId() to 1),
                         StreamKey(stream),
                         record
-                    )
+                    ) { reserved.release() }
                 val partition = partitioner.getPartition(record, recordQueueForPipeline.partitions)
-                recordQueueForPipeline.publish(reserved.replace(pipelineMessage), partition)
+                recordQueueForPipeline.publish(pipelineMessage, partition)
             }
             is DestinationRecordStreamComplete -> {
                 manager.markEndOfStream(true)
                 log.info { "Read COMPLETE for stream $stream" }
-                recordQueueForPipeline.broadcast(reserved.replace(PipelineEndOfStream(stream)))
+                recordQueueForPipeline.broadcast(PipelineEndOfStream(stream))
                 reserved.release()
             }
             is DestinationRecordStreamIncomplete -> {
                 manager.markEndOfStream(false)
                 log.info { "Read INCOMPLETE for stream $stream" }
-                recordQueueForPipeline.broadcast(reserved.replace(PipelineEndOfStream(stream)))
+                recordQueueForPipeline.broadcast(PipelineEndOfStream(stream))
                 reserved.release()
             }
             is DestinationFile -> {
@@ -309,8 +309,7 @@ interface InputConsumerTaskFactory {
         fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
 
         // Required by new interface
-        recordQueueForPipeline:
-            PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
+        recordQueueForPipeline: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
         loadPipeline: LoadPipeline?,
         partitioner: InputPartitioner,
         openStreamQueue: QueueWriter<DestinationStream>,
@@ -332,8 +331,7 @@ class DefaultInputConsumerTaskFactory(
         fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
 
         // Required by new interface
-        recordQueueForPipeline:
-            PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
+        recordQueueForPipeline: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
         loadPipeline: LoadPipeline?,
         partitioner: InputPartitioner,
         openStreamQueue: QueueWriter<DestinationStream>,

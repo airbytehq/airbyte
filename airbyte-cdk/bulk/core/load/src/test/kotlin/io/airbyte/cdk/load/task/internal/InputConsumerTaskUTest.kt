@@ -47,7 +47,7 @@ class InputConsumerTaskUTest {
     @MockK lateinit var fileTransferQueue: MessageQueue<FileTransferQueueMessage>
     @MockK
     lateinit var recordQueueForPipeline:
-        PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordRaw>>>
+        PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>
     @MockK lateinit var partitioner: InputPartitioner
     @MockK lateinit var openStreamQueue: QueueWriter<DestinationStream>
 
