@@ -355,7 +355,7 @@ to the Airbyte connector configuration screen, so it may log in to the bastion.
 
 MSSQL data types are mapped to the following data types when synchronizing data. You can check the
 test values examples
-[here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mssql/src/test-integration/java/io/airbyte/integrations/source/mssql/MssqlSourceComprehensiveTest.java).
+[here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mssql/src/test-integration/java/io/airbyte/integrations/source/mssql/MssqlSourceDatatypeTest.java).
 If you can't find the data type you are looking for or have any problems feel free to add a new
 test!
 
