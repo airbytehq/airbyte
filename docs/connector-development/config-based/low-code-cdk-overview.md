@@ -1,6 +1,6 @@
 # Low-code connector development
 
-Airbyte’s low-code framework enables you to build source connectors for REST APIs via a [connector builder UI](https://docs.airbyte.com/connector-development/connector-builder-ui/overview) or by modifying boilerplate YAML files via terminal or text editor.
+Airbyte's low-code framework enables you to build source connectors for REST APIs via a [connector builder UI](../connector-builder-ui/overview.md) or by modifying boilerplate YAML files via terminal or text editor.
 
 :::info
 Developer updates will be announced via our [#help-connector-development Slack channel](https://airbytehq.slack.com/archives/C027KKE4BCZ). If you are using the CDK, please join to stay up to date on changes and issues.
@@ -75,7 +75,7 @@ To use the low-code framework to build an REST API Source connector:
 5. Specify stream schemas
 6. Add the connector to the Airbyte platform
 
-For a step-by-step tutorial, refer to the [Getting Started tutorial](./tutorial/0-getting-started.md) or the [video tutorial](https://youtu.be/i7VSL2bDvmw)
+For a step-by-step tutorial, refer to the [Getting Started with the Connector Builder](../connector-builder-ui/tutorial.mdx) or the [video tutorial](https://youtu.be/i7VSL2bDvmw)
 
 ## Connector Builder UI
 
@@ -107,7 +107,7 @@ The following table describes the components of the YAML file:
 | `definitions` | Describes the objects to be reused in the YAML connector                                                                                                                                                                             |
 | `streams`     | Lists the streams of the source                                                                                                                                                                                                      |
 | `check`       | Describes how to test the connection to the source by trying to read a record from a specified list of streams and failing if no records could be read                                                                               |
-| `spec`        | A [connector specification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol#actor-specification) which describes the required and optional parameters which can be input by the end user to configure this connector |
+| `spec`        | A [connector specification](../../understanding-airbyte/airbyte-protocol#actor-specification) which describes the required and optional parameters which can be input by the end user to configure this connector |
 
 :::tip
 Streams define the schema of the data to sync, as well as how to read it from the underlying API source. A stream generally corresponds to a resource within the API. They are analogous to tables for a relational database source.
@@ -131,17 +131,6 @@ For each stream, configure the following components:
 
 For a deep dive into each of the components, refer to [Understanding the YAML file](./understanding-the-yaml-file/yaml-overview.md) or the [full YAML Schema definition](https://github.com/airbytehq/airbyte-python-cdk/blob/main/airbyte_cdk/sources/declarative/declarative_component_schema.yaml)
 
-## Tutorial
-
-This section is a tutorial that will guide you through the end-to-end process of implementing a low-code connector.
-
-0. [Getting started](tutorial/0-getting-started.md)
-1. [Creating a source](tutorial/1-create-source.md)
-2. [Installing dependencies](tutorial/2-install-dependencies.md)
-3. [Connecting to the API](tutorial/3-connecting-to-the-API-source.md)
-4. [Reading data](tutorial/4-reading-data.md)
-5. [Incremental reads](tutorial/5-incremental-reads.md)
-6. [Testing](tutorial/6-testing.md)
 
 ## Sample connectors
 
