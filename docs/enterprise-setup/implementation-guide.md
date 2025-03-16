@@ -742,13 +742,15 @@ Now, when you install Airbyte, images will come from the custom image registry y
 
 ### Customizing your Service Account
 
-You may choose to use your own service account instead of the Airbyte default, `airbyte-sa`. This may allow for better audit trails and resource management specific to your organizational policies and requirements.
+You may choose to use your own service account instead of the Airbyte default, `airbyte-admin`. This may allow for better audit trails and resource management specific to your organizational policies and requirements.
 
 To do this, add the following to your `values.yaml`:
 
 ```
-serviceAccount:
-  name:
+global:
+  jobs:
+    kube:
+      serviceAccountName: default
 ```
 
 ## AWS Policies Appendix
