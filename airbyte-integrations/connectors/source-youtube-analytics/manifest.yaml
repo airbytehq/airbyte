@@ -440,9 +440,8 @@ definitions:
       path: jobs
       http_method: GET
     status_extractor:
-      type: DpathExtractor
-      field_path:
-        - status
+      type: CustomRecordExtractor
+      class_name: source_declarative_manifest.components.StatusExtractor
     status_mapping:
       failed:
         - failed
@@ -452,15 +451,14 @@ definitions:
         - timeout
       completed:
         - ready
-    urls_extractor:
-      type: DpathExtractor
-      field_path:
-        - downloadUrl
+    download_target_extractor:
+      type: CustomRecordExtractor
+      class_name: source_declarative_manifest.components.DownloadTargetExtractor
     download_requester:
       $ref: "#/definitions/base_requester"
-      path: "{{stream_slice.extra_fields['downloadUrl']}}"
+      path: "{{ stream_slice.extra_fields['download_target'] }}"
       http_method: GET
-    decoder:
+    download_decoder:
       type: GzipJsonDecoder
     record_selector:
       type: RecordSelector
@@ -472,10 +470,10 @@ definitions:
     url_base: https://youtubereporting.googleapis.com/v1/
     authenticator:
       type: OAuthAuthenticator
-      client_id: '{{ config[''credentials'']["client_id"] }}'
+      client_id: '{{ config["client_id"] }}'
       grant_type: refresh_token
-      client_secret: '{{ config[''credentials'']["client_secret"] }}'
-      refresh_token: '{{ config[''credentials'']["refresh_token"] }}'
+      client_secret: '{{ config["client_secret"] }}'
+      refresh_token: '{{ config["refresh_token"] }}'
       refresh_request_body: {}
       token_refresh_endpoint: https://oauth2.googleapis.com/token
     error_handlers:
@@ -510,33 +508,26 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     title: YouTube Analytics Spec
     required:
-      - credentials
+      - client_id
+      - client_secret
+      - refresh_token
     additionalProperties: true
     properties:
-      credentials:
-        type: object
-        title: Authenticate via OAuth 2.0
-        required:
-          - client_id
-          - client_secret
-          - refresh_token
-        additionalProperties: true
-        properties:
-          client_id:
-            type: string
-            description: The Client ID of your developer application
-            title: Client ID
-            airbyte_secret: true
-          client_secret:
-            type: string
-            description: The client secret of your developer application
-            title: Client Secret
-            airbyte_secret: true
-          refresh_token:
-            type: string
-            description: A refresh token generated using the above client ID and secret
-            title: Refresh Token
-            airbyte_secret: true
+      client_id:
+        type: string
+        description: The Client ID of your developer application
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        description: The client secret of your developer application
+        title: Client Secret
+        airbyte_secret: true
+      refresh_token:
+        type: string
+        description: A refresh token generated using the above client ID and secret
+        title: Refresh Token
+        airbyte_secret: true
   advanced_auth:
     auth_flow_type: oauth2.0
     oauth_config_specification:
@@ -547,7 +538,6 @@ spec:
           refresh_token:
             type: string
             path_in_connector_config:
-              - credentials
               - refresh_token
       complete_oauth_server_input_specification:
         type: object
@@ -564,12 +554,10 @@ spec:
           client_id:
             type: string
             path_in_connector_config:
-              - credentials
               - client_id
           client_secret:
             type: string
             path_in_connector_config:
-              - credentials
               - client_secret
 
 metadata:
