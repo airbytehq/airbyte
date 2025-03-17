@@ -160,6 +160,23 @@ definitions:
             page_size: 100
             cursor_value: "{{ response.records.cursor }}"
             stop_condition: "{{ 'records' not in response }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: metaData.started
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.start_date or (now_utc() -
+            duration('P90DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: fromDateTime
       transformations:
         - type: AddFields
           fields:
