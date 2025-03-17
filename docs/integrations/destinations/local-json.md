@@ -2,13 +2,13 @@
 
 :::danger
 
-This destination is meant to be used on a local workstation and won't work on Kubernetes
+This destination is meant to be used on a local workstation and won't work on Kubernetes production deployments. This is because the destination writes data to the local filesystem of the container, which is not accessible outside the pod in a Kubernetes environment unless you configure persistent volumes.
 
 :::
 
 ## Overview
 
-This destination writes data to a directory on the _local_ filesystem on the host running Airbyte. By default, data is written to `/tmp/airbyte_local`. To change this location, modify the `LOCAL_ROOT` environment variable for Airbyte.
+This destination writes data to a directory on the filesystem within the Airbyte container. All data is written under the `/local` directory inside the container. This directory is enforced by the connector code and cannot be changed through environment variables.
 
 ### Sync Overview
 
@@ -37,39 +37,36 @@ This integration will be constrained by the speed at which your filesystem accep
 
 The `destination_path` will always start with `/local` whether it is specified by the user or not. Any directory nesting within local will be mapped onto the local mount.
 
-By default, the `LOCAL_ROOT` env variable in the `.env` file is set `/tmp/airbyte_local`.
-
-The local mount is mounted by Docker onto `LOCAL_ROOT`. This means the `/local` is substituted by `/tmp/airbyte_local` by default.
+The connector code enforces that all paths must be under the `/local` directory. If you provide a path that doesn't start with `/local`, it will be automatically prefixed with `/local`. Attempting to write to a location outside the `/local` directory will result in an error.
 
 :::caution
 
-Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a MacOS, as /tmp has a symlink that points to /private. It will not work otherwise). You allow it with "File sharing" in `Settings -> Resources -> File sharing -> add the one or two above folder` and hit the "Apply & restart" button.
+When using abctl to deploy Airbyte locally, the data is stored within the Kubernetes cluster created by abctl. You'll need to use kubectl commands to access the data as described in the "Access Replicated Data Files" section below.
 
 :::
 
 ### Example:
 
 - If `destination_path` is set to `/local/cars/models`
-- the local mount is using the `/tmp/airbyte_local` default
-- then all data will be written to `/tmp/airbyte_local/cars/models` directory.
+- then all data will be written to `/local/cars/models` directory inside the container
 
 ## Access Replicated Data Files
 
-If your Airbyte instance is running on the same computer that you are navigating with, you can open your browser and enter [file:///tmp/airbyte_local](file:///tmp/airbyte_local) to look at the replicated data locally. If the first approach fails or if your Airbyte instance is running on a remote server, follow the following steps to access the replicated files:
+Since Airbyte now runs in a Kubernetes cluster managed by abctl, accessing the replicated data requires using kubectl commands:
 
-1. Access the scheduler container using `docker exec -it airbyte-server bash`
-2. Navigate to the default local mount using `cd /tmp/airbyte_local`
-3. Navigate to the replicated file directory you specified when you created the destination, using `cd /{destination_path}`
-4. List files containing the replicated data using `ls`
-5. Execute `cat {filename}` to display the data in a particular file
+1. Find the pod running the destination connector:
+   ```
+   kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl get pods | grep destination
+   ```
 
-You can also copy the output file to your host machine, the following command will copy the file to the current working directory you are using:
+2. Copy the files from the pod to your local machine:
+   ```
+   kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl cp <pod-name>:/local/<destination_path>/<filename> ./<filename>
+   ```
 
-```text
-docker cp airbyte-server:/tmp/airbyte_local/{destination_path}/{filename}.jsonl .
-```
+Note: The exact pod name will depend on your specific connection ID and sync attempt. Look for pods with names containing "destination" and your connection ID.
 
-Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](/integrations/locating-files-local-destination.md) for an alternative approach.
+If you are running Airbyte on Windows, you may need to adjust these commands accordingly. You can also refer to this [link](/integrations/locating-files-local-destination.md) for an alternative approach.
 
 ## Changelog
 

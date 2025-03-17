@@ -15,7 +15,7 @@
         "description": "Path to the directory where json files will be written. The files will be placed inside that local mount. For more information check out our <a href=\"https://docs.airbyte.com/integrations/destinations/local-json\">docs</a>",
         "title": "Destination Path",
         "type": "string",
-        "examples": ["/json_data"]
+        "examples": ["/local/json_data"]
       }
     }
   }
