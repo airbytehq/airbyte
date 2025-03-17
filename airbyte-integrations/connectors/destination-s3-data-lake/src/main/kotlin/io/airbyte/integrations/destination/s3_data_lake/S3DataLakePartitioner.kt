@@ -29,22 +29,22 @@ class S3DataLakePartitioner(catalog: DestinationCatalog) : InputPartitioner {
             return 0
         }
 
-        streamToPrimaryKeyFieldNames[record.stream]?.let { primaryKey ->
-            val jsonData = record.asRawJson()
-
-            val primaryKeyValues =
-                primaryKey.map { keys ->
-                    keys.map { key -> if (jsonData.has(key)) jsonData.get(key) else null }
-                }
-            val hash = primaryKeyValues.hashCode()
-            /** abs(MIN_VALUE) == MIN_VALUE, so we need to handle this case separately */
-            if (hash == Int.MIN_VALUE) {
-                return 0
-            }
-            return abs(primaryKeyValues.hashCode()) % numParts
+        if (record.stream.importType !is Dedupe) {
+            return abs(random.nextInt()) % numParts
         }
-            ?: run {
-                return abs(random.nextInt()) % numParts
+
+        val primaryKey = (record.stream.importType as Dedupe).primaryKey
+        val jsonData = record.asRawJson()
+
+        val primaryKeyValues =
+            primaryKey.map { keys ->
+                keys.map { key -> if (jsonData.has(key)) jsonData.get(key) else null }
             }
+        val hash = primaryKeyValues.hashCode()
+        /** abs(MIN_VALUE) == MIN_VALUE, so we need to handle this case separately */
+        if (hash == Int.MIN_VALUE) {
+            return 0
+        }
+        return abs(primaryKeyValues.hashCode()) % numParts
     }
 }
