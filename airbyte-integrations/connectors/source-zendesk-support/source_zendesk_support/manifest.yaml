@@ -856,6 +856,95 @@ definitions:
       cursor_filter: "start_time"
       primary_key: "id"
 
+  ticket_metrics_stream:
+    type: StateDelegatingStream
+    name: "ticket_metrics"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_zendesk_support/schemas/ticket_metrics.json"
+    full_refresh_stream:
+      $ref: "#/definitions/base_incremental_stream"
+      schema_loader:
+        type: JsonFileSchemaLoader
+        file_path: "./source_zendesk_support/schemas/ticket_metrics.json"
+      name: "ticket_metrics"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_datetime_formats:
+          - "%s"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%s"
+        cursor_field: "_ab_updated_at"
+        start_datetime:
+          datetime: "0" # not used as the API does not take filters in
+      retriever:
+        $ref: "#/definitions/retriever"
+        ignore_stream_slicer_parameters_on_paginated_requests: true
+        requester:
+          $ref: "#/definitions/retriever/requester"
+          path: "ticket_metrics"
+        paginator:
+          $ref: "#/definitions/links_next_paginator"
+          pagination_strategy:
+            $ref: "#/definitions/after_url_paginator/pagination_strategy"
+            stop_condition: "{{ config.get('ignore_pagination', False) or not response['meta']['has_more'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["ticket_metrics"]
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - "_ab_updated_at"
+              value: "{{ record['updated_at'] }}"
+    incremental_stream:
+      $ref: "#/definitions/base_incremental_stream"
+      schema_loader:
+        type: JsonFileSchemaLoader
+        file_path: "./source_zendesk_support/schemas/ticket_metrics.json"
+      name: "ticket_metrics"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_datetime_formats:
+          - "%s"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%s"
+        cursor_field: "_ab_updated_at"
+        start_datetime:
+          datetime: "0" # not used as we should start from the state value
+      retriever:
+        $ref: "#/definitions/retriever"
+        ignore_stream_slicer_parameters_on_paginated_requests: true
+        requester:
+          $ref: "#/definitions/retriever/requester"
+          path: "tickets/{{ stream_partition.ticket_id }}/metrics"
+        paginator:
+          type: NoPagination
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["ticket_metric"]
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: "id"
+              partition_field: "ticket_id"
+              stream:
+                $ref: "#/definitions/tickets_stream"
+              incremental_dependency: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - "_ab_updated_at"
+              value: "{{ record['generated_timestamp'] }}"
+
   topics_stream:
     $ref: "#/definitions/semi_incremental_stream"
     retriever:
@@ -951,6 +1040,7 @@ streams:
   - $ref: "#/definitions/ticket_metric_events_stream"
   - $ref: "#/definitions/ticket_skips_stream"
   - $ref: "#/definitions/tickets_stream"
+  - $ref: "#/definitions/ticket_metrics_stream"
   - $ref: "#/definitions/triggers_stream"
   - $ref: "#/definitions/users_stream"
   - $ref: "#/definitions/users_identities_stream"

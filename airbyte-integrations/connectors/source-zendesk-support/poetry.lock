@@ -2,15 +2,15 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.38.3"
+version = "6.41.1"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 groups = ["main"]
 markers = "python_version <= \"3.11\""
 files = [
-    {file = "airbyte_cdk-6.38.3-py3-none-any.whl", hash = "sha256:3bb29acf69da7188bd10f8c23cd2e683b08079bde4f5d16d87718b39cfa92cb2"},
-    {file = "airbyte_cdk-6.38.3.tar.gz", hash = "sha256:dfece60e4fbf51eae2f565f2389afaa9b4c7827f342ee77fcfdfdd7d7742a255"},
+    {file = "airbyte_cdk-6.41.1-py3-none-any.whl", hash = "sha256:1fefae879211822cab2877dc146a7911b88b6e925da690e8a5d5ae4e2fbcb579"},
+    {file = "airbyte_cdk-6.41.1.tar.gz", hash = "sha256:a444ccfa456e3e4753920e2b2f5454179cbd189e6ee3fef75520cedaacb819c8"},
 ]
 
 [package.dependencies]
@@ -30,6 +30,7 @@ langchain_core = "0.1.42"
 nltk = "3.9.1"
 numpy = "<2"
 orjson = ">=3.10.7,<4.0.0"
+packaging = "*"
 pandas = "2.2.2"
 psutil = "6.1.0"
 pydantic = ">=2.7,<3.0"
@@ -43,6 +44,7 @@ rapidfuzz = ">=3.10.1,<4.0.0"
 requests = "*"
 requests_cache = "*"
 serpyco-rs = ">=1.10.2,<2.0.0"
+typing-extensions = "*"
 wcmatch = "10.0"
 whenever = ">=0.6.16,<0.7.0"
 xmltodict = ">=0.13,<0.15"
@@ -2289,4 +2291,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.12"
-content-hash = "1ae467862b0ad7402b948894dfc342e0aca8c42acda8fe58bfd8e7a35061f050"
+content-hash = "10d0d1d8178f167fa815bef857639874b8572cd797b7b0b81eadc9fc7e2cdd49"

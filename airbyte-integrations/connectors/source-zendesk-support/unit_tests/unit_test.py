@@ -128,24 +128,6 @@ def test_token_authenticator():
 
 
 @pytest.mark.parametrize(
-    "config",
-    [(TEST_CONFIG), (TEST_CONFIG_OAUTH)],
-    ids=["api_token", "oauth"],
-)
-def test_convert_config2stream_args(config):
-    result = SourceZendeskSupport(config=config, catalog=None, state=None).convert_config2stream_args(config)
-    assert "authenticator" in result
-
-
-@freezegun.freeze_time("2022-01-01")
-def test_default_start_date():
-    result = SourceZendeskSupport(config=TEST_CONFIG_WITHOUT_START_DATE, catalog=None, state=None).convert_config2stream_args(
-        TEST_CONFIG_WITHOUT_START_DATE
-    )
-    assert result["start_date"] == "2020-01-01T00:00:00Z"
-
-
-@pytest.mark.parametrize(
     "config, expected",
     [
         (TEST_CONFIG, "aW50ZWdyYXRpb24tdGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="),
