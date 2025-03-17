@@ -1,0 +1,105 @@
+version: 2.0.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - user
+
+definitions:
+  base_requester:
+    type: HttpRequester
+    url_base: https://graph.instagram.com/v22.0
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["access_token"] }}'
+  streams:
+    user:
+      type: DeclarativeStream
+      name: user
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /me
+          http_method: GET
+          request_parameters:
+            fields: >-
+              id,user_id,username,name,account_type,profile_picture_url,followers_count,follows_count,media_count,biography,website
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user"
+
+streams:
+  - $ref: "#/definitions/streams/user"
+
+metadata:
+  autoImportSchema:
+    user: true
+
+schemas:
+  user:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      account_type:
+        type:
+          - string
+          - "null"
+      biography:
+        type:
+          - string
+          - "null"
+      followers_count:
+        type:
+          - number
+          - "null"
+      follows_count:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      media_count:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      profile_picture_url:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - string
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"

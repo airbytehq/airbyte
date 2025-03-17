@@ -16,7 +16,7 @@ packages = [ { include = "source_instagram_api" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+airbyte-cdk = "^2"
 
 [tool.poetry.scripts]
 source-instagram-api = "source_instagram_api.run:run"
