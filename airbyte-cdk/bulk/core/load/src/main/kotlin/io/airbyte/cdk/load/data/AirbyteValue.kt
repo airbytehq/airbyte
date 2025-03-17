@@ -166,12 +166,12 @@ private class ObjectValueSerializer : JsonSerializer<ObjectValue>() {
  * @property name Field name
  * @property fieldCategory [FieldCategory] of the field
  */
-data class EnrichedAirbyteValue(
-    val value: AirbyteValue,
+class EnrichedAirbyteValue(
+    var value: AirbyteValue,
     val type: AirbyteType,
     val name: String,
     val fieldCategory: FieldCategory,
-    val changes: List<Meta.Change> = emptyList()
+    val changes: MutableList<Meta.Change> = mutableListOf()
 ) {
     init {
         require(name.isNotBlank()) { "Field name cannot be blank" }
@@ -183,7 +183,7 @@ data class EnrichedAirbyteValue(
      * @param reason The [Reason] for nullification, defaults to DESTINATION_SERIALIZATION_ERROR
      * @return A new [EnrichedAirbyteValue] with a null value and an additional change record
      */
-    fun toNullified(reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR): EnrichedAirbyteValue {
+    fun nullify(reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR) {
         val nullChange =
             Meta.Change(
                 field = name,
@@ -191,8 +191,8 @@ data class EnrichedAirbyteValue(
                 reason = reason
             )
 
-        // Return a copy with null value and the new change added to the changes list
-        return copy(value = NullValue, changes = changes + nullChange)
+        value = NullValue
+        changes.add(nullChange)
     }
 
     /**
@@ -202,10 +202,10 @@ data class EnrichedAirbyteValue(
      * @param newValue The new (truncated) value to use
      * @return A new [EnrichedAirbyteValue] with the truncated value and an additional change record
      */
-    fun toTruncated(
+    fun truncate(
         reason: Reason = Reason.DESTINATION_RECORD_SIZE_LIMITATION,
         newValue: AirbyteValue
-    ): EnrichedAirbyteValue {
+    ) {
         val truncateChange =
             Meta.Change(
                 field = name,
@@ -214,7 +214,8 @@ data class EnrichedAirbyteValue(
             )
 
         // Return a copy with null value and the new change added to the changes list
-        return copy(value = newValue, changes = changes + truncateChange)
+        value = newValue
+        changes.add(truncateChange)
     }
 }
 

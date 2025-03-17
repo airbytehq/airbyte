@@ -41,7 +41,6 @@ import java.math.BigInteger
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import java.util.*
 
 /**
  * Internal representation of destination messages. These are intended to be specialized for
@@ -194,6 +193,8 @@ data class EnrichedDestinationRecordAirbyteValue(
             TODO("all the other efields"),
         )
     }
+
+    val allFields = declaredFields + airbyteMetaFields
 }
 
 data class DestinationRecordRaw(
@@ -243,26 +244,21 @@ data class DestinationRecordRaw(
                                 "Field '$fieldName' exists in schema keys but not in properties"
                             )
 
-                    val airbyteValue =
-                        if (fieldValue.isNull) NullValue else fieldValue.toAirbyteValue()
-                    declaredFields[fieldName] =
+                    val enrichedValue =
                         EnrichedAirbyteValue(
-                                value = airbyteValue,
-                                type = fieldType,
-                                name = fieldName,
-                                fieldCategory = FieldCategory.CLIENT_DATA,
-                            )
-                            .let {
-                                val coercedValue = AirbyteValueCoercer.coerce(airbyteValue, schema)
-                                if (coercedValue == null) {
-                                    it.toNullified(
-                                        AirbyteRecordMessageMetaChange.Reason
-                                            .DESTINATION_SERIALIZATION_ERROR
-                                    )
-                                } else {
-                                    it
-                                }
-                            }
+                            value = NullValue,
+                            type = fieldType,
+                            name = fieldName,
+                            fieldCategory = FieldCategory.CLIENT_DATA,
+                        )
+                    AirbyteValueCoercer.coerce(fieldValue.toAirbyteValue(), schema)?.let {
+                        enrichedValue.value = it
+                    }
+                        ?: enrichedValue.nullify(
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                        )
+
+                    declaredFields[fieldName] = enrichedValue
                 }
                 else -> {
                     // Undeclared field (not in schema)
