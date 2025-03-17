@@ -9,7 +9,8 @@ data:
       - advertising-api-eu.amazon.com
       - advertising-api-fe.amazon.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: 
+      docker.io/airbyte/source-declarative-manifest:6.41.1@sha256:f256b6f008ec07a37e3e6bce3ada17bec4197c1bc66c41c4b756980c8cb587ac
   connectorSubtype: api
   connectorType: source
   definitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
@@ -25,7 +26,7 @@ data:
   name: Amazon Ads
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-amazon-ads
   registryOverrides:
     cloud:
@@ -90,7 +91,7 @@ data:
       - sponsored_products_report_stream
   supportLevel: certified
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests
