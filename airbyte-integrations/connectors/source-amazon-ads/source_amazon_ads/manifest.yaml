@@ -2147,7 +2147,7 @@ definitions:
         - timeout
       completed:
         - COMPLETED
-    urls_extractor:
+    download_target_extractor:
       type: DpathExtractor
       field_path:
         - url
@@ -2192,7 +2192,7 @@ definitions:
         $ref: "#/definitions/report_creation_error_handler"
     polling_requester:
       type: HttpRequester
-      path: /reporting/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+      path: /reporting/reports/{{ creation_response['id'] }}
       url_base: >-
         {%- set URL_MAPPING = {
             "NA": "https://advertising-api.amazon.com/",
@@ -2210,7 +2210,7 @@ definitions:
 
     download_requester:
       type: HttpRequester
-      path: "{{stream_slice.extra_fields['url']}}"
+      path: "{{ download_target }}"
       url_base: ""
       http_method: GET
       authenticator:
