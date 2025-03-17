@@ -7,9 +7,12 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
+import io.airbyte.cdk.load.data.AirbyteType
+import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.data.ArrayType
-import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
+import io.airbyte.cdk.load.data.ArrayValue
+import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.MapperPipeline
@@ -28,8 +31,11 @@ import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -162,58 +168,40 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         stream: DestinationStream,
         tableSchema: Schema,
     ): Record {
-        // deep-coerce arrays
         record.declaredFields.forEach { (_, value) ->
-            if (value.type is ArrayType) {
-                value.mutateArrayElements { element, elementType ->
-                    AirbyteValueCoercer.coerce(element, elementType)
-                }
-            }
-        }
+            value.transformValueRecursingIntoArrays { element, elementType ->
+                when (elementType) {
+                    // Convert complex types to string
+                    is ObjectType,
+                    ObjectTypeWithEmptySchema,
+                    ObjectTypeWithoutSchema,
+                    is UnionType,
+                    is UnknownType -> StringValue(element.serializeToString())
 
-        // Convert complex types to string
-        record.declaredFields.forEach { (_, value) ->
-            when (value.type) {
-                is ArrayType,
-                ArrayTypeWithoutSchema,
-                is ObjectType,
-                ObjectTypeWithEmptySchema,
-                ObjectTypeWithoutSchema,
-                is UnionType,
-                is UnknownType -> value.value = StringValue(value.value.serializeToString())
-                else -> {}
-            }
-        }
-
-        // Null out numeric values that exceed int64/float64
-        record.declaredFields.forEach { (_, value) ->
-            if (value.type is ArrayType) {
-                value.mutateArrayElements { element, elementType ->
-                    when (elementType) {
-                        is NumberType -> {
-                            val numberValue = (element as NumberValue)
-                            if (
-                                numberValue.value < BigDecimal(Double.MIN_VALUE) ||
-                                    numberValue.value > BigDecimal(Double.MAX_VALUE)
-                            ) {
-                                null
-                            } else {
-                                numberValue
-                            }
+                    // Null out numeric values that exceed int64/float64
+                    is NumberType -> {
+                        val numberValue = element as NumberValue
+                        if (
+                            numberValue.value < BigDecimal(Double.MIN_VALUE) ||
+                                numberValue.value > BigDecimal(Double.MAX_VALUE)
+                        ) {
+                            null
+                        } else {
+                            numberValue
                         }
-                        is IntegerType -> {
-                            val numberValue = (element as IntegerValue)
-                            if (
-                                numberValue.value < BigInteger.valueOf(Long.MIN_VALUE) ||
-                                    numberValue.value > BigInteger.valueOf(Long.MAX_VALUE)
-                            ) {
-                                null
-                            } else {
-                                numberValue
-                            }
-                        }
-                        else -> element
                     }
+                    is IntegerType -> {
+                        val numberValue = element as IntegerValue
+                        if (
+                            numberValue.value < BigInteger.valueOf(Long.MIN_VALUE) ||
+                                numberValue.value > BigInteger.valueOf(Long.MAX_VALUE)
+                        ) {
+                            null
+                        } else {
+                            numberValue
+                        }
+                    }
+                    else -> element
                 }
             }
         }
@@ -254,4 +242,63 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         } else {
             Operation.INSERT
         }
+}
+
+/**
+ * Our Airbyte<>Iceberg schema conversion generates strongly-typed arrays.
+ *
+ * This function applies a function to every non-array-typed value, recursing into arrays as needed.
+ * [f] may assume that the AirbyteValue is a valid value for the AirbyteType. For example, if [f] is
+ * called with a [NumberType], it is safe to cast the value to [NumberValue].
+ */
+fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
+    f: (AirbyteValue, AirbyteType) -> AirbyteValue?
+) {
+    if (type !is ArrayType) {
+        f(value, type)?.let { value = it } ?: nullify()
+        return
+    }
+
+    /**
+     * Recursively iterates over an [ArrayValue], applying [f] or further recursion if a nested
+     * [ArrayType] is encountered. All null/mutation scenarios are handled here to keep the logic
+     * DRY.
+     */
+    fun recurseArray(
+        currentValue: AirbyteValue,
+        currentType: AirbyteType,
+        path: String,
+    ): AirbyteValue {
+        fun nullifyCurrentValue(): AirbyteValue {
+            changes.add(
+                Meta.Change(
+                    field = path,
+                    change = Change.NULLED,
+                    reason = Reason.DESTINATION_SERIALIZATION_ERROR,
+                ),
+            )
+            return NullValue
+        }
+        return if (currentType is ArrayType) {
+            // If the type is another array, we recurse deeper.
+            AirbyteValueCoercer.coerceArray(currentValue)?.let { elementCoercedToArray ->
+                val mutatedElements =
+                    elementCoercedToArray.values.mapIndexed { index, element ->
+                        // TODO verify this behavior
+                        val newPath = "$path.$index"
+                        recurseArray(element, currentType.items.type, newPath)
+                    }
+                ArrayValue(mutatedElements)
+            }
+                ?: nullifyCurrentValue()
+        } else {
+            // If we're at a leaf node, call the user function.
+            // If the function returns null, then generate the appropriate change entry.
+            f(currentValue, currentType) ?: nullifyCurrentValue()
+        }
+    }
+
+    // Mutate the top-level array and store the result back in 'value'.
+    val elementType = (type as ArrayType).items.type
+    value = recurseArray(value, elementType, name)
 }

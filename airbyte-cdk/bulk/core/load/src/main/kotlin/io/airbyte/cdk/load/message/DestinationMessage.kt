@@ -29,6 +29,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.*
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamState
@@ -122,7 +123,7 @@ data class Meta(
         // Using the raw protocol enums here.
         // By definition, we just want to pass these through directly.
         val change: AirbyteRecordMessageMetaChange.Change,
-        val reason: AirbyteRecordMessageMetaChange.Reason,
+        val reason: Reason,
     ) {
         fun asProtocolObject(): AirbyteRecordMessageMetaChange =
             AirbyteRecordMessageMetaChange().withField(field).withChange(change).withReason(reason)
@@ -254,9 +255,7 @@ data class DestinationRecordRaw(
                     AirbyteValueCoercer.coerce(fieldValue.toAirbyteValue(), schema)?.let {
                         enrichedValue.value = it
                     }
-                        ?: enrichedValue.nullify(
-                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
-                        )
+                        ?: enrichedValue.nullify(Reason.DESTINATION_SERIALIZATION_ERROR)
 
                     declaredFields[fieldName] = enrichedValue
                 }
