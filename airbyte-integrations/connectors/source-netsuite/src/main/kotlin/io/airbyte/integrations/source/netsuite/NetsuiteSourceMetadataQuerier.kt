@@ -37,7 +37,6 @@ import java.sql.ResultSet
 class NetsuiteSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
 ) : MetadataQuerier by base {
-    // TODO: Might need a redo on all functions below.
     private val log = KotlinLogging.logger {}
 
     val memoizedColumnMetadata: Map<TableName, List<ColumnMetadata>> by lazy {
@@ -113,20 +112,20 @@ class NetsuiteSourceMetadataQuerier(
     }
 
     override fun streamNamespaces(): List<String> =
-        memoizedTableNames.mapNotNull { it.catalog }.distinct()
+        memoizedTableNames.mapNotNull { it.schema }.distinct()
 
-    override fun streamNames(streamNamespace: String?): List<StreamIdentifier> =
-        memoizedTableNames
-            .filter { it.catalog == streamNamespace }
+    override fun streamNames(streamNamespace: String?): List<StreamIdentifier> {
+        return memoizedTableNames
+            .filter { it.schema == streamNamespace }
             .map { StreamDescriptor().withName(it.name).withNamespace(it.schema) }
             .map(StreamIdentifier::from)
+    }
 
     fun findTableName(
         streamID: StreamIdentifier,
     ): TableName? = memoizedTableNames.find { it.name == streamID.name }
 
     val memoizedTableNames: List<TableName> by lazy {
-        log.info { "memoized table names." }
         try {
             val allTables = mutableSetOf<TableName>()
             val dbmd: DatabaseMetaData = base.conn.metaData
@@ -144,12 +143,9 @@ class NetsuiteSourceMetadataQuerier(
                             type = rs.getString("TABLE_TYPE") ?: "",
                         ),
                     )
-                    log.info {
-                        "Found table:catalog: ${rs.getString("TABLE_CAT")} ; schema: ${rs.getString("TABLE_SCHEM")}; name: ${rs.getString("TABLE_NAME")}"
-                    }
                 }
             }
-            return@lazy allTables.toList()
+            return@lazy allTables.filter { EXCLUDED_NAMESPACES.contains(it.schema).not() }.toList()
         } catch (e: Exception) {
             throw RuntimeException("Table name discovery query failed: ${e.message}", e)
         }
@@ -238,5 +234,7 @@ class NetsuiteSourceMetadataQuerier(
                 return NetsuiteSourceMetadataQuerier(base)
             }
         }
+
+        val EXCLUDED_NAMESPACES = setOf("SYSTEM")
     }
 }

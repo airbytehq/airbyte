@@ -25,7 +25,7 @@ data class NetsuiteSourceConfiguration(
     override val sshConnectionOptions: SshConnectionOptions,
     override val jdbcUrlFmt: String,
     override val jdbcProperties: Map<String, String>,
-    override val namespaces: Set<String>,
+    override val namespaces: Set<String> = emptySet(),
     val incremental: IncrementalConfiguration,
     override val maxConcurrency: Int,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
@@ -113,8 +113,6 @@ class NetsuiteSourceConfigurationFactory :
             sshConnectionOptions = sshOpts,
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
-            // todo: Fix me;
-            namespaces = setOf("Airbyte, Inc_"),
             incremental = incrementalConfiguration,
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,

@@ -2,6 +2,7 @@ data:
   ab_internal:
     ql: 200
     sl: 0
+    isEnterprise: true
   allowedHosts:
     hosts:
       - ${host}
@@ -9,23 +10,23 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b979cb59-34b3-4f8b-9bf7-ae82d6371e2a
-  dockerImageTag: 0.0.2
-  dockerRepository: airbyte/source-fish
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-netsuite-enterprise
   documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-netsuite
-  githubIssueLabel: source-fish
+  githubIssueLabel: source-netsuite-enterprise
   icon: netsuite.svg
   license: Airbyte Enterprise
   maxSecondsBetweenMessages: 7200
-  name: Fish Source
-  registryOverrides:
-    cloud:
-      enabled: false
-    oss:
-      enabled: false
-  releaseStage: alpha
-  supportLevel: community
-  tags:
-    - language:java
+  name: Netsuite Enterprise Source
   connectorBuildOptions:
     baseImage: docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: certified
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"
