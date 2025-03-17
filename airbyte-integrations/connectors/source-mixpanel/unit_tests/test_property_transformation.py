@@ -13,7 +13,7 @@ import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
 
-from .utils import get_url_to_mock, setup_response, init_stream
+from .utils import get_url_to_mock, init_stream, setup_response
 
 
 @pytest.fixture

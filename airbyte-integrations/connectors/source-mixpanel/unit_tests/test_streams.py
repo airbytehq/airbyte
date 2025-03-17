@@ -9,14 +9,13 @@ from unittest.mock import MagicMock
 
 import pytest
 from source_mixpanel.components import iter_dicts
-from source_mixpanel.streams import EngageSchema, ExportSchema, MixpanelStream
 from source_mixpanel.utils import read_full_refresh
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 
-from .utils import get_url_to_mock, read_incremental, setup_response, init_stream
+from .utils import get_url_to_mock, init_stream, read_incremental, setup_response
 
 
 logger = logging.getLogger("airbyte")
@@ -24,30 +23,10 @@ logger = logging.getLogger("airbyte")
 MIXPANEL_BASE_URL = "https://mixpanel.com/api/query/"
 
 
-@pytest.fixture
-def patch_base_class(mocker):
-    # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(MixpanelStream, "path", "v0/example_endpoint")
-    mocker.patch.object(MixpanelStream, "primary_key", "test_primary_key")
-    mocker.patch.object(MixpanelStream, "__abstractmethods__", set())
-
-
 @pytest.fixture(autouse=True)
 def time_sleep_mock(mocker):
     time_mock = mocker.patch("time.sleep", lambda x: None)
     yield time_mock
-
-
-def test_url_base(patch_base_class, config):
-    stream = MixpanelStream(authenticator=MagicMock(), **config)
-
-    assert stream.url_base == "https://mixpanel.com/api/query/"
-
-
-def test_request_headers(patch_base_class, config):
-    stream = MixpanelStream(authenticator=MagicMock(), **config)
-
-    assert stream.request_headers(stream_state={}) == {"Accept": "application/json"}
 
 
 @pytest.fixture
@@ -484,16 +463,16 @@ def _minimize_schema(fill_schema, schema_original):
 
 def test_engage_schema(requests_mock, engage_schema_response, config_raw):
     stream = init_stream("engage", config=config_raw)
-    requests_mock.register_uri("GET", get_url_to_mock(EngageSchema(authenticator=MagicMock(), **config_raw)), engage_schema_response)
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/properties", engage_schema_response)
     type_schema = {}
     _minimize_schema(type_schema, stream.get_json_schema())
 
     assert type_schema == {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "additionalProperties": True,
         "properties": {
-            "CreatedDate": {"type": ["null", "string"]},
-            "CreatedDateTimestamp": {"multipleOf": 1e-20, "type": ["null", "number"]},
+            "CreatedDate": {"type": ["null", "string"], "format": "date-time"},
+            "CreatedDateTimestamp": {"type": ["null", "number"]},
             "browser": {"type": ["null", "string"]},
             "browser_version": {"type": ["null", "string"]},
             "city": {"type": ["null", "string"]},
@@ -507,9 +486,9 @@ def test_engage_schema(requests_mock, engage_schema_response, config_raw):
             "last_name": {"type": ["null", "string"]},
             "last_seen": {"format": "date-time", "type": ["null", "string"]},
             "name": {"type": ["null", "string"]},
-            "properties": {"additionalProperties": True, "type": ["null", "object"]},
+            "properties": {"type": ["null", "object"]},
             "region": {"type": ["null", "string"]},
-            "tags": {"items": {}, "required": False, "type": ["null", "array"]},
+            "tags": {"type": ["null", "array"]},
             "timezone": {"type": ["null", "string"]},
             "unblocked": {"type": ["null", "string"]},
         },
@@ -518,10 +497,9 @@ def test_engage_schema(requests_mock, engage_schema_response, config_raw):
 
 
 def test_update_engage_schema(requests_mock, config, config_raw):
-    stream = EngageSchema(authenticator=MagicMock(), **config)
     requests_mock.register_uri(
         "GET",
-        get_url_to_mock(stream),
+        "https://mixpanel.com/api/query/engage/properties",
         setup_response(
             200,
             {
@@ -595,19 +573,24 @@ def export_schema_response():
         200,
         {
             "$DYNAMIC_FIELD": {"count": 6},
+            "$dynamic_field": {"count": 6},
             "$browser_version": {"count": 6},
         },
     )
 
 
-def test_export_schema(requests_mock, export_schema_response, config):
-    stream = ExportSchema(authenticator=MagicMock(), **config)
-    requests_mock.register_uri("GET", get_url_to_mock(stream), export_schema_response)
+def test_export_schema(requests_mock, export_schema_response, config_raw):
+    stream = init_stream("export", config_raw)
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", export_schema_response)
 
-    records = stream.read_records(sync_mode=SyncMode.full_refresh)
+    schema = stream.get_json_schema()
 
-    records_length = sum(1 for _ in records)
-    assert records_length == 2
+    assert "DYNAMIC_FIELD" in schema["properties"]
+    assert schema["properties"]["DYNAMIC_FIELD"]["type"] == ["null", "string"]
+    assert "_dynamic_field" in schema["properties"]
+    assert schema["properties"]["_dynamic_field"]["type"] == ["null", "string"]
+    assert "browser_version" in schema["properties"]
+    assert schema["properties"]["browser_version"]["type"] == ["null", "string"]
 
 
 def test_export_get_json_schema(requests_mock, export_schema_response, config_raw):

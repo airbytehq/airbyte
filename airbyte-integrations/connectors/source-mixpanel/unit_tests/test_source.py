@@ -11,10 +11,11 @@ from source_mixpanel.source import SourceMixpanel
 
 from airbyte_cdk.utils import AirbyteTracedException
 
-from .utils import command_check, get_url_to_mock, setup_response, init_stream
+from .utils import command_check, get_url_to_mock, init_stream, setup_response
 
 
 logger = logging.getLogger("airbyte")
+
 
 @pytest.fixture
 def check_connection_url(config_raw):

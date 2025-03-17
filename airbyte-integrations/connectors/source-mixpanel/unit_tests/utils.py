@@ -5,6 +5,9 @@
 import urllib.parse
 from typing import Any, List, MutableMapping
 from unittest import mock
+from unittest.mock import MagicMock
+
+from source_mixpanel import SourceMixpanel
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
@@ -12,11 +15,8 @@ from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
-from source_mixpanel import SourceMixpanel
-from unittest.mock import MagicMock
-
 from airbyte_cdk.sources.streams.call_rate import APIBudget
+from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 
 
 def setup_response(status, body):
