@@ -458,8 +458,12 @@ definitions:
       $ref: "#/definitions/base_requester"
       path: "{{ stream_slice.extra_fields['download_target'] }}"
       http_method: GET
+      request_headers:
+        Accept-Encoding: gzip
     download_decoder:
-      type: GzipJsonDecoder
+      type: GzipDecoder
+      decoder:
+        type: CsvDecoder
     record_selector:
       type: RecordSelector
       extractor:
