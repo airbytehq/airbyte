@@ -11,6 +11,9 @@ import com.fasterxml.jackson.databind.JsonSerializer
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.node.NullNode
+import io.airbyte.cdk.load.message.Meta
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
@@ -153,3 +156,77 @@ private class ObjectValueSerializer : JsonSerializer<ObjectValue>() {
 }
 
 @JvmInline value class UnknownValue(val value: JsonNode) : AirbyteValue
+
+/**
+ * Represents an "enriched" (/augmented) Airbyte value with additional metadata.
+ *
+ * @property value The actual [AirbyteValue]
+ * @property type The type ([AirbyteType]) of the [AirbyteValue]
+ * @property changes List of [Meta.Change]s that have been applied to this value
+ * @property name Field name
+ * @property fieldCategory [FieldCategory] of the field
+ */
+data class EnrichedAirbyteValue(
+    val value: AirbyteValue,
+    val type: AirbyteType,
+    val changes: List<Meta.Change> = emptyList(),
+    val name: String,
+    val fieldCategory: FieldCategory
+) {
+    init {
+        require(name.isNotBlank()) { "Field name cannot be blank" }
+    }
+
+    /**
+     * Creates a nullified version of this value with the specified reason.
+     *
+     * @param reason The [Reason] for nullification, defaults to DESTINATION_SERIALIZATION_ERROR
+     * @return A new [EnrichedAirbyteValue] with a null value and an additional change record
+     */
+    fun toNullified(reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR): EnrichedAirbyteValue {
+        val nullChange =
+            Meta.Change(
+                field = name,
+                change = AirbyteRecordMessageMetaChange.Change.NULLED,
+                reason = reason
+            )
+
+        // Return a copy with null value and the new change added to the changes list
+        return copy(value = NullValue, changes = changes + nullChange)
+    }
+
+    /**
+     * Creates a truncated version of this value with the specified reason and new value.
+     *
+     * @param reason The [Reason] for truncation, defaults to DESTINATION_RECORD_SIZE_LIMITATION
+     * @param newValue The new (truncated) value to use
+     * @return A new [EnrichedAirbyteValue] with the truncated value and an additional change record
+     */
+    fun toTruncated(
+        reason: Reason = Reason.DESTINATION_RECORD_SIZE_LIMITATION,
+        newValue: AirbyteValue
+    ): EnrichedAirbyteValue {
+        val truncateChange =
+            Meta.Change(
+                field = name,
+                change = AirbyteRecordMessageMetaChange.Change.TRUNCATED,
+                reason = reason
+            )
+
+        // Return a copy with null value and the new change added to the changes list
+        return copy(value = newValue, changes = changes + truncateChange)
+    }
+}
+
+/**
+ * The [EnrichedAirbyteValue] category allows us to quickly understand if the field is an Airbyte
+ * controlled field or if it is declared by the source.
+ */
+enum class FieldCategory {
+    RAW_ID,
+    EXTRACTED_AT,
+    META,
+    GENERATION_ID,
+    // For fields that don't match any of the predefined Airbyte columns
+    CLIENT_DATA
+}
