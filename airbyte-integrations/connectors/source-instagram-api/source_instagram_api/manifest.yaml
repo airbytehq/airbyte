@@ -104,21 +104,19 @@ definitions:
           fields:
             - type: AddedFieldDefinition
               path:
-                - media_insights_info
-              value: >-
-                {{ {
-                "media_id": record['id'], 
-                "media_type": record['media_type'], 
-                "media_product_type": record['media_product_type'],
-                "user_id": stream_partition.ig_id
-                } }}
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
                 - user_id
               value: "{{ stream_partition.ig_id }}"
               value_type: string
+        - type: AddFields
+          fields: # TODO check if this field is present
+            - type: AddedFieldDefinition
+              path:
+                - media_insights_info
+              value: >-
+                {{ {"media_id": record['id'], 
+                "media_type": record['media_type'], 
+                "media_product_type": record['media_product_type'],
+                "user_id": stream_partition.ig_id} }}
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
@@ -133,16 +131,106 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Media"
-
+    Stories:
+      type: DeclarativeStream
+      name: stories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ stream_partition.ig_id }}/stories"
+          http_method: GET
+          request_parameters:
+            fields: >-
+              caption,id,like_count,media_type,media_product_type,media_url,owner,permalink,shortcode,thumbnail_url,timestamp,username
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: >-
+              {{ response.get("paging", {}).get("cursors", {}).get("after", {}) }}
+            stop_condition: >-
+              {{ not response.get("paging", {}).get("next", {}) }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: ig_id
+              stream:
+                $ref: "#/definitions/streams/User"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - user_id
+              value: "{{ stream_partition.ig_id }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - story_insights_info
+              value: >-
+                {{ {
+                "story_id": record['id'],
+                "user_id": stream_partition.ig_id
+                } }}
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - timestamp
+              value: '{% set datetime_str = format_datetime(record["timestamp"], "%Y-%m-%dT%H:%M:%S%z") %}{% set formatted_datetime = datetime_str[:-2] + ":" + datetime_str[-2:] %}{{ formatted_datetime }}'
+        - type: CustomTransformation
+          class_name: source_instagram_api.components.InstagramClearUrlTransformation
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Stories"
 
 streams:
   - $ref: "#/definitions/streams/User"
   - $ref: "#/definitions/streams/Media"
+  - $ref: "#/definitions/streams/Stories"
 
 metadata:
   autoImportSchema:
     User: true
     Media: true
+    Stories: true
+  yamlComponents:
+    streams:
+      Media:
+        - transformations
+      Stories:
+        - transformations
 
 schemas:
   User:
@@ -350,4 +438,88 @@ schemas:
               type:
                 - "null"
                 - string
-
+  Stories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    required:
+      - id
+    properties:
+      user_id:
+        description: The unique identifier for account associated with the story.
+        type:
+          - "null"
+          - string
+      caption:
+        description: The caption associated with the story.
+        type:
+          - "null"
+          - string
+      id:
+        description: Unique ID of the story.
+        type:
+          - "null"
+          - string
+      ig_id:
+        description: Instagram ID of the story.
+        type:
+          - "null"
+          - string
+      like_count:
+        description: Number of likes on the story.
+        type:
+          - "null"
+          - integer
+      media_type:
+        description: Type of media in the story (image, video, etc.).
+        type:
+          - "null"
+          - string
+      media_product_type:
+        description: Product type associated with the media in the story.
+        type:
+          - "null"
+          - string
+      media_url:
+        description: URL of the media in the story.
+        type:
+          - "null"
+          - string
+      owner:
+        description: The user who owns the story.
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: ID of the owner of the story.
+            type:
+              - "null"
+              - string
+      permalink:
+        description: Permanent link to the story.
+        type:
+          - "null"
+          - string
+      shortcode:
+        description: Shortcode identifier of the story.
+        type:
+          - "null"
+          - string
+      thumbnail_url:
+        description: URL of the thumbnail of the media in the story.
+        type:
+          - "null"
+          - string
+      timestamp:
+        description: Timestamp when the story was posted.
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      username:
+        description: Username associated with the story.
+        type:
+          - "null"
+          - string
