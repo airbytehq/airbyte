@@ -247,18 +247,17 @@ class EnrichedAirbyteValue(
                     val elementPath = "$path.$i"
                     if (elementType is ArrayType) {
                         val coercedElement = AirbyteValueCoercer.coerceArray(element)
-                        if (coercedElement != null) {
-                            recursionHelper(coercedElement, elementType.items.type, name)
-                        } else {
-                            changes.add(
-                                Meta.Change(
-                                    field = elementPath,
-                                    change = Change.NULLED,
-                                    reason = Reason.DESTINATION_SERIALIZATION_ERROR,
+                        coercedElement?.let { recursionHelper(it, elementType.items.type, name) }
+                            ?: run {
+                                changes.add(
+                                    Meta.Change(
+                                        field = elementPath,
+                                        change = Change.NULLED,
+                                        reason = Reason.DESTINATION_SERIALIZATION_ERROR,
+                                    )
                                 )
-                            )
-                            NullValue
-                        }
+                                NullValue
+                            }
                     } else {
                         val mutatedElement = f(element, elementType)
                         if (mutatedElement == null) {
@@ -279,13 +278,10 @@ class EnrichedAirbyteValue(
             return ArrayValue(mutatedElements)
         }
 
-        val elementType = (type as ArrayType).items.type
-        val coercedValue = AirbyteValueCoercer.coerceArray(value)
-        if (coercedValue != null) {
-            value = recursionHelper(coercedValue, elementType, name)
-        } else {
-            nullify()
+        AirbyteValueCoercer.coerceArray(value)?.let {
+            value = recursionHelper(it, (type as ArrayType).items.type, name)
         }
+            ?: run { nullify() }
     }
 }
 
