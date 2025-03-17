@@ -63,3 +63,14 @@ fun DestinationRecordAirbyteValue.dataWithAirbyteMeta(
     stream: DestinationStream,
     flatten: Boolean = false
 ) = DestinationRecordToAirbyteValueWithMeta(stream, flatten).convert(data, emittedAtMs, meta)
+
+fun Meta.Change.toAirbyteValue(): ObjectValue =
+    ObjectValue(
+        linkedMapOf(
+            "field" to StringValue(field),
+            "change" to StringValue(change.name),
+            "reason" to StringValue(reason.name)
+        )
+    )
+
+fun List<Meta.Change>.toAirbyteValues(): List<ObjectValue> = map { it.toAirbyteValue() }

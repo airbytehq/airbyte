@@ -163,13 +163,12 @@ private class ObjectValueSerializer : JsonSerializer<ObjectValue>() {
  * @property type The type ([AirbyteType]) of the [AirbyteValue]
  * @property changes List of [Meta.Change]s that have been applied to this value
  * @property name Field name
- * @property fieldCategory [FieldCategory] of the field
+ * @property fieldCategory [AirbyteMetaFields] of the field
  */
 class EnrichedAirbyteValue(
     var value: AirbyteValue,
     val type: AirbyteType,
     val name: String,
-    val fieldCategory: FieldCategory,
     val changes: MutableList<Meta.Change> = mutableListOf()
 ) {
     init {
@@ -206,17 +205,4 @@ class EnrichedAirbyteValue(
         value = newValue
         changes.add(truncateChange)
     }
-}
-
-/**
- * The [EnrichedAirbyteValue] category allows us to quickly understand if the field is an Airbyte
- * controlled field or if it is declared by the source.
- */
-enum class FieldCategory {
-    RAW_ID,
-    EXTRACTED_AT,
-    META,
-    GENERATION_ID,
-    // For fields that don't match any of the predefined Airbyte columns
-    CLIENT_DATA
 }

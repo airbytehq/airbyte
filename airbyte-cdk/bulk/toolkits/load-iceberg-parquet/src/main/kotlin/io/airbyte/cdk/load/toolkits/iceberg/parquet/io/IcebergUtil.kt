@@ -22,14 +22,12 @@ import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
-import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
@@ -152,16 +150,15 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     }
 
     /**
-     * Converts an Airbyte [DestinationRecordAirbyteValue] into an Iceberg [Record]. The converted
-     * record will be wrapped to include [Operation] information, which is used by the writer to
-     * determine how to write the data to the underlying Iceberg files.
+     * Converts an Airbyte [EnrichedDestinationRecordAirbyteValue] into an Iceberg [Record]. The
+     * converted record will be wrapped to include [Operation] information, which is used by the
+     * writer to determine how to write the data to the underlying Iceberg files.
      *
-     * @param record The Airbyte [DestinationRecordAirbyteValue] record to be converted for writing
-     * by Iceberg.
+     * @param record The Airbyte [EnrichedDestinationRecordAirbyteValue] record to be converted for
+     * writing by Iceberg.
      * @param stream The Airbyte [DestinationStream] that contains information about the stream.
      * @param tableSchema The Iceberg [Table] [Schema].
-     * @param pipeline The [MapperPipeline] used to convert the Airbyte record to an Iceberg record.
-     * @return An Iceberg [Record] representation of the Airbyte [DestinationRecordAirbyteValue].
+     * @return An Iceberg [Record] representation of the [EnrichedDestinationRecordAirbyteValue].
      */
     fun toRecord(
         record: EnrichedDestinationRecordAirbyteValue,
@@ -179,38 +176,40 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
                     is UnknownType -> StringValue(element.serializeToString())
 
                     // Null out numeric values that exceed int64/float64
-                    is NumberType -> {
-                        val numberValue = element as NumberValue
-                        if (
-                            numberValue.value < BigDecimal(Double.MIN_VALUE) ||
-                                numberValue.value > BigDecimal(Double.MAX_VALUE)
-                        ) {
-                            null
-                        } else {
-                            numberValue
-                        }
-                    }
-                    is IntegerType -> {
-                        val numberValue = element as IntegerValue
-                        if (
-                            numberValue.value < BigInteger.valueOf(Long.MIN_VALUE) ||
-                                numberValue.value > BigInteger.valueOf(Long.MAX_VALUE)
-                        ) {
-                            null
-                        } else {
-                            numberValue
-                        }
-                    }
+                    is NumberType -> nullOutOfRangeNumber(element as NumberValue)
+                    is IntegerType -> nullOutOfRangeInt(element as IntegerValue)
+
+                    // otherwise, return the element unchanged
                     else -> element
                 }
             }
         }
 
         return RecordWrapper(
-            delegate = record.declaredFields.toIcebergRecord(tableSchema),
+            delegate = record.allTypedFields.toIcebergRecord(tableSchema),
             operation = getOperation(record = record, importType = stream.importType)
         )
     }
+
+    private fun nullOutOfRangeInt(numberValue: IntegerValue) =
+        if (
+            numberValue.value < BigInteger.valueOf(Long.MIN_VALUE) ||
+                numberValue.value > BigInteger.valueOf(Long.MAX_VALUE)
+        ) {
+            null
+        } else {
+            numberValue
+        }
+
+    private fun nullOutOfRangeNumber(numberValue: NumberValue) =
+        if (
+            numberValue.value < BigDecimal(Double.MIN_VALUE) ||
+                numberValue.value > BigDecimal(Double.MAX_VALUE)
+        ) {
+            null
+        } else {
+            numberValue
+        }
 
     fun toIcebergSchema(stream: DestinationStream, pipeline: MapperPipeline): Schema {
         val primaryKeys =
@@ -228,13 +227,12 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     }
 
     private fun getOperation(
-        record: DestinationRecordAirbyteValue,
+        record: EnrichedDestinationRecordAirbyteValue,
         importType: ImportType,
     ): Operation =
         if (
-            record.data is ObjectValue &&
-                (record.data as ObjectValue).values[AIRBYTE_CDC_DELETE_COLUMN] != null &&
-                (record.data as ObjectValue).values[AIRBYTE_CDC_DELETE_COLUMN] !is NullValue
+            record.declaredFields[AIRBYTE_CDC_DELETE_COLUMN] != null &&
+                record.declaredFields[AIRBYTE_CDC_DELETE_COLUMN]!!.value !is NullValue
         ) {
             Operation.DELETE
         } else if (importType is Dedupe) {
