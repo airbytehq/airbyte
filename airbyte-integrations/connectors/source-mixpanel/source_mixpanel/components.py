@@ -6,28 +6,20 @@ from dataclasses import dataclass
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import dpath.util
-import pendulum
 import requests
 
 from airbyte_cdk.models import AirbyteMessage, FailureType, SyncMode, Type
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
-from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ConstantBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
-from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
-from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import _default_file_path
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
 from source_mixpanel.backoff_strategy import DEFAULT_API_BUDGET
 from source_mixpanel.property_transformation import transform_property_names
-from source_mixpanel.streams.export import ExportSchema
-
-from .source import SourceMixpanel
-from .streams.engage import EngageSchema
 
 
 class MixpanelHttpRequester(HttpRequester):
@@ -304,61 +296,15 @@ class EngagePaginationStrategy(PageIncrement):
         self._total = 0
 
 
-class EngageJsonFileSchemaLoader(JsonFileSchemaLoader):
-    """Engage schema combines static and dynamic approaches"""
+class EngagePropertiesDpathExtractor(DpathExtractor):
+    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
+        properties = next(super().extract_records(response))
+        _properties = []
+        for field_name in properties:
+            properties[field_name].update({"name": field_name})
+            _properties.append(properties[field_name])
 
-    schema: Mapping[str, Any]
-
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        if not self.file_path:
-            self.file_path = _default_file_path()
-        self.file_path = InterpolatedString.create(self.file_path, parameters=parameters)
-        self.schema = {}
-
-    def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        Dynamically load additional properties from API
-        Add cache to reduce a number of API calls because get_json_schema()
-        is called for each extracted record
-        """
-
-        if self.schema:
-            return self.schema
-
-        schema = super().get_json_schema()
-
-        types = {
-            "boolean": {"type": ["null", "boolean"]},
-            "number": {"type": ["null", "number"], "multipleOf": 1e-20},
-            # no format specified as values can be "2021-12-16T00:00:00", "1638298874", "15/08/53895"
-            "datetime": {"type": ["null", "string"]},
-            "object": {"type": ["null", "object"], "additionalProperties": True},
-            "list": {"type": ["null", "array"], "required": False, "items": {}},
-            "string": {"type": ["null", "string"]},
-        }
-
-        params = {"authenticator": SourceMixpanel.get_authenticator(self.config), "region": self.config.get("region")}
-        project_id = self.config.get("credentials", {}).get("project_id")
-        if project_id:
-            params["project_id"] = project_id
-
-        schema["additionalProperties"] = self.config.get("select_properties_by_default", True)
-
-        # read existing Engage schema from API
-        schema_properties = EngageSchema(**params).read_records(sync_mode=SyncMode.full_refresh)
-        for property_entry in schema_properties:
-            property_name: str = property_entry["name"]
-            property_type: str = property_entry["type"]
-            if property_name.startswith("$"):
-                # Just remove leading '$' for 'reserved' mixpanel properties name, example:
-                # from API: '$browser'
-                # to stream: 'browser'
-                property_name = property_name[1:]
-            # Do not overwrite 'standard' hard-coded properties, add 'custom' properties
-            if property_name not in schema["properties"]:
-                schema["properties"][property_name] = types.get(property_type, {"type": ["null", "string"]})
-        self.schema = schema
-        return schema
+        yield _properties
 
 
 def iter_dicts(lines, logger=logging.getLogger("airbyte")):
@@ -388,81 +334,10 @@ def iter_dicts(lines, logger=logging.getLogger("airbyte")):
                 parts = []
 
 
-class ExportJsonFileSchemaLoader(JsonFileSchemaLoader):
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        if not self.file_path:
-            self.file_path = _default_file_path()
-        self.file_path = InterpolatedString.create(self.file_path, parameters=parameters)
-        self.schema = {}
-
-    def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        :return: A dict of the JSON schema representing this stream.
-
-        The default implementation of this method looks for a JSONSchema file with the same name as this stream's "name" property.
-        Override as needed.
-        """
-
-        schema = super().get_json_schema()
-        params = {
-            "authenticator": SourceMixpanel.get_authenticator(self.config),
-            "region": self.config.get("region"),
-            "project_id": self.config.get("credentials").get("project_id"),
-        }
-
-        # Set whether to allow additional properties for engage and export endpoints
-        # Event and Engage properties are dynamic and depend on the properties provided on upload,
-        #   when the Event or Engage (user/person) was created.
-        schema["additionalProperties"] = True
-
-        # read existing Export schema from API
-        schema_properties = ExportSchema(**params).read_records(sync_mode=SyncMode.full_refresh)
-        for result in transform_property_names(schema_properties):
-            # Schema does not provide exact property type
-            # string ONLY for event properties (no other datatypes)
-            # Reference: https://help.mixpanel.com/hc/en-us/articles/360001355266-Event-Properties#field-size-character-limits-for-event-properties
-            schema["properties"][result.transformed_name] = {"type": ["null", "string"]}
-
-        return schema
-
-
 class ExportDpathExtractor(DpathExtractor):
     def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
-        """Export API return response in JSONL format but each line is a valid JSON object
-        Raw item example:
-            {
-                "event": "Viewed E-commerce Page",
-                "properties": {
-                    "time": 1623860880,
-                    "distinct_id": "1d694fd9-31a5-4b99-9eef-ae63112063ed",
-                    "$browser": "Chrome",                                           -> will be renamed to "browser"
-                    "$browser_version": "91.0.4472.101",
-                    "$current_url": "https://unblockdata.com/solutions/e-commerce/",
-                    "$insert_id": "c5eed127-c747-59c8-a5ed-d766f48e39a4",
-                    "$mp_api_endpoint": "api.mixpanel.com",
-                    "mp_lib": "Segment: analytics-wordpress",
-                    "mp_processing_time_ms": 1623886083321,
-                    "noninteraction": true
-                }
-            }
-        """
-
         # We prefer response.iter_lines() to response.text.split_lines() as the later can missparse text properties embeding linebreaks
-        records = []
-        for record in iter_dicts(response.iter_lines(decode_unicode=True)):
-            # transform record into flat dict structure
-            item = {"event": record["event"]}
-            properties = record["properties"]
-            for result in transform_property_names(properties.keys()):
-                # Convert all values to string (this is default property type)
-                # because API does not provide properties type information
-                item[result.transformed_name] = str(properties[result.source_name])
-
-            # convert timestamp to datetime string
-            item["time"] = pendulum.from_timestamp(int(item["time"]), tz="UTC").to_iso8601_string()
-
-            records.append(item)
-
+        records = list(iter_dicts(response.iter_lines(decode_unicode=True)))
         return records
 
 
@@ -491,3 +366,30 @@ class ExportErrorHandler(DefaultErrorHandler):
                 )
 
         return super().interpret_response(response_or_exception)
+
+
+class PropertiesTransformation(RecordTransformation):
+    properties_field: str = None
+
+    def __init__(self, properties_field: str = None) -> None:
+        self.properties_field = properties_field
+
+    def transform(
+        self,
+        record: Record,
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        updated_record = {}
+        to_transform = record[self.properties_field] if self.properties_field else record
+
+        for result in transform_property_names(to_transform.keys()):
+            updated_record[result.transformed_name] = to_transform[result.source_name]
+
+        if self.properties_field:
+            record[self.properties_field].clear()
+            record[self.properties_field].update(updated_record)
+        else:
+            record.clear()
+            record.update(updated_record)

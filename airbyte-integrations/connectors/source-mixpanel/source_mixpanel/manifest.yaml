@@ -210,9 +210,69 @@ definitions:
               - browser_version
             value: "{{ record.browser_version | string if record.browser_version else '' }}"
     schema_loader:
-      type: CustomSchemaLoader
-      class_name: "source_mixpanel.components.EngageJsonFileSchemaLoader"
-      file_path: "./source_mixpanel/schemas/{{ parameters['name'] }}.json"
+      type: DynamicSchemaLoader
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: CustomRequester
+          class_name: "source_mixpanel.components.EngagesHttpRequester"
+          url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/query/"
+          path: engage/properties
+          authenticator: "#/definitions/authenticator"
+          error_handler:
+            $ref: "#/definitions/default_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            class_name: "source_mixpanel.components.EngagePropertiesDpathExtractor"
+            field_path:
+              - results
+      schema_transformations:
+        - type: KeysReplace
+          old: "$"
+          new: ""
+        - type: AddFields
+          fields:
+            - path: [ "distinct_id" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "browser" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "browser_version" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "city" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "country_code" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "region" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "timezone" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "last_seen" ]
+              value: "{{ {'type': ['null', 'string'], 'format': 'date-time'} }}"
+            - path: [ "email" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "name" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "first_name" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "last_name" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "id" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "unblocked" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+      schema_type_identifier:
+        type: SchemaTypeIdentifier
+        key_pointer: [ "name" ]
+        type_pointer: [ "type" ]
+        schema_pointer: [ ]
+        types_mapping:
+          - type: TypesMap
+            target_type: timestamp_with_timezone
+            current_type: datetime
+          - type: TypesMap
+            target_type: array
+            current_type: list
 
   cohort_members_stream:
     $ref: "#/definitions/engage_stream"
@@ -396,8 +456,6 @@ definitions:
         path: export
         http_method: GET
         url_base: "https://data-{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/2.0/"
-        request_parameters:
-          where:
         error_handler:
           type: CustomErrorHandler
           class_name: "source_mixpanel.components.ExportErrorHandler"
@@ -439,10 +497,205 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    transformations:
+      - type: CustomTransformation
+        class_name: "source_mixpanel.components.PropertiesTransformation"
+        properties_field: "properties"
+      - type: DpathFlattenFields
+        delete_origin_value: true
+        field_path:
+          - "properties"
+#      - type: AddFields
+#        fields:
+#          - path: [ "time" ]
+#            value: "{{ format_datetime_from_timestamp(record['time'], '%Y-%m-%dT%H:%M:%SZ') }}"
     schema_loader:
-      type: CustomSchemaLoader
-      class_name: "source_mixpanel.components.ExportJsonFileSchemaLoader"
-      file_path: "./source_mixpanel/schemas/{{ parameters['name'] }}.json"
+      type: DynamicSchemaLoader
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: CustomRequester
+          class_name: "source_mixpanel.components.MixpanelHttpRequester"
+          url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/query"
+          authenticator: "#/definitions/authenticator"
+          error_handler:
+            $ref: "#/definitions/default_error_handler"
+          path: events/properties/top
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_transformations:
+        - type: CustomTransformation
+          class_name: "source_mixpanel.components.PropertiesTransformation"
+        - type: AddFields
+          fields:
+            - path: [ "event" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "distinct_id" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "insert_id" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "time" ]
+              value: "{{ {'type': ['null', 'string'], 'format': 'date-time'} }}"
+            - path: [ "browser" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "created" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "email" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "first_name" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "last_name" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "initial_referrer" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "os" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Abandon Cart Count" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Account Created Count" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Add To Cart Count" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Affiliate" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Browse Count" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Browse Filter" ]
+              value: "{{ {'type': ['null', 'array'], 'items': {'type': ['null', 'array']}} }}"
+            - path: [ "Campaign Name" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Campaign Source" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Card Type" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Cart Items" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Cart Size" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Cart Size (# of Items)" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Cart Value" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Complete Purchase Count" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Coupon" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Coupon Count Used" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Date of Last Item Detail View" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Delivery Day" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Delivery Fee" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Delivery Fees" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Delivery Method" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Delivery Method Added Count" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Gender" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Item Category" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Item Cost" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Item Detail Page Count" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Item Name" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Item Rating" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Items in Browse" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Landing Page Loaded Count" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Last Cart Abandonment" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Last Event" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Last Purchase" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Last Search" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [  "Marketing A/B Test" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Misc Fee" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Misc Fees" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [  "Number of Cards Added" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Number of Cart Abandons" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Number of Item Details Viewed" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [  "Number of Purchases" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Number of Searches" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Page Version" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["Payment Method Added Count" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Platform" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Registration Date" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Registration Method" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Review Payment Count" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [  "Search Count" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Search Page" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Search Results Count" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "Search Term" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Suggested Item" ]
+              value: "{{ {'type': ['null', 'boolean']} }}"
+            - path: [ "Total Charge" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "UTM_Medium" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "UTM_Term" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: ["UTM_source" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Within Checkout Process" ]
+              value: "{{ {'type': ['null', 'boolean']} }}"
+            - path: [ "mp_lib" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "labels" ]
+              value: "{{ {'type': ['null', 'array'], 'items': {'type': ['null', 'string']}} }}"
+            - path: [ "sampling_factor" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "dataset" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "Referred by" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "import" ]
+              value: "{{ {'type': ['null', 'boolean']} }}"
+            - path: [ "URL" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "mp_api_timestamp_ms" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "mp_api_endpoint" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "mp_processing_time_ms" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+      schema_type_identifier:
+        type: SchemaTypeIdentifier
+        key_pointer: []
+        type_pointer: []
+        schema_pointer: []
+
 
 streams:
   - "#/definitions/cohorts_stream"
