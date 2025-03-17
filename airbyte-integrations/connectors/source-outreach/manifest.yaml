@@ -862,12 +862,12 @@ spec:
         type: string
         description: >-
           The date from which you'd like to replicate data for Outreach API, in
-          the format YYYY-MM-DDT00:00:00.000Z. All data generated after this date
+          the format YYYY-MM-DDT00:00:00Z. All data generated after this date
           will be replicated.
         title: Start Date
         format: date-time
         examples:
-          - "2020-11-16T00:00:00.000Z"
+          - "2020-11-16T00:00:00Z"
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         order: 4
     additionalProperties: true
