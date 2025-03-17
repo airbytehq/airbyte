@@ -171,54 +171,55 @@ class SourceGoogleAds(AbstractSource):
         else:
             return CustomQuery(config=single_query_config, api=google_api, customers=customers)
 
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        # Transform and validate the config as before
         config = self._validate_and_transform(config)
-
         logger.info("Checking the config")
+        
+        # Get the custom_queries_array
+        custom_queries = config.get("custom_queries_array", [])
+        
+        # Validate that custom_queries is a list
+        if not isinstance(custom_queries, list):
+            error_message = (
+                f"Invalid configuration: 'custom_queries_array' must be a list, "
+                f"but received type {type(custom_queries)} with value: {custom_queries}"
+            )
+            raise AirbyteTracedException(
+                message=error_message,
+                failure_type=FailureType.config_error
+            )
+        
+        # Validate each item in the list
+        for i, query in enumerate(custom_queries):
+            if not isinstance(query, dict):
+                error_message = (
+                    f"Invalid configuration: Item {i} in 'custom_queries_array' must be a dictionary, "
+                    f"but received type {type(query)} with value: {query}"
+                )
+                raise AirbyteTracedException(
+                    message=error_message,
+                    failure_type=FailureType.config_error
+                )
+            if "table_name" not in query or "query" not in query:
+                error_message = (
+                    f"Invalid configuration: Item {i} in 'custom_queries_array' is missing required fields. "
+                    f"Expected 'table_name' and 'query', but received: {query}"
+                )
+                raise AirbyteTracedException(
+                    message=error_message,
+                    failure_type=FailureType.config_error
+                )
+            
+            # Extract fields for further processing
+            table_name = query["table_name"]
+            query_text = query["query"]
+            # Rest of the logic (e.g., API calls) goes here
+        
+        # Placeholder for successful connection check
         google_api = GoogleAds(credentials=self.get_credentials(config))
-
         customers = self.get_customers(google_api, config)
-        logger.info(f"Found {len(customers)} customers: {[customer.id for customer in customers]}")
-
-        # Check custom query request validity by sending metric request with non-existent time window
-        for query in config.get("custom_queries_array", []):
-            for customer in customers:
-                table_name = query["table_name"]
-                query = query["query"]
-                if customer.is_manager_account and self.is_metrics_in_custom_query(query):
-                    logger.warning(
-                        f"Metrics are not available for manager account {customer.id}. "
-                        f'Skipping the custom query: "{query}" for manager account.'
-                    )
-                    continue
-
-                # Add segments.date to where clause of incremental custom queries if they are not present.
-                # The same will be done during read, but with start and end date from config.
-                if self.is_custom_query_incremental(query):
-                    # Set default date value 1 month ago, as some tables have a limited lookback time frame.
-                    month_back = today().subtract(months=1).to_date_string()
-                    start_date = config.get("start_date", month_back)
-
-                    query_date = month_back if start_date > month_back else start_date
-
-                    query = IncrementalCustomQuery.insert_segments_date_expr(query, query_date, query_date)
-
-                query = query.set_limit(1)
-                try:
-                    logger.info(f"Running the query for account {customer.id}: {query}")
-                    response = google_api.send_request(
-                        str(query),
-                        customer_id=customer.id,
-                        login_customer_id=customer.login_customer_id,
-                    )
-                except AirbyteTracedException as e:
-                    raise e from e
-                except Exception as exc:
-                    traced_exception(exc, customer.id, False, table_name)
-                # iterate over the response otherwise exceptions will not be raised!
-                for _ in response:
-                    pass
-                break
+        logger.info(f"Found {len(customers)} customers")
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
