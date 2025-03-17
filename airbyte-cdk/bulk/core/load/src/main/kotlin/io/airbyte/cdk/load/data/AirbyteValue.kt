@@ -169,9 +169,9 @@ private class ObjectValueSerializer : JsonSerializer<ObjectValue>() {
 data class EnrichedAirbyteValue(
     val value: AirbyteValue,
     val type: AirbyteType,
-    val changes: List<Meta.Change> = emptyList(),
     val name: String,
-    val fieldCategory: FieldCategory
+    val fieldCategory: FieldCategory,
+    val changes: List<Meta.Change> = emptyList()
 ) {
     init {
         require(name.isNotBlank()) { "Field name cannot be blank" }

@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.FieldCategory
@@ -17,6 +18,7 @@ import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
@@ -36,7 +38,9 @@ import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.math.BigInteger
+import java.time.Instant
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.*
 
 /**
@@ -171,12 +175,26 @@ data class DestinationRecordAirbyteValue(
 data class EnrichedDestinationRecordAirbyteValue(
     val stream: DestinationStream,
     val declaredFields: Map<String, EnrichedAirbyteValue>,
-    val airbyteMetaFields: Map<String, EnrichedAirbyteValue>,
     val undeclaredFields: Map<String, JsonNode>,
     val emittedAtMs: Long,
     val meta: Meta?,
     val serializedSizeBytes: Long = 0L
-)
+) {
+    val airbyteMetaFields: Map<String, EnrichedAirbyteValue> by lazy {
+        mapOf(
+            "_airbyte_extracted_at" to
+                EnrichedAirbyteValue(
+                    TimestampWithTimezoneValue(
+                        OffsetDateTime.ofInstant(Instant.ofEpochMilli(emittedAtMs), ZoneOffset.UTC)
+                    ),
+                    TimestampTypeWithTimezone,
+                    name = "_airbyte_extracted_at",
+                    FieldCategory.EXTRACTED_AT,
+                ),
+            TODO("all the other efields"),
+        )
+    }
+}
 
 data class DestinationRecordRaw(
     val stream: DestinationStream,
@@ -212,7 +230,6 @@ data class DestinationRecordRaw(
             }
 
         val declaredFields = mutableMapOf<String, EnrichedAirbyteValue>()
-        val airbyteMetaFields = mutableMapOf<String, EnrichedAirbyteValue>()
         val undeclaredFields = mutableMapOf<String, JsonNode>()
 
         // Process fields from the raw JSON
@@ -230,11 +247,22 @@ data class DestinationRecordRaw(
                         if (fieldValue.isNull) NullValue else fieldValue.toAirbyteValue()
                     declaredFields[fieldName] =
                         EnrichedAirbyteValue(
-                            value = airbyteValue,
-                            type = fieldType,
-                            name = fieldName,
-                            fieldCategory = FieldCategory.CLIENT_DATA
-                        )
+                                value = airbyteValue,
+                                type = fieldType,
+                                name = fieldName,
+                                fieldCategory = FieldCategory.CLIENT_DATA,
+                            )
+                            .let {
+                                val coercedValue = AirbyteValueCoercer.coerce(airbyteValue, schema)
+                                if (coercedValue == null) {
+                                    it.toNullified(
+                                        AirbyteRecordMessageMetaChange.Reason
+                                            .DESTINATION_SERIALIZATION_ERROR
+                                    )
+                                } else {
+                                    it
+                                }
+                            }
                 }
                 else -> {
                     // Undeclared field (not in schema)
@@ -246,7 +274,6 @@ data class DestinationRecordRaw(
         return EnrichedDestinationRecordAirbyteValue(
             stream = stream,
             declaredFields = declaredFields,
-            airbyteMetaFields = airbyteMetaFields,
             undeclaredFields = undeclaredFields,
             emittedAtMs = rawData.record.emittedAt,
             meta =
