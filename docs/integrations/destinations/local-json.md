@@ -8,7 +8,7 @@ This destination is meant to be used on a local workstation and won't work on Ku
 
 ## Overview
 
-This destination writes data to a directory on the filesystem within the Airbyte container. All data is written under the `/local` directory inside the container. This directory is enforced by the connector code and cannot be changed through environment variables.
+This destination writes data to a directory on the filesystem within the Airbyte container. All data is written under the `/local` directory inside the container.
 
 ### Sync Overview
 
@@ -52,7 +52,7 @@ When using abctl to deploy Airbyte locally, the data is stored within the Kubern
 
 ## Access Replicated Data Files
 
-Since Airbyte now runs in a Kubernetes cluster managed by abctl, accessing the replicated data requires using kubectl commands:
+Since Airbyte runs in a Kubernetes cluster managed by abctl, accessing the replicated data requires using kubectl commands:
 
 1. Find the pod running the destination connector:
    ```
@@ -66,7 +66,7 @@ Since Airbyte now runs in a Kubernetes cluster managed by abctl, accessing the r
 
 Note: The exact pod name will depend on your specific connection ID and sync attempt. Look for pods with names containing "destination" and your connection ID.
 
-If you are running Airbyte on Windows, you may need to adjust these commands accordingly. You can also refer to this [link](/integrations/locating-files-local-destination.md) for an alternative approach.
+If you are running Airbyte on Windows, you may need to adjust these commands accordingly. You can also refer to the [alternative file access methods](/integrations/locating-files-local-destination.md) for other approaches.
 
 ## Changelog
 
