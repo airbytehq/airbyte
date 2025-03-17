@@ -7,15 +7,32 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
+import io.airbyte.cdk.load.data.AirbyteValueCoercer
+import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
+import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
+import io.airbyte.cdk.load.util.serializeToString
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.math.BigDecimal
+import java.math.BigInteger
 import javax.inject.Singleton
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.CatalogUtil
@@ -141,18 +158,68 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
      * @return An Iceberg [Record] representation of the Airbyte [DestinationRecordAirbyteValue].
      */
     fun toRecord(
-        record: DestinationRecordAirbyteValue,
+        record: EnrichedDestinationRecordAirbyteValue,
         stream: DestinationStream,
         tableSchema: Schema,
-        pipeline: MapperPipeline
     ): Record {
-        val dataMapped =
-            pipeline
-                .map(record.data, record.meta?.changes)
-                .withAirbyteMeta(stream, record.emittedAtMs, true)
-        // TODO figure out how to detect the actual operation value
+        // deep-coerce arrays
+        record.declaredFields.forEach { (_, value) ->
+            if (value.type is ArrayType) {
+                value.mutateArrayElements { element, elementType ->
+                    AirbyteValueCoercer.coerce(element, elementType)
+                }
+            }
+        }
+
+        // Convert complex types to string
+        record.declaredFields.forEach { (_, value) ->
+            when (value.type) {
+                is ArrayType,
+                ArrayTypeWithoutSchema,
+                is ObjectType,
+                ObjectTypeWithEmptySchema,
+                ObjectTypeWithoutSchema,
+                is UnionType,
+                is UnknownType -> value.value = StringValue(value.value.serializeToString())
+                else -> {}
+            }
+        }
+
+        // Null out numeric values that exceed int64/float64
+        record.declaredFields.forEach { (_, value) ->
+            if (value.type is ArrayType) {
+                value.mutateArrayElements { element, elementType ->
+                    when (elementType) {
+                        is NumberType -> {
+                            val numberValue = (element as NumberValue)
+                            if (
+                                numberValue.value < BigDecimal(Double.MIN_VALUE) ||
+                                    numberValue.value > BigDecimal(Double.MAX_VALUE)
+                            ) {
+                                null
+                            } else {
+                                numberValue
+                            }
+                        }
+                        is IntegerType -> {
+                            val numberValue = (element as IntegerValue)
+                            if (
+                                numberValue.value < BigInteger.valueOf(Long.MIN_VALUE) ||
+                                    numberValue.value > BigInteger.valueOf(Long.MAX_VALUE)
+                            ) {
+                                null
+                            } else {
+                                numberValue
+                            }
+                        }
+                        else -> element
+                    }
+                }
+            }
+        }
+
         return RecordWrapper(
-            delegate = dataMapped.toIcebergRecord(tableSchema),
+            delegate = record.declaredFields.toIcebergRecord(tableSchema),
             operation = getOperation(record = record, importType = stream.importType)
         )
     }

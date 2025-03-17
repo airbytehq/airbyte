@@ -12,8 +12,7 @@ import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.node.NullNode
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.*
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
@@ -184,12 +183,7 @@ class EnrichedAirbyteValue(
      * @return A new [EnrichedAirbyteValue] with a null value and an additional change record
      */
     fun nullify(reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR) {
-        val nullChange =
-            Meta.Change(
-                field = name,
-                change = AirbyteRecordMessageMetaChange.Change.NULLED,
-                reason = reason
-            )
+        val nullChange = Meta.Change(field = name, change = Change.NULLED, reason = reason)
 
         value = NullValue
         changes.add(nullChange)
@@ -206,16 +200,92 @@ class EnrichedAirbyteValue(
         reason: Reason = Reason.DESTINATION_RECORD_SIZE_LIMITATION,
         newValue: AirbyteValue
     ) {
-        val truncateChange =
-            Meta.Change(
-                field = name,
-                change = AirbyteRecordMessageMetaChange.Change.TRUNCATED,
-                reason = reason
-            )
+        val truncateChange = Meta.Change(field = name, change = Change.TRUNCATED, reason = reason)
 
         // Return a copy with null value and the new change added to the changes list
         value = newValue
         changes.add(truncateChange)
+    }
+
+    /**
+     * If this value is an Array element, compute a new value for each element of the array. If the
+     * computed value is null, then update it to a [NullValue] and add a NULLED_OUT entry to the
+     * changes list.
+     */
+    fun mutateArrayElements(f: (AirbyteValue, AirbyteType) -> AirbyteValue?) {
+        check(value !is ArrayValue) { "Attempting to walk over a non-array value" }
+        val elementType = (type as ArrayType).items.type
+        val changes = mutableListOf<Meta.Change>()
+        val mutatedElements: List<AirbyteValue> =
+            (value as ArrayValue).values.mapIndexed { i, element ->
+                val mutatedElement = f(element, elementType)
+                if (mutatedElement == null) {
+                    changes.add(
+                        Meta.Change(
+                            // TODO do we do this, or do we do `arst[42]` path syntax?
+                            field = "$name.$i",
+                            Change.NULLED,
+                            Reason.DESTINATION_SERIALIZATION_ERROR,
+                        )
+                    )
+                    NullValue
+                } else {
+                    mutatedElement
+                }
+            }
+        value = ArrayValue(mutatedElements)
+    }
+
+    fun recursivelyMutateArrayElements(f: (AirbyteValue, AirbyteType) -> AirbyteValue?) {
+        fun recursionHelper(
+            value: ArrayValue,
+            elementType: AirbyteType,
+            path: String
+        ): AirbyteValue {
+            val mutatedElements: List<AirbyteValue> =
+                value.values.mapIndexed { i, element ->
+                    val elementPath = "$path.$i"
+                    if (elementType is ArrayType) {
+                        val coercedElement = AirbyteValueCoercer.coerceArray(element)
+                        if (coercedElement != null) {
+                            recursionHelper(coercedElement, elementType.items.type, name)
+                        } else {
+                            changes.add(
+                                Meta.Change(
+                                    field = elementPath,
+                                    change = Change.NULLED,
+                                    reason = Reason.DESTINATION_SERIALIZATION_ERROR,
+                                )
+                            )
+                            NullValue
+                        }
+                    } else {
+                        val mutatedElement = f(element, elementType)
+                        if (mutatedElement == null) {
+                            changes.add(
+                                Meta.Change(
+                                    // TODO do we do this, or do we do `arst[42]` path syntax?
+                                    field = elementPath,
+                                    Change.NULLED,
+                                    Reason.DESTINATION_SERIALIZATION_ERROR,
+                                )
+                            )
+                            NullValue
+                        } else {
+                            mutatedElement
+                        }
+                    }
+                }
+            return ArrayValue(mutatedElements)
+        }
+
+        val elementType = (type as ArrayType).items.type
+        val coercedValue = AirbyteValueCoercer.coerceArray(value)
+        if (coercedValue != null) {
+            value = recursionHelper(coercedValue, elementType, name)
+        } else {
+            nullify()
+        }
     }
 }
 
