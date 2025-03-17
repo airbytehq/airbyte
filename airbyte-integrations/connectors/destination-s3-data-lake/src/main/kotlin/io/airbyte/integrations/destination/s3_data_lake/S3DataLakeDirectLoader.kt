@@ -80,11 +80,11 @@ class S3DataLakeDirectLoader(
     }
 
     override fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
-        val recordAirbyteValue = record.asDestinationRecordAirbyteValue()
+        val enrichedRecordAirbyteValue = record.asEnrichedDestinationRecordAirbyteValue()
 
         val icebergRecord =
             icebergUtil.toRecord(
-                record = recordAirbyteValue,
+                record = enrichedRecordAirbyteValue,
                 stream = stream,
                 tableSchema = schema,
                 pipeline = pipeline,
@@ -92,7 +92,8 @@ class S3DataLakeDirectLoader(
         writer.write(icebergRecord)
 
         dataSize +=
-            recordAirbyteValue.serializedSizeBytes // TODO: use icebergRecord.size() instead?
+            enrichedRecordAirbyteValue
+                .serializedSizeBytes // TODO: use icebergRecord.size() instead?
         if (dataSize < batchSize) {
             return DirectLoader.Incomplete
         }
