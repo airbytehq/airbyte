@@ -181,10 +181,22 @@ class SourceGoogleAds(AbstractSource):
         logger.info(f"Found {len(customers)} customers: {[customer.id for customer in customers]}")
 
         # Check custom query request validity by sending metric request with non-existent time window
-        for query in config.get("custom_queries_array", []):
-            for customer in customers:
+        custom_queries = config.get("custom_queries_array", [])
+        logger.info(f"custom_queries_array type: {type(custom_queries)}, length: {len(custom_queries) if isinstance(custom_queries, list) else 'N/A'}")
+        
+        for i, query in enumerate(custom_queries):
+            logger.info(f"Processing query item {i}, type: {type(query)}")
+            try:
                 table_name = query["table_name"]
                 query = query["query"]
+                logger.info(f"table_name: {table_name}, type: {type(table_name)}")
+                logger.info(f"query type: {type(query)}")
+            except TypeError as e:
+                logger.error(f"TypeError accessing query item {i}: {e}")
+                logger.error(f"query item {i} value: {query}")
+                raise  # Re-raise to maintain original error behavior
+            
+            for customer in customers:
                 if customer.is_manager_account and self.is_metrics_in_custom_query(query):
                     logger.warning(
                         f"Metrics are not available for manager account {customer.id}. "
