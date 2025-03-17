@@ -36,7 +36,7 @@ class CreationRequester(HttpRequester):
             super().send_request(**kwargs)
             jobs_response = self.get_jobs_response()
         return jobs_response
-        
+
     def get_jobs_response(self):
         request, jobs_response = self._http_client.send_request(
             http_method="GET",
@@ -50,7 +50,7 @@ class CreationRequester(HttpRequester):
 class PollingRequester(HttpRequester):
     def send_request(self, **kwargs):
         stream_name = self.name.split(" - ")[-1]
-        
+
         jobs_response = super().send_request(**kwargs)
         jobs_list = jobs_response.json().get("jobs", [])
         job_resource = list(filter(lambda job: job["reportTypeId"] == stream_name, jobs_list))[0]
@@ -73,7 +73,7 @@ class StatusExtractor(RecordExtractor):
             yield "running"
         else:
             yield "completed"
-            
+
 
 @dataclass
 class DownloadTargetExtractor(RecordExtractor):
@@ -81,7 +81,7 @@ class DownloadTargetExtractor(RecordExtractor):
         reports = response.json().get("reports", [])
         urls = list(map(lambda report: report.get("downloadUrl", ""), reports))
         return urls
-            
+
 
 @dataclass
 class YoutubeAnalyticsErrorHandler(DefaultErrorHandler):
