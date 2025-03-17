@@ -12,7 +12,10 @@ import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
+import io.airbyte.cdk.load.data.FieldCategory
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.json.toAirbyteValue
@@ -34,6 +37,7 @@ import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.math.BigInteger
 import java.time.OffsetDateTime
+import java.util.*
 
 /**
  * Internal representation of destination messages. These are intended to be specialized for
@@ -145,7 +149,7 @@ data class DestinationRecord(
         )
     }
     fun asDestinationRecordRaw(): DestinationRecordRaw {
-        return DestinationRecordRaw(stream, message, serialized)
+        return DestinationRecordRaw(stream, message, serialized, schema)
     }
 }
 
@@ -177,7 +181,8 @@ data class EnrichedDestinationRecordAirbyteValue(
 data class DestinationRecordRaw(
     val stream: DestinationStream,
     private val rawData: AirbyteMessage,
-    private val serialized: String
+    private val serialized: String,
+    private val schema: AirbyteType
 ) {
     fun asRawJson(): JsonNode {
         return rawData.record.data
@@ -197,7 +202,62 @@ data class DestinationRecordRaw(
     }
 
     fun asEnrichedDestinationRecordAirbyteValue(): EnrichedDestinationRecordAirbyteValue {
-        TODO()
+        val rawJson = asRawJson()
+
+        // Get the set of field names defined in the schema
+        val schemaFields =
+            when (schema) {
+                is ObjectType -> schema.properties.keys
+                else -> emptySet()
+            }
+
+        val declaredFields = mutableMapOf<String, EnrichedAirbyteValue>()
+        val airbyteMetaFields = mutableMapOf<String, EnrichedAirbyteValue>()
+        val undeclaredFields = mutableMapOf<String, JsonNode>()
+
+        // Process fields from the raw JSON
+        rawJson.fields().forEach { (fieldName, fieldValue) ->
+            when {
+                schemaFields.contains(fieldName) -> {
+                    // Declared field (exists in schema)
+                    val fieldType =
+                        (schema as ObjectType).properties[fieldName]?.type
+                            ?: throw IllegalStateException(
+                                "Field '$fieldName' exists in schema keys but not in properties"
+                            )
+
+                    val airbyteValue =
+                        if (fieldValue.isNull) NullValue else fieldValue.toAirbyteValue()
+                    declaredFields[fieldName] =
+                        EnrichedAirbyteValue(
+                            value = airbyteValue,
+                            type = fieldType,
+                            name = fieldName,
+                            fieldCategory = FieldCategory.CLIENT_DATA
+                        )
+                }
+                else -> {
+                    // Undeclared field (not in schema)
+                    undeclaredFields[fieldName] = fieldValue
+                }
+            }
+        }
+
+        return EnrichedDestinationRecordAirbyteValue(
+            stream = stream,
+            declaredFields = declaredFields,
+            airbyteMetaFields = airbyteMetaFields,
+            undeclaredFields = undeclaredFields,
+            emittedAtMs = rawData.record.emittedAt,
+            meta =
+                Meta(
+                    rawData.record.meta?.changes?.map {
+                        Meta.Change(it.field, it.change, it.reason)
+                    }
+                        ?: emptyList()
+                ),
+            serializedSizeBytes = serialized.length.toLong()
+        )
     }
 }
 
