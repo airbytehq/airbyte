@@ -518,7 +518,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: CursorPagination
-            page_size: 5
+            page_size: 100
             cursor_value: "{{ response.get(\"additional_data\", {}).get(\"next_cursor\", {}) }}"
             stop_condition: >-
               {{ not response.get("additional_data", {}).get("next_cursor", {})

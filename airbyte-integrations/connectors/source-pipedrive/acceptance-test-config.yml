@@ -30,6 +30,9 @@ acceptance_tests:
           - name: stages
           - name: deal_products
           - name: mail
+          - name: deals
+          - name: users
+          - name: persons
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
