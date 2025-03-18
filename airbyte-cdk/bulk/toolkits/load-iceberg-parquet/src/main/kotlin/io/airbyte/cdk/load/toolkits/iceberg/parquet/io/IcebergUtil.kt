@@ -173,14 +173,20 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
                     ObjectTypeWithEmptySchema,
                     ObjectTypeWithoutSchema,
                     is UnionType,
-                    is UnknownType -> StringValue(element.serializeToString())
+                    is UnknownType ->
+                        // serializing to string is a non-lossy operation, so don't generate a
+                        // Meta.Change object.
+                        ChangedValue(
+                            StringValue(element.serializeToString()),
+                            changeDescription = null
+                        )
 
                     // Null out numeric values that exceed int64/float64
                     is NumberType -> nullOutOfRangeNumber(element)
                     is IntegerType -> nullOutOfRangeInt(element)
 
-                    // otherwise, return the element unchanged
-                    else -> element
+                    // otherwise, don't change anything
+                    else -> null
                 }
             }
         }
@@ -191,29 +197,31 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         )
     }
 
-    private fun nullOutOfRangeInt(numberValue: AirbyteValue): AirbyteValue? {
-        return if (numberValue == NullValue) {
-            return NullValue
-        } else if (
-            (numberValue as IntegerValue).value < BigInteger.valueOf(Long.MIN_VALUE) ||
-                numberValue.value > BigInteger.valueOf(Long.MAX_VALUE)
+    private fun nullOutOfRangeInt(numberValue: AirbyteValue): ChangedValue? {
+        return if (
+            BigInteger.valueOf(Long.MIN_VALUE) <= (numberValue as IntegerValue).value &&
+                numberValue.value <= BigInteger.valueOf(Long.MAX_VALUE)
         ) {
             null
         } else {
-            numberValue
+            ChangedValue(
+                NullValue,
+                ChangeDescription(Change.NULLED, Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+            )
         }
     }
 
-    private fun nullOutOfRangeNumber(numberValue: AirbyteValue): AirbyteValue? {
-        return if (numberValue == NullValue) {
-            return NullValue
-        } else if (
-            (numberValue as NumberValue).value < BigDecimal(Double.MIN_VALUE) ||
-                numberValue.value > BigDecimal(Double.MAX_VALUE)
+    private fun nullOutOfRangeNumber(numberValue: AirbyteValue): ChangedValue? {
+        return if (
+            BigDecimal(Double.MIN_VALUE) <= (numberValue as NumberValue).value &&
+                numberValue.value <= BigDecimal(Double.MAX_VALUE)
         ) {
             null
         } else {
-            numberValue
+            ChangedValue(
+                NullValue,
+                ChangeDescription(Change.NULLED, Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+            )
         }
     }
 
@@ -256,13 +264,8 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
  * called with a [NumberType], it is safe to cast the value to [NumberValue].
  */
 fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
-    f: (AirbyteValue, AirbyteType) -> AirbyteValue?
+    f: (AirbyteValue, AirbyteType) -> ChangedValue?
 ) {
-    if (type !is ArrayType) {
-        f(value, type)?.let { value = it } ?: nullify()
-        return
-    }
-
     /**
      * Recursively iterates over an [ArrayValue], applying [f] or further recursion if a nested
      * [ArrayType] is encountered. All null/mutation scenarios are handled here to keep the logic
@@ -273,17 +276,9 @@ fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
         currentType: AirbyteType,
         path: String,
     ): AirbyteValue {
-        fun nullifyCurrentValue(): AirbyteValue {
-            changes.add(
-                Meta.Change(
-                    field = path,
-                    change = Change.NULLED,
-                    reason = Reason.DESTINATION_SERIALIZATION_ERROR,
-                ),
-            )
+        return if (currentValue == NullValue) {
             return NullValue
-        }
-        return if (currentType is ArrayType) {
+        } else if (currentType is ArrayType) {
             // If the type is another array, we recurse deeper.
             AirbyteValueCoercer.coerceArray(currentValue)?.let { elementCoercedToArray ->
                 val mutatedElements =
@@ -294,15 +289,29 @@ fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
                     }
                 ArrayValue(mutatedElements)
             }
-                ?: nullifyCurrentValue()
+                ?: run {
+                    changes.add(
+                        Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR)
+                    )
+                    NullValue
+                }
         } else {
             // If we're at a leaf node, call the user function.
             // If the function returns null, then generate the appropriate change entry.
-            f(currentValue, currentType) ?: nullifyCurrentValue()
+            f(currentValue, currentType)?.let { (newValue, changeDescription) ->
+                changeDescription?.let { (change, reason) ->
+                    changes.add(Meta.Change(path, change, reason))
+                }
+                newValue
+            }
+                ?: currentValue
         }
     }
 
     // Mutate the top-level array and store the result back in 'value'.
-    val elementType = (type as ArrayType).items.type
-    value = recurseArray(value, elementType, name)
+    value = recurseArray(value, type, name)
 }
+
+data class ChangeDescription(val change: Change, val reason: Reason)
+
+data class ChangedValue(val newValue: AirbyteValue, val changeDescription: ChangeDescription?)
