@@ -40,7 +40,7 @@ class MondayActivityExtractor(RecordExtractor):
         response_body_generator = self.decoder.decode(response)
         for response_body in response_body_generator:
             if not response_body["data"]["boards"]:
-                return
+                continue
 
             for board_data in response_body["data"]["boards"]:
                 if not isinstance(board_data, dict) or not board_data.get("activity_logs"):
@@ -83,6 +83,7 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
 
     def try_extract_records(self, response: requests.Response, field_path: List[Union[InterpolatedString, str]]) -> List[Record]:
         decoded_response = self.decoder.decode(response)
+        result = []
         for response_body in decoded_response:
             path = [path.eval(self.config) for path in field_path]
             extracted = dpath.util.values(response_body, path) if path else response_body
@@ -94,9 +95,9 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
             if extracted:
                 if isinstance(extracted, list) and None in extracted:
                     logger.warning(f"Record with null value received; errors: {response_body.get('errors')}")
-                    return [x for x in extracted if x]
-                return extracted if isinstance(extracted, list) else [extracted]
-            return []
+                    result += [x for x in extracted if x]
+                result += extracted if isinstance(extracted, list) else [extracted]
+        return result
 
     def extract_records(self, response: requests.Response) -> List[Record]:
         result = self.try_extract_records(response, field_path=self.field_path)

@@ -164,10 +164,10 @@ class MondayGraphqlRequester(HttpRequester):
         object_arguments.pop("stream_slice")
 
         # 1 is default start time, so we can skip it to get all the data
-        if created_at and created_at != "1":
-            created_at = datetime.fromtimestamp(int(created_at)).strftime("%Y-%m-%dT%H:%M:%SZ")
-        else:
+        if created_at == "1":
             created_at = None
+        else:
+            created_at = datetime.fromtimestamp(int(created_at)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         query = self._build_query(object_name, field_schema, limit=nested_limit, page=sub_page, fromt=created_at)
         if "board_ids" in self.config and "ids" not in object_arguments:
