@@ -13,7 +13,7 @@ As a quick recap, the Airbyte Specification requires an Airbyte Source to suppor
 
 A core concept discussed here is the **Source**.
 
-The Source contains one or more **Streams** \(or **Airbyte Streams**\). A **Stream** is the other concept key to understanding how Airbyte models the data syncing process. A **Stream** models the logical data groups that make up the larger **Source**. If the **Source** is a RDMS, each **Stream** is a table. In a REST API setting, each **Stream** corresponds to one resource within the API. e.g. a **Stripe Source** would have have one **Stream** for `Transactions`, one for `Charges` and so on.
+The Source contains one or more **Streams** \(or **Airbyte Streams**\). A **Stream** is the other concept key to understanding how Airbyte models the data syncing process. A **Stream** models the logical data groups that make up the larger **Source**. If the **Source** is a RDMS, each **Stream** is a table. In a REST API setting, each **Stream** corresponds to one resource within the API. e.g. a **Stripe Source** would have one **Stream** for `Transactions`, one for `Charges` and so on.
 
 ## The `Source` class
 
