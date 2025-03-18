@@ -86,7 +86,9 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                    | Subject                                                  |
-| :------ | :--------- | :---------------------------------------------- | :------------------------------------------------------- |
+|:--------|:-----------|:------------------------------------------------|:---------------------------------------------------------|
+| 0.1.8   | 2025-03-14 | https://github.com/airbytehq/airbyte/pull/55771 | Migration to Kotlin                                      |
+| 0.1.7   | 2025-03-07 | https://github.com/airbytehq/airbyte/pull/55183 | Upgrade teradata jdbc driver to 20.00.00.43              |
 | 0.1.6   | 2024-06-24 | https://github.com/airbytehq/airbyte/pull/39455 | Fix for Parameter 2 length size                          |
 | 0.1.5   | 2024-01-12 | https://github.com/airbytehq/airbyte/pull/33872 | Added Primary Index on \_airbyte_ab_id to fix NoPI issue |
 | 0.1.4   | 2023-12-04 | https://github.com/airbytehq/airbyte/pull/28667 | Make connector available on Airbyte Cloud                |
