@@ -28,20 +28,26 @@ function getFilenamesInDir(prefix, dir, excludes) {
       // Get the first header of the markdown document
       try {
         const filePath = path.join(dir, `${filename}.md`);
-        const fileContent = fs.readFileSync(filePath, 'utf8');
-        const firstLine = fileContent.split('\n').find(line => line.trim().startsWith('# '));
-        const contentTitle = firstLine ? firstLine.replace(/^#\s*/, '').trim() : filename;
+        const fileContent = fs.readFileSync(filePath, "utf8");
+        const firstLine = fileContent
+          .split("\n")
+          .find((line) => line.trim().startsWith("# "));
+        const contentTitle = firstLine
+          ? firstLine.replace(/^#\s*/, "").trim()
+          : filename;
         return {
-          type: 'doc',
+          type: "doc",
           id: prefix + filename,
-          label: contentTitle || filename
+          label: contentTitle || filename,
         };
       } catch (error) {
-        console.warn(`Warning: Using filename as title for ${path.join(prefix, filename)}`);
+        console.warn(
+          `Warning: Using filename as title for ${path.join(prefix, filename)}`
+        );
         return {
-          type: 'doc',
+          type: "doc",
           id: prefix + filename,
-          label: filename
+          label: filename,
         };
       }
 
@@ -91,7 +97,8 @@ function getDestinationConnectors() {
 function getEnterpriseConnectors() {
   return getFilenamesInDir(
     "integrations/enterprise-connectors/",
-    enterpriseConnectorDocs, ["readme"]
+    enterpriseConnectorDocs,
+    ["readme"]
   );
 }
 
@@ -306,7 +313,7 @@ const buildAConnector = {
             "connector-development/config-based/advanced-topics/parameters",
             "connector-development/config-based/advanced-topics/references",
             "connector-development/config-based/advanced-topics/string-interpolation",
-          ]
+          ],
         },
       ],
     },
@@ -396,8 +403,8 @@ const connectorCatalog = {
         sourceMssql,
         ...getSourceConnectors(),
       ].sort((itemA, itemB) => {
-        const labelA = itemA?.label || '';
-        const labelB = itemB?.label || '';
+        const labelA = itemA?.label || "";
+        const labelB = itemB?.label || "";
         return labelA.localeCompare(labelB);
       }),
     },
@@ -413,8 +420,8 @@ const connectorCatalog = {
         destinationPostgres,
         ...getDestinationConnectors(),
       ].sort((itemA, itemB) => {
-        const labelA = itemA?.label || '';
-        const labelB = itemB?.label || '';
+        const labelA = itemA?.label || "";
+        const labelB = itemB?.label || "";
         return labelA.localeCompare(labelB);
       }),
     },
@@ -581,7 +588,7 @@ module.exports = {
         "using-airbyte/getting-started/set-up-a-connection",
       ],
     },
-    sectionHeader("Airbyte Connectors"),
+    sectionHeader("Connectors"),
     connectorCatalog,
     buildAConnector,
     "integrations/connector-support-levels",
@@ -651,8 +658,8 @@ module.exports = {
             id: "integrations/enterprise-connectors/README",
           },
           items: [...getEnterpriseConnectors()].sort((itemA, itemB) => {
-            const labelA = itemA?.label || '';
-            const labelB = itemB?.label || '';
+            const labelA = itemA?.label || "";
+            const labelB = itemB?.label || "";
             return labelA.localeCompare(labelB);
           }),
         },
@@ -708,7 +715,7 @@ module.exports = {
           items: [
             {
               type: "doc",
-              id: "access-management/role-mapping"
+              id: "access-management/role-mapping",
             },
           ],
         },
@@ -791,7 +798,8 @@ module.exports = {
       label: "Release Notes",
       link: {
         type: "generated-index",
-        description: "We release new self-managed versions of Airbyte regularly. Airbyte Cloud customers always have the latest enhancements.",
+        description:
+          "We release new self-managed versions of Airbyte regularly. Airbyte Cloud customers always have the latest enhancements.",
       },
       items: [
         "release_notes/v-1.5",
@@ -805,7 +813,8 @@ module.exports = {
           label: "Historical release notes",
           link: {
             type: "generated-index",
-            description: "Historical release notes from before Airbyte 1.0 are preserved here for posterity."
+            description:
+              "Historical release notes from before Airbyte 1.0 are preserved here for posterity.",
           },
           items: [
             "release_notes/aug_2024",
@@ -834,7 +843,7 @@ module.exports = {
             "release_notes/september_2022",
             "release_notes/august_2022",
             "release_notes/july_2022",
-          ]
+          ],
         },
       ],
     },
