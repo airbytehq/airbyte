@@ -84,6 +84,7 @@ class InputConsumerTaskUTest {
     @Test
     fun `input consumer does not use the new path when there is no load pipeline`() = runTest {
         val inputConsumerTask = createTask(null)
+        val destinationStream = catalog.getStream(stream)
 
         coEvery { inputFlow.collect(any()) } coAnswers
             {
