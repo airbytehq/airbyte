@@ -306,8 +306,8 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                        |
-|:--------| :--------- | :--------------------------------------------------------- |:-------------------------------------------------------------------------------|
-| 0.3.18  | 2025-03-13 | [\#55737](https://github.com/airbytehq/airbyte/pull/55737) | CDK: Pass DestinationStream around vs Descriptor                               |
+|:--------|:-----------| :--------------------------------------------------------- |:-------------------------------------------------------------------------------|
+| 0.3.18  | 2025-03-18 | [\#55811](https://github.com/airbytehq/airbyte/pull/55811) | CDK: Pass DestinationStream around vs Descriptor                               |
 | 0.3.17  | 2025-03-13 | [\#55737](https://github.com/airbytehq/airbyte/pull/55737) | CDK: Pass DestinationRecordRaw around instead of DestinationRecordAirbyteValue |
 | 0.3.16  | 2025-03-13 | [\#55755](https://github.com/airbytehq/airbyte/pull/55755) | Exclude number fields from identifier fields                                   |
 | 0.3.15  | 2025-02-28 | [\#54724](https://github.com/airbytehq/airbyte/pull/54724) | Certify connector                                                              |
