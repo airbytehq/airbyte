@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import abc
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from airbyte_cdk.test.mock_http import HttpRequest
 
@@ -54,4 +54,8 @@ class MondayBaseRequestBuilder(MondayRequestBuilder):
 
     def with_authenticator(self, authenticator: Authenticator) -> "MondayBaseRequestBuilder":
         self._authenticator: Authenticator = authenticator
+        return self
+
+    def with_board_ids(self, board_ids: List[int]) -> "MondayBaseRequestBuilder":
+        self._board_ids = board_ids
         return self
