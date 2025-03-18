@@ -9,16 +9,12 @@ connectionSpecification:
     - client_id
     - client_secret
     - refresh_token
+    - stream_mappings
+    - stream_order
+    - print_record_content_on_error
+    - is_sandbox
   additionalProperties: true
   properties:
-    is_sandbox:
-      title: Sandbox
-      description: >-
-        Toggle if you're using a <a
-        href="https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5">Salesforce Sandbox</a>
-      type: boolean
-      default: false
-      order: 1
     auth_type:
       type: string
       const: Client
@@ -44,7 +40,7 @@ connectionSpecification:
       airbyte_secret: true
       order: 4
     stream_mappings:
-      title: Mapping where input stream should be sync and how
+      title: Stream Mapping to Salesforce
       type: array
       items:
         type: object
@@ -79,7 +75,7 @@ connectionSpecification:
       default: []
       order: 5
     stream_order:
-      title: Stream order
+      title: Stream Sync Order
       description: >-
         The order in which the streams should be synced. Streams are synced in the order they are listed. Only those streams will be synced so make sure all the input streams are configured here.
       type: array
@@ -88,11 +84,19 @@ connectionSpecification:
       default: []
       order: 6
     print_record_content_on_error:
-      title: Whether to print the records content in the logs on error or not
-      description: If enable, the records content will be printed as part of the log in case of failure which allows for easier debugging.
+      title: Include Record Contents in Error Logs
+      description: If enabled, the records content will be printed as part of the log in case of failure which allows for easier debugging.
       type: boolean
       default: false
       order: 7
+    is_sandbox:
+      title: Sync to Salesforce Sandbox
+      description: >-
+        Toggle if you're using a <a
+        href="https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5">Salesforce Sandbox</a>
+      type: boolean
+      default: false
+      order: 1
 advanced_auth:
   auth_flow_type: oauth2.0
   predicate_key:
