@@ -189,7 +189,7 @@ data class DestinationRecord(
     override fun asProtocolMessage(): AirbyteMessage = message
 
     fun asRecordSerialized(): DestinationRecordSerialized =
-        DestinationRecordSerialized(stream.descriptor, serialized)
+        DestinationRecordSerialized(stream, serialized)
     fun asRecordMarshaledToAirbyteValue(): DestinationRecordAirbyteValue {
         return DestinationRecordAirbyteValue(
             stream,
