@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerType
@@ -169,6 +170,8 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
             value.transformValueRecursingIntoArrays { element, elementType ->
                 when (elementType) {
                     // Convert complex types to string
+                    // (note that schemaless arrays are stringified, but schematized arrays are not)
+                    ArrayTypeWithoutSchema,
                     is ObjectType,
                     ObjectTypeWithEmptySchema,
                     ObjectTypeWithoutSchema,
