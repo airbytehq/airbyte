@@ -155,18 +155,18 @@ const token = await getToken(oauthKey, oauthSecret);
 const modal = new AirbyteEmbeddedModal({
   token, // from your backend
   workspaceId,
-  onFlowComplete: (source, mask) => {
+  onFlowComplete: (source, configTemplate, partialConfig) => {
     // create the connection on your backend
-    await createConnection(source, mask);
+    await createConnection(source, configTemplate, partialConfig);
   },
 });
 
 await modal.open();
 ```
 
-### Creating Connections with Masks
+### Creating Connections with ConfigTemplate
 
-When creating a connection, it is the responsibility of the Operator to merge the information provided by the user in the mask with the preferences of the operator. For example, a user may have chosen to skip the syncing of a certain stream - when creating the connection, the Operator should not include that stream.
+When creating a connection, it is the responsibility of the Operator to merge the information provided by the user in the partialConfig with the preferences of the operator. For example, a user may have chosen to skip the syncing of a certain stream - when creating the connection, the Operator should not include that stream.
 
 TODO
 
