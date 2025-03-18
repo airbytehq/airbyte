@@ -176,8 +176,8 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
                     is UnknownType -> StringValue(element.serializeToString())
 
                     // Null out numeric values that exceed int64/float64
-                    is NumberType -> nullOutOfRangeNumber(element as NumberValue)
-                    is IntegerType -> nullOutOfRangeInt(element as IntegerValue)
+                    is NumberType -> nullOutOfRangeNumber(element)
+                    is IntegerType -> nullOutOfRangeInt(element)
 
                     // otherwise, return the element unchanged
                     else -> element
@@ -191,25 +191,31 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         )
     }
 
-    private fun nullOutOfRangeInt(numberValue: IntegerValue) =
-        if (
-            numberValue.value < BigInteger.valueOf(Long.MIN_VALUE) ||
+    private fun nullOutOfRangeInt(numberValue: AirbyteValue): AirbyteValue? {
+        return if (numberValue == NullValue) {
+            return NullValue
+        } else if (
+            (numberValue as IntegerValue).value < BigInteger.valueOf(Long.MIN_VALUE) ||
                 numberValue.value > BigInteger.valueOf(Long.MAX_VALUE)
         ) {
             null
         } else {
             numberValue
         }
+    }
 
-    private fun nullOutOfRangeNumber(numberValue: NumberValue) =
-        if (
-            numberValue.value < BigDecimal(Double.MIN_VALUE) ||
+    private fun nullOutOfRangeNumber(numberValue: AirbyteValue): AirbyteValue? {
+        return if (numberValue == NullValue) {
+            return NullValue
+        } else if (
+            (numberValue as NumberValue).value < BigDecimal(Double.MIN_VALUE) ||
                 numberValue.value > BigDecimal(Double.MAX_VALUE)
         ) {
             null
         } else {
             numberValue
         }
+    }
 
     fun toIcebergSchema(stream: DestinationStream, pipeline: MapperPipeline): Schema {
         val primaryKeys =
