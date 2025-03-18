@@ -247,8 +247,8 @@ importers:
         specifier: ^2.1.9
         version: 2.1.9(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@markprompt/docusaurus-theme-search':
-        specifier: ^0.32.3
-        version: 0.32.3(@types/react@19.0.10)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(ws@8.18.1)
+        specifier: ^0.32.4
+        version: 0.32.4(@types/react@19.0.10)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(ws@8.18.1)
       '@mdx-js/react':
         specifier: ^3.0.0
         version: 3.0.0(@types/react@19.0.10)(react@18.2.0)
@@ -2188,8 +2188,8 @@ packages:
   '@markprompt/css@0.34.0':
     resolution: {integrity: sha512-09ffKPM2kPUiUs8Oali/6XDQq2TRpvib++a0tB/wm3bJmMu2UxDelkL43LTF3Ju+D8EYBznKkXvtvFgiu7QlQA==}
 
-  '@markprompt/docusaurus-theme-search@0.32.3':
-    resolution: {integrity: sha512-2iUJKkZFqadNjHvq1P8f1m0Zcxs2Rrxj6pm+tNEucanyipn1iic5rprhpMpM08fEaS2IDWYbxivLBACe6b67Ng==}
+  '@markprompt/docusaurus-theme-search@0.32.4':
+    resolution: {integrity: sha512-ziPQWpYFb6CGOOGoZIacNsrmn/FmLpZyLV86v8RVJXgM+N9NCKBf4jw2g+dNw+nHY5466kNIUSTJ+g6PDPh7Og==}
     peerDependencies:
       react: ^18.3 || ^19
 
@@ -10793,7 +10793,7 @@ snapshots:
 
   '@markprompt/css@0.34.0': {}
 
-  '@markprompt/docusaurus-theme-search@0.32.3(@types/react@19.0.10)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(ws@8.18.1)':
+  '@markprompt/docusaurus-theme-search@0.32.4(@types/react@19.0.10)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(ws@8.18.1)':
     dependencies:
       '@docusaurus/types': 3.7.0(acorn@8.14.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@markprompt/css': 0.34.0
