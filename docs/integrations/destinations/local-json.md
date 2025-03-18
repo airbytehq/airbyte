@@ -50,6 +50,10 @@ When using abctl to deploy Airbyte locally, the data is stored within the Kubern
 - If `destination_path` is set to `/local/cars/models`
 - then all data will be written to `/local/cars/models` directory inside the container
 
+:::info
+**Understanding Airbyte's Architecture:** In Airbyte's Kubernetes deployment, destination connectors don't run as standalone pods. Instead, they are executed as jobs by the worker pods. This means that to persist data from the Local JSON destination, you must mount volumes to the worker pods, not to the destination connectors directly.
+:::
+
 ## Using with Kubernetes
 
 When using Airbyte in a Kubernetes environment, you need to follow these steps to properly configure and access data:
@@ -75,24 +79,55 @@ When using Airbyte in a Kubernetes environment, you need to follow these steps t
 2. **Configure the Destination with Volume Mount**
    - When setting up your Local JSON destination, set the destination path to `/local/data`
    - In the Airbyte UI, create or edit your connection to use this destination
-   - **Important**: You must configure the destination pods to mount the PVC during sync
-   - For Airbyte deployments, you need to modify the destination connector deployment to include the volume mount:
+   - **Important**: You must configure the worker pods that run the destination connector to mount the PVC during sync
+   - In Airbyte's Kubernetes deployment, destination connectors run as jobs launched by the worker deployment
+   - For Helm deployments, modify your values.yaml to include volume mounts for the worker:
      ```yaml
-     # Example configuration for mounting a volume to destination pods
-     volumes:
-     - name: data-volume
-       persistentVolumeClaim:
-         claimName: local-json-data
-     
-     containers:
-     - name: destination-container
-       # ... other container configuration ...
-       volumeMounts:
-       - name: data-volume
-         mountPath: /local
+     worker:
+       extraVolumes:
+         - name: data-volume
+           persistentVolumeClaim:
+             claimName: local-json-data
+       extraVolumeMounts:
+         - name: data-volume
+           mountPath: /local
      ```
-   - Apply this configuration to your destination pods before running a sync
-   - This step is critical - without mounting the volume to the destination pod during sync, data will not persist
+   - Apply this configuration when installing or upgrading Airbyte:
+     ```bash
+     helm upgrade --install airbyte airbyte/airbyte -n airbyte -f values.yaml
+     ```
+   - For manual Kubernetes deployments, patch the worker deployment:
+     ```bash
+     kubectl patch deployment airbyte-worker -n airbyte --patch '
+     {
+       "spec": {
+         "template": {
+           "spec": {
+             "volumes": [
+               {
+                 "name": "data-volume",
+                 "persistentVolumeClaim": {
+                   "claimName": "local-json-data"
+                 }
+               }
+             ],
+             "containers": [
+               {
+                 "name": "airbyte-worker",
+                 "volumeMounts": [
+                   {
+                     "name": "data-volume",
+                     "mountPath": "/local"
+                   }
+                 ]
+               }
+             ]
+           }
+         }
+       }
+     }'
+     ```
+   - This step is critical - without mounting the volume to the worker pods that run the destination, data will not persist
 
 3. **Access Data After Sync Completion**
    - For completed pods where the data is stored in the persistent volume, create a temporary pod with the volume mounted:
@@ -142,6 +177,36 @@ When using Airbyte in a Kubernetes environment, you need to follow these steps t
 Note: The exact pod name will depend on your specific connection ID and sync attempt. Look for pods with names containing "destination" and your connection ID.
 
 If you are running Airbyte on Windows, you may need to adjust these commands accordingly. You can also refer to the [alternative file access methods](/integrations/locating-files-local-destination.md) for other approaches.
+
+## Troubleshooting
+
+### Verifying Volume Mounts
+
+If you're having trouble with data persistence, follow these steps to verify your volume mounting configuration:
+
+1. **Check if the PVC was created successfully:**
+   ```bash
+   kubectl get pvc local-json-data -n <your-namespace>
+   ```
+   The status should be "Bound".
+
+2. **Verify that the worker pods have the volume mounted:**
+   ```bash
+   kubectl describe pod -l app=airbyte-worker -n <your-namespace> | grep -A 10 "Volumes:"
+   ```
+   You should see your volume listed with the correct PVC.
+
+3. **Check the logs of a recent sync job for file paths:**
+   ```bash
+   kubectl logs <destination-pod-name> -n <your-namespace> | grep "File output:"
+   ```
+   This should show paths starting with `/local/`.
+
+4. **Common issues:**
+   - Volume not mounted to worker pods (most common issue)
+   - Incorrect mount path (must be `/local`)
+   - PVC not bound or available
+   - Insufficient permissions on the mounted volume
 
 ## Changelog
 
