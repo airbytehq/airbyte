@@ -52,17 +52,21 @@ When using abctl to deploy Airbyte locally, the data is stored within the Kubern
 
 ## Access Replicated Data Files
 
-Since Airbyte runs in a Kubernetes cluster managed by abctl, accessing the replicated data requires using kubectl commands:
+Since Airbyte runs in a Kubernetes cluster managed by abctl, accessing the replicated data requires a different approach than with Docker:
 
-1. Find the pod running the destination connector:
-   ```
-   kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl get pods | grep destination
-   ```
+1. Configure a persistent volume to store the data outside the pod:
+   - Edit your connection configuration to set the destination path to a directory that's mounted to a persistent volume
+   - This allows data to persist even after the pod completes its execution
 
-2. Copy the files from the pod to your local machine:
-   ```
-   kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl cp <pod-name>:/local/<destination_path>/<filename> ./<filename>
-   ```
+2. For existing data in completed pods, you can access it by:
+   - Viewing the logs of the completed pod to see the file contents:
+     ```
+     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl logs <pod-name> | grep -A 100 "data written to"
+     ```
+   - Or by creating a new pod that mounts the same persistent volume:
+     ```
+     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl run file-access --image=busybox --restart=Never -it --rm -- /bin/sh -c "ls -la /path/to/mounted/volume"
+     ```
 
 Note: The exact pod name will depend on your specific connection ID and sync attempt. Look for pods with names containing "destination" and your connection ID.
 
