@@ -26,6 +26,7 @@ class MondayGraphqlRequester(HttpRequester):
         self.limit = InterpolatedString.create(self.limit, parameters=parameters)
         self.nested_limit = InterpolatedString.create(self.nested_limit, parameters=parameters)
         self.name = parameters.get("name", "").lower()
+        self.stream_mode = parameters.get("stream_mode", "full_refresh")
 
     def _ensure_type(self, t: Type, o: Any):
         """
@@ -187,11 +188,16 @@ class MondayGraphqlRequester(HttpRequester):
 
         page = next_page_token and next_page_token[self.NEXT_PAGE_TOKEN_FIELD_NAME]
         if self.name == "boards" and stream_slice:
+            if self.stream_mode == "full_refresh":
+                # incremental sync parameters are not needed for full refresh
+                stream_slice = {}
+            else:
+                stream_slice = {"ids": stream_slice.get("ids")}
             query_builder = partial(self._build_query, **stream_slice)
         elif self.name == "items":
             # `items` stream use a separate pagination strategy where first level pages are across `boards` and sub-pages are across `items`
             page, sub_page = page if page else (None, None)
-            if "start_time" in stream_slice:
+            if self.stream_mode == "full_refresh":
                 query_builder = partial(self._build_items_query, sub_page=sub_page)
             else:
                 query_builder = partial(self._build_items_incremental_query, stream_slice=stream_slice)
@@ -208,6 +214,7 @@ class MondayGraphqlRequester(HttpRequester):
             limit=limit or None,
             page=page,
         )
+        print(query)
         return {"query": f"query{{{query}}}"}
 
     # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.

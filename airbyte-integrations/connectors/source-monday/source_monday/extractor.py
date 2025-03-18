@@ -1,3 +1,4 @@
+
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
@@ -37,11 +38,10 @@ class MondayActivityExtractor(RecordExtractor):
     decoder: Decoder = JsonDecoder(parameters={})
 
     def extract_records(self, response: requests.Response) -> List[Record]:
-        response_decoded = self.decoder.decode(response)
-        for response_body in response_decoded:
+        response_body_generator = self.decoder.decode(response)
+        for response_body in response_body_generator:
             if not response_body["data"]["boards"]:
-                yield from []
-                continue
+                return
 
             for board_data in response_body["data"]["boards"]:
                 if not isinstance(board_data, dict) or not board_data.get("activity_logs"):
@@ -61,6 +61,7 @@ class MondayActivityExtractor(RecordExtractor):
                         new_record.update({"board_id": json_data.get("board_id")})
 
                     yield new_record
+
 
 @dataclass
 class MondayIncrementalItemsExtractor(RecordExtractor):
@@ -115,4 +116,4 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
                 if display_value and not text:
                     values["text"] = display_value
 
-        return result
+        yield from result
