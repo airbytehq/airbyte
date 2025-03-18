@@ -1629,7 +1629,7 @@ definitions:
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
             } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+            }}/reporting/reports/{{ creation_response['id'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -1660,7 +1660,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{stream_slice.extra_fields['url']}}
+          url_base: test_base/{{ download_target }}
           http_method: GET
       primary_key:
         - profileId
@@ -1873,7 +1873,7 @@ definitions:
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
             } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+            }}/reporting/reports/{{ creation_response['id'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -1904,7 +1904,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{stream_slice.extra_fields['url']}}
+          url_base: test_base/{{ download_target }}
           http_method: GET
       primary_key:
         - profileId
@@ -2116,7 +2116,7 @@ definitions:
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
             } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+            }}/reporting/reports/{{ creation_response['id'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -2147,7 +2147,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{stream_slice.extra_fields['url']}}
+          url_base: test_base/{{ download_target }}
           http_method: GET
       primary_key:
         - profileId
@@ -2363,7 +2363,7 @@ definitions:
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
             } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+            }}/reporting/reports/{{ creation_response['id'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -2394,7 +2394,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{stream_slice.extra_fields['url']}}
+          url_base: test_base/{{ download_target }}
           http_method: GET
       primary_key:
         - profileId
@@ -2602,7 +2602,7 @@ definitions:
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
             } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+            }}/reporting/reports/{{ creation_response['id'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -2633,7 +2633,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{stream_slice.extra_fields['url']}}
+          url_base: test_base/{{ download_target }}
           http_method: GET
       primary_key:
         - profileId
@@ -2807,7 +2807,7 @@ definitions:
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
             } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+            }}/reporting/reports/{{ creation_response['id'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -2838,7 +2838,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{stream_slice.extra_fields['url']}}
+          url_base: test_base/{{ download_target }}
           http_method: GET
       primary_key:
         - profileId
@@ -3021,7 +3021,7 @@ definitions:
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
             } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+            }}/reporting/reports/{{ creation_response['id'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -3052,7 +3052,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{stream_slice.extra_fields['url']}}
+          url_base: test_base/{{ download_target }}
           http_method: GET
       primary_key:
         - profileId
@@ -3232,7 +3232,7 @@ definitions:
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
             } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+            }}/reporting/reports/{{ creation_response['id'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -3263,7 +3263,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{stream_slice.extra_fields['url']}}
+          url_base: test_base/{{ download_target }}
           http_method: GET
       primary_key:
         - profileId
@@ -3451,7 +3451,7 @@ definitions:
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
             } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+            }}/reporting/reports/{{ creation_response['id'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -3482,7 +3482,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{stream_slice.extra_fields['url']}}
+          url_base: test_base/{{ download_target }}
           http_method: GET
       primary_key:
         - profileId
@@ -3670,7 +3670,7 @@ definitions:
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
             } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+            }}/reporting/reports/{{ creation_response['id'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -3701,7 +3701,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{stream_slice.extra_fields['url']}}
+          url_base: test_base/{{ download_target }}
           http_method: GET
       primary_key:
         - profileId
@@ -3884,7 +3884,7 @@ definitions:
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
             } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+            }}/reporting/reports/{{ creation_response['id'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -3915,7 +3915,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{stream_slice.extra_fields['url']}}
+          url_base: test_base/{{ download_target }}
           http_method: GET
       primary_key:
         - profileId
@@ -4087,7 +4087,7 @@ definitions:
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
             } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+            }}/reporting/reports/{{ creation_response['id'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -4118,7 +4118,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{stream_slice.extra_fields['url']}}
+          url_base: test_base/{{ download_target }}
           http_method: GET
       primary_key:
         - profileId
@@ -4291,7 +4291,7 @@ definitions:
                 "EU": "https://advertising-api-eu.amazon.com/",
                 "FE": "https://advertising-api-fe.amazon.com/"
             } -%} {{ URL_MAPPING[config["region"]]
-            }}/reporting/reports/{{stream_slice['create_job_response'].json()['reportId']}}
+            }}/reporting/reports/{{ creation_response['id'] }}
           authenticator:
             type: OAuthAuthenticator
             client_id: "{{ config[\"client_id\"] }}"
@@ -4322,7 +4322,7 @@ definitions:
                       error. Please, retry the request or restart sync.
         download_requester:
           type: HttpRequester
-          url_base: test_base/{{stream_slice.extra_fields['url']}}
+          url_base: test_base/{{ download_target }}
           http_method: GET
       primary_key:
         - profileId
@@ -4574,6 +4574,50 @@ spec:
         default: []
         uniqueItems: true
     additionalProperties: true
+  supportsNormalization: false
+  supportsDBT: false
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+    - auth_type
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      oauth_user_input_from_connector_config_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          region:
+            type: string
+            path_in_connector_config:
+            - region
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+            - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+            - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+            - client_secret
 
 metadata:
   autoImportSchema:
@@ -8523,3 +8567,8 @@ schemas:
           - string
     title: sponsored_products_asins_targets_report_stream
     additionalProperties: true
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 10
+  max_concurrency: 10
