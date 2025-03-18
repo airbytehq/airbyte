@@ -50,22 +50,45 @@ When using abctl to deploy Airbyte locally, the data is stored within the Kubern
 - If `destination_path` is set to `/local/cars/models`
 - then all data will be written to `/local/cars/models` directory inside the container
 
-## Access Replicated Data Files
+## Using with Kubernetes (abctl)
 
-Since Airbyte runs in a Kubernetes cluster managed by abctl, accessing the replicated data requires a different approach than with Docker:
+Since Airbyte runs in a Kubernetes cluster managed by abctl, you need to follow these steps to properly configure and access data:
 
-1. Configure a persistent volume to store the data outside the pod:
-   - Edit your connection configuration to set the destination path to a directory that's mounted to a persistent volume
-   - This allows data to persist even after the pod completes its execution
+1. **Create a Persistent Volume**
+   - First, create a persistent volume claim (PVC) in your Kubernetes cluster:
+     ```
+     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl apply -f - <<EOF
+     apiVersion: v1
+     kind: PersistentVolumeClaim
+     metadata:
+       name: local-json-data
+     spec:
+       accessModes:
+         - ReadWriteOnce
+       resources:
+         requests:
+           storage: 1Gi
+     EOF
+     ```
 
-2. For existing data in completed pods, you can access it by:
-   - Viewing the logs of the completed pod to see the file contents:
+2. **Configure the Destination**
+   - When setting up your Local JSON destination, set the destination path to `/local/data`
+   - In the Airbyte UI, create or edit your connection to use this destination
+
+3. **Access Data After Sync Completion**
+   - For completed pods where the data is stored in the persistent volume:
      ```
-     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl logs <pod-name> | grep -A 100 "data written to"
+     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl run file-access --image=busybox --restart=Never -it --rm --volumes=local-json-data:/data -- /bin/sh -c "ls -la /data"
      ```
-   - Or by creating a new pod that mounts the same persistent volume:
+   - To view file contents:
      ```
-     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl run file-access --image=busybox --restart=Never -it --rm -- /bin/sh -c "ls -la /path/to/mounted/volume"
+     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl run file-access --image=busybox --restart=Never -it --rm --volumes=local-json-data:/data -- /bin/sh -c "cat /data/your_stream_name/*.jsonl"
+     ```
+
+4. **Alternative: View File Paths in Logs**
+   - If you can't mount the volume, you can at least see the file paths in the logs:
+     ```
+     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl logs <pod-name> | grep "File output:"
      ```
 
 Note: The exact pod name will depend on your specific connection ID and sync attempt. Look for pods with names containing "destination" and your connection ID.
