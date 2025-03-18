@@ -296,7 +296,7 @@ check:
   stream_names:
     - "users"
 
-#
+# The smallest limit for 1 minute is 250 queries, so set the default number of workers to 4. https://developer.monday.com/api-reference/docs/rate-limits#minute-limit
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 4) }}"

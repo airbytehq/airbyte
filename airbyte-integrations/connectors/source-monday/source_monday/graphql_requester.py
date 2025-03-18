@@ -227,7 +227,6 @@ class MondayGraphqlRequester(HttpRequester):
             limit=limit or None,
             page=page,
         )
-        print(query)
         return {"query": f"query{{{query}}}"}
 
     # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.
