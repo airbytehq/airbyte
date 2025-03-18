@@ -246,8 +246,7 @@ class ShopifyBulkManager:
         _, canceled_response = self.http_client.send_request(
             http_method="POST",
             url=self.base_url,
-            data=ShopifyBulkTemplates.cancel(self._job_id),
-            headers={"Content-Type": "application/graphql"},
+            json={"query": ShopifyBulkTemplates.cancel(self._job_id)},
             request_kwargs={},
         )
         # mark the job was self-canceled
@@ -405,8 +404,7 @@ class ShopifyBulkManager:
         _, response = self.http_client.send_request(
             http_method="POST",
             url=self.base_url,
-            data=ShopifyBulkTemplates.status(self._job_id),
-            headers={"Content-Type": "application/graphql"},
+            json={"query": ShopifyBulkTemplates.status(self._job_id)},
             request_kwargs={},
         )
         self._job_healthcheck(response)
