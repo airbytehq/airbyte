@@ -102,19 +102,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - admins
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -153,19 +140,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -204,19 +178,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - teams
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -255,19 +216,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - segments
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -324,9 +272,12 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    action: RETRY
+                    action: FAIL
                     http_codes:
                       - 500
+                    #We cannot retry 500 errors, so we fail the stream. Docs: https://developers.intercom.com/docs/references/2.1/rest-api/companies/iterating-over-all-companies
+                    #We need to implement a 'RESTART' action to restart the stream from the beginning in the CDK, Tracked here:
+                    error_message: "A network timeout occurred. Please restart the sync to continue fetching companies. Stream: companies must be restarted to continue fetching companies."
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 60
@@ -342,13 +293,8 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: scroll_param
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 150
             cursor_value: "{{ response.get('scroll_param') }}"
             stop_condition: "{{ not response.get('data') }}"
       incremental_sync:
@@ -403,19 +349,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -456,19 +389,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -488,19 +408,9 @@ definitions:
             Accept: application/json
             Intercom-Version: "2.11"
           request_body_json:
-            sort: "{'field': 'updated_at', 'order': 'ascending'}"
             query: >-
-              { 'operator': 'OR', 'value': [ { 'field': 'updated_at',
-              'operator': '>', 'value': {{ stream_interval.get('start_time', {}) or
-              format_datetime(config['start_date'], '%s') }} }, { 'field':
-              'updated_at', 'operator': '=', 'value': {{
-              stream_interval.get('start_time', {}) or format_datetime(config['start_date'],
-              '%s') }} }, ], }
-            pagination: >-
-              { 'per_page': 150, 'page': {{
-              next_page_token.get('next_page_token').get('page') }},
-              'starting_after': '{{
-              next_page_token.get('next_page_token').get('starting_after') }}' }
+              { 'operator': 'OR', 'value': [ { 'field': 'updated_at', 'operator': '>', 'value': {{ stream_interval.get('start_time', {}) or format_datetime(config['start_date'], '%s') }} }, { 'field': 'updated_at', 'operator': '=', 'value': {{ stream_interval.get('start_time', {}) or format_datetime(config['start_date'], '%s') }} } ] }
+            sort: "{'field': 'updated_at', 'order': 'ascending'}"
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
@@ -510,8 +420,7 @@ definitions:
                 failure_type: config_error
                 error_message: >-
                   Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
+                  Please, validate your current Intercom plan to continue using API.
                 error_message_contains: Active subscription needed
         record_selector:
           type: RecordSelector
@@ -524,8 +433,16 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
+            cursor_value: "{{ response.get('pages', {}).get('next', {}).get('starting_after') if response.get('pages', {}).get('next') else '' }}"
+            stop_condition: "{{ not response.get('pages', {}).get('next', {}).get('starting_after') }}"
+          page_size_option:
+            type: RequestOption
+            field_path: ["pagination", "per_page"]
+            inject_into: body_json
+          page_token_option:
+            type: RequestOption
+            field_path: ["pagination", "starting_after"]
+            inject_into: body_json
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -557,19 +474,8 @@ definitions:
             Accept: application/json
             Intercom-Version: "2.11"
           request_body_json:
+            query: "{ 'operator': 'OR', 'value': [ { 'field': 'updated_at', 'operator': '>', 'value': {{ stream_interval.get('start_time', {}) or format_datetime(config['start_date'], '%s') }} }, { 'field': 'updated_at', 'operator': '=', 'value': {{ stream_interval.get('start_time', {}) or format_datetime(config['start_date'], '%s') }} } ] }"
             sort: "{'field': 'updated_at', 'order': 'ascending'}"
-            query: >-
-              { 'operator': 'OR', 'value': [ { 'field': 'updated_at',
-              'operator': '>', 'value': {{ stream_interval.get('start_time', {}) or
-              format_datetime(config['start_date'], '%s') }} }, { 'field':
-              'updated_at', 'operator': '=', 'value': {{
-              stream_interval.get('start_time', {}) or format_datetime(config['start_date'],
-              '%s') }} }, ], }
-            pagination: >-
-              { 'per_page': 150, 'page': {{
-              next_page_token.get('next_page_token').get('page') }},
-              'starting_after': '{{
-              next_page_token.get('next_page_token').get('starting_after') }}' }
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
@@ -579,8 +485,7 @@ definitions:
                 failure_type: config_error
                 error_message: >-
                   Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
+                  Please, validate your current Intercom plan to continue using API.
                 error_message_contains: Active subscription needed
         record_selector:
           type: RecordSelector
@@ -593,8 +498,16 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 150
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
+            cursor_value: "{{ response.get('pages', {}).get('next', {}).get('starting_after') if response.get('pages', {}).get('next') else '' }}"
+            stop_condition: "{{ not response.get('pages', {}).get('next', {}).get('starting_after') }}"
+          page_size_option:
+            type: RequestOption
+            field_path: ["pagination", "per_page"]
+            inject_into: body_json
+          page_token_option:
+            type: RequestOption
+            field_path: ["pagination", "starting_after"]
+            inject_into: body_json
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -751,11 +664,6 @@ definitions:
               }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{
               stream_interval['end_time'] }} } ]}
             sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
-            pagination: >-
-              {{ {"per_page": 150} if not next_page_token
-              else {"per_page": 150, "starting_after":
-              next_page_token["next_page_token"]} }}
-            test: null
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
@@ -766,8 +674,7 @@ definitions:
                 failure_type: config_error
                 error_message: >-
                   Failed to perform request. Error: Active subscription needed.
-                  Please, validate your current Intercom plan to continue using
-                  API.
+                  Please, validate your current Intercom plan to continue using API.
         record_selector:
           type: RecordSelector
           extractor:
@@ -779,12 +686,16 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 150
-            cursor_value: >-
-              {{ response.get('pages', {}).get('next', {}).get('starting_after')
-              }}
-            stop_condition: >-
-              {{ not response.get('pages', {}).get('next',
-              {}).get('starting_after') }}
+            cursor_value: "{{ response.get('pages', {}).get('next', {}).get('starting_after') if response.get('pages', {}).get('next') else '' }}"
+            stop_condition: "{{ not response.get('pages', {}).get('next', {}).get('starting_after') }}"
+          page_size_option:
+            type: RequestOption
+            field_path: ["pagination", "per_page"]
+            inject_into: body_json
+          page_token_option:
+            type: RequestOption
+            field_path: ["pagination", "starting_after"]
+            inject_into: body_json
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -793,7 +704,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
