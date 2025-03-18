@@ -231,19 +231,19 @@ data class EnrichedDestinationRecordAirbyteValue(
     val airbyteMetaFields: Map<String, EnrichedAirbyteValue> by lazy {
         mapOf(
             Meta.COLUMN_NAME_AB_RAW_ID to
-                EnrichedAirbyteValue(
+                EnrichedAirbyteValue.make(
                     StringValue(UUID.randomUUID().toString()),
                     Meta.AirbyteMetaFields.RAW_ID.type,
                     name = Meta.COLUMN_NAME_AB_EXTRACTED_AT,
                 ),
             Meta.COLUMN_NAME_AB_EXTRACTED_AT to
-                EnrichedAirbyteValue(
+                EnrichedAirbyteValue.make(
                     IntegerValue(emittedAtMs),
                     Meta.AirbyteMetaFields.EXTRACTED_AT.type,
                     name = Meta.COLUMN_NAME_AB_EXTRACTED_AT,
                 ),
             Meta.COLUMN_NAME_AB_META to
-                EnrichedAirbyteValue(
+                EnrichedAirbyteValue.make(
                     ObjectValue(
                         linkedMapOf(
                             "sync_id" to IntegerValue(stream.syncId),
@@ -261,7 +261,7 @@ data class EnrichedDestinationRecordAirbyteValue(
                     name = Meta.COLUMN_NAME_AB_META,
                 ),
             Meta.COLUMN_NAME_AB_GENERATION_ID to
-                EnrichedAirbyteValue(
+                EnrichedAirbyteValue.make(
                     IntegerValue(stream.generationId),
                     Meta.AirbyteMetaFields.GENERATION_ID.type,
                     name = Meta.COLUMN_NAME_AB_GENERATION_ID,
@@ -320,15 +320,19 @@ data class DestinationRecordRaw(
                             )
 
                     val enrichedValue =
-                        EnrichedAirbyteValue(
-                            value = NullValue,
-                            type = fieldType,
-                            name = fieldName,
-                        )
-                    AirbyteValueCoercer.coerce(fieldValue.toAirbyteValue(), fieldType)?.let {
-                        enrichedValue.value = it
-                    }
-                        ?: enrichedValue.nullify(Reason.DESTINATION_SERIALIZATION_ERROR)
+                        AirbyteValueCoercer.coerce(fieldValue.toAirbyteValue(), fieldType)?.let {
+                            EnrichedAirbyteValue.make(
+                                value = it,
+                                type = fieldType,
+                                name = fieldName,
+                            )
+                        }
+                            ?: EnrichedAirbyteValue.make(
+                                    value = NullValue,
+                                    type = fieldType,
+                                    name = fieldName,
+                                )
+                                .apply { nullify() }
 
                     declaredFields[fieldName] = enrichedValue
                 }
