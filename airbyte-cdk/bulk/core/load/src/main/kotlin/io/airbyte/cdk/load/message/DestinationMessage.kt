@@ -325,7 +325,7 @@ data class DestinationRecordRaw(
                             type = fieldType,
                             name = fieldName,
                         )
-                    AirbyteValueCoercer.coerce(fieldValue.toAirbyteValue(), schema)?.let {
+                    AirbyteValueCoercer.coerce(fieldValue.toAirbyteValue(), fieldType)?.let {
                         enrichedValue.value = it
                     }
                         ?: enrichedValue.nullify(Reason.DESTINATION_SERIALIZATION_ERROR)
