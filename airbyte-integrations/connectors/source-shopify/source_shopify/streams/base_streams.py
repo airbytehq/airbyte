@@ -33,7 +33,7 @@ class ShopifyStream(HttpStream, ABC):
     logger = logging.getLogger("airbyte")
 
     # Latest Stable Release
-    api_version = "2024-04"
+    api_version = "2025-01"
     # Page size
     limit = 250
 
