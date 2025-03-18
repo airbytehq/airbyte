@@ -258,11 +258,8 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
 fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
     f: (AirbyteValue, AirbyteType) -> AirbyteValue?
 ) {
-    if (value == null) {
-        return
-    }
     if (type !is ArrayType) {
-        f(value!!, type)?.let { value = it } ?: nullify()
+        f(value, type)?.let { value = it } ?: nullify()
         return
     }
 
@@ -307,5 +304,5 @@ fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
 
     // Mutate the top-level array and store the result back in 'value'.
     val elementType = (type as ArrayType).items.type
-    value = recurseArray(value!!, elementType, name)
+    value = recurseArray(value, elementType, name)
 }

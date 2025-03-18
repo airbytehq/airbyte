@@ -143,10 +143,10 @@ fun Map<String, EnrichedAirbyteValue>.toIcebergRecord(icebergSchema: Schema): Ge
     val airbyteValueToIcebergRecord = AirbyteValueToIcebergRecord()
     icebergSchema.asStruct().fields().forEach { field ->
         val value = this[field.name()]
-        if (value?.value != null) {
+        if (value != null) {
             record.setField(
                 field.name(),
-                airbyteValueToIcebergRecord.convert(value.value!!, field.type())
+                airbyteValueToIcebergRecord.convert(value.value, field.type())
             )
         }
     }

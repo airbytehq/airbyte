@@ -165,38 +165,15 @@ private class ObjectValueSerializer : JsonSerializer<ObjectValue>() {
  * @property name Field name
  * @property fieldCategory [AirbyteMetaFields] of the field
  */
-class EnrichedAirbyteValue {
-    /**
-     * This field is only null if [nullify] was called. Otherwise, null values are represented as
-     * [NullValue].
-     */
-    val type: AirbyteType
-    val name: String
-    val changes: MutableList<Meta.Change>
-
-    constructor(
-        // public constructor requires nonnull value
-        value: AirbyteValue,
-        type: AirbyteType,
-        name: String,
-        changes: MutableList<Meta.Change> = mutableListOf()
-    ) : this(value as AirbyteValue?, type, name, changes)
-
-    private constructor(
-        value: AirbyteValue?,
-        type: AirbyteType,
-        name: String,
-        changes: MutableList<Meta.Change> = mutableListOf()
-    ) {
-        this.type = type
-        this.name = name
-        this.changes = changes
+class EnrichedAirbyteValue(
+    var value: AirbyteValue,
+    val type: AirbyteType,
+    val name: String,
+    val changes: MutableList<Meta.Change> = mutableListOf()
+) {
+    init {
         require(name.isNotBlank()) { "Field name cannot be blank" }
-        this.value = value
     }
-
-    var value: AirbyteValue?
-        private set
 
     /**
      * Creates a nullified version of this value with the specified reason.
@@ -206,7 +183,8 @@ class EnrichedAirbyteValue {
      */
     fun nullify(reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR) {
         val nullChange = Meta.Change(field = name, change = Change.NULLED, reason = reason)
-        value = null
+
+        value = NullValue
         changes.add(nullChange)
     }
 
