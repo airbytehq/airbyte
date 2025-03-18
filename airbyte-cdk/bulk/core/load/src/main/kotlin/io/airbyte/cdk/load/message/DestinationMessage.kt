@@ -228,48 +228,49 @@ data class EnrichedDestinationRecordAirbyteValue(
     val meta: Meta?,
     val serializedSizeBytes: Long = 0L,
 ) {
-    val airbyteMetaFields: Map<String, EnrichedAirbyteValue> by lazy {
-        mapOf(
-            Meta.COLUMN_NAME_AB_RAW_ID to
-                EnrichedAirbyteValue(
-                    StringValue(UUID.randomUUID().toString()),
-                    Meta.AirbyteMetaFields.RAW_ID.type,
-                    name = Meta.COLUMN_NAME_AB_EXTRACTED_AT,
-                ),
-            Meta.COLUMN_NAME_AB_EXTRACTED_AT to
-                EnrichedAirbyteValue(
-                    IntegerValue(emittedAtMs),
-                    Meta.AirbyteMetaFields.EXTRACTED_AT.type,
-                    name = Meta.COLUMN_NAME_AB_EXTRACTED_AT,
-                ),
-            Meta.COLUMN_NAME_AB_META to
-                EnrichedAirbyteValue(
-                    ObjectValue(
-                        linkedMapOf(
-                            "sync_id" to IntegerValue(stream.syncId),
-                            "changes" to
-                                ArrayValue(
-                                    (meta?.changes?.toAirbyteValues()
-                                        ?: emptyList()) +
-                                        declaredFields
-                                            .map { it.value.changes.toAirbyteValues() }
-                                            .flatten()
-                                )
-                        )
+    val airbyteMetaFields: Map<String, EnrichedAirbyteValue>
+        get() =
+            mapOf(
+                Meta.COLUMN_NAME_AB_RAW_ID to
+                    EnrichedAirbyteValue(
+                        StringValue(UUID.randomUUID().toString()),
+                        Meta.AirbyteMetaFields.RAW_ID.type,
+                        name = Meta.COLUMN_NAME_AB_EXTRACTED_AT,
                     ),
-                    Meta.AirbyteMetaFields.META.type,
-                    name = Meta.COLUMN_NAME_AB_META,
-                ),
-            Meta.COLUMN_NAME_AB_GENERATION_ID to
-                EnrichedAirbyteValue(
-                    IntegerValue(stream.generationId),
-                    Meta.AirbyteMetaFields.GENERATION_ID.type,
-                    name = Meta.COLUMN_NAME_AB_GENERATION_ID,
-                ),
-        )
-    }
+                Meta.COLUMN_NAME_AB_EXTRACTED_AT to
+                    EnrichedAirbyteValue(
+                        IntegerValue(emittedAtMs),
+                        Meta.AirbyteMetaFields.EXTRACTED_AT.type,
+                        name = Meta.COLUMN_NAME_AB_EXTRACTED_AT,
+                    ),
+                Meta.COLUMN_NAME_AB_META to
+                    EnrichedAirbyteValue(
+                        ObjectValue(
+                            linkedMapOf(
+                                "sync_id" to IntegerValue(stream.syncId),
+                                "changes" to
+                                    ArrayValue(
+                                        (meta?.changes?.toAirbyteValues()
+                                            ?: emptyList()) +
+                                            declaredFields
+                                                .map { it.value.changes.toAirbyteValues() }
+                                                .flatten()
+                                    )
+                            )
+                        ),
+                        Meta.AirbyteMetaFields.META.type,
+                        name = Meta.COLUMN_NAME_AB_META,
+                    ),
+                Meta.COLUMN_NAME_AB_GENERATION_ID to
+                    EnrichedAirbyteValue(
+                        IntegerValue(stream.generationId),
+                        Meta.AirbyteMetaFields.GENERATION_ID.type,
+                        name = Meta.COLUMN_NAME_AB_GENERATION_ID,
+                    ),
+            )
 
-    val allTypedFields = declaredFields + airbyteMetaFields
+    val allTypedFields: Map<String, EnrichedAirbyteValue>
+        get() = declaredFields + airbyteMetaFields
 }
 
 data class DestinationRecordRaw(
