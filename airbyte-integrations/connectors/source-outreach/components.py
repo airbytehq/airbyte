@@ -35,4 +35,3 @@ class CustomExtractor(RecordExtractor):
             extracted_records.append(extracted_record)
 
         return extracted_records
-
