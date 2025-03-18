@@ -76,13 +76,38 @@ Since Airbyte runs in a Kubernetes cluster managed by abctl, you need to follow 
    - In the Airbyte UI, create or edit your connection to use this destination
 
 3. **Access Data After Sync Completion**
-   - For completed pods where the data is stored in the persistent volume:
+   - For completed pods where the data is stored in the persistent volume, create a temporary pod with the volume mounted:
      ```
-     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl run file-access --image=busybox --restart=Never -it --rm --volumes=local-json-data:/data -- /bin/sh -c "ls -la /data"
+     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl apply -f - <<EOF
+     apiVersion: v1
+     kind: Pod
+     metadata:
+       name: file-access
+     spec:
+       containers:
+       - name: file-access
+         image: busybox
+         command: ["sh", "-c", "ls -la /data && sleep 3600"]
+         volumeMounts:
+         - name: data-volume
+           mountPath: /data
+       volumes:
+       - name: data-volume
+         persistentVolumeClaim:
+           claimName: local-json-data
+     EOF
      ```
-   - To view file contents:
+   - Then access the pod to view files:
      ```
-     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl run file-access --image=busybox --restart=Never -it --rm --volumes=local-json-data:/data -- /bin/sh -c "cat /data/your_stream_name/*.jsonl"
+     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl exec -it file-access -- sh
+     ```
+   - To view file contents directly:
+     ```
+     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl exec -it file-access -- cat /data/your_stream_name/*.jsonl
+     ```
+   - When finished, delete the temporary pod:
+     ```
+     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl delete pod file-access
      ```
 
 4. **Alternative: View File Paths in Logs**
