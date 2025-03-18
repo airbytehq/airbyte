@@ -263,16 +263,16 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
  * Our Airbyte<>Iceberg schema conversion generates strongly-typed arrays.
  *
  * This function applies a function to every non-array-typed value, recursing into arrays as needed.
- * [f] may assume that the AirbyteValue is a valid value for the AirbyteType. For example, if [f] is
- * called with a [NumberType], it is safe to cast the value to [NumberValue].
+ * [transformer] may assume that the AirbyteValue is a valid value for the AirbyteType. For example,
+ * if [transformer] is called with a [NumberType], it is safe to cast the value to [NumberValue].
  */
 fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
-    f: (AirbyteValue, AirbyteType) -> ChangedValue?
+    transformer: (AirbyteValue, AirbyteType) -> ChangedValue?
 ) {
     /**
-     * Recursively iterates over an [ArrayValue], applying [f] or further recursion if a nested
-     * [ArrayType] is encountered. All null/mutation scenarios are handled here to keep the logic
-     * DRY.
+     * Recursively iterates over an [ArrayValue], applying [transformer] or further recursion if a
+     * nested [ArrayType] is encountered. All null/mutation scenarios are handled here to keep the
+     * logic DRY.
      */
     fun recurseArray(
         currentValue: AirbyteValue,
@@ -301,7 +301,7 @@ fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
         } else {
             // If we're at a leaf node, call the user function.
             // If the function returns null, then generate the appropriate change entry.
-            f(currentValue, currentType)?.let { (newValue, changeDescription) ->
+            transformer(currentValue, currentType)?.let { (newValue, changeDescription) ->
                 changeDescription?.let { (change, reason) ->
                     changes.add(Meta.Change(path, change, reason))
                 }
