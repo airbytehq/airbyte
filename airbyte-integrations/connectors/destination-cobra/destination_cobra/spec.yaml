@@ -15,22 +15,22 @@ connectionSpecification:
     - is_sandbox
   additionalProperties: true
   properties:
-    auth_type:
-      type: string
-      const: Client
     client_id:
       title: Client ID
       description: Enter your Salesforce developer application's <a
         href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client ID</a>
       type: string
-      order: 2
+      order: 1
+    auth_type:
+      type: string
+      const: Client
     client_secret:
       title: Client Secret
       description: Enter your Salesforce developer application's <a
         href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client secret</a>
       type: string
       airbyte_secret: true
-      order: 3
+      order: 2
     refresh_token:
       title: Refresh Token
       description: >-
@@ -38,7 +38,7 @@ connectionSpecification:
         href="https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account.
       type: string
       airbyte_secret: true
-      order: 4
+      order: 3
     stream_mappings:
       title: Stream Mapping to Salesforce
       type: array
@@ -73,7 +73,7 @@ connectionSpecification:
             description: "Given the operation is an upsert, a field representing an external ID needs to be provided"
             type: string
       default: []
-      order: 5
+      order: 4
     stream_order:
       title: Stream Sync Order
       description: >-
@@ -82,13 +82,13 @@ connectionSpecification:
       items:
         type: string
       default: []
-      order: 6
+      order: 5
     print_record_content_on_error:
       title: Include Record Contents in Error Logs
       description: If enabled, the records content will be printed as part of the log in case of failure which allows for easier debugging.
       type: boolean
       default: false
-      order: 7
+      order: 6
     is_sandbox:
       title: Sync to Salesforce Sandbox
       description: >-
@@ -96,7 +96,7 @@ connectionSpecification:
         href="https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5">Salesforce Sandbox</a>
       type: boolean
       default: false
-      order: 1
+      order: 7
 advanced_auth:
   auth_flow_type: oauth2.0
   predicate_key:
