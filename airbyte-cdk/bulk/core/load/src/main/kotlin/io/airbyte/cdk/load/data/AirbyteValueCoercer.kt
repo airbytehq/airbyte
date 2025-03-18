@@ -25,8 +25,12 @@ import java.time.format.DateTimeFormatter
  * common-sense conversions among numeric types, as well as upcasting any value to StringValue.
  */
 object AirbyteValueCoercer {
-    fun coerce(value: AirbyteValue, type: AirbyteType): AirbyteValue? =
-        when (type) {
+    fun coerce(value: AirbyteValue, type: AirbyteType): AirbyteValue? {
+        // Don't modify nulls.
+        if (value == NullValue) {
+            return NullValue
+        }
+        return when (type) {
             BooleanType -> coerceBoolean(value)
             DateType -> coerceDate(value)
             IntegerType -> coerceInt(value)
@@ -48,6 +52,7 @@ object AirbyteValueCoercer {
             // leave it unchanged.
             is UnknownType -> value
         }
+    }
 
     fun coerceBoolean(value: AirbyteValue): BooleanValue? = requireType<BooleanValue>(value)
 
