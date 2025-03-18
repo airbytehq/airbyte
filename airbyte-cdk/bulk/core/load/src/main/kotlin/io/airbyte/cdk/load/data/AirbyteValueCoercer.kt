@@ -30,27 +30,31 @@ object AirbyteValueCoercer {
         if (value == NullValue) {
             return NullValue
         }
-        return when (type) {
-            BooleanType -> coerceBoolean(value)
-            DateType -> coerceDate(value)
-            IntegerType -> coerceInt(value)
-            NumberType -> coerceNumber(value)
-            StringType -> coerceString(value)
-            TimeTypeWithTimezone -> coerceTimeTz(value)
-            TimeTypeWithoutTimezone -> coerceTimeNtz(value)
-            TimestampTypeWithTimezone -> coerceTimestampTz(value)
-            TimestampTypeWithoutTimezone -> coerceTimestampNtz(value)
-            is ArrayType,
-            ArrayTypeWithoutSchema -> coerceArray(value)
-            is ObjectType,
-            ObjectTypeWithEmptySchema,
-            ObjectTypeWithoutSchema -> coerceObject(value)
+        return try {
+            when (type) {
+                BooleanType -> coerceBoolean(value)
+                DateType -> coerceDate(value)
+                IntegerType -> coerceInt(value)
+                NumberType -> coerceNumber(value)
+                StringType -> coerceString(value)
+                TimeTypeWithTimezone -> coerceTimeTz(value)
+                TimeTypeWithoutTimezone -> coerceTimeNtz(value)
+                TimestampTypeWithTimezone -> coerceTimestampTz(value)
+                TimestampTypeWithoutTimezone -> coerceTimestampNtz(value)
+                is ArrayType,
+                ArrayTypeWithoutSchema -> coerceArray(value)
+                is ObjectType,
+                ObjectTypeWithEmptySchema,
+                ObjectTypeWithoutSchema -> coerceObject(value)
 
-            // Don't touch unions, just pass it through
-            is UnionType -> value
-            // Similarly, if we don't know what type it's supposed to be,
-            // leave it unchanged.
-            is UnknownType -> value
+                // Don't touch unions, just pass it through
+                is UnionType -> value
+                // Similarly, if we don't know what type it's supposed to be,
+                // leave it unchanged.
+                is UnknownType -> value
+            }
+        } catch (e: Exception) {
+            null
         }
     }
 
