@@ -34,5 +34,5 @@ data:
     sl: 100
     ql: 100
     isEnterprise: true
-  supportLevel: community
+  supportLevel: certified
 metadataSpecVersion: "1.0"
