@@ -2652,7 +2652,15 @@ class ProductVariant(ShopifyBulkQuery):
             Field(name="src", alias="image_src"),
             Field(name="url", alias="image_url"),
         ]
-
+        measurement_fields = [
+            Field(name="weight", fields=["value", "unit"]),
+        ]
+        inventory_item_fields = [
+            Field(name="id", alias="inventory_item_id"),
+            Field(name="tracked", alias="tracked"),
+            Field(name="requiresShipping", alias="requiresShipping"),
+            Field(name="measurement", alias="measurement", fields=measurement_fields),
+        ]
         query_nodes: List[Field] = [
             "__typename",
             "id",
@@ -2662,25 +2670,19 @@ class ProductVariant(ShopifyBulkQuery):
             "position",
             "inventoryPolicy",
             "compareAtPrice",
-            "inventoryManagement",
             "createdAt",
             "updatedAt",
             "taxable",
             "barcode",
-            "weight",
-            "weightUnit",
             "inventoryQuantity",
-            "requiresShipping",
             "availableForSale",
             "displayName",
             "taxCode",
             Field(name="selectedOptions", alias="options", fields=option_fields),
-            Field(name="weight", alias="grams"),
             Field(name="image", fields=image_fields),
             Field(name="inventoryQuantity", alias="old_inventory_quantity"),
             Field(name="product", fields=[Field(name="id", alias="product_id")]),
-            Field(name="fulfillmentService", fields=[Field(name="handle", alias="fulfillment_service")]),
-            Field(name="inventoryItem", fields=[Field(name="id", alias="inventory_item_id")]),
+            Field(name="inventoryItem", fields=inventory_item_fields),
         ] + presentment_prices
 
         return query_nodes
@@ -2741,6 +2743,12 @@ class ProductVariant(ShopifyBulkQuery):
         # unnest mandatory fields from their placeholders
         record["product_id"] = self._unnest_and_resolve_id(record, "product", "product_id")
         record["inventory_item_id"] = self._unnest_and_resolve_id(record, "inventoryItem", "inventory_item_id")
+        inventory_item = record.get("inventoryItem")
+        measurement_weight = record.get("inventoryItem", {}).get("measurement", {}).get("weight")
+        record["weight"] = measurement_weight.get("value") if measurement_weight.get("value") else 0.0
+        record["weight_unit"] = measurement_weight.get("unit") if measurement_weight else None
+        record["tracked"] = inventory_item.get("tracked") if inventory_item else None
+        record["requires_shipping"] = inventory_item.get("requiresShipping") if inventory_item else None
         record["image_id"] = self._unnest_and_resolve_id(record, "image", "image_id")
         image = record.get("image", {})
         record["image_src"] = image.get("image_src") if image else None
@@ -2751,7 +2759,7 @@ class ProductVariant(ShopifyBulkQuery):
         price = record.get("price")
         record["price"] = float(price) if price else None
         # cast the `grams` to integer
-        record["grams"] = int(record.get("grams", 0))
+        record["grams"] = int(record.get("weight", 0))
         # convert date-time cursors
         record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
         record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
