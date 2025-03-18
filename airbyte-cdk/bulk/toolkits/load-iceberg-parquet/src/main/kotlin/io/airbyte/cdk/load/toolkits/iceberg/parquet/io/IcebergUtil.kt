@@ -262,7 +262,7 @@ fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
         return
     }
     if (type !is ArrayType) {
-        f(value!!, type)?.let { setValue(it) } ?: nullify()
+        f(value!!, type)?.let { value = it } ?: nullify()
         return
     }
 
@@ -307,5 +307,5 @@ fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
 
     // Mutate the top-level array and store the result back in 'value'.
     val elementType = (type as ArrayType).items.type
-    setValue(recurseArray(value!!, elementType, name))
+    value = recurseArray(value!!, elementType, name)
 }

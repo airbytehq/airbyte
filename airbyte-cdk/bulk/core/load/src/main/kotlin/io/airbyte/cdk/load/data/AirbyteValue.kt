@@ -159,44 +159,44 @@ private class ObjectValueSerializer : JsonSerializer<ObjectValue>() {
 /**
  * Represents an "enriched" (/augmented) Airbyte value with additional metadata.
  *
- * Use [make] to create new instances. The constructor is private to enforce how nulls are handled
- * in the [value] field.
- *
  * @property value The actual [AirbyteValue]
  * @property type The type ([AirbyteType]) of the [AirbyteValue]
  * @property changes List of [Meta.Change]s that have been applied to this value
  * @property name Field name
  * @property fieldCategory [AirbyteMetaFields] of the field
  */
-class EnrichedAirbyteValue
-private constructor(
-    value: AirbyteValue?,
-    val type: AirbyteType,
-    val name: String,
-    val changes: MutableList<Meta.Change> = mutableListOf()
-) {
+class EnrichedAirbyteValue {
     /**
      * This field is only null if [nullify] was called. Otherwise, null values are represented as
      * [NullValue].
      */
-    var value: AirbyteValue? = value
-        private set
+    val type: AirbyteType
+    val name: String
+    val changes: MutableList<Meta.Change>
 
-    init {
+    constructor(
+        // public constructor requires nonnull value
+        value: AirbyteValue,
+        type: AirbyteType,
+        name: String,
+        changes: MutableList<Meta.Change> = mutableListOf()
+    ) : this(value as AirbyteValue?, type, name, changes)
+
+    private constructor(
+        value: AirbyteValue?,
+        type: AirbyteType,
+        name: String,
+        changes: MutableList<Meta.Change> = mutableListOf()
+    ) {
+        this.type = type
+        this.name = name
+        this.changes = changes
         require(name.isNotBlank()) { "Field name cannot be blank" }
-    }
-
-    /**
-     * Public setter requires nonnull AirbyteValue. If you want to set the value to null, use
-     * [nullify].
-     *
-     * This function is primarily useful for supporting destinations which require recursive
-     * type-coercion (i.e. if you need to modify a value in a way that doesn't "lose data"). In most
-     * cases, connectors should only need to use [nullify] / [truncate]
-     */
-    fun setValue(value: AirbyteValue) {
         this.value = value
     }
+
+    var value: AirbyteValue?
+        private set
 
     /**
      * Creates a nullified version of this value with the specified reason.
@@ -226,15 +226,5 @@ private constructor(
         // Return a copy with null value and the new change added to the changes list
         value = newValue
         changes.add(truncateChange)
-    }
-
-    companion object {
-        fun make(
-            // require nonnull value here
-            value: AirbyteValue,
-            type: AirbyteType,
-            name: String,
-            changes: MutableList<Meta.Change> = mutableListOf()
-        ) = EnrichedAirbyteValue(value, type, name, changes)
     }
 }
