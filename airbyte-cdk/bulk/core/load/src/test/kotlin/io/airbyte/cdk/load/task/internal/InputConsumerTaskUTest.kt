@@ -83,6 +83,7 @@ class InputConsumerTaskUTest {
     @Test
     fun `input consumer does not use the new path when there is no load pipeline`() = runTest {
         val inputConsumerTask = createTask(null)
+        val destinationStream = catalog.getStream(stream)
 
         coEvery { inputFlow.collect(any()) } coAnswers
             {
@@ -94,7 +95,7 @@ class InputConsumerTaskUTest {
                             null,
                             0,
                             DestinationRecord(
-                                stream = stream,
+                                stream = destinationStream,
                                 message = mockk(relaxed = true),
                                 serialized = "",
                                 schema = ObjectTypeWithoutSchema
@@ -112,6 +113,7 @@ class InputConsumerTaskUTest {
     @Test
     fun `input consumer uses the new path when there is a load pipeline`(): Unit = runTest {
         val inputConsumerTask = createTask(mockk(relaxed = true))
+        val destinationStream = catalog.getStream(stream)
 
         coEvery { inputFlow.collect(any()) } coAnswers
             {
@@ -123,7 +125,7 @@ class InputConsumerTaskUTest {
                             null,
                             0,
                             DestinationRecord(
-                                stream = stream,
+                                stream = destinationStream,
                                 message = mockk(relaxed = true),
                                 serialized = "",
                                 schema = ObjectTypeWithoutSchema
