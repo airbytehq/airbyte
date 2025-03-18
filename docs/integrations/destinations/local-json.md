@@ -103,7 +103,11 @@ Since Airbyte runs in a Kubernetes cluster managed by abctl, you need to follow 
      ```
    - To view file contents directly:
      ```
-     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl exec -it file-access -- cat /data/your_stream_name/*.jsonl
+     # First, list all directories to find your stream names
+     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl exec -it file-access -- ls -la /data
+     
+     # Then view specific files (replace stream_name with actual stream name from above)
+     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl exec -it file-access -- cat /data/stream_name/*.jsonl
      ```
    - When finished, delete the temporary pod:
      ```
