@@ -86,8 +86,8 @@ public abstract class AbstractFormat implements KafkaFormat {
         if (saslMechanism.equals(OAuthBearerLoginModule.OAUTHBEARER_MECHANISM)) {
           builder.put(SaslConfigs.SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL, protocolConfig.get("oauthbearer_token_endpoint_url").asText());
           builder.put(SaslConfigs.SASL_LOGIN_CALLBACK_HANDLER_CLASS, OAuthBearerLoginCallbackHandler.class.getName());
-        } else if(saslMechanism.equals("AWS_MSK_IAM")) {
-          //IAMClientCallbackHandler
+        } else if (saslMechanism.equals("AWS_MSK_IAM")) {
+          // IAMClientCallbackHandler
           builder.put(SaslConfigs.SASL_CLIENT_CALLBACK_HANDLER_CLASS, IAMClientCallbackHandler.class.getName());
         }
       }

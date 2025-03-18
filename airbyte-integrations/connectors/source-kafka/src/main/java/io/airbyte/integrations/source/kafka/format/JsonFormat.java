@@ -5,10 +5,10 @@
 package io.airbyte.integrations.source.kafka.format;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.protocol.models.Field;
@@ -155,7 +155,7 @@ public class JsonFormat extends AbstractFormat {
                   .withEmittedAt(Instant.now().toEpochMilli())
                   .withData(record.value())
                   .withData(Jsons.jsonNode(ImmutableMap.builder().put("value", record.value()).build())));
-             
+
         }
 
         return endOfData();
