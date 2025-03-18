@@ -44,9 +44,7 @@ import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.math.BigInteger
-import java.time.Instant
 import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import java.util.UUID
 
 /**
@@ -240,9 +238,7 @@ data class EnrichedDestinationRecordAirbyteValue(
                 ),
             Meta.COLUMN_NAME_AB_EXTRACTED_AT to
                 EnrichedAirbyteValue(
-                    TimestampWithTimezoneValue(
-                        OffsetDateTime.ofInstant(Instant.ofEpochMilli(emittedAtMs), ZoneOffset.UTC),
-                    ),
+                    IntegerValue(emittedAtMs),
                     Meta.AirbyteMetaFields.EXTRACTED_AT.type,
                     name = Meta.COLUMN_NAME_AB_EXTRACTED_AT,
                 ),
