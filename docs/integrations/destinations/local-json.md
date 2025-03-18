@@ -50,14 +50,14 @@ When using abctl to deploy Airbyte locally, the data is stored within the Kubern
 - If `destination_path` is set to `/local/cars/models`
 - then all data will be written to `/local/cars/models` directory inside the container
 
-## Using with Kubernetes (abctl)
+## Using with Kubernetes
 
-Since Airbyte runs in a Kubernetes cluster managed by abctl, you need to follow these steps to properly configure and access data:
+When using Airbyte in a Kubernetes environment, you need to follow these steps to properly configure and access data:
 
 1. **Create a Persistent Volume**
    - First, create a persistent volume claim (PVC) in your Kubernetes cluster:
      ```
-     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl apply -f - <<EOF
+     kubectl apply -f - <<EOF
      apiVersion: v1
      kind: PersistentVolumeClaim
      metadata:
@@ -70,25 +70,34 @@ Since Airbyte runs in a Kubernetes cluster managed by abctl, you need to follow 
            storage: 1Gi
      EOF
      ```
+   - Note: Adjust the namespace and other parameters according to your Kubernetes setup
 
 2. **Configure the Destination with Volume Mount**
    - When setting up your Local JSON destination, set the destination path to `/local/data`
    - In the Airbyte UI, create or edit your connection to use this destination
-   - **Important**: You must configure the destination pods to mount the PVC during sync:
-     ```
-     # First, find the destination pods for your connection
-     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl get pods | grep destination
+   - **Important**: You must configure the destination pods to mount the PVC during sync
+   - For Airbyte deployments, you need to modify the destination connector deployment to include the volume mount:
+     ```yaml
+     # Example configuration for mounting a volume to destination pods
+     volumes:
+     - name: data-volume
+       persistentVolumeClaim:
+         claimName: local-json-data
      
-     # Then, create a custom resource to mount the volume for future destination pods
-     # Note: The exact implementation will depend on your Airbyte deployment configuration
-     # Consult the Airbyte documentation for your specific deployment method
+     containers:
+     - name: destination-container
+       # ... other container configuration ...
+       volumeMounts:
+       - name: data-volume
+         mountPath: /local
      ```
+   - Apply this configuration to your destination pods before running a sync
    - This step is critical - without mounting the volume to the destination pod during sync, data will not persist
 
 3. **Access Data After Sync Completion**
    - For completed pods where the data is stored in the persistent volume, create a temporary pod with the volume mounted:
      ```
-     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl apply -f - <<EOF
+     kubectl apply -f - <<EOF
      apiVersion: v1
      kind: Pod
      metadata:
@@ -109,25 +118,25 @@ Since Airbyte runs in a Kubernetes cluster managed by abctl, you need to follow 
      ```
    - Then access the pod to view files:
      ```
-     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl exec -it file-access -- sh
+     kubectl exec -it file-access -- sh
      ```
    - To view file contents directly:
      ```
      # First, list all directories to find your stream names
-     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl exec -it file-access -- ls -la /data
+     kubectl exec -it file-access -- ls -la /data
      
      # Then view specific files (replace stream_name with actual stream name from above)
-     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl exec -it file-access -- cat /data/stream_name/*.jsonl
+     kubectl exec -it file-access -- cat /data/stream_name/*.jsonl
      ```
    - When finished, delete the temporary pod:
      ```
-     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl delete pod file-access
+     kubectl delete pod file-access
      ```
 
 4. **Alternative: View File Paths in Logs**
    - If you can't mount the volume, you can at least see the file paths in the logs:
      ```
-     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl logs <pod-name> | grep "File output:"
+     kubectl logs <pod-name> | grep "File output:"
      ```
 
 Note: The exact pod name will depend on your specific connection ID and sync attempt. Look for pods with names containing "destination" and your connection ID.
