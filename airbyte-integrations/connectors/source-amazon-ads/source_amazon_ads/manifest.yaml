@@ -1,4 +1,4 @@
-version: 6.5.0
+version: 6.41.3
 
 type: DeclarativeSource
 
@@ -2192,7 +2192,7 @@ definitions:
         $ref: "#/definitions/report_creation_error_handler"
     polling_requester:
       type: HttpRequester
-      path: /reporting/reports/{{ creation_response['id'] }}
+      path: /reporting/reports/{{ creation_response['reportId'] }}
       url_base: >-
         {%- set URL_MAPPING = {
             "NA": "https://advertising-api.amazon.com/",
@@ -2203,7 +2203,7 @@ definitions:
       authenticator: "#/definitions/oauth_authenticator"
       http_method: GET
       request_headers:
-        Amazon-Advertising-API-Scope: "{{ stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
+        Amazon-Advertising-API-Scope: "{{ creation_response['headers']['Amazon-Advertising-API-Scope'] }}"
         Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
       error_handler:
         $ref: "#/definitions/report_polling_error_handler"
