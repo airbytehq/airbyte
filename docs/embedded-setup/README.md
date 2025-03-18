@@ -2,6 +2,11 @@
 products: embedded
 ---
 
+<head>
+  <!-- HIDE PAGE FROM SEARCH ENGINES FOR NOW -->
+  <meta name="robots" content="noindex, nofollow" />
+</head>
+
 # Airbyte Embedded Operator Guide
 
 Last Updated: March 18th, 2025
