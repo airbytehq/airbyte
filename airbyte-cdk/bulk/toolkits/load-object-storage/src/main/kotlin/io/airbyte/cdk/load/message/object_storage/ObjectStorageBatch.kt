@@ -33,6 +33,7 @@ data class IncompletePartialUpload(val key: String) : ObjectStorageBatch {
 data class LoadedObject<T : RemoteObject<*>>(
     val remoteObject: T,
     val fileNumber: Long,
+    val isEmpty: Boolean
 ) : ObjectStorageBatch {
     override val state: Batch.State = Batch.State.COMPLETE
     override val groupId = remoteObject.key

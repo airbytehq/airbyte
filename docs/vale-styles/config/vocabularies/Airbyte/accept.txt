@@ -6,14 +6,15 @@ Airbyte
 Airbyte's
 Self-Managed Community
 Self-Managed Enterprise
-[Cc]loud
+Cloud
 Cloud Teams
 Cloud Enterprise
 abctl
 PyAirbyte
+[Nn]amespace
 
 #
-# Common Terms and Trade Names
+# Common Terms we use
 #
 
 repo
@@ -23,3 +24,26 @@ Kubernetes
 Helm
 kind
 Vale
+OpenTelemetry
+Datadog
+[Dd]eduplication
+
+# Common acronyms and initialisms that don't need definitions
+
+AWS
+GCP
+REST
+IAM
+
+# Airbyte connectors
+
+Nessie
+S3 Data Lake
+
+# Companies and products
+
+Glue
+
+# Acceptable non-words that should not trigger spellcheck
+
+[Nn]ulled
