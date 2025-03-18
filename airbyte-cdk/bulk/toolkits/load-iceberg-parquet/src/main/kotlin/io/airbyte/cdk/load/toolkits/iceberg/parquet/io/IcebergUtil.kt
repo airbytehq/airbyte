@@ -270,47 +270,43 @@ fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
     transformer: (AirbyteValue, AirbyteType) -> ChangedValue?
 ) {
     /**
-     * Recursively iterates over an [ArrayValue], applying [transformer] or further recursion if a
-     * nested [ArrayType] is encountered. All null/mutation scenarios are handled here to keep the
-     * logic DRY.
+     * Recurse through ArrayValues, until we find a non-ArrayType field, coercing to ArrayValue as
+     * needed, then apply [transformer]. If [transformer] returns a [ChangedValue], modify the
+     * original ArrayValue's element (and populate [EnrichedAirbyteValue.changes] if needed).
      */
     fun recurseArray(
         currentValue: AirbyteValue,
         currentType: AirbyteType,
         path: String,
-    ): AirbyteValue =
+    ): AirbyteValue {
         if (currentValue == NullValue) {
-            NullValue
+            return NullValue
         } else if (currentType is ArrayType) {
             // If the type is another array, we recurse deeper.
-            AirbyteValueCoercer.coerceArray(currentValue)?.let { elementCoercedToArray ->
-                val mutatedElements =
-                    elementCoercedToArray.values.mapIndexed { index, element ->
-                        // TODO verify this behavior
-                        val newPath = "$path.$index"
-                        recurseArray(element, currentType.items.type, newPath)
-                    }
-                ArrayValue(mutatedElements)
+            val coercedArray = AirbyteValueCoercer.coerceArray(currentValue)
+            if (coercedArray == null) {
+                changes.add(
+                    Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR),
+                )
+                return NullValue
             }
-                ?: run {
-                    changes.add(
-                        Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR)
-                    )
-                    NullValue
+            return ArrayValue(
+                coercedArray.values.mapIndexed { index, element ->
+                    val newPath = "$path.$index"
+                    recurseArray(element, currentType.items.type, newPath)
                 }
+            )
         } else {
-            // If we're at a leaf node, call the user function.
-            // If the function returns null, then generate the appropriate change entry.
-            transformer(currentValue, currentType)?.let { (newValue, changeDescription) ->
-                changeDescription?.let { (change, reason) ->
-                    changes.add(Meta.Change(path, change, reason))
-                }
-                newValue
+            // If we're at a leaf node, call the transformer.
+            val transformedValue = transformer(currentValue, currentType) ?: return currentValue
+            val (newValue, changeDescription) = transformedValue
+            changeDescription?.let { (change, reason) ->
+                changes.add(Meta.Change(path, change, reason))
             }
-                ?: currentValue
+            return newValue
         }
+    }
 
-    // Mutate the top-level array and store the result back in 'value'.
     value = recurseArray(value, type, name)
 }
 
