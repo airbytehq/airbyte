@@ -95,6 +95,8 @@ The Railz connector should gracefully handle Railz API limitations under normal 
 
 | Version | Date       | Pull Request                                             | Subject           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------- |
+| 0.2.2 | 2025-03-08 | [53971](https://github.com/airbytehq/airbyte/pull/53971) | Update dependencies |
+| 0.2.1 | 2025-02-24 | [54164](https://github.com/airbytehq/airbyte/pull/54164) | Remove stream_state interpolation from record filter |
 | 0.2.0 | 2025-02-05 | [47244](https://github.com/airbytehq/airbyte/pull/47244) | Migrate to manifest only format |
 | 0.1.26 | 2025-02-01 | [52978](https://github.com/airbytehq/airbyte/pull/52978) | Update dependencies |
 | 0.1.25 | 2025-01-25 | [52519](https://github.com/airbytehq/airbyte/pull/52519) | Update dependencies |

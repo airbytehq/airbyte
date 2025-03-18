@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "3.3.33"
+version = "3.4.0"
 name = "source-facebook-marketing"
 description = "Source implementation for Facebook Marketing."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -27,7 +27,7 @@ source-facebook-marketing = "source_facebook_marketing.run:run"
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.6"
 freezegun = "^1.4.0"
-pytest = "^7"
+pytest = "^8.0.0"
 requests-mock = "^1.9.3"
 
 

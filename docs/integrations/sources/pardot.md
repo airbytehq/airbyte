@@ -93,6 +93,8 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
+| 1.0.5 | 2025-03-08 | [55566](https://github.com/airbytehq/airbyte/pull/55566) | Update dependencies |
+| 1.0.4 | 2025-03-01 | [55009](https://github.com/airbytehq/airbyte/pull/55009) | Update dependencies |
 | 1.0.3 | 2025-02-23 | [54624](https://github.com/airbytehq/airbyte/pull/54624) | Update dependencies |
 | 1.0.2 | 2025-02-15 | [47530](https://github.com/airbytehq/airbyte/pull/47530) | Update dependencies |
 | 1.0.1 | 2025-01-10 | [51040](https://github.com/airbytehq/airbyte/pull/51040) | Fix schemas, adjust error handling, remove split-up interval |

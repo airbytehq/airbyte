@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "5.8.7"
+version = "5.8.12"
 name = "source-stripe"
 description = "Source implementation for Stripe."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -27,7 +27,7 @@ source-stripe = "source_stripe.run:run"
 requests-mock = "^1.11.0"
 freezegun = "==1.2.2"
 pytest-mock = "^3.6.1"
-pytest = "^7"
+pytest = "^8.0.0"
 
 
 [tool.poe]

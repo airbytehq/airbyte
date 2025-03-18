@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.4.31"
+version = "0.4.33"
 name = "source-convex"
 description = "Source implementation for Convex."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -26,7 +26,7 @@ source-convex = "source_convex.run:run"
 responses = "^0.13.3"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
-pytest = "^6.1"
+pytest = "^8.0.0"
 
 
 [tool.poe]

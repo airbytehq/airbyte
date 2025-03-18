@@ -320,6 +320,9 @@ By default, this stream is enabled and retrieves information about **users and g
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.3.0 | 2025-03-11 | [55689](https://github.com/airbytehq/airbyte/pull/55689) | Refactor to use new Stream Permissions Reader |
+| 0.2.4 | 2025-03-08 | [55349](https://github.com/airbytehq/airbyte/pull/55349) | Update dependencies |
+| 0.2.3 | 2025-03-01 | [54955](https://github.com/airbytehq/airbyte/pull/54955) | Update dependencies |
 | 0.2.2 | 2025-02-22 | [54416](https://github.com/airbytehq/airbyte/pull/54416) | Update dependencies |
 | 0.2.1 | 2025-02-15 | [53774](https://github.com/airbytehq/airbyte/pull/53774) | Update dependencies |
 | 0.2.0 | 2025-02-14 | [52099](https://github.com/airbytehq/airbyte/pull/52099) | Introduce ACLs and Permissions streams |

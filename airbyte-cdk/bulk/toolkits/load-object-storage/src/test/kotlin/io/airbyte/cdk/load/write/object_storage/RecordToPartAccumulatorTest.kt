@@ -91,7 +91,6 @@ class RecordToPartAccumulatorTest {
             }
 
         coEvery { pathFactory.getPathToFile(any(), any()) } answers { "path.${secondArg<Long>()}" }
-        coEvery { pathFactory.supportsStaging } returns false
 
         // Object 1
 

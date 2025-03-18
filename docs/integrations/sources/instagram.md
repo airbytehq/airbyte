@@ -146,6 +146,10 @@ for more information.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| 3.2.2 | 2025-03-10 | [55685](https://github.com/airbytehq/airbyte/pull/55685) | Disable cache for InstagramMediaChildrenTransformation |
+| 3.2.1 | 2025-03-08 | [55463](https://github.com/airbytehq/airbyte/pull/55463) | Update dependencies |
+| 3.2.0 | 2025-02-28 | [54364](https://github.com/airbytehq/airbyte/pull/54364) | Update to CDK v6 |
+| 3.1.9 | 2025-03-01 | [54789](https://github.com/airbytehq/airbyte/pull/54789) | Update dependencies |
 | 3.1.8 | 2025-02-22 | [54364](https://github.com/airbytehq/airbyte/pull/54364) | Update dependencies |
 | 3.1.7 | 2025-02-15 | [53846](https://github.com/airbytehq/airbyte/pull/53846) | Update dependencies |
 | 3.1.6 | 2025-02-08 | [53291](https://github.com/airbytehq/airbyte/pull/53291) | Update dependencies |

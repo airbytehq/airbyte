@@ -80,6 +80,9 @@ Link to HiBob API documentation [here](https://apidocs.hibob.com/docs/).
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.16 | 2025-03-10 | [55674](https://github.com/airbytehq/airbyte/pull/55674) | Change check stream from payrolls to profiles |
+| 0.2.15 | 2025-03-08 | [55484](https://github.com/airbytehq/airbyte/pull/55484) | Update dependencies |
+| 0.2.14 | 2025-03-01 | [54742](https://github.com/airbytehq/airbyte/pull/54742) | Update dependencies |
 | 0.2.13 | 2025-02-22 | [54314](https://github.com/airbytehq/airbyte/pull/54314) | Update dependencies |
 | 0.2.12 | 2025-02-15 | [53809](https://github.com/airbytehq/airbyte/pull/53809) | Update dependencies |
 | 0.2.11 | 2025-02-08 | [53265](https://github.com/airbytehq/airbyte/pull/53265) | Update dependencies |

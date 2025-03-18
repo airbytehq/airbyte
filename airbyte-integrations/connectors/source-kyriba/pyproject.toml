@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.34"
+version = "0.1.36"
 name = "source-kyriba"
 description = "Source implementation for Kyriba."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -23,7 +23,7 @@ airbyte-cdk = "0.80.0"
 source-kyriba = "source_kyriba.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.1"
+pytest = "^8.0.0"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
 
