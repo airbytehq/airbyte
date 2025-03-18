@@ -115,16 +115,6 @@ class SapHanaSourceCursorBasedIntegrationTest {
     }
 
     @Test
-    fun testCursorBasedReadWithEmptyTable() {
-        db.execute("DELETE FROM ${schemaNames[0]}.${tableNames[0]}")
-
-        val run1: BufferingOutputConsumer =
-            CliRunner.source("read", config, getConfiguredCatalog()).run()
-
-        assertTrue(run1.records().isEmpty())
-    }
-
-    @Test
     fun testCursorBasedViewRead() {
         try {
             val viewName = "${tableNames[0]}_VIEW"

@@ -15,4 +15,7 @@ application {
 dependencies {
     implementation 'com.sap.cloud.db.jdbc:ngdbc:2.22.12'
     implementation project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-extract-jdbc')
+    testImplementation project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-extract-jdbc')
+    testImplementation testFixtures(project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-extract-jdbc'))
+    testImplementation testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract'))
 }
