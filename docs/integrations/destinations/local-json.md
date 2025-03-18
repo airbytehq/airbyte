@@ -74,9 +74,14 @@ Since Airbyte runs in a Kubernetes cluster managed by abctl, you need to follow 
 2. **Configure the Destination with Volume Mount**
    - When setting up your Local JSON destination, set the destination path to `/local/data`
    - In the Airbyte UI, create or edit your connection to use this destination
-   - **Important**: You must configure the destination pod to mount the PVC during sync:
+   - **Important**: You must configure the destination pods to mount the PVC during sync:
      ```
-     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl patch deployment airbyte-abctl-destination -p '{"spec":{"template":{"spec":{"volumes":[{"name":"data-volume","persistentVolumeClaim":{"claimName":"local-json-data"}}],"containers":[{"name":"airbyte-abctl-destination","volumeMounts":[{"name":"data-volume","mountPath":"/local"}]}]}}}}'
+     # First, find the destination pods for your connection
+     kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl get pods | grep destination
+     
+     # Then, create a custom resource to mount the volume for future destination pods
+     # Note: The exact implementation will depend on your Airbyte deployment configuration
+     # Consult the Airbyte documentation for your specific deployment method
      ```
    - This step is critical - without mounting the volume to the destination pod during sync, data will not persist
 
