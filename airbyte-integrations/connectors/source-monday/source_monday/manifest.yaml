@@ -146,7 +146,7 @@ definitions:
     parent_stream_configs:
       - type: ParentStreamConfig
         stream: "#/definitions/activity_logs_stream"
-        parent_key: "board_id"  # For boards_stream
+        parent_key: "board_id" # For boards_stream
         partition_field: "ids"
 
   incremental_extractor:

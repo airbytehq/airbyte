@@ -2,11 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import requests
 from typing import Any, List, Mapping, Optional, Tuple
 
-from airbyte_cdk.sources.types import Record
+import requests
+
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
+from airbyte_cdk.sources.types import Record
 
 
 #
@@ -34,11 +35,9 @@ class ItemPaginationStrategy(PageIncrement):
         self._page: Optional[int] = self.start_from_page
         self._sub_page: Optional[int] = self.start_from_page
 
-    def next_page_token(self,
-        response: requests.Response,
-        last_page_size: int,
-        last_record: Optional[Record],
-        last_page_token_value: Optional[Any]) -> Optional[Tuple[Optional[int], Optional[int]]]:
+    def next_page_token(
+        self, response: requests.Response, last_page_size: int, last_record: Optional[Record], last_page_token_value: Optional[Any]
+    ) -> Optional[Tuple[Optional[int], Optional[int]]]:
         """
         Determines page and subpage numbers for the `items` stream
 
@@ -78,11 +77,9 @@ class ItemCursorPaginationStrategy(PageIncrement):
         self._page: Optional[int] = self.start_from_page
         self._sub_page: Optional[int] = self.start_from_page
 
-    def next_page_token(self,
-        response: requests.Response,
-        last_page_size: int,
-        last_record: Optional[Record],
-        last_page_token_value: Optional[Any]) -> Optional[Tuple[Optional[int], Optional[int]]]:
+    def next_page_token(
+        self, response: requests.Response, last_page_size: int, last_record: Optional[Record], last_page_token_value: Optional[Any]
+    ) -> Optional[Tuple[Optional[int], Optional[int]]]:
         """
         `items` stream use a separate 2 level pagination strategy where:
         1st level `boards` - incremental pagination
