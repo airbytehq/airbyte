@@ -87,7 +87,6 @@ class S3DataLakeDirectLoader(
                 record = enrichedRecordAirbyteValue,
                 stream = stream,
                 tableSchema = schema,
-                pipeline = pipeline,
             )
         writer.write(icebergRecord)
 
