@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.pipeline.InputPartitioner
 import jakarta.inject.Singleton
-import kotlin.math.abs
 import kotlin.random.Random
 
 @Singleton
@@ -21,7 +20,7 @@ class S3DataLakePartitioner : InputPartitioner {
         }
 
         if (record.stream.importType !is Dedupe) {
-            return abs(random.nextInt()) % numParts
+            return random.nextInt(numParts)
         }
 
         val primaryKey = (record.stream.importType as Dedupe).primaryKey
@@ -31,11 +30,6 @@ class S3DataLakePartitioner : InputPartitioner {
             primaryKey.map { keys ->
                 keys.map { key -> if (jsonData.has(key)) jsonData.get(key) else null }
             }
-        val hash = primaryKeyValues.hashCode()
-        /** abs(MIN_VALUE) == MIN_VALUE, so we need to handle this case separately */
-        if (hash == Int.MIN_VALUE) {
-            return 0
-        }
-        return abs(primaryKeyValues.hashCode()) % numParts
+        return Math.floorMod(primaryKeyValues.hashCode(), numParts)
     }
 }
