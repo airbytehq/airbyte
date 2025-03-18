@@ -17,8 +17,8 @@ data:
     jobSpecific:
       - jobType: check_connection
         resourceRequirements:
-          memory_limit: 6144mi
-          memory_request: 6144mi
+          memory_limit: 8192mi
+          memory_request: 8192mi
   githubIssueLabel: source-google-sheets
   icon: google-sheets.svg
   license: Elv2
