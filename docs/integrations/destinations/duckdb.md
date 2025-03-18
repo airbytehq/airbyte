@@ -32,7 +32,7 @@ We do not recommend providing your API token in the `md:` connection string, as 
 
 ### Authenticating to MotherDuck
 
-For authentication, you can can provide your [MotherDuck Service Credential](https://motherduck.com/docs/authenticating-to-motherduck/#syntax) as the `motherduck_api_key` configuration option.
+For authentication, you can provide your [MotherDuck Service Credential](https://motherduck.com/docs/authenticating-to-motherduck/#syntax) as the `motherduck_api_key` configuration option.
 
 ### Sync Overview
 

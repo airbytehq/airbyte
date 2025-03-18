@@ -111,6 +111,12 @@ class SourceMicrosoftSharePointSpec(AbstractFileBasedSpec, BaseModel):
         order=4,
         default=".",
     )
+    site_url: str = Field(
+        title="Site URL",
+        description="Url of SharePoint site to search for files. Leave empty to search in the main site.",
+        order=5,
+        default="",
+    )
 
     @classmethod
     def documentation_url(cls) -> str:

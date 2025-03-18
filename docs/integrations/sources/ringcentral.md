@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the [RingCentra
 
 ## Prerequisites
 
-Auth Token (which acts as bearer token), account id and extension id are mandate for this connector to work, Account token could be recieved by following (Bearer ref - https://developers.ringcentral.com/api-reference/authentication), and account_id and extension id could be seen at response to basic api call to an endpoint with ~ operator. Example- (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
+Auth Token (which acts as bearer token), account id and extension id are mandate for this connector to work, Account token could be received by following (Bearer ref - https://developers.ringcentral.com/api-reference/authentication), and account_id and extension id could be seen at response to basic api call to an endpoint with ~ operator. Example- (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
 
 ## Setup guide
 

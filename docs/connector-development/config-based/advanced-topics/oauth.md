@@ -892,7 +892,7 @@ complete_oauth_server_output_specification:
   </details>
 
 #### Case A: OAuth Flow returns the `access_token` only
-When the `access_token` is the only key expected after the successfull `OAuth2.0` authentication
+When the `access_token` is the only key expected after the successful `OAuth2.0` authentication
 
   <details>
       <summary>Example Declarative OAuth Specification</summary>
@@ -975,7 +975,7 @@ oauth_config_specification:
 
 
 #### Case B: OAuth Flow returns the `refresh_token` only
-When the `refresh_token` is the only key expected after the successfull `OAuth2.0` authentication
+When the `refresh_token` is the only key expected after the successful `OAuth2.0` authentication
 
   <details>
       <summary>Example Declarative OAuth Specification</summary>
@@ -1015,7 +1015,7 @@ oauth_config_specification:
   </details>
 
 #### Case C: OAuth Flow returns the `access_token` and the `refresh_token`
-When the the `access_token` and the `refresh_token` are the only keys expected after the successfull `OAuth2.0` authentication
+When the `access_token` and the `refresh_token` are the only keys expected after the successful `OAuth2.0` authentication
 
   <details>
       <summary>Example Declarative OAuth Specification</summary>

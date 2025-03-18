@@ -290,7 +290,7 @@ Add a destination to which you want to send data. In this example, you add BigQu
 
 2. Run `terraform apply`. Terraform tells you it will add 1 resource. Type `yes` and press <kbd>Enter</kbd>.
 
-Terraform adds the destination to Airbyte. To see your new destination, open your Airbyte workspace and and click **Destinations**. Or, use the [List destinations](https://reference.airbyte.com/reference/listdestinations) API endpoint.
+Terraform adds the destination to Airbyte. To see your new destination, open your Airbyte workspace and click **Destinations**. Or, use the [List destinations](https://reference.airbyte.com/reference/listdestinations) API endpoint.
 
 ## Step 4: Create a connection
 

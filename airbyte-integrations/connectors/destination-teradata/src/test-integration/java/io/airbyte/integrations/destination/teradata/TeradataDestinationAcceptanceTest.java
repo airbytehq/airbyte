@@ -7,9 +7,7 @@ package io.airbyte.integrations.destination.teradata;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
-import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
-import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
@@ -21,6 +19,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.teradata.envclient.TeradataHttpClient;
 import io.airbyte.integrations.destination.teradata.envclient.dto.*;
 import io.airbyte.integrations.destination.teradata.envclient.exception.BaseException;
+import io.airbyte.integrations.destination.teradata.util.TeradataConstants;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
@@ -30,10 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import javax.sql.DataSource;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,8 +50,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
   private JsonNode configJson;
   private JdbcDatabase database;
   private DataSource dataSource;
-  private TeradataDestination destination = new TeradataDestination();
-  private final JdbcSourceOperations sourceOperations = JdbcUtils.getDefaultSourceOperations();
+  private final TeradataDestination destination = new TeradataDestination();
 
   @Override
   protected String getImageName() {
@@ -86,6 +81,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
           configJson.get("env_region").asText(),
           configJson.get("env_password").asText());
       response = teradataHttpClient.createEnvironment(request, token).get();
+      LOGGER.info("Environemnt " + configJson.get("env_name").asText() + " is created successfully ");
     } else if (response.state() == EnvironmentResponse.State.STOPPED) {
       var request = new EnvironmentRequest(name, new OperationRequest("start"));
       teradataHttpClient.startEnvironment(request, token);
@@ -100,8 +96,9 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
   void cleanupEnvironment() throws ExecutionException, InterruptedException {
     try {
       TeradataHttpClient teradataHttpClient = new TeradataHttpClient(configJson.get("env_url").asText());
-      var request = new EnvironmentRequest(configJson.get("env_name").asText(), new OperationRequest("stop"));
-      teradataHttpClient.stopEnvironment(request, configJson.get("env_token").asText());
+      var request = new DeleteEnvironmentRequest(configJson.get("env_name").asText());
+      teradataHttpClient.deleteEnvironment(request, configJson.get("env_token").asText());
+      LOGGER.info("Environemnt " + configJson.get("env_name").asText() + " is deleted successfully ");
     } catch (BaseException be) {
       LOGGER.error("Environemnt " + configJson.get("env_name").asText() + " is not available. " + be.getMessage());
     }
@@ -146,7 +143,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
     try {
       ((ObjectNode) configJson).put("schema", SCHEMA_NAME);
       dataSource = getDataSource(configJson);
-      database = getDatabase(dataSource);
+      database = destination.getDatabase(dataSource);
       database.execute(createSchemaQuery);
     } catch (Exception e) {
       AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Database " + SCHEMA_NAME + " creation got failed.");
@@ -189,12 +186,8 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
     final JsonNode jdbcConfig = destination.toJdbcConfig(config);
     return DataSourceFactory.create(jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        TeradataDestination.DRIVER_CLASS, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        TeradataConstants.DRIVER_CLASS, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         getConnectionProperties(config));
-  }
-
-  protected JdbcDatabase getDatabase(final DataSource dataSource) {
-    return new DefaultJdbcDatabase(dataSource);
   }
 
   protected Map<String, String> getConnectionProperties(final JsonNode config) {

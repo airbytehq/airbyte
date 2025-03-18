@@ -72,6 +72,14 @@
             }
           }
         ]
+      },
+      "board_ids": {
+        "type": "array",
+        "title": "Boards to sync",
+        "description": "The IDs of the boards that the Items and Boards streams will extract records from. When left empty, streams will extract records from all boards that exist within the account.",
+        "items": {
+          "type": "integer"
+        }
       }
     }
   },

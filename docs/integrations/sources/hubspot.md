@@ -227,7 +227,7 @@ The HubSpot source connector supports the following streams:
   - Fewer than 10,000 records are being synced
 - **EngagementsAll** if either of these criteria are not met.
 
-Because of this, the `engagements` stream can be slow to sync if it hasn't synced within the last 30 days and/or is generating large volumes of new data. To accomodate for this limitation, we recommend scheduling more frequent syncs.
+Because of this, the `engagements` stream can be slow to sync if it hasn't synced within the last 30 days and/or is generating large volumes of new data. To accommodate for this limitation, we recommend scheduling more frequent syncs.
 
 ### Notes on the `Forms` and `Form Submissions` stream
 
