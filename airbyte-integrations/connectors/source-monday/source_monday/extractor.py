@@ -6,7 +6,7 @@ import json
 import logging
 from dataclasses import InitVar, dataclass, field
 from datetime import datetime
-from typing import Any, List, Mapping, Union
+from typing import Any, Iterable, List, Mapping, Union
 
 import dpath.util
 import requests
@@ -36,7 +36,7 @@ class MondayActivityExtractor(RecordExtractor):
     parameters: InitVar[Mapping[str, Any]]
     decoder: Decoder = JsonDecoder(parameters={})
 
-    def extract_records(self, response: requests.Response) -> List[Record]:
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         response_body_generator = self.decoder.decode(response)
         for response_body in response_body_generator:
             if not response_body["data"]["boards"]:
@@ -99,7 +99,7 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
                 result += extracted if isinstance(extracted, list) else [extracted]
         return result
 
-    def extract_records(self, response: requests.Response) -> List[Record]:
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         result = self.try_extract_records(response, field_path=self.field_path)
         if not result and self.field_path_pagination:
             result = self.try_extract_records(response, self.field_path_pagination)
