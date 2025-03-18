@@ -21,7 +21,7 @@ The Amazon SQS source syncs the SQS API, refer: https://docs.aws.amazon.com/AWSS
 
 ### Supported Streams
 
-This Source is capable of syncing the following core Action that would be recieved as streams for sync:
+This Source is capable of syncing the following core Action that would be received as streams for sync:
 
 - [RecieveMessage](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_ReceiveMessage.html)
 - [QueueAttributes](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_GetQueueAttributes.html)
