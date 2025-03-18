@@ -278,9 +278,9 @@ fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
         currentValue: AirbyteValue,
         currentType: AirbyteType,
         path: String,
-    ): AirbyteValue {
-        return if (currentValue == NullValue) {
-            return NullValue
+    ): AirbyteValue =
+        if (currentValue == NullValue) {
+            NullValue
         } else if (currentType is ArrayType) {
             // If the type is another array, we recurse deeper.
             AirbyteValueCoercer.coerceArray(currentValue)?.let { elementCoercedToArray ->
@@ -309,7 +309,6 @@ fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
             }
                 ?: currentValue
         }
-    }
 
     // Mutate the top-level array and store the result back in 'value'.
     value = recurseArray(value, type, name)
