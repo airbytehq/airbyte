@@ -9,6 +9,17 @@ import io.airbyte.cdk.load.message.Meta.AirbyteMetaFields
 
 class AirbyteTypeToAirbyteTypeWithMeta(private val flatten: Boolean) {
     fun convert(schema: AirbyteType): ObjectType {
+        val properties =
+            linkedMapOf(
+                Meta.COLUMN_NAME_AB_RAW_ID to
+                    FieldType(AirbyteMetaFields.RAW_ID.type, nullable = false),
+                Meta.COLUMN_NAME_AB_EXTRACTED_AT to
+                    FieldType(AirbyteMetaFields.EXTRACTED_AT.type, nullable = false),
+                Meta.COLUMN_NAME_AB_META to
+                    FieldType(AirbyteMetaFields.META.type, nullable = false),
+                Meta.COLUMN_NAME_AB_GENERATION_ID to
+                    FieldType(AirbyteMetaFields.GENERATION_ID.type, nullable = false),
+            )
         if (flatten) {
             if (schema is ObjectType) {
                 schema.properties.forEach { (name, field) -> properties[name] = field }
@@ -23,20 +34,6 @@ class AirbyteTypeToAirbyteTypeWithMeta(private val flatten: Boolean) {
             properties[Meta.COLUMN_NAME_DATA] = FieldType(schema, nullable = false)
         }
         return ObjectType(properties)
-    }
-
-    companion object {
-        val properties =
-            linkedMapOf(
-                Meta.COLUMN_NAME_AB_RAW_ID to
-                    FieldType(AirbyteMetaFields.RAW_ID.type, nullable = false),
-                Meta.COLUMN_NAME_AB_EXTRACTED_AT to
-                    FieldType(AirbyteMetaFields.EXTRACTED_AT.type, nullable = false),
-                Meta.COLUMN_NAME_AB_META to
-                    FieldType(AirbyteMetaFields.META.type, nullable = false),
-                Meta.COLUMN_NAME_AB_GENERATION_ID to
-                    FieldType(AirbyteMetaFields.GENERATION_ID.type, nullable = false),
-            )
     }
 }
 
