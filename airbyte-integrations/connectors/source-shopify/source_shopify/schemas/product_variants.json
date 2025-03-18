@@ -236,6 +236,10 @@
     "tax_code": {
       "description": "The tax code for the product variant.",
       "type": ["null", "string"]
+    },
+    "tracked": {
+      "description": "Whether inventory levels are tracked for the item.",
+      "type": ["null", "boolean"]
     }
   }
 }
