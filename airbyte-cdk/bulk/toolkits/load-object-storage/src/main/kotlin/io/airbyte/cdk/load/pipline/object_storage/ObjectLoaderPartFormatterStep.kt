@@ -20,7 +20,7 @@ import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicInteger
 
 @Singleton
 @Requires(bean = ObjectLoader::class)
@@ -37,7 +37,8 @@ class ObjectLoaderPartFormatterStep(
     val batchSizeOverride: Long? = null,
 ) : LoadPipelineStep {
     override val numWorkers: Int = objectLoader.numPartWorkers
-    private val streamCompletionMap = ConcurrentHashMap<DestinationStream.Descriptor, AtomicLong>()
+    private val streamCompletionMap =
+        ConcurrentHashMap<DestinationStream.Descriptor, AtomicInteger>()
 
     override fun taskForPartition(partition: Int): LoadPipelineStepTask<*, *, *, *, *> {
         return LoadPipelineStepTask(

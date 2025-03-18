@@ -5,11 +5,13 @@
 package io.airbyte.cdk.load.task.internal
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEndOfStream
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.message.QueueWriter
+import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.WithBatchState
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.BatchAccumulator
@@ -18,12 +20,18 @@ import io.airbyte.cdk.load.pipeline.BatchStateUpdate
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.pipeline.OutputPartitioner
 import io.airbyte.cdk.load.pipeline.PipelineFlushStrategy
+import io.airbyte.cdk.load.pipeline.RecordCountFlushStrategy
 import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.task.OnEndOfSync
 import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
+import io.airbyte.cdk.load.write.LoadStrategy
+import io.micronaut.context.annotation.Requires
+import io.micronaut.context.annotation.Value
+import jakarta.inject.Named
+import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.fold
 
@@ -38,39 +46,17 @@ data class StateWithCounts<S : AutoCloseable>(
 }
 
 /** A long-running task that actually implements a load pipeline step. */
-class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStream, U : Any> : Task {
-    private val batchAccumulator: BatchAccumulator<S, K1, T, U>
-    private val inputFlow: Flow<PipelineEvent<K1, T>>
-    private val batchUpdateQueue: QueueWriter<BatchUpdate>
-    private val outputPartitioner: OutputPartitioner<K1, T, K2, U>?
-    private val outputQueue: PartitionedQueue<PipelineEvent<K2, U>>?
-    private val flushStrategy: PipelineFlushStrategy?
-    private val part: Int
-    private val numWorkers: Int
-    private val streamCompletions: ConcurrentHashMap<DestinationStream.Descriptor, AtomicLong>
-
-    constructor(
-        batchAccumulator: BatchAccumulator<S, K1, T, U>,
-        inputFlow: Flow<PipelineEvent<K1, T>>,
-        batchUpdateQueue: QueueWriter<BatchUpdate>,
-        outputPartitioner: OutputPartitioner<K1, T, K2, U>?,
-        outputQueue: PartitionedQueue<PipelineEvent<K2, U>>?,
-        flushStrategy: PipelineFlushStrategy?,
-        part: Int,
-        numWorkers: Int,
-        streamCompletions: ConcurrentHashMap<DestinationStream.Descriptor, AtomicLong>
-    ) {
-        this.batchAccumulator = batchAccumulator
-        this.inputFlow = inputFlow
-        this.batchUpdateQueue = batchUpdateQueue
-        this.outputPartitioner = outputPartitioner
-        this.outputQueue = outputQueue
-        this.flushStrategy = flushStrategy
-        this.part = part
-        this.numWorkers = numWorkers
-        this.streamCompletions = streamCompletions
-    }
-
+class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStream, U : Any>(
+    private val batchAccumulator: BatchAccumulator<S, K1, T, U>,
+    private val inputFlow: Flow<PipelineEvent<K1, T>>,
+    private val batchUpdateQueue: QueueWriter<BatchUpdate>,
+    private val outputPartitioner: OutputPartitioner<K1, T, K2, U>?,
+    private val outputQueue: PartitionedQueue<PipelineEvent<K2, U>>?,
+    private val flushStrategy: PipelineFlushStrategy?,
+    private val part: Int,
+    private val numWorkers: Int,
+    private val streamCompletions: ConcurrentHashMap<DestinationStream.Descriptor, AtomicInteger>
+) : Task {
     override val terminalCondition: TerminalCondition = OnEndOfSync
 
     override suspend fun execute() {
@@ -164,9 +150,8 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         // Only forward end-of-stream if ALL workers have seen end-of-stream.
                         if (
                             streamCompletions
-                                .getOrPut(input.stream) { AtomicLong(0) }
-                                .incrementAndGet()
-                                .toInt() == numWorkers
+                                .getOrPut(input.stream) { AtomicInteger(0) }
+                                .incrementAndGet() == numWorkers
                         ) {
                             outputQueue?.broadcast(PipelineEndOfStream(input.stream))
                         }
@@ -214,5 +199,82 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
 
     override fun toString(): String {
         return "LoadPipelineStepTask(${batchAccumulator::class.simpleName}, part=$part)"
+    }
+}
+
+@Singleton
+@Requires(bean = LoadStrategy::class)
+class LoadPipelineStepTaskFactory(
+    @Named("batchStateUpdateQueue") val batchUpdateQueue: QueueWriter<BatchUpdate>,
+    @Named("recordQueue")
+    val recordQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+    @Value("\${airbyte.destination.core.record-batch-size-override:null}")
+    val batchSizeOverride: Long? = null,
+) {
+    private val streamCompletions = ConcurrentHashMap<DestinationStream.Descriptor, AtomicInteger>()
+
+    fun <S : AutoCloseable, K1 : WithStream, T, K2 : WithStream, U : Any> create(
+        batchAccumulator: BatchAccumulator<S, K1, T, U>,
+        inputFlow: Flow<PipelineEvent<K1, T>>,
+        outputPartitioner: OutputPartitioner<K1, T, K2, U>?,
+        outputQueue: PartitionedQueue<PipelineEvent<K2, U>>?,
+        flushStrategy: PipelineFlushStrategy?,
+        part: Int,
+        numWorkers: Int,
+    ): LoadPipelineStepTask<S, K1, T, K2, U> {
+        return LoadPipelineStepTask(
+            batchAccumulator,
+            inputFlow,
+            batchUpdateQueue,
+            outputPartitioner,
+            outputQueue,
+            flushStrategy,
+            part,
+            numWorkers,
+            streamCompletions
+        )
+    }
+
+    fun <S : AutoCloseable, K2 : WithStream, U : Any> createFirstStep(
+        batchAccumulator: BatchAccumulator<S, StreamKey, DestinationRecordRaw, U>,
+        outputPartitioner: OutputPartitioner<StreamKey, DestinationRecordRaw, K2, U>?,
+        outputQueue: PartitionedQueue<PipelineEvent<K2, U>>?,
+        part: Int,
+        numWorkers: Int,
+    ): LoadPipelineStepTask<S, StreamKey, DestinationRecordRaw, K2, U> {
+        return create(
+            batchAccumulator,
+            recordQueue.consume(part),
+            outputPartitioner,
+            outputQueue,
+            batchSizeOverride?.let { RecordCountFlushStrategy(it) },
+            part,
+            numWorkers
+        )
+    }
+
+    fun <S : AutoCloseable, K1 : WithStream, T, K2 : WithStream, U : Any> createFinalStep(
+        batchAccumulator: BatchAccumulator<S, K1, T, U>,
+        inputQueue: PartitionedQueue<PipelineEvent<K1, T>>,
+        part: Int,
+        numWorkers: Int,
+    ): LoadPipelineStepTask<S, K1, T, K2, U> {
+        return create(
+            batchAccumulator,
+            inputQueue.consume(part),
+            null,
+            null,
+            null,
+            part,
+            numWorkers
+        )
+    }
+
+    fun <S : AutoCloseable, K2 : WithStream, U : Any> createOnlyStep(
+        batchAccumulator: BatchAccumulator<S, StreamKey, DestinationRecordRaw, U>,
+        part: Int,
+        numWorkers: Int,
+    ): LoadPipelineStepTask<S, StreamKey, DestinationRecordRaw, K2, U> {
+        return createFirstStep(batchAccumulator, null, null, part, numWorkers)
     }
 }
