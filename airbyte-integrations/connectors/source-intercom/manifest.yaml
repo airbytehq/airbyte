@@ -278,7 +278,7 @@ definitions:
                     http_codes:
                       - 500
                     #We cannot retry 500 errors, so we fail the stream. Docs: https://developers.intercom.com/docs/references/2.1/rest-api/companies/iterating-over-all-companies
-                    #We need to implement a 'RESTART' action to restart the stream from the beginning in the CDK, Tracked here:
+                    #We need to implement a 'RESTART' action to restart the stream from the beginning in the CDK, Tracked here: https://github.com/airbytehq/airbyte-internal-issues/issues/12107
                     error_message: "A network timeout occurred. Please restart the sync to continue fetching companies. Stream: companies must be restarted to continue fetching companies."
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
