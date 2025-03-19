@@ -27,8 +27,9 @@ class MondayGraphqlRequester(HttpRequester):
         self.limit = InterpolatedString.create(self.limit, parameters=parameters)
         self.nested_limit = InterpolatedString.create(self.nested_limit, parameters=parameters)
         self.name = parameters.get("name", "").lower()
-        self.stream_sync_mode = SyncMode.incremental if parameters.get("stream_sync_mode",
-                                                                       "full_refresh") == SyncMode.full_refresh else SyncMode.full_refresh
+        self.stream_sync_mode = (
+            SyncMode.incremental if parameters.get("stream_sync_mode", "full_refresh") == SyncMode.full_refresh else SyncMode.full_refresh
+        )
 
     def _ensure_type(self, t: Type, o: Any):
         """
