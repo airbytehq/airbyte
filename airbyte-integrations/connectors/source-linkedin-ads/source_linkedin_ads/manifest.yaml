@@ -583,9 +583,13 @@ definitions:
               partition_field: campaign_id
               stream:
                 $ref: "#/definitions/streams/campaigns"
+              extra_fields:
+                - ["status"]
+                - ["runSchedule"]
+                - ["lastModified"]
       incremental_sync:
         type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        class_name: source_linkedin_ads.components.CampaignAnalyticsDatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -745,9 +749,13 @@ definitions:
               partition_field: campaign_id
               stream:
                 $ref: "#/definitions/streams/campaigns"
+              extra_fields:
+                - ["status"]
+                - ["runSchedule"]
+                - ["lastModified"]
       incremental_sync:
         type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        class_name: source_linkedin_ads.components.CampaignAnalyticsDatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -826,9 +834,13 @@ definitions:
               partition_field: campaign_id
               stream:
                 $ref: "#/definitions/streams/campaigns"
+              extra_fields:
+                - ["status"]
+                - ["runSchedule"]
+                - ["lastModified"]
       incremental_sync:
         type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        class_name: source_linkedin_ads.components.CampaignAnalyticsDatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -907,9 +919,13 @@ definitions:
               partition_field: campaign_id
               stream:
                 $ref: "#/definitions/streams/campaigns"
+              extra_fields:
+                - ["status"]
+                - ["runSchedule"]
+                - ["lastModified"]
       incremental_sync:
         type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        class_name: source_linkedin_ads.components.CampaignAnalyticsDatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -988,9 +1004,13 @@ definitions:
               partition_field: campaign_id
               stream:
                 $ref: "#/definitions/streams/campaigns"
+              extra_fields:
+                - ["status"]
+                - ["runSchedule"]
+                - ["lastModified"]
       incremental_sync:
         type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        class_name: source_linkedin_ads.components.CampaignAnalyticsDatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -1069,9 +1089,13 @@ definitions:
               partition_field: campaign_id
               stream:
                 $ref: "#/definitions/streams/campaigns"
+              extra_fields:
+                - ["status"]
+                - ["runSchedule"]
+                - ["lastModified"]
       incremental_sync:
         type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        class_name: source_linkedin_ads.components.CampaignAnalyticsDatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -1150,9 +1174,13 @@ definitions:
               partition_field: campaign_id
               stream:
                 $ref: "#/definitions/streams/campaigns"
+              extra_fields:
+                - ["status"]
+                - ["runSchedule"]
+                - ["lastModified"]
       incremental_sync:
         type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        class_name: source_linkedin_ads.components.CampaignAnalyticsDatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -1231,9 +1259,13 @@ definitions:
               partition_field: campaign_id
               stream:
                 $ref: "#/definitions/streams/campaigns"
+              extra_fields:
+                - ["status"]
+                - ["runSchedule"]
+                - ["lastModified"]
       incremental_sync:
         type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        class_name: source_linkedin_ads.components.CampaignAnalyticsDatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -1312,9 +1344,13 @@ definitions:
               partition_field: campaign_id
               stream:
                 $ref: "#/definitions/streams/campaigns"
+              extra_fields:
+                - ["status"]
+                - ["runSchedule"]
+                - ["lastModified"]
       incremental_sync:
         type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        class_name: source_linkedin_ads.components.CampaignAnalyticsDatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -1393,9 +1429,13 @@ definitions:
               partition_field: campaign_id
               stream:
                 $ref: "#/definitions/streams/campaigns"
+              extra_fields:
+                - ["status"]
+                - ["runSchedule"]
+                - ["lastModified"]
       incremental_sync:
         type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        class_name: source_linkedin_ads.components.CampaignAnalyticsDatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
@@ -1475,9 +1515,13 @@ definitions:
               partition_field: campaign_id
               stream:
                 $ref: "#/definitions/streams/campaigns"
+              extra_fields:
+                - ["status"]
+                - ["runSchedule"]
+                - ["lastModified"]
       incremental_sync:
         type: CustomIncrementalSync
-        class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
+        class_name: source_linkedin_ads.components.CampaignAnalyticsDatetimeBasedCursor
         cursor_field: end_date
         cursor_datetime_formats:
           - "%Y-%m-%d"
