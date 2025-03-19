@@ -17,14 +17,13 @@ import org.junit.jupiter.api.Test
 class ObjectLoaderPartPartitionerTest<K : WithStream, T> {
     @Test
     fun `partitioner always assigns 0`() {
-        val keys = (0 until 12).map(Int::toString)
         val partitioner = ObjectLoaderFormattedPartPartitioner<K, T>()
         val stream = DestinationStream.Descriptor("test", "stream")
         val numParts = 3
         var lastPartition: Int? = null
         (0 until 12).forEach {
             val partition = partitioner.getPart(ObjectKey(stream, it.toString()), numParts)
-            lastPartition?.let { last -> assertEquals(0, partition) }
+            lastPartition?.let { _ -> assertEquals(0, partition) }
             lastPartition = partition
         }
     }

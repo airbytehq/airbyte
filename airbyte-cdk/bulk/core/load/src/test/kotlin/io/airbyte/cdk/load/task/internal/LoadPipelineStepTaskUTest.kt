@@ -28,7 +28,7 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.joinAll
@@ -72,6 +72,7 @@ class LoadPipelineStepTaskUTest {
             null,
             part,
             part,
+            1,
             ConcurrentHashMap()
         )
 
@@ -396,7 +397,8 @@ class LoadPipelineStepTaskUTest {
         data class TestKey(val output: Boolean, override val stream: DestinationStream.Descriptor) :
             WithStream
         val outputQueue = mockk<PartitionedQueue<PipelineEvent<TestKey, Boolean>>>()
-        val completionMap = ConcurrentHashMap<DestinationStream.Descriptor, AtomicLong>()
+        val completionMap =
+            ConcurrentHashMap<Pair<Int, DestinationStream.Descriptor>, AtomicInteger>()
         val inputFlows =
             arrayOf<Flow<PipelineEvent<StreamKey, String>>>(
                 mockk(relaxed = true),
@@ -422,6 +424,7 @@ class LoadPipelineStepTaskUTest {
                     null,
                     it,
                     2,
+                    1,
                     completionMap
                 )
             }

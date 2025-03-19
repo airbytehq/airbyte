@@ -55,7 +55,9 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
     private val flushStrategy: PipelineFlushStrategy?,
     private val part: Int,
     private val numWorkers: Int,
-    private val streamCompletions: ConcurrentHashMap<DestinationStream.Descriptor, AtomicInteger>
+    private val taskIndex: Int,
+    private val streamCompletions:
+        ConcurrentHashMap<Pair<Int, DestinationStream.Descriptor>, AtomicInteger>
 ) : Task {
     override val terminalCondition: TerminalCondition = OnEndOfSync
 
@@ -150,7 +152,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         // Only forward end-of-stream if ALL workers have seen end-of-stream.
                         if (
                             streamCompletions
-                                .getOrPut(input.stream) { AtomicInteger(0) }
+                                .getOrPut(Pair(taskIndex, input.stream)) { AtomicInteger(0) }
                                 .incrementAndGet() == numWorkers
                         ) {
                             outputQueue?.broadcast(PipelineEndOfStream(input.stream))
@@ -211,7 +213,10 @@ class LoadPipelineStepTaskFactory(
     @Value("\${airbyte.destination.core.record-batch-size-override:null}")
     val batchSizeOverride: Long? = null,
 ) {
-    private val streamCompletions = ConcurrentHashMap<DestinationStream.Descriptor, AtomicInteger>()
+    // A map of (TaskIndex, Stream) -> Count_of_closed streams to ensure eos is not forwared from
+    // task N to N+1 until all workers have seen eos.
+    private val streamCompletions =
+        ConcurrentHashMap<Pair<Int, DestinationStream.Descriptor>, AtomicInteger>()
 
     fun <S : AutoCloseable, K1 : WithStream, T, K2 : WithStream, U : Any> create(
         batchAccumulator: BatchAccumulator<S, K1, T, U>,
@@ -221,6 +226,7 @@ class LoadPipelineStepTaskFactory(
         flushStrategy: PipelineFlushStrategy?,
         part: Int,
         numWorkers: Int,
+        taskIndex: Int,
     ): LoadPipelineStepTask<S, K1, T, K2, U> {
         return LoadPipelineStepTask(
             batchAccumulator,
@@ -231,6 +237,7 @@ class LoadPipelineStepTaskFactory(
             flushStrategy,
             part,
             numWorkers,
+            taskIndex,
             streamCompletions
         )
     }
@@ -249,16 +256,17 @@ class LoadPipelineStepTaskFactory(
             outputQueue,
             batchSizeOverride?.let { RecordCountFlushStrategy(it) },
             part,
-            numWorkers
+            numWorkers,
+            taskIndex = 0
         )
     }
 
-    fun <S : AutoCloseable, K1 : WithStream, T, K2 : WithStream, U : Any> createFinalStep(
+    fun <S : AutoCloseable, K1 : WithStream, T, U : Any> createFinalStep(
         batchAccumulator: BatchAccumulator<S, K1, T, U>,
         inputQueue: PartitionedQueue<PipelineEvent<K1, T>>,
         part: Int,
         numWorkers: Int,
-    ): LoadPipelineStepTask<S, K1, T, K2, U> {
+    ): LoadPipelineStepTask<S, K1, T, K1, U> {
         return create(
             batchAccumulator,
             inputQueue.consume(part),
@@ -266,7 +274,8 @@ class LoadPipelineStepTaskFactory(
             null,
             null,
             part,
-            numWorkers
+            numWorkers,
+            taskIndex = -1
         )
     }
 
@@ -276,5 +285,26 @@ class LoadPipelineStepTaskFactory(
         numWorkers: Int,
     ): LoadPipelineStepTask<S, StreamKey, DestinationRecordRaw, K2, U> {
         return createFirstStep(batchAccumulator, null, null, part, numWorkers)
+    }
+
+    fun <S : AutoCloseable, K1 : WithStream, T, K2 : WithStream, U : Any> createIntermediateStep(
+        batchAccumulator: BatchAccumulator<S, K1, T, U>,
+        inputQueue: PartitionedQueue<PipelineEvent<K1, T>>,
+        outputPartitioner: OutputPartitioner<K1, T, K2, U>?,
+        outputQueue: PartitionedQueue<PipelineEvent<K2, U>>?,
+        part: Int,
+        numWorkers: Int,
+        taskIndex: Int,
+    ): LoadPipelineStepTask<S, K1, T, K2, U> {
+        return create(
+            batchAccumulator,
+            inputQueue.consume(part),
+            outputPartitioner,
+            outputQueue,
+            null,
+            part,
+            numWorkers,
+            taskIndex
+        )
     }
 }
