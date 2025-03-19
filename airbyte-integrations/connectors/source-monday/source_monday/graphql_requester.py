@@ -7,6 +7,7 @@ from datetime import datetime
 from functools import partial
 from typing import Any, Mapping, MutableMapping, Optional, Type, Union
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
@@ -26,7 +27,8 @@ class MondayGraphqlRequester(HttpRequester):
         self.limit = InterpolatedString.create(self.limit, parameters=parameters)
         self.nested_limit = InterpolatedString.create(self.nested_limit, parameters=parameters)
         self.name = parameters.get("name", "").lower()
-        self.stream_mode = parameters.get("stream_mode", "full_refresh")
+        self.stream_sync_mode = SyncMode.incremental if parameters.get("stream_sync_mode",
+                                                                       "full_refresh") == SyncMode.full_refresh else SyncMode.full_refresh
 
     def _ensure_type(self, t: Type, o: Any):
         """
@@ -202,7 +204,7 @@ class MondayGraphqlRequester(HttpRequester):
 
         page = next_page_token and next_page_token[self.NEXT_PAGE_TOKEN_FIELD_NAME]
         if self.name == "boards" and stream_slice:
-            if self.stream_mode == "full_refresh":
+            if self.stream_sync_mode == SyncMode.full_refresh:
                 # incremental sync parameters are not needed for full refresh
                 stream_slice = {}
             else:
@@ -211,7 +213,7 @@ class MondayGraphqlRequester(HttpRequester):
         elif self.name == "items":
             # `items` stream use a separate pagination strategy where first level pages are across `boards` and sub-pages are across `items`
             page, sub_page = page if page else (None, None)
-            if self.stream_mode == "full_refresh":
+            if self.stream_sync_mode == SyncMode.full_refresh:
                 query_builder = partial(self._build_items_query, sub_page=sub_page)
             else:
                 query_builder = partial(self._build_items_incremental_query, stream_slice=stream_slice)

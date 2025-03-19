@@ -165,14 +165,14 @@ definitions:
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "updated_at_int"
-      start_datetime: "1"
+      start_datetime: "1" # default start time will be skipped to read in full refresh without cursor value
       datetime_format: "%s"
 
   boards_stream_full_refresh:
     $ref: "#/definitions/state_delegating_stream"
     $parameters:
       path: ""
-      stream_mode: "full_refresh"
+      stream_sync_mode: "full_refresh"
       items_per_page: 10
       nested_items_per_page: 10
       field_path: ["data", "boards", "*"]
@@ -193,7 +193,7 @@ definitions:
     $ref: "#/definitions/state_delegating_stream"
     $parameters:
       path: ""
-      stream_mode: "incremental"
+      stream_sync_mode: "incremental"
       items_per_page: 10
       nested_items_per_page: 10
       field_path: ["data", "boards", "*"]
@@ -236,7 +236,7 @@ definitions:
     $ref: "#/definitions/state_delegating_stream"
     $parameters:
       path: ""
-      stream_mode: "full_refresh"
+      stream_sync_mode: "full_refresh"
       items_per_page: 1
       page_size: 20
       nested_items_per_page: 20
@@ -255,7 +255,7 @@ definitions:
     $ref: "#/definitions/state_delegating_stream"
     $parameters:
       path: ""
-      stream_mode: "incremental"
+      stream_sync_mode: "incremental"
       page_size: 20
       nested_items_per_page: 20
       field_path: ["data", "items", "*"]
