@@ -2,7 +2,7 @@
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, MutableMapping, Optional
+from typing import Any, Dict, MutableMapping, Optional, List
 
 import requests
 
@@ -18,7 +18,21 @@ from source_instagram_api import SourceInstagramApi
 
 from .common import remove_params_from_url
 
-GRAPH_URL = resolve_manifest(source=SourceInstagramApi()).record.data["manifest"]["definitions"]["base_requester"]["url_base"]
+
+source_obj = SourceInstagramApi()
+GRAPH_URL = source_obj.url_base
+
+def get_stream_request_params(stream_name: str) -> Optional[dict]:
+    for stream_def in resolve_manifest(source_obj).record.data.get("manifest", {}).get("streams", {}):
+        if stream_def["name"] == stream_name:
+            return stream_def.get("retriever", {}).get("requester", {}).get("request_parameters", {})
+    return {}
+
+def get_stream_fields(stream_name: str) -> List[str]:
+    params = get_stream_request_params(stream_name)
+    if fields := params.get("fields"):
+        return fields.split(",")
+    return []
 
 
 def get_http_response(name: str, path: str, request_params: Dict, config: Config) -> Optional[MutableMapping[str, Any]]:
@@ -106,14 +120,12 @@ class InstagramMediaChildrenTransformation(RecordTransformation):
                 [
                   {
                     "id": "7608776690540",
-                    "ig_id": "2521545917836833225",
                     "media_type": "IMAGE",
                     "media_url": "https://fake_url?_nc_cat=...",
                     // more fields
                   },
                   {
                     "id": "2896800415362",
-                    "ig_id": "2521545917736276706",
                     "media_type": "IMAGE",
                     "media_url": "https://fake_url?_nc_cat=...",
                     // more fields
@@ -122,19 +134,7 @@ class InstagramMediaChildrenTransformation(RecordTransformation):
         """
         children = record.get("children")
         children_fetched = []
-        # todo review these fields
-        fields = ",".join([
-            "id",
-            "ig_id",
-            "media_type",
-            "media_url",
-            "owner",
-            "permalink",
-            "shortcode",
-            "thumbnail_url",
-            "timestamp",
-            "username",
-        ])
+        fields = ",".join([field for field in get_stream_fields("media") if field not in {"caption"}])
         if children:
             children_ids = [child.get("id") for child in children.get("data")]
             for children_id in children_ids:

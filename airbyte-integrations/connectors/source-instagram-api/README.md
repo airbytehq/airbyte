@@ -42,7 +42,7 @@ poetry run source-instagram-api read --config secrets/config.json --catalog inte
 To run tests locally, from the connector directory run:
 
 ```
-poetry run pytest tests
+poetry run pytest unit_tests
 ```
 
 ### Building the docker image
