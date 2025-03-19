@@ -10,7 +10,6 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
@@ -75,7 +74,7 @@ class DefaultProcessRecordsTask(
                         file.localFile.inputStream().use {
                             val records =
                                 if (file.isEmpty) {
-                                    emptyList<DestinationRecordAirbyteValue>().listIterator()
+                                    emptyList<DestinationRecord>().listIterator()
                                 } else {
                                     it.toRecordIterator()
                                 }
@@ -96,11 +95,7 @@ class DefaultProcessRecordsTask(
                 log.info { "Forcing finalization of all accumulators." }
                 accumulators.forEach { (streamDescriptor, acc) ->
                     val finalBatch =
-                        acc.processRecords(
-                            emptyList<DestinationRecordAirbyteValue>().listIterator(),
-                            0,
-                            true
-                        )
+                        acc.processRecords(emptyList<DestinationRecord>().listIterator(), 0, true)
                     handleBatch(streamDescriptor, finalBatch, null)
                 }
             }
@@ -122,7 +117,7 @@ class DefaultProcessRecordsTask(
         }
     }
 
-    private fun InputStream.toRecordIterator(): Iterator<DestinationRecordAirbyteValue> {
+    private fun InputStream.toRecordIterator(): Iterator<DestinationRecord> {
         return lineSequence()
             .map {
                 when (val message = deserializer.deserialize(it)) {
@@ -136,7 +131,7 @@ class DefaultProcessRecordsTask(
             .takeWhile {
                 it !is DestinationRecordStreamComplete && it !is DestinationRecordStreamIncomplete
             }
-            .map { (it as DestinationRecord).asRecordMarshaledToAirbyteValue() }
+            .map { it as DestinationRecord }
             .iterator()
     }
 }
