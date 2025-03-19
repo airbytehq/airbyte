@@ -12,7 +12,7 @@ from typing import Dict, Iterable, List, Optional
 import psutil
 from typing_extensions import override
 
-from airbyte_cdk import FailureType, AirbyteTracedException
+from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -46,19 +46,18 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         """
         assert isinstance(value, SourceSFTPBulkSpec)
         self._config = value
-        
+
         # Initialize GPG decryptor if enabled
         if self.config.gpg_config.enabled:
             if not self.config.gpg_config.private_key:
                 raise AirbyteTracedException(
                     failure_type=FailureType.config_error,
                     message="GPG private key is required when GPG decryption is enabled",
-                    internal_message="Config validation failed: missing required GPG private key"
+                    internal_message="Config validation failed: missing required GPG private key",
                 )
-            
+
             self._gpg_decryptor = GPGDecryptor(
-                gpg_private_key=self.config.gpg_config.private_key,
-                gpg_passphrase=self.config.gpg_config.passphrase
+                gpg_private_key=self.config.gpg_config.private_key, gpg_passphrase=self.config.gpg_config.passphrase
             )
 
     @property
@@ -190,37 +189,37 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         # Check if file needs decryption and GPG decryption is enabled
         if self._gpg_decryptor and self._gpg_decryptor.is_gpg_encrypted(local_file_path):
             logger.info(f"File {local_file_path} appears to be GPG encrypted. Attempting decryption.")
-            
+
             # Generate output path for decrypted file
             decrypted_file_path = None
-            for ext in ['.gpg', '.pgp', '.asc']:
+            for ext in [".gpg", ".pgp", ".asc"]:
                 if local_file_path.endswith(ext):
-                    decrypted_file_path = local_file_path[:-len(ext)]
+                    decrypted_file_path = local_file_path[: -len(ext)]
                     break
             else:
                 decrypted_file_path = f"{local_file_path}.decrypted"
-                
+
             # Get the relative path for decrypted file
             decrypted_file_relative_path = os.path.relpath(decrypted_file_path, local_directory)
-            
+
             # Decrypt the file
             start_decrypt_time = time.time()
             decrypted_file_path = self._gpg_decryptor.decrypt_file(local_file_path, decrypted_file_path)
             decrypt_duration = time.time() - start_decrypt_time
-            
+
             # Get decrypted file size
             decrypted_file_size = os.path.getsize(decrypted_file_path)
-            
+
             logger.info(f"Time taken to decrypt the file: {decrypt_duration:,.2f} seconds.")
             logger.info(f"Decrypted file {decrypted_file_relative_path} successfully created.")
             logger.info(f"Decrypted file size: {decrypted_file_size / (1024 * 1024):,.2f} MB.")
-            
+
             # Return the decrypted file information
             decrypted_absolute_file_path = os.path.abspath(decrypted_file_path)
             return {
                 "file_url": decrypted_absolute_file_path,
                 "bytes": decrypted_file_size,
-                "file_relative_path": decrypted_file_relative_path
+                "file_relative_path": decrypted_file_relative_path,
             }
 
         return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": file_relative_path}

@@ -29,10 +29,7 @@ class PrivateKeyCredentials(BaseModel):
 
 class GPGEncryptionConfig(BaseModel):
     enabled: bool = Field(
-        title="Enable GPG Decryption",
-        description="Whether to decrypt GPG encrypted files after download",
-        default=False,
-        order=1
+        title="Enable GPG Decryption", description="Whether to decrypt GPG encrypted files after download", default=False, order=1
     )
     private_key: Optional[str] = Field(
         title="GPG Private Key",
@@ -40,21 +37,17 @@ class GPGEncryptionConfig(BaseModel):
         airbyte_secret=True,
         multiline=True,
         default=None,
-        order=2
+        order=2,
     )
     public_key: Optional[str] = Field(
         title="GPG Public Key",
         description="The GPG public key (armored format: BEGIN PGP PUBLIC KEY BLOCK). Required if you need to verify signatures.",
         multiline=True,
         default=None,
-        order=3
+        order=3,
     )
     passphrase: Optional[str] = Field(
-        title="GPG Key Passphrase",
-        description="Passphrase for GPG private key (if required)",
-        airbyte_secret=True,
-        default=None,
-        order=4
+        title="GPG Key Passphrase", description="Passphrase for GPG private key (if required)", airbyte_secret=True, default=None, order=4
     )
 
 
