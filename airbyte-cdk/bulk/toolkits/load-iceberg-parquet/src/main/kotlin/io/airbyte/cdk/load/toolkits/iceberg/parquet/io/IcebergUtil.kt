@@ -16,7 +16,6 @@ import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
-import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
@@ -228,13 +227,13 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
         }
     }
 
-    fun toIcebergSchema(stream: DestinationStream, pipeline: MapperPipeline): Schema {
+    fun toIcebergSchema(stream: DestinationStream): Schema {
         val primaryKeys =
             when (stream.importType) {
                 is Dedupe -> (stream.importType as Dedupe).primaryKey
                 else -> emptyList()
             }
-        return pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(primaryKeys)
+        return stream.schema.withAirbyteMeta(true).toIcebergSchema(primaryKeys)
     }
 
     private fun getSortOrder(schema: Schema): SortOrder {
