@@ -14,6 +14,8 @@ definitions:
     pokethings:
       type: DeclarativeStream
       name: pokethings
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -25,8 +27,6 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-      primary_key:
-        - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -53,30 +53,57 @@ spec:
     additionalProperties: true
 
 metadata:
-  assist: {}
-  testedStreams:
-    pokethings:
-      hasRecords: true
-      streamHash: a3878e9fa53669b6c1f871f79b813ce49eb20df1
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
   autoImportSchema:
     pokethings: true
+  testedStreams:
+    pokethings:
+      streamHash: a3878e9fa53669b6c1f871f79b813ce49eb20df1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
 
 schemas:
   pokethings:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - id
+    additionalProperties: true
     properties:
-      id:
-        type: number
-      name:
+      abilities:
         type:
-          - string
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            ability:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+            is_hidden:
+              type:
+                - boolean
+                - "null"
+            slot:
+              type:
+                - number
+                - "null"
+      base_experience:
+        type:
+          - number
           - "null"
       cries:
         type:
@@ -100,14 +127,58 @@ schemas:
             - object
             - "null"
           properties:
-            url:
-              type:
-                - string
-                - "null"
             name:
               type:
                 - string
                 - "null"
+            url:
+              type:
+                - string
+                - "null"
+      game_indices:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            version:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+            game_index:
+              type:
+                - number
+                - "null"
+      height:
+        type:
+          - number
+          - "null"
+      held_items:
+        type:
+          - array
+          - "null"
+      id:
+        type: number
+      is_default:
+        type:
+          - boolean
+          - "null"
+      location_area_encounters:
+        type:
+          - string
+          - "null"
       moves:
         type:
           - array
@@ -122,11 +193,11 @@ schemas:
                 - object
                 - "null"
               properties:
-                url:
+                name:
                   type:
                     - string
                     - "null"
-                name:
+                url:
                   type:
                     - string
                     - "null"
@@ -139,23 +210,6 @@ schemas:
                   - object
                   - "null"
                 properties:
-                  order:
-                    type:
-                      - number
-                      - "null"
-                  version_group:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      url:
-                        type:
-                          - string
-                          - "null"
-                      name:
-                        type:
-                          - string
-                          - "null"
                   level_learned_at:
                     type:
                       - number
@@ -165,92 +219,57 @@ schemas:
                       - object
                       - "null"
                     properties:
-                      url:
-                        type:
-                          - string
-                          - "null"
                       name:
                         type:
                           - string
                           - "null"
+                      url:
+                        type:
+                          - string
+                          - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  version_group:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      url:
+                        type:
+                          - string
+                          - "null"
+      name:
+        type:
+          - string
+          - "null"
       order:
         type:
           - number
           - "null"
-      stats:
+      past_abilities:
         type:
           - array
           - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            stat:
-              type:
-                - object
-                - "null"
-              properties:
-                url:
-                  type:
-                    - string
-                    - "null"
-                name:
-                  type:
-                    - string
-                    - "null"
-            effort:
-              type:
-                - number
-                - "null"
-            base_stat:
-              type:
-                - number
-                - "null"
-      types:
+      past_types:
         type:
           - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            type:
-              type:
-                - object
-                - "null"
-              properties:
-                url:
-                  type:
-                    - string
-                    - "null"
-                name:
-                  type:
-                    - string
-                    - "null"
-            slot:
-              type:
-                - number
-                - "null"
-      height:
-        type:
-          - number
-          - "null"
-      weight:
-        type:
-          - number
           - "null"
       species:
         type:
           - object
           - "null"
         properties:
-          url:
+          name:
             type:
               - string
               - "null"
-          name:
+          url:
             type:
               - string
               - "null"
@@ -259,45 +278,27 @@ schemas:
           - object
           - "null"
         properties:
+          back_default:
+            type:
+              - string
+              - "null"
+          back_shiny:
+            type:
+              - string
+              - "null"
+          front_default:
+            type:
+              - string
+              - "null"
+          front_shiny:
+            type:
+              - string
+              - "null"
           other:
             type:
               - object
               - "null"
             properties:
-              home:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  front_shiny:
-                    type:
-                      - string
-                      - "null"
-                  front_default:
-                    type:
-                      - string
-                      - "null"
-              showdown:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  back_shiny:
-                    type:
-                      - string
-                      - "null"
-                  front_shiny:
-                    type:
-                      - string
-                      - "null"
-                  back_default:
-                    type:
-                      - string
-                      - "null"
-                  front_default:
-                    type:
-                      - string
-                      - "null"
               dream_world:
                 type:
                   - object
@@ -307,16 +308,50 @@ schemas:
                     type:
                       - string
                       - "null"
+              home:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  front_default:
+                    type:
+                      - string
+                      - "null"
+                  front_shiny:
+                    type:
+                      - string
+                      - "null"
               official-artwork:
                 type:
                   - object
                   - "null"
                 properties:
+                  front_default:
+                    type:
+                      - string
+                      - "null"
                   front_shiny:
                     type:
                       - string
                       - "null"
+              showdown:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  back_default:
+                    type:
+                      - string
+                      - "null"
+                  back_shiny:
+                    type:
+                      - string
+                      - "null"
                   front_default:
+                    type:
+                      - string
+                      - "null"
+                  front_shiny:
                     type:
                       - string
                       - "null"
@@ -330,53 +365,16 @@ schemas:
                   - object
                   - "null"
                 properties:
-                  yellow:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      back_gray:
-                        type:
-                          - string
-                          - "null"
-                      front_gray:
-                        type:
-                          - string
-                          - "null"
-                      back_default:
-                        type:
-                          - string
-                          - "null"
-                      front_default:
-                        type:
-                          - string
-                          - "null"
-                      back_transparent:
-                        type:
-                          - string
-                          - "null"
-                      front_transparent:
-                        type:
-                          - string
-                          - "null"
                   red-blue:
                     type:
                       - object
                       - "null"
                     properties:
-                      back_gray:
-                        type:
-                          - string
-                          - "null"
-                      front_gray:
-                        type:
-                          - string
-                          - "null"
                       back_default:
                         type:
                           - string
                           - "null"
-                      front_default:
+                      back_gray:
                         type:
                           - string
                           - "null"
@@ -384,7 +382,264 @@ schemas:
                         type:
                           - string
                           - "null"
+                      front_default:
+                        type:
+                          - string
+                          - "null"
+                      front_gray:
+                        type:
+                          - string
+                          - "null"
                       front_transparent:
+                        type:
+                          - string
+                          - "null"
+                  yellow:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      back_default:
+                        type:
+                          - string
+                          - "null"
+                      back_gray:
+                        type:
+                          - string
+                          - "null"
+                      back_transparent:
+                        type:
+                          - string
+                          - "null"
+                      front_default:
+                        type:
+                          - string
+                          - "null"
+                      front_gray:
+                        type:
+                          - string
+                          - "null"
+                      front_transparent:
+                        type:
+                          - string
+                          - "null"
+              generation-ii:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  crystal:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      back_default:
+                        type:
+                          - string
+                          - "null"
+                      back_shiny:
+                        type:
+                          - string
+                          - "null"
+                      back_shiny_transparent:
+                        type:
+                          - string
+                          - "null"
+                      back_transparent:
+                        type:
+                          - string
+                          - "null"
+                      front_default:
+                        type:
+                          - string
+                          - "null"
+                      front_shiny:
+                        type:
+                          - string
+                          - "null"
+                      front_shiny_transparent:
+                        type:
+                          - string
+                          - "null"
+                      front_transparent:
+                        type:
+                          - string
+                          - "null"
+                  gold:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      back_default:
+                        type:
+                          - string
+                          - "null"
+                      back_shiny:
+                        type:
+                          - string
+                          - "null"
+                      front_default:
+                        type:
+                          - string
+                          - "null"
+                      front_shiny:
+                        type:
+                          - string
+                          - "null"
+                      front_transparent:
+                        type:
+                          - string
+                          - "null"
+                  silver:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      back_default:
+                        type:
+                          - string
+                          - "null"
+                      back_shiny:
+                        type:
+                          - string
+                          - "null"
+                      front_default:
+                        type:
+                          - string
+                          - "null"
+                      front_shiny:
+                        type:
+                          - string
+                          - "null"
+                      front_transparent:
+                        type:
+                          - string
+                          - "null"
+              generation-iii:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  emerald:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      front_default:
+                        type:
+                          - string
+                          - "null"
+                      front_shiny:
+                        type:
+                          - string
+                          - "null"
+                  firered-leafgreen:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      back_default:
+                        type:
+                          - string
+                          - "null"
+                      back_shiny:
+                        type:
+                          - string
+                          - "null"
+                      front_default:
+                        type:
+                          - string
+                          - "null"
+                      front_shiny:
+                        type:
+                          - string
+                          - "null"
+                  ruby-sapphire:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      back_default:
+                        type:
+                          - string
+                          - "null"
+                      back_shiny:
+                        type:
+                          - string
+                          - "null"
+                      front_default:
+                        type:
+                          - string
+                          - "null"
+                      front_shiny:
+                        type:
+                          - string
+                          - "null"
+              generation-iv:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  diamond-pearl:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      back_default:
+                        type:
+                          - string
+                          - "null"
+                      back_shiny:
+                        type:
+                          - string
+                          - "null"
+                      front_default:
+                        type:
+                          - string
+                          - "null"
+                      front_shiny:
+                        type:
+                          - string
+                          - "null"
+                  heartgold-soulsilver:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      back_default:
+                        type:
+                          - string
+                          - "null"
+                      back_shiny:
+                        type:
+                          - string
+                          - "null"
+                      front_default:
+                        type:
+                          - string
+                          - "null"
+                      front_shiny:
+                        type:
+                          - string
+                          - "null"
+                  platinum:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      back_default:
+                        type:
+                          - string
+                          - "null"
+                      back_shiny:
+                        type:
+                          - string
+                          - "null"
+                      front_default:
+                        type:
+                          - string
+                          - "null"
+                      front_shiny:
                         type:
                           - string
                           - "null"
@@ -403,15 +658,11 @@ schemas:
                           - object
                           - "null"
                         properties:
-                          back_shiny:
-                            type:
-                              - string
-                              - "null"
-                          front_shiny:
-                            type:
-                              - string
-                              - "null"
                           back_default:
+                            type:
+                              - string
+                              - "null"
+                          back_shiny:
                             type:
                               - string
                               - "null"
@@ -419,15 +670,15 @@ schemas:
                             type:
                               - string
                               - "null"
-                      back_shiny:
-                        type:
-                          - string
-                          - "null"
-                      front_shiny:
-                        type:
-                          - string
-                          - "null"
+                          front_shiny:
+                            type:
+                              - string
+                              - "null"
                       back_default:
+                        type:
+                          - string
+                          - "null"
+                      back_shiny:
                         type:
                           - string
                           - "null"
@@ -435,163 +686,7 @@ schemas:
                         type:
                           - string
                           - "null"
-              generation-ii:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  gold:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      back_shiny:
-                        type:
-                          - string
-                          - "null"
                       front_shiny:
-                        type:
-                          - string
-                          - "null"
-                      back_default:
-                        type:
-                          - string
-                          - "null"
-                      front_default:
-                        type:
-                          - string
-                          - "null"
-                      front_transparent:
-                        type:
-                          - string
-                          - "null"
-                  silver:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      back_shiny:
-                        type:
-                          - string
-                          - "null"
-                      front_shiny:
-                        type:
-                          - string
-                          - "null"
-                      back_default:
-                        type:
-                          - string
-                          - "null"
-                      front_default:
-                        type:
-                          - string
-                          - "null"
-                      front_transparent:
-                        type:
-                          - string
-                          - "null"
-                  crystal:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      back_shiny:
-                        type:
-                          - string
-                          - "null"
-                      front_shiny:
-                        type:
-                          - string
-                          - "null"
-                      back_default:
-                        type:
-                          - string
-                          - "null"
-                      front_default:
-                        type:
-                          - string
-                          - "null"
-                      back_transparent:
-                        type:
-                          - string
-                          - "null"
-                      front_transparent:
-                        type:
-                          - string
-                          - "null"
-                      back_shiny_transparent:
-                        type:
-                          - string
-                          - "null"
-                      front_shiny_transparent:
-                        type:
-                          - string
-                          - "null"
-              generation-iv:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  platinum:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      back_shiny:
-                        type:
-                          - string
-                          - "null"
-                      front_shiny:
-                        type:
-                          - string
-                          - "null"
-                      back_default:
-                        type:
-                          - string
-                          - "null"
-                      front_default:
-                        type:
-                          - string
-                          - "null"
-                  diamond-pearl:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      back_shiny:
-                        type:
-                          - string
-                          - "null"
-                      front_shiny:
-                        type:
-                          - string
-                          - "null"
-                      back_default:
-                        type:
-                          - string
-                          - "null"
-                      front_default:
-                        type:
-                          - string
-                          - "null"
-                  heartgold-soulsilver:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      back_shiny:
-                        type:
-                          - string
-                          - "null"
-                      front_shiny:
-                        type:
-                          - string
-                          - "null"
-                      back_default:
-                        type:
-                          - string
-                          - "null"
-                      front_default:
                         type:
                           - string
                           - "null"
@@ -600,89 +695,29 @@ schemas:
                   - object
                   - "null"
                 properties:
-                  x-y:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      front_shiny:
-                        type:
-                          - string
-                          - "null"
-                      front_default:
-                        type:
-                          - string
-                          - "null"
                   omegaruby-alphasapphire:
                     type:
                       - object
                       - "null"
                     properties:
-                      front_shiny:
-                        type:
-                          - string
-                          - "null"
                       front_default:
                         type:
                           - string
                           - "null"
-              generation-iii:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  emerald:
+                      front_shiny:
+                        type:
+                          - string
+                          - "null"
+                  x-y:
                     type:
                       - object
                       - "null"
                     properties:
-                      front_shiny:
-                        type:
-                          - string
-                          - "null"
                       front_default:
                         type:
                           - string
                           - "null"
-                  ruby-sapphire:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      back_shiny:
-                        type:
-                          - string
-                          - "null"
                       front_shiny:
-                        type:
-                          - string
-                          - "null"
-                      back_default:
-                        type:
-                          - string
-                          - "null"
-                      front_default:
-                        type:
-                          - string
-                          - "null"
-                  firered-leafgreen:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      back_shiny:
-                        type:
-                          - string
-                          - "null"
-                      front_shiny:
-                        type:
-                          - string
-                          - "null"
-                      back_default:
-                        type:
-                          - string
-                          - "null"
-                      front_default:
                         type:
                           - string
                           - "null"
@@ -705,11 +740,11 @@ schemas:
                       - object
                       - "null"
                     properties:
-                      front_shiny:
+                      front_default:
                         type:
                           - string
                           - "null"
-                      front_default:
+                      front_shiny:
                         type:
                           - string
                           - "null"
@@ -727,23 +762,7 @@ schemas:
                         type:
                           - string
                           - "null"
-          back_shiny:
-            type:
-              - string
-              - "null"
-          front_shiny:
-            type:
-              - string
-              - "null"
-          back_default:
-            type:
-              - string
-              - "null"
-          front_default:
-            type:
-              - string
-              - "null"
-      abilities:
+      stats:
         type:
           - array
           - "null"
@@ -752,75 +771,56 @@ schemas:
             - object
             - "null"
           properties:
+            base_stat:
+              type:
+                - number
+                - "null"
+            effort:
+              type:
+                - number
+                - "null"
+            stat:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+      types:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - object
+                - "null"
+              properties:
+                name:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
             slot:
               type:
                 - number
                 - "null"
-            ability:
-              type:
-                - object
-                - "null"
-              properties:
-                url:
-                  type:
-                    - string
-                    - "null"
-                name:
-                  type:
-                    - string
-                    - "null"
-            is_hidden:
-              type:
-                - boolean
-                - "null"
-      held_items:
-        type:
-          - array
-          - "null"
-      is_default:
-        type:
-          - boolean
-          - "null"
-      past_types:
-        type:
-          - array
-          - "null"
-      game_indices:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            version:
-              type:
-                - object
-                - "null"
-              properties:
-                url:
-                  type:
-                    - string
-                    - "null"
-                name:
-                  type:
-                    - string
-                    - "null"
-            game_index:
-              type:
-                - number
-                - "null"
-      past_abilities:
-        type:
-          - array
-          - "null"
-      base_experience:
+      weight:
         type:
           - number
           - "null"
-      location_area_encounters:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
+    required:
+      - id

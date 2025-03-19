@@ -16,7 +16,7 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.41.4@sha256:2e2f1da1b6b9de195397a47abfe1981771628c6a9ff43a51c0e381adcec3d97c
   connectorSubtype: api
   connectorType: source
-  definitionId: dcd80064-ba6c-49aa-8934-47a1600058ce
+  definitionId: 64e7bdfc-d65b-4bdf-a9c0-a45ecce49e06
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-pokethings
   githubIssueLabel: source-pokethings
