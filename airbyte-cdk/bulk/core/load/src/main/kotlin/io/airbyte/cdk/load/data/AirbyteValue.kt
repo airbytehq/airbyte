@@ -163,7 +163,6 @@ private class ObjectValueSerializer : JsonSerializer<ObjectValue>() {
  * @property type The type ([AirbyteType]) of the [AirbyteValue]
  * @property changes List of [Meta.Change]s that have been applied to this value
  * @property name Field name
- * @property fieldCategory [AirbyteMetaFields] of the field
  */
 class EnrichedAirbyteValue(
     var value: AirbyteValue,
@@ -179,7 +178,6 @@ class EnrichedAirbyteValue(
      * Creates a nullified version of this value with the specified reason.
      *
      * @param reason The [Reason] for nullification, defaults to DESTINATION_SERIALIZATION_ERROR
-     * @return A new [EnrichedAirbyteValue] with a null value and an additional change record
      */
     fun nullify(reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR) {
         val nullChange = Meta.Change(field = name, change = Change.NULLED, reason = reason)
@@ -193,7 +191,6 @@ class EnrichedAirbyteValue(
      *
      * @param reason The [Reason] for truncation, defaults to DESTINATION_RECORD_SIZE_LIMITATION
      * @param newValue The new (truncated) value to use
-     * @return A new [EnrichedAirbyteValue] with the truncated value and an additional change record
      */
     fun truncate(
         reason: Reason = Reason.DESTINATION_RECORD_SIZE_LIMITATION,

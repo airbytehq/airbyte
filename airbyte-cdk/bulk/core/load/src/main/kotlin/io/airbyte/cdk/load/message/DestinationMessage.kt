@@ -228,7 +228,7 @@ data class EnrichedDestinationRecordAirbyteValue(
     val meta: Meta?,
     val serializedSizeBytes: Long = 0L,
 ) {
-    val airbyteMetaFields: Map<String, EnrichedAirbyteValue>
+    private val airbyteMetaFields: Map<String, EnrichedAirbyteValue>
         get() =
             mapOf(
                 Meta.COLUMN_NAME_AB_RAW_ID to
