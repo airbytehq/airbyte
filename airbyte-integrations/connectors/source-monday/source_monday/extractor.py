@@ -96,7 +96,8 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
                 if isinstance(extracted, list) and None in extracted:
                     logger.warning(f"Record with null value received; errors: {response_body.get('errors')}")
                     result += [x for x in extracted if x]
-                result += extracted if isinstance(extracted, list) else [extracted]
+                else:
+                    result += extracted if isinstance(extracted, list) else [extracted]
         return result
 
     def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:

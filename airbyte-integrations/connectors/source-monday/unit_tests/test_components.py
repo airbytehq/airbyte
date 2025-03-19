@@ -38,7 +38,7 @@ def test_null_records(caplog):
         "account_id": 123456,
     }
     response = _create_response(content)
-    records = extractor.extract_records(response)
+    records = list(extractor.extract_records(response))
     warning_message = "Record with null value received; errors: [{'message': 'Cannot return null for non-nullable field Board.creator'}]"
     assert warning_message in caplog.messages
     expected_records = [

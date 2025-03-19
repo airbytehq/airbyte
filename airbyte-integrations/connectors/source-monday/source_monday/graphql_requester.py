@@ -161,7 +161,8 @@ class MondayGraphqlRequester(HttpRequester):
         nested_limit = self.nested_limit.eval(self.config)
 
         created_at = (object_arguments.get("stream_slice", dict()) or dict()).get("start_time")
-        object_arguments.pop("stream_slice")
+        if "stream_slice" in object_arguments:
+            object_arguments.pop("stream_slice")
 
         # 1 is default start time, so we can skip it to get all the data
         if created_at == "1":
@@ -227,6 +228,7 @@ class MondayGraphqlRequester(HttpRequester):
             limit=limit or None,
             page=page,
         )
+        print(query)
         return {"query": f"query{{{query}}}"}
 
     # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.
