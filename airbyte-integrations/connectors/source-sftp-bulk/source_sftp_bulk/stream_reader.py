@@ -3,6 +3,7 @@
 
 import datetime
 import logging
+import os
 import stat
 import time
 from io import IOBase
@@ -11,11 +12,12 @@ from typing import Dict, Iterable, List, Optional
 import psutil
 from typing_extensions import override
 
-from airbyte_cdk import FailureType
+from airbyte_cdk import FailureType, AirbyteTracedException
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_sftp_bulk.client import SFTPClient
+from source_sftp_bulk.gpg_decryptor import GPGDecryptor
 from source_sftp_bulk.spec import SourceSFTPBulkSpec
 
 
@@ -25,6 +27,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
     def __init__(self):
         super().__init__()
         self._sftp_client = None
+        self._gpg_decryptor = None
 
     @property
     def config(self) -> SourceSFTPBulkSpec:
@@ -43,6 +46,20 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         """
         assert isinstance(value, SourceSFTPBulkSpec)
         self._config = value
+        
+        # Initialize GPG decryptor if enabled
+        if self.config.gpg_config.enabled:
+            if not self.config.gpg_config.private_key:
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    message="GPG private key is required when GPG decryption is enabled",
+                    internal_message="Config validation failed: missing required GPG private key"
+                )
+            
+            self._gpg_decryptor = GPGDecryptor(
+                gpg_private_key=self.config.gpg_config.private_key,
+                gpg_passphrase=self.config.gpg_config.passphrase
+            )
 
     @property
     def sftp_client(self) -> SFTPClient:
@@ -121,7 +138,7 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
     @override
     def get_file(self, file: RemoteFile, local_directory: str, logger: logging.Logger) -> Dict[str, str | int]:
         """
-        Downloads a file from SFTP server to a specified local directory.
+        Downloads a file from SFTP server to a specified local directory and decrypts it if it's GPG encrypted.
 
         Args:
             file (RemoteFile): The remote file object containing URI and metadata.
@@ -130,16 +147,15 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
 
         Returns:
             dict: A dictionary containing the following:
-                - "file_url" (str): The absolute path of the downloaded file.
+                - "file_url" (str): The absolute path of the downloaded file (decrypted if applicable).
                 - "bytes" (int): The file size in bytes.
-                - "file_relative_path" (str): The relative path of the file for local storage. Is relative to local_directory as
-                this a mounted volume in the pod container.
+                - "file_relative_path" (str): The relative path of the file for local storage.
 
         Raises:
-            FileSizeLimitError: If the file size exceeds the predefined limit (1 GB).
+            FileSizeLimitError: If the file size exceeds the predefined limit.
         """
         file_size = self.file_size(file)
-        # I'm putting this check here so we can remove the safety wheels per connector when ready.
+        # Check file size limit
         if file_size > self.FILE_SIZE_LIMIT:
             message = "File size exceeds the 1 GB limit."
             raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
@@ -170,6 +186,42 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
         download_duration = time.time() - start_download_time
         logger.info(f"Time taken to download the file {file.uri}: {download_duration:,.2f} seconds.")
         logger.info(f"File {file_relative_path} successfully written to {local_directory}.")
+
+        # Check if file needs decryption and GPG decryption is enabled
+        if self._gpg_decryptor and self._gpg_decryptor.is_gpg_encrypted(local_file_path):
+            logger.info(f"File {local_file_path} appears to be GPG encrypted. Attempting decryption.")
+            
+            # Generate output path for decrypted file
+            decrypted_file_path = None
+            for ext in ['.gpg', '.pgp', '.asc']:
+                if local_file_path.endswith(ext):
+                    decrypted_file_path = local_file_path[:-len(ext)]
+                    break
+            else:
+                decrypted_file_path = f"{local_file_path}.decrypted"
+                
+            # Get the relative path for decrypted file
+            decrypted_file_relative_path = os.path.relpath(decrypted_file_path, local_directory)
+            
+            # Decrypt the file
+            start_decrypt_time = time.time()
+            decrypted_file_path = self._gpg_decryptor.decrypt_file(local_file_path, decrypted_file_path)
+            decrypt_duration = time.time() - start_decrypt_time
+            
+            # Get decrypted file size
+            decrypted_file_size = os.path.getsize(decrypted_file_path)
+            
+            logger.info(f"Time taken to decrypt the file: {decrypt_duration:,.2f} seconds.")
+            logger.info(f"Decrypted file {decrypted_file_relative_path} successfully created.")
+            logger.info(f"Decrypted file size: {decrypted_file_size / (1024 * 1024):,.2f} MB.")
+            
+            # Return the decrypted file information
+            decrypted_absolute_file_path = os.path.abspath(decrypted_file_path)
+            return {
+                "file_url": decrypted_absolute_file_path,
+                "bytes": decrypted_file_size,
+                "file_relative_path": decrypted_file_relative_path
+            }
 
         return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": file_relative_path}
 
