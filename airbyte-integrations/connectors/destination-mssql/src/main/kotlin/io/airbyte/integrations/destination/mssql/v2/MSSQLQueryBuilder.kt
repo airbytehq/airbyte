@@ -22,19 +22,17 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteTypeToMssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setAsNullValue
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setValue
 import io.airbyte.integrations.destination.mssql.v2.convert.MssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.ResultSetToAirbyteValue.Companion.getAirbyteNamedValue
-import io.airbyte.protocol.models.Jsons
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -197,19 +195,6 @@ class MSSQLQueryBuilder(
             )
 
         val airbyteFields = airbyteFinalTableFields.map { it.name }.toSet()
-
-        private fun AirbyteRecordMessageMeta.trackChange(
-            fieldName: String,
-            change: AirbyteRecordMessageMetaChange.Change,
-            reason: AirbyteRecordMessageMetaChange.Reason,
-        ) {
-            this.changes.add(
-                AirbyteRecordMessageMetaChange()
-                    .withField(fieldName)
-                    .withChange(change)
-                    .withReason(reason)
-            )
-        }
     }
 
     data class NamedField(val name: String, val type: FieldType)
@@ -338,59 +323,44 @@ class MSSQLQueryBuilder(
         plainRecord: DestinationRecord,
         schema: List<NamedField>
     ) {
-        val record = plainRecord.asRecordMarshaledToAirbyteValue()
-        val recordObject = record.data as ObjectValue
-        var airbyteMetaStatementIndex: Int? = null
-        val airbyteMeta =
-            AirbyteRecordMessageMeta().apply {
-                changes =
-                    record.meta?.changes?.map { it.asProtocolObject() }?.toMutableList()
-                        ?: mutableListOf()
-                setAdditionalProperty("sync_id", stream.syncId)
-            }
+        val enrichedRecord =
+            plainRecord.asDestinationRecordRaw().asEnrichedDestinationRecordAirbyteValue()
+        // TODO maybe we should just sort this into schema order?
+        val populatedFields = enrichedRecord.allTypedFields
 
+        var airbyteMetaStatementIndex: Int? = null
         schema.forEachIndexed { index, field ->
             val statementIndex = index + 1
-            if (field.name in airbyteFields) {
-                when (field.name) {
-                    COLUMN_NAME_AB_RAW_ID ->
-                        statement.setString(statementIndex, UUID.randomUUID().toString())
-                    COLUMN_NAME_AB_EXTRACTED_AT ->
-                        statement.setLong(statementIndex, record.emittedAtMs)
-                    COLUMN_NAME_AB_GENERATION_ID ->
-                        statement.setLong(statementIndex, stream.generationId)
-                    COLUMN_NAME_AB_META -> airbyteMetaStatementIndex = statementIndex
-                }
-            } else {
+            if (field.name == COLUMN_NAME_AB_META) {
+                // don't populate _airbyte_meta yet - we might run into errors in the other fields
+                // for this record.
+                // Instead, we grab the statement index, and populate airbyte_meta after processing
+                // all the other fields.
+                airbyteMetaStatementIndex = statementIndex
+                return@forEachIndexed
+            }
+            populatedFields[field.name]?.let { value ->
                 try {
-                    val value = recordObject.values[field.name]
-                    statement.setValue(statementIndex, value, field)
+                    statement.setValue(statementIndex, value.value, field)
                 } catch (e: Exception) {
                     statement.setAsNullValue(statementIndex, field.type.type)
                     when (e) {
                         is ArithmeticException ->
-                            airbyteMeta.trackChange(
-                                field.name,
-                                AirbyteRecordMessageMetaChange.Change.NULLED,
-                                AirbyteRecordMessageMetaChange.Reason
-                                    .DESTINATION_FIELD_SIZE_LIMITATION,
-                            )
-                        else ->
-                            airbyteMeta.trackChange(
-                                field.name,
-                                AirbyteRecordMessageMetaChange.Change.NULLED,
-                                AirbyteRecordMessageMetaChange.Reason
-                                    .DESTINATION_SERIALIZATION_ERROR,
-                            )
+                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                        else -> value.nullify(Reason.DESTINATION_SERIALIZATION_ERROR)
                     }
                 }
             }
+                ?: statement.setAsNullValue(statementIndex, field.type.type)
         }
+
+        // Now that we're done processing the rest of the record, populate airbyte_meta into the
+        // prepared statement.
         airbyteMetaStatementIndex?.let { statementIndex ->
-            if (airbyteMeta.changes.isEmpty()) {
-                airbyteMeta.changes = null
-            }
-            statement.setString(statementIndex, Jsons.serialize(airbyteMeta))
+            statement.setString(
+                statementIndex,
+                enrichedRecord.airbyteMeta.value.serializeToString()
+            )
         }
     }
 
