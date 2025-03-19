@@ -28,7 +28,7 @@ class MondayGraphqlRequester(HttpRequester):
         self.nested_limit = InterpolatedString.create(self.nested_limit, parameters=parameters)
         self.name = parameters.get("name", "").lower()
         self.stream_sync_mode = (
-            SyncMode.incremental if parameters.get("stream_sync_mode", "full_refresh") == SyncMode.full_refresh else SyncMode.full_refresh
+            SyncMode.full_refresh if parameters.get("stream_sync_mode", "full_refresh") == "full_refresh" else SyncMode.incremental
         )
 
     def _ensure_type(self, t: Type, o: Any):
@@ -231,7 +231,6 @@ class MondayGraphqlRequester(HttpRequester):
             limit=limit or None,
             page=page,
         )
-        print(query)
         return {"query": f"query{{{query}}}"}
 
     # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.
