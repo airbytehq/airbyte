@@ -47,12 +47,10 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get('pages', {}).get('next', {}).get('starting_after') if response.get('pages', {}).get('next') else '' }}"
-            stop_condition: "{{ not response.get('pages', {}).get('next', {}).get('starting_after') }}"
+            cursor_value: "{{ response.get('pages', {}).get('next') }}"
+            stop_condition: "{{ not response.get('pages', {}).get('next') }}"
           page_token_option:
-            type: RequestOption
-            field_name: starting_after
-            inject_into: request_parameter
+            type: RequestPath
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
