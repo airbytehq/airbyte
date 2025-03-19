@@ -4,9 +4,9 @@ import json
 from unittest import TestCase
 from unittest.mock import patch
 
-from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.mock_http import HttpMocker
 
 from .config import ConfigBuilder
 from .monday_requests import TeamsRequestBuilder
@@ -115,7 +115,8 @@ class TestTeamsStreamFullRefresh(TestCase):
         error_logs = [
             error
             for error in get_log_messages_by_log_level(output.logs, LogLevel.INFO)
-            if 'Backing off _send(...) for 0.0s (airbyte_cdk.sources.streams.http.exceptions.UserDefinedBackoffException: Internal server error.' in error
+            if "Backing off _send(...) for 0.0s (airbyte_cdk.sources.streams.http.exceptions.UserDefinedBackoffException: Internal server error."
+            in error
         ]
         assert len(error_logs) == 5
 

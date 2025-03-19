@@ -15,7 +15,7 @@ def test_extract_records():
         "data": {"boards": [{"activity_logs": [{"data": '{"pulse_id": 123}', "entity": "pulse", "created_at": "16367386880000000"}]}]}
     }
 
-    response.content = json.dumps(response_body).encode('utf-8')
+    response.content = json.dumps(response_body).encode("utf-8")
 
     extractor = MondayActivityExtractor(parameters={})
     records = list(extractor.extract_records(response))
@@ -30,7 +30,7 @@ def test_empty_activity_logs_extract_records():
     response = MagicMock()
     response_body = {"data": {"boards": [{"activity_logs": None}]}}
 
-    response.content = json.dumps(response_body).encode('utf-8')
+    response.content = json.dumps(response_body).encode("utf-8")
     extractor = MondayActivityExtractor(parameters={})
     records = list(extractor.extract_records(response))
 
@@ -42,7 +42,7 @@ def test_extract_records_incremental():
     response = MagicMock()
     response_body = {"data": {"boards": [{"id": 1, "column_values": [{"id": 11, "text": None, "display_value": "Hola amigo!"}]}]}}
 
-    response.content = json.dumps(response_body).encode('utf-8')
+    response.content = json.dumps(response_body).encode("utf-8")
     extractor = MondayIncrementalItemsExtractor(
         parameters={},
         field_path=["data", "ccccc"],
