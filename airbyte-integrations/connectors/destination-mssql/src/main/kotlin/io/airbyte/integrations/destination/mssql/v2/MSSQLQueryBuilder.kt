@@ -17,7 +17,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
@@ -31,7 +31,6 @@ import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.lang.ArithmeticException
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -336,9 +335,10 @@ class MSSQLQueryBuilder(
 
     fun populateStatement(
         statement: PreparedStatement,
-        record: DestinationRecordAirbyteValue,
+        plainRecord: DestinationRecord,
         schema: List<NamedField>
     ) {
+        val record = plainRecord.asRecordMarshaledToAirbyteValue()
         val recordObject = record.data as ObjectValue
         var airbyteMetaStatementIndex: Int? = null
         val airbyteMeta =
