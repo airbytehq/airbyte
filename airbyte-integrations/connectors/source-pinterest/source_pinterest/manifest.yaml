@@ -208,7 +208,7 @@ definitions:
       path: "{{ 'catalogs/product_groups?ad_account_id=' + config['account_id'] if config.get('account_id') else 'catalogs/product_groups' }}"
 
   ad_accounts_stream:
-  # Docs: https://developers.pinterest.com/docs/api/v5/ad_accounts-list and https://developers.pinterest.com/docs/api/v5/ad_accounts-get
+    # Docs: https://developers.pinterest.com/docs/api/v5/ad_accounts-list and https://developers.pinterest.com/docs/api/v5/ad_accounts-get
     name: "ad_accounts"
     $ref: "#/definitions/base_stream"
     schema_loader:
@@ -246,7 +246,6 @@ definitions:
     $parameters:
       path: "{{ 'boards/' + stream_slice.id + '/pins?ad_account_id=' + config['account_id'] if config.get('account_id') else 'boards/' + stream_slice.id + '/pins' }}"
 
-
   board_section_pins_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/#operation/board_sections/list_pins
     name: "board_section_pins"
@@ -265,7 +264,6 @@ definitions:
             partition_field: "id"
     $parameters:
       path: "{{ 'boards/' + stream_slice.parent_slice.id + '/sections/' + stream_slice.id + '/pins?ad_account_id=' + config['account_id'] if config.get('account_id') else 'boards/' + stream_slice.parent_slice.id + '/sections/' + stream_slice.id + '/pins' }}"
-
 
   audiences_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/#operation/audiences/list
