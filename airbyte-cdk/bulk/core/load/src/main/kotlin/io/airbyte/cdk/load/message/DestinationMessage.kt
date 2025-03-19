@@ -225,9 +225,36 @@ data class EnrichedDestinationRecordAirbyteValue(
     val declaredFields: Map<String, EnrichedAirbyteValue>,
     val undeclaredFields: Map<String, JsonNode>,
     val emittedAtMs: Long,
+    /**
+     * The airbyte_meta field as received by the destination connector. Note that this field is NOT
+     * updated by [EnrichedAirbyteValue.nullify] / [EnrichedAirbyteValue.truncate].
+     *
+     * If you want an up-to-date view of airbyte_meta, including any changes that were done to the
+     * values within the destination connector, you should use [airbyteMeta].
+     */
     val meta: Meta?,
     val serializedSizeBytes: Long = 0L,
 ) {
+    val airbyteMeta: EnrichedAirbyteValue
+        get() =
+            EnrichedAirbyteValue(
+                ObjectValue(
+                    linkedMapOf(
+                        "sync_id" to IntegerValue(stream.syncId),
+                        "changes" to
+                            ArrayValue(
+                                (meta?.changes?.toAirbyteValues()
+                                    ?: emptyList()) +
+                                    declaredFields
+                                        .map { it.value.changes.toAirbyteValues() }
+                                        .flatten(),
+                            ),
+                    ),
+                ),
+                Meta.AirbyteMetaFields.META.type,
+                name = Meta.COLUMN_NAME_AB_META,
+            )
+
     val airbyteMetaFields: Map<String, EnrichedAirbyteValue>
         get() =
             mapOf(
@@ -243,24 +270,7 @@ data class EnrichedDestinationRecordAirbyteValue(
                         Meta.AirbyteMetaFields.EXTRACTED_AT.type,
                         name = Meta.COLUMN_NAME_AB_EXTRACTED_AT,
                     ),
-                Meta.COLUMN_NAME_AB_META to
-                    EnrichedAirbyteValue(
-                        ObjectValue(
-                            linkedMapOf(
-                                "sync_id" to IntegerValue(stream.syncId),
-                                "changes" to
-                                    ArrayValue(
-                                        (meta?.changes?.toAirbyteValues()
-                                            ?: emptyList()) +
-                                            declaredFields
-                                                .map { it.value.changes.toAirbyteValues() }
-                                                .flatten()
-                                    )
-                            )
-                        ),
-                        Meta.AirbyteMetaFields.META.type,
-                        name = Meta.COLUMN_NAME_AB_META,
-                    ),
+                Meta.COLUMN_NAME_AB_META to airbyteMeta,
                 Meta.COLUMN_NAME_AB_GENERATION_ID to
                     EnrichedAirbyteValue(
                         IntegerValue(stream.generationId),
