@@ -221,9 +221,9 @@ definitions:
               incremental_dependency: true
         group_size: 10
         deduplicate: true
-      state_migrations:
-        - type: CustomStateMigration
-          class_name: source_monday.state_migration.MondayStateMigration
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_monday.state_migration.MondayStateMigration
 
   items_stream:
     type: StateDelegatingStream
