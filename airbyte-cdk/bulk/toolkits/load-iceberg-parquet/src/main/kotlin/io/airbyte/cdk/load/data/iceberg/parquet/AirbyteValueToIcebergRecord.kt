@@ -126,18 +126,6 @@ class AirbyteValueToIcebergRecord {
     }
 }
 
-fun ObjectValue.toIcebergRecord(icebergSchema: Schema): GenericRecord {
-    val record = GenericRecord.create(icebergSchema)
-    val airbyteValueToIcebergRecord = AirbyteValueToIcebergRecord()
-    icebergSchema.asStruct().fields().forEach { field ->
-        val value = this.values[field.name()]
-        if (value != null) {
-            record.setField(field.name(), airbyteValueToIcebergRecord.convert(value, field.type()))
-        }
-    }
-    return record
-}
-
 fun Map<String, EnrichedAirbyteValue>.toIcebergRecord(icebergSchema: Schema): GenericRecord {
     val record = GenericRecord.create(icebergSchema)
     val airbyteValueToIcebergRecord = AirbyteValueToIcebergRecord()
