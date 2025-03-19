@@ -11,6 +11,8 @@ definitions:
   streams:
     activity_logs:
       type: DeclarativeStream
+      description: >-
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/admins/listactivitylogs
       name: activity_logs
       primary_key:
         - id
@@ -43,12 +45,14 @@ definitions:
               - activity_logs
         paginator:
           type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get('pages', {}).get('next') }}"
-            stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
+            cursor_value: "{{ response.get('pages', {}).get('next', {}).get('starting_after') if response.get('pages', {}).get('next') else '' }}"
+            stop_condition: "{{ not response.get('pages', {}).get('next', {}).get('starting_after') }}"
+          page_token_option:
+            type: RequestOption
+            field_name: starting_after
+            inject_into: request_parameter
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -71,7 +75,7 @@ definitions:
     admins:
       type: DeclarativeStream
       description: >-
-        https://developers.intercom.com/intercom-api-reference/reference#list-admins
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/admins/listadmins
       name: admins
       primary_key:
         - id
@@ -109,7 +113,7 @@ definitions:
     tags:
       type: DeclarativeStream
       description: >-
-        https://developers.intercom.com/intercom-api-reference/reference#list-tags-for-an-app
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/tags/listtags
       name: tags
       primary_key:
         - name
@@ -147,7 +151,7 @@ definitions:
     teams:
       type: DeclarativeStream
       description: >-
-        https://developers.intercom.com/intercom-api-reference/reference#list-teams
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/teams/listteams
       name: teams
       primary_key:
         - name
@@ -185,7 +189,7 @@ definitions:
     segments:
       type: DeclarativeStream
       description: >-
-        https://developers.intercom.com/intercom-api-reference/reference#list-segments
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/segments/listsegments
       name: segments
       primary_key:
         - id
@@ -235,7 +239,7 @@ definitions:
     companies:
       type: DeclarativeStream
       description: >-
-        https://developers.intercom.com/intercom-api-reference/reference/scroll-over-all-companies
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/companies/scrolloverallcompanies
       name: companies
       primary_key:
         - id
@@ -316,7 +320,7 @@ definitions:
     company_attributes:
       type: DeclarativeStream
       description: >-
-        https://developers.intercom.com/intercom-api-reference/reference#list-data-attributes
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/data-attributes/listdataattributes
       name: company_attributes
       primary_key:
         - name
@@ -356,7 +360,7 @@ definitions:
     contact_attributes:
       type: DeclarativeStream
       description: >-
-        https://developers.intercom.com/intercom-api-reference/reference#list-data-attributes
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/data-attributes
       name: contact_attributes
       primary_key:
         - name
@@ -396,7 +400,7 @@ definitions:
     contacts:
       type: DeclarativeStream
       description: >-
-        https://developers.intercom.com/intercom-api-reference/reference/pagination-sorting-search
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/contacts/searchcontacts
       name: contacts
       retriever:
         type: SimpleRetriever
@@ -462,7 +466,7 @@ definitions:
     conversations:
       type: DeclarativeStream
       description: >-
-        https://developers.intercom.com/intercom-api-reference/reference/pagination-sorting-search
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/conversations/searchconversations
       name: conversations
       retriever:
         type: SimpleRetriever
@@ -526,6 +530,8 @@ definitions:
           $ref: "#/schemas/conversations"
     conversation_parts:
       type: DeclarativeStream
+      description: >-
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/conversations/retrieveconversation
       name: conversation_parts
       primary_key:
         - id
@@ -585,6 +591,8 @@ definitions:
         schema:
           $ref: "#/schemas/conversation_parts"
     company_segments:
+      description: >-
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/companies/listattachedsegmentsforcompanies
       type: DeclarativeStream
       name: company_segments
       primary_key:
@@ -597,6 +605,7 @@ definitions:
           http_method: GET
           request_headers:
             Accept: application/json
+            #This API is only documented on version 2.11 as of today 3/19/25
             Intercom-Version: "2.11"
           error_handler:
             type: CustomErrorHandler
@@ -643,6 +652,8 @@ definitions:
           $ref: "#/schemas/company_segments"
     tickets:
       type: DeclarativeStream
+      description: >-
+        https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/tickets/searchtickets
       name: tickets
       primary_key:
         - id
