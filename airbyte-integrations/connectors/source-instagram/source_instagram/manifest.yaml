@@ -119,16 +119,16 @@ definitions:
             metric: >-
               {% if stream_partition.media_insights_info.media_product_type ==
               "REELS" %}{{
-              'comments,ig_reels_avg_watch_time,ig_reels_video_view_total_time,likes,plays,reach,saved,shares,ig_reels_aggregated_all_plays_count,clips_replays_count'
+              'comments,ig_reels_avg_watch_time,ig_reels_video_view_total_time,likes,reach,saved,shares'
               }}{% elif stream_partition.media_insights_info.media_type ==
               "VIDEO" and
               stream_partition.media_insights_info.media_product_type == "FEED"
-              %}{{  'impressions,reach,saved'}}{% elif
+              %}{{  'reach,saved'}}{% elif
               stream_partition.media_insights_info.media_type == "VIDEO" %}{{
-              'impressions,reach,saved,likes,comments,shares,follows,profile_visits'
+              'reach,saved,likes,comments,shares,follows,profile_visits'
               }}{%elif stream_partition.media_insights_info.media_type ==
-              "CAROUSEL_ALBUM"%}{{ 'impressions,reach,saved,shares,follows,profile_visits' }}{% else %}{{
-              'impressions,reach,saved,likes,comments,shares,follows,profile_visits' }}{%
+              "CAROUSEL_ALBUM"%}{{ 'reach,saved,shares,follows,profile_visits' }}{% else %}{{
+              'reach,saved,likes,comments,shares,follows,profile_visits' }}{%
               endif %}
           error_handler:
             type: CompositeErrorHandler
@@ -815,11 +815,6 @@ schemas:
         type:
           - "null"
           - number
-      impressions:
-        description: The number of times the media has been displayed to users.
-        type:
-          - "null"
-          - integer
       reach:
         description: The number of unique users who have seen the media.
         type:
@@ -847,21 +842,6 @@ schemas:
           - integer
       total_interactions:
         description: The total number of interactions (likes, comments, shares) on the media.
-        type:
-          - "null"
-          - integer
-      plays:
-        description: The number of times the media has been played.
-        type:
-          - "null"
-          - integer
-      ig_reels_aggregated_all_plays_count:
-        description: The number of times of Instagram Reels gets reproduced after an impression is counted.
-        type:
-          - "null"
-          - integer
-      clips_replays_count:
-        description: The number of times the reel gets reproduced after the first one.
         type:
           - "null"
           - integer

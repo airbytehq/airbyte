@@ -146,6 +146,7 @@ for more information.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| 3.3.0 | 2025-03-20 | [x](https://github.com/airbytehq/airbyte/pull/x) | Remove deprecated metrics from `UserInsights` and `MediaInsights` streams. |
 | 3.2.2 | 2025-03-10 | [55685](https://github.com/airbytehq/airbyte/pull/55685) | Disable cache for InstagramMediaChildrenTransformation |
 | 3.2.1 | 2025-03-08 | [55463](https://github.com/airbytehq/airbyte/pull/55463) | Update dependencies |
 | 3.2.0 | 2025-02-28 | [54364](https://github.com/airbytehq/airbyte/pull/54364) | Update to CDK v6 |
