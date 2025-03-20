@@ -1,0 +1,3874 @@
+version: 6.13.0
+
+type: DeclarativeSource
+
+description: Salla API connector.
+
+check:
+  type: CheckStream
+  stream_names:
+    - Orders
+
+definitions:
+  streams:
+    Orders:
+      type: DeclarativeStream
+      name: Orders
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: orders
+          http_method: GET
+          request_parameters:
+            format: light
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 15
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Orders"
+    Products:
+      type: DeclarativeStream
+      name: Products
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: products
+          http_method: GET
+          request_parameters:
+            format: light
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Products"
+    Customers:
+      type: DeclarativeStream
+      name: Customers
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: customers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Customers"
+    Shipments:
+      type: DeclarativeStream
+      name: Shipments
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: shipments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Shipments"
+    Abandoned carts:
+      type: DeclarativeStream
+      name: Abandoned carts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: carts/abandoned
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 10
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Abandoned carts"
+    Branches:
+      type: DeclarativeStream
+      name: Branches
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: branches
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 10
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Branches"
+    Brands:
+      type: DeclarativeStream
+      name: Brands
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: brands
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 10
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Brands"
+    Available Payment Methods:
+      type: DeclarativeStream
+      name: Available Payment Methods
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: payment/methods
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 10
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Available Payment Methods"
+    List Banks:
+      type: DeclarativeStream
+      name: List Banks
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: payment/banks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 10
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/List Banks"
+    Taxes:
+      type: DeclarativeStream
+      name: Taxes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: taxes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 10
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Taxes"
+    List Transactions:
+      type: DeclarativeStream
+      name: List Transactions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: transactions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 10
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/List Transactions"
+    List Special Offers:
+      type: DeclarativeStream
+      name: List Special Offers
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: specialoffers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 10
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/List Special Offers"
+    List Countries:
+      type: DeclarativeStream
+      name: List Countries
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: countries
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 10
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/List Countries"
+    affiliates:
+      type: DeclarativeStream
+      name: affiliates
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: affiliates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 10
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/affiliates"
+    Affiliate Details:
+      type: DeclarativeStream
+      name: Affiliate Details
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: affiliates/{{ stream_partition.parent_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/affiliates"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Affiliate Details"
+    Transaction details:
+      type: DeclarativeStream
+      name: Transaction details
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: transactions/{{ stream_partition.parent_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/List Transactions"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Transaction details"
+    List Reviews:
+      type: DeclarativeStream
+      name: List Reviews
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: reviews
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 10
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/List Reviews"
+    Review details:
+      type: DeclarativeStream
+      name: Review details
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: reviews/{{ stream_partition.parent_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/List Reviews"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Review details"
+    Shipment Details:
+      type: DeclarativeStream
+      name: Shipment Details
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: shipments/{{ stream_partition.parent_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/Shipments"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Shipment Details"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.salla.dev/admin/v2/
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      expires_in_name: expires_in
+      access_token_name: access_token
+      refresh_request_body: {}
+      refresh_token_updater:
+        refresh_token_name: refresh_token
+        access_token_config_path:
+          - oauth_access_token
+        refresh_token_config_path:
+          - client_refresh_token
+        token_expiry_date_config_path:
+          - oauth_token_expiry_date
+      token_refresh_endpoint: https://accounts.salla.sa/oauth2/token
+
+streams:
+  - $ref: "#/definitions/streams/Orders"
+  - $ref: "#/definitions/streams/Products"
+  - $ref: "#/definitions/streams/Customers"
+  - $ref: "#/definitions/streams/Shipments"
+  - $ref: "#/definitions/streams/Abandoned carts"
+  - $ref: "#/definitions/streams/Branches"
+  - $ref: "#/definitions/streams/Brands"
+  - $ref: "#/definitions/streams/Available Payment Methods"
+  - $ref: "#/definitions/streams/List Banks"
+  - $ref: "#/definitions/streams/Taxes"
+  - $ref: "#/definitions/streams/List Transactions"
+  - $ref: "#/definitions/streams/List Special Offers"
+  - $ref: "#/definitions/streams/List Countries"
+  - $ref: "#/definitions/streams/affiliates"
+  - $ref: "#/definitions/streams/Affiliate Details"
+  - $ref: "#/definitions/streams/Transaction details"
+  - $ref: "#/definitions/streams/List Reviews"
+  - $ref: "#/definitions/streams/Review details"
+  - $ref: "#/definitions/streams/Shipment Details"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - client_refresh_token
+    properties:
+      client_id:
+        type: string
+        name: client_id
+        order: 0
+        title: OAuth Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        name: client_secret
+        order: 1
+        title: OAuth Client Secret
+        airbyte_secret: true
+      client_refresh_token:
+        type: string
+        order: 2
+        title: Refresh token
+        airbyte_secret: true
+      oauth_access_token:
+        type: string
+        description: >-
+          The current access token. This field might be overridden by the
+          connector based on the token refresh endpoint response.
+        order: 3
+        title: Access token
+        airbyte_secret: true
+      oauth_token_expiry_date:
+        type: string
+        description: >-
+          The date the current access token expires in. This field might be
+          overridden by the connector based on the token refresh endpoint
+          response.
+        order: 4
+        title: Token expiry date
+        format: date-time
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Orders: false
+    Products: true
+    Customers: true
+    Shipments: true
+    Abandoned carts: true
+    Branches: true
+    Brands: true
+    Available Payment Methods: true
+    List Banks: true
+    Taxes: true
+    List Transactions: true
+    List Special Offers: true
+    List Countries: true
+    affiliates: true
+    Affiliate Details: true
+    Transaction details: true
+    List Reviews: true
+    Review details: true
+    Shipment Details: true
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams:
+    Orders:
+      streamHash: 49501a9bdeca10dc1fa180be5286364982da88c1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Products:
+      streamHash: 62511eec50772dac72c9c2a653fcd3f5ce7ed844
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Customers:
+      streamHash: 29e27ea0641b9defd672b1b18c1a04af557f3c36
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Shipments:
+      streamHash: 7df61c06cc9b0762a5d74c81b6e2ddff9e4b52e4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Abandoned carts:
+      streamHash: d115fff20f5450f54538279d2582ca426176d520
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Branches:
+      streamHash: 9d57148d5fe6f490b90cc3ab1223b605607000a9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Brands:
+      streamHash: b939d187d82602f15430b8f26c295ce7149fce1e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Available Payment Methods:
+      streamHash: 16d953c8790106b136d458a0f769cab1afa95137
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    List Banks:
+      streamHash: c812123965bef5b7f63c3ae5049cc7501dda57fa
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Taxes:
+      streamHash: dbd74a572860a07cc5e80b25690c64bd6e88c8a2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    List Transactions:
+      streamHash: 6e330d438a6759e75768973e6bf2ff06cab15a43
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    List Special Offers:
+      streamHash: 655c0b2aaf1e126c0d8af38326f8b2998cdba698
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    List Countries:
+      streamHash: a70a6e7ced14b1cf6ca9fe384d889e7c4925f238
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    affiliates:
+      streamHash: 839dbdc6ff2c8f6daed734c7356913ed49d00865
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Affiliate Details:
+      streamHash: be9f70f9f171db1858e9b8edeefa11b1777d6854
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Transaction details:
+      streamHash: 06cb934368a1e43c50edefcac806aa7d464a447e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    List Reviews:
+      streamHash: 48da81b475c4e34c415692fe4b3b9a8a54a13a2c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Review details:
+      streamHash: 82aa5bc9590cc24e849df0e86b8cae64fd07749b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Shipment Details:
+      streamHash: 03612a652dc95b8358be986ecc06f1cbfa4ca2a9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.google.com/gmail/api/guides
+
+schemas:
+  Orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            can_cancel:
+              type:
+                - boolean
+                - "null"
+            can_reorder:
+              type:
+                - boolean
+                - "null"
+            customer:
+              type:
+                - object
+                - "null"
+              properties:
+                avatar:
+                  type:
+                    - string
+                    - "null"
+                birthday:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    date:
+                      type:
+                        - string
+                        - "null"
+                    timezone:
+                      type:
+                        - string
+                        - "null"
+                    timezone_type:
+                      type:
+                        - number
+                        - "null"
+                city:
+                  type:
+                    - string
+                    - "null"
+                country:
+                  type:
+                    - string
+                    - "null"
+                country_code:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    date:
+                      type:
+                        - string
+                        - "null"
+                    timezone:
+                      type:
+                        - string
+                        - "null"
+                    timezone_type:
+                      type:
+                        - number
+                        - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+                email:
+                  type:
+                    - string
+                    - "null"
+                first_name:
+                  type:
+                    - string
+                    - "null"
+                full_name:
+                  type:
+                    - string
+                    - "null"
+                gender:
+                  type:
+                    - string
+                    - "null"
+                groups:
+                  type:
+                    - array
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                lang:
+                  type:
+                    - string
+                    - "null"
+                last_name:
+                  type:
+                    - string
+                    - "null"
+                location:
+                  type:
+                    - string
+                    - "null"
+                mobile:
+                  type:
+                    - number
+                    - "null"
+                mobile_code:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    date:
+                      type:
+                        - string
+                        - "null"
+                    timezone:
+                      type:
+                        - string
+                        - "null"
+                    timezone_type:
+                      type:
+                        - number
+                        - "null"
+                urls:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    admin:
+                      type:
+                        - string
+                        - "null"
+                    customer:
+                      type:
+                        - string
+                        - "null"
+            date:
+              type:
+                - object
+                - "null"
+              properties:
+                date:
+                  type:
+                    - string
+                    - "null"
+                timezone:
+                  type:
+                    - string
+                    - "null"
+                timezone_type:
+                  type:
+                    - number
+                    - "null"
+            draft:
+              type:
+                - boolean
+                - "null"
+            exchange_rate:
+              type:
+                - object
+                - "null"
+              properties:
+                base_currency:
+                  type:
+                    - string
+                    - "null"
+                exchange_currency:
+                  type:
+                    - string
+                    - "null"
+                rate:
+                  type:
+                    - string
+                    - "null"
+            features:
+              type:
+                - object
+                - "null"
+              properties:
+                digitalable:
+                  type:
+                    - boolean
+                    - "null"
+                has_suspicious_alert:
+                  type:
+                    - boolean
+                    - "null"
+                pickable:
+                  type:
+                    - boolean
+                    - "null"
+                shippable:
+                  type:
+                    - boolean
+                    - "null"
+            id:
+              type:
+                - number
+                - "null"
+            is_pending_payment:
+              type:
+                - boolean
+                - "null"
+            items:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  quantity:
+                    type:
+                      - number
+                      - "null"
+                  thumbnail:
+                    type:
+                      - string
+                      - "null"
+            payment_actions:
+              type:
+                - object
+                - "null"
+              properties:
+                refund_action:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    can_print_refund_invoice:
+                      type:
+                        - boolean
+                        - "null"
+                    can_send_sms:
+                      type:
+                        - boolean
+                        - "null"
+                    can_send_sms_msg:
+                      type:
+                        - string
+                        - "null"
+                    has_refund_amount:
+                      type:
+                        - boolean
+                        - "null"
+                    loyalty_point_programs:
+                      type:
+                        - array
+                        - "null"
+                    paid_amount:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        amount:
+                          type:
+                            - number
+                            - "null"
+                        currency:
+                          type:
+                            - string
+                            - "null"
+                    payment_method_label:
+                      type:
+                        - string
+                        - "null"
+                    refund_amount:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        amount:
+                          type:
+                            - number
+                            - "null"
+                        currency:
+                          type:
+                            - string
+                            - "null"
+                remaining_action:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    checkout_url:
+                      type:
+                        - string
+                        - "null"
+                    has_remaining_amount:
+                      type:
+                        - boolean
+                        - "null"
+                    paid_amount:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        amount:
+                          type:
+                            - number
+                            - "null"
+                        currency:
+                          type:
+                            - string
+                            - "null"
+                    payment_method_label:
+                      type:
+                        - string
+                        - "null"
+                    remaining_amount:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        amount:
+                          type:
+                            - number
+                            - "null"
+                        currency:
+                          type:
+                            - string
+                            - "null"
+            payment_method:
+              type:
+                - string
+                - "null"
+            pending_payment_ends_at:
+              type:
+                - number
+                - "null"
+            read:
+              type:
+                - boolean
+                - "null"
+            reference_id:
+              type:
+                - number
+                - "null"
+            source:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - object
+                - "null"
+              properties:
+                customized:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - number
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                slug:
+                  type:
+                    - string
+                    - "null"
+            total:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - number
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            urls:
+              type:
+                - object
+                - "null"
+              properties:
+                admin:
+                  type:
+                    - string
+                    - "null"
+                customer:
+                  type:
+                    - string
+                    - "null"
+      pagination:
+        type:
+          - object
+          - "null"
+        properties:
+          count:
+            type:
+              - number
+              - "null"
+          currentPage:
+            type:
+              - number
+              - "null"
+          links:
+            type:
+              - object
+              - "null"
+            properties:
+              next:
+                type:
+                  - string
+                  - "null"
+          perPage:
+            type:
+              - number
+              - "null"
+          total:
+            type:
+              - number
+              - "null"
+          totalPages:
+            type:
+              - number
+              - "null"
+      status:
+        type:
+          - number
+          - "null"
+      success:
+        type:
+          - boolean
+          - "null"
+  Products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      branches:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+      brand:
+        type:
+          - object
+          - "null"
+        properties: {}
+      calories:
+        type:
+          - number
+          - "null"
+      categories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      features:
+        type:
+          - object
+          - "null"
+        properties:
+          can_add_note:
+            type:
+              - boolean
+              - "null"
+          can_upload_file:
+            type:
+              - boolean
+              - "null"
+          has_options:
+            type:
+              - boolean
+              - "null"
+          has_special_price:
+            type:
+              - boolean
+              - "null"
+          hide_quantity:
+            type:
+              - boolean
+              - "null"
+          is_donation:
+            type:
+              - boolean
+              - "null"
+          require_shipping:
+            type:
+              - boolean
+              - "null"
+          taxable:
+            type:
+              - boolean
+              - "null"
+      gtin:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      prices:
+        type:
+          - object
+          - "null"
+        properties:
+          price:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          regular_price:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          sale_price:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          starting_price:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+      promotion:
+        type:
+          - object
+          - "null"
+        properties:
+          sub_title:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+      show_in:
+        type:
+          - object
+          - "null"
+        properties:
+          app:
+            type:
+              - boolean
+              - "null"
+          mahly:
+            type:
+              - boolean
+              - "null"
+          web:
+            type:
+              - boolean
+              - "null"
+      sku:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      urls:
+        type:
+          - object
+          - "null"
+        properties:
+          thumbnail:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+  Customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      avatar:
+        type:
+          - string
+          - "null"
+      birthday:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          timezone_type:
+            type:
+              - number
+              - "null"
+      city:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      country_code:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          timezone_type:
+            type:
+              - number
+              - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      full_name:
+        type:
+          - string
+          - "null"
+      gender:
+        type:
+          - string
+          - "null"
+      groups:
+        type:
+          - array
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      lang:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - number
+          - "null"
+      mobile_code:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          timezone_type:
+            type:
+              - number
+              - "null"
+      urls:
+        type:
+          - object
+          - "null"
+        properties:
+          admin:
+            type:
+              - string
+              - "null"
+          customer:
+            type:
+              - string
+              - "null"
+  Shipments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      amounts:
+        type:
+          - object
+          - "null"
+        properties:
+          cash_on_delivery:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          discounts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                code:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+                discount:
+                  type:
+                    - string
+                    - "null"
+                discounted_shipping:
+                  type:
+                    - string
+                    - "null"
+                hasMarketing:
+                  type:
+                    - boolean
+                    - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+          shipping_cost:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          sub_total:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          tax:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  amount:
+                    type:
+                      - number
+                      - "null"
+                  currency:
+                    type:
+                      - string
+                      - "null"
+              percent:
+                type:
+                  - string
+                  - "null"
+          total:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+      billing_account:
+        type:
+          - string
+          - "null"
+      cash_on_delivery:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      courier_id:
+        type:
+          - number
+          - "null"
+      courier_logo:
+        type:
+          - string
+          - "null"
+      courier_name:
+        type:
+          - string
+          - "null"
+      exchange_rate:
+        type:
+          - object
+          - "null"
+        properties:
+          base_currency:
+            type:
+              - string
+              - "null"
+          exchange_currency:
+            type:
+              - string
+              - "null"
+          rate:
+            type:
+              - number
+              - "null"
+      external_company_name:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      is_bullet_delivery:
+        type:
+          - boolean
+          - "null"
+      is_international:
+        type:
+          - boolean
+          - "null"
+      meta:
+        type:
+          - object
+          - "null"
+        properties:
+          app_id:
+            type:
+              - number
+              - "null"
+          policy_options:
+            anyOf:
+              - type: array
+              - type: object
+                properties:
+                  boxes:
+                    type: number
+      order_id:
+        type:
+          - number
+          - "null"
+      order_reference_id:
+        type:
+          - number
+          - "null"
+      packages:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            item_id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            options:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  values:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        name:
+                          type:
+                            - string
+                            - "null"
+                        price:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            amount:
+                              type:
+                                - number
+                                - "null"
+                            currency:
+                              type:
+                                - string
+                                - "null"
+                        value:
+                          type:
+                            - string
+                            - "null"
+            price:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - number
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            sku:
+              type:
+                - string
+                - "null"
+            weight:
+              type:
+                - object
+                - "null"
+              properties:
+                units:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - number
+                    - "null"
+      payment_method:
+        type:
+          - string
+          - "null"
+      ship_from:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          address_line:
+            type:
+              - string
+              - "null"
+          block:
+            type:
+              - string
+              - "null"
+          branch_id:
+            type:
+              - number
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          city_id:
+            type:
+              - number
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          country_code:
+            type:
+              - string
+              - "null"
+          country_id:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          latitude:
+            type:
+              - number
+              - "null"
+          longitude:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          street_number:
+            type:
+              - string
+              - "null"
+      ship_to:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          address_line:
+            type:
+              - string
+              - "null"
+          block:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          city_id:
+            type:
+              - number
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          country_code:
+            type:
+              - string
+              - "null"
+          country_id:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          latitude:
+            type:
+              - number
+              - "null"
+          longitude:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          street_number:
+            type:
+              - string
+              - "null"
+      source:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      total:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      total_weight:
+        type:
+          - object
+          - "null"
+        properties:
+          units:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - number
+              - "null"
+      trackable:
+        type:
+          - boolean
+          - "null"
+  Abandoned carts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      age_in_minutes:
+        type:
+          - number
+          - "null"
+      checkout_url:
+        type:
+          - string
+          - "null"
+      coupon:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          amount:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          code:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          expiry_date:
+            type:
+              - string
+              - "null"
+          free_shipping:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          minimum_amount:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          start_date:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          timezone_type:
+            type:
+              - number
+              - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          avatar:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          mobile:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - number
+          - "null"
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - number
+                - "null"
+            product_id:
+              type:
+                - number
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+      subtotal:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      total:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      total_discount:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      updated_at:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          timezone_type:
+            type:
+              - number
+              - "null"
+  Branches:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      additional_number:
+        type:
+          - string
+          - "null"
+      address_description:
+        type:
+          - string
+          - "null"
+      building_number:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - object
+          - "null"
+        properties:
+          country_id:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          name_en:
+            type:
+              - string
+              - "null"
+      closest_time:
+        type:
+          - object
+          - "null"
+        properties:
+          from:
+            type:
+              - string
+              - "null"
+          to:
+            type:
+              - string
+              - "null"
+      cod_cost:
+        type:
+          - string
+          - "null"
+      contacts:
+        type:
+          - object
+          - "null"
+        properties:
+          phone:
+            type:
+              - string
+              - "null"
+          telephone:
+            type:
+              - string
+              - "null"
+          whatsapp:
+            type:
+              - string
+              - "null"
+      country:
+        type:
+          - object
+          - "null"
+        properties:
+          code:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          mobile_code:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          name_en:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - number
+          - "null"
+      is_cod_available:
+        type:
+          - boolean
+          - "null"
+      is_default:
+        type:
+          - boolean
+          - "null"
+      is_open:
+        type:
+          - boolean
+          - "null"
+      is_stock:
+        type:
+          - boolean
+          - "null"
+      local:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - object
+          - "null"
+        properties:
+          lat:
+            type:
+              - string
+              - "null"
+          lng:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      postal_code:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      street:
+        type:
+          - string
+          - "null"
+      working_hours:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            times:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  from:
+                    type:
+                      - string
+                      - "null"
+                  to:
+                    type:
+                      - string
+                      - "null"
+  Brands:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+      pagination:
+        type:
+          - object
+          - "null"
+        properties:
+          count:
+            type:
+              - number
+              - "null"
+          currentPage:
+            type:
+              - number
+              - "null"
+          links:
+            type:
+              - array
+              - "null"
+          perPage:
+            type:
+              - number
+              - "null"
+          total:
+            type:
+              - number
+              - "null"
+          totalPages:
+            type:
+              - number
+              - "null"
+      status:
+        type:
+          - number
+          - "null"
+      success:
+        type:
+          - boolean
+          - "null"
+  Available Payment Methods:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+  List Banks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account_name:
+        type:
+          - string
+          - "null"
+      bank_name:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+  Taxes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      country:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      tax:
+        type:
+          - number
+          - "null"
+  List Transactions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      available_actions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      card:
+        type:
+          - object
+          - "null"
+        properties:
+          brand:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          number:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          timezone_type:
+            type:
+              - number
+              - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          mobile:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - number
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      payment_method:
+        type:
+          - object
+          - "null"
+        properties:
+          icon:
+            type:
+              - string
+              - "null"
+          is_refundable:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+      references:
+        type:
+          - object
+          - "null"
+        properties:
+          cart_id:
+            type:
+              - number
+              - "null"
+          order_id:
+            type:
+              - number
+              - "null"
+          transaction:
+            type:
+              - number
+              - string
+              - "null"
+      status:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+      total:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+  List Special Offers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      applied_to:
+        type:
+          - string
+          - "null"
+      buy:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          categories:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                avatar:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                extra_attributes:
+                  type:
+                    - array
+                    - "null"
+                has_hidden_products:
+                  type:
+                    - number
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                parent_id:
+                  type:
+                    - number
+                    - "null"
+                products_counts:
+                  type:
+                    - number
+                    - "null"
+                show_in_app:
+                  type:
+                    - number
+                    - "null"
+                show_in_menu:
+                  type:
+                    - number
+                    - "null"
+                sort_order:
+                  type:
+                    - number
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+                store_id:
+                  type:
+                    - number
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+          quantity:
+            type:
+              - number
+              - "null"
+      get:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          categories:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                metadata:
+                  type:
+                    - object
+                    - "null"
+                  properties: {}
+                has_hidden_products:
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                parent_id:
+                  type:
+                    - number
+                    - "null"
+                show_in:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    app:
+                      type:
+                        - boolean
+                        - "null"
+                    salla_points:
+                      type:
+                        - boolean
+                        - "null"
+                sort_order:
+                  type:
+                    - number
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+                update_at:
+                  type:
+                    - string
+                    - "null"
+                urls:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    admin:
+                      type:
+                        - string
+                        - "null"
+                    customer:
+                      type:
+                        - string
+                        - "null"
+          discount_amount:
+            type:
+              - string
+              - "null"
+          discount_type:
+            type:
+              - string
+              - "null"
+          quantity:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - number
+          - "null"
+      message:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      offer_type:
+        type:
+          - string
+          - "null"
+      show_discounts_table_message:
+        type:
+          - boolean
+          - "null"
+      show_price_after_discount:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+  List Countries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      capital:
+        type:
+          - string
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      mobile_code:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      name_en:
+        type:
+          - string
+          - "null"
+  affiliates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      amount:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      apply_to:
+        type:
+          - string
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      commission_type:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          affiliate:
+            type:
+              - string
+              - "null"
+          statistics:
+            type:
+              - string
+              - "null"
+      marketer_city:
+        type:
+          - string
+          - "null"
+      marketer_name:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      profit:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - boolean
+          - "null"
+      visits_count:
+        type:
+          - number
+          - "null"
+  Affiliate Details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          apply_to:
+            type:
+              - string
+              - "null"
+          code:
+            type:
+              - string
+              - "null"
+          commission_type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          links:
+            type:
+              - object
+              - "null"
+            properties:
+              affiliate:
+                type:
+                  - string
+                  - "null"
+              statistics:
+                type:
+                  - string
+                  - "null"
+          marketer_city:
+            type:
+              - string
+              - "null"
+          marketer_name:
+            type:
+              - string
+              - "null"
+          notes:
+            type:
+              - string
+              - "null"
+          profit:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          status:
+            type:
+              - boolean
+              - "null"
+          visits_count:
+            type:
+              - number
+              - "null"
+      status:
+        type:
+          - number
+          - "null"
+      success:
+        type:
+          - boolean
+          - "null"
+  Transaction details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      available_actions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      card:
+        type:
+          - object
+          - "null"
+        properties:
+          brand:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          number:
+            type:
+              - string
+              - "null"
+      created_at:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          timezone_type:
+            type:
+              - number
+              - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          mobile:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - number
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      payment_method:
+        type:
+          - object
+          - "null"
+        properties:
+          icon:
+            type:
+              - string
+              - "null"
+          is_refundable:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+      references:
+        type:
+          - object
+          - "null"
+        properties:
+          cart_id:
+            type:
+              - number
+              - "null"
+          order_id:
+            type:
+              - number
+              - "null"
+          transaction:
+            type:
+              - number
+              - string
+              - "null"
+      status:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+      total:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+  List Reviews:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      content:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      customer:
+        anyOf:
+          - type: array
+          - type: object
+            properties:
+              avatart:
+                type: string
+              city:
+                type: string
+              country:
+                type: string
+              email:
+                type: string
+              id:
+                type: number
+              mobile:
+                type: number
+              name:
+                type: string
+      id:
+        type:
+          - number
+          - "null"
+      is_published:
+        type:
+          - boolean
+          - "null"
+      rating:
+        type:
+          - number
+          - "null"
+  Review details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      content:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      customer:
+        anyOf:
+          - type: array
+          - type: object
+            properties:
+              avatart:
+                type: string
+              city:
+                type: string
+              country:
+                type: string
+              email:
+                type: string
+              id:
+                type: number
+              mobile:
+                type: number
+              name:
+                type: string
+      id:
+        type:
+          - number
+          - "null"
+      is_published:
+        type:
+          - boolean
+          - "null"
+      rating:
+        type:
+          - number
+          - "null"
+  Shipment Details:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      amounts:
+        type:
+          - object
+          - "null"
+        properties:
+          cash_on_delivery:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          discounts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                code:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+                discount:
+                  type:
+                    - string
+                    - "null"
+                discounted_shipping:
+                  type:
+                    - string
+                    - "null"
+                hasMarketing:
+                  type:
+                    - boolean
+                    - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+          shipping_cost:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          sub_total:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          tax:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  amount:
+                    type:
+                      - number
+                      - "null"
+                  currency:
+                    type:
+                      - string
+                      - "null"
+              percent:
+                type:
+                  - string
+                  - "null"
+          total:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+      billing_account:
+        type:
+          - string
+          - "null"
+      cash_on_delivery:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      courier_id:
+        type:
+          - number
+          - "null"
+      courier_logo:
+        type:
+          - string
+          - "null"
+      courier_name:
+        type:
+          - string
+          - "null"
+      exchange_rate:
+        type:
+          - object
+          - "null"
+        properties:
+          base_currency:
+            type:
+              - string
+              - "null"
+          exchange_currency:
+            type:
+              - string
+              - "null"
+          rate:
+            type:
+              - number
+              - "null"
+      external_company_name:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      is_bullet_delivery:
+        type:
+          - boolean
+          - "null"
+      is_international:
+        type:
+          - boolean
+          - "null"
+      meta:
+        type:
+          - object
+          - "null"
+        properties:
+          app_id:
+            type:
+              - number
+              - "null"
+          policy_options:
+            type:
+              - object
+              - "null"
+            properties:
+              boxes:
+                type:
+                  - number
+                  - "null"
+      order_id:
+        type:
+          - number
+          - "null"
+      order_reference_id:
+        type:
+          - number
+          - "null"
+      packages:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            item_id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            options:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  values:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        name:
+                          type:
+                            - string
+                            - "null"
+                        price:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            amount:
+                              type:
+                                - number
+                                - "null"
+                            currency:
+                              type:
+                                - string
+                                - "null"
+                        value:
+                          type:
+                            - string
+                            - "null"
+            price:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - number
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            sku:
+              type:
+                - string
+                - "null"
+            weight:
+              type:
+                - object
+                - "null"
+              properties:
+                units:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - number
+                    - "null"
+      payment_method:
+        type:
+          - string
+          - "null"
+      ship_from:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          address_line:
+            type:
+              - string
+              - "null"
+          block:
+            type:
+              - string
+              - "null"
+          branch_id:
+            type:
+              - number
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          city_id:
+            type:
+              - number
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          country_code:
+            type:
+              - string
+              - "null"
+          country_id:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          latitude:
+            type:
+              - number
+              - "null"
+          longitude:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          street_number:
+            type:
+              - string
+              - "null"
+      ship_to:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          address_line:
+            type:
+              - string
+              - "null"
+          block:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          city_id:
+            type:
+              - number
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          country_code:
+            type:
+              - string
+              - "null"
+          country_id:
+            type:
+              - number
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          latitude:
+            type:
+              - number
+              - "null"
+          longitude:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          street_number:
+            type:
+              - string
+              - "null"
+      source:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      total:
+        type:
+          - object
+          - "null"
+        properties:
+          amount:
+            type:
+              - number
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+      total_weight:
+        type:
+          - object
+          - "null"
+        properties:
+          units:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - number
+              - "null"
+      trackable:
+        type:
+          - boolean
+          - "null"
