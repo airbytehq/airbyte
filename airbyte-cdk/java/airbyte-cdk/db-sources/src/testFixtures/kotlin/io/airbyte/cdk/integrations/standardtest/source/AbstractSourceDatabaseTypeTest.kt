@@ -158,7 +158,6 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
             val expectedValuesForStream = expectedValues[streamName]
             if (expectedValuesForStream != null) {
                 val value = getValueFromJsonNode(message.record.data[testColumnName])
-                LOGGER.info { "*** val $value"}
                 if (!expectedValuesForStream.contains(value)) {
                     unexpectedValuesByStream.putIfAbsent(streamName, ArrayList())
                     unexpectedValuesByStream[streamName]!!.add(UnexpectedRecord(streamName, value))
@@ -194,7 +193,6 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
             val test = testByName.getValue(streamName)
             val missedValues: List<MissedRecords> = missedValuesByStream[streamName]!!
             for (missedValue in missedValues) {
-                LOGGER.info {"*** missed: ${missedValue.missedValues}" }
                 errorsByStream[streamName]!!.add(
                     "The stream '$streamName' checking type '${test.sourceType}' initialized at " +
                         "${test.declarationLocation} is missing values: $missedValue"
