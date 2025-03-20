@@ -139,6 +139,15 @@ definitions:
                   personInteractionStats: true
                 collaboration:
                   publicComments: true
+                metaData:
+                  id: true
+                  calendarEventId: true
+                  clientUniqueId: true
+                  customData: true
+                  direction: true
+                  duration: true
+                  isPrivate: true
+                  started: true
         record_selector:
           type: RecordSelector
           extractor:
