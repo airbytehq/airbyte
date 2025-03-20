@@ -1,8 +1,9 @@
+# temp file change
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, MutableMapping, Optional, List
+from typing import Any, Dict, List, MutableMapping, Optional
 
 import requests
 
@@ -22,11 +23,13 @@ from .common import remove_params_from_url
 source_obj = SourceInstagramApi()
 GRAPH_URL = source_obj.url_base
 
+
 def get_stream_request_params(stream_name: str) -> Optional[dict]:
     for stream_def in resolve_manifest(source_obj).record.data.get("manifest", {}).get("streams", {}):
         if stream_def["name"] == stream_name:
             return stream_def.get("retriever", {}).get("requester", {}).get("request_parameters", {})
     return {}
+
 
 def get_stream_fields(stream_name: str) -> List[str]:
     params = get_stream_request_params(stream_name)

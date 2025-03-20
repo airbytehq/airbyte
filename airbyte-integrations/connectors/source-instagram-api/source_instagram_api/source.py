@@ -1,16 +1,18 @@
+# temp file change
 #
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-import requests
 from typing import Tuple
+
+import requests
 
 from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
-class SourceInstagramApi(YamlDeclarativeSource):
 
+class SourceInstagramApi(YamlDeclarativeSource):
     url_base: str
 
     def __init__(self):

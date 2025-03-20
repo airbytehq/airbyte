@@ -1,10 +1,16 @@
-from source_instagram_api.components import get_stream_request_params, get_stream_fields
-
-
+# temp file change
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-
 from typing import Dict
 
+from source_instagram_api.components import (
+    GRAPH_URL,
+    InstagramBreakDownResultsTransformation,
+    InstagramClearUrlTransformation,
+    InstagramInsightsTransformation,
+    InstagramMediaChildrenTransformation,
+    get_stream_fields,
+    get_stream_request_params,
+)
 from unit_tests.records import (
     breakdowns_record,
     children_record,
@@ -15,17 +21,26 @@ from unit_tests.records import (
     insights_record,
     insights_record_transformed,
 )
-from source_instagram_api.components import (
-    GRAPH_URL,
-    InstagramBreakDownResultsTransformation,
-    InstagramClearUrlTransformation,
-    InstagramInsightsTransformation,
-    InstagramMediaChildrenTransformation,
-)
 
-media_fields = ['caption', 'comments_count', 'id', 'is_comment_enabled', 'is_shared_to_feed', 'like_count', 'media_type',
-                'media_product_type', 'media_url', 'owner', 'permalink', 'shortcode', 'thumbnail_url', 'timestamp', 'username', 'children']
 
+media_fields = [
+    "caption",
+    "comments_count",
+    "id",
+    "is_comment_enabled",
+    "is_shared_to_feed",
+    "like_count",
+    "media_type",
+    "media_product_type",
+    "media_url",
+    "owner",
+    "permalink",
+    "shortcode",
+    "thumbnail_url",
+    "timestamp",
+    "username",
+    "children",
+]
 
 
 def mock_path(requests_mock, path: str, method: str = "GET", response: Dict = None):
@@ -34,9 +49,23 @@ def mock_path(requests_mock, path: str, method: str = "GET", response: Dict = No
 
 
 def test_instagram_media_children_transformation(requests_mock, config):
-    children_fields = ['comments_count', 'id', 'is_comment_enabled', 'is_shared_to_feed', 'like_count', 'media_type',
-                    'media_product_type', 'media_url', 'owner', 'permalink', 'shortcode', 'thumbnail_url', 'timestamp', 'username',
-                    'children']
+    children_fields = [
+        "comments_count",
+        "id",
+        "is_comment_enabled",
+        "is_shared_to_feed",
+        "like_count",
+        "media_type",
+        "media_product_type",
+        "media_url",
+        "owner",
+        "permalink",
+        "shortcode",
+        "thumbnail_url",
+        "timestamp",
+        "username",
+        "children",
+    ]
 
     params = "?fields=" + ",".join(children_fields)
     children_record_data = children_record["children"]["data"]
@@ -62,8 +91,6 @@ def test_break_down_results_transformation():
 def test_instagram_insights_transformation(config):
     record_transformation = InstagramInsightsTransformation().transform(insights_record)
     assert record_transformation == insights_record_transformed
-
-
 
 
 def test_get_stream_request_params():
