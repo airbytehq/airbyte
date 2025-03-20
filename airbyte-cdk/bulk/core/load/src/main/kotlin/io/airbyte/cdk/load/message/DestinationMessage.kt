@@ -253,6 +253,7 @@ data class EnrichedDestinationRecordAirbyteValue(
                 ),
                 Meta.AirbyteMetaFields.META.type,
                 name = Meta.COLUMN_NAME_AB_META,
+                airbyteMetaField = Meta.AirbyteMetaFields.META,
             )
 
     val airbyteMetaFields: Map<String, EnrichedAirbyteValue>
@@ -263,12 +264,14 @@ data class EnrichedDestinationRecordAirbyteValue(
                         StringValue(UUID.randomUUID().toString()),
                         Meta.AirbyteMetaFields.RAW_ID.type,
                         name = Meta.COLUMN_NAME_AB_RAW_ID,
+                        airbyteMetaField = Meta.AirbyteMetaFields.RAW_ID,
                     ),
                 Meta.COLUMN_NAME_AB_EXTRACTED_AT to
                     EnrichedAirbyteValue(
                         IntegerValue(emittedAtMs),
                         Meta.AirbyteMetaFields.EXTRACTED_AT.type,
                         name = Meta.COLUMN_NAME_AB_EXTRACTED_AT,
+                        airbyteMetaField = Meta.AirbyteMetaFields.EXTRACTED_AT,
                     ),
                 Meta.COLUMN_NAME_AB_META to airbyteMeta,
                 Meta.COLUMN_NAME_AB_GENERATION_ID to
@@ -276,6 +279,7 @@ data class EnrichedDestinationRecordAirbyteValue(
                         IntegerValue(stream.generationId),
                         Meta.AirbyteMetaFields.GENERATION_ID.type,
                         name = Meta.COLUMN_NAME_AB_GENERATION_ID,
+                        airbyteMetaField = Meta.AirbyteMetaFields.GENERATION_ID,
                     ),
             )
 
@@ -335,6 +339,7 @@ data class DestinationRecordRaw(
                             value = NullValue,
                             type = fieldType,
                             name = fieldName,
+                            airbyteMetaField = null,
                         )
                     AirbyteValueCoercer.coerce(fieldValue.toAirbyteValue(), fieldType)?.let {
                         enrichedValue.value = it
