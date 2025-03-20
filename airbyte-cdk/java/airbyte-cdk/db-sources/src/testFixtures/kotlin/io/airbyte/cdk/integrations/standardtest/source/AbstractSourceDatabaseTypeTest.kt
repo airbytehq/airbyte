@@ -193,6 +193,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
             val test = testByName.getValue(streamName)
             val missedValues: List<MissedRecords> = missedValuesByStream[streamName]!!
             for (missedValue in missedValues) {
+                LOGGER.info {"*** missed: ${missedValue.missedValues}" }
                 errorsByStream[streamName]!!.add(
                     "The stream '$streamName' checking type '${test.sourceType}' initialized at " +
                         "${test.declarationLocation} is missing values: $missedValue"
