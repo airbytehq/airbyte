@@ -3,9 +3,9 @@
 #
 
 import json
-import pytest
 from typing import Any
 
+import pytest
 from requests import Response
 from source_monday.extractor import MondayIncrementalItemsExtractor
 from source_monday.state_migration import MondayStateMigration
@@ -30,13 +30,13 @@ def test_monday_state_migration(input_state, expected_state, expected_should_mig
 
     # Test should_migrate
     should_migrate_result = migration.should_migrate(input_state)
-    assert should_migrate_result == expected_should_migrate, \
-        f"should_migrate failed: expected {expected_should_migrate}, got {should_migrate_result}"
+    assert (
+        should_migrate_result == expected_should_migrate
+    ), f"should_migrate failed: expected {expected_should_migrate}, got {should_migrate_result}"
 
     # Test migrate
     result = migration.migrate(input_state)
-    assert result == expected_state, \
-        f"migrate failed: expected {expected_state}, got {result}"
+    assert result == expected_state, f"migrate failed: expected {expected_state}, got {result}"
 
 
 def _create_response(content: Any) -> Response:
