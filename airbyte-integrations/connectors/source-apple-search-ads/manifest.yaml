@@ -224,7 +224,7 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: UTC
+            timeZone: "{{ config['timezone'] or 'UTC' }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
@@ -333,7 +333,7 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: UTC
+            timeZone: "{{config['timezone'] or 'UTC' }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
@@ -450,7 +450,7 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: UTC
+            timeZone: "{{ config['timezone'] or 'UTC' }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
@@ -552,9 +552,9 @@ definitions:
     url_base: https://api.searchads.apple.com/api/v5
     authenticator:
       type: OAuthAuthenticator
-      client_id: "{{ config[\"client_id\"] }}"
+      client_id: "{{ config.client_id }}"
       grant_type: client_credentials
-      client_secret: "{{ config[\"client_secret\"] }}"
+      client_secret: "{{ config.client_secret }}"
       token_refresh_endpoint: >-
         https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg
       refresh_request_body: {}
@@ -577,6 +577,7 @@ spec:
       - client_id
       - start_date
       - client_secret
+      - timezone
     properties:
       org_id:
         type: integer
@@ -640,6 +641,17 @@ spec:
         pattern: ^(20|1[0-9]|[1-9])$
         examples:
           - 10
+      timezone:
+        type: string
+        default: UTC
+        description: >-
+          The timezone for the reporting data. Use 'ORTZ' for Organization Time
+          Zone or 'UTC' for Coordinated Universal Time. Default is UTC.
+        enum:
+          - ORTZ
+          - UTC
+        order: 7
+        title: Time Zone
     additionalProperties: true
 
 metadata:
@@ -650,30 +662,40 @@ metadata:
     campaigns_report_daily: false
     adgroups_report_daily: false
     keywords_report_daily: false
+  yamlComponents:
+    streams:
+      campaigns_report_daily:
+        - errorHandler
+      adgroups_report_daily:
+        - errorHandler
+      keywords_report_daily:
+        - errorHandler
+    global:
+      - authenticator
   testedStreams:
     campaigns:
-      hasRecords: true
-      streamHash: a02e38fcbb8c97bef845c35c6fa80e2883b725de
+      streamHash: 695200dfcda5d952c3d0c21948db4780caa38393
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     adgroups:
-      hasRecords: true
-      streamHash: 6269cb26c1a83a935021ae8cc50d68876b50fb88
+      streamHash: fe4a079447f9e32ab0e6bd33cbb87620aa946b70
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     keywords:
-      hasRecords: true
-      streamHash: 420d4d9d64844d2857f46bfe341448c9669b6b03
+      streamHash: 8419d91ef05fe6a37e6a731972cc63f7db413ec3
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     campaigns_report_daily:
-      streamHash: 8fd362f826977e9ea2cc751874bd28d34885cd87
+      streamHash: 0f716882a4c4cf2af1d32eaa5e4bfae1df650d1b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true

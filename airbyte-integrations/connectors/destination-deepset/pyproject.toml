@@ -1,0 +1,28 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.0"
+name = "destination-deepset"
+description = "Destination implementation for deepset."
+authors = ["Airbyte <contact@airbyte.io>"]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destinations/deepset"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+packages = [{ include = "destination_deepset" }, { include = "main.py" }]
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.12"
+airbyte-cdk = "^6"
+httpx = "^0.28.1"
+tenacity = "^8"
+
+[tool.poetry.scripts]
+destination-deepset = "destination_deepset.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8"
+pytest-httpx = "*"
