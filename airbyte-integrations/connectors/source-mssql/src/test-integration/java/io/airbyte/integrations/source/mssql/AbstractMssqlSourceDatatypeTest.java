@@ -188,7 +188,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
                 "'0001-01-01 00:00:00.0000000 +00:00'")
             .addExpectedValues("2001-01-10T00:00:00.000000+01:00",
                 "9999-01-10T00:00:00.000000+01:00", null, "2024-05-10T19:00:01.604805+03:00", "2024-03-02T19:08:07.123456+09:00",
-                "2024-03-02T19:08:07.123456+09:00", "0001-01-01T00:00:00.000000+00:00")
+                "2024-03-02T19:08:07.123456+09:00", "0001-01-01T00:00:00.000000Z")
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
