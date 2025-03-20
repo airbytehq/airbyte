@@ -45,7 +45,7 @@ sealed interface DestinationMessage {
 
 /** Records. */
 sealed interface DestinationStreamAffinedMessage : DestinationMessage {
-    val stream: DestinationStream.Descriptor
+    val stream: DestinationStream
 }
 
 sealed interface DestinationRecordDomainMessage : DestinationStreamAffinedMessage
@@ -123,7 +123,7 @@ data class Meta(
 }
 
 data class DestinationRecord(
-    override val stream: DestinationStream.Descriptor,
+    override val stream: DestinationStream,
     val message: AirbyteMessage,
     val serialized: String,
     val schema: AirbyteType
@@ -153,14 +153,11 @@ data class DestinationRecord(
  * Represents a record already in its serialized state. The intended use is for conveying records
  * from stdin to the spill file, where reserialization is not necessary.
  */
-data class DestinationRecordSerialized(
-    val stream: DestinationStream.Descriptor,
-    val serialized: String
-)
+data class DestinationRecordSerialized(val stream: DestinationStream, val serialized: String)
 
 /** Represents a record both deserialized AND marshaled to airbyte value. The marshaling */
 data class DestinationRecordAirbyteValue(
-    val stream: DestinationStream.Descriptor,
+    val stream: DestinationStream,
     val data: AirbyteValue,
     val emittedAtMs: Long,
     val meta: Meta?,
@@ -168,7 +165,7 @@ data class DestinationRecordAirbyteValue(
 )
 
 data class EnrichedDestinationRecordAirbyteValue(
-    val stream: DestinationStream.Descriptor,
+    val stream: DestinationStream,
     val declaredFields: Map<String, EnrichedAirbyteValue>,
     val airbyteMetaFields: Map<String, EnrichedAirbyteValue>,
     val undeclaredFields: Map<String, JsonNode>,
@@ -178,7 +175,7 @@ data class EnrichedDestinationRecordAirbyteValue(
 )
 
 data class DestinationRecordRaw(
-    val stream: DestinationStream.Descriptor,
+    val stream: DestinationStream,
     private val rawData: AirbyteMessage,
     private val serialized: String
 ) {
@@ -205,7 +202,7 @@ data class DestinationRecordRaw(
 }
 
 data class DestinationFile(
-    override val stream: DestinationStream.Descriptor,
+    override val stream: DestinationStream,
     val emittedAtMs: Long,
     val serialized: String,
     val fileMessage: AirbyteRecordMessageFile
@@ -274,8 +271,8 @@ data class DestinationFile(
             .withType(AirbyteMessage.Type.RECORD)
             .withRecord(
                 AirbyteRecordMessage()
-                    .withStream(stream.name)
-                    .withNamespace(stream.namespace)
+                    .withStream(stream.descriptor.name)
+                    .withNamespace(stream.descriptor.namespace)
                     .withEmittedAt(emittedAtMs)
                     .withAdditionalProperty("file", file)
             )
@@ -301,35 +298,35 @@ private fun statusToProtocolMessage(
         )
 
 data class DestinationRecordStreamComplete(
-    override val stream: DestinationStream.Descriptor,
+    override val stream: DestinationStream,
     val emittedAtMs: Long,
 ) : DestinationRecordDomainMessage {
     override fun asProtocolMessage(): AirbyteMessage =
-        statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.COMPLETE)
+        statusToProtocolMessage(stream.descriptor, emittedAtMs, AirbyteStreamStatus.COMPLETE)
 }
 
 data class DestinationRecordStreamIncomplete(
-    override val stream: DestinationStream.Descriptor,
+    override val stream: DestinationStream,
     val emittedAtMs: Long,
 ) : DestinationRecordDomainMessage {
     override fun asProtocolMessage(): AirbyteMessage =
-        statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.INCOMPLETE)
+        statusToProtocolMessage(stream.descriptor, emittedAtMs, AirbyteStreamStatus.INCOMPLETE)
 }
 
 data class DestinationFileStreamComplete(
-    override val stream: DestinationStream.Descriptor,
+    override val stream: DestinationStream,
     val emittedAtMs: Long,
 ) : DestinationFileDomainMessage {
     override fun asProtocolMessage(): AirbyteMessage =
-        statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.COMPLETE)
+        statusToProtocolMessage(stream.descriptor, emittedAtMs, AirbyteStreamStatus.COMPLETE)
 }
 
 data class DestinationFileStreamIncomplete(
-    override val stream: DestinationStream.Descriptor,
+    override val stream: DestinationStream,
     val emittedAtMs: Long,
 ) : DestinationFileDomainMessage {
     override fun asProtocolMessage(): AirbyteMessage =
-        statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.INCOMPLETE)
+        statusToProtocolMessage(stream.descriptor, emittedAtMs, AirbyteStreamStatus.INCOMPLETE)
 }
 
 /** State. */
@@ -485,7 +482,7 @@ class DestinationMessageFactory(
                             message.record.additionalProperties["file"] as Map<String, Any>
 
                         DestinationFile(
-                            stream = stream.descriptor,
+                            stream = stream,
                             emittedAtMs = message.record.emittedAt,
                             serialized = serialized,
                             fileMessage =
@@ -504,7 +501,7 @@ class DestinationMessageFactory(
                         )
                     }
                 } else {
-                    DestinationRecord(stream.descriptor, message, serialized, stream.schema)
+                    DestinationRecord(stream, message, serialized, stream.schema)
                 }
             }
             AirbyteMessage.Type.TRACE -> {
@@ -522,24 +519,24 @@ class DestinationMessageFactory(
                         AirbyteStreamStatus.COMPLETE ->
                             if (fileTransferEnabled) {
                                 DestinationFileStreamComplete(
-                                    stream.descriptor,
+                                    stream,
                                     message.trace.emittedAt?.toLong() ?: 0L
                                 )
                             } else {
                                 DestinationRecordStreamComplete(
-                                    stream.descriptor,
+                                    stream,
                                     message.trace.emittedAt?.toLong() ?: 0L
                                 )
                             }
                         AirbyteStreamStatus.INCOMPLETE ->
                             if (fileTransferEnabled) {
                                 DestinationFileStreamIncomplete(
-                                    stream.descriptor,
+                                    stream,
                                     message.trace.emittedAt?.toLong() ?: 0L
                                 )
                             } else {
                                 DestinationRecordStreamIncomplete(
-                                    stream.descriptor,
+                                    stream,
                                     message.trace.emittedAt?.toLong() ?: 0L
                                 )
                             }

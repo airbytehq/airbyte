@@ -132,7 +132,7 @@ class MSSQLChecker(private val dataSourceFactory: MSSQLDataSourceFactory) :
             MSSQLCSVFormattingWriter(stream, outputStream, true).use { csvWriter ->
                 val destinationRecord =
                     DestinationRecordAirbyteValue(
-                        stream.descriptor,
+                        stream,
                         ObjectValue(
                             linkedMapOf(COLUMN_NAME to IntegerValue(TEST_ID_VALUE.toBigInteger()))
                         ),
