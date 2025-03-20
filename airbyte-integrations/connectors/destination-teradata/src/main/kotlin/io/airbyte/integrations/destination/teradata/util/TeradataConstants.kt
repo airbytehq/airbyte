@@ -20,5 +20,11 @@ interface TeradataConstants {
         const val VERIFY_CA: String = "verify-ca"
         const val VERIFY_FULL: String = "verify-full"
         const val CA_CERT_KEY: String = "ssl_ca_certificate"
+        const val QUERY_BAND_KEY: String = "query_band"
+        const val DEFAULT_QUERY_BAND: String = "org=teradata-internal-telem;appname=airbyte;"
+        const val DEFAULT_QUERY_BAND_ORG = "org=teradata-internal-telem;"
+        const val DEFAULT_QUERY_BAND_APPNAME = "appname=airbyte;"
+        const val QUERY_BAND_SET = "SET QUERY_BAND='"
+        const val QUERY_BAND_SESSION = "' FOR SESSION"
     }
 }

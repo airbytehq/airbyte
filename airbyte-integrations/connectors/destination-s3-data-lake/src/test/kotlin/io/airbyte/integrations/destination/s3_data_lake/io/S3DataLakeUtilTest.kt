@@ -207,7 +207,7 @@ internal class S3DataLakeUtilTest {
             )
         val airbyteRecord =
             DestinationRecordAirbyteValue(
-                stream = airbyteStream.descriptor,
+                stream = airbyteStream,
                 data =
                     ObjectValue(
                         linkedMapOf("id" to IntegerValue(42L), "name" to StringValue("John Doe"))
@@ -254,7 +254,7 @@ internal class S3DataLakeUtilTest {
             )
         val airbyteRecord =
             DestinationRecordAirbyteValue(
-                stream = airbyteStream.descriptor,
+                stream = airbyteStream,
                 data =
                     ObjectValue(
                         linkedMapOf(
@@ -306,7 +306,7 @@ internal class S3DataLakeUtilTest {
             )
         val airbyteRecord =
             DestinationRecordAirbyteValue(
-                stream = airbyteStream.descriptor,
+                stream = airbyteStream,
                 data =
                     ObjectValue(
                         linkedMapOf("id" to IntegerValue(42L), "name" to StringValue("John Doe"))

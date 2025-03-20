@@ -8,16 +8,16 @@ This page provides guidance on how to manage notifications for Airbyte, allowing
 
 ## Notification Event Types
 
-| Type of Notification                              | Description                                                                                                                                                               |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Failed Syncs**                                  | A sync from any of your connections fails. Note that if sync runs frequently or if there are many syncs in the workspace these types of events can be noisy               |
-| **Successful Syncs**                              | A sync from any of your connections succeeds. Note that if sync runs frequently or if there are many syncs in the workspace these types of events can be noisy            |
-| **Automated Connection Updates**                  | A connection is updated automatically (ex. a source schema is automatically updated)                                                                                      |
-| **Connection Updates Requiring Action**           | A connection update requires you to take action (ex. a breaking schema change is detected)                                                                                |
-| **Warning - Repeated Failures**                   | A connection will be disabled soon due to repeated failures. It has failed 20 times consecutively and there were only failed jobs in the past 4 days                       |
+| Type of Notification                              | Description                                                                                                                                                              |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Failed Syncs**                                  | A sync from any of your connections fails. Note that if sync runs frequently or if there are many syncs in the workspace these types of events can be noisy              |
+| **Successful Syncs**                              | A sync from any of your connections succeeds. Note that if sync runs frequently or if there are many syncs in the workspace these types of events can be noisy           |
+| **Automated Connection Updates**                  | A connection is updated automatically (ex. a source schema is automatically updated)                                                                                     |
+| **Connection Updates Requiring Action**           | A connection update requires you to take action (ex. a breaking schema change is detected)                                                                               |
+| **Warning - Repeated Failures**                   | A connection will be disabled soon due to repeated failures. It has failed 20 times consecutively and there were only failed jobs in the past 4 days                     |
 | **Sync Disabled - Repeated Failures**             | A connection was automatically disabled due to repeated failures. It will be disabled when it has failed 30 times consecutively and has been failing for 7 days in a row |
-| **Warning - Upgrade Required** (Cloud only)       | A new connector version is available and requires manual upgrade                                                                                                          |
-| **Sync Disabled - Upgrade Required** (Cloud only) | One or more connections were automatically disabled due to a connector upgrade deadline passing                                                                           |
+| **Warning - Upgrade Required** (Cloud only)       | A new connector version is available and requires manual upgrade                                                                                                         |
+| **Sync Disabled - Upgrade Required** (Cloud only) | One or more connections were automatically disabled due to a connector upgrade deadline passing                                                                          |
 
 ### Enabling schema update notifications
 
@@ -44,10 +44,12 @@ All email notifications except for Successful Syncs are enabled by default.
 To change the recipient, edit and save the **notification email recipient**. If you would like to send email notifications to more than one recipient, you can enter an email distribution list (ie Google Group) as the recipient.
 
 ## Configure Webhook Notification Settings
+
 Airbyte can send notifications to any generic webhook service. This is helpful when using a downstream service to trigger transformations or other tasks in your data stack.
 
 ### Example Webhook Notification Payload
-Open each section to see an example of the payload returned for the notification type. 
+
+Open each section to see an example of the payload returned for the notification type.
 
 :::info
 Airbyte passes both the `data` payload along with text blocks that are intended for Slack usage.
@@ -87,6 +89,8 @@ Airbyte passes both the `data` payload along with text blocks that are intended 
         "recordsEmitted":89,
         "recordsCommitted":45,
         "errorMessage":"Something failed",
+        "errorType": "config_error",
+        "errorOrigin": "source",
         "bytesEmittedFormatted": "1000 B",
         "bytesCommittedFormatted":"90 B",
         "success":false,
@@ -95,6 +99,8 @@ Airbyte passes both the `data` payload along with text blocks that are intended 
     }
 }
 ```
+
+Note that `errorType` refers to the type of error that occurred, and may indicate the need for a followup action. For example `config_error` indicates a problem with the source or destination configuration (look to `errorOrigin`), while `transient_error` indicates a temporary issue that may resolve itself.
 
 </details>
 <details>
@@ -144,40 +150,46 @@ Airbyte passes both the `data` payload along with text blocks that are intended 
 <details>
   <summary>Automated Connection Updates</summary>
 
-  Webhook does not contain payload and only works for Slack notifications
+Webhook does not contain payload and only works for Slack notifications
+
 </details>
 
 <details>
   <summary>Connection Updates Requiring Action</summary>
-  
-  Webhook does not contain payload and only works for Slack notifications
+
+Webhook does not contain payload and only works for Slack notifications
+
 </details>
 
 <details>
   <summary>Warning - Repeated Failures</summary>
-  
-  Webhook does not contain payload and only works for Slack notifications
+
+Webhook does not contain payload and only works for Slack notifications
+
 </details>
 
 <details>
   <summary>Sync Disabled - Repeated Failures</summary>
-  
-  Webhook does not contain payload and only works for Slack notifications
+
+Webhook does not contain payload and only works for Slack notifications
+
 </details>
 <details>
   <summary>Warning - Upgrade Required</summary>
-  
-  Webhook does not contain payload and only works for Slack notifications
+
+Webhook does not contain payload and only works for Slack notifications
+
 </details>
 <details>
   <summary>Sync Disabled - Upgrade Required</summary>
-  
-  Webhook does not contain payload and only works for Slack notifications
+
+Webhook does not contain payload and only works for Slack notifications
+
 </details>
 
 ### Configuring Slack Notifications
 
-The webhook notification also integrates easily with Slack. 
+The webhook notification also integrates easily with Slack.
 
 If you're more of a visual learner, head over to [this video](https://www.youtube.com/watch?v=NjYm8F-KiFc&ab_channel=Airbyte) to learn how to set up a Slack app to receive notifications. You can also refer to the Slack documentation on how to [create an incoming webhook for Slack](https://api.slack.com/messaging/webhooks).
 

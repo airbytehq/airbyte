@@ -166,6 +166,15 @@ class SingleStreamFileTransfer(
     private val log = KotlinLogging.logger {}
 
     private val descriptor = DestinationStream.Descriptor(randomizedNamespace, streamName)
+    private val stream =
+        DestinationStream(
+            descriptor = DestinationStream.Descriptor(randomizedNamespace, streamName),
+            importType = Append,
+            schema = ObjectType(linkedMapOf()),
+            generationId = 1,
+            minimumGenerationId = 0,
+            syncId = 1,
+        )
 
     override val catalog: DestinationCatalog =
         DestinationCatalog(
@@ -202,7 +211,7 @@ class SingleStreamFileTransfer(
             val fileName = makeFileName(it.toLong())
             val message =
                 DestinationFile(
-                    descriptor,
+                    stream,
                     System.currentTimeMillis(),
                     "",
                     DestinationFile.AirbyteRecordMessageFile(

@@ -1,4 +1,4 @@
-version: 6.36.3
+version: 6.33.4
 
 type: DeclarativeSource
 
@@ -209,7 +209,7 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: UTC
+            timeZone: "{{ config['timezone'] or 'UTC' }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
@@ -308,7 +308,7 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: UTC
+            timeZone: "{{config['timezone'] or 'UTC' }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
@@ -415,7 +415,7 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: UTC
+            timeZone: "{{ config['timezone'] or 'UTC' }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
@@ -531,6 +531,7 @@ spec:
       - client_id
       - start_date
       - client_secret
+      - timezone
     properties:
       org_id:
         type: integer
@@ -594,6 +595,17 @@ spec:
         pattern: ^(20|1[0-9]|[1-9])$
         examples:
           - 10
+      timezone:
+        type: string
+        default: UTC
+        description: >-
+          The timezone for the reporting data. Use 'ORTZ' for Organization Time
+          Zone or 'UTC' for Coordinated Universal Time. Default is UTC.
+        enum:
+          - ORTZ
+          - UTC
+        order: 7
+        title: Time Zone
     additionalProperties: true
 
 metadata:
@@ -616,47 +628,47 @@ metadata:
       - authenticator
   testedStreams:
     campaigns:
-      streamHash: 471be30065f2e627f876ceb64b765b1c9b144b3a
+      streamHash: 695200dfcda5d952c3d0c21948db4780caa38393
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     adgroups:
-      streamHash: 78700b260228ba45013dc89a6dc308ecb66c1493
+      streamHash: fe4a079447f9e32ab0e6bd33cbb87620aa946b70
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     keywords:
-      streamHash: 41a8b9105965783ffb44bebddd40ef5e36b59da4
+      streamHash: 8419d91ef05fe6a37e6a731972cc63f7db413ec3
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     campaigns_report_daily:
-      streamHash: 65c26f415b78932b495424c2da6b13d4408f02a4
+      streamHash: 0f716882a4c4cf2af1d32eaa5e4bfae1df650d1b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     adgroups_report_daily:
-      streamHash: 236c631495a6c5d871069511422cf4ecccd45127
+      streamHash: 69ae81a549ddf4cf49525e4731ce3f0672850294
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     keywords_report_daily:
-      streamHash: 960877547a37e031d2b50197379b164fb42028c1
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 9e3168136c48dbdc3e29e620f048eb3824023132
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:

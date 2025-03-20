@@ -71,6 +71,7 @@ However, at this moment and as indicated in the stream names, the connector only
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| 0.6.0 | 2025-03-20 | [55785](https://github.com/airbytehq/airbyte/pull/55785) | Add timezone config parameter |
 | 0.5.1 | 2025-03-08 | [55366](https://github.com/airbytehq/airbyte/pull/55366) | Update dependencies |
 | 0.5.0 | 2025-03-05 | [55210](https://github.com/airbytehq/airbyte/pull/55210) | Remove primary keys |
 | 0.4.3 | 2025-03-01 | [54873](https://github.com/airbytehq/airbyte/pull/54873) | Update dependencies |

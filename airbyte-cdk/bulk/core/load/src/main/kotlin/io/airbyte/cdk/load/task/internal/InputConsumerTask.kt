@@ -80,7 +80,7 @@ class DefaultInputConsumerTask(
     // Required by new interface
     @Named("recordQueue")
     private val recordQueueForPipeline:
-        PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
+        PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val loadPipeline: LoadPipeline? = null,
     private val partitioner: InputPartitioner,
     private val openStreamQueue: QueueWriter<DestinationStream>
@@ -96,8 +96,8 @@ class DefaultInputConsumerTask(
         sizeBytes: Long
     ) {
         val stream = reserved.value.stream
-        val manager = syncManager.getStreamManager(stream)
-        val recordQueue = recordQueueSupplier.get(stream)
+        val manager = syncManager.getStreamManager(stream.descriptor)
+        val recordQueue = recordQueueSupplier.get(stream.descriptor)
         when (val message = reserved.value) {
             is DestinationRecord -> {
                 val wrapped =
@@ -125,7 +125,9 @@ class DefaultInputConsumerTask(
             is DestinationFile -> {
                 val index = manager.incrementReadCount()
                 // destinationTaskLauncher.handleFile(stream, message, index)
-                fileTransferQueue.publish(FileTransferQueueMessage(stream, message, index))
+                fileTransferQueue.publish(
+                    FileTransferQueueMessage(stream.descriptor, message, index)
+                )
             }
             is DestinationFileStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
@@ -133,9 +135,9 @@ class DefaultInputConsumerTask(
                 val envelope =
                     BatchEnvelope(
                         SimpleBatch(Batch.State.COMPLETE),
-                        streamDescriptor = message.stream,
+                        streamDescriptor = message.stream.descriptor,
                     )
-                destinationTaskLauncher.handleNewBatch(stream, envelope)
+                destinationTaskLauncher.handleNewBatch(stream.descriptor, envelope)
             }
             is DestinationFileStreamIncomplete ->
                 throw IllegalStateException("File stream $stream failed upstream, cannot continue.")
@@ -146,16 +148,16 @@ class DefaultInputConsumerTask(
         reserved: Reserved<DestinationStreamAffinedMessage>,
     ) {
         val stream = reserved.value.stream
-        unopenedStreams.remove(stream)?.let {
+        unopenedStreams.remove(stream.descriptor)?.let {
             log.info { "Saw first record for stream $stream; initializing" }
             // Note, since we're not spilling to disk, there is nothing to do with
             // any records before initialization is complete, so we'll wait here
             // for it to finish.
             openStreamQueue.publish(it)
-            syncManager.getOrAwaitStreamLoader(stream)
+            syncManager.getOrAwaitStreamLoader(stream.descriptor)
             log.info { "Initialization for stream $stream complete" }
         }
-        val manager = syncManager.getStreamManager(stream)
+        val manager = syncManager.getStreamManager(stream.descriptor)
         when (val message = reserved.value) {
             is DestinationRecord -> {
                 val record = message.asDestinationRecordRaw()
@@ -163,28 +165,30 @@ class DefaultInputConsumerTask(
                 val pipelineMessage =
                     PipelineMessage(
                         mapOf(manager.getCurrentCheckpointId() to 1),
-                        StreamKey(stream),
+                        StreamKey(stream.descriptor),
                         record
-                    )
+                    ) { reserved.release() }
                 val partition = partitioner.getPartition(record, recordQueueForPipeline.partitions)
-                recordQueueForPipeline.publish(reserved.replace(pipelineMessage), partition)
+                recordQueueForPipeline.publish(pipelineMessage, partition)
             }
             is DestinationRecordStreamComplete -> {
                 manager.markEndOfStream(true)
                 log.info { "Read COMPLETE for stream $stream" }
-                recordQueueForPipeline.broadcast(reserved.replace(PipelineEndOfStream(stream)))
+                recordQueueForPipeline.broadcast(PipelineEndOfStream(stream.descriptor))
                 reserved.release()
             }
             is DestinationRecordStreamIncomplete -> {
                 manager.markEndOfStream(false)
                 log.info { "Read INCOMPLETE for stream $stream" }
-                recordQueueForPipeline.broadcast(reserved.replace(PipelineEndOfStream(stream)))
+                recordQueueForPipeline.broadcast(PipelineEndOfStream(stream.descriptor))
                 reserved.release()
             }
             is DestinationFile -> {
                 val index = manager.incrementReadCount()
                 // destinationTaskLauncher.handleFile(stream, message, index)
-                fileTransferQueue.publish(FileTransferQueueMessage(stream, message, index))
+                fileTransferQueue.publish(
+                    FileTransferQueueMessage(stream.descriptor, message, index)
+                )
             }
             is DestinationFileStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
@@ -192,9 +196,9 @@ class DefaultInputConsumerTask(
                 val envelope =
                     BatchEnvelope(
                         SimpleBatch(Batch.State.COMPLETE),
-                        streamDescriptor = message.stream,
+                        streamDescriptor = message.stream.descriptor,
                     )
-                destinationTaskLauncher.handleNewBatch(stream, envelope)
+                destinationTaskLauncher.handleNewBatch(stream.descriptor, envelope)
             }
             is DestinationFileStreamIncomplete ->
                 throw IllegalStateException("File stream $stream failed upstream, cannot continue.")
@@ -309,8 +313,7 @@ interface InputConsumerTaskFactory {
         fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
 
         // Required by new interface
-        recordQueueForPipeline:
-            PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
+        recordQueueForPipeline: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
         loadPipeline: LoadPipeline?,
         partitioner: InputPartitioner,
         openStreamQueue: QueueWriter<DestinationStream>,
@@ -332,8 +335,7 @@ class DefaultInputConsumerTaskFactory(
         fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
 
         // Required by new interface
-        recordQueueForPipeline:
-            PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
+        recordQueueForPipeline: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
         loadPipeline: LoadPipeline?,
         partitioner: InputPartitioner,
         openStreamQueue: QueueWriter<DestinationStream>,
