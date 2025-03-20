@@ -49,18 +49,6 @@
       "id": "84386203808767123/insights/likes/lifetime"
     },
     {
-      "name": "plays",
-      "period": "lifetime",
-      "values": [
-        {
-          "value": 2385
-        }
-      ],
-      "title": "Plays",
-      "description": "The number of plays of your reel.",
-      "id": "84386203808767123/insights/plays/lifetime"
-    },
-    {
       "name": "reach",
       "period": "lifetime",
       "values": [

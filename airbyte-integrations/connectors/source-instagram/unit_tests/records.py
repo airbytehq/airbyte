@@ -212,14 +212,6 @@ insights_record = {
             "id": "insta_id/insights/likes/lifetime",
         },
         {
-            "name": "plays",
-            "period": "lifetime",
-            "values": [{"value": 2176}],
-            "title": "title5",
-            "description": "Description5.",
-            "id": "insta_id/insights/plays/lifetime",
-        },
-        {
             "name": "reach",
             "period": "lifetime",
             "values": [{"value": 1842}],
@@ -251,7 +243,6 @@ insights_record_transformed = {
     "ig_reels_avg_watch_time": 11900,
     "ig_reels_video_view_total_time": 25979677,
     "likes": 102,
-    "plays": 2176,
     "reach": 1842,
     "saved": 7,
     "shares": 1,

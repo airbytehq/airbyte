@@ -203,10 +203,6 @@
             "description": "The total number of interactions (likes, comments, shares) on the media.",
             "type": ["null", "integer"]
           },
-          "plays": {
-            "description": "The number of times the media has been played.",
-            "type": ["null", "integer"]
-          },
           "follows": {
             "description": "The number of accounts that started to follow the profile.",
             "type": ["null", "integer"]

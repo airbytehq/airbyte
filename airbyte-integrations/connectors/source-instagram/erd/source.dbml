@@ -32,7 +32,6 @@ Table "media_insights" {
     "likes" integer
     "shares" integer
     "total_interactions" integer
-    "plays" integer
     "follows" integer
     "profile_visits" integer
 }

@@ -82,7 +82,6 @@ _METRICS = {
         "ig_reels_avg_watch_time",
         "ig_reels_video_view_total_time",
         "likes",
-        "plays",
         "reach",
         "saved",
         "shares",
