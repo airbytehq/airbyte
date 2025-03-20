@@ -30,7 +30,6 @@ class CustomExtractor(RecordExtractor):
             "author",
             "category",
             "comments",
-            "enclosure",
             "guid",
         ]
 
@@ -41,6 +40,17 @@ class CustomExtractor(RecordExtractor):
                     mapping[item_key] = item[item_key]
                 except (AttributeError, KeyError):
                     pass
+            
+            # Special handling for enclosure to extract the URL attribute
+            try:
+                if hasattr(item, 'enclosures') and len(item.enclosures) > 0:
+                    mapping['enclosure'] = item.enclosures[0].get('url', '')
+                elif hasattr(item, 'enclosure') and hasattr(item.enclosure, 'url'):
+                    mapping['enclosure'] = item.enclosure.url
+                elif hasattr(item, 'enclosure'):
+                    mapping['enclosure'] = item.enclosure
+            except (AttributeError, KeyError, IndexError):
+                pass
 
             try:
                 dt = datetime.utcfromtimestamp(timegm(item.published_parsed))
