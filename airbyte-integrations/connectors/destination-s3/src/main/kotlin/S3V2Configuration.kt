@@ -76,6 +76,7 @@ class S3V2ConfigurationFactory :
             numUploadWorkers = pojo.numObjectLoaders ?: 10,
             partSizeBytes = (pojo.partSizeMb ?: 10) * 1024L * 1024L,
             useLegacyClient = pojo.useLegacyClient ?: false,
+            maxMemoryRatioReservedForParts = pojo.ratioOfMemoryToReserveForFiles ?: 0.8,
         )
     }
 }

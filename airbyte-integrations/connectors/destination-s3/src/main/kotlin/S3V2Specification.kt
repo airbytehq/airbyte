@@ -82,6 +82,8 @@ class S3V2Specification :
     val partSizeMb: Int? = null
     @get:JsonProperty("use_legacy_client")
     val useLegacyClient: Boolean? = null
+    @get:JsonProperty("ratio_of_memory_to_reserve_for_files")
+    val ratioOfMemoryToReserveForFiles: Double? = null
 }
 
 @Singleton

@@ -5,7 +5,6 @@ import io.airbyte.cdk.load.file.object_storage.PathFactory
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.airbyte.cdk.load.file.s3.S3Client
 import io.airbyte.cdk.load.file.s3.S3Object
-import io.airbyte.cdk.load.file.s3.S3StreamingUpload
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationFileStreamComplete
@@ -16,6 +15,7 @@ import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.message.Undefined
+import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.SelfTerminating
 import io.airbyte.cdk.load.task.TerminalCondition
@@ -23,13 +23,13 @@ import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
 import io.airbyte.cdk.load.write.WriteOpOverride
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.File
 import java.io.RandomAccessFile
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
-import kotlin.random.Random
 import kotlin.time.measureTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -38,7 +38,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -70,6 +69,8 @@ class S3V2WriteOpOverride(
         val mockPartQueue: Channel<FileSegment> = Channel(Channel.UNLIMITED)
         val streamCount = AtomicLong(catalog.streams.size.toLong())
         val totalBytesLoaded = AtomicLong(0L)
+        val memoryManager = ReservationManager((Runtime.getRuntime().maxMemory() *
+            config.maxMemoryRatioReservedForParts).toLong())
         try {
             withContext(Dispatchers.IO) {
                 val duration = measureTime {
@@ -103,6 +104,13 @@ class S3V2WriteOpOverride(
                                         throw IllegalStateException("This can't work unless you set FileMessage.bytes!")
                                     }
                                     val size = message.fileMessage.bytes!!
+                                    log.info {
+                                        "Reserving $size bytes for file ${message.fileMessage.fileUrl}"
+                                    }
+                                    memoryManager.reserve(size)
+                                    log.info {
+                                        "Successfully reserved $size bytes for file ${message.fileMessage.fileUrl}"
+                                    }
                                     val numWholeParts = (size / config.partSizeBytes).toInt()
                                     val numParts =
                                         numWholeParts + if (size % config.partSizeBytes > 0) 1 else 0
@@ -118,6 +126,7 @@ class S3V2WriteOpOverride(
                                     val upload = client.startStreamingUpload(objectKey)
                                     val partCounter = AtomicLong(numParts.toLong())
                                     repeat(numParts) { partNumber ->
+                                        val partSize = if (partNumber == numParts - 1) lastPartSize else config.partSizeBytes
                                         mockPartQueue.send(
                                             FileSegment(
                                                 fileUrl,
@@ -127,6 +136,10 @@ class S3V2WriteOpOverride(
                                                 if (partNumber == numParts - 1) lastPartSize else config.partSizeBytes
                                             ) {
                                                 val partsRemaining = partCounter.decrementAndGet()
+                                                log.info {
+                                                    "Releasing $partSize bytes for part ${partNumber + 1} of file $fileUrl"
+                                                }
+                                                memoryManager.release(partSize)
                                                 if (partsRemaining == 0L) {
                                                     log.info {
                                                         "Finished uploading $numParts parts of $fileUrl; deleting file and finishing upload"
