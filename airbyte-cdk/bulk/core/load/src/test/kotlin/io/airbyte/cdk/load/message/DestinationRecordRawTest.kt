@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.message
@@ -14,43 +14,36 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.math.BigInteger
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class DestinationRecordRawTest {
 
-    private lateinit var stream: DestinationStream
-    private lateinit var recordSchema: ObjectType
-
-    @BeforeEach
-    fun setup() {
-        // Create a schema with various field types for testing
-        recordSchema =
-            ObjectType(
-                linkedMapOf(
-                    "string_field" to FieldType(StringType, true),
-                    "integer_field" to FieldType(IntegerType, false),
-                    "boolean_field" to FieldType(BooleanType, true),
-                    "number_field" to FieldType(NumberType, true),
-                    "array_field" to FieldType(ArrayType(FieldType(StringType, true)), true),
-                    "object_field" to
-                        FieldType(
-                            ObjectType(linkedMapOf("nested_field" to FieldType(StringType, true))),
-                            true
-                        )
-                )
+    // Create a schema with various field types for testing
+    private val recordSchema =
+        ObjectType(
+            linkedMapOf(
+                "string_field" to FieldType(StringType, true),
+                "integer_field" to FieldType(IntegerType, false),
+                "boolean_field" to FieldType(BooleanType, true),
+                "number_field" to FieldType(NumberType, true),
+                "array_field" to FieldType(ArrayType(FieldType(StringType, true)), true),
+                "object_field" to
+                    FieldType(
+                        ObjectType(linkedMapOf("nested_field" to FieldType(StringType, true))),
+                        true
+                    )
             )
+        )
 
-        stream =
-            DestinationStream(
-                DestinationStream.Descriptor("test_namespace", "test_stream"),
-                io.airbyte.cdk.load.command.Append,
-                recordSchema,
-                42L, // generationId
-                0L, // minimumGenerationId
-                123L // syncId
-            )
-    }
+    private val stream =
+        DestinationStream(
+            DestinationStream.Descriptor("test_namespace", "test_stream"),
+            io.airbyte.cdk.load.command.Append,
+            recordSchema,
+            generationId = 42L,
+            minimumGenerationId = 0L,
+            syncId = 123L,
+        )
 
     @Test
     fun `test handling of undeclared fields`() {
@@ -276,9 +269,9 @@ class DestinationRecordRawTest {
                 DestinationStream.Descriptor("test_namespace", "test_stream"),
                 io.airbyte.cdk.load.command.Append,
                 emptySchema,
-                42L,
-                0L,
-                123L
+                generationId = 42L,
+                minimumGenerationId = 0L,
+                syncId = 123L,
             )
 
         val jsonData = """{"field1": "value1", "field2": 123}"""
@@ -354,9 +347,9 @@ class DestinationRecordRawTest {
                 DestinationStream.Descriptor("test_namespace", "test_stream"),
                 io.airbyte.cdk.load.command.Append,
                 complexSchema,
-                42L,
-                0L,
-                123L
+                generationId = 42L,
+                minimumGenerationId = 0L,
+                syncId = 123L,
             )
 
         val jsonData =
