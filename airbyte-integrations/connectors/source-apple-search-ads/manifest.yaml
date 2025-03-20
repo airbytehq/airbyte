@@ -753,8 +753,6 @@ schemas:
         type: array
         items:
           type: string
-    required:
-      - id
   adgroups:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -886,8 +884,6 @@ schemas:
                     type: array
                     items:
                       type: string
-    required:
-      - id
   keywords:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -918,8 +914,6 @@ schemas:
         type: string
       text:
         type: string
-    required:
-      - id
   campaigns_report_daily:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
