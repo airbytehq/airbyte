@@ -1,38 +1,30 @@
-metadataSpecVersion: "1.0"
 data:
-  allowedHosts:
-    hosts:
-      - "api.searchads.apple.com"
-  registryOverrides:
-    oss:
-      enabled: true
-    cloud:
-      enabled: true
-  remoteRegistries:
-    pypi:
-      enabled: false
-      packageName: airbyte-source-apple-search-ads
-  connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.41.1@sha256:f256b6f008ec07a37e3e6bce3ada17bec4197c1bc66c41c4b756980c8cb587ac
   connectorSubtype: api
   connectorType: source
   definitionId: e59c8416-c2fa-4bd3-9e95-52677ea281c1
-  dockerImageTag: 0.6.0
+  dockerImageTag: 0.5.1
   dockerRepository: airbyte/source-apple-search-ads
   githubIssueLabel: source-apple-search-ads
   icon: icon.svg
   license: MIT
   name: Apple Search Ads
-  releaseDate: 2025-03-16
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-apple-search-ads
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/apple-search-ads
   tags:
-    - language:manifest-only
     - cdk:low-code
+    - language:manifest-only
   ab_internal:
-    ql: 100
     sl: 100
+    ql: 100
   connectorTestSuitesOptions:
     - suite: acceptanceTests
       testSecrets:
@@ -43,5 +35,5 @@ data:
             alias: airbyte-connector-testing-secret-store
   supportLevel: community
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.38.3@sha256:fcba02266f262aabc2f37e4f14574aa1c8c5cffd018504bab28803e405c93afe
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.41.1@sha256:f256b6f008ec07a37e3e6bce3ada17bec4197c1bc66c41c4b756980c8cb587ac
 metadataSpecVersion: "1.0"
