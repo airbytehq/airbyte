@@ -17,6 +17,11 @@ data:
   icon: confluence.svg
   license: MIT
   name: Confluence
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "Available streams are migrated to V2 endpoint. This is a breaking change which requires re-syncing all data."
+        upgradeDeadline: "2025-04-30"
   registryOverrides:
     cloud:
       enabled: true
