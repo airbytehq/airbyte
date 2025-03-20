@@ -11,7 +11,7 @@ import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriterFactory
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import java.io.OutputStream
 import javax.inject.Singleton
 
@@ -23,7 +23,7 @@ class MSSQLCSVFormattingWriter(
     private val finalSchema = stream.schema.withAirbyteMeta(true)
     private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
     private val mssqlRowValidator = MSSQLCsvRowValidator(validateValuesPreLoad)
-    override fun accept(record: DestinationRecordAirbyteValue) {
+    override fun accept(record: DestinationRecordRaw) {
         printer.printRecord(
             mssqlRowValidator
                 .validate(record, this.finalSchema)

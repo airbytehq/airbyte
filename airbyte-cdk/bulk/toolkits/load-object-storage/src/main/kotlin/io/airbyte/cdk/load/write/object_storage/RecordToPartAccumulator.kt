@@ -65,7 +65,7 @@ class RecordToPartAccumulator<U : OutputStream>(
 
         // Add all the records to the formatting writer.
         log.info { "Accumulating ${totalSizeBytes}b records for ${partialUpload.partFactory.key}" }
-        records.forEach { partialUpload.writer.accept(it.asDestinationRecordAirbyteValue()) }
+        records.forEach { partialUpload.writer.accept(it) }
         partialUpload.writer.flush()
 
         // Check if we have reached the target size.
