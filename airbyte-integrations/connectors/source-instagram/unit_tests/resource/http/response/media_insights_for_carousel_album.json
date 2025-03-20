@@ -1,18 +1,6 @@
 {
   "data": [
     {
-      "name": "impressions",
-      "period": "lifetime",
-      "values": [
-        {
-          "value": 11000
-        }
-      ],
-      "title": "Impressions",
-      "description": "The number of times your carousel album was displayed.",
-      "id": "66123508374641123/insights/impressions/lifetime"
-    },
-    {
       "name": "reach",
       "period": "lifetime",
       "values": [
