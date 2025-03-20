@@ -18,6 +18,7 @@ import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
@@ -33,6 +34,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import scala.annotation.meta.field
 
 private val logger = KotlinLogging.logger {}
 
@@ -324,13 +326,17 @@ class MSSQLQueryBuilder(
         schema: List<NamedField>
     ) {
         val enrichedRecord = plainRecord.asEnrichedDestinationRecordAirbyteValue()
-        // TODO maybe we should just sort this into schema order?
         val populatedFields = enrichedRecord.allTypedFields
 
         var airbyteMetaStatementIndex: Int? = null
         schema.forEachIndexed { index, field ->
             val statementIndex = index + 1
-            if (field.name == COLUMN_NAME_AB_META) {
+            val value = populatedFields[field.name]
+            if (value == null) {
+                statement.setAsNullValue(statementIndex, field.type.type)
+                return@forEachIndexed
+            }
+            if (value.airbyteMetaField == Meta.AirbyteMetaFields.META) {
                 // don't populate _airbyte_meta yet - we might run into errors in the other fields
                 // for this record.
                 // Instead, we grab the statement index, and populate airbyte_meta after processing
@@ -338,19 +344,17 @@ class MSSQLQueryBuilder(
                 airbyteMetaStatementIndex = statementIndex
                 return@forEachIndexed
             }
-            populatedFields[field.name]?.let { value ->
-                try {
-                    statement.setValue(statementIndex, value.value, field)
-                } catch (e: Exception) {
-                    statement.setAsNullValue(statementIndex, field.type.type)
-                    when (e) {
-                        is ArithmeticException ->
-                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
-                        else -> value.nullify(Reason.DESTINATION_SERIALIZATION_ERROR)
-                    }
+
+            try {
+                statement.setValue(statementIndex, value.value, field)
+            } catch (e: Exception) {
+                statement.setAsNullValue(statementIndex, field.type.type)
+                when (e) {
+                    is ArithmeticException ->
+                        value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                    else -> value.nullify(Reason.DESTINATION_SERIALIZATION_ERROR)
                 }
             }
-                ?: statement.setAsNullValue(statementIndex, field.type.type)
         }
 
         // Now that we're done processing the rest of the record, populate airbyte_meta into the
