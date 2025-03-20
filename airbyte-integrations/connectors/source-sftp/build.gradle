@@ -3,6 +3,7 @@ plugins {
 }
 
 airbyteJavaConnector {
+    // TODO: Re-pin to the published CDK version once PR https://github.com/airbytehq/airbyte-python-cdk/pull/426 has merged
     cdkVersionRequired = '0.20.4'
     features = ['db-sources']
     useLocalCdk = false
