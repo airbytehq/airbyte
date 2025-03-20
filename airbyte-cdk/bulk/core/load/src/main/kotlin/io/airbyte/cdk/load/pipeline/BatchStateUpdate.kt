@@ -12,17 +12,21 @@ import io.airbyte.cdk.load.task.Task
 /** Used internally by the CDK to track record ranges to ack. */
 sealed interface BatchUpdate {
     val stream: DestinationStream.Descriptor
-    val task: Task
+    val taskName: String
+    val part: Int
 }
 
 data class BatchStateUpdate(
     override val stream: DestinationStream.Descriptor,
     val checkpointCounts: Map<CheckpointId, Long>,
     val state: Batch.State,
-    override val task: Task,
+    override val taskName: String,
+    override val part: Int,
+    val inputCount: Long = 0L
 ) : BatchUpdate
 
 data class BatchEndOfStream(
     override val stream: DestinationStream.Descriptor,
-    override val task: Task,
+    override val taskName: String,
+    override val part: Int,
 ) : BatchUpdate

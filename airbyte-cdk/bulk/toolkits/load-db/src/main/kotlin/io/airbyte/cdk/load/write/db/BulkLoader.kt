@@ -52,5 +52,5 @@ interface BulkLoaderFactory<K : WithStream, T : RemoteObject<*>> : ObjectLoader 
     // Override the bookkeeping state for objects in object storage
     // from the default of "COMPLETE". Connector devs can ignore this.
     override val stateAfterUpload: Batch.State
-        get() = Batch.State.STAGED
+        get() = Batch.State.LOADED
 }

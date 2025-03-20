@@ -55,9 +55,10 @@ interface Batch {
 
     enum class State {
         PROCESSED,
-        STAGED,
-        PERSISTED,
-        COMPLETE;
+        STAGED, // staged locally or remotely-but-not-yet-complete (ie, partial multi-part upload)
+        LOADED, // ie, staged remotely but in a non-recoverable way
+        PERSISTED, // recoverable (framework can ack), but not yet complete
+        COMPLETE; // completely done; implies persisted (ie, framework can ack)
 
         fun isPersisted(): Boolean =
             when (this) {

@@ -12,8 +12,10 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.Part
 import io.airbyte.cdk.load.file.object_storage.PartFactory
 import io.airbyte.cdk.load.file.object_storage.PathFactory
+import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.message.WithBatchState
 import io.airbyte.cdk.load.pipeline.BatchAccumulator
 import io.airbyte.cdk.load.pipeline.BatchAccumulatorResult
 import io.airbyte.cdk.load.pipeline.FinalOutput
@@ -63,7 +65,10 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
         }
     }
 
-    @JvmInline value class FormattedPart(val part: Part)
+    data class FormattedPart(
+        val part: Part,
+        override val state: Batch.State = Batch.State.PROCESSED
+        ): WithBatchState
 
     private suspend fun newState(stream: DestinationStream): State<T> {
         // Determine unique file name.

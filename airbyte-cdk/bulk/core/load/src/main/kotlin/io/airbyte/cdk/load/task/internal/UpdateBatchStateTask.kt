@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.pipeline.BatchEndOfStream
 import io.airbyte.cdk.load.pipeline.BatchStateUpdate
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.state.CheckpointManager
+import io.airbyte.cdk.load.state.CheckpointValue
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.OnEndOfSync
@@ -36,32 +37,21 @@ class UpdateBatchStateTask(
             when (message) {
                 is BatchStateUpdate -> {
                     log.info {
-                        "Batch update from ${message.task}: ${message.stream}[${message.state}] += ${message.checkpointCounts}"
+                        "Batch update for ${message.stream}: ${message.taskName}[${message.part}](${message.state}) += ${message.checkpointCounts}"
                     }
-                    when (message.state) {
-                        Batch.State.COMPLETE -> {
-                            message.checkpointCounts.forEach {
-                                manager.incrementCompletedCount(
-                                    it.key,
-                                    it.value,
-                                )
-                            }
-                        }
-                        Batch.State.PERSISTED -> {
-                            message.checkpointCounts.forEach {
-                                manager.incrementPersistedCount(
-                                    it.key,
-                                    it.value,
-                                )
-                            }
-                        }
-                        else -> return@collect
-                    }
+                    manager.incrementCheckpointCounts(
+                        message.taskName,
+                        message.part,
+                        message.state,
+                        message.checkpointCounts,
+                        message.inputCount
+                    )
                 }
                 is BatchEndOfStream -> {
                     log.info {
-                        "End-of-stream checks for ${message.stream}: ${message.task}"
+                        "End-of-stream checks for ${message.stream}: ${message.taskName}[${message.part}]"
                     }
+                    manager.markTaskEndOfStream(message.taskName, message.part)
                 }
             }
             checkpointManager.flushReadyCheckpointMessages()

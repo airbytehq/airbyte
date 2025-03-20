@@ -8,7 +8,7 @@ import io.airbyte.cdk.load.write.BasicPerformanceTest
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-@Disabled("We don't want this to run in CI")
+//@Disabled("We don't want this to run in CI")
 class S3V2JsonNoFrillsPerformanceTest :
     BasicPerformanceTest(
         configContents = S3V2TestUtils.getConfig(S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH),
@@ -18,13 +18,19 @@ class S3V2JsonNoFrillsPerformanceTest :
         numFilesForFileTransfer = 5,
         fileSizeMbForFileTransfer = 1024,
     ) {
-    @Test
+    @Disabled
+        @Test
     override fun testFileTransfer() {
         super.testFileTransfer()
     }
+
+    @Test
+    override fun testInsertRecords() {
+        super.testInsertRecords()
+    }
 }
 
-@Disabled("We don't want this to run in CI")
+//@Disabled("We don't want this to run in CI")
 class S3V2ParquetSnappyPerformanceTest :
     BasicPerformanceTest(
         configContents = S3V2TestUtils.getConfig(S3V2TestUtils.PARQUET_SNAPPY_CONFIG_PATH),

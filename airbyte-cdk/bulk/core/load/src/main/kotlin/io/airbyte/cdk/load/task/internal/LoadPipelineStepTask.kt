@@ -65,6 +65,8 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
 ) : Task {
     private val log = KotlinLogging.logger {}
 
+    private val taskName = batchAccumulator::class.java.simpleName
+
     override val terminalCondition: TerminalCondition = OnEndOfSync
 
     data class StateStore<K1, S: AutoCloseable>(
@@ -127,7 +129,8 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                                 handleOutput(
                                     input.key,
                                     stateWithCounts.checkpointCounts,
-                                    finalAccOutput
+                                    finalAccOutput,
+                                    stateWithCounts.inputCount
                                 )
                                 stateWithCounts.checkpointCounts.clear()
                                 0
@@ -155,7 +158,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         keysToRemove.forEach { key ->
                             stateStore.stateWithCounts.remove(key)?.let { stored ->
                                 val output = batchAccumulator.finish(stored.accumulatorState).output
-                                handleOutput(key, stored.checkpointCounts, output)
+                                handleOutput(key, stored.checkpointCounts, output, stored.inputCount)
                                 stored.close()
                             }
                         }
@@ -169,13 +172,14 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                                 "$this saw end-of-stream for ${input.stream} after ${stateStore.totalInputCount} inputs, all workers complete"
                             }
                             outputQueue?.broadcast(PipelineEndOfStream(input.stream))
-                            batchUpdateQueue.publish(BatchEndOfStream(input.stream, task = this))
-
                         } else {
                             log.info {
                                 "$this saw end-of-stream for ${input.stream} after ${stateStore.totalInputCount} inputs, ${numWorkers - numWorkersSeenEos} workers remaining"
                             }
                         }
+
+                        // Track which tasks are complete
+                        batchUpdateQueue.publish(BatchEndOfStream(input.stream, taskName, part))
 
                         stateStore
                     }
@@ -193,7 +197,8 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
     private suspend fun handleOutput(
         inputKey: K1,
         checkpointCounts: Map<CheckpointId, Long>,
-        output: U
+        output: U,
+        inputCount: Long
     ) {
 
         // Only publish the output if there's a next step.
@@ -211,7 +216,10 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                     stream = inputKey.stream,
                     checkpointCounts = checkpointCounts.toMap(),
                     state = output.state,
-                    task = this)
+                    taskName = taskName,
+                    part = part,
+                    inputCount = inputCount
+                )
 
             batchUpdateQueue.publish(update)
         }
