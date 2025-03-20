@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.mssql.v2
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.SimpleBatch
 import javax.sql.DataSource
 
@@ -19,7 +19,7 @@ class MSSQLStreamLoader(
     private val recordCommitBatchSize = 5_000
 
     override suspend fun processRecords(
-        records: Iterator<DestinationRecord>,
+        records: Iterator<DestinationRecordRaw>,
         totalSizeBytes: Long,
         endOfStream: Boolean
     ): Batch {
