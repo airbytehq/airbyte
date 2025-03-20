@@ -17,7 +17,7 @@ include = "source_monday"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
-airbyte_cdk = "v6.41.2dev0"
+airbyte_cdk = "^6"
 
 [tool.poetry.scripts]
 source-monday = "source_monday.run:run"
