@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.5.32"
+version = "0.6.0"
 name = "source-greenhouse"
 description = "Source implementation for Greenhouse."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,15 +16,14 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_greenhouse"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "0.80.0"
-dataclasses-jsonschema = "==2.15.1"
+python = "^3.10,<3.12"
+airbyte-cdk = "^6"
 
 [tool.poetry.scripts]
 source-greenhouse = "source_greenhouse.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.1"
+pytest = "^8.0.0"
 pytest-mock = "^3.6"
 requests-mock = "^1.9.3"
 

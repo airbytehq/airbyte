@@ -139,6 +139,54 @@ def test_unzip_stream(client, absolute_path, test_files):
         assert client._unzip(file)
 
 
+def test_unzip_canonical_ext(absolute_path, test_files):
+    config = {
+        "dataset_name": "BBB",
+        "format": "csv",
+        "url": f"{absolute_path}/{test_files}/test.csv.zip",
+        "provider": {"storage": "local"},
+        "reader_options": {"encoding": "utf-8"},
+    }
+
+    client = Client(**config)
+
+    with patch.object(client, "_unzip", wraps=client._unzip) as monkey:
+        next(client.read())
+        monkey.assert_called()
+
+
+def test_unzip_capitalized_ext(absolute_path, test_files):
+    config = {
+        "dataset_name": "CCC",
+        "format": "csv",
+        "url": f"{absolute_path}/{test_files}/test.csv.Zip",
+        "provider": {"storage": "local"},
+        "reader_options": {"encoding": "utf-8"},
+    }
+
+    client = Client(**config)
+
+    with patch.object(client, "_unzip", wraps=client._unzip) as monkey:
+        next(client.read())
+        monkey.assert_called()
+
+
+def test_unzip_all_caps_ext(absolute_path, test_files):
+    config = {
+        "dataset_name": "CCC",
+        "format": "csv",
+        "url": f"{absolute_path}/{test_files}/test.csv.ZIP",
+        "provider": {"storage": "local"},
+        "reader_options": {"encoding": "utf-8"},
+    }
+
+    client = Client(**config)
+
+    with patch.object(client, "_unzip", wraps=client._unzip) as monkey:
+        next(client.read())
+        monkey.assert_called()
+
+
 def test_open_aws_url():
     url = "s3://my_bucket/my_key"
     provider = {"storage": "S3"}

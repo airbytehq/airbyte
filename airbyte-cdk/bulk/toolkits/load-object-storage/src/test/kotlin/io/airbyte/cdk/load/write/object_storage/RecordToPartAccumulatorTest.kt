@@ -42,7 +42,7 @@ class RecordToPartAccumulatorTest {
 
     private fun makeRecord(): DestinationRecordAirbyteValue =
         DestinationRecordAirbyteValue(
-            DestinationStream.Descriptor("test", "stream"),
+            stream,
             ObjectValue(linkedMapOf()),
             0L,
             null,
@@ -91,7 +91,6 @@ class RecordToPartAccumulatorTest {
             }
 
         coEvery { pathFactory.getPathToFile(any(), any()) } answers { "path.${secondArg<Long>()}" }
-        coEvery { pathFactory.supportsStaging } returns false
 
         // Object 1
 
