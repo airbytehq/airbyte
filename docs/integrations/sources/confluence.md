@@ -39,10 +39,10 @@ For detailed instructions on creating an Atlassian API Token, please refer to th
 ## Supported streams
 
 - [Audit](https://developer.atlassian.com/cloud/confluence/rest/api-group-audit/#api-wiki-rest-api-audit-get)
-- [Blog Posts](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
+- [Blog Posts](https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-blog-post/#api-blogposts-get)
 - [Group](https://developer.atlassian.com/cloud/confluence/rest/api-group-group/#api-wiki-rest-api-group-get)
-- [Pages](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
-- [Space](https://developer.atlassian.com/cloud/confluence/rest/api-group-space/#api-wiki-rest-api-space-get)
+- [Pages](https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-page/#api-pages-get)
+- [Space](https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-space/#api-spaces-get)
 
 :::note
 The `audit` stream requires a Standard or Premium plan.
