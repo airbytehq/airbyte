@@ -74,13 +74,6 @@ class S3V2Specification :
             "{\"examples\":[\"{date}\",\"{date:yyyy_MM}\",\"{timestamp}\",\"{part_number}\",\"{sync_id}\"],\"order\":9}"
     )
     override val fileNamePattern: String? = null
-
-    //    Uncomment to re-enable staging
-    //    @get:JsonSchemaInject(json = """{"order":10}""")
-    //    override val useStagingDirectory: Boolean? = null
-    //
-    //    @get:JsonSchemaInject(json = """{"examples":["__staging/data_sync/test"],"order":11}""")
-    //    override val s3StagingPrefix: String? = null
 }
 
 @Singleton

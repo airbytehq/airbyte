@@ -24,11 +24,11 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.33.6@sha256:81af934a2136edf0521a71697938cea20d1c6eb36c944566b9455bdd2a47d2bd
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.38.3@sha256:fcba02266f262aabc2f37e4f14574aa1c8c5cffd018504bab28803e405c93afe
   connectorSubtype: api
   connectorType: source
   definitionId: 3490c201-5d95-4783-b600-eaf07a4c7787
-  dockerImageTag: 1.1.2
+  dockerImageTag: 1.1.6
   dockerRepository: airbyte/source-outreach
   githubIssueLabel: source-outreach
   icon: outreach.svg
