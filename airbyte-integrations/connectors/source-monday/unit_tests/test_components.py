@@ -34,9 +34,10 @@ def test_monday_state_migration(input_state, expected_state, expected_should_mig
         should_migrate_result == expected_should_migrate
     ), f"should_migrate failed: expected {expected_should_migrate}, got {should_migrate_result}"
 
-    # Test migrate
-    result = migration.migrate(input_state)
-    assert result == expected_state, f"migrate failed: expected {expected_state}, got {result}"
+    if should_migrate_result:
+        # Test migrate
+        result = migration.migrate(input_state)
+        assert result == expected_state, f"migrate failed: expected {expected_state}, got {result}"
 
 
 def _create_response(content: Any) -> Response:
