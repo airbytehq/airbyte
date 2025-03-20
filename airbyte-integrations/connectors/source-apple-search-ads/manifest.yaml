@@ -209,7 +209,7 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: "{{ config['timezone'] or "UTC" }}"
+            timeZone: "{{ config['timezone'] or 'UTC' }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
@@ -308,7 +308,7 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: "{{config['timezone'] or "UTC" }}"
+            timeZone: "{{config['timezone'] or 'UTC' }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
@@ -415,7 +415,7 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: "{{ config['timezone'] or "UTC" }}"
+            timeZone: "{{ config['timezone'] or 'UTC' }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
