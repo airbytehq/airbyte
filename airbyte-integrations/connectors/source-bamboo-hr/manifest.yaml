@@ -1,4 +1,4 @@
-version: 5.14.0
+version: 6.41.5
 
 type: DeclarativeSource
 
@@ -22,16 +22,99 @@ definitions:
             Accept: application/json
           request_body_json:
             title: Airbyte
-            fields: list(self.schema["properties"].keys())
+            fields:
+              - acaStatus
+              - acaStatusCategory
+              - address1
+              - address2
+              - age
+              - bestEmail
+              - birthday
+              - bonusAmount
+              - bonusComment
+              - bonusDate
+              - bonusReason
+              - city
+              - commisionDate
+              - commissionAmount
+              - commissionComment
+              - commissionDate
+              - country
+              - createdByUserId
+              - dateOfBirth
+              - department
+              - displayName
+              - division
+              - eeo
+              - employeeNumber
+              - employmentHistoryStatus
+              - ethnicity
+              - exempt
+              - firstName
+              - flsaCode
+              - fullName1
+              - fullName2
+              - fullName3
+              - fullName4
+              - fullName5
+              - gender
+              - hireDate
+              - homeEmail
+              - homePhone
+              - id
+              - includeInPayroll
+              - isPhotoUploaded
+              - jobTitle
+              - lastChanged
+              - lastName
+              - location
+              - maritalStatus
+              - middleName
+              - mobilePhone
+              - nationalId
+              - nationality
+              - nin
+              - originalHireDate
+              - paidPer
+              - payChangeReason
+              - payFrequency
+              - payGroup
+              - payGroupId
+              - payRate
+              - payRateEffectiveDate
+              - paySchedule
+              - payScheduleId
+              - payType
+              - preferredName
+              - sin
+              - ssn
+              - standardHoursPerWeek
+              - state
+              - stateCode
+              - status
+              - supervisor
+              - supervisorEId
+              - supervisorEmail
+              - supervisorId
+              - terminationDate
+              - timeTrackingEnabled
+              - workEmail
+              - workPhone
+              - workPhoneExtension
+              - workPhonePlusExtension
+              - zipcode
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - employees
+        decoder:
+          type: JsonDecoder
       schema_loader:
-        type: CustomSchemaLoader
-        class_name: source_declarative_manifest.components.CustomReportsSchemaLoader
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_reports_stream"
     employees_directory_stream:
       type: DeclarativeStream
       name: employees_directory_stream
@@ -51,6 +134,8 @@ definitions:
             type: DpathExtractor
             field_path:
               - employees
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -71,6 +156,8 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -91,6 +178,8 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created
@@ -165,9 +254,9 @@ spec:
           If true, the custom reports endpoint will include the default fields
           defined here:
           https://documentation.bamboohr.com/docs/list-of-field-names.
+        order: 3
         title: custom_reports_include_default_fields
         default: true
-        order: 3
       start_date:
         type: string
         order: 4
@@ -178,39 +267,325 @@ spec:
 
 metadata:
   autoImportSchema:
-    custom_reports_stream: false
+    custom_reports_stream: true
     employees_directory_stream: false
     meta_fields_stream: false
     time_off_requests_stream: false
-  yamlComponents:
-    global:
-      - authenticator
-  testedStreams: {}
+  testedStreams:
+    custom_reports_stream:
+      streamHash: 17b37f59c7989844d5ac72b2ee6b3bd82cd587b7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    employees_directory_stream:
+      hasRecords: true
+      streamHash: f3f79feb9b746f21efeee900c2c5cb23d8d34d1a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    meta_fields_stream:
+      hasRecords: true
+      streamHash: 0936ffc28869d835e25b46d2d6bf685789a66238
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    time_off_requests_stream:
+      hasRecords: true
+      streamHash: 89cd0105b9b0ad08f2c451eb9bb23c62123955b0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
+  custom_reports_stream:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address1:
+        type:
+          - string
+          - "null"
+      address2:
+        type:
+          - string
+          - "null"
+      age:
+        type:
+          - string
+          - "null"
+      bestEmail:
+        type:
+          - string
+          - "null"
+      birthday:
+        type:
+          - string
+          - "null"
+      bonusAmount:
+        type:
+          - string
+          - "null"
+      bonusComment:
+        type:
+          - string
+          - "null"
+      bonusDate:
+        type:
+          - string
+          - "null"
+      bonusReason:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      commissionAmount:
+        type:
+          - string
+          - "null"
+      commissionComment:
+        type:
+          - string
+          - "null"
+      commissionDate:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      createdByUserId:
+        type:
+          - string
+          - "null"
+      dateOfBirth:
+        type:
+          - string
+          - "null"
+      department:
+        type:
+          - string
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      division:
+        type:
+          - string
+          - "null"
+      eeo:
+        type:
+          - string
+          - "null"
+      employeeNumber:
+        type:
+          - string
+          - "null"
+      employmentHistoryStatus:
+        type:
+          - string
+          - "null"
+      ethnicity:
+        type:
+          - string
+          - "null"
+      exempt:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      flsaCode:
+        type:
+          - string
+          - "null"
+      fullName1:
+        type:
+          - string
+          - "null"
+      fullName2:
+        type:
+          - string
+          - "null"
+      fullName3:
+        type:
+          - string
+          - "null"
+      fullName4:
+        type:
+          - string
+          - "null"
+      fullName5:
+        type:
+          - string
+          - "null"
+      gender:
+        type:
+          - string
+          - "null"
+      hireDate:
+        type:
+          - string
+          - "null"
+      homeEmail:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      isPhotoUploaded:
+        type:
+          - string
+          - "null"
+      jobTitle:
+        type:
+          - string
+          - "null"
+      lastChanged:
+        type:
+          - string
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - string
+          - "null"
+      maritalStatus:
+        type:
+          - string
+          - "null"
+      middleName:
+        type:
+          - string
+          - "null"
+      mobilePhone:
+        type:
+          - string
+          - "null"
+      originalHireDate:
+        type:
+          - string
+          - "null"
+      payChangeReason:
+        type:
+          - string
+          - "null"
+      payFrequency:
+        type:
+          - string
+          - "null"
+      payPer:
+        type:
+          - string
+          - "null"
+      payRate:
+        type:
+          - string
+          - "null"
+      payRateEffectiveDate:
+        type:
+          - string
+          - "null"
+      paySchedule:
+        type:
+          - string
+          - "null"
+      payScheduleId:
+        type:
+          - string
+          - "null"
+      payType:
+        type:
+          - string
+          - "null"
+      preferredName:
+        type:
+          - string
+          - "null"
+      ssn:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      stateCode:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      supervisor:
+        type:
+          - string
+          - "null"
+      supervisorEId:
+        type:
+          - string
+          - "null"
+      supervisorEmail:
+        type:
+          - string
+          - "null"
+      supervisorId:
+        type:
+          - string
+          - "null"
+      terminationDate:
+        type:
+          - string
+          - "null"
+      workEmail:
+        type:
+          - string
+          - "null"
+      workPhone:
+        type:
+          - string
+          - "null"
+      workPhonePlusExtension:
+        type:
+          - string
+          - "null"
+      zipcode:
+        type:
+          - string
+          - "null"
   employees_directory_stream:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      id:
-        type:
-        - "null"
-        - string
       type:
         type:
           - "null"
           - string
-      name:
+      canUploadPhoto:
         type:
           - "null"
-          - string
-      firstName:
-        type:
-          - "null"
-          - string
-      lastName:
+          - integer
+      department:
         type:
           - "null"
           - string
@@ -218,15 +593,23 @@ schemas:
         type:
           - "null"
           - string
-      department:
-        type:
-          - "null"
-          - string
       division:
         type:
           - "null"
           - string
+      firstName:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
       jobTitle:
+        type:
+          - "null"
+          - string
+      lastName:
         type:
           - "null"
           - string
@@ -238,15 +621,11 @@ schemas:
         type:
           - "null"
           - string
-      supervisor:
+      mobilePhone:
         type:
           - "null"
           - string
-      canUploadPhoto:
-        type:
-          - "null"
-          - integer
-      mobilePhone:
+      name:
         type:
           - "null"
           - string
@@ -263,6 +642,10 @@ schemas:
           - "null"
           - string
       pronouns:
+        type:
+          - "null"
+          - string
+      supervisor:
         type:
           - "null"
           - string
