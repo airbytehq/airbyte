@@ -79,13 +79,3 @@ Log into the email you used above and verify your new Salesforce account user. Y
 
 <!-- /env:cloud -->
 
-## Changelog
-
-<details>
-  <summary>Expand to review</summary>
-
-| Version | Date       | Pull Request                                              | Subject                                                                                                                                             |
-|:--------| :--------- | :-------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.0.1   | 2025-03-14 | [#82](https://github.com/airbytehq/airbyte-enterprise/pull/82) | Initial release                                                                                                            |
-
-</details>
