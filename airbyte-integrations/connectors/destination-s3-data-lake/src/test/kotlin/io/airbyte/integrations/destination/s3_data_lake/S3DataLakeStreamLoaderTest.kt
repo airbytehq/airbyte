@@ -14,7 +14,6 @@ import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketRegion
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
@@ -148,8 +147,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { createTable(any(), any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } answers
                 {
-                    val pipeline = secondArg() as MapperPipeline
-                    pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
+                    stream.schema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
         }
         val streamLoader =
@@ -245,8 +243,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { createTable(any(), any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } answers
                 {
-                    val pipeline = secondArg() as MapperPipeline
-                    pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
+                    stream.schema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
             every { constructGenerationIdSuffix(any() as Long) } returns ""
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } just runs
@@ -396,8 +393,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { createTable(any(), any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } answers
                 {
-                    val pipeline = secondArg() as MapperPipeline
-                    pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(listOf(primaryKeys))
+                    stream.schema.withAirbyteMeta(true).toIcebergSchema(listOf(primaryKeys))
                 }
             every { constructGenerationIdSuffix(any() as Long) } returns ""
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } just runs
@@ -454,8 +450,7 @@ internal class S3DataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { toIcebergSchema(any()) } answers
                 {
-                    val pipeline = secondArg() as MapperPipeline
-                    pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
+                    stream.schema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
         }
         val streamLoader =
