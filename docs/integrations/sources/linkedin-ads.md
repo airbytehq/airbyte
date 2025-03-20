@@ -202,6 +202,7 @@ No workaround has been identified to manage this issue as of 2025, February.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 5.3.3 | 2025-04-20 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Fix empty records: add `approximateMemberReach` to `ANALYTICS_FIELDS_V2` |
 | 5.3.3 | 2025-03-12 | [55724](https://github.com/airbytehq/airbyte/pull/55724) | Update outdated schema `approximateUniqueImpressions` to new `approximateMemberReach` for `adAnalytics` streams. |
 | 5.3.2 | 2025-03-08 | [55447](https://github.com/airbytehq/airbyte/pull/55447) | Update dependencies |
 | 5.3.1 | 2025-03-05 | [55211](https://github.com/airbytehq/airbyte/pull/55211) | Update dependencies |
