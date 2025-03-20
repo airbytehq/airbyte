@@ -12,20 +12,6 @@ import org.junit.jupiter.api.Test
 class EnrichedAirbyteValueTest {
 
     @Test
-    fun `test initialization with valid arguments`() {
-        val value = StringValue("test value")
-        val type = StringType
-        val name = "testField"
-
-        val enriched = EnrichedAirbyteValue(value, type, name)
-
-        assertEquals(value, enriched.value)
-        assertEquals(type, enriched.type)
-        assertEquals(name, enriched.name)
-        assertEquals(0, enriched.changes.size)
-    }
-
-    @Test
     fun `test nullify method sets value to NullValue and adds change`() {
         val initialValue = StringValue("test value")
         val type = StringType

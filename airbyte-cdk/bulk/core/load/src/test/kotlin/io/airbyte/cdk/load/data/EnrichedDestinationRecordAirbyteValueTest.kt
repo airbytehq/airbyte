@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.data
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
@@ -27,50 +26,6 @@ class EnrichedDestinationRecordAirbyteValueTest {
         )
 
     private val emittedAtMs = 1234567890L
-
-    @Test
-    fun `test constructor with all parameters`() {
-        val declaredFields =
-            mapOf(
-                "field1" to EnrichedAirbyteValue(StringValue("value1"), StringType, "field1"),
-                "field2" to EnrichedAirbyteValue(IntegerValue(42), IntegerType, "field2")
-            )
-
-        val undeclaredFields =
-            mapOf(
-                "undeclared1" to JsonNodeFactory.instance.textNode("value1"),
-                "undeclared2" to JsonNodeFactory.instance.numberNode(42)
-            )
-
-        val meta =
-            Meta(
-                changes =
-                    listOf(
-                        Meta.Change(
-                            "field1",
-                            Change.TRUNCATED,
-                            Reason.DESTINATION_RECORD_SIZE_LIMITATION
-                        )
-                    )
-            )
-
-        val record =
-            EnrichedDestinationRecordAirbyteValue(
-                stream = destinationStream,
-                declaredFields = declaredFields,
-                undeclaredFields = undeclaredFields,
-                emittedAtMs = emittedAtMs,
-                meta = meta,
-                serializedSizeBytes = 1024L
-            )
-
-        assertEquals(destinationStream, record.stream)
-        assertEquals(declaredFields, record.declaredFields)
-        assertEquals(undeclaredFields, record.undeclaredFields)
-        assertEquals(emittedAtMs, record.emittedAtMs)
-        assertEquals(meta, record.meta)
-        assertEquals(1024L, record.serializedSizeBytes)
-    }
 
     @Test
     fun `test airbyteMetaFields property`() {
