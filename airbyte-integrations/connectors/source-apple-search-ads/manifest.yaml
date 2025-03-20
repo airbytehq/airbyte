@@ -1035,53 +1035,10 @@ schemas:
               type: integer
             taps:
               type: integer
-            totalAvgCPI:
-              type:
-                - object
-                - "null"
-              properties:
-                amount:
-                  type:
-                    - string
-                    - "null"
-                currency:
-                  type:
-                    - string
-                    - "null"
-            totalInstallRate:
-              type:
-                - number
-                - "null"
-            totalInstalls:
-              type:
-                - number
-                - "null"
-            totalNewDownloads:
-              type:
-                - number
-                - "null"
-            totalRedownloads:
-              type:
-                - number
-                - "null"
             ttr:
               type: number
-            viewInstalls:
-              type:
-                - number
-                - "null"
-            viewNewDownloads:
-              type:
-                - number
-                - "null"
-            viewRedownloads:
-              type:
-                - number
-                - "null"
       other:
         type: boolean
-    required:
-      - date
   adgroups_report_daily:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1184,53 +1141,10 @@ schemas:
               type: integer
             taps:
               type: integer
-            totalAvgCPI:
-              type:
-                - object
-                - "null"
-              properties:
-                amount:
-                  type:
-                    - string
-                    - "null"
-                currency:
-                  type:
-                    - string
-                    - "null"
-            totalInstallRate:
-              type:
-                - number
-                - "null"
-            totalInstalls:
-              type:
-                - number
-                - "null"
-            totalNewDownloads:
-              type:
-                - number
-                - "null"
-            totalRedownloads:
-              type:
-                - number
-                - "null"
             ttr:
               type: number
-            viewInstalls:
-              type:
-                - number
-                - "null"
-            viewNewDownloads:
-              type:
-                - number
-                - "null"
-            viewRedownloads:
-              type:
-                - number
-                - "null"
       other:
         type: boolean
-    required:
-      - date
   keywords_report_daily:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
