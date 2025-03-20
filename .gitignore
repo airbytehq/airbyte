@@ -13,7 +13,7 @@ out
 .kotlin
 **/gmon.out
 static_checker_reports/
-
+.tool-versions
 # Logs
 acceptance_tests_logs/
 airbyte_ci_logs/

@@ -445,7 +445,9 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.1.22  | 2025-02-10 | [53217](https://github.com/airbytehq/airbyte/pull/53217)                                                          | Default to PK when the clustered index is composite.                                                                           |
+| 4.1.24 | 2025-03-11 | [55709](https://github.com/airbytehq/airbyte/pull/55709) | Filter unwanted tables in discover to prevent null table issues |
+| 4.1.23 | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234) | Update base image version for certified DB source connectors |
+| 4.1.22 | 2025-02-10 | [53217](https://github.com/airbytehq/airbyte/pull/53217) | Default to PK when the clustered index is composite. |
 | 4.1.21 | 2025-02-21 | [54189](https://github.com/airbytehq/airbyte/pull/54189) | Print state data only in the debugging log. |
 | 4.1.20 | 2025-01-26 | [52556](https://github.com/airbytehq/airbyte/pull/52556) | Improve tables discovery during read. |
 | 4.1.19 | 2025-01-16 | [51596](https://github.com/airbytehq/airbyte/pull/51596) | Bump driver versions to latest (jdbc, debezium, cdk) |

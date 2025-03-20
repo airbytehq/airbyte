@@ -507,10 +507,9 @@ definitions:
     url_base: https://api.searchads.apple.com/api/v5
     authenticator:
       type: OAuthAuthenticator
-      client_id: "{{ config[\"client_id\"] }}"
+      client_id: "{{ config.client_id }}"
       grant_type: client_credentials
-      client_secret: "{{ config[\"client_secret\"] }}"
-      refresh_request_body: {}
+      client_secret: "{{ config.client_secret }}"
       token_refresh_endpoint: >-
         https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg
 
