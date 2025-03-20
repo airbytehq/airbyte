@@ -171,7 +171,7 @@ definitions:
             stop_condition: "{{ 'records' not in response }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: metaData.started
+        cursor_field: startdatetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%dT%H:%M:%S%z"
@@ -192,6 +192,9 @@ definitions:
             - path:
                 - id
               value: "{{ record['metaData']['id'] }}"
+            - path:
+                - startdatetime
+              value: "{{ record['metaData']['started'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
