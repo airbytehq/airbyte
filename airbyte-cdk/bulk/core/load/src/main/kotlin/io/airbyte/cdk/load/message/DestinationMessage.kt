@@ -235,7 +235,7 @@ data class EnrichedDestinationRecordAirbyteValue(
                     EnrichedAirbyteValue(
                         StringValue(UUID.randomUUID().toString()),
                         Meta.AirbyteMetaFields.RAW_ID.type,
-                        name = Meta.COLUMN_NAME_AB_EXTRACTED_AT,
+                        name = Meta.COLUMN_NAME_AB_RAW_ID,
                     ),
                 Meta.COLUMN_NAME_AB_EXTRACTED_AT to
                     EnrichedAirbyteValue(
