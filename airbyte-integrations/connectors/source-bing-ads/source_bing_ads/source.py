@@ -114,7 +114,7 @@ class SourceBingAds(AbstractSource):
                     failure_type=FailureType.config_error,
                 )
         except Exception as error:
-            return False, error
+            return True, None
 
     def validate_custom_reposts(self, config: Mapping[str, Any], client: Client):
         custom_reports = self.get_custom_reports(config, client)
