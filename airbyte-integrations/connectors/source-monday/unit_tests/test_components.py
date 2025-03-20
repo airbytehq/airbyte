@@ -3,10 +3,40 @@
 #
 
 import json
+import pytest
 from typing import Any
 
 from requests import Response
 from source_monday.extractor import MondayIncrementalItemsExtractor
+from source_monday.state_migration import MondayStateMigration
+
+
+@pytest.mark.parametrize(
+    "input_state, expected_state, expected_should_migrate",
+    [
+        # Test case 1: State with activity_logs key
+        ({"activity_logs": {"some": "data"}, "other_key": "value"}, {"other_key": "value"}, True),
+        # Test case 2: Empty state
+        ({}, {}, False),
+        # Test case 3: State without activity_logs
+        ({"key1": "value1", "key2": "value2"}, {"key1": "value1", "key2": "value2"}, False),
+        # Test case 4: State with activity_logs as None
+        ({"activity_logs": None, "other_key": "value"}, {"other_key": "value"}, True),
+    ],
+)
+def test_monday_state_migration(input_state, expected_state, expected_should_migrate):
+    """Test both migrate and should_migrate methods of MondayStateMigration."""
+    migration = MondayStateMigration()
+
+    # Test should_migrate
+    should_migrate_result = migration.should_migrate(input_state)
+    assert should_migrate_result == expected_should_migrate, \
+        f"should_migrate failed: expected {expected_should_migrate}, got {should_migrate_result}"
+
+    # Test migrate
+    result = migration.migrate(input_state)
+    assert result == expected_state, \
+        f"migrate failed: expected {expected_state}, got {result}"
 
 
 def _create_response(content: Any) -> Response:
