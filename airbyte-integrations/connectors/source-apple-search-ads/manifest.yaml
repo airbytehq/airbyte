@@ -209,7 +209,7 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: "{{ config['timeZone'] }}"
+            timeZone: "{{ config['timezone'] }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
@@ -308,7 +308,7 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: "{{config['timeZone'] }}"
+            timeZone: "{{config['timezone'] or "UTC" }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
@@ -415,7 +415,7 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: "{{ config['timeZone'] }}"
+            timeZone: "{{ config['timezone'] or "UTC" }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
@@ -531,7 +531,7 @@ spec:
       - client_id
       - start_date
       - client_secret
-      - timeZone
+      - timezone
     properties:
       org_id:
         type: integer
@@ -595,11 +595,12 @@ spec:
         pattern: ^(20|1[0-9]|[1-9])$
         examples:
           - 10
-      timeZone:
+      timezone:
         type: string
+        default: UTC
         description: >-
           The timezone for the reporting data. Use 'ORTZ' for Organization Time
-          Zone or 'UTC' for Coordinated Universal Time.
+          Zone or 'UTC' for Coordinated Universal Time. Default is UTC.
         enum:
           - ORTZ
           - UTC
