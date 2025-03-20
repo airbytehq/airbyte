@@ -24,6 +24,7 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -56,21 +57,19 @@ object LIMITS {
  */
 class MSSQLCsvRowValidator(private val validateValuesPreLoad: Boolean) {
 
-    fun validate(
-        record: DestinationRecordAirbyteValue,
-        schema: ObjectType
-    ): DestinationRecordAirbyteValue {
-        val objectValue = record.data as? ObjectValue ?: return record
+    fun validate(record: DestinationRecordRaw, schema: ObjectType): DestinationRecordAirbyteValue {
+        val marshalledRecord = record.asDestinationRecordAirbyteValue()
+        val objectValue = marshalledRecord.data as? ObjectValue ?: return marshalledRecord
         val values = objectValue.values
 
         schema.properties.forEach { (columnName, fieldType) ->
             val oldValue = values[columnName]
-            if (oldValue != null && oldValue !is NullValue && record.meta != null) {
+            if (oldValue != null && oldValue !is NullValue && marshalledRecord.meta != null) {
                 values[columnName] =
-                    oldValue.validateAndReplace(columnName, fieldType, record.meta!!)
+                    oldValue.validateAndReplace(columnName, fieldType, marshalledRecord.meta!!)
             }
         }
-        return record
+        return marshalledRecord
     }
 
     private fun AirbyteValue.validateAndReplace(
