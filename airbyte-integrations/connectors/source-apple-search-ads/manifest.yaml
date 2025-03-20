@@ -624,6 +624,8 @@ metadata:
         - errorHandler
       keywords_report_daily:
         - errorHandler
+    global:
+      - authenticator
   testedStreams:
     campaigns:
       streamHash: 695200dfcda5d952c3d0c21948db4780caa38393
