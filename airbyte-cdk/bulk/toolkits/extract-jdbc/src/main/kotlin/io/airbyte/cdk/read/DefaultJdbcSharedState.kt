@@ -73,7 +73,7 @@ class DefaultJdbcSharedState(
                 .mapToLong { it.toFile().length() }
                 .sum()
 //            log.info { "Total size of files in /staging/files: $size bytes" }
-            if (size > 3L shl 30) { // 3GB
+            if (size > 6L shl 30) { // 3GB
                 log.info { "staging dir too full $size" }
                 return null
             }
