@@ -348,8 +348,6 @@ schemas:
         type: string
       status:
         type: string
-        enum:
-          - current
       title:
         type: string
       spaceId:
@@ -423,8 +421,6 @@ schemas:
         type: string
       status:
         type: string
-        enum:
-          - current
       title:
         type: string
       spaceId:
@@ -433,8 +429,6 @@ schemas:
         type: string
       parentType:
         type: string
-        enum:
-          - page
       position:
         type: integer
       authorId:
@@ -469,8 +463,6 @@ schemas:
     properties:
       type:
         type: string
-        enum:
-          - global
       description:
         type: object
         properties:
@@ -486,8 +478,6 @@ schemas:
         type: string
       status:
         type: string
-        enum:
-          - current
       authorId:
         type: string
       createdAt:
