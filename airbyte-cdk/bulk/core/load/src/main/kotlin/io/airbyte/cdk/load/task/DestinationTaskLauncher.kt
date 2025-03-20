@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.task
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
@@ -180,6 +181,13 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
                 log.error(e) { "Caught exception in task $innerTask" }
                 if (hasThrown.setOnce()) {
                     handleException(e)
+                } else {
+                    log.info { "Skipping exception handling, because it has already run." }
+                }
+            } catch (t: Throwable) {
+                log.error(t) { "Critical error in task $innerTask" }
+                if (hasThrown.setOnce()) {
+                    handleException(SystemErrorException(t.message, t))
                 } else {
                     log.info { "Skipping exception handling, because it has already run." }
                 }
