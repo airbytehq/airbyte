@@ -17,7 +17,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
@@ -320,11 +320,10 @@ class MSSQLQueryBuilder(
 
     fun populateStatement(
         statement: PreparedStatement,
-        plainRecord: DestinationRecord,
+        plainRecord: DestinationRecordRaw,
         schema: List<NamedField>
     ) {
-        val enrichedRecord =
-            plainRecord.asDestinationRecordRaw().asEnrichedDestinationRecordAirbyteValue()
+        val enrichedRecord = plainRecord.asEnrichedDestinationRecordAirbyteValue()
         // TODO maybe we should just sort this into schema order?
         val populatedFields = enrichedRecord.allTypedFields
 
