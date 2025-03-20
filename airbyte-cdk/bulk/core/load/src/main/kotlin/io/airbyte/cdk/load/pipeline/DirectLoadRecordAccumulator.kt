@@ -26,21 +26,24 @@ data class DirectLoadAccResult(override val state: Batch.State) : WithBatchState
 class DirectLoadRecordAccumulator<S : DirectLoader, K : WithStream>(
     val directLoaderFactory: DirectLoaderFactory<S>
 ) : BatchAccumulator<S, K, DestinationRecordRaw, DirectLoadAccResult> {
-    override fun start(key: K, part: Int): S {
+    override suspend fun start(key: K, part: Int): S {
         return directLoaderFactory.create(key.stream, part)
     }
 
-    override fun accept(record: DestinationRecordRaw, state: S): Pair<S, DirectLoadAccResult?> {
-        state.accept(record).let {
+    override suspend fun accept(
+        input: DestinationRecordRaw,
+        state: S
+    ): BatchAccumulatorResult<S, DirectLoadAccResult> {
+        state.accept(input).let {
             return when (it) {
-                is Incomplete -> Pair(state, null)
-                is Complete -> Pair(state, DirectLoadAccResult(Batch.State.COMPLETE))
+                is Incomplete -> NoOutput(state)
+                is Complete -> FinalOutput(DirectLoadAccResult(Batch.State.COMPLETE))
             }
         }
     }
 
-    override fun finish(state: S): DirectLoadAccResult {
+    override suspend fun finish(state: S): FinalOutput<S, DirectLoadAccResult> {
         state.finish()
-        return DirectLoadAccResult(Batch.State.COMPLETE)
+        return FinalOutput(DirectLoadAccResult(Batch.State.COMPLETE))
     }
 }
