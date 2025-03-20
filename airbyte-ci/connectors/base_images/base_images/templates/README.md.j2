@@ -29,7 +29,7 @@ However, we do artificially generate Dockerfiles for debugging and documentation
 
 ### `{{ registry.ConnectorBaseImageClass.repository }}`
 
-| Version | Published | Docker Image Address | Changelog | 
+| Version | Published | Docker Image Address | Changelog |
 |---------|-----------|--------------|-----------|
 {%- for entry in registry.entries %}
 |  {{ entry.version }} | {{ "✅" if entry.published else "❌" }}| {{ entry.published_docker_image.address }} | {{ entry.changelog_entry.changelog_entry }} |
@@ -54,7 +54,7 @@ However, we do artificially generate Dockerfiles for debugging and documentation
 It will:
   - Prompt you to pick which base image you'd like to publish.
   - Prompt you for a major/minor/patch/pre-release version bump.
-  - Prompt you for  a changelog message.
+  - Prompt you for a changelog message.
   - Run the sanity checks on the new version.
   - Optional: Publish the new version to DockerHub.
   - Regenerate the docs and the registry json file.
@@ -78,6 +78,9 @@ poetry run mypy base_images --check-untyped-defs
 ```
 
 ## CHANGELOG
+
+### 1.6.0
+- Add a Python base image 4.0.0 with Python 3.11.11.
 
 ### 1.4.0
 - Declare a base image for our java connectors.

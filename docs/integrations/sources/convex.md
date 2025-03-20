@@ -75,6 +75,13 @@ In the Data tab, you should see the tables and a sample of the data that will be
 
 | Version | Date       | Pull Request                                             | Subject                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------- |
+| 0.4.33 | 2025-03-08 | [55286](https://github.com/airbytehq/airbyte/pull/55286) | Update dependencies |
+| 0.4.32 | 2025-03-01 | [54954](https://github.com/airbytehq/airbyte/pull/54954) | Update dependencies |
+| 0.4.31 | 2025-02-22 | [54423](https://github.com/airbytehq/airbyte/pull/54423) | Update dependencies |
+| 0.4.30 | 2025-02-15 | [53748](https://github.com/airbytehq/airbyte/pull/53748) | Update dependencies |
+| 0.4.29 | 2025-02-08 | [52826](https://github.com/airbytehq/airbyte/pull/52826) | Update dependencies |
+| 0.4.28 | 2025-01-25 | [52355](https://github.com/airbytehq/airbyte/pull/52355) | Update dependencies |
+| 0.4.27 | 2025-01-18 | [51686](https://github.com/airbytehq/airbyte/pull/51686) | Update dependencies |
 | 0.4.26 | 2025-01-11 | [51094](https://github.com/airbytehq/airbyte/pull/51094) | Update dependencies |
 | 0.4.25 | 2024-12-28 | [50531](https://github.com/airbytehq/airbyte/pull/50531) | Update dependencies |
 | 0.4.24 | 2024-12-21 | [50013](https://github.com/airbytehq/airbyte/pull/50013) | Update dependencies |

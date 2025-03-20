@@ -43,6 +43,14 @@ Visit `https://YOUR_REGION.castoredc.com/account/settings` for getting your clie
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.18 | 2025-03-08 | [55364](https://github.com/airbytehq/airbyte/pull/55364) | Update dependencies |
+| 0.0.17 | 2025-03-01 | [54872](https://github.com/airbytehq/airbyte/pull/54872) | Update dependencies |
+| 0.0.16 | 2025-02-22 | [54270](https://github.com/airbytehq/airbyte/pull/54270) | Update dependencies |
+| 0.0.15 | 2025-02-15 | [53922](https://github.com/airbytehq/airbyte/pull/53922) | Update dependencies |
+| 0.0.14 | 2025-02-08 | [53409](https://github.com/airbytehq/airbyte/pull/53409) | Update dependencies |
+| 0.0.13 | 2025-02-01 | [52879](https://github.com/airbytehq/airbyte/pull/52879) | Update dependencies |
+| 0.0.12 | 2025-01-25 | [52169](https://github.com/airbytehq/airbyte/pull/52169) | Update dependencies |
+| 0.0.11 | 2025-01-18 | [51753](https://github.com/airbytehq/airbyte/pull/51753) | Update dependencies |
 | 0.0.10 | 2025-01-11 | [51244](https://github.com/airbytehq/airbyte/pull/51244) | Update dependencies |
 | 0.0.9 | 2024-12-28 | [50456](https://github.com/airbytehq/airbyte/pull/50456) | Update dependencies |
 | 0.0.8 | 2024-12-21 | [50156](https://github.com/airbytehq/airbyte/pull/50156) | Update dependencies |

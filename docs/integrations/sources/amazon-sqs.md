@@ -21,7 +21,7 @@ The Amazon SQS source syncs the SQS API, refer: https://docs.aws.amazon.com/AWSS
 
 ### Supported Streams
 
-This Source is capable of syncing the following core Action that would be recieved as streams for sync:
+This Source is capable of syncing the following core Action that would be received as streams for sync:
 
 - [RecieveMessage](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_ReceiveMessage.html)
 - [QueueAttributes](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_GetQueueAttributes.html)
@@ -91,7 +91,14 @@ Required properties are 'Queue URL', 'AWS Region' and 'Delete Messages After Rea
 
 | Version | Date       | Pull Request                                              | Subject                           |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------- |
-| 1.0.0   | 2024-11-07 | [41064](https://github.com/airbytehq/airbyte/pull/41064) | Migrate to low code |
+| 1.0.7 | 2025-03-08 | [54832](https://github.com/airbytehq/airbyte/pull/54832) | Update dependencies |
+| 1.0.6 | 2025-03-01 | [54738](https://github.com/airbytehq/airbyte/pull/54738) | fix: Update source-amazon-sqs to use nltk 3.9.1 or higher |
+| 1.0.5 | 2025-02-22 | [54271](https://github.com/airbytehq/airbyte/pull/54271) | Update dependencies |
+| 1.0.4 | 2025-02-15 | [53936](https://github.com/airbytehq/airbyte/pull/53936) | Update dependencies |
+| 1.0.3 | 2025-02-01 | [52878](https://github.com/airbytehq/airbyte/pull/52878) | Update dependencies |
+| 1.0.2 | 2025-01-25 | [52163](https://github.com/airbytehq/airbyte/pull/52163) | Update dependencies |
+| 1.0.1 | 2025-01-18 | [51742](https://github.com/airbytehq/airbyte/pull/51742) | Update dependencies |
+| 1.0.0 | 2024-11-07 | [41064](https://github.com/airbytehq/airbyte/pull/41064) | Migrate to low code |
 | 0.1.1   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region |
 | 0.1.0   | 2021-10-10 | [\#0000](https://github.com/airbytehq/airbyte/pull/0000)  | Initial version                   |
 

@@ -1,4 +1,7 @@
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+#
+
 from __future__ import annotations
 
 import hashlib
@@ -7,14 +10,14 @@ import os
 import textwrap
 import time
 import webbrowser
-from collections.abc import AsyncGenerator, AsyncIterable, Callable, Generator, Iterable
+from collections.abc import AsyncIterable, Callable, Generator, Iterable
 from itertools import product
 from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional
 
 import dagger
 import pytest
-from airbyte_protocol.models import AirbyteCatalog, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification  # type: ignore
+from airbyte_protocol.models import ConfiguredAirbyteCatalog  # type: ignore
 from connection_retriever.audit_logging import get_user_email  # type: ignore
 from connection_retriever.retrieval import ConnectionNotFoundError, get_current_docker_image_tag  # type: ignore
 from rich.prompt import Confirm, Prompt
@@ -38,7 +41,6 @@ from live_tests.commons.secret_access import get_airbyte_api_key
 from live_tests.commons.segment_tracking import track_usage
 from live_tests.commons.utils import clean_up_artifacts
 from live_tests.report import PrivateDetailsReport, ReportState, TestReport
-from live_tests.utils import get_catalog, get_spec
 
 if TYPE_CHECKING:
     from _pytest.config import Config
@@ -105,6 +107,12 @@ def pytest_addoption(parser: Parser) -> None:
         default=None,
         help="The maximum number of connections to retrieve and use for testing.",
     )
+    parser.addoption(
+        "--disable-proxy",
+        type=bool,
+        default=False,
+        help="If a connector uses provider-specific libraries (e.g., facebook-business), it is better to disable the proxy.",
+    )
 
 
 def pytest_configure(config: Config) -> None:
@@ -154,6 +162,8 @@ def pytest_configure(config: Config) -> None:
     config.stash[stash_keys.MAX_CONNECTIONS] = (
         int(config.stash[stash_keys.MAX_CONNECTIONS]) if config.stash[stash_keys.MAX_CONNECTIONS] else None
     )
+
+    config.stash[stash_keys.DISABLE_PROXY] = config.getoption("--disable-proxy")
 
     if config.stash[stash_keys.RUN_IN_AIRBYTE_CI]:
         config.stash[stash_keys.SHOULD_READ_WITH_STATE] = bool(config.getoption("--should-read-with-state"))
@@ -484,18 +494,18 @@ async def run_command(
     test_artifacts_directory: Path,
     duckdb_path: Path,
     runs_in_ci,
+    disable_proxy: bool = False,
 ) -> ExecutionResult:
     """Run the given command for the given connector and connection objects."""
     execution_inputs = get_execution_inputs_for_command(command, connection_objects, connector, test_artifacts_directory, duckdb_path)
     logging.info(f"Running {command} for {connector.target_or_control.value} connector {execution_inputs.connector_under_test.name}")
-    proxy_hostname = f"proxy_server_{command.value}_{execution_inputs.connector_under_test.version.replace('.', '_')}"
-    proxy = Proxy(dagger_client, proxy_hostname, connection_objects.connection_id)
-    runner = ConnectorRunner(
-        dagger_client,
-        execution_inputs,
-        runs_in_ci,
-        http_proxy=proxy,
-    )
+    proxy = None
+
+    if not disable_proxy:
+        proxy_hostname = f"proxy_server_{command.value}_{execution_inputs.connector_under_test.version.replace('.', '_')}"
+        proxy = Proxy(dagger_client, proxy_hostname, connection_objects.connection_id)
+
+    runner = ConnectorRunner(dagger_client, execution_inputs, runs_in_ci, http_proxy=proxy)
     execution_result = await runner.run()
     return execution_result, proxy
 
@@ -510,6 +520,7 @@ async def run_command_and_add_to_report(
     runs_in_ci,
     test_report: TestReport,
     private_details_report: PrivateDetailsReport,
+    disable_proxy: bool = False,
 ) -> ExecutionResult:
     """Run the given command for the given connector and connection objects and add the results to the test report."""
     execution_result, proxy = await run_command(
@@ -520,6 +531,7 @@ async def run_command_and_add_to_report(
         test_artifacts_directory,
         duckdb_path,
         runs_in_ci,
+        disable_proxy=disable_proxy,
     )
     if connector.target_or_control is TargetOrControl.CONTROL:
         test_report.add_control_execution_result(execution_result)
@@ -548,6 +560,7 @@ def generate_execution_results_fixture(command: Command, control_or_target: str)
             request: SubRequest, dagger_client: dagger.Client, control_connector: ConnectorUnderTest, test_artifacts_directory: Path
         ) -> ExecutionResult:
             connection_objects = request.param
+            disable_proxy = request.config.stash[stash_keys.DISABLE_PROXY]
 
             execution_results, proxy = await run_command_and_add_to_report(
                 dagger_client,
@@ -559,10 +572,13 @@ def generate_execution_results_fixture(command: Command, control_or_target: str)
                 request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
                 request.config.stash[stash_keys.TEST_REPORT],
                 request.config.stash[stash_keys.PRIVATE_DETAILS_REPORT],
+                disable_proxy=disable_proxy,
             )
 
             yield execution_results
-            await proxy.clear_cache_volume()
+
+            if not disable_proxy:
+                await proxy.clear_cache_volume()
 
     else:
 
@@ -571,6 +587,7 @@ def generate_execution_results_fixture(command: Command, control_or_target: str)
             request: SubRequest, dagger_client: dagger.Client, target_connector: ConnectorUnderTest, test_artifacts_directory: Path
         ) -> ExecutionResult:
             connection_objects = request.param
+            disable_proxy = request.config.stash[stash_keys.DISABLE_PROXY]
 
             execution_results, proxy = await run_command_and_add_to_report(
                 dagger_client,
@@ -582,10 +599,13 @@ def generate_execution_results_fixture(command: Command, control_or_target: str)
                 request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
                 request.config.stash[stash_keys.TEST_REPORT],
                 request.config.stash[stash_keys.PRIVATE_DETAILS_REPORT],
+                disable_proxy=disable_proxy,
             )
 
             yield execution_results
-            await proxy.clear_cache_volume()
+
+            if not disable_proxy:
+                await proxy.clear_cache_volume()
 
     return generated_fixture
 

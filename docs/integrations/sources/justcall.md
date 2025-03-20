@@ -25,6 +25,14 @@ JustCall connector enables seamless data integration by syncing call logs, conta
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.17 | 2025-03-08 | [55496](https://github.com/airbytehq/airbyte/pull/55496) | Update dependencies |
+| 0.0.16 | 2025-03-01 | [54755](https://github.com/airbytehq/airbyte/pull/54755) | Update dependencies |
+| 0.0.15 | 2025-02-22 | [54344](https://github.com/airbytehq/airbyte/pull/54344) | Update dependencies |
+| 0.0.14 | 2025-02-15 | [53808](https://github.com/airbytehq/airbyte/pull/53808) | Update dependencies |
+| 0.0.13 | 2025-02-08 | [53264](https://github.com/airbytehq/airbyte/pull/53264) | Update dependencies |
+| 0.0.12 | 2025-02-01 | [52770](https://github.com/airbytehq/airbyte/pull/52770) | Update dependencies |
+| 0.0.11 | 2025-01-25 | [52287](https://github.com/airbytehq/airbyte/pull/52287) | Update dependencies |
+| 0.0.10 | 2025-01-18 | [51806](https://github.com/airbytehq/airbyte/pull/51806) | Update dependencies |
 | 0.0.9 | 2025-01-11 | [51212](https://github.com/airbytehq/airbyte/pull/51212) | Update dependencies |
 | 0.0.8 | 2024-12-28 | [50640](https://github.com/airbytehq/airbyte/pull/50640) | Update dependencies |
 | 0.0.7 | 2024-12-21 | [50072](https://github.com/airbytehq/airbyte/pull/50072) | Update dependencies |

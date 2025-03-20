@@ -220,10 +220,24 @@ UNSUPPORTED_FILTERING_STREAMS = [
 
 UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup"]
 
+#    When upgrading the API version, it must be changed in these locations as well:
+#    1. airbyte-integrations/connectors/source-salesforce/unit_tests/resource/http/response/job_response.json:
+#      {'apiVersion': 'v62.0'}
+#                      ^^^^^
+#
+#    2. airbyte-integrations/connectors/source-salesforce/integration_tests/expected_records.jsonl
+#      Streams:
+#          Account: {'data.attributes.url': '/services/data/v62.0/sobjects/Account/0014W000027f6V3QAI'}
+#                                                           ^^^^^
+#
+#          Asset: {'data.attributes.url': '/services/data/v62.0/sobjects/Asset/02i4W00000EkJsrQAF'}
+#                                                        ^^^^^
+API_VERSION = "v62.0"
+
 
 class Salesforce:
     logger = logging.getLogger("airbyte")
-    version = "v57.0"
+    version = API_VERSION
     parallel_tasks_size = 100
     # https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm
     # Request Size Limits
