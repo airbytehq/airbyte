@@ -4,7 +4,7 @@
       {
         "start_time": "2021-01-01",
         "end_time": "2021-01-31",
-        "fields": "actionClicks,adUnitClicks,approximateUniqueImpressions,cardClicks,cardImpressions,clicks,commentLikes,comments,companyPageClicks,conversionValueInLocalCurrency,costInLocalCurrency,costInUsd,dateRange,documentCompletions,documentFirstQuartileCompletions,documentMidpointCompletions,documentThirdQuartileCompletions,downloadClicks,pivotValues",
+        "fields": "actionClicks,adUnitClicks,approximateMemberReach,cardClicks,cardImpressions,clicks,commentLikes,comments,companyPageClicks,conversionValueInLocalCurrency,costInLocalCurrency,costInUsd,dateRange,documentCompletions,documentFirstQuartileCompletions,documentMidpointCompletions,documentThirdQuartileCompletions,downloadClicks,pivotValues",
         "start.day": 1,
         "start.month": 1,
         "start.year": 2021,
@@ -74,7 +74,7 @@
       {
         "start_time": "2021-01-31",
         "end_time": "2021-03-01",
-        "fields": "actionClicks,adUnitClicks,approximateUniqueImpressions,cardClicks,cardImpressions,clicks,commentLikes,comments,companyPageClicks,conversionValueInLocalCurrency,costInLocalCurrency,costInUsd,dateRange,documentCompletions,documentFirstQuartileCompletions,documentMidpointCompletions,documentThirdQuartileCompletions,downloadClicks,pivotValues",
+        "fields": "actionClicks,adUnitClicks,approximateMemberReach,cardClicks,cardImpressions,clicks,commentLikes,comments,companyPageClicks,conversionValueInLocalCurrency,costInLocalCurrency,costInUsd,dateRange,documentCompletions,documentFirstQuartileCompletions,documentMidpointCompletions,documentThirdQuartileCompletions,downloadClicks,pivotValues",
         "start.day": 31,
         "start.month": 1,
         "start.year": 2021,
