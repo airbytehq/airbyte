@@ -1,6 +1,8 @@
-version: 4.5.4
+version: 6.41.5
 
 type: DeclarativeSource
+
+description: testing wtf
 
 check:
   type: CheckStream
@@ -25,6 +27,8 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -47,8 +51,6 @@ spec:
       pokemon_name:
         type: string
         description: Pokemon requested from the API.
-        title: Pokemon Name
-        pattern: ^[a-z0-9_\-]+$
         enum:
           - bulbasaur
           - ivysaur
@@ -948,16 +950,27 @@ spec:
           - glastrier
           - spectrier
           - calyrex
+        order: 0
+        title: Pokemon Name
+        pattern: ^[a-z0-9_\-]+$
         examples:
           - ditto
           - luxray
           - snorlax
-        order: 0
     additionalProperties: true
 
 metadata:
   autoImportSchema:
     pokemon: false
+  testedStreams:
+    pokemon:
+      streamHash: abbff0528a3e0a0344fcb191f1cc63f4aa624367
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
 
 schemas:
   pokemon:
