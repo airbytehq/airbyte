@@ -17,6 +17,9 @@ You'll need the following information to configure the Teradata destination:
 - **Password**
 - **Default Schema Name** - Specify the schema (or several schemas separated by commas) to be set in the search-path. These schemas will be used to resolve unqualified object names used in statements executed over this connection.
 - **JDBC URL Params** (optional)
+- **Query Band** (optional) - The [query band ](https://teradata-docs.s3.amazonaws.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html#BGEGBBAA)is a set of name-value pairs that can be assigned to a Teradata database session. It helps identify the source of SQL requests originating from Airbyte. You can customize the query band to include relevant information such as application name, organization, and user identifiers.
+  Each entry should be formatted as key=value, separated by semicolons (;). 
+  Example: `appname=myApp;org=myOrganization;`
 
 [Refer to this guide for more details](https://downloads.teradata.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html#BGBHDDGB)
 
@@ -87,6 +90,8 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version | Date       | Pull Request                                    | Subject                                                  |
 |:--------|:-----------|:------------------------------------------------|:---------------------------------------------------------|
+| 0.1.9   | 2025-03-17 | https://github.com/airbytehq/airbyte/pull/55800 | Added Query Band Support                                 |
+| 0.1.8   | 2025-03-14 | https://github.com/airbytehq/airbyte/pull/55771 | Migration to Kotlin                                      |
 | 0.1.7   | 2025-03-07 | https://github.com/airbytehq/airbyte/pull/55183 | Upgrade teradata jdbc driver to 20.00.00.43              |
 | 0.1.6   | 2024-06-24 | https://github.com/airbytehq/airbyte/pull/39455 | Fix for Parameter 2 length size                          |
 | 0.1.5   | 2024-01-12 | https://github.com/airbytehq/airbyte/pull/33872 | Added Primary Index on \_airbyte_ab_id to fix NoPI issue |
