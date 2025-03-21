@@ -42,7 +42,7 @@ class RecordToPartAccumulatorTest {
 
     private fun makeRecord(): DestinationRecordAirbyteValue =
         DestinationRecordAirbyteValue(
-            DestinationStream.Descriptor("test", "stream"),
+            stream,
             ObjectValue(linkedMapOf()),
             0L,
             null,

@@ -22,8 +22,10 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      dockerImageTag: 4.0.4 # previous stable version here
     oss:
       enabled: true
+      dockerImageTag: 4.0.4 # previous stable version here
   releaseStage: alpha
   releases:
     rolloutConfiguration:
