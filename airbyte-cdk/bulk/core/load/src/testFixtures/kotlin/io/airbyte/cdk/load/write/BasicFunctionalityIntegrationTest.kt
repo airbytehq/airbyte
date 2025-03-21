@@ -51,6 +51,7 @@ import io.airbyte.cdk.load.test.util.NameMapper
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
+import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -71,6 +72,7 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertThrows
 
 sealed interface AllTypesBehavior
 
@@ -143,8 +145,30 @@ enum class UnionBehavior {
 
 enum class UnknownTypesBehavior {
     NULL,
+
+    /**
+     * Values of unknown types are JSON-serialized. In particular, this means that a string `"foo"`
+     * would be written to the destination as `"\"foo\""`.
+     */
+    SERIALIZE,
+
+    /**
+     * Values of unknown types are naively converted to string. String values are written as-is, and
+     * other types are JSON-serialized.
+     *
+     * In most cases, we prefer [SERIALIZE] over [PASS_THROUGH], but there are some destinations
+     * (e.g. blob storage writing JSONL) where this makes sense. Additionally, destination-s3 in CSV
+     * mode does this for historical reasons.
+     */
     PASS_THROUGH,
-    SERIALIZE
+
+    /**
+     * The sync is expected to fail on unrecognized types. We generally prefer to avoid this
+     * behavior, but destination-s3 in avro/parquet mode does this for historical reasons.
+     *
+     * New connectors should generally try to use [SERIALIZE].
+     */
+    FAIL,
 }
 
 abstract class BasicFunctionalityIntegrationTest(
@@ -2358,65 +2382,77 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
             )
-        runSync(
-            updatedConfig,
-            stream,
-            listOf(
-                InputRecord(
-                    randomizedNamespace,
-                    "problematic_types",
-                    """
+
+        fun runSync() =
+            runSync(
+                updatedConfig,
+                stream,
+                listOf(
+                    InputRecord(
+                        randomizedNamespace,
+                        "problematic_types",
+                        """
                         {
                           "id": 1,
                           "name": "ex falso quodlibet"
                         }""".trimIndent(),
-                    emittedAtMs = 1602637589100,
+                        emittedAtMs = 1602637589100,
+                    )
                 )
             )
-        )
-
-        val expectedRecords: List<OutputRecord> =
-            listOf(
-                OutputRecord(
-                    extractedAt = 1602637589100,
-                    generationId = 42,
-                    data =
-                        mapOf(
-                            "id" to 1,
-                            "name" to
-                                when (unknownTypesBehavior) {
-                                    UnknownTypesBehavior.NULL -> null
-                                    UnknownTypesBehavior.PASS_THROUGH -> "ex falso quodlibet"
-                                    UnknownTypesBehavior.SERIALIZE -> "\"ex falso quodlibet\""
-                                },
-                        ),
-                    airbyteMeta =
-                        OutputRecord.Meta(
-                            syncId = 42,
-                            changes =
-                                when (unknownTypesBehavior) {
-                                    UnknownTypesBehavior.NULL ->
-                                        listOf(
-                                            Change(
-                                                "name",
-                                                AirbyteRecordMessageMetaChange.Change.NULLED,
-                                                AirbyteRecordMessageMetaChange.Reason
-                                                    .DESTINATION_SERIALIZATION_ERROR
+        if (unknownTypesBehavior == UnknownTypesBehavior.FAIL) {
+            assertThrows<DestinationUncleanExitException> { runSync() }
+        } else {
+            assertDoesNotThrow { runSync() }
+            val expectedRecords: List<OutputRecord> =
+                listOf(
+                    OutputRecord(
+                        extractedAt = 1602637589100,
+                        generationId = 42,
+                        data =
+                            mapOf(
+                                "id" to 1,
+                                "name" to
+                                    when (unknownTypesBehavior) {
+                                        UnknownTypesBehavior.NULL -> null
+                                        UnknownTypesBehavior.PASS_THROUGH -> "ex falso quodlibet"
+                                        UnknownTypesBehavior.SERIALIZE -> "\"ex falso quodlibet\""
+                                        // this is required to satisfy the compiler,
+                                        // but intellij correctly detects that it's unreachable.
+                                        UnknownTypesBehavior.FAIL ->
+                                            throw IllegalStateException(
+                                                "The sync was expected to fail, so we should not be asserting that its records were correct"
                                             )
-                                        )
-                                    else -> emptyList()
-                                }
-                        ),
-                ),
-            )
+                                    },
+                            ),
+                        airbyteMeta =
+                            OutputRecord.Meta(
+                                syncId = 42,
+                                changes =
+                                    when (unknownTypesBehavior) {
+                                        UnknownTypesBehavior.NULL ->
+                                            listOf(
+                                                Change(
+                                                    "name",
+                                                    AirbyteRecordMessageMetaChange.Change.NULLED,
+                                                    AirbyteRecordMessageMetaChange.Reason
+                                                        .DESTINATION_SERIALIZATION_ERROR
+                                                )
+                                            )
+                                        else -> emptyList()
+                                    }
+                            ),
+                    ),
+                )
 
-        dumpAndDiffRecords(
-            parsedConfig,
-            expectedRecords,
-            stream,
-            primaryKey = listOf(listOf("id")),
-            cursor = null,
-        )
+            dumpAndDiffRecords(
+                parsedConfig,
+                expectedRecords,
+                stream,
+                primaryKey = listOf(listOf("id")),
+                cursor = null,
+            )
+        }
     }
 
     /**

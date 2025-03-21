@@ -395,7 +395,7 @@ class S3V2WriteTestAvroUncompressed :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
         mergesUnions = true
     )
 
@@ -410,7 +410,7 @@ class S3V2WriteTestAvroBzip2 :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
         mergesUnions = true
     )
 
@@ -425,7 +425,7 @@ class S3V2WriteTestParquetUncompressed :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
         mergesUnions = true
     )
 
@@ -440,7 +440,7 @@ class S3V2WriteTestParquetSnappy :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
         mergesUnions = true
     )
 

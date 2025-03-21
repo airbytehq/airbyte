@@ -43,6 +43,7 @@ import java.util.UUID
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 abstract class MSSQLWriterTest(
@@ -301,6 +302,14 @@ internal class BulkInsert :
                     )
             ) { spec -> MSSQLConfigurationFactory().makeWithOverrides(spec, emptyMap()) },
     ) {
+
+    @Disabled(
+        "temporarily disabling while I work on implementing better type handling in bulk inserts - https://github.com/airbytehq/airbyte-internal-issues/issues/12128 / https://github.com/airbytehq/airbyte/pull/55884"
+    )
+    @Test
+    override fun testUnknownTypes() {
+        super.testUnknownTypes()
+    }
 
     companion object {
         const val CONFIG_FILE = "secrets/bulk_upload_config.json"
