@@ -23,6 +23,7 @@ import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
+import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.integrations.destination.mssql.v2.config.AzureBlobStorageClientCreator
 import io.airbyte.integrations.destination.mssql.v2.config.BulkLoadConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.DataSourceFactory
@@ -42,6 +43,7 @@ import java.util.UUID
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 
 abstract class MSSQLWriterTest(
     configPath: Path,
@@ -64,7 +66,7 @@ abstract class MSSQLWriterTest(
         supportFileTransfer = false,
         commitDataIncrementally = true,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
-        nullUnknownTypes = false,
+        unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
         nullEqualsUnset = true,
         configUpdater = configUpdater,
     )
@@ -259,6 +261,11 @@ internal class StandardInsert :
                 MSSQLConfigurationFactory().makeWithOverrides(spec, configOverrides)
             },
     ) {
+
+    @Test
+    override fun testUnknownTypes() {
+        super.testUnknownTypes()
+    }
 
     companion object {
         @JvmStatic

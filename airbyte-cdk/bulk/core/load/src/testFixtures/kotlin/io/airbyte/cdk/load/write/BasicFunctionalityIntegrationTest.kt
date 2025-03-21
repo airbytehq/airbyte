@@ -141,6 +141,12 @@ enum class UnionBehavior {
     STRINGIFY,
 }
 
+enum class UnknownTypesBehavior {
+    NULL,
+    PASS_THROUGH,
+    SERIALIZE
+}
+
 abstract class BasicFunctionalityIntegrationTest(
     /** The config to pass into the connector, as a serialized JSON blob */
     configContents: String,
@@ -183,7 +189,7 @@ abstract class BasicFunctionalityIntegrationTest(
      */
     val commitDataIncrementally: Boolean,
     val allTypesBehavior: AllTypesBehavior,
-    val nullUnknownTypes: Boolean = false,
+    val unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     nullEqualsUnset: Boolean = false,
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
 ) :
@@ -2378,27 +2384,27 @@ abstract class BasicFunctionalityIntegrationTest(
                         mapOf(
                             "id" to 1,
                             "name" to
-                                if (nullUnknownTypes) {
-                                    null
-                                } else {
-                                    "ex falso quodlibet"
+                                when (unknownTypesBehavior) {
+                                    UnknownTypesBehavior.NULL -> null
+                                    UnknownTypesBehavior.PASS_THROUGH -> "ex falso quodlibet"
+                                    UnknownTypesBehavior.SERIALIZE -> "\"ex falso quodlibet\""
                                 },
                         ),
                     airbyteMeta =
                         OutputRecord.Meta(
                             syncId = 42,
                             changes =
-                                if (nullUnknownTypes) {
-                                    listOf(
-                                        Change(
-                                            "name",
-                                            AirbyteRecordMessageMetaChange.Change.NULLED,
-                                            AirbyteRecordMessageMetaChange.Reason
-                                                .DESTINATION_SERIALIZATION_ERROR
+                                when (unknownTypesBehavior) {
+                                    UnknownTypesBehavior.NULL ->
+                                        listOf(
+                                            Change(
+                                                "name",
+                                                AirbyteRecordMessageMetaChange.Change.NULLED,
+                                                AirbyteRecordMessageMetaChange.Reason
+                                                    .DESTINATION_SERIALIZATION_ERROR
+                                            )
                                         )
-                                    )
-                                } else {
-                                    emptyList()
+                                    else -> emptyList()
                                 }
                         ),
                 ),
