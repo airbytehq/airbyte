@@ -55,9 +55,9 @@ object LIMITS {
  *                             Only enable if strict data validation is required.
  * ```
  */
-class MSSQLCsvRowValidator(private val validateValuesPreLoad: Boolean) {
+class MSSQLCsvRowGenerator(private val validateValuesPreLoad: Boolean) {
 
-    fun validate(record: DestinationRecordRaw, schema: ObjectType): DestinationRecordAirbyteValue {
+    fun generate(record: DestinationRecordRaw, schema: ObjectType): DestinationRecordAirbyteValue {
         val marshalledRecord = record.asDestinationRecordAirbyteValue()
         val objectValue = marshalledRecord.data as? ObjectValue ?: return marshalledRecord
         val values = objectValue.values
