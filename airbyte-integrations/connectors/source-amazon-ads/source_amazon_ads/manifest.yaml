@@ -7,7 +7,7 @@ check:
   stream_names:
     - streams
 
-max_concurrent_async_job_count: 10
+max_concurrent_async_job_count: "{{ config.get('max_concurrent_async_job_count', 10) }}"
 
 definitions:
   sponsored_product_ad_group_error_handler:
@@ -2205,7 +2205,7 @@ definitions:
       authenticator: "#/definitions/oauth_authenticator"
       http_method: GET
       request_headers:
-        Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
+        Amazon-Advertising-API-Scope: "{{ creation_response['headers']['Amazon-Advertising-API-Scope'] }}"
         Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
       error_handler:
         $ref: "#/definitions/report_polling_error_handler"
