@@ -112,7 +112,7 @@ class DestinationCobra(Destination):
         record_processor = self._instantiate_record_processor()
 
         for message in input_messages:
-            self._logger.info(f"Processing message: {message}")
+            self._logger.debug(f"Processing message: {message}")
             if message.type == Type.RECORD:
                 record_processor.process(message.record)
 
