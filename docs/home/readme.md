@@ -1,14 +1,14 @@
-# Welcome to Airbyte Docs
+# Airbyte docs
 
 <Grid columns="1">
 
-<CardWithIcon title="What is Airbyte?" description="Airbyte is an open-source data movement infrastructure for building extract and load (EL) data pipelines. It is designed for versatility, scalability, and ease-of-use." icon="enterprise"/>
+<CardWithIcon title="What is Airbyte?" description="Airbyte is open-source data movement infrastructure for building extract and load (EL) data pipelines. It is designed for versatility, scalability, and ease-of-use." icon="enterprise"/>
 
 </Grid>
 
 <Arcade id="8UUaeQOILatZ38Rjh8cs" title="Airbyte Demo: Get Started Creating Connections" paddingBottom="calc(61.416666666666664% + 41px)" />
 
-### Why Airbyte?
+## Why Airbyte?
  
 Today, teams and organizations require efficient and timely data access to an ever-growing list of data sources. In-house data pipelines are brittle and costly to build and maintain. Airbyte's unique open-source approach enables your data stack to adapt as your data needs evolve.
 

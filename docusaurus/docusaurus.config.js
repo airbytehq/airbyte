@@ -26,7 +26,7 @@ const config = {
     mermaid: true,
   },
   themes: ["@docusaurus/theme-mermaid"],
-  title: "Airbyte Documentation",
+  title: "Airbyte Docs",
   tagline:
     "Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.",
   url: "https://docs.airbyte.com/",
@@ -208,7 +208,7 @@ const config = {
         isCloseable: true,
       },
       navbar: {
-        title: "",
+        title: "Docs",
         logo: {
           alt: "Simple, secure and extensible data integration",
           src: "img/logo-dark.png",
@@ -221,14 +221,14 @@ const config = {
             position: 'left',
             docsPluginId: "platform",
             sidebarId: 'platform',
-            label: 'Airbyte platform',
+            label: 'Platform',
           },
           {
             type: 'docSidebar',
             position: 'left',
             docsPluginId: "connectors",
             sidebarId: 'connectors',
-            label: 'Connector catalog',
+            label: 'Connectors',
           },
           {
             type: 'docSidebar',
@@ -238,27 +238,14 @@ const config = {
             label: 'Release notes',
           },
           {
-            type: 'dropdown',
-            label: 'More resources',
-            position: 'left',
-            items: [
-              {
-                label: 'Airbyte website',
-                href: 'https://airbyte.io/',
-              },
-              {
-                label: 'Tutorials',
-                href: "https://airbyte.com/tutorials",
-              },
-              {
-                label: 'Blog',
-                href: "https://airbyte.com/blog",
-              },
-              {
-                href: "https://support.airbyte.com/",
-                label: "Support",
-              },
-            ],
+            href: "https://support.airbyte.com/",
+            label: "Support",
+          },
+
+          {
+            href: "https://status.airbyte.com",
+            label: "Status",
+            className: "cloudStatusLink"
           },
           // --- Right side ---
           // Platform docs version selector
@@ -269,12 +256,6 @@ const config = {
             docsPluginId: 'platform',
             label: 'Version',
             dropdownActiveClassDisabled: true, // do not style the dropdown as active when viewing platform docs
-          },
-          {
-            href: "https://status.airbyte.com",
-            label: "Cloud status",
-            className: "cloudStatusLink",
-            position: "right",
           },
           {
             href: "https://github.com/airbytehq",

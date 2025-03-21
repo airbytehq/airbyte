@@ -93,8 +93,8 @@ html[data-theme="dark"] {
   transform: translateY(-2px);
 }
 
-.navbar__items--right {
-  gap: 4px;
+a.navbar__brand {
+  color: var(--ifm-menu-color);
 }
 
 .header-github-link:hover {
@@ -151,6 +151,10 @@ html[data-theme="dark"] {
   text-decoration: none;
 }
 
+.navbar .navbar__item {
+  margin-right: 0.5em;
+}
+
 .navbar__category {
   font-weight: 700;
   font-size: 0.8em;
@@ -161,6 +165,15 @@ html[data-theme="dark"] {
 
 .navbar__category:not(:first-child) {
   margin-top: 1.1em;
+}
+
+ul.table-of-contents{
+  padding-left: 0;
+  border: 0;
+}
+
+ul.table-of-contents li {
+  margin-left: 0;
 }
 
 /* Hide the breadcrumbs if they have only the house as an entry (i.e. on the start page) */
