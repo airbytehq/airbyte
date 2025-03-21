@@ -3,12 +3,14 @@
 #
 
 
-from typing import Any, Mapping, MutableMapping
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
+import requests
 from source_shopify.shopify_graphql.bulk.query import (
     Collection,
     CustomerAddresses,
     CustomerJourney,
+    DeliveryProfile,
     DiscountCode,
     FulfillmentOrder,
     InventoryItem,
@@ -26,13 +28,16 @@ from source_shopify.shopify_graphql.bulk.query import (
     Product,
     ProductImage,
     ProductVariant,
+    ProfileLocationGroups,
     Transaction,
 )
 
+from airbyte_cdk import HttpSubStream
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 from .base_streams import (
+    FullRefreshShopifyGraphQlBulkStream,
     IncrementalShopifyGraphQlBulkStream,
     IncrementalShopifyNestedStream,
     IncrementalShopifyStream,
@@ -327,5 +332,101 @@ class CustomerAddress(IncrementalShopifyGraphQlBulkStream):
     cursor_field = "id"
 
 
-class Countries(ShopifyStream):
-    data_field = "countries"
+class ProfileLocationGroups(FullRefreshShopifyGraphQlBulkStream):
+    # https://shopify.dev/docs/api/admin-graphql/latest/queries/deliveryProfiles
+    query = ProfileLocationGroups
+    response_field = "deliveryProfiles"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        page_info = response.json()["data"]["deliveryProfiles"]["pageInfo"]
+        if page_info["hasNextPage"]:
+            # The cursor to retrieve nodes after in the connection. Typically, you should pass the endCursor of the previous page as after.
+            return {"cursor": page_info["endCursor"]}
+        return None
+
+    def request_body_json(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[Mapping[str, Any]]:
+        return {
+            "query": self.query().get(query_args={"cursor": next_page_token["cursor"] if next_page_token else None}),
+        }
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        for node in super().parse_response(response, **kwargs):
+            for location_group in node.get("profileLocationGroups", []):
+                yield location_group.get("locationGroup")
+
+
+class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
+    # https://shopify.dev/docs/api/admin-graphql/latest/queries/deliveryProfiles
+    _page_cursor = None
+    _sub_page_cursor = None
+
+    query = DeliveryProfile
+    response_field = "deliveryProfiles"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        # TODO: add test for pagination
+        json_response = response.json().get("data", {})
+        page_info = json_response.get("deliveryProfiles", {}).get("pageInfo", {})
+        # only one top page in query
+        sub_page_info = (
+            # only first one
+            json_response.get("deliveryProfiles", {})
+            .get("nodes", [{}])[0]
+            # only one location group id in query
+            .get("profileLocationGroups", [{}])[0]
+            .get("locationGroupZones", {})
+            .get("pageInfo", {})
+        )
+        if not sub_page_info["hasNextPage"] and not page_info["hasNextPage"]:
+            return None
+        if sub_page_info["hasNextPage"]:
+            # The cursor to retrieve nodes after in the connection. Typically, you should pass the endCursor of the previous page as after.
+            self._sub_page_cursor = sub_page_info["endCursor"]
+        if page_info["hasNextPage"]:
+            # The cursor to retrieve nodes after in the connection. Typically, you should pass the endCursor of the previous page as after.
+            self._page_cursor = page_info["endCursor"]
+
+        return {
+            "cursor": self._page_cursor,
+            "sub_cursor": self._sub_page_cursor,
+        }
+
+    def request_body_json(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[Mapping[str, Any]]:
+
+        return {
+            "query": self.query(location_group_id=stream_slice["parent"]["id"], location_group_zones_cursor=self._sub_page_cursor).get(
+                query_args={
+                    "cursor": self._page_cursor,
+                }
+            ),
+        }
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        for node in super().parse_response(response, **kwargs):
+            for location_group in node.get("profileLocationGroups", []):
+                for location_group_zone in location_group.get("locationGroupZones", {}).get("nodes", []):
+                    for country in location_group_zone.get("zone", {}).get("countries"):
+                        yield self._process_country(country)
+
+    def _process_country(self, country: Mapping[str, Any]) -> Mapping[str, Any]:
+        country["id"] = int(country["id"].split("/")[-1])
+
+        for province in country.get("provinces", []):
+            province["id"] = int(province["id"].split("/")[-1])
+            province["country_id"] = country["id"]
+
+        country["restOfWorld'"] = country["code"]["restOfWorld"]
+        country["code"] = country["code"]["countryCode"] if country["code"]["countryCode"] is not None else "*"
+
+        country["shop_url"] = self.config["shop"]
+        return country

@@ -3202,3 +3202,165 @@ class OrderAgreement(ShopifyBulkQuery):
         record["agreements"] = agreements_with_sales if agreements_with_sales else {}
 
         yield record
+
+
+class DeliveryZoneList:
+    query_name = "deliveryProfiles"
+    operation_name = "DeliveryZoneList"
+    operation_type = "query"
+
+    query_nodes: List[str] = []
+
+    page_size = 100
+
+    def resolve(self, query: Query) -> str:
+        # return the constructed query operation
+        return Operation(type=self.operation_type, name=self.operation_name, queries=[query]).render()
+
+    def build(self, name: str, query_args: Mapping[str, Any] = None) -> Query:
+        arguments = [Argument(name="first", value=self.page_size)]
+
+        if query_args:
+            if query_args.get("cursor"):
+                arguments.append(Argument(name="after", value=query_args["cursor"]))
+
+        query = Query(name=name, arguments=arguments, fields=self.query_nodes)
+        # return constructed query
+        return query
+
+    def query(self, query_args: Mapping[str, Any] = None) -> Query:
+        return self.build(self.query_name, query_args)
+
+    def get(self, query_args: Mapping[str, Any] = None) -> str:
+        query: Query = self.query(query_args)
+        return self.resolve(query)
+
+
+class ProfileLocationGroups(DeliveryZoneList):
+    @property
+    def query_nodes(self) -> Optional[Union[List[Field], List[str]]]:
+        query_nodes: List[Field] = [
+            Field(name="pageInfo", fields=["hasNextPage", "endCursor"]),
+            Field(
+                name="nodes",
+                fields=[
+                    Field(
+                        name="profileLocationGroups",
+                        fields=[Field(name="locationGroup", fields=["id"])],
+                    ),
+                ],
+            ),
+        ]
+        return query_nodes
+
+
+class DeliveryProfile(DeliveryZoneList):
+    """
+        query DeliveryZoneList {
+      deliveryProfiles(
+        first: 1
+      ) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          profileLocationGroups(
+            locationGroupId: "<locationGroupId>"
+          ) {
+            locationGroupZones(
+              first: 100
+            ) {
+              nodes {
+                zone {
+                  id
+                  name
+                  countries {
+                    id
+                    name
+                    translatedName
+                    code {
+                      countryCode
+                      restOfWorld
+                    }
+                    provinces {
+                      id
+                      translatedName
+                      name
+                      code
+                    }
+                  }
+                }
+              }
+              pageInfo {
+                hasNextPage
+                endCursor
+              }
+            }
+          }
+        }
+      }
+    }
+    """
+    page_size = 1
+    sub_page_size = 100
+
+    def __init__(self, location_group_id: str, location_group_zones_cursor: str = None):
+        self.location_group_id = location_group_id
+        self.location_group_zones_cursor = location_group_zones_cursor
+
+    @property
+    def query_nodes(self) -> Optional[Union[List[Field], List[str]]]:
+        location_group_id = '"' + self.location_group_id + '"'
+        location_group_zones_arguments = [Argument(name="first", value=self.sub_page_size)]
+        if self.location_group_zones_cursor:
+            cursor = '"' + self.location_group_zones_cursor + '"'
+            location_group_zones_arguments.append(Argument(name="after", value=cursor))
+
+        query_nodes: List[Field] = [
+            Field(name="pageInfo", fields=["hasNextPage", "endCursor"]),
+            Field(
+                name="nodes",
+                fields=[
+                    Field(
+                        name="profileLocationGroups",
+                        arguments=[Argument(name="locationGroupId", value=location_group_id)],
+                        fields=[
+                            Field(
+                                name="locationGroupZones",
+                                arguments=location_group_zones_arguments,
+                                fields=[
+                                    Field(
+                                        name="nodes",
+                                        fields=[
+                                            Field(
+                                                name="zone",
+                                                fields=[
+                                                    "id",
+                                                    "name",
+                                                    Field(
+                                                        name="countries",
+                                                        fields=[
+                                                            "id",
+                                                            "name",
+                                                            "translatedName",
+                                                            Field(name="code", fields=["countryCode", "restOfWorld"]),
+                                                            Field(
+                                                                name="provinces",
+                                                                fields=["id", "translatedName", "name", "code"],
+                                                            ),
+                                                        ],
+                                                    ),
+                                                ],
+                                            )
+                                        ],
+                                    ),
+                                    Field(name="pageInfo", fields=["hasNextPage", "endCursor"]),
+                                ],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        ]
+        return query_nodes
