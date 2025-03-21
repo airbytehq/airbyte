@@ -1,0 +1,389 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": ["null", "object"],
+    "properties": {
+        "id": {
+            "description": "Unique identifier for the payment.",
+            "type": ["null", "string"]
+        },
+        "createdAt": {
+            "description": "Date and time when the payment was created.",
+            "type": ["null", "string"],
+            "format": "date-time"
+        },
+        "updatedAt": {
+            "description": "Date and time when the payment was last updated.",
+            "type": ["null", "string"],
+            "format": "date-time"
+        },
+        "archived": {
+            "description": "Indicates if the payment is archived.",
+            "type": ["null", "boolean"]
+        },
+        "companies": {
+            "description": "Companies associated with the payment.",
+            "type": ["null", "array"],
+            "items": {
+                "type": ["null", "string"]
+            }
+        },
+        "line_items": {
+            "description": "Line items associated with the payment.",
+            "type": ["null", "array"],
+            "items": {
+                "type": ["null", "string"]
+            }
+        },
+        "contacts": {
+            "description": "Contacts associated with the payment.",
+            "type": ["null", "array"],
+            "items": {
+                "type": ["null", "string"]
+            }
+        },
+        "properties": {
+            "description": "Information related to the properties of the payment.",
+            "type": ["null", "object"],
+            "properties": {
+                "hs_all_accessible_team_ids": {
+                    "description": "IDs of all teams that have access to the payment.",
+                    "type": ["null", "array"],
+                    "items": {
+                        "type": ["null", "string"]
+                    }
+                },
+                "hs_billing_address_country": {
+                    "description": "Country of the billing address.",
+                    "type": ["null", "string"]
+                },
+                "hs_billing_address_zip": {
+                    "description": "ZIP code of the billing address.",
+                    "type": ["null", "string"]
+                },
+                "hs_billing_bill_to_name": {
+                    "description": "Name of the person to bill.",
+                    "type": ["null", "string"]
+                },
+                "hs_currency_code": {
+                    "description": "Currency code of the payment.",
+                    "type": ["null", "string"]
+                },
+                "hs_customer_email": {
+                    "description": "Email address of the customer.",
+                    "type": ["null", "string"]
+                },
+                "hs_fees_amount": {
+                    "description": "Amount of fees associated with the payment.",
+                    "type": ["null", "number"]
+                },
+                "hs_fees_amount_in_portal_currency": {
+                    "description": "Amount of fees in portal currency.",
+                    "type": ["null", "number"]
+                },
+                "hs_has_associated_invoice": {
+                    "description": "Indicates if the payment has an associated invoice.",
+                    "type": ["null", "boolean"]
+                },
+                "hs_initial_amount": {
+                    "description": "Initial amount of the payment.",
+                    "type": ["null", "number"]
+                },
+                "hs_initial_amount_in_portal_currency": {
+                    "description": "Initial amount in portal currency.",
+                    "type": ["null", "number"]
+                },
+                "hs_initial_amount_in_settlement_currency": {
+                    "description": "Initial amount in settlement currency.",
+                    "type": ["null", "number"]
+                },
+                "hs_initiated_date": {
+                    "description": "Date and time when the payment was initiated.",
+                    "type": ["null", "string"],
+                    "format": "date-time"
+                },
+                "hs_is_refundable": {
+                    "description": "Indicates if the payment is refundable.",
+                    "type": ["null", "boolean"]
+                },
+                "hs_latest_status": {
+                    "description": "Latest status of the payment.",
+                    "type": ["null", "string"]
+                },
+                "hs_latest_status_updated_date": {
+                    "description": "Date and time when the status was last updated.",
+                    "type": ["null", "string"],
+                    "format": "date-time"
+                },
+                "hs_max_refundable_amount": {
+                    "description": "Maximum amount that can be refunded.",
+                    "type": ["null", "number"]
+                },
+                "hs_net_amount": {
+                    "description": "Net amount of the payment.",
+                    "type": ["null", "number"]
+                },
+                "hs_net_amount_after_refunds": {
+                    "description": "Net amount after refunds.",
+                    "type": ["null", "number"]
+                },
+                "hs_number_of_associated_invoices": {
+                    "description": "Number of invoices associated with the payment.",
+                    "type": ["null", "number"]
+                },
+                "hs_object_id": {
+                    "description": "Object ID of the payment.",
+                    "type": ["null", "number"]
+                },
+                "hs_object_source": {
+                    "description": "Source of the payment object.",
+                    "type": ["null", "string"]
+                },
+                "hs_payment_id": {
+                    "description": "ID of the payment.",
+                    "type": ["null", "string"]
+                },
+                "hs_payment_method": {
+                    "description": "Method used for the payment.",
+                    "type": ["null", "string"]
+                },
+                "hs_payment_method_bank_or_issuer": {
+                    "description": "Bank or issuer of the payment method.",
+                    "type": ["null", "string"]
+                },
+                "hs_payment_method_last_4": {
+                    "description": "Last 4 digits of the payment method.",
+                    "type": ["null", "string"]
+                },
+                "hs_payment_method_type": {
+                    "description": "Type of payment method used.",
+                    "type": ["null", "string"]
+                },
+                "hs_payment_source_app": {
+                    "description": "Application source of the payment.",
+                    "type": ["null", "string"]
+                },
+                "hs_payment_source_id": {
+                    "description": "ID of the payment source.",
+                    "type": ["null", "string"]
+                },
+                "hs_payment_source_name": {
+                    "description": "Name of the payment source.",
+                    "type": ["null", "string"]
+                },
+                "hs_payment_source_url": {
+                    "description": "URL of the payment source.",
+                    "type": ["null", "string"]
+                },
+                "hs_payment_type": {
+                    "description": "Type of payment.",
+                    "type": ["null", "string"]
+                },
+                "hs_platform_fee": {
+                    "description": "Platform fee associated with the payment.",
+                    "type": ["null", "number"]
+                },
+                "hs_platform_invoice_id": {
+                    "description": "ID of the platform invoice.",
+                    "type": ["null", "number"]
+                },
+                "hs_processor_type": {
+                    "description": "Type of payment processor used.",
+                    "type": ["null", "string"]
+                },
+                "hs_refunds_amount": {
+                    "description": "Amount of refunds.",
+                    "type": ["null", "number"]
+                },
+                "hs_settlement_currency_code": {
+                    "description": "Currency code for settlement.",
+                    "type": ["null", "string"]
+                },
+                "hs_shipping_ship_to_name": {
+                    "description": "Name of the shipping recipient.",
+                    "type": ["null", "string"]
+                },
+                "hs_total_collected_amount_after_refunds": {
+                    "description": "Total amount collected after refunds.",
+                    "type": ["null", "number"]
+                },
+                "hs_total_discounts_amount": {
+                    "description": "Total amount of discounts.",
+                    "type": ["null", "number"]
+                },
+                "hs_was_created_with_associated_deal": {
+                    "description": "Indicates if the payment was created with an associated deal.",
+                    "type": ["null", "string"]
+                }
+            }
+        },
+        "properties_hs_all_accessible_team_ids": {
+            "description": "IDs of all teams that have access to the payment.",
+            "type": ["null", "array"],
+            "items": {
+                "type": ["null", "string"]
+            }
+        },
+        "properties_hs_billing_address_country": {
+            "description": "Country of the billing address.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_billing_address_zip": {
+            "description": "ZIP code of the billing address.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_billing_bill_to_name": {
+            "description": "Name of the person to bill.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_currency_code": {
+            "description": "Currency code of the payment.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_customer_email": {
+            "description": "Email address of the customer.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_fees_amount": {
+            "description": "Amount of fees associated with the payment.",
+            "type": ["null", "number"]
+        },
+        "properties_hs_fees_amount_in_portal_currency": {
+            "description": "Amount of fees in portal currency.",
+            "type": ["null", "number"]
+        },
+        "properties_hs_has_associated_invoice": {
+            "description": "Indicates if the payment has an associated invoice.",
+            "type": ["null", "boolean"]
+        },
+        "properties_hs_initial_amount": {
+            "description": "Initial amount of the payment.",
+            "type": ["null", "number"]
+        },
+        "properties_hs_initial_amount_in_portal_currency": {
+            "description": "Initial amount in portal currency.",
+            "type": ["null", "number"]
+        },
+        "properties_hs_initial_amount_in_settlement_currency": {
+            "description": "Initial amount in settlement currency.",
+            "type": ["null", "number"]
+        },
+        "properties_hs_initiated_date": {
+            "description": "Date and time when the payment was initiated.",
+            "type": ["null", "string"],
+            "format": "date-time"
+        },
+        "properties_hs_is_refundable": {
+            "description": "Indicates if the payment is refundable.",
+            "type": ["null", "boolean"]
+        },
+        "properties_hs_latest_status": {
+            "description": "Latest status of the payment.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_latest_status_updated_date": {
+            "description": "Date and time when the status was last updated.",
+            "type": ["null", "string"],
+            "format": "date-time"
+        },
+        "properties_hs_max_refundable_amount": {
+            "description": "Maximum amount that can be refunded.",
+            "type": ["null", "number"]
+        },
+        "properties_hs_net_amount": {
+            "description": "Net amount of the payment.",
+            "type": ["null", "number"]
+        },
+        "properties_hs_net_amount_after_refunds": {
+            "description": "Net amount after refunds.",
+            "type": ["null", "number"]
+        },
+        "properties_hs_number_of_associated_invoices": {
+            "description": "Number of invoices associated with the payment.",
+            "type": ["null", "number"]
+        },
+        "properties_hs_object_id": {
+            "description": "Object ID of the payment.",
+            "type": ["null", "number"]
+        },
+        "properties_hs_object_source": {
+            "description": "Source of the payment object.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_payment_id": {
+            "description": "ID of the payment.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_payment_method": {
+            "description": "Method used for the payment.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_payment_method_bank_or_issuer": {
+            "description": "Bank or issuer of the payment method.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_payment_method_last_4": {
+            "description": "Last 4 digits of the payment method.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_payment_method_type": {
+            "description": "Type of payment method used.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_payment_source_app": {
+            "description": "Application source of the payment.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_payment_source_id": {
+            "description": "ID of the payment source.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_payment_source_name": {
+            "description": "Name of the payment source.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_payment_source_url": {
+            "description": "URL of the payment source.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_payment_type": {
+            "description": "Type of payment.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_platform_fee": {
+            "description": "Platform fee associated with the payment.",
+            "type": ["null", "number"]
+        },
+        "properties_hs_platform_invoice_id": {
+            "description": "ID of the platform invoice.",
+            "type": ["null", "number"]
+        },
+        "properties_hs_processor_type": {
+            "description": "Type of payment processor used.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_refunds_amount": {
+            "description": "Amount of refunds.",
+            "type": ["null", "number"]
+        },
+        "properties_hs_settlement_currency_code": {
+            "description": "Currency code for settlement.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_shipping_ship_to_name": {
+            "description": "Name of the shipping recipient.",
+            "type": ["null", "string"]
+        },
+        "properties_hs_total_collected_amount_after_refunds": {
+            "description": "Total amount collected after refunds.",
+            "type": ["null", "number"]
+        },
+        "properties_hs_total_discounts_amount": {
+            "description": "Total amount of discounts.",
+            "type": ["null", "number"]
+        },
+        "properties_hs_was_created_with_associated_deal": {
+            "description": "Indicates if the payment was created with an associated deal.",
+            "type": ["null", "string"]
+        }
+    }
+}

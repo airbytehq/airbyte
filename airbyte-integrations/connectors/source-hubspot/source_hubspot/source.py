@@ -67,6 +67,7 @@ from source_hubspot.streams import (
     TicketsWebAnalytics,
     WebAnalyticsStream,
     Workflows,
+    CommercePayments,
 )
 
 
@@ -173,6 +174,7 @@ class SourceHubspot(AbstractSource):
             Tickets(**common_params),
             TicketPipelines(**common_params),
             Workflows(**common_params),
+            CommercePayments(**common_params),
         ]
 
         enable_experimental_streams = "enable_experimental_streams" in config and config["enable_experimental_streams"]
