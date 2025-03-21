@@ -1,6 +1,6 @@
 # Confluence Migration Guide
 
-## Upgrading to Version 1.0.0
+## Upgrading to 1.0.0
 
 With the release of **Confluence API V2**, several changes have been introduced to the connector, impacting endpoint structures and schema definitions. To ensure a seamless transition, follow the migration steps outlined below.
 
