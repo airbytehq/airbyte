@@ -359,7 +359,8 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/cursor_incremental_sync"
       start_time_option:
-        $ref: "#/definitions/cursor_incremental_sync/start_time_option"
+        type: RequestOption
+        inject_into: request_parameter
         field_name: "start_time"
     retriever:
       $ref: "#/definitions/retriever"
@@ -402,8 +403,8 @@ definitions:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
-            parent_key: id
-            partition_field: post_id
+            parent_key: "id"
+            partition_field: "post_id"
             stream:
               $ref: "#/definitions/posts_stream"
             incremental_dependency: true
@@ -442,8 +443,8 @@ definitions:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
-            parent_key: id
-            partition_field: post_id
+            parent_key: "id"
+            partition_field: "post_id"
             stream:
               $ref: "#/definitions/posts_stream"
             incremental_dependency: true
@@ -476,8 +477,8 @@ definitions:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
-            parent_key: _airbyte_parent_id
-            partition_field: id
+            parent_key: "_airbyte_parent_id"
+            partition_field: "id"
             stream:
               $ref: "#/definitions/post_comments_stream"
             incremental_dependency: true
