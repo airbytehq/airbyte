@@ -76,16 +76,14 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         # Convert string paths to InterpolatedString for both field_path and field_path_pagination
-        self._field_path = [
-            InterpolatedString.create(p, parameters=parameters) if isinstance(p, str) else p
-            for p in self.field_path
-        ]
+        self._field_path = [InterpolatedString.create(p, parameters=parameters) if isinstance(p, str) else p for p in self.field_path]
         self._field_path_pagination = [
-            InterpolatedString.create(p, parameters=parameters) if isinstance(p, str) else p
-            for p in self.field_path_pagination
+            InterpolatedString.create(p, parameters=parameters) if isinstance(p, str) else p for p in self.field_path_pagination
         ]
 
-    def _try_extract_records(self, response: requests.Response, field_path: List[Union[InterpolatedString, str]]) -> Iterable[Mapping[str, Any]]:
+    def _try_extract_records(
+        self, response: requests.Response, field_path: List[Union[InterpolatedString, str]]
+    ) -> Iterable[Mapping[str, Any]]:
         for body in self.decoder.decode(response):
             if len(field_path) == 0:
                 extracted = body
