@@ -873,8 +873,6 @@ definitions:
         type: DatetimeBasedCursor
         cursor_datetime_formats:
           - "%s"
-          - "%Y-%m-%dT%H:%M:%SZ"
-          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%s"
         cursor_field: "_ab_updated_at"
         start_datetime:
@@ -909,8 +907,6 @@ definitions:
         type: DatetimeBasedCursor
         cursor_datetime_formats:
           - "%s"
-          - "%Y-%m-%dT%H:%M:%SZ"
-          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%s"
         cursor_field: "_ab_updated_at"
         start_datetime:
