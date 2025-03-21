@@ -86,7 +86,7 @@ The connector is restricted by normal Okta [requests limitation](https://develop
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 1.0.0 | 2025-02-03 | [48751](https://github.com/airbytehq/airbyte/pull/48751) | Update Specification to Make 'Domain' Mandatory |
+| 1.0.0  | 2025-03-24 | [48751](https://github.com/airbytehq/airbyte/pull/48751) | Update Specification to Make 'Domain' Mandatory |
 | 0.3.21 | 2025-02-24 | [54167](https://github.com/airbytehq/airbyte/pull/54167) | Remove stream_state interpolation |
 | 0.3.20 | 2025-02-01 | [52728](https://github.com/airbytehq/airbyte/pull/52728) | Update dependencies |
 | 0.3.19 | 2025-01-25 | [52469](https://github.com/airbytehq/airbyte/pull/52469) | Update dependencies |
