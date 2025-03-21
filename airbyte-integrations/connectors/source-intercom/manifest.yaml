@@ -476,8 +476,14 @@ definitions:
             Accept: application/json
             Intercom-Version: "2.11"
           request_body_json:
-            query: "{ 'operator': 'OR', 'value': [ { 'field': 'updated_at', 'operator': '>', 'value': {{ stream_interval.get('start_time', {}) or format_datetime(config['start_date'], '%s') }} }, { 'field': 'updated_at', 'operator': '=', 'value': {{ stream_interval.get('start_time', {}) or format_datetime(config['start_date'], '%s') }} } ] }"
             sort: "{'field': 'updated_at', 'order': 'ascending'}"
+            query: >-
+              { 'operator': 'OR', 'value': [ { 'field': 'updated_at',
+              'operator': '>', 'value': {{ stream_interval.get('start_time', {}) or
+              format_datetime(config['start_date'], '%s') }} }, { 'field':
+              'updated_at', 'operator': '=', 'value': {{
+              stream_interval.get('start_time', {}) or format_datetime(config['start_date'],
+              '%s') }} }, ], }
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
