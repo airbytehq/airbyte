@@ -2,7 +2,7 @@ version: 6.41.5
 
 type: DeclarativeSource
 
-description: another test
+description: test4
 
 check:
   type: CheckStream
