@@ -14,6 +14,10 @@ import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.csv.toCsvValue
@@ -21,6 +25,7 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigInteger
+import java.time.format.DateTimeFormatter
 
 object LIMITS {
     // Maximum value for BIGINT in SQL Server
@@ -75,6 +80,24 @@ class MSSQLCsvRowGenerator(private val validateValuesPreLoad: Boolean) {
                     is BooleanType ->
                         value.value =
                             if ((actualValue as BooleanValue).value) LIMITS.TRUE else LIMITS.FALSE
+
+                    // MSSQL requires a specific timestamp format - in particular,
+                    // "2000-01-01T00:00Z" causes an error.
+                    // MSSQL requires "2000-01-01T00:00:00Z".
+                    is TimestampTypeWithTimezone ->
+                        value.value =
+                            StringValue(
+                                (actualValue as TimestampWithTimezoneValue)
+                                    .value
+                                    .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                            )
+                    is TimestampTypeWithoutTimezone ->
+                        value.value =
+                            StringValue(
+                                (actualValue as TimestampWithoutTimezoneValue)
+                                    .value
+                                    .format(DateTimeFormatter.ISO_DATE_TIME)
+                            )
 
                     // serialize complex types to string
                     is ArrayType,
