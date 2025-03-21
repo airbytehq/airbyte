@@ -7,8 +7,6 @@ import logging
 from datetime import datetime
 from typing import Any, List, Mapping, Optional, Tuple
 
-import pendulum
-
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
@@ -17,7 +15,6 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from source_zendesk_support.streams import DATETIME_FORMAT, ZendeskConfigException
 
 from .streams import (
-    TicketMetrics,
     UserSettingsStream,
 )
 

@@ -868,6 +868,7 @@ definitions:
         type: JsonFileSchemaLoader
         file_path: "./source_zendesk_support/schemas/ticket_metrics.json"
       name: "ticket_metrics"
+      primary_key: "id"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_datetime_formats:
@@ -906,6 +907,7 @@ definitions:
         type: JsonFileSchemaLoader
         file_path: "./source_zendesk_support/schemas/ticket_metrics.json"
       name: "ticket_metrics"
+      primary_key: "id"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_datetime_formats:
