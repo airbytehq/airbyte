@@ -359,7 +359,8 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/cursor_incremental_sync"
       start_time_option:
-        $ref: "#/definitions/cursor_incremental_sync/start_time_option"
+        type: RequestOption
+        inject_into: request_parameter
         field_name: "start_time"
     retriever:
       $ref: "#/definitions/retriever"
