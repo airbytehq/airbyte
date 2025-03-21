@@ -51,7 +51,7 @@ class UpdateBatchStateTask(
                     log.info {
                         "End-of-stream checks for ${message.stream}: ${message.taskName}[${message.part}]"
                     }
-                    manager.markTaskEndOfStream(message.taskName, message.part)
+                    manager.markTaskEndOfStream(message.taskName, message.part,  message.totalInputCount)
                 }
             }
             checkpointManager.flushReadyCheckpointMessages()

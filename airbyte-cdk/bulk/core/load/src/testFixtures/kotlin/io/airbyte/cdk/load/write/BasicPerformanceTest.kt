@@ -114,6 +114,7 @@ abstract class BasicPerformanceTest(
     namespaceOverride: String? = null,
     val numFilesForFileTransfer: Int = 5,
     val fileSizeMbForFileTransfer: Int = 1024,
+    val numStreamsForMultiStream: Int = 4
 ) {
 
     protected val destinationProcessFactory = DestinationProcessFactory.get(emptyList())
@@ -302,6 +303,20 @@ abstract class BasicPerformanceTest(
             testScenario = scenario,
             useFileTransfer = true,
             validation = null,
+        )
+    }
+
+    @Test
+    open fun testManyStreamsInsertRecords() {
+        runSync(
+            testScenario = MultiStreamInsert(
+                idColumn = idColumn,
+                columns = twoStringColumns,
+                randomizedNamespace = randomizedNamespace,
+                recordsToInsertPerStream = defaultRecordsToInsert / numStreamsForMultiStream,
+                numStreams = numStreamsForMultiStream,
+                streamNamePrefix = testInfo.testMethod.get().name,
+            )
         )
     }
 

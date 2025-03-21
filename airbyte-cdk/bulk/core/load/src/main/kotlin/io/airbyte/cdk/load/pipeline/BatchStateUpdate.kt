@@ -29,4 +29,5 @@ data class BatchEndOfStream(
     override val stream: DestinationStream.Descriptor,
     override val taskName: String,
     override val part: Int,
+    val totalInputCount: Long
 ) : BatchUpdate

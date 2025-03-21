@@ -234,6 +234,148 @@ class SingleStreamFileTransfer(
         )
 }
 
+class MultiStreamInsert(
+    private val numStreams: Int,
+    private val streamNamePrefix: String,
+    private val idColumn: NamedField,
+    private val columns: List<NamedField>,
+    private val recordsToInsertPerStream: Long,
+    private val dedup: Boolean = false,
+    duplicateChance: Double = 0.0,
+    randomizedNamespace: String,
+    generationId: Long = 0,
+    minGenerationId: Long = 0,
+): PerformanceTestScenario {
+
+    init {
+        assert(duplicateChance in 0.0..1.0)
+    }
+
+    private val streams = run {
+        val importType =
+            if (!dedup) Append
+            else
+                Dedupe(
+                    primaryKey = listOf(listOf(idColumn.name)),
+                    cursor = listOf(idColumn.name),
+                )
+        val schema =
+            (listOf(idColumn) + columns).map {
+                Pair(it.name, FieldType(type = it.type, nullable = true))
+            }
+
+        (0 until numStreams).map {
+            DestinationStream(
+                descriptor = DestinationStream.Descriptor(
+                    randomizedNamespace,
+                    "${streamNamePrefix}__$it"
+                ),
+                importType = importType,
+                schema = ObjectType(linkedMapOf(*schema.toTypedArray())),
+                generationId = generationId,
+                minimumGenerationId = minGenerationId,
+                syncId = 1,
+            )
+        }
+    }
+
+    private val random = SecureRandom()
+    private val randomThreshold: Int =
+        if (duplicateChance > 0.0) ((duplicateChance % 1.0) * 100).toInt() else 0
+
+    private var recordCount: Long = 0
+    private var byteCount: Long = 0
+
+    override val catalog = DestinationCatalog(streams)
+
+    protected class RecordWriter(
+        indexColumn: NamedField,
+        columns: List<NamedField>,
+        private val streams: List<DestinationStream>,
+        private val destination: DestinationProcess,
+        private val recordBufferSize: Long = 1,
+    ) : AutoCloseable {
+        private val baseRecords = run {
+            val data = (listOf(indexColumn) + columns).associate { Pair(it.name, it.sample) }
+            streams.map { stream ->
+                InputRecord(
+                    namespace = stream.descriptor.namespace,
+                    name = stream.descriptor.name,
+                    data = Jsons.serialize(data),
+                    emittedAtMs = System.currentTimeMillis(),
+                )
+            }
+        }
+
+        private val messagePartsAndSizes = baseRecords.map { records ->
+            val messageParts = Jsons.serialize(records.asProtocolMessage()).split(indexColumn.sample.toString())
+            Pair(
+                messageParts, messageParts.sumOf { it.length }
+            )
+        }
+        private val totalSize = messagePartsAndSizes.sumOf { it.second }
+
+        private val sb = StringBuilder()
+
+        var recordsWrittenPerStream: Long = 0
+        var bytesWritten: Long = 0
+
+        fun write(id: Long) {
+            messagePartsAndSizes.forEach { (parts, _) ->
+                sb.append(parts[0])
+                sb.append(id)
+                sb.append(parts[1])
+                sb.appendLine()
+            }
+
+            if (recordsWrittenPerStream % recordBufferSize == 0L) {
+                flush()
+            }
+
+            recordsWrittenPerStream += 1
+            bytesWritten += totalSize + id.length() * streams.size
+        }
+
+        private fun flush() {
+            if (sb.isNotEmpty()) {
+                destination.sendMessage(sb.toString())
+                sb.clear()
+            }
+        }
+
+        override fun close() {
+            flush()
+        }
+    }
+
+    override fun send(destination: DestinationProcess) {
+        RecordWriter(
+            indexColumn = idColumn,
+            columns = columns,
+            streams = streams,
+            destination = destination,
+            recordBufferSize = 10,
+        )
+            .use { writer ->
+                (1..recordsToInsertPerStream).forEach {
+                    writer.write(it)
+                    if (randomThreshold > 0 && random.nextInt(0, 100) <= randomThreshold) {
+                        writer.write(it)
+                    }
+                }
+                recordCount = writer.recordsWrittenPerStream
+                byteCount = writer.bytesWritten
+            }
+    }
+
+    override fun getSummary() =
+        PerformanceTestScenario.Summary(
+            recordCount,
+            byteCount,
+            expectedRecordsCount = if (dedup) recordsToInsertPerStream else recordCount,
+        )
+}
+
 private fun Long.length(): Long =
     if (this <= 99999) {
         if (this <= 99) {

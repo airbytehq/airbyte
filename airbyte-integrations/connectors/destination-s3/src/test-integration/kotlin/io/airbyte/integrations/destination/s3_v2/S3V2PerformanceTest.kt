@@ -28,6 +28,11 @@ class S3V2JsonNoFrillsPerformanceTest :
     override fun testInsertRecords() {
         super.testInsertRecords()
     }
+
+    @Test
+    override fun testManyStreamsInsertRecords() {
+        super.testManyStreamsInsertRecords()
+    }
 }
 
 //@Disabled("We don't want this to run in CI")

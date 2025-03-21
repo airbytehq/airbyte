@@ -123,7 +123,8 @@ interface StreamManager {
 
     fun markTaskEndOfStream(
         taskName: String,
-        part: Int
+        part: Int,
+        finalInputCount: Long
     )
 
         /**
@@ -163,7 +164,7 @@ class DefaultStreamManager(
         ConcurrentHashMap()
     data class TaskKey(val name: String, val part: Int)
     private val namedCheckpointCounts: ConcurrentHashMap<Pair<TaskKey, Batch.State>, ConcurrentHashMap<CheckpointId, CheckpointValue>> = ConcurrentHashMap()
-    private val taskCompletions = ConcurrentHashSet<TaskKey>()
+    private val taskCompletionCounts = ConcurrentHashMap<TaskKey, Long>()
 
     init {
         Batch.State.entries.forEach { rangesState[it] = TreeRangeSet.create() }
@@ -370,14 +371,22 @@ class DefaultStreamManager(
         inputCount: Long
     ) {
         checkpointCounts.forEach { (checkpointId, recordCount) ->
+            val taskKey = TaskKey(taskName, part)
+            if (taskCompletionCounts.containsKey(taskKey)) {
+                throw IllegalStateException(
+                    "$taskKey received input after seeing end-of-stream (checkpointCounts=$checkpointCounts, inputCount=$inputCount, sawEosAtCount=${taskCompletionCounts[taskKey]})."
+                )
+            }
             namedCheckpointCounts
                 .getOrPut(TaskKey(taskName, part) to state) { ConcurrentHashMap() }
                 .merge(checkpointId, CheckpointValue(recordCount, inputCount)) { old, new -> old + new }
         }
     }
 
-    override fun markTaskEndOfStream(taskName: String, part: Int) {
-        taskCompletions.add(TaskKey(taskName, part))
+    override fun markTaskEndOfStream(taskName: String, part: Int, finalInputCount: Long) {
+        taskCompletionCounts.putIfAbsent(TaskKey(taskName, part), finalInputCount)?.let {
+            throw IllegalStateException("End-of-stream reported at $finalInputCount already seen for $taskName[$part] at $it")
+        }
     }
 
     override fun areRecordsPersistedUntilCheckpoint(checkpointId: CheckpointId): Boolean {
@@ -421,27 +430,28 @@ class DefaultStreamManager(
                 val (taskKey, state) = key
                 val recordCount = value.values.sumOf { it.records }
                 val inputCount = value.values.sumOf { it.inputs }
-                val isComplete = taskCompletions.contains(taskKey)
-                Triple(taskKey, state, Triple(recordCount, inputCount, isComplete))
+                val isCompleteCount = taskCompletionCounts[taskKey]
+                Triple(taskKey, state, Triple(recordCount, inputCount, isCompleteCount))
             }
             val byTask = byPart.groupBy { TaskKey(it.first.name, 999) }.mapValues {
-                it.value.fold(Triple(Batch.State.PROCESSED, Pair(0L, 0L), false)) { z, x ->
+                it.value.fold(Triple(Batch.State.PROCESSED, Pair(0L, 0L), null as Long?)) { z, x ->
                     Triple(x.second,
                         Pair(z.second.first + x.third.first, z.second.second + x.third.second),
-                        z.third || x.third.third
+                        (z.third?.plus(x.third.third?:0L)) ?: x.third.third
                     )
                 }
             }.map { (taskKey, stateAndCountsAndComplete) ->
-                val (state, counts, isComplete) = stateAndCountsAndComplete
-                Triple(taskKey, state, Triple(counts.first, counts.second, isComplete))
+                val (state, counts, isCompleteCount) = stateAndCountsAndComplete
+                Triple(taskKey, state, Triple(counts.first, counts.second, isCompleteCount))
             }
             val sortedAndFormatted = (byPart + byTask)
                 .sortedBy { (taskKey, state, _) -> state.ordinal * 1_000 + taskKey.part }
                 .map { (taskKey, state, countsAndComplete) ->
-                    val (recordCount, inputCount, isComplete) = countsAndComplete
+                    val (recordCount, inputCount, isCompleteCount) = countsAndComplete
                     val partString = if (taskKey.part == 999) "[TOTAL]" else "[${taskKey.part}]"
                     val inputString = if (recordCount == inputCount) "(" else " (inputs: $inputCount, "
-                    "${taskKey.name}$partString($state): $recordCount records ${inputString}done: ${isComplete})"
+                    val completeString = if (isCompleteCount == null) "false" else "true, saw eos at input $isCompleteCount"
+                    "${taskKey.name}$partString($state): $recordCount records ${inputString}done: $completeString)"
                 }
             (listOf(header) + sortedAndFormatted).joinToString(separator = "\n")
         }

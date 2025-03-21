@@ -33,6 +33,7 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.fold
 import kotlinx.coroutines.flow.lastOrNull
@@ -71,7 +72,8 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
 
     data class StateStore<K1, S: AutoCloseable>(
         val stateWithCounts: MutableMap<K1, StateWithCounts<S>> = mutableMapOf(),
-        val totalInputCount: Long = 0,
+        val streamCounts: MutableMap<DestinationStream.Descriptor, Long> = mutableMapOf(),
+        val streamsEnded: MutableSet<DestinationStream.Descriptor> = mutableSetOf(),
     )
 
     override suspend fun execute() {
@@ -80,6 +82,9 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                 when (input) {
                     is PipelineMessage -> {
                         // Get or create the accumulator state associated w/ the input key.
+                        if (stateStore.streamsEnded.contains(input.key.stream)) {
+                            throw IllegalStateException("Received input for stream that has ended: $input")
+                        }
                         val stateWithCounts =
                             stateStore.stateWithCounts
                                 .getOrPut(input.key) {
@@ -150,7 +155,8 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                             stateStore.stateWithCounts.remove(input.key)?.close()
                         }
 
-                        stateStore.copy(totalInputCount = stateStore.totalInputCount + 1)
+                        stateStore.streamCounts.merge(input.key.stream, 1) { old, new -> old + new }
+                        stateStore
                     }
                     is PipelineEndOfStream -> {
                         // Give any key associated with the stream a chance to finish
@@ -169,17 +175,19 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                             .incrementAndGet()
                         if (numWorkersSeenEos == numWorkers) {
                             log.info {
-                                "$this saw end-of-stream for ${input.stream} after ${stateStore.totalInputCount} inputs, all workers complete"
+                                "$this saw end-of-stream for ${input.stream} after ${stateStore.streamCounts[input.stream] ?: 0L} inputs, all workers complete"
                             }
+                            delay(1000)
                             outputQueue?.broadcast(PipelineEndOfStream(input.stream))
                         } else {
                             log.info {
-                                "$this saw end-of-stream for ${input.stream} after ${stateStore.totalInputCount} inputs, ${numWorkers - numWorkersSeenEos} workers remaining"
+                                "$this saw end-of-stream for ${input.stream} after ${stateStore.streamCounts[input.stream] ?: 0L} inputs, ${numWorkers - numWorkersSeenEos} workers remaining"
                             }
                         }
 
                         // Track which tasks are complete
-                        batchUpdateQueue.publish(BatchEndOfStream(input.stream, taskName, part))
+                        stateStore.streamsEnded.add(input.stream)
+                        batchUpdateQueue.publish(BatchEndOfStream(input.stream, taskName, part, stateStore.streamCounts[input.stream] ?: 0L))
 
                         stateStore
                     }

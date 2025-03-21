@@ -117,6 +117,11 @@ class MSSQLBulkInsertPerformanceTest :
         super.testInsertRecords()
     }
 
+    @Test
+    override fun testManyStreamsInsertRecords() {
+        super.testManyStreamsInsertRecords()
+    }
+
     @Disabled
     @Test
     override fun testInsertRecordsWithManyColumns() {
