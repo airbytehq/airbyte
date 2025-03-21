@@ -68,6 +68,7 @@ class ShopifyBulkTemplates:
                         createdAt
                     }
                     userErrors {
+                        code
                         field
                         message
                     }
