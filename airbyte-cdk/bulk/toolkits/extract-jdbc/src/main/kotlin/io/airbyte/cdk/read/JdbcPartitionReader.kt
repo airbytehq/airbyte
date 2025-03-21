@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
@@ -79,10 +80,12 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
                     ),
             )
             .use { result: SelectQuerier.Result ->
+                var count = 0
                 for (row in result) {
                     out(row)
-                    numRecords.incrementAndGet()
+                    count ++
                 }
+                numRecords.addAndGet(count.toLong())
             }
         runComplete.set(true)
     }
@@ -126,14 +129,18 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
                     SelectQuerier.Parameters(reuseResultObject = true, fetchSize = fetchSize),
             )
             .use { result: SelectQuerier.Result ->
+                var lastRecordLocal: ObjectNode? = null
+                var count = 0
                 for (row in result) {
                     out(row)
-                    lastRecord.set(row.data)
+                    lastRecordLocal = row.data
                     // Check activity periodically to handle timeout.
-                    if (numRecords.incrementAndGet() % fetchSize == 0L) {
+                    if (++count % fetchSize == 0) {
                         coroutineContext.ensureActive()
                     }
                 }
+                numRecords.addAndGet(count.toLong())
+                lastRecordLocal?.let { lastRecord.set(it) }
             }
         runComplete.set(true)
     }
@@ -157,7 +164,9 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
                 streamState.updateLimitState { it.down }
             }
         }
-        val checkpointState: OpaqueStateValue = partition.incompleteState(lastRecord.get()!!)
+        val checkpointState: OpaqueStateValue = partition.incompleteState(
+            lastRecord.get() ?: JsonNodeFactory.instance.objectNode()
+        )
         return PartitionReadCheckpoint(checkpointState, numRecords.get())
     }
 }
