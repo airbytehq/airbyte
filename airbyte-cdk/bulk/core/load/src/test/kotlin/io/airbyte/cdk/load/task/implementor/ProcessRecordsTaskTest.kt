@@ -66,7 +66,7 @@ class ProcessRecordsTaskTest {
         coEvery { deserializer.deserialize(any()) } answers
             {
                 DestinationRecord(
-                    stream = MockDestinationCatalogFactory.stream1.descriptor,
+                    stream = MockDestinationCatalogFactory.stream1,
                     message =
                         AirbyteMessage()
                             .withRecord(

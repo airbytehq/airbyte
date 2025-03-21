@@ -3289,6 +3289,11 @@ schemas:
           - number
           - "null"
         description: Percentage discount applied by the coupon.
+      discount_quantity:
+        type:
+          - integer
+          - "null"
+        description: Specifies the number of free units provided for the item price, without affecting the total quantity sold. This parameter is applicable only when the discount_type is set to offer_quantity.
       discount_type:
         type:
           - string
