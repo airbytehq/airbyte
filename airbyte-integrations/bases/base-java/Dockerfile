@@ -6,7 +6,7 @@
 
 # If you need to add a custom logic to build your connector image, you can do it by adding a finalize_build.sh or finalize_build.py script in the connector folder.
 # Please reach out to the Connectors Operations team if you have any question.
-ARG JDK_VERSION=17.0.8
+ARG JDK_VERSION=17.0.8-al2023
 FROM amazoncorretto:${JDK_VERSION}
 COPY --from=airbyte/integration-base:dev /airbyte /airbyte
 
