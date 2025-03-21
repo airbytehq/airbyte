@@ -4,36 +4,23 @@
 
 package io.airbyte.integrations.destination.mssql.v2
 
-import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
-import io.airbyte.cdk.load.data.DateType
-import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.TimeTypeWithTimezone
-import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.message.Meta
-import io.airbyte.protocol.models.Jsons
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigInteger
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.OffsetDateTime
-import java.time.OffsetTime
 
 object LIMITS {
     // Maximum value for BIGINT in SQL Server
@@ -57,206 +44,55 @@ object LIMITS {
  */
 class MSSQLCsvRowGenerator(private val validateValuesPreLoad: Boolean) {
 
-    fun generate(record: DestinationRecordRaw, schema: ObjectType): DestinationRecordAirbyteValue {
-        val marshalledRecord = record.asDestinationRecordAirbyteValue()
-        val objectValue = marshalledRecord.data as? ObjectValue ?: return marshalledRecord
-        val values = objectValue.values
+    fun generate(record: DestinationRecordRaw, schema: ObjectType): List<Any> {
+        val enrichedRecord = record.asEnrichedDestinationRecordAirbyteValue()
 
-        schema.properties.forEach { (columnName, fieldType) ->
-            val oldValue = values[columnName]
-            if (oldValue != null && oldValue !is NullValue && marshalledRecord.meta != null) {
-                values[columnName] =
-                    oldValue.validateAndReplace(columnName, fieldType, marshalledRecord.meta!!)
-            }
-        }
-        return marshalledRecord
-    }
-
-    private fun AirbyteValue.validateAndReplace(
-        columnName: String,
-        fieldType: FieldType,
-        meta: Meta
-    ): AirbyteValue =
-        when (this) {
-            is StringValue -> validateStringValue(columnName, this, fieldType, meta)
-            is IntegerValue -> validateIntegerValue(columnName, this, meta)
-            is BooleanValue -> validateBooleanValue(this)
-            is NumberValue -> validateNumberValue(this)
-            is ObjectValue -> validateObjectValue(this, fieldType, meta)
-            else -> this
-        }
-
-    private fun validateStringValue(
-        columnName: String,
-        value: StringValue,
-        fieldType: FieldType,
-        meta: Meta
-    ): AirbyteValue {
-        if (!validateValuesPreLoad || fieldType.isStringColumn()) {
-            return value
-        }
-
-        val rawString = value.value
-
-        if (fieldType.isNumericColumn()) {
-            return runCatching { NumberValue(rawString.toBigDecimal()) }
-                .fold(
-                    onSuccess = { validateNumberValue(it) },
-                    onFailure = {
-                        meta.nullify(
-                            columnName,
-                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
-                        )
-                        NullValue
+        if (validateValuesPreLoad) {
+            enrichedRecord.declaredFields.values.forEach { value ->
+                if (value.value is NullValue) {
+                    return@forEach
+                }
+                val actualValue = value.value
+                when (value.type) {
+                    // Enforce numeric range
+                    is IntegerType -> {
+                        if (
+                            (actualValue as IntegerValue).value < LIMITS.MIN_BIGINT ||
+                                LIMITS.MAX_BIGINT < actualValue.value
+                        ) {
+                            value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                        }
                     }
-                )
-        } else if (fieldType.isBooleanColumn()) {
-            val asIntValue = parseBooleanAsIntValue(rawString)
-            if (asIntValue == null) {
-                meta.nullify(
-                    columnName,
-                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
-                )
-                return NullValue
-            }
-            return asIntValue
-        } else if (fieldType.isDateColumn()) {
-            if (!safeParseDate(rawString)) {
-                meta.nullify(
-                    columnName,
-                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
-                )
-                return NullValue
-            }
-        } else if (fieldType.isTimeColumn()) {
-            if (!safeParseTime(rawString)) {
-                meta.nullify(
-                    columnName,
-                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
-                )
-                return NullValue
-            }
-        } else if (fieldType.isTimestampColumn()) {
-            if (!safeParseTimestamp(rawString)) {
-                meta.nullify(
-                    columnName,
-                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
-                )
-                return NullValue
-            }
-        } else if (fieldType.isUnionColumn()) {
-            return StringValue(Jsons.serialize(rawString))
-        }
-        return value
-    }
+                    is NumberType -> {
+                        // Force to BigDecimal -> re-box as NumberValue
+                        value.value =
+                            NumberValue(
+                                (actualValue as NumberValue).value.toDouble().toBigDecimal()
+                            )
+                    }
 
-    private fun validateIntegerValue(
-        columnName: String,
-        value: IntegerValue,
-        meta: Meta
-    ): AirbyteValue {
-        // If the integer exceeds BIGINT range, then we must nullify it.
-        if (value.value < LIMITS.MIN_BIGINT || LIMITS.MAX_BIGINT < value.value) {
-            meta.nullify(
-                columnName,
-                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
-            )
-            return NullValue
-        }
-        return value
-    }
+                    // SQL server expects booleans as 0 or 1
+                    is BooleanType ->
+                        value.value =
+                            if ((actualValue as BooleanValue).value) LIMITS.TRUE else LIMITS.FALSE
 
-    private fun validateBooleanValue(value: BooleanValue): IntegerValue {
-        return if (value.value) LIMITS.TRUE else LIMITS.FALSE
-    }
-
-    private fun validateNumberValue(value: NumberValue): NumberValue {
-        // Force to BigDecimal -> re-box as NumberValue
-        return NumberValue(value.value.toDouble().toBigDecimal())
-    }
-
-    private fun validateObjectValue(
-        value: ObjectValue,
-        fieldType: FieldType,
-        meta: Meta
-    ): ObjectValue {
-        // If the schema says it's actually an object, we recursively validate.
-        val actualObjType = fieldType.type
-        if (actualObjType is ObjectType) {
-            val convertedValues = LinkedHashMap<String, AirbyteValue>(value.values.size)
-            value.values.forEach { (propName, propValue) ->
-                val subType = actualObjType.properties[propName]
-                val validated =
-                    if (subType != null) propValue.validateAndReplace(propName, subType, meta)
-                    else propValue
-                convertedValues[propName] = validated
-            }
-            return ObjectValue(convertedValues)
-        }
-        return value
-    }
-
-    private fun parseBooleanAsIntValue(value: String): IntegerValue? {
-        // Accept "1", "0", or strict booleans ("true"/"false")
-        return when (value) {
-            "1" -> LIMITS.TRUE
-            "0" -> LIMITS.FALSE
-            else -> {
-                val bool = value.lowercase().toBooleanStrictOrNull() ?: return null
-                if (bool) LIMITS.TRUE else LIMITS.FALSE
+                    // serialize complex types to string
+                    is ArrayType,
+                    is ObjectType,
+                    is UnionType,
+                    is UnknownType -> value.value = StringValue(actualValue.serializeToString())
+                    else -> {}
+                }
             }
         }
-    }
 
-    private fun safeParseDate(value: String): Boolean {
-        return runCatching { LocalDate.parse(value) }.isSuccess
-    }
-
-    private fun safeParseTime(value: String): Boolean {
-        if (runCatching { OffsetTime.parse(value) }.isSuccess) return true
-        return runCatching { LocalTime.parse(value) }.isSuccess
-    }
-
-    private fun safeParseTimestamp(value: String): Boolean {
-        if (runCatching { OffsetDateTime.parse(value) }.isSuccess) return true
-        return runCatching { LocalDateTime.parse(value) }.isSuccess
-    }
-
-    private fun FieldType.isNumericColumn(): Boolean {
-        return type is NumberType || type is IntegerType
-    }
-
-    private fun FieldType.isStringColumn(): Boolean {
-        return type is StringType
-    }
-
-    private fun FieldType.isUnionColumn(): Boolean {
-        return type is UnionType
-    }
-
-    private fun FieldType.isBooleanColumn(): Boolean {
-        return type is BooleanType
-    }
-
-    private fun FieldType.isDateColumn(): Boolean {
-        return type is DateType
-    }
-
-    private fun FieldType.isTimeColumn(): Boolean {
-        return type is TimeTypeWithTimezone || type is TimeTypeWithoutTimezone
-    }
-
-    private fun FieldType.isTimestampColumn(): Boolean {
-        return type is TimestampTypeWithTimezone || type is TimestampTypeWithoutTimezone
-    }
-
-    private fun Meta.nullify(fieldName: String, reason: AirbyteRecordMessageMetaChange.Reason) {
-        val metaChange =
-            Meta.Change(
-                field = fieldName,
-                change = AirbyteRecordMessageMetaChange.Change.NULLED,
-                reason = reason
-            )
-        (this.changes as MutableList).add(metaChange)
+        val values = enrichedRecord.allTypedFields
+        return schema.properties.map { (columnName, _) ->
+            val value = values[columnName]
+            if (value == null || value.value is NullValue || !validateValuesPreLoad) {
+                return@map value?.value.toCsvValue()
+            }
+            value.value.toCsvValue()
+        }
     }
 }
