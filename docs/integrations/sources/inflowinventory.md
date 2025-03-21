@@ -40,6 +40,15 @@ Docs : https://cloudapi.inflowinventory.com/docs/index.html#section/Overview
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.14 | 2025-03-08 | [55437](https://github.com/airbytehq/airbyte/pull/55437) | Update dependencies |
+| 0.0.13 | 2025-03-01 | [54750](https://github.com/airbytehq/airbyte/pull/54750) | Update dependencies |
+| 0.0.12 | 2025-02-22 | [54311](https://github.com/airbytehq/airbyte/pull/54311) | Update dependencies |
+| 0.0.11 | 2025-02-15 | [53796](https://github.com/airbytehq/airbyte/pull/53796) | Update dependencies |
+| 0.0.10 | 2025-02-08 | [53296](https://github.com/airbytehq/airbyte/pull/53296) | Update dependencies |
+| 0.0.9 | 2025-02-01 | [52746](https://github.com/airbytehq/airbyte/pull/52746) | Update dependencies |
+| 0.0.8 | 2025-01-25 | [52288](https://github.com/airbytehq/airbyte/pull/52288) | Update dependencies |
+| 0.0.7 | 2025-01-18 | [51823](https://github.com/airbytehq/airbyte/pull/51823) | Update dependencies |
+| 0.0.6 | 2025-01-11 | [51200](https://github.com/airbytehq/airbyte/pull/51200) | Update dependencies |
 | 0.0.5 | 2024-12-28 | [50660](https://github.com/airbytehq/airbyte/pull/50660) | Update dependencies |
 | 0.0.4 | 2024-12-21 | [50082](https://github.com/airbytehq/airbyte/pull/50082) | Update dependencies |
 | 0.0.3 | 2024-12-14 | [49633](https://github.com/airbytehq/airbyte/pull/49633) | Update dependencies |

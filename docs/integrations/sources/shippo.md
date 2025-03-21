@@ -29,6 +29,15 @@ In order to use this source, you must first create a Shippo account. Once logged
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.15 | 2025-03-08 | [55594](https://github.com/airbytehq/airbyte/pull/55594) | Update dependencies |
+| 0.0.14 | 2025-03-01 | [55153](https://github.com/airbytehq/airbyte/pull/55153) | Update dependencies |
+| 0.0.13 | 2025-02-22 | [54487](https://github.com/airbytehq/airbyte/pull/54487) | Update dependencies |
+| 0.0.12 | 2025-02-15 | [54069](https://github.com/airbytehq/airbyte/pull/54069) | Update dependencies |
+| 0.0.11 | 2025-02-08 | [53535](https://github.com/airbytehq/airbyte/pull/53535) | Update dependencies |
+| 0.0.10 | 2025-02-01 | [52997](https://github.com/airbytehq/airbyte/pull/52997) | Update dependencies |
+| 0.0.9 | 2025-01-25 | [52451](https://github.com/airbytehq/airbyte/pull/52451) | Update dependencies |
+| 0.0.8 | 2025-01-18 | [51924](https://github.com/airbytehq/airbyte/pull/51924) | Update dependencies |
+| 0.0.7 | 2025-01-11 | [51315](https://github.com/airbytehq/airbyte/pull/51315) | Update dependencies |
 | 0.0.6 | 2024-12-28 | [50702](https://github.com/airbytehq/airbyte/pull/50702) | Update dependencies |
 | 0.0.5 | 2024-12-21 | [50292](https://github.com/airbytehq/airbyte/pull/50292) | Update dependencies |
 | 0.0.4 | 2024-12-14 | [49727](https://github.com/airbytehq/airbyte/pull/49727) | Update dependencies |

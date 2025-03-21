@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.s3_data_lake
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
@@ -50,14 +51,26 @@ class S3DataLakeSpecification :
 
     @get:JsonSchemaInject(json = """{"order":4}""") override val s3Endpoint: String? = null
 
-    @get:JsonSchemaInject(json = """{"always_show": true,"order":5}""")
+    @get:JsonSchemaDescription(
+        """The root location of the data warehouse used by the Iceberg catalog. Typically includes a bucket name and path within that bucket. For AWS Glue and Nessie, must include the storage protocol (such as "s3://" for Amazon S3)."""
+    )
+    @get:JsonSchemaInject(
+        json =
+            """
+                {
+                    "examples": ["s3://your-bucket/path/to/store/files/in"],
+                    "always_show": true,
+                    "order":5
+                }
+            """
+    )
     override val warehouseLocation: String = ""
 
     @get:JsonSchemaInject(json = """{"always_show": true,"order":6}""")
     override val mainBranchName: String = ""
 
     @get:JsonSchemaInject(json = """{"always_show": true,"order":7}""")
-    override val catalogType: CatalogType = GlueCatalogSpecification(glueId = "")
+    override val catalogType: CatalogType = GlueCatalogSpecification(glueId = "", databaseName = "")
 }
 
 @Singleton

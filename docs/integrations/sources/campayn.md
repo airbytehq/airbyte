@@ -24,6 +24,14 @@ The Airbyte connector for [Campayn](https://campayn.com/) enables seamless data 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.14 | 2025-03-08 | [55377](https://github.com/airbytehq/airbyte/pull/55377) | Update dependencies |
+| 0.0.13 | 2025-03-01 | [54866](https://github.com/airbytehq/airbyte/pull/54866) | Update dependencies |
+| 0.0.12 | 2025-02-22 | [54267](https://github.com/airbytehq/airbyte/pull/54267) | Update dependencies |
+| 0.0.11 | 2025-02-15 | [53898](https://github.com/airbytehq/airbyte/pull/53898) | Update dependencies |
+| 0.0.10 | 2025-02-08 | [53423](https://github.com/airbytehq/airbyte/pull/53423) | Update dependencies |
+| 0.0.9 | 2025-02-01 | [52193](https://github.com/airbytehq/airbyte/pull/52193) | Update dependencies |
+| 0.0.8 | 2025-01-18 | [51726](https://github.com/airbytehq/airbyte/pull/51726) | Update dependencies |
+| 0.0.7 | 2025-01-11 | [51274](https://github.com/airbytehq/airbyte/pull/51274) | Update dependencies |
 | 0.0.6 | 2024-12-28 | [50461](https://github.com/airbytehq/airbyte/pull/50461) | Update dependencies |
 | 0.0.5 | 2024-12-21 | [50208](https://github.com/airbytehq/airbyte/pull/50208) | Update dependencies |
 | 0.0.4 | 2024-12-14 | [49585](https://github.com/airbytehq/airbyte/pull/49585) | Update dependencies |

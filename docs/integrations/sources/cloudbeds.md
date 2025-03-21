@@ -30,6 +30,15 @@ You can learn more about the API here https://hotels.cloudbeds.com/api/v1.2/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.14 | 2025-03-08 | [55278](https://github.com/airbytehq/airbyte/pull/55278) | Update dependencies |
+| 0.0.13 | 2025-03-01 | [54981](https://github.com/airbytehq/airbyte/pull/54981) | Update dependencies |
+| 0.0.12 | 2025-02-22 | [54443](https://github.com/airbytehq/airbyte/pull/54443) | Update dependencies |
+| 0.0.11 | 2025-02-15 | [53706](https://github.com/airbytehq/airbyte/pull/53706) | Update dependencies |
+| 0.0.10 | 2025-02-08 | [53350](https://github.com/airbytehq/airbyte/pull/53350) | Update dependencies |
+| 0.0.9 | 2025-02-01 | [52804](https://github.com/airbytehq/airbyte/pull/52804) | Update dependencies |
+| 0.0.8 | 2025-01-25 | [52335](https://github.com/airbytehq/airbyte/pull/52335) | Update dependencies |
+| 0.0.7 | 2025-01-18 | [51660](https://github.com/airbytehq/airbyte/pull/51660) | Update dependencies |
+| 0.0.6 | 2025-01-11 | [51074](https://github.com/airbytehq/airbyte/pull/51074) | Update dependencies |
 | 0.0.5 | 2024-12-28 | [50555](https://github.com/airbytehq/airbyte/pull/50555) | Update dependencies |
 | 0.0.4 | 2024-12-21 | [49992](https://github.com/airbytehq/airbyte/pull/49992) | Update dependencies |
 | 0.0.3 | 2024-12-14 | [49487](https://github.com/airbytehq/airbyte/pull/49487) | Update dependencies |

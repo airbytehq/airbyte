@@ -98,6 +98,7 @@ Your database user should now be ready for use with Airbyte.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.4 | 2025-01-10 | [51484](https://github.com/airbytehq/airbyte/pull/51484) | Use a non root base image |
 | 0.2.3 | 2024-12-18 | [49915](https://github.com/airbytehq/airbyte/pull/49915) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.2.2 | 2024-02-13 | [35234](https://github.com/airbytehq/airbyte/pull/35234) | Adopt CDK 0.20.4 |
 | 0.2.1 | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |

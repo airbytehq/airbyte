@@ -65,6 +65,15 @@ an Orb Account and API Key.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                               |
 |---------|------------| -------------------------------------------------------- |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.13 | 2025-03-08 | [55552](https://github.com/airbytehq/airbyte/pull/55552) | Update dependencies |
+| 2.1.12 | 2025-03-01 | [55033](https://github.com/airbytehq/airbyte/pull/55033) | Update dependencies |
+| 2.1.11 | 2025-02-23 | [54564](https://github.com/airbytehq/airbyte/pull/54564) | Update dependencies |
+| 2.1.10 | 2025-02-15 | [54019](https://github.com/airbytehq/airbyte/pull/54019) | Update dependencies |
+| 2.1.9 | 2025-02-08 | [53476](https://github.com/airbytehq/airbyte/pull/53476) | Update dependencies |
+| 2.1.8 | 2025-02-01 | [53005](https://github.com/airbytehq/airbyte/pull/53005) | Update dependencies |
+| 2.1.7 | 2025-01-25 | [52516](https://github.com/airbytehq/airbyte/pull/52516) | Update dependencies |
+| 2.1.6 | 2025-01-18 | [51886](https://github.com/airbytehq/airbyte/pull/51886) | Update dependencies |
+| 2.1.5 | 2025-01-11 | [51350](https://github.com/airbytehq/airbyte/pull/51350) | Update dependencies |
 | 2.1.4 | 2024-12-28 | [50741](https://github.com/airbytehq/airbyte/pull/50741) | Update dependencies |
 | 2.1.3 | 2024-12-21 | [50228](https://github.com/airbytehq/airbyte/pull/50228) | Update dependencies |
 | 2.1.2 | 2024-12-14 | [49693](https://github.com/airbytehq/airbyte/pull/49693) | Update dependencies |

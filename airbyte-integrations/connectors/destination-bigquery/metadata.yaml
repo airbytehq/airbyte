@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
-  dockerImageTag: 2.9.1
+  dockerImageTag: 2.9.2
   dockerRepository: airbyte/destination-bigquery
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   githubIssueLabel: destination-bigquery
@@ -13,7 +13,7 @@ data:
   license: ELv2
   name: BigQuery
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:1.0.0@sha256:be86e5684e1e6d9280512d3d8071b47153698fe08ad990949c8eeff02803201a
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   registryOverrides:
     cloud:
       enabled: true

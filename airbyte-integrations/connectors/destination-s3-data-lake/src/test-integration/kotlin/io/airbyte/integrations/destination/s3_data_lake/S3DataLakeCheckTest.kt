@@ -16,4 +16,5 @@ class S3DataLakeCheckTest :
             ),
         // TODO we maybe should add some configs that are expected to fail `check`
         failConfigFilenamesAndFailureReasons = mapOf(),
+        additionalMicronautEnvs = S3DataLakeDestination.additionalMicronautEnvs,
     )

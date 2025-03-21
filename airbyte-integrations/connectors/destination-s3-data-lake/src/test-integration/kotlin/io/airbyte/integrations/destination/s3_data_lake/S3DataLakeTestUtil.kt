@@ -4,14 +4,18 @@
 
 package io.airbyte.integrations.destination.s3_data_lake
 
-import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
+import io.airbyte.cdk.load.command.aws.AwsAssumeRoleCredentials
+import io.airbyte.cdk.load.command.aws.AwsEnvVarConstants
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.util.Jsons
-import io.airbyte.integrations.destination.s3_data_lake.io.AWSSystemCredentials
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import java.nio.file.Files
 import java.nio.file.Path
+import org.apache.iceberg.catalog.Catalog
 
 object S3DataLakeTestUtil {
     val GLUE_CONFIG_PATH: Path = Path.of("secrets/glue.json")
@@ -24,23 +28,32 @@ object S3DataLakeTestUtil {
             ValidatedJsonUtils.parseOne(S3DataLakeSpecification::class.java, Files.readString(path))
         )
 
-    fun getAWSSystemCredentials(): AWSSystemCredentials {
-        val configFile = GLUE_AWS_ASSUME_ROLE_CONFIG_PATH.toFile()
-        return Jsons.readValue(configFile, AWSSystemCredentials::class.java)
+    fun getAwsAssumeRoleCredentials(): AwsAssumeRoleCredentials {
+        val creds = getAwsAssumeRoleCredentialsAsMap()
+        return AwsAssumeRoleCredentials(
+            creds[AwsEnvVarConstants.ASSUME_ROLE_ACCESS_KEY.environmentVariable]!!,
+            creds[AwsEnvVarConstants.ASSUME_ROLE_SECRET_KEY.environmentVariable]!!,
+            creds[AwsEnvVarConstants.ASSUME_ROLE_EXTERNAL_ID.environmentVariable]!!,
+        )
     }
 
-    fun getAWSSystemCredentialsAsMap(): Map<String, String> {
-        val credentials = getAWSSystemCredentials()
-        return Jsons.convertValue(credentials, object : TypeReference<Map<String, String>>() {})
+    fun getAwsAssumeRoleCredentialsAsMap(): Map<String, String> {
+        val parsedAssumeRoleCreds =
+            Jsons.readTree(Files.readString(GLUE_AWS_ASSUME_ROLE_CONFIG_PATH)) as ObjectNode
+        return parsedAssumeRoleCreds.properties().associate { it.key to it.value.textValue() }
     }
 
     fun getConfig(spec: ConfigurationSpecification) =
         S3DataLakeConfigurationFactory()
             .makeWithoutExceptionHandling(spec as S3DataLakeSpecification)
 
-    fun getCatalog(config: S3DataLakeConfiguration, awsSystemCredentials: AWSSystemCredentials) =
-        S3DataLakeUtil(SimpleTableIdGenerator(), awsSystemCredentials).let { icebergUtil ->
-            val props = icebergUtil.toCatalogProperties(config)
-            icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, props)
-        }
+    fun getCatalog(
+        config: S3DataLakeConfiguration,
+        awsAssumeRoleCredentials: AwsAssumeRoleCredentials
+    ): Catalog {
+        val icebergUtil = IcebergUtil(SimpleTableIdGenerator())
+        val s3DataLakeUtil = S3DataLakeUtil(icebergUtil, awsAssumeRoleCredentials)
+        val props = s3DataLakeUtil.toCatalogProperties(config)
+        return icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, props)
+    }
 }

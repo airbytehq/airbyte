@@ -45,7 +45,7 @@ class ProcessRecordsTaskTest {
     private lateinit var batchAccumulator: BatchAccumulator
     private lateinit var inputQueue: MessageQueue<FileAggregateMessage>
     private lateinit var processRecordsTaskFactory: DefaultProcessRecordsTaskFactory
-    private lateinit var launcher: DefaultDestinationTaskLauncher
+    private lateinit var launcher: DefaultDestinationTaskLauncher<*>
     private lateinit var outputQueue: MultiProducerChannel<BatchEnvelope<*>>
     private lateinit var syncManager: SyncManager
 
@@ -66,7 +66,7 @@ class ProcessRecordsTaskTest {
         coEvery { deserializer.deserialize(any()) } answers
             {
                 DestinationRecord(
-                    stream = MockDestinationCatalogFactory.stream1.descriptor,
+                    stream = MockDestinationCatalogFactory.stream1,
                     message =
                         AirbyteMessage()
                             .withRecord(

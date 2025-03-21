@@ -1,0 +1,49 @@
+#
+# Company vocabulary
+#
+
+Airbyte
+Airbyte's
+Self-Managed Community
+Self-Managed Enterprise
+Cloud
+Cloud Teams
+Cloud Enterprise
+abctl
+PyAirbyte
+[Nn]amespace
+
+#
+# Common Terms we use
+#
+
+repo
+Vercel
+Docusaurus
+Kubernetes
+Helm
+kind
+Vale
+OpenTelemetry
+Datadog
+[Dd]eduplication
+
+# Common acronyms and initialisms that don't need definitions
+
+AWS
+GCP
+REST
+IAM
+
+# Airbyte connectors
+
+Nessie
+S3 Data Lake
+
+# Companies and products
+
+Glue
+
+# Acceptable non-words that should not trigger spellcheck
+
+[Nn]ulled

@@ -111,8 +111,17 @@ The key that you are assigned is rate-limited and as such any applications that 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                        |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------- |
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
+|:--------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.17 | 2025-03-08 | [55644](https://github.com/airbytehq/airbyte/pull/55644) | Update dependencies |
+| 0.2.16 | 2025-03-01 | [55113](https://github.com/airbytehq/airbyte/pull/55113) | Update dependencies |
+| 0.2.15 | 2025-02-22 | [54515](https://github.com/airbytehq/airbyte/pull/54515) | Update dependencies |
+| 0.2.14 | 2025-02-15 | [54044](https://github.com/airbytehq/airbyte/pull/54044) | Update dependencies |
+| 0.2.13 | 2025-02-08 | [53584](https://github.com/airbytehq/airbyte/pull/53584) | Update dependencies |
+| 0.2.12 | 2025-02-01 | [53036](https://github.com/airbytehq/airbyte/pull/53036) | Update dependencies |
+| 0.2.11 | 2025-01-25 | [52381](https://github.com/airbytehq/airbyte/pull/52381) | Update dependencies |
+| 0.2.10 | 2025-01-18 | [51417](https://github.com/airbytehq/airbyte/pull/51417) | Update dependencies |
+| 0.2.9 | 2025-01-13 | [50855](https://github.com/airbytehq/airbyte/pull/50855) | Update to latest CDK and fix custom pagination strategy |
 | 0.2.8 | 2024-12-28 | [50818](https://github.com/airbytehq/airbyte/pull/50818) | Update dependencies |
 | 0.2.7 | 2024-12-21 | [50341](https://github.com/airbytehq/airbyte/pull/50341) | Update dependencies |
 | 0.2.6 | 2024-12-14 | [49797](https://github.com/airbytehq/airbyte/pull/49797) | Update dependencies |

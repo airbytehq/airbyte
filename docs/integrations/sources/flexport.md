@@ -49,6 +49,15 @@ Authentication uses a pre-created API token which can be [created in the UI](htt
 
 | Version | Date       | Pull Request                                             | Subject                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------ |
+| 0.3.16 | 2025-03-08 | [55264](https://github.com/airbytehq/airbyte/pull/55264) | Update dependencies |
+| 0.3.15 | 2025-03-01 | [54951](https://github.com/airbytehq/airbyte/pull/54951) | Update dependencies |
+| 0.3.14 | 2025-02-22 | [54385](https://github.com/airbytehq/airbyte/pull/54385) | Update dependencies |
+| 0.3.13 | 2025-02-15 | [53717](https://github.com/airbytehq/airbyte/pull/53717) | Update dependencies |
+| 0.3.12 | 2025-02-08 | [53371](https://github.com/airbytehq/airbyte/pull/53371) | Update dependencies |
+| 0.3.11 | 2025-02-01 | [52853](https://github.com/airbytehq/airbyte/pull/52853) | Update dependencies |
+| 0.3.10 | 2025-01-25 | [52301](https://github.com/airbytehq/airbyte/pull/52301) | Update dependencies |
+| 0.3.9 | 2025-01-18 | [51655](https://github.com/airbytehq/airbyte/pull/51655) | Update dependencies |
+| 0.3.8 | 2025-01-11 | [51084](https://github.com/airbytehq/airbyte/pull/51084) | Update dependencies |
 | 0.3.7 | 2024-12-28 | [50565](https://github.com/airbytehq/airbyte/pull/50565) | Update dependencies |
 | 0.3.6 | 2024-12-21 | [50031](https://github.com/airbytehq/airbyte/pull/50031) | Update dependencies |
 | 0.3.5 | 2024-12-14 | [49508](https://github.com/airbytehq/airbyte/pull/49508) | Update dependencies |

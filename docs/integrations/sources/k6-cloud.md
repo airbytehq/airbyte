@@ -32,6 +32,15 @@ This source can sync data from the [K6 Cloud API](https://developers.k6.io). At 
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.17 | 2025-03-08 | [55486](https://github.com/airbytehq/airbyte/pull/55486) | Update dependencies |
+| 0.2.16 | 2025-03-01 | [54748](https://github.com/airbytehq/airbyte/pull/54748) | Update dependencies |
+| 0.2.15 | 2025-02-22 | [54290](https://github.com/airbytehq/airbyte/pull/54290) | Update dependencies |
+| 0.2.14 | 2025-02-15 | [53830](https://github.com/airbytehq/airbyte/pull/53830) | Update dependencies |
+| 0.2.13 | 2025-02-08 | [53251](https://github.com/airbytehq/airbyte/pull/53251) | Update dependencies |
+| 0.2.12 | 2025-02-01 | [52732](https://github.com/airbytehq/airbyte/pull/52732) | Update dependencies |
+| 0.2.11 | 2025-01-25 | [52229](https://github.com/airbytehq/airbyte/pull/52229) | Update dependencies |
+| 0.2.10 | 2025-01-18 | [51837](https://github.com/airbytehq/airbyte/pull/51837) | Update dependencies |
+| 0.2.9 | 2025-01-11 | [51190](https://github.com/airbytehq/airbyte/pull/51190) | Update dependencies |
 | 0.2.8 | 2024-12-28 | [50656](https://github.com/airbytehq/airbyte/pull/50656) | Update dependencies |
 | 0.2.7 | 2024-12-21 | [50077](https://github.com/airbytehq/airbyte/pull/50077) | Update dependencies |
 | 0.2.6 | 2024-12-14 | [49612](https://github.com/airbytehq/airbyte/pull/49612) | Update dependencies |

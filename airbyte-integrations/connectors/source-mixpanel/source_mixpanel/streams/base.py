@@ -39,7 +39,7 @@ class MixpanelStream(HttpStream, ABC):
     @property
     def url_base(self):
         prefix = "eu." if self.region == "EU" else ""
-        return f"https://{prefix}mixpanel.com/api/2.0/"
+        return f"https://{prefix}mixpanel.com/api/query/"
 
     @property
     def reqs_per_hour_limit(self):
@@ -59,6 +59,7 @@ class MixpanelStream(HttpStream, ABC):
         end_date: Optional[Date] = None,
         date_window_size: int = 30,  # in days
         attribution_window: int = 0,  # in days
+        export_lookback_window: int = 0,  # in seconds
         select_properties_by_default: bool = True,
         project_id: int = None,
         reqs_per_hour_limit: int = DEFAULT_REQS_PER_HOUR_LIMIT,
@@ -68,6 +69,7 @@ class MixpanelStream(HttpStream, ABC):
         self.end_date = end_date
         self.date_window_size = date_window_size
         self.attribution_window = attribution_window
+        self.export_lookback_window = export_lookback_window
         self.additional_properties = select_properties_by_default
         self.region = region
         self.project_timezone = project_timezone
@@ -166,11 +168,14 @@ class DateSlicesMixin:
             # Remove time part from state because API accept 'from_date' param in date format only ('YYYY-MM-DD')
             # It also means that sync returns duplicated entries for the date from the state (date range is inclusive)
             cursor_value = stream_state[self.cursor_field]
-            stream_state_date = pendulum.parse(stream_state[self.cursor_field]).date()
-            start_date = max(start_date, stream_state_date)
+            # This stream is only used for Export stream, so we use export_lookback_window here
+            cursor_value = (pendulum.parse(cursor_value) - timedelta(seconds=self.export_lookback_window)).to_iso8601_string()
+            stream_state_date = pendulum.parse(stream_state[self.cursor_field])
+            start_date = max(start_date, stream_state_date.date())
 
+        final_lookback_window = max(self.export_lookback_window, self.attribution_window * 24 * 60 * 60)
         # move start_date back <attribution_window> days to sync data since that time as well
-        start_date = start_date - timedelta(days=self.attribution_window)
+        start_date = start_date - timedelta(seconds=final_lookback_window)
 
         # end_date cannot be later than today
         end_date = min(self.end_date, pendulum.today(tz=self.project_timezone).date())

@@ -1,0 +1,93 @@
+# A shared set of tasks for Airbyte connectors using Poetry and Ruff.
+#
+# This file should be included in connectors' `poetry.toml` as follows:
+#
+# ```toml
+# [tool.poe]
+# include = [
+#     "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+# ]
+#
+# Within any connector directory, you can then run `poe` or `poe --help` to see the full set of
+# available tasks.
+#
+# Third party tools (ruff, mypy, etc.) will be used from the poetry environment when available, or
+# from the local system `PATH` otherwise.
+
+[tool.poe.tasks]
+
+# Installation and package updates
+lock = "poetry lock"
+install = "poetry install --all-extras"
+
+# Pytest
+pytest = "poetry run pytest"
+pytest-fast = "pytest --ff -m 'not slow and not requires_creds'"
+
+# Coverage checks
+coverage = "pytest --cov=. --cov-report=term-missing"
+coverage-html = "pytest --cov=. --cov-report=html"
+
+# Check commands
+check-ruff-lint = "ruff check ."
+check-ruff-format = "ruff format ."
+check-ruff = [
+    "check-ruff-lint",
+    "check-ruff-format",
+]
+check-mypy = "mypy ."
+
+check-all = [
+    "check-ruff",
+    "check-mypy",
+]
+
+# Fix commands
+fix-ruff-format = "ruff format --fix ."
+fix-ruff-lint = "ruff check --fix ."
+fix-ruff = [
+    "fix-ruff-format",
+    "fix-ruff-lint",
+]
+fix-all = [
+    "fix-ruff",
+    # TODO: Consider adding prettier, etc.
+]
+fix-and-check = [ # Fix everything fixable, then see if checks pass
+    "fix-all",
+    "check-all",
+]
+
+# CDK Pinning
+# Usage examples:
+#  poe use-cdk-latest                       # Pin to the latest CDK version
+#  poe use-cdk-version 4.5.6                # Defaults to 'latest' if version is omitted
+#  poe use-cdk-branch 'aj/my-branch-name'   # Pin to a specific branch
+#  poe use-cdk-branch-active                # Pin to the branch of the local CDK repo
+
+[tool.poe.tasks.use-cdk-latest]
+cmd = 'poetry add airbyte-cdk@latest'
+help = "Pin to the latest version of the CDK."
+
+[tool.poe.tasks.use-cdk-version]
+cmd = 'poetry add "airbyte-cdk@${VERSION}"'
+args = [
+  { name = "VERSION", positional = true, default = "latest" },
+]
+help = "Pin to a specific version of the CDK."
+
+[tool.poe.tasks.use-cdk-branch-active]
+shell = '''
+    REPO_ROOT=$(git rev-parse --show-toplevel)
+    ACTIVE_CDK_BRANCH=$(git -C "$REPO_ROOT/../airbyte-python-cdk" rev-parse --abbrev-ref HEAD)
+    echo "Attempting to pin CDK to branch '$ACTIVE_CDK_BRANCH' from the local repo."
+    poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git#${ACTIVE_CDK_BRANCH}"
+'''
+help = "Pin to the branch of the CDK that is currently checked out locally."
+
+[tool.poe.tasks.use-cdk-branch]
+cmd = 'poetry add "git+https://github.com/airbytehq/airbyte-python-cdk.git#${BRANCH}"'
+args = [
+  { name = "BRANCH", positional = true, default = "main" },
+]
+help = "Pin to a specific branch of the CDK."
