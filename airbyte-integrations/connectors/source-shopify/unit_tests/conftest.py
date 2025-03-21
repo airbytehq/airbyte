@@ -150,6 +150,7 @@ def bulk_error_with_concurrent_job():
                         "message": "",
                     },
                     {
+                        "code": "OPERATION_IN_PROGRESS",
                         "field": None,
                         "message": "A bulk query operation for this app and shop is already in progress: gid://shopify/BulkOperation/4046676525245.",
                     },
