@@ -887,9 +887,6 @@ definitions:
           path: "ticket_metrics"
         paginator:
           $ref: "#/definitions/links_next_paginator"
-          pagination_strategy:
-            $ref: "#/definitions/after_url_paginator/pagination_strategy"
-            stop_condition: "{{ config.get('ignore_pagination', False) or not response['meta']['has_more'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -945,7 +942,8 @@ definitions:
           fields:
             - path:
                 - "_ab_updated_at"
-              value: "{{ record['generated_timestamp'] }}"
+              value: "{{ record['generated_timestamp'] if 'generated_timestamp' in record else 0 }}"
+              value_type: "integer"
 
   topics_stream:
     $ref: "#/definitions/semi_incremental_stream"
