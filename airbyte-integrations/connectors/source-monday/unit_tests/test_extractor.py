@@ -47,10 +47,9 @@ def test_extract_records_incremental():
         parameters={},
         field_path=["data", "ccccc"],
         config=MagicMock(),
-        field_path_pagination=["data", "bbbb"],
-        field_path_incremental=["data", "boards", "*"],
+        field_path_pagination=["data", "boards", "*"],
     )
     records = list(extractor.extract_records(response))
 
     # Assertions
-    assert records == [{"id": 1, "column_values": [{"id": 11, "text": "Hola amigo!", "display_value": "Hola amigo!"}]}]
+    assert records == [{"id": 1, "column_values": [{"id": 11, "text": None, "display_value": "Hola amigo!"}]}]

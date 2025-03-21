@@ -164,6 +164,15 @@ definitions:
 
   state_delegating_stream:
     $ref: "#/definitions/base_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - updated_at_int
+            value: "{{ timestamp(record.get('updated_at')) | int if record.get('updated_at') else 1 }}" # updated_at_int is cursor field so in cannot be None
+      - type: CustomTransformation
+        class_name: source_monday.transformation.MondayTransformation
+
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "updated_at_int"
@@ -302,4 +311,4 @@ check:
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 4) }}"
-  max_concurrency: 40
+  max_concurrency: 40 # Monday concurrency limit for lowest tier is 40. https://developer.monday.com/api-reference/docs/rate-limits#concurrency-limit
