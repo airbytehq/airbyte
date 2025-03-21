@@ -16,6 +16,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.ZoneOffset
 
 /**
@@ -39,7 +40,6 @@ sealed class FeedBootstrap<T : Feed>(
     /** [Feed] to emit records for. */
     val feed: T
 ) {
-
     /** Delegates to [StateManager.feeds]. */
     val feeds: List<Feed>
         get() = stateManager.feeds
@@ -76,18 +76,19 @@ sealed class FeedBootstrap<T : Feed>(
         StreamRecordConsumer {
 
         override fun accept(recordData: ObjectNode, changes: Map<Field, FieldValueChange>?) {
-            if (changes.isNullOrEmpty()) {
-                acceptWithoutChanges(recordData)
-            } else {
-                val protocolChanges: List<AirbyteRecordMessageMetaChange> =
-                    changes.map { (field: Field, fieldValueChange: FieldValueChange) ->
-                        AirbyteRecordMessageMetaChange()
-                            .withField(field.id)
-                            .withChange(fieldValueChange.protocolChange())
-                            .withReason(fieldValueChange.protocolReason())
-                    }
-                acceptWithChanges(recordData, protocolChanges)
-            }
+            return // dev-null
+//                    if (changes.isNullOrEmpty()) {
+//                acceptWithoutChanges(recordData)
+//            } else {
+//                val protocolChanges: List<AirbyteRecordMessageMetaChange> =
+//                    changes.map { (field: Field, fieldValueChange: FieldValueChange) ->
+//                        AirbyteRecordMessageMetaChange()
+//                            .withField(field.id)
+//                            .withChange(fieldValueChange.protocolChange())
+//                            .withReason(fieldValueChange.protocolReason())
+//                    }
+//                acceptWithChanges(recordData, protocolChanges)
+//            }
         }
 
         private fun acceptWithoutChanges(recordData: ObjectNode) {
