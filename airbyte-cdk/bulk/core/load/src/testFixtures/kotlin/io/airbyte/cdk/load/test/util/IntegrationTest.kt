@@ -216,7 +216,7 @@ abstract class IntegrationTest(
             if (streamStatus != null) {
                 catalog.streams.forEach {
                     destination.sendMessage(
-                        DestinationRecordStreamComplete(it.descriptor, System.currentTimeMillis())
+                        DestinationRecordStreamComplete(it, System.currentTimeMillis())
                             .asProtocolMessage()
                     )
                 }

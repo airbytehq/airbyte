@@ -82,7 +82,7 @@ class FilePartAccumulatorTest {
 
     private fun createFileMessage(file: File): DestinationFile {
         return DestinationFile(
-            descriptor,
+            stream,
             0,
             "",
             DestinationFile.AirbyteRecordMessageFile(

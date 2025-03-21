@@ -14,6 +14,7 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,14 @@ public class TeradataSqlOperationsTest {
   @BeforeEach
   void setUp() throws SQLException {
     MockitoAnnotations.openMocks(this);
+  }
+
+  @Test
+  void testEmptyInsertRecordsInternal() throws SQLException {
+    List<AirbyteRecordMessage> records = new ArrayList<>();
+    String schemaName = "test_schema";
+    String tableName = "test_table";
+    teradataSqlOperations.insertRecordsInternal(database, records, schemaName, tableName);
   }
 
   @Test
@@ -109,6 +118,29 @@ public class TeradataSqlOperationsTest {
   }
 
   @Test
+  void testCreateTableIfNotExists() throws Exception {
+    // Test case where schema does not exist
+    doNothing().when(database).execute(anyString());
+    doReturn(0).when(database).queryInt(anyString());
+    teradataSqlOperations.createTableIfNotExists(database, "schema", "table");
+    verify(database, times(1)).queryInt(stringCaptor.capture());
+    assertTrue(stringCaptor.getValue().contains("SELECT COUNT(1) FROM DBC.TABLES"));
+    verify(database, times(1)).execute(stringCaptor.capture());
+    assertTrue(stringCaptor.getValue().contains("CREATE SET TABLE"));
+  }
+
+  @Test
+  void testCreateTableIfExists() throws Exception {
+    // Test case where schema already exists
+    doNothing().when(database).execute(anyString());
+    doReturn(1).when(database).queryInt(anyString());
+    teradataSqlOperations.createTableIfNotExists(database, "schema", "table");
+    verify(database, times(1)).queryInt(stringCaptor.capture());
+    assertTrue(stringCaptor.getValue().contains("SELECT COUNT(1) FROM DBC.TABLES"));
+    verify(database, times(0)).execute("");
+  }
+
+  @Test
   void testDropTableIfExists() throws SQLException {
     doNothing().when(database).execute(anyString());
 
@@ -122,6 +154,22 @@ public class TeradataSqlOperationsTest {
   void testTruncateTableQuery() {
     String query = teradataSqlOperations.truncateTableQuery(database, "schema", "table");
     assertEquals("DELETE schema.table ALL;\n", query);
+  }
+
+  @Test
+  void testExecuteTransactionEmptyQueries() throws Exception {
+    List<String> queries = new ArrayList<>();
+
+    // Test case where transaction executes successfully
+    doNothing().when(database).execute(anyString());
+
+    teradataSqlOperations.executeTransaction(database, queries);
+
+    verify(database, times(0)).execute("");
+
+    // Test case where transaction fails
+    doThrow(new SQLException("Execution failed")).when(database).execute(anyString());
+
   }
 
   @Test

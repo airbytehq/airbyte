@@ -31,6 +31,7 @@ data:
     - language:python
     - cdk:python-file-based
   supportLevel: community
+  supportsFileTransfer: true
   connectorTestSuitesOptions:
     - suite: acceptanceTests
       testSecrets:

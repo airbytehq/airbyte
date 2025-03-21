@@ -117,6 +117,12 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
 
     /** Tells Debezium which tables and columns we care about. */
     fun withStreams(streams: List<Stream>): DebeziumPropertiesBuilder {
+        if (streams.isEmpty()) {
+            return apply {
+                with("table.include.list", "$^")
+                with("column.include.list", "$^")
+            }
+        }
         val tableIncludeList: List<String> =
             streams.map { Pattern.quote("${it.namespace}.${it.name}") }
         val columnIncludeList: List<String> =

@@ -374,10 +374,7 @@ abstract class BasicPerformanceTest(
                     testScenario.send(destination)
                     testScenario.catalog.streams.forEach {
                         destination.sendMessage(
-                            DestinationRecordStreamComplete(
-                                    it.descriptor,
-                                    System.currentTimeMillis()
-                                )
+                            DestinationRecordStreamComplete(it, System.currentTimeMillis())
                                 .asProtocolMessage()
                         )
                     }
