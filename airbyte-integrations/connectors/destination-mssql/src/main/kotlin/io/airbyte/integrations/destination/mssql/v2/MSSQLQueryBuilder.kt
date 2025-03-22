@@ -11,12 +11,34 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.Overwrite
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
+import io.airbyte.cdk.load.data.BooleanType
+import io.airbyte.cdk.load.data.BooleanValue
+import io.airbyte.cdk.load.data.DateType
+import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimeTypeWithTimezone
+import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
+import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
@@ -26,15 +48,15 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteTypeToMssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setAsNullValue
-import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setValue
 import io.airbyte.integrations.destination.mssql.v2.convert.MssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.ResultSetToAirbyteValue.Companion.getAirbyteNamedValue
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.math.BigInteger
 import java.sql.Connection
+import java.sql.Date
 import java.sql.PreparedStatement
 import java.sql.ResultSet
-import scala.annotation.meta.field
 
 private val logger = KotlinLogging.logger {}
 
@@ -332,7 +354,7 @@ class MSSQLQueryBuilder(
         schema.forEachIndexed { index, field ->
             val statementIndex = index + 1
             val value = populatedFields[field.name]
-            if (value == null) {
+            if (value == null || value.value == NullValue) {
                 statement.setAsNullValue(statementIndex, field.type.type)
                 return@forEachIndexed
             }
@@ -345,15 +367,63 @@ class MSSQLQueryBuilder(
                 return@forEachIndexed
             }
 
-            try {
-                statement.setValue(statementIndex, value.value, field)
-            } catch (e: Exception) {
-                statement.setAsNullValue(statementIndex, field.type.type)
-                when (e) {
-                    is ArithmeticException ->
+            when (value.type) {
+                BooleanType ->
+                    statement.setBoolean(statementIndex, (value.value as BooleanValue).value)
+                DateType ->
+                    statement.setDate(
+                        statementIndex,
+                        Date.valueOf((value.value as DateValue).value)
+                    )
+                IntegerType -> {
+                    val intValue = (value.value as IntegerValue).value
+                    // TODO use existing LIMITS constants
+                    if (
+                        intValue < BigInteger("-9223372036854775808") ||
+                            BigInteger("9223372036854775807") < intValue
+                    ) {
                         value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
-                    else -> value.nullify(Reason.DESTINATION_SERIALIZATION_ERROR)
+                    } else {
+                        statement.setLong(statementIndex, intValue.longValueExact())
+                    }
                 }
+                NumberType ->
+                    statement.setDouble(
+                        statementIndex,
+                        (value.value as NumberValue).value.toDouble()
+                    )
+                StringType ->
+                    statement.setString(statementIndex, (value.value as StringValue).value)
+                TimeTypeWithTimezone ->
+                    statement.setObject(
+                        statementIndex,
+                        (value.value as TimeWithTimezoneValue).value
+                    )
+                TimeTypeWithoutTimezone ->
+                    statement.setObject(
+                        statementIndex,
+                        (value.value as TimeWithoutTimezoneValue).value
+                    )
+                TimestampTypeWithTimezone ->
+                    statement.setObject(
+                        statementIndex,
+                        (value.value as TimestampWithTimezoneValue).value
+                    )
+                TimestampTypeWithoutTimezone ->
+                    statement.setObject(
+                        statementIndex,
+                        (value.value as TimestampWithoutTimezoneValue).value
+                    )
+
+                // Serialize complex types to string
+                is ArrayType,
+                ArrayTypeWithoutSchema,
+                is ObjectType,
+                ObjectTypeWithEmptySchema,
+                ObjectTypeWithoutSchema,
+                is UnionType,
+                is UnknownType ->
+                    statement.setString(statementIndex, value.value.serializeToString())
             }
         }
 

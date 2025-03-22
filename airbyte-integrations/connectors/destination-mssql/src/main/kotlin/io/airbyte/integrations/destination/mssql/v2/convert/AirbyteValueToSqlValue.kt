@@ -19,6 +19,7 @@ import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnknownValue
 import io.airbyte.cdk.load.util.serializeToJsonBytes
+import io.airbyte.cdk.load.util.serializeToString
 import java.sql.Date
 import java.sql.Time
 import java.sql.Timestamp
@@ -35,14 +36,10 @@ class AirbyteValueToSqlValue {
      */
     fun convert(airbyteValue: AirbyteValue): Any? {
         return when (airbyteValue) {
-            is ObjectValue -> {
-                val convertedValues =
-                    airbyteValue.values.entries.associate { (name, value) ->
-                        name to convert(value)
-                    }
-                convertedValues
-            }
-            is ArrayValue -> airbyteValue.values.map { convert(it) }
+            // just return the ObjectValue directly - it has a custom serializer,
+            // which knows how to serialize the map<string, AirbyteValue>
+            is ObjectValue -> airbyteValue.serializeToString()
+            is ArrayValue -> airbyteValue.values.serializeToString()
             is BooleanValue -> airbyteValue.value
             is DateValue -> Date.valueOf(airbyteValue.value)
             is IntegerValue -> airbyteValue.value
