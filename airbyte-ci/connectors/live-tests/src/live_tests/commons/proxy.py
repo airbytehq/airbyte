@@ -130,13 +130,14 @@ class Proxy:
         python_version_output = (await container.with_exec(["python", "--version"]).stdout()).strip()
         python_version = python_version_output.split(" ")[-1]
         python_version_minor_only = ".".join(python_version.split(".")[:-1])
-        requests_cert_path = f"/usr/local/lib/python{python_version_minor_only}/site-packages/certifi/cacert.pem"
+        mitm_cert_path = "/etc/ssl/certs/mitmproxy-ca.pem"
         current_user = (await container.with_exec(["whoami"]).stdout()).strip()
         try:
             return await (
                 container.with_user("root")
                 # Overwrite the requests cert file with the mitmproxy self-signed certificate
-                .with_file(requests_cert_path, pem, owner=current_user)
+                .with_file(mitm_cert_path, pem, owner=current_user)
+                .with_env_variable("REQUESTS_CA_BUNDLE", mitm_cert_path)
                 .with_env_variable("http_proxy", f"{self.hostname}:{self.PROXY_PORT}")
                 .with_env_variable("https_proxy", f"{self.hostname}:{self.PROXY_PORT}")
                 .with_user(current_user)
