@@ -70,7 +70,7 @@ class SourceMicrosoftSharePointClient:
     def _get_scope(tenant_prefix: str = None):
         """
         Returns the scope for the access token.
-        We use admin site to retrieve objects like Site groups and users.
+        We use admin site to retrieve objects like Sites.
         """
         if tenant_prefix:
             admin_site_url = f"https://{tenant_prefix}-admin.sharepoint.com"
@@ -138,8 +138,8 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         return self.auth_client._get_access_token()["access_token"]
 
     def get_token_response_object(self, tenant_prefix: str = None) -> Callable:
-        """ "
-        When building a ClientContext using with_access_token method,
+        """
+        When building a ClientContext using with_access_token() method,
         the token_func param is expected to be a method/callable that returns a TokenResponse object.
         tenant_prefix is used to determine the scope of the access token.
         return: A callable that returns a TokenResponse object.

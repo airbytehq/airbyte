@@ -653,7 +653,7 @@ def test_drives_property(auth_type, user_principal_name, has_refresh_token):
 )
 def test_get_site_drive(site_url, expected_call, expected_result, exception):
     """
-    Parameterized test for the get_site_drive method.
+    Test for the get_site_drive method.
     """
     # Create a mock reader instance
     reader = SourceMicrosoftSharePointStreamReader()
