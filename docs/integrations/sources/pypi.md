@@ -31,6 +31,7 @@ Try not to make a lot of requests (thousands) in a short amount of time (minutes
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.16 | 2025-03-22 | [56199](https://github.com/airbytehq/airbyte/pull/56199) | Update dependencies |
 | 0.2.15 | 2025-03-08 | [55518](https://github.com/airbytehq/airbyte/pull/55518) | Update dependencies |
 | 0.2.14 | 2025-03-01 | [55035](https://github.com/airbytehq/airbyte/pull/55035) | Update dependencies |
 | 0.2.13 | 2025-02-23 | [54578](https://github.com/airbytehq/airbyte/pull/54578) | Update dependencies |
