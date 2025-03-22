@@ -10,17 +10,17 @@ from functools import lru_cache
 from io import IOBase
 from os import makedirs, path
 from os.path import getsize
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, MutableMapping
+from typing import Any, Callable, Dict, Iterable, List, MutableMapping, Optional, Tuple
 
 import requests
 import smart_open
 from msal import ConfidentialClientApplication
-from office365.onedrive.drives.drive import Drive
+from office365.entity_collection import EntityCollection
 from office365.graph_client import GraphClient
+from office365.onedrive.drives.drive import Drive
 from office365.runtime.auth.token_response import TokenResponse
 from office365.sharepoint.client_context import ClientContext
 from office365.sharepoint.search.service import SearchService
-from office365.entity_collection import EntityCollection
 
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
@@ -37,6 +37,7 @@ from .utils import (
     get_site,
     get_site_prefix,
 )
+
 
 SITE_TITLE = "Title"
 SITE_PATH = "Path"

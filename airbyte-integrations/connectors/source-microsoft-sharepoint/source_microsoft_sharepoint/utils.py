@@ -7,11 +7,12 @@ from functools import lru_cache
 from http import HTTPStatus
 from typing import List
 
+from office365.graph_client import GraphClient
+from office365.onedrive.sites.site import Site
+
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
-from office365.graph_client import GraphClient
-from office365.onedrive.sites.site import Site
 
 LOGGER = logging.getLogger("airbyte")
 
