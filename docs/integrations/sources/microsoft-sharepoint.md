@@ -307,6 +307,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
 | 0.9.0 | 2025-03-24 | [55912](https://github.com/airbytehq/airbyte/pull/55912) | Provide ability to ietrate all sharepoint sites |
+| 0.8.1 | 2025-03-22 | [56014](https://github.com/airbytehq/airbyte/pull/56014) | Update dependencies |
 | 0.8.0 | 2025-03-12 | [54658](https://github.com/airbytehq/airbyte/pull/54658) | Provide ability to sync other sites than Main sharepoint site |
 | 0.7.2 | 2025-03-08 | [55427](https://github.com/airbytehq/airbyte/pull/55427) | Update dependencies |
 | 0.7.1 | 2025-03-01 | [54749](https://github.com/airbytehq/airbyte/pull/54749) | Update dependencies |
