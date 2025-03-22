@@ -502,17 +502,3 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             raise AirbyteTracedException(
                 f"There was an error while trying to download the file {file.uri}: {str(e)}", failure_type=FailureType.config_error
             )
-
-    def get_file_acl_permissions(self):
-        return None
-
-    def load_identity_groups(self):
-        return None
-
-    @property
-    def identities_schema(self):
-        return None
-
-    @property
-    def file_permissions_schema(self):
-        return None
