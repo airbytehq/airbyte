@@ -655,21 +655,13 @@ def test_get_site_drive(site_url, expected_call, expected_result, exception):
     """
     Test for the get_site_drive method.
     """
-    # Create a mock reader instance
     reader = SourceMicrosoftSharePointStreamReader()
-
-    # Mock the config with the specified site URL
     reader._config = MagicMock(site_url=site_url)
-
-    # Mock one_drive_client
     mock_one_drive_client = MagicMock()
-    # Set the underlying attribute instead of using the property
     reader._one_drive_client = mock_one_drive_client
 
-    # Create mock response for execute_query_with_retry
     mock_drives = expected_result
 
-    # Mock methods based on the scenario
     with patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query:
         # Set up the mock to return the expected result or raise an exception
         if exception and expected_call == "error":
@@ -677,7 +669,6 @@ def test_get_site_drive(site_url, expected_call, expected_result, exception):
         else:
             mock_execute_query.return_value = mock_drives
 
-        # Mock get_all_sites and get_drives_from_sites for the 'all_sites' scenario
         mock_sites = [
             {"Title": "Site1", "Path": "https://test-tenant.sharepoint.com/sites/site1"},
             {"Title": "Site2", "Path": "https://test-tenant.sharepoint.com/sites/site2"},
@@ -687,7 +678,6 @@ def test_get_site_drive(site_url, expected_call, expected_result, exception):
             patch.object(reader, "get_all_sites", return_value=mock_sites) as mock_get_all_sites,
             patch.object(reader, "get_drives_from_sites", return_value=mock_drives) as mock_get_drives_from_sites,
         ):
-            # Determine the expected behavior based on the scenario
             if exception:
                 with pytest.raises(AirbyteTracedException) as exc_info:
                     reader.get_site_drive()
@@ -695,7 +685,6 @@ def test_get_site_drive(site_url, expected_call, expected_result, exception):
             else:
                 result = reader.get_site_drive()
 
-                # Check that the right methods were called based on the scenario
                 if expected_call == "drives":
                     # Default site URL
                     mock_one_drive_client.drives.get.assert_called_once()
@@ -729,21 +718,17 @@ def test_get_site_drive(site_url, expected_call, expected_result, exception):
     ],
 )
 def test_retrieve_files_from_accessible_drives(mocker, refresh_token, auth_type, search_scope, expected_methods_called):
-    # Set up the reader class
     reader = SourceMicrosoftSharePointStreamReader()
     config = MagicMock(credentials=MagicMock(auth_type=auth_type, refresh_token=refresh_token), search_scope=search_scope)
 
     reader._config = config
 
-    # Mock the necessary methods
     with patch.object(SourceMicrosoftSharePointStreamReader, "drives", return_value=[]) as mock_drives:
         mocker.patch.object(reader, "_get_files_by_drive_name")
         mocker.patch.object(reader, "_get_shared_files_from_all_drives")
 
-        # Call the method under test
         files = list(reader.get_all_files())
 
-        # Assert that only the desired methods were called
         assert reader._get_files_by_drive_name.called == ("_get_files_by_drive_name" in expected_methods_called)
         assert reader._get_shared_files_from_all_drives.called == ("_get_shared_files_from_all_drives" in expected_methods_called)
 
@@ -794,7 +779,6 @@ def test_get_all_sites(search_result, expected_sites, raises_exception):
         patch("source_microsoft_sharepoint.stream_reader.SearchService") as mock_search_service,
         patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query,
     ):
-        # Setup mocks
         mock_get_site.return_value = "test-site"
         mock_get_site_prefix.return_value = ("https://test-tenant.sharepoint.com", "test-tenant")
 
