@@ -80,8 +80,20 @@ class EnrichedDestinationRecordAirbyteValueTest {
     fun `test allTypedFields property`() {
         val declaredFields =
             mapOf(
-                "field1" to EnrichedAirbyteValue(StringValue("value1"), StringType, "field1"),
-                "field2" to EnrichedAirbyteValue(IntegerValue(42), IntegerType, "field2")
+                "field1" to
+                    EnrichedAirbyteValue(
+                        StringValue("value1"),
+                        StringType,
+                        "field1",
+                        airbyteMetaField = null
+                    ),
+                "field2" to
+                    EnrichedAirbyteValue(
+                        IntegerValue(42),
+                        IntegerType,
+                        "field2",
+                        airbyteMetaField = null
+                    )
             )
 
         val record =
@@ -114,10 +126,22 @@ class EnrichedDestinationRecordAirbyteValueTest {
     @Test
     fun `test proper collection of changes in meta field`() {
         // Create fields with changes
-        val field1 = EnrichedAirbyteValue(StringValue("value1"), StringType, "field1")
+        val field1 =
+            EnrichedAirbyteValue(
+                StringValue("value1"),
+                StringType,
+                "field1",
+                airbyteMetaField = null
+            )
         field1.truncate(Reason.DESTINATION_RECORD_SIZE_LIMITATION, StringValue("val"))
 
-        val field2 = EnrichedAirbyteValue(IntegerValue(1000000), IntegerType, "field2")
+        val field2 =
+            EnrichedAirbyteValue(
+                IntegerValue(1000000),
+                IntegerType,
+                "field2",
+                airbyteMetaField = null
+            )
         field2.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
 
         val declaredFields = mapOf("field1" to field1, "field2" to field2)

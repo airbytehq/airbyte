@@ -168,7 +168,8 @@ class EnrichedAirbyteValue(
     var value: AirbyteValue,
     val type: AirbyteType,
     val name: String,
-    val changes: MutableList<Meta.Change> = mutableListOf()
+    val changes: MutableList<Meta.Change> = mutableListOf(),
+    val airbyteMetaField: Meta.AirbyteMetaFields?,
 ) {
     init {
         require(name.isNotBlank()) { "Field name cannot be blank" }

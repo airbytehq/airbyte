@@ -17,7 +17,7 @@ class EnrichedAirbyteValueTest {
         val type = StringType
         val name = "testField"
 
-        val enriched = EnrichedAirbyteValue(initialValue, type, name)
+        val enriched = EnrichedAirbyteValue(initialValue, type, name, airbyteMetaField = null)
         enriched.nullify(Reason.DESTINATION_SERIALIZATION_ERROR)
 
         assertEquals(NullValue, enriched.value)
@@ -35,7 +35,7 @@ class EnrichedAirbyteValueTest {
         val type = IntegerType
         val name = "testField"
 
-        val enriched = EnrichedAirbyteValue(initialValue, type, name)
+        val enriched = EnrichedAirbyteValue(initialValue, type, name, airbyteMetaField = null)
         enriched.nullify()
 
         assertEquals(NullValue, enriched.value)
@@ -53,7 +53,7 @@ class EnrichedAirbyteValueTest {
         val type = BooleanType
         val name = "testField"
 
-        val enriched = EnrichedAirbyteValue(initialValue, type, name)
+        val enriched = EnrichedAirbyteValue(initialValue, type, name, airbyteMetaField = null)
         enriched.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
 
         assertEquals(NullValue, enriched.value)
@@ -72,7 +72,7 @@ class EnrichedAirbyteValueTest {
         val name = "testField"
         val truncatedValue = StringValue("This is a very...")
 
-        val enriched = EnrichedAirbyteValue(initialValue, type, name)
+        val enriched = EnrichedAirbyteValue(initialValue, type, name, airbyteMetaField = null)
         enriched.truncate(Reason.DESTINATION_RECORD_SIZE_LIMITATION, truncatedValue)
 
         assertEquals(truncatedValue, enriched.value)
@@ -91,7 +91,7 @@ class EnrichedAirbyteValueTest {
         val name = "testField"
         val truncatedValue = StringValue("This is a very...")
 
-        val enriched = EnrichedAirbyteValue(initialValue, type, name)
+        val enriched = EnrichedAirbyteValue(initialValue, type, name, airbyteMetaField = null)
         enriched.truncate(newValue = truncatedValue)
 
         assertEquals(truncatedValue, enriched.value)
@@ -110,7 +110,7 @@ class EnrichedAirbyteValueTest {
         val name = "testField"
         val truncatedValue = StringValue("This is a very...")
 
-        val enriched = EnrichedAirbyteValue(initialValue, type, name)
+        val enriched = EnrichedAirbyteValue(initialValue, type, name, airbyteMetaField = null)
         enriched.truncate(Reason.DESTINATION_SERIALIZATION_ERROR, truncatedValue)
 
         assertEquals(truncatedValue, enriched.value)
@@ -128,7 +128,7 @@ class EnrichedAirbyteValueTest {
         val type = StringType
         val name = "testField"
 
-        val enriched = EnrichedAirbyteValue(initialValue, type, name)
+        val enriched = EnrichedAirbyteValue(initialValue, type, name, airbyteMetaField = null)
 
         // First change - truncate
         val truncatedValue = StringValue("Init...")

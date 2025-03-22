@@ -200,12 +200,14 @@ class AirbyteValueToIcebergRecordTest {
                         IntegerValue(123L),
                         IntegerType,
                         "id",
+                        airbyteMetaField = null,
                     ),
                 "name" to
                     EnrichedAirbyteValue(
                         StringValue("John Doe"),
                         StringType,
                         "name",
+                        airbyteMetaField = null,
                     ),
                 "meta" to
                     EnrichedAirbyteValue(
@@ -223,6 +225,7 @@ class AirbyteValueToIcebergRecordTest {
                         ),
                         Meta.AirbyteMetaFields.META.type,
                         "meta",
+                        airbyteMetaField = Meta.AirbyteMetaFields.META,
                     )
             )
 
@@ -256,9 +259,15 @@ class AirbyteValueToIcebergRecordTest {
                         IntegerValue(123L),
                         IntegerType,
                         "id",
+                        airbyteMetaField = null,
                     ),
                 "name" to
-                    EnrichedAirbyteValue(StringValue("Should be ignored"), StringType, "name"),
+                    EnrichedAirbyteValue(
+                        StringValue("Should be ignored"),
+                        StringType,
+                        "name",
+                        airbyteMetaField = null
+                    ),
             )
 
         val result = objectValue.toIcebergRecord(schema)
