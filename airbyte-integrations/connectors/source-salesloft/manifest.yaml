@@ -3492,6 +3492,54 @@ schemas:
         type:
           - boolean
           - "null"
+      action:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+      cadence:
+        type:
+          - object
+          - "null"
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      email_template:
+        type:
+          - object
+          - "null"
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
+      step:
+        type:
+          - object
+          - "null"
+        properties:
+          _href:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - integer
     required:
       - id
       - updated_at
