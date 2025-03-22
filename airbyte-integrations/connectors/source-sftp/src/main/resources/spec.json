@@ -2,7 +2,7 @@
   "documentationUrl": "https://docs.airbyte.com/integrations/source/sftp",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "SFTP Source Spec",
+    "title": "SFTP (Legacy) Source Spec",
     "type": "object",
     "required": ["user", "host", "port"],
     "additionalProperties": true,
