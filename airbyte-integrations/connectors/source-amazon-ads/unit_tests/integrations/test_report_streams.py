@@ -10,6 +10,7 @@ import requests_mock
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequestMatcher
+from airbyte_cdk.test.mock_http.mocker import SupportedHttpMethods
 
 from .ad_requests import (
     OAuthRequestBuilder,
@@ -101,7 +102,7 @@ class TestDisplayReportStreams(TestCase):
                 ReportDownloadResponseBuilder.download_report().with_record(ReportFileRecordBuilder.report_file_record()).build()
             )
             request_matcher = HttpRequestMatcher(download_request_builder.build(), minimum_number_of_expected_match=1)
-            http_mocker._matchers.append(request_matcher)
+            http_mocker._matchers[SupportedHttpMethods.GET].append(request_matcher)
 
             http_mocker._mocker.get(
                 requests_mock.ANY,
@@ -163,7 +164,7 @@ class TestDisplayReportStreams(TestCase):
                 ReportDownloadResponseBuilder.download_report().with_record(ReportFileRecordBuilder.report_file_record()).build()
             )
             request_matcher = HttpRequestMatcher(download_request_builder.build(), minimum_number_of_expected_match=1)
-            http_mocker._matchers.append(request_matcher)
+            http_mocker._matchers[SupportedHttpMethods.GET].append(request_matcher)
 
             http_mocker._mocker.get(
                 requests_mock.ANY,
@@ -225,7 +226,7 @@ class TestDisplayReportStreams(TestCase):
                 ReportDownloadResponseBuilder.download_report().with_record(ReportFileRecordBuilder.report_file_record()).build()
             )
             request_matcher = HttpRequestMatcher(download_request_builder.build(), minimum_number_of_expected_match=1)
-            http_mocker._matchers.append(request_matcher)
+            http_mocker._matchers[SupportedHttpMethods.GET].append(request_matcher)
 
             http_mocker._mocker.get(
                 requests_mock.ANY,
@@ -323,7 +324,7 @@ class TestDisplayReportStreams(TestCase):
                 ReportDownloadResponseBuilder.download_report().with_record(ReportFileRecordBuilder.report_file_record()).build()
             )
             request_matcher = HttpRequestMatcher(download_request_builder.build(), minimum_number_of_expected_match=1)
-            http_mocker._matchers.append(request_matcher)
+            http_mocker._matchers[SupportedHttpMethods.GET].append(request_matcher)
 
             http_mocker._mocker.get(
                 requests_mock.ANY,
