@@ -10,22 +10,21 @@ import com.google.common.collect.TreeRangeSet
 import io.airbyte.cdk.load.command.DestinationStream
 
 /**
- * Represents an accumulated batch of records in some stage of processing.
- *
- * Emitted by @[io.airbyte.cdk.write.StreamLoader.processRecords] to describe the batch accumulated.
- * Non-[State.COMPLETE] batches are routed to @[io.airbyte.cdk.write.StreamLoader.processBatch]
+ * Represents an accumulated batch of records in some stage of processing. Emitted by @
+ * [io.airbyte.cdk.write.StreamLoader.processRecords] to describe the batch accumulated. Non-
+ * [BatchState.COMPLETE] batches are routed to @[io.airbyte.cdk.write.StreamLoader.processBatch]
  * re-entrantly until completion.
  *
  * The framework will track the association between the Batch and the range of records it
- * represents, by [Batch.State]s. The [State.PERSISTED] state has special meaning: it indicates that
- * the associated ranges have been persisted remotely, and that platform checkpoint messages can be
- * emitted.
+ * represents, by [Batch.BatchState]s. The [BatchState.PERSISTED] state has special meaning: it
+ * indicates that the associated ranges have been persisted remotely, and that platform checkpoint
+ * messages can be emitted.
  *
- * [State.STAGED] is used internally to indicate that records have been spooled to disk for
+ * [BatchState.STAGED] is used internally to indicate that records have been spooled to disk for
  * processing and should not be used by implementors.
  *
  * When a stream has been read to End-of-stream, and all ranges between 0 and End-of-stream are
- * [State.COMPLETE], then all records are considered to have been processed.
+ * [BatchState.COMPLETE], then all records are considered to have been processed.
  *
  * A [Batch] may contain an optional `groupId`. If provided, the most advanced state provided for
  * any batch will apply to all batches with the same `groupId`. This is useful for a case where each
@@ -50,38 +49,25 @@ import io.airbyte.cdk.load.command.DestinationStream
  * // etc...
  * ```
  */
+@Deprecated("This serves the old-style StreamLoader interface. See BatchState")
 interface Batch {
     val groupId: String?
 
-    enum class State {
-        PROCESSED,
-        STAGED,
-        PERSISTED,
-        COMPLETE;
-
-        fun isPersisted(): Boolean =
-            when (this) {
-                PERSISTED,
-                COMPLETE -> true
-                else -> false
-            }
-    }
-
     fun isPersisted(): Boolean = state.isPersisted()
 
-    val state: State
+    val state: BatchState
 
     /**
-     * If a [Batch] is [State.COMPLETE], there's nothing further to do. If it is part of a group,
-     * then its state will be updated by the next batch in the group that advances.
+     * If a [Batch] is [BatchState.COMPLETE], there's nothing further to do. If it is part of a
+     * group, then its state will be updated by the next batch in the group that advances.
      */
     val requiresProcessing: Boolean
-        get() = state != State.COMPLETE && groupId == null
+        get() = state != BatchState.COMPLETE && groupId == null
 }
 
 /** Simple batch: use if you need no other metadata for processing. */
 data class SimpleBatch(
-    override val state: Batch.State,
+    override val state: BatchState,
     override val groupId: String? = null,
 ) : Batch
 

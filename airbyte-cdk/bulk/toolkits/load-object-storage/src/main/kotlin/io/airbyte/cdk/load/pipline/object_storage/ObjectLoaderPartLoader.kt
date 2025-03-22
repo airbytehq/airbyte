@@ -7,6 +7,8 @@ package io.airbyte.cdk.load.pipline.object_storage
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
+import io.airbyte.cdk.load.message.BatchState
+import io.airbyte.cdk.load.message.WithBatchState
 import io.airbyte.cdk.load.pipeline.BatchAccumulator
 import io.airbyte.cdk.load.pipeline.BatchAccumulatorResult
 import io.airbyte.cdk.load.pipeline.FinalOutput
@@ -56,8 +58,10 @@ class ObjectLoaderPartLoader(
         }
     }
 
-    sealed interface PartResult {
+    sealed interface PartResult : WithBatchState {
         val objectKey: String
+        override val state: BatchState
+            get() = BatchState.STAGED
     }
     data class LoadedPart(
         val upload: Deferred<StreamingUpload<*>>,
