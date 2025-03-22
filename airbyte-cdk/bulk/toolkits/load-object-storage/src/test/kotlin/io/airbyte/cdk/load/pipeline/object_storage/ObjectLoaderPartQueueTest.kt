@@ -34,19 +34,19 @@ class ObjectLoaderPartQueueTest {
     fun `part queue clamps part size if too many workers`() {
         val beanFactory = ObjectLoaderPartQueueFactory(objectLoader)
         every { objectLoader.numPartWorkers } returns 5
-        every { objectLoader.numUploadWorkers } returns 3
+        every { objectLoader.numUploadWorkers } returns 3 // * 2
         every { objectLoader.partSizeBytes } returns 100
         val memoryReservation = mockk<Reserved<ObjectLoader>>(relaxed = true)
         every { memoryReservation.bytesReserved } returns 800
         val clampedSize = beanFactory.objectLoaderClampedPartSizeBytes(memoryReservation)
-        Assertions.assertEquals(800 / 9, clampedSize)
+        Assertions.assertEquals(800 / 11, clampedSize)
     }
 
     @Test
     fun `part queue does not clamp part size if not too many workers`() {
         val beanFactory = ObjectLoaderPartQueueFactory(objectLoader)
         every { objectLoader.numPartWorkers } returns 5
-        every { objectLoader.numUploadWorkers } returns 1
+        every { objectLoader.numUploadWorkers } returns 1 // * 2
         every { objectLoader.partSizeBytes } returns 100
         val memoryReservation = mockk<Reserved<ObjectLoader>>(relaxed = true)
         every { memoryReservation.bytesReserved } returns 800

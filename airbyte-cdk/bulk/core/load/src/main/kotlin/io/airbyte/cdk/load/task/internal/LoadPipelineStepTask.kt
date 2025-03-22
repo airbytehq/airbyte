@@ -89,6 +89,11 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
             try {
                 when (input) {
                     is PipelineMessage -> {
+                        if (stateStore.streamsEnded.contains(input.key.stream)) {
+                            throw IllegalStateException(
+                                "$taskName[$part] received input for complete stream ${input.key.stream}. This indicates data was processed out of order and future bookkeeping might be corrupt. Failing hard."
+                            )
+                        }
                         // Get or create the accumulator state associated w/ the input key.
                         val stateWithCounts =
                             stateStore.stateWithCounts
