@@ -9,6 +9,7 @@ import pendulum
 import pytest
 from source_hubspot.streams import (
     Campaigns,
+    CommercePayments,
     Companies,
     ContactLists,
     Contacts,
@@ -41,7 +42,6 @@ from source_hubspot.streams import (
     TicketPipelines,
     Tickets,
     Workflows,
-    CommercePayments,
 )
 
 from airbyte_cdk.models import SyncMode

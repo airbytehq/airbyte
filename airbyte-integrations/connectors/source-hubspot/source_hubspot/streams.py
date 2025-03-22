@@ -2389,13 +2389,15 @@ class CustomObject(CRMSearchStream, ABC):
     def properties(self) -> Mapping[str, Any]:
         # do not make extra api calls
         return self.custom_properties
-    
+
+
 class CommercePayments(CRMSearchStream):
     entity = "commerce_payments"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "companies", "deals", "line_item"]
     primary_key = "id"
     scopes = {"crm.objects.commercepayments.read"}
+
 
 class EmailSubscriptions(Stream):
     """EMAIL SUBSCRIPTION, API v1

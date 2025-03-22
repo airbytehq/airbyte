@@ -19,6 +19,7 @@ from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
     API,
     Campaigns,
+    CommercePayments,
     Companies,
     CompaniesPropertyHistory,
     CompaniesWebAnalytics,
@@ -67,7 +68,6 @@ from source_hubspot.streams import (
     TicketsWebAnalytics,
     WebAnalyticsStream,
     Workflows,
-    CommercePayments,
 )
 
 
@@ -140,6 +140,7 @@ class SourceHubspot(AbstractSource):
         common_params = self.get_common_params(config=config)
         streams = [
             Campaigns(**common_params),
+            CommercePayments(**common_params),
             Companies(**common_params),
             ContactLists(**common_params),
             Contacts(**common_params),
@@ -174,7 +175,6 @@ class SourceHubspot(AbstractSource):
             Tickets(**common_params),
             TicketPipelines(**common_params),
             Workflows(**common_params),
-            CommercePayments(**common_params),
         ]
 
         enable_experimental_streams = "enable_experimental_streams" in config and config["enable_experimental_streams"]
