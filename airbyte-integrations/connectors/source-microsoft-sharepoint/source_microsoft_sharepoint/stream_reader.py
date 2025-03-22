@@ -10,12 +10,17 @@ from functools import lru_cache
 from io import IOBase
 from os import makedirs, path
 from os.path import getsize
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, MutableMapping
 
 import requests
 import smart_open
 from msal import ConfidentialClientApplication
+from office365.onedrive.drives.drive import Drive
 from office365.graph_client import GraphClient
+from office365.runtime.auth.token_response import TokenResponse
+from office365.sharepoint.client_context import ClientContext
+from office365.sharepoint.search.service import SearchService
+from office365.entity_collection import EntityCollection
 
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
@@ -24,7 +29,17 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 
 from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
-from .utils import FolderNotFoundException, MicrosoftSharePointRemoteFile, execute_query_with_retry, filter_http_urls
+from .utils import (
+    FolderNotFoundException,
+    MicrosoftSharePointRemoteFile,
+    execute_query_with_retry,
+    filter_http_urls,
+    get_site,
+    get_site_prefix,
+)
+
+SITE_TITLE = "Title"
+SITE_PATH = "Path"
 
 
 class SourceMicrosoftSharePointClient:
@@ -50,9 +65,20 @@ class SourceMicrosoftSharePointClient:
             self._client = GraphClient(self._get_access_token)
         return self._client
 
-    def _get_access_token(self):
+    @staticmethod
+    def _get_scope(tenant_prefix: str = None):
+        """
+        Returns the scope for the access token.
+        We use admin site to retrieve objects like Site groups and users.
+        """
+        if tenant_prefix:
+            admin_site_url = f"https://{tenant_prefix}-admin.sharepoint.com"
+            return [f"{admin_site_url}/.default"]
+        return ["https://graph.microsoft.com/.default"]
+
+    def _get_access_token(self, tenant_prefix: str = None):
         """Retrieves an access token for SharePoint access."""
-        scope = ["https://graph.microsoft.com/.default"]
+        scope = self._get_scope(tenant_prefix)
         refresh_token = self.config.credentials.refresh_token if hasattr(self.config.credentials, "refresh_token") else None
 
         if refresh_token:
@@ -66,6 +92,13 @@ class SourceMicrosoftSharePointClient:
             raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
 
         return result
+
+    def get_token_response_object_wrapper(self, tenant_prefix: str):
+        def get_token_response_object():
+            token = self._get_access_token(tenant_prefix=tenant_prefix)
+            return TokenResponse.from_json(token)
+
+        return get_token_response_object
 
 
 class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
@@ -102,6 +135,20 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
     def get_access_token(self):
         # Directly fetch a new access token from the auth_client each time it's called
         return self.auth_client._get_access_token()["access_token"]
+
+    def get_token_response_object(self, tenant_prefix: str = None) -> Callable:
+        """ "
+        When building a ClientContext using with_access_token method,
+        the token_func param is expected to be a method/callable that returns a TokenResponse object.
+        tenant_prefix is used to determine the scope of the access token.
+        return: A callable that returns a TokenResponse object.
+        """
+        return self.auth_client.get_token_response_object_wrapper(tenant_prefix=tenant_prefix)
+
+    def get_client_context(self):
+        site_url, root_site_prefix = get_site_prefix(get_site(self.one_drive_client))
+        client_context = ClientContext(site_url).with_access_token(self.get_token_response_object(tenant_prefix=root_site_prefix))
+        return client_context
 
     @config.setter
     def config(self, value: SourceMicrosoftSharePointSpec):
@@ -202,11 +249,67 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
                 yield from self._list_directories_and_files(folder, folder_path_url)
 
+    def get_all_sites(self) -> List[MutableMapping[str, Any]]:
+        """
+        Retrieves all SharePoint sites from the current tenant.
+
+        Returns:
+            List[MutableMapping[str, Any]]: A list of site information.
+        """
+        _, root_site_prefix = get_site_prefix(get_site(self.one_drive_client))
+        ctx = self.get_client_context()
+        search_service = SearchService(ctx)
+        # ignore default OneDrive site with NOT Path:https://prefix-my.sharepoint.com
+        search_job = search_service.post_query(f"contentclass:STS_Site NOT Path:https://{root_site_prefix}-my.sharepoint.com")
+        search_job_result = execute_query_with_retry(search_job)
+
+        found_sites = []
+        if search_job.value and search_job_result.value.PrimaryQueryResult:
+            table = search_job_result.value.PrimaryQueryResult.RelevantResults.Table
+            for row in table.Rows:
+                found_site = {}
+                data = row.Cells
+                found_site[SITE_TITLE] = data.get(SITE_TITLE)
+                found_site[SITE_PATH] = data.get(SITE_PATH)
+                found_sites.append(found_site)
+        else:
+            raise Exception("No site collections found")
+
+        return found_sites
+
+    def get_drives_from_sites(self, sites: List[MutableMapping[str, Any]]) -> EntityCollection:
+        """
+        Retrieves SharePoint drives from the provided sites.
+        Args:
+            sites (List[MutableMapping[str, Any]]): A list of site information.
+
+        Returns:
+            EntityCollection: A collection of SharePoint drives.
+        """
+        all_sites_drives = EntityCollection(context=self.one_drive_client, item_type=Drive)
+        for site in sites:
+            drives = execute_query_with_retry(self.one_drive_client.sites.get_by_url(site[SITE_PATH]).drives.get())
+            for site_drive in drives:
+                all_sites_drives.add_child(site_drive)
+        return all_sites_drives
+
     def get_site_drive(self):
+        """
+        Retrieves SharePoint drives based on the provided site URL.
+        It iterates over the sites if something like sharepoint.com/sites/ is in the site_url.
+        Returns:
+            EntityCollection: A collection of SharePoint drives.
+
+        Raises:
+            AirbyteTracedException: If an error occurs while retrieving drives.
+        """
         try:
             if not self.config.site_url:
                 # get main site drives
                 drives = execute_query_with_retry(self.one_drive_client.drives.get())
+            elif re.search(r"sharepoint\.com/sites/?$", self.config.site_url):
+                # get all sites and then get drives from each site
+                return self.get_drives_from_sites(self.get_all_sites())
             else:
                 # get drives for site drives provided in the config
                 drives = execute_query_with_retry(self.one_drive_client.sites.get_by_url(self.config.site_url).drives.get())

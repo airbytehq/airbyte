@@ -16,6 +16,7 @@ from source_microsoft_sharepoint.stream_reader import (
     SourceMicrosoftSharePointStreamReader,
 )
 from wcmatch.glob import GLOBSTAR, globmatch
+from office365.entity_collection import EntityCollection
 
 from airbyte_cdk import AirbyteTracedException
 
@@ -604,7 +605,7 @@ def test_drives_property(auth_type, user_principal_name, has_refresh_token):
         refresh_token = "dummy_refresh_token" if has_refresh_token else None
         # Setup for different authentication types
         config_mock = MagicMock(
-            credentials=MagicMock(auth_type=auth_type, user_principal_name=user_principal_name, refresh_token=refresh_token)
+            credentials=MagicMock(auth_type=auth_type, user_principal_name=user_principal_name, refresh_token=refresh_token), site_url=""
         )
 
         # Mock responses for the drives list and a single drive (my_drive)
@@ -636,7 +637,82 @@ def test_drives_property(auth_type, user_principal_name, has_refresh_token):
             assert mock_execute_query.call_count == 2
             drives_response.add_child.assert_called_once_with(my_drive)
 
-    #  Retrieve files from accessible drives when search_scope is 'ACCESSIBLE_DRIVES' or 'ALL'
+
+@pytest.mark.parametrize(
+    "site_url, expected_call, expected_result, exception",
+    [
+        # Scenario 1: No site URL (default site)
+        ("", "drives", MagicMock(spec=EntityCollection), None),
+        # Scenario 2: Site URL ending with 'sharepoint.com/sites/' (all sites)
+        ("https://test-tenant.sharepoint.com/sites/", "all_sites", MagicMock(spec=EntityCollection), None),
+        # Scenario 3: Specific site URL (single site)
+        ("https://test-tenant.sharepoint.com/sites/specific", "specific_site", MagicMock(spec=EntityCollection), None),
+        # Scenario 4: Error scenario
+        ("https://test-tenant.sharepoint.com/sites/error", "error", None, Exception("Test exception")),
+    ],
+)
+def test_get_site_drive(site_url, expected_call, expected_result, exception):
+    """
+    Parameterized test for the get_site_drive method.
+    """
+    # Create a mock reader instance
+    reader = SourceMicrosoftSharePointStreamReader()
+
+    # Mock the config with the specified site URL
+    reader._config = MagicMock(site_url=site_url)
+
+    # Mock one_drive_client
+    mock_one_drive_client = MagicMock()
+    # Set the underlying attribute instead of using the property
+    reader._one_drive_client = mock_one_drive_client
+
+    # Create mock response for execute_query_with_retry
+    mock_drives = expected_result
+
+    # Mock methods based on the scenario
+    with patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query:
+        # Set up the mock to return the expected result or raise an exception
+        if exception and expected_call == "error":
+            mock_execute_query.side_effect = exception
+        else:
+            mock_execute_query.return_value = mock_drives
+
+        # Mock get_all_sites and get_drives_from_sites for the 'all_sites' scenario
+        mock_sites = [
+            {"Title": "Site1", "Path": "https://test-tenant.sharepoint.com/sites/site1"},
+            {"Title": "Site2", "Path": "https://test-tenant.sharepoint.com/sites/site2"},
+        ]
+
+        with (
+            patch.object(reader, "get_all_sites", return_value=mock_sites) as mock_get_all_sites,
+            patch.object(reader, "get_drives_from_sites", return_value=mock_drives) as mock_get_drives_from_sites,
+        ):
+            # Determine the expected behavior based on the scenario
+            if exception:
+                with pytest.raises(AirbyteTracedException) as exc_info:
+                    reader.get_site_drive()
+                assert "Failed to retrieve drives from sharepoint" in str(exc_info.value)
+            else:
+                result = reader.get_site_drive()
+
+                # Check that the right methods were called based on the scenario
+                if expected_call == "drives":
+                    # Default site URL
+                    mock_one_drive_client.drives.get.assert_called_once()
+                    mock_get_all_sites.assert_not_called()
+                    mock_get_drives_from_sites.assert_not_called()
+                elif expected_call == "all_sites":
+                    # Site URL ending with 'sharepoint.com/sites/'
+                    mock_one_drive_client.drives.get.assert_not_called()
+                    mock_get_all_sites.assert_called_once()
+                    mock_get_drives_from_sites.assert_called_once_with(mock_sites)
+                elif expected_call == "specific_site":
+                    # Specific site URL
+                    mock_one_drive_client.sites.get_by_url.assert_called_once_with(site_url)
+                    mock_get_all_sites.assert_not_called()
+                    mock_get_drives_from_sites.assert_not_called()
+
+                assert result == mock_drives
 
 
 @pytest.mark.parametrize(

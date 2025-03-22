@@ -3,11 +3,15 @@ import logging
 import time
 from datetime import datetime
 from enum import Enum
+from functools import lru_cache
 from http import HTTPStatus
+from typing import List
 
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
+from office365.graph_client import GraphClient
+from office365.onedrive.sites.site import Site
 
 LOGGER = logging.getLogger("airbyte")
 
@@ -150,3 +154,22 @@ class PlaceholderUrlBuilder:
         query_string = "&".join(self._segments)
         query_string = "?" + query_string if query_string else ""
         return f"{self._scheme}://{self._host}{self._path}{query_string}"
+
+
+@lru_cache(maxsize=None)
+def get_site(graph_client: GraphClient, site_url: str = None):
+    if site_url:
+        site = execute_query_with_retry(graph_client.sites.get_by_url(site_url))
+    else:
+        site = execute_query_with_retry(graph_client.sites.root.get())
+    return site
+
+
+def get_site_prefix(site: Site):
+    site_url = site.web_url
+    host_name = site.site_collection.hostname
+    host_name_parts: List = host_name.split(".")  # e.g. "contoso.sharepoint.com" => ["contoso", "sharepoint", "com"]
+    if len(host_name_parts) < 2:
+        raise ValueError(f"Invalid host name: {host_name}")
+
+    return site_url, host_name_parts[0]

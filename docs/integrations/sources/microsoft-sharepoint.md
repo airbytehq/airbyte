@@ -271,6 +271,7 @@ If enabled, sends subdirectory folder structure along with source file names to 
 
 By providing a url to the site URL field, the connector will be able to access the files in the specific sharepoint site. 
 The site url should be in the format `https://<tenan_name>.sharepoint.com/sites/<site>`. If no field is provided, the connector will access the files in the main site.
+To have the connector iterate all sub-sites provide the site url as `https://<tenan_name>.sharepoint.com/sites/`.
 
 ### Supported sync modes
 
