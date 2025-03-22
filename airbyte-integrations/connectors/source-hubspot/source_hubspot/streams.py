@@ -2391,6 +2391,14 @@ class CustomObject(CRMSearchStream, ABC):
         return self.custom_properties
 
 
+class CommercePayments(CRMSearchStream):
+    entity = "commerce_payments"
+    last_modified_field = "hs_lastmodifieddate"
+    associations = ["contacts", "companies", "deals", "line_item"]
+    primary_key = "id"
+    scopes = {"crm.objects.commercepayments.read"}
+
+
 class EmailSubscriptions(Stream):
     """EMAIL SUBSCRIPTION, API v1
     Docs: https://legacydocs.hubspot.com/docs/methods/email/get_subscriptions
