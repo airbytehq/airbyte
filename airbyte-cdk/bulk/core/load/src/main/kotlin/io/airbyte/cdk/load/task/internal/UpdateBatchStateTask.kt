@@ -5,13 +5,11 @@
 package io.airbyte.cdk.load.task.internal
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.QueueReader
 import io.airbyte.cdk.load.pipeline.BatchEndOfStream
 import io.airbyte.cdk.load.pipeline.BatchStateUpdate
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.state.CheckpointManager
-import io.airbyte.cdk.load.state.CheckpointValue
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
 import io.airbyte.cdk.load.task.OnEndOfSync
@@ -37,7 +35,7 @@ class UpdateBatchStateTask(
             when (message) {
                 is BatchStateUpdate -> {
                     log.info {
-                        "Batch update for ${message.stream}: ${message.taskName}[${message.part}](${message.state}) += ${message.checkpointCounts}"
+                        "Batch update for ${message.stream}: ${message.taskName}[${message.part}](${message.state}) += ${message.checkpointCounts} (inputs += ${message.inputCount})"
                     }
                     manager.incrementCheckpointCounts(
                         message.taskName,
@@ -51,7 +49,11 @@ class UpdateBatchStateTask(
                     log.info {
                         "End-of-stream checks for ${message.stream}: ${message.taskName}[${message.part}]"
                     }
-                    manager.markTaskEndOfStream(message.taskName, message.part,  message.totalInputCount)
+                    manager.markTaskEndOfStream(
+                        message.taskName,
+                        message.part,
+                        message.totalInputCount
+                    )
                 }
             }
             checkpointManager.flushReadyCheckpointMessages()

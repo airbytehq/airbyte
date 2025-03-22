@@ -59,9 +59,10 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
         }
     }
 
-    sealed interface PartResult<T : RemoteObject<*>>: WithBatchState {
+    sealed interface PartResult<T : RemoteObject<*>> : WithBatchState {
         val objectKey: String
-        override val state: Batch.State get() = Batch.State.STAGED
+        override val state: Batch.State
+            get() = Batch.State.STAGED
     }
     data class LoadedPart<T : RemoteObject<*>>(
         val upload: Deferred<StreamingUpload<T>>,

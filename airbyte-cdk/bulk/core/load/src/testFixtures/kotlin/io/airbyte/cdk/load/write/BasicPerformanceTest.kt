@@ -309,14 +309,15 @@ abstract class BasicPerformanceTest(
     @Test
     open fun testManyStreamsInsertRecords() {
         runSync(
-            testScenario = MultiStreamInsert(
-                idColumn = idColumn,
-                columns = twoStringColumns,
-                randomizedNamespace = randomizedNamespace,
-                recordsToInsertPerStream = defaultRecordsToInsert / numStreamsForMultiStream,
-                numStreams = numStreamsForMultiStream,
-                streamNamePrefix = testInfo.testMethod.get().name,
-            )
+            testScenario =
+                MultiStreamInsert(
+                    idColumn = idColumn,
+                    columns = twoStringColumns,
+                    randomizedNamespace = randomizedNamespace,
+                    recordsToInsertPerStream = defaultRecordsToInsert / numStreamsForMultiStream,
+                    numStreams = numStreamsForMultiStream,
+                    streamNamePrefix = testInfo.testMethod.get().name,
+                )
         )
     }
 

@@ -5,10 +5,8 @@
 package io.airbyte.cdk.load.message
 
 import io.airbyte.cdk.load.util.CloseableCoroutine
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.merge
 
 interface PartitionedQueue<T> : CloseableCoroutine {

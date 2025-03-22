@@ -245,7 +245,7 @@ class MultiStreamInsert(
     randomizedNamespace: String,
     generationId: Long = 0,
     minGenerationId: Long = 0,
-): PerformanceTestScenario {
+) : PerformanceTestScenario {
 
     init {
         assert(duplicateChance in 0.0..1.0)
@@ -266,10 +266,8 @@ class MultiStreamInsert(
 
         (0 until numStreams).map {
             DestinationStream(
-                descriptor = DestinationStream.Descriptor(
-                    randomizedNamespace,
-                    "${streamNamePrefix}__$it"
-                ),
+                descriptor =
+                    DestinationStream.Descriptor(randomizedNamespace, "${streamNamePrefix}__$it"),
                 importType = importType,
                 schema = ObjectType(linkedMapOf(*schema.toTypedArray())),
                 generationId = generationId,
@@ -307,12 +305,13 @@ class MultiStreamInsert(
             }
         }
 
-        private val messagePartsAndSizes = baseRecords.map { records ->
-            val messageParts = Jsons.serialize(records.asProtocolMessage()).split(indexColumn.sample.toString())
-            Pair(
-                messageParts, messageParts.sumOf { it.length }
-            )
-        }
+        private val messagePartsAndSizes =
+            baseRecords.map { records ->
+                val messageParts =
+                    Jsons.serialize(records.asProtocolMessage())
+                        .split(indexColumn.sample.toString())
+                Pair(messageParts, messageParts.sumOf { it.length })
+            }
         private val totalSize = messagePartsAndSizes.sumOf { it.second }
 
         private val sb = StringBuilder()
@@ -350,12 +349,12 @@ class MultiStreamInsert(
 
     override fun send(destination: DestinationProcess) {
         RecordWriter(
-            indexColumn = idColumn,
-            columns = columns,
-            streams = streams,
-            destination = destination,
-            recordBufferSize = 10,
-        )
+                indexColumn = idColumn,
+                columns = columns,
+                streams = streams,
+                destination = destination,
+                recordBufferSize = 10,
+            )
             .use { writer ->
                 (1..recordsToInsertPerStream).forEach {
                     writer.write(it)

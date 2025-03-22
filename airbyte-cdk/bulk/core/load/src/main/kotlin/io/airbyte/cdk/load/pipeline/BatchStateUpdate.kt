@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.pipeline
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.state.CheckpointId
-import io.airbyte.cdk.load.task.Task
 
 /** Used internally by the CDK to track record ranges to ack. */
 sealed interface BatchUpdate {

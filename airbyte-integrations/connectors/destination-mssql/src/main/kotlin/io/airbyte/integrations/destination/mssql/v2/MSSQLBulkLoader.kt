@@ -23,8 +23,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
-@Singleton
-class MSSQLInputPartitioner: RoundRobinInputPartitioner()
+@Singleton class MSSQLInputPartitioner : RoundRobinInputPartitioner()
 
 class MSSQLBulkLoader(
     private val azureBlobClient: AzureBlobClient,
@@ -53,7 +52,7 @@ class MSSQLBulkLoader(
      * into the destination table using the PK columns.
      */
     private fun handleDedup(dataFilePath: String) {
-        log.info { "Deduplicating $dataFilePath into table for ${stream.descriptor}"}
+        log.info { "Deduplicating $dataFilePath into table for ${stream.descriptor}" }
         val importType = stream.importType as Dedupe
         val primaryKey =
             if (importType.primaryKey.isNotEmpty()) {
@@ -79,7 +78,7 @@ class MSSQLBulkLoader(
 
     /** Performs a simple bulk insert (append-overwrite behavior). */
     private fun handleAppendOverwrite(dataFilePath: String) {
-        log.info { "Loading $dataFilePath into table for ${stream.descriptor}"}
+        log.info { "Loading $dataFilePath into table for ${stream.descriptor}" }
         mssqlBulkLoadHandler.bulkLoadForAppendOverwrite(
             dataFilePath = dataFilePath,
             formatFilePath = formatFilePath
@@ -92,9 +91,7 @@ class MSSQLBulkLoader(
      */
     private suspend fun deleteBlobSafe(path: String) {
         try {
-            log.info {
-                "Deleting blob at path=$path"
-            }
+            log.info { "Deleting blob at path=$path" }
             azureBlobClient.delete(path)
         } catch (e: Exception) {
             log.error(e) { "Failed to delete blob at path=$path. Cause: ${e.message}" }

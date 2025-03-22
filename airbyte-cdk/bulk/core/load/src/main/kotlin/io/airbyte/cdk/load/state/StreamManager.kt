@@ -17,7 +17,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CompletableDeferred
-import org.apache.mina.util.ConcurrentHashSet
 
 sealed interface StreamResult
 
@@ -29,11 +28,10 @@ data object StreamProcessingSucceeded : StreamResult
 
 data class CheckpointValue(
     val records: Long,
-    val inputs: Long
-    // TODO: File bytes moved
+// TODO: File bytes moved
 ) {
     operator fun plus(other: CheckpointValue): CheckpointValue {
-        return CheckpointValue(records + other.records, inputs + other.inputs)
+        return CheckpointValue(records + other.records)
     }
 }
 
@@ -112,7 +110,6 @@ interface StreamManager {
      */
     fun getCurrentCheckpointId(): CheckpointId
 
-
     fun incrementCheckpointCounts(
         taskName: String,
         part: Int,
@@ -121,13 +118,9 @@ interface StreamManager {
         inputCount: Long
     )
 
-    fun markTaskEndOfStream(
-        taskName: String,
-        part: Int,
-        finalInputCount: Long
-    )
+    fun markTaskEndOfStream(taskName: String, part: Int, finalInputCount: Long)
 
-        /**
+    /**
      * True if persisted counts for each checkpoint up to and including [checkpointId] match the
      * number of records read for that id.
      */
@@ -163,7 +156,11 @@ class DefaultStreamManager(
     private val recordsReadPerCheckpoint: ConcurrentHashMap<CheckpointId, CheckpointValue> =
         ConcurrentHashMap()
     data class TaskKey(val name: String, val part: Int)
-    private val namedCheckpointCounts: ConcurrentHashMap<Pair<TaskKey, Batch.State>, ConcurrentHashMap<CheckpointId, CheckpointValue>> = ConcurrentHashMap()
+    private val namedCheckpointCounts:
+        ConcurrentHashMap<
+            Pair<TaskKey, Batch.State>, ConcurrentHashMap<CheckpointId, CheckpointValue>> =
+        ConcurrentHashMap()
+    private val taskInputCounts = ConcurrentHashMap<TaskKey, Long>()
     private val taskCompletionCounts = ConcurrentHashMap<TaskKey, Long>()
 
     init {
@@ -204,7 +201,7 @@ class DefaultStreamManager(
         val count = recordIndex - lastCheckpointRecordIndex.getAndSet(recordIndex)
 
         val checkpointId = CheckpointId(nextCheckpointId.getAndIncrement().toInt())
-        recordsReadPerCheckpoint.merge(checkpointId, CheckpointValue(records = count, inputs = 0)) { old, _ ->
+        recordsReadPerCheckpoint.merge(checkpointId, CheckpointValue(records = count)) { old, _ ->
             if (old.records > 0) {
                 throw IllegalStateException("Checkpoint $old already exists")
             }
@@ -373,19 +370,22 @@ class DefaultStreamManager(
         checkpointCounts.forEach { (checkpointId, recordCount) ->
             val taskKey = TaskKey(taskName, part)
             if (taskCompletionCounts.containsKey(taskKey)) {
-                throw IllegalStateException(
+                log.warn {
                     "$taskKey received input after seeing end-of-stream (checkpointCounts=$checkpointCounts, inputCount=$inputCount, sawEosAtCount=${taskCompletionCounts[taskKey]})."
-                )
+                }
             }
             namedCheckpointCounts
                 .getOrPut(TaskKey(taskName, part) to state) { ConcurrentHashMap() }
-                .merge(checkpointId, CheckpointValue(recordCount, inputCount)) { old, new -> old + new }
+                .merge(checkpointId, CheckpointValue(recordCount)) { old, new -> old + new }
         }
+        taskInputCounts.merge(TaskKey(taskName, part), inputCount) { old, new -> old + new }
     }
 
     override fun markTaskEndOfStream(taskName: String, part: Int, finalInputCount: Long) {
         taskCompletionCounts.putIfAbsent(TaskKey(taskName, part), finalInputCount)?.let {
-            throw IllegalStateException("End-of-stream reported at $finalInputCount already seen for $taskName[$part] at $it")
+            throw IllegalStateException(
+                "End-of-stream reported at $finalInputCount already seen for $taskName[$part] at $it"
+            )
         }
     }
 
@@ -396,16 +396,28 @@ class DefaultStreamManager(
         }
 
         val readCount = counts.map { it.value.records }.sum()
-        val persistedCount = namedCheckpointCounts.filter { (key, _) -> key.second == Batch.State.PERSISTED }
-            .values
-            .fold(0L) { acc, checkpointIdToValue ->
-                acc + checkpointIdToValue.filterKeys { it.id <= checkpointId.id }.values.sumOf { it.records }
-            }
-        val completedCount = namedCheckpointCounts.filter { (key, _) -> key.second == Batch.State.COMPLETE }
-            .values
-            .fold(0L) { acc, checkpointIdToValue ->
-                acc + checkpointIdToValue.filterKeys { it.id <= checkpointId.id }.values.sumOf { it.records }
-            }
+        val persistedCount =
+            namedCheckpointCounts
+                .filter { (key, _) -> key.second == Batch.State.PERSISTED }
+                .values
+                .fold(0L) { acc, checkpointIdToValue ->
+                    acc +
+                        checkpointIdToValue
+                            .filterKeys { it.id <= checkpointId.id }
+                            .values
+                            .sumOf { it.records }
+                }
+        val completedCount =
+            namedCheckpointCounts
+                .filter { (key, _) -> key.second == Batch.State.COMPLETE }
+                .values
+                .fold(0L) { acc, checkpointIdToValue ->
+                    acc +
+                        checkpointIdToValue
+                            .filterKeys { it.id <= checkpointId.id }
+                            .values
+                            .sumOf { it.records }
+                }
         if (persistedCount == readCount) {
             return true
         }
@@ -425,41 +437,59 @@ class DefaultStreamManager(
         }
 
         log.info {
-            val header = "\nStream ${stream.descriptor.namespace}:${stream.descriptor.name}: Records Read: $readCount (done: ${markedEndOfStream.get()})"
-            val byPart = namedCheckpointCounts.map { (key, value) ->
-                val (taskKey, state) = key
-                val recordCount = value.values.sumOf { it.records }
-                val inputCount = value.values.sumOf { it.inputs }
-                val isCompleteCount = taskCompletionCounts[taskKey]
-                Triple(taskKey, state, Triple(recordCount, inputCount, isCompleteCount))
-            }
-            val byTask = byPart.groupBy { TaskKey(it.first.name, 999) }.mapValues {
-                it.value.fold(Triple(Batch.State.PROCESSED, Pair(0L, 0L), null as Long?)) { z, x ->
-                    Triple(x.second,
-                        Pair(z.second.first + x.third.first, z.second.second + x.third.second),
-                        (z.third?.plus(x.third.third?:0L)) ?: x.third.third
-                    )
+            val header =
+                "\nStream ${stream.descriptor.namespace}:${stream.descriptor.name}: Records Read: $readCount (done: ${markedEndOfStream.get()})"
+            val byPart =
+                namedCheckpointCounts.map { (key, value) ->
+                    val (taskKey, state) = key
+                    val recordCount = value.values.sumOf { it.records }
+                    val inputCount = taskInputCounts[taskKey] ?: 0L
+                    val isCompleteCount = taskCompletionCounts[taskKey]
+                    Triple(taskKey, state, Triple(recordCount, inputCount, isCompleteCount))
                 }
-            }.map { (taskKey, stateAndCountsAndComplete) ->
-                val (state, counts, isCompleteCount) = stateAndCountsAndComplete
-                Triple(taskKey, state, Triple(counts.first, counts.second, isCompleteCount))
-            }
-            val sortedAndFormatted = (byPart + byTask)
-                .sortedBy { (taskKey, state, _) -> state.ordinal * 1_000 + taskKey.part }
-                .map { (taskKey, state, countsAndComplete) ->
-                    val (recordCount, inputCount, isCompleteCount) = countsAndComplete
-                    val partString = if (taskKey.part == 999) "[TOTAL]" else "[${taskKey.part}]"
-                    val inputString = if (recordCount == inputCount) "(" else " (inputs: $inputCount, "
-                    val completeString = if (isCompleteCount == null) "false" else "true, saw eos at input $isCompleteCount"
-                    "${taskKey.name}$partString($state): $recordCount records ${inputString}done: $completeString)"
-                }
+            val byTask =
+                byPart
+                    .groupBy { TaskKey(it.first.name, 999) }
+                    .mapValues {
+                        it.value.fold(Triple(Batch.State.PROCESSED, Pair(0L, 0L), null as Long?)) {
+                            z,
+                            x ->
+                            Triple(
+                                x.second,
+                                Pair(
+                                    z.second.first + x.third.first,
+                                    z.second.second + x.third.second
+                                ),
+                                (z.third?.plus(x.third.third ?: 0L)) ?: x.third.third
+                            )
+                        }
+                    }
+                    .map { (taskKey, stateAndCountsAndComplete) ->
+                        val (state, counts, isCompleteCount) = stateAndCountsAndComplete
+                        Triple(taskKey, state, Triple(counts.first, counts.second, isCompleteCount))
+                    }
+            val sortedAndFormatted =
+                (byPart + byTask)
+                    .sortedBy { (taskKey, state, _) -> state.ordinal * 1_000 + taskKey.part }
+                    .map { (taskKey, state, countsAndComplete) ->
+                        val (recordCount, inputCount, isCompleteCount) = countsAndComplete
+                        val partString = if (taskKey.part == 999) "[TOTAL]" else "[${taskKey.part}]"
+                        val inputString =
+                            if (recordCount == inputCount) "(" else " (inputs: $inputCount, "
+                        val completeString =
+                            if (isCompleteCount == null) "false"
+                            else "true, saw eos at input $isCompleteCount"
+                        "${taskKey.name}$partString($state): $recordCount records ${inputString}done: $completeString)"
+                    }
             (listOf(header) + sortedAndFormatted).joinToString(separator = "\n")
         }
 
-        val completedCount = namedCheckpointCounts.filter { (key, _) -> key.second == Batch.State.COMPLETE  }
-            .values
-            .flatMap { it.values }
-            .sumOf { it.records }
+        val completedCount =
+            namedCheckpointCounts
+                .filter { (key, _) -> key.second == Batch.State.COMPLETE }
+                .values
+                .flatMap { it.values }
+                .sumOf { it.records }
 
         return completedCount == readCount
     }

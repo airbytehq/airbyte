@@ -21,5 +21,4 @@ class S3V2ObjectLoader(config: S3V2Configuration<*>) : ObjectLoader {
     override val partSizeBytes: Long = config.partSizeBytes
 }
 
-@Singleton
-class S3V2RoundRobinInputPartitioner : RoundRobinInputPartitioner()
+@Singleton class S3V2RoundRobinInputPartitioner : RoundRobinInputPartitioner()

@@ -72,9 +72,8 @@ class ObjectLoaderPartQueueFactory(
     fun objectLoaderPartQueue(
         @Named("objectLoaderClampedPartSizeBytes") clampedPartSizeBytes: Long,
         @Named("objectLoaderMemoryReservation") reservation: Reserved<*>
-    ):
-        SinglePartitionQueueWithMultiPartitionBroadcast<
-            PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>> {
+    ): SinglePartitionQueueWithMultiPartitionBroadcast<
+        PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>> {
         val maxNumParts = reservation.bytesReserved / clampedPartSizeBytes
         val numWorkersHoldingParts = loader.numPartWorkers + loader.numUploadWorkers
         val maxQueueCapacity = maxNumParts - numWorkersHoldingParts

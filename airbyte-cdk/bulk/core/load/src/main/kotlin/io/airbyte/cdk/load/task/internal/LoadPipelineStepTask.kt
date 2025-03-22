@@ -33,13 +33,15 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.fold
-import kotlinx.coroutines.flow.lastOrNull
-import kotlinx.coroutines.flow.runningFold
-import kotlinx.coroutines.flow.takeWhile
 
+/**
+ * Accumulator state with the checkpoint counts (Checkpoint Id -> Records Seen) seen since the state
+ * was created.
+ *
+ * Includes a count of the inputs seen since the state was created.
+ */
 data class StateWithCounts<S : AutoCloseable>(
     val accumulatorState: S,
     val checkpointCounts: MutableMap<CheckpointId, Long> = mutableMapOf(),
@@ -70,7 +72,13 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
 
     override val terminalCondition: TerminalCondition = OnEndOfSync
 
-    data class StateStore<K1, S: AutoCloseable>(
+    /**
+     * Task-global state. A map of all the keys seen with associated accumulator state and
+     * bookkeeping info. Also includes a global count of inputs seen per stream and fact of stream
+     * end (it is an critical error to receive input for a stream that has ended, as it means that
+     * something is likely wrong with our bookkeeping.)
+     */
+    data class StateStore<K1, S : AutoCloseable>(
         val stateWithCounts: MutableMap<K1, StateWithCounts<S>> = mutableMapOf(),
         val streamCounts: MutableMap<DestinationStream.Descriptor, Long> = mutableMapOf(),
         val streamsEnded: MutableSet<DestinationStream.Descriptor> = mutableSetOf(),
@@ -83,7 +91,9 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                     is PipelineMessage -> {
                         // Get or create the accumulator state associated w/ the input key.
                         if (stateStore.streamsEnded.contains(input.key.stream)) {
-                            throw IllegalStateException("Received input for stream that has ended: $input")
+                            log.warn {
+                                "$taskName[$part] received input for complete stream ${input.key.stream}. This might result in small output files or checkpoint acks withheld until end-of-sync."
+                            }
                         }
                         val stateWithCounts =
                             stateStore.stateWithCounts
@@ -152,42 +162,60 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                                     inputCount = inputCount
                                 )
                         } else {
-                            stateStore.stateWithCounts.remove(input.key)?.close()
+                            stateStore.stateWithCounts.remove(input.key)?.let {
+                                if (inputCount > 0 || it.checkpointCounts.isNotEmpty()) {
+                                    throw IllegalStateException(
+                                        "State evicted with unhandled input ($inputCount) or checkpoint counts(${it.checkpointCounts})"
+                                    )
+                                }
+                                stateWithCounts.close()
+                            }
                         }
-
                         stateStore.streamCounts.merge(input.key.stream, 1) { old, new -> old + new }
                         stateStore
                     }
                     is PipelineEndOfStream -> {
-                        // Give any key associated with the stream a chance to finish
-                        val keysToRemove = stateStore.stateWithCounts.keys.filter { it.stream == input.stream }
+                        val numWorkersSeenEos =
+                            streamCompletions
+                                .getOrPut(Pair(taskIndex, input.stream)) { AtomicInteger(0) }
+                                .incrementAndGet()
+                        val inputCountEos = stateStore.streamCounts[input.stream] ?: 0
+
+                        // Give any key associated with the stream a chance to finish its input
+                        val keysToRemove =
+                            stateStore.stateWithCounts.keys.filter { it.stream == input.stream }
                         keysToRemove.forEach { key ->
-                            stateStore.stateWithCounts.remove(key)?.let { stored ->
-                                val output = batchAccumulator.finish(stored.accumulatorState).output
-                                handleOutput(key, stored.checkpointCounts, output, stored.inputCount)
-                                stored.close()
+                            stateStore.stateWithCounts.remove(key)?.let { stateWithCounts ->
+                                val output =
+                                    batchAccumulator.finish(stateWithCounts.accumulatorState).output
+                                handleOutput(
+                                    key,
+                                    stateWithCounts.checkpointCounts,
+                                    output,
+                                    stateWithCounts.inputCount
+                                )
+                                stateWithCounts.close()
                             }
                         }
 
                         // Only forward end-of-stream if ALL workers have seen end-of-stream.
-                        val numWorkersSeenEos = streamCompletions
-                            .getOrPut(Pair(taskIndex, input.stream)) { AtomicInteger(0) }
-                            .incrementAndGet()
                         if (numWorkersSeenEos == numWorkers) {
                             log.info {
-                                "$this saw end-of-stream for ${input.stream} after ${stateStore.streamCounts[input.stream] ?: 0L} inputs, all workers complete"
+                                "$this saw end-of-stream for ${input.stream} after $inputCountEos inputs, all workers complete"
                             }
-                            delay(1000)
+                            // delay(1000)
                             outputQueue?.broadcast(PipelineEndOfStream(input.stream))
                         } else {
                             log.info {
-                                "$this saw end-of-stream for ${input.stream} after ${stateStore.streamCounts[input.stream] ?: 0L} inputs, ${numWorkers - numWorkersSeenEos} workers remaining"
+                                "$this saw end-of-stream for ${input.stream} after $inputCountEos inputs, ${numWorkers - numWorkersSeenEos} workers remaining"
                             }
                         }
 
                         // Track which tasks are complete
                         stateStore.streamsEnded.add(input.stream)
-                        batchUpdateQueue.publish(BatchEndOfStream(input.stream, taskName, part, stateStore.streamCounts[input.stream] ?: 0L))
+                        batchUpdateQueue.publish(
+                            BatchEndOfStream(input.stream, taskName, part, inputCountEos)
+                        )
 
                         stateStore
                     }
@@ -228,7 +256,6 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                     part = part,
                     inputCount = inputCount
                 )
-
             batchUpdateQueue.publish(update)
         }
     }
