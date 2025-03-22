@@ -331,7 +331,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 stream,
                 listOf(
                     InputFile(
-                        stream = stream.descriptor,
+                        stream = stream,
                         emittedAtMs = 1234,
                         fileMessage = fileMessage,
                     ),
