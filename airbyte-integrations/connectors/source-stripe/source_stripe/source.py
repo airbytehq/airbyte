@@ -25,6 +25,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_stripe.streams import (
     CreatedCursorIncrementalStripeStream,
+    CustomerBalanceTransactions,
     Events,
     IncrementalStripeStream,
     ParentIncrementalStripeSubStream,
@@ -206,7 +207,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             ],
             **args,
         )
-        subscription_items = UpdatedCursorIncrementalStripeLazySubStream(
+        subscription_items = ParentIncrementalStripeSubStream(
             name="subscription_items",
             path="subscription_items",
             parent=subscriptions,
@@ -217,8 +218,6 @@ class SourceStripe(ConcurrentSourceAdapter):
             },
             cursor_field="subscription_updated",
             use_cache=USE_CACHE,
-            sub_items_attr="items",
-            event_types=["customer.subscription.created", "customer.subscription.updated"],
             **args,
         )
         transfers = IncrementalStripeStream(
@@ -505,13 +504,6 @@ class SourceStripe(ConcurrentSourceAdapter):
                 event_types=["topup.canceled", "topup.created", "topup.failed", "topup.reversed", "topup.succeeded"],
                 **args,
             ),
-            ParentIncrementalStripeSubStream(
-                name="customer_balance_transactions",
-                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/balance_transactions",
-                parent=self.customers(**args),
-                cursor_field="created",
-                **args,
-            ),
             UpdatedCursorIncrementalStripeLazySubStream(
                 name="application_fees_refunds",
                 path=lambda self, stream_slice, *args, **kwargs: f"application_fees/{stream_slice['parent']['id']}/refunds",
@@ -552,20 +544,11 @@ class SourceStripe(ConcurrentSourceAdapter):
                 },
                 **args,
             ),
-            UpdatedCursorIncrementalStripeLazySubStream(
+            ParentIncrementalStripeSubStream(
                 name="invoice_line_items",
                 path=lambda self, stream_slice, *args, **kwargs: f"invoices/{stream_slice['parent']['id']}/lines",
                 parent=invoices,
                 cursor_field="invoice_updated",
-                event_types=[
-                    "invoice.created",
-                    "invoice.deleted",
-                    "invoice.updated",
-                    # the event type = "invoice.upcoming" doesn't contain the `primary_key = `id` field,
-                    # thus isn't used, see the doc: https://docs.stripe.com/api/invoices/object#invoice_object-id
-                    # reference issue: https://github.com/airbytehq/oncall/issues/5560
-                ],
-                sub_items_attr="lines",
                 slice_data_retriever=lambda record, stream_slice: {
                     "invoice_id": stream_slice["parent"]["id"],
                     "invoice_created": stream_slice["parent"]["created"],
@@ -579,6 +562,13 @@ class SourceStripe(ConcurrentSourceAdapter):
                 name="transfer_reversals",
                 path=lambda self, stream_slice, *args, **kwargs: f"transfers/{stream_slice['parent']['id']}/reversals",
                 parent=transfers,
+                cursor_field="created",
+                **args,
+            ),
+            CustomerBalanceTransactions(
+                name="customer_balance_transactions",
+                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/balance_transactions",
+                parents=[invoices, self.customers(**args)],
                 cursor_field="created",
                 **args,
             ),
