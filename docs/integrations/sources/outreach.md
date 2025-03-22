@@ -56,6 +56,7 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.1.8 | 2025-03-22 | [56211](https://github.com/airbytehq/airbyte/pull/56211) | Update dependencies |
 | 1.1.7 | 2025-03-17 | [55888](https://github.com/airbytehq/airbyte/pull/55888) | Remove custom incremental class and use new filter syntax |
 | 1.1.6 | 2025-03-09 | [55180](https://github.com/airbytehq/airbyte/pull/55180) | 🐛 Source Outreach: remove stream_state interpolation |
 | 1.1.5 | 2025-03-08 | [55561](https://github.com/airbytehq/airbyte/pull/55561) | Update dependencies |
