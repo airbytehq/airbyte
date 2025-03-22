@@ -35,6 +35,8 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.fold
+import kotlinx.coroutines.flow.lastOrNull
+import kotlinx.coroutines.flow.runningFold
 
 /**
  * Accumulator state with the checkpoint counts (Checkpoint Id -> Records Seen) seen since the state
@@ -85,7 +87,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
     )
 
     override suspend fun execute() {
-        inputFlow.fold(StateStore<K1, S>()) { stateStore, input ->
+        val finalStateStore = inputFlow.runningFold(StateStore<K1, S>()) { stateStore, input ->
             try {
                 when (input) {
                     is PipelineMessage -> {
@@ -181,22 +183,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                                 .incrementAndGet()
                         val inputCountEos = stateStore.streamCounts[input.stream] ?: 0
 
-                        // Give any key associated with the stream a chance to finish its input
-                        val keysToRemove =
-                            stateStore.stateWithCounts.keys.filter { it.stream == input.stream }
-                        keysToRemove.forEach { key ->
-                            stateStore.stateWithCounts.remove(key)?.let { stateWithCounts ->
-                                val output =
-                                    batchAccumulator.finish(stateWithCounts.accumulatorState).output
-                                handleOutput(
-                                    key,
-                                    stateWithCounts.checkpointCounts,
-                                    output,
-                                    stateWithCounts.inputCount
-                                )
-                                stateWithCounts.close()
-                            }
-                        }
+                        finishState(stateStore, input.stream)
 
                         // Only forward end-of-stream if ALL workers have seen end-of-stream.
                         if (numWorkersSeenEos == numWorkers) {
@@ -227,6 +214,12 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                     .forEach { it.getOrThrow() }
                 throw t
             }
+        }.lastOrNull()
+
+        if (finalStateStore == null) {
+            log.warn { "Task $taskName[$part] consumed no input" }
+        } else {
+            finishState(finalStateStore, null)
         }
     }
 
@@ -257,6 +250,27 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                     inputCount = inputCount
                 )
             batchUpdateQueue.publish(update)
+        }
+    }
+
+    private suspend fun finishState(stateStore: StateStore<K1, S>, onlyStream: DestinationStream.Descriptor?) {
+        val keysToRemove =
+            stateStore.stateWithCounts.keys.filter { k -> onlyStream == null || onlyStream == k.stream }
+
+        keysToRemove.forEach { key ->
+            log.warn { "Finishing state for $key remaining after end-of-stream" }
+            stateStore.stateWithCounts.remove(key)?.let { stateWithCounts ->
+                val output =
+                    batchAccumulator.finish(stateWithCounts.accumulatorState).output
+                println("EXTRA OUTPUT $output")
+                handleOutput(
+                    key,
+                    stateWithCounts.checkpointCounts,
+                    output,
+                    stateWithCounts.inputCount
+                )
+                stateWithCounts.close()
+            }
         }
     }
 
