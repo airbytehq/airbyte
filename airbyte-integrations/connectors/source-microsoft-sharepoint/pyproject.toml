@@ -17,10 +17,10 @@ include = "source_microsoft_sharepoint"
 
 [tool.poetry.dependencies]
 python = "^3.11,<3.12"
-msal = "==1.25.0"
+msal = "==1.27.0"
 Office365-REST-Python-Client = "==2.5.5"
 smart-open = "==6.4.0"
-airbyte-cdk = {extras = ["file-based"], version = "^6"}
+airbyte-cdk = {extras = ["file-based"], version = "^6.38.5"}
 
 [tool.poetry.scripts]
 source-microsoft-sharepoint = "source_microsoft_sharepoint.run:run"
