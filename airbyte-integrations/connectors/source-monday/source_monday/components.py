@@ -8,7 +8,7 @@ from typing import Any, Iterable, List, Mapping, Optional, Union
 import dpath.util
 
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
-from airbyte_cdk.sources.declarative.incremental import Cursor
+from airbyte_cdk.sources.declarative.incremental import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
@@ -20,7 +20,7 @@ RequestInput = Union[str, Mapping[str, str]]
 
 
 @dataclass
-class IncrementalSingleSlice(Cursor):
+class IncrementalSingleSlice(DeclarativeCursor):
     cursor_field: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
@@ -75,6 +75,9 @@ class IncrementalSingleSlice(Cursor):
         cursor_value = stream_state.get(self.cursor_field.eval(self.config))
         if cursor_value:
             self._state[self.cursor_field.eval(self.config)] = cursor_value
+    
+    def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
+        return self._state
 
     def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
         latest_record = self._state if self.is_greater_than_or_equal(self._state, most_recent_record) else most_recent_record
