@@ -127,6 +127,7 @@ The Stripe source connector supports the following streams:
 - [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
 - [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
+- [Tax Rates](https://docs.stripe.com/api/tax_rates/list) \(Incremental\)
 - [Top Ups](https://stripe.com/docs/api/topups/list) \(Incremental\)
 - [Transactions](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
@@ -170,6 +171,7 @@ However, not all the entities are supported by the Events API, so the Stripe con
 - `Refunds`
 - `Setup Attempts`
 - `Shipping Rates`
+- `Tax Rates`
 
 On the other hand, the following streams use the `updated` field value as a cursor:
 
@@ -246,6 +248,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.9.0 | 2025-03-15 | [44184](https://github.com/airbytehq/airbyte/pull/44184) | Added stream `tax_rates` (incremental sync)
 | 5.8.12     | 2025-03-10 | [55682](https://github.com/airbytehq/airbyte/pull/55682)  | Promoting release candidate 5.8.10-rc.1 to a main version.                                                                                                                                                                    |
 | 5.8.11     | 2025-03-08 | [55598](https://github.com/airbytehq/airbyte/pull/55598)  | Update dependencies                                                                                                                                                                                                           |
 | 5.8.10-rc1 | 2025-02-22 | [53670](https://github.com/airbytehq/airbyte/pull/53670)  | Update pritbuffer logic                                                                                                                                                                                                       |

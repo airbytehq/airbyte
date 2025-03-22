@@ -32,6 +32,7 @@ from source_stripe.streams import (
     StripeLazySubStream,
     StripeStream,
     StripeSubStream,
+    TaxRates,
     UpdatedCursorIncrementalStripeLazySubStream,
     UpdatedCursorIncrementalStripeStream,
     UpdatedCursorIncrementalStripeSubStream,
@@ -51,6 +52,7 @@ class SourceStripe(ConcurrentSourceAdapter):
     message_repository = InMemoryMessageRepository(entrypoint_logger.level)
     _SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION = {
         Events: ("created[gte]", "created[lte]"),
+        TaxRates: ("created[gte]", "created[lte]"),
         CreatedCursorIncrementalStripeStream: ("created[gte]", "created[lte]"),
     }
 
@@ -292,6 +294,7 @@ class SourceStripe(ConcurrentSourceAdapter):
         streams = [
             checkout_sessions,
             Events(**incremental_args),
+            TaxRates(**incremental_args),
             UpdatedCursorIncrementalStripeStream(
                 name="external_account_cards",
                 path=lambda self, *args, **kwargs: f"accounts/{self.account_id}/external_accounts",
