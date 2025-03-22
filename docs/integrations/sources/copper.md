@@ -44,6 +44,7 @@ The Copper source connector supports the following [sync modes](https://docs.air
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.10 | 2025-03-22 | [55936](https://github.com/airbytehq/airbyte/pull/55936) | Update dependencies |
 | 0.4.9 | 2025-03-08 | [55301](https://github.com/airbytehq/airbyte/pull/55301) | Update dependencies |
 | 0.4.8 | 2025-03-01 | [54411](https://github.com/airbytehq/airbyte/pull/54411) | Update dependencies |
 | 0.4.7 | 2025-02-15 | [52851](https://github.com/airbytehq/airbyte/pull/52851) | Update dependencies |
