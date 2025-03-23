@@ -25,6 +25,7 @@ JustCall connector enables seamless data integration by syncing call logs, conta
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.18 | 2025-03-22 | [56058](https://github.com/airbytehq/airbyte/pull/56058) | Update dependencies |
 | 0.0.17 | 2025-03-08 | [55496](https://github.com/airbytehq/airbyte/pull/55496) | Update dependencies |
 | 0.0.16 | 2025-03-01 | [54755](https://github.com/airbytehq/airbyte/pull/54755) | Update dependencies |
 | 0.0.15 | 2025-02-22 | [54344](https://github.com/airbytehq/airbyte/pull/54344) | Update dependencies |

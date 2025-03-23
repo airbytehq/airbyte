@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-customerly
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.41.3@sha256:dad33e5ffdd4a2480ea809d79ebad0128214c3cd0f2799ae3f0232e737a0bc58
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.41.8@sha256:702857eda56f90ea5f2eea387c5e7f7919f7fddc4148c6c0c9e7dc1879bcc93b
   connectorSubtype: api
   connectorType: source
   definitionId: 5a48749a-84ee-4a4e-8e84-217119fbe438
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/source-customerly
   githubIssueLabel: source-customerly
   icon: icon.svg

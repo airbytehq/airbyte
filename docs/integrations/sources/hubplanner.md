@@ -44,6 +44,7 @@ The Okta source connector supports the following [sync modes](https://docs.airby
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.3.15 | 2025-03-22 | [56002](https://github.com/airbytehq/airbyte/pull/56002) | Update dependencies |
 | 0.3.14 | 2025-03-08 | [55450](https://github.com/airbytehq/airbyte/pull/55450) | Update dependencies |
 | 0.3.13 | 2025-03-01 | [54773](https://github.com/airbytehq/airbyte/pull/54773) | Update dependencies |
 | 0.3.12 | 2025-02-22 | [54362](https://github.com/airbytehq/airbyte/pull/54362) | Update dependencies |

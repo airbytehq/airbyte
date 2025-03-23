@@ -6,10 +6,10 @@ data:
       - oauth.platform.intuit.com
   connectorSubtype: api
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.38.3@sha256:fcba02266f262aabc2f37e4f14574aa1c8c5cffd018504bab28803e405c93afe
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.41.8@sha256:702857eda56f90ea5f2eea387c5e7f7919f7fddc4148c6c0c9e7dc1879bcc93b
   connectorType: source
   definitionId: cf9c4355-b171-4477-8f2d-6c5cc5fc8b7e
-  dockerImageTag: 4.1.0
+  dockerImageTag: 4.1.1
   dockerRepository: airbyte/source-quickbooks
   githubIssueLabel: source-quickbooks
   icon: quickbooks.svg
@@ -22,8 +22,10 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      dockerImageTag: 4.0.4 # previous stable version here
     oss:
       enabled: true
+      dockerImageTag: 4.0.4 # previous stable version here
   releaseStage: alpha
   releases:
     rolloutConfiguration:

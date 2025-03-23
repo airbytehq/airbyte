@@ -83,7 +83,8 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.2.0   | 2025-03-10 | [47319](https://github.com/airbytehq/airbyte/pull/47319) | Migrate to Manifest-only |
+| 1.2.1 | 2025-03-22 | [56345](https://github.com/airbytehq/airbyte/pull/56345) | Update dependencies |
+| 1.2.0 | 2025-03-10 | [47319](https://github.com/airbytehq/airbyte/pull/47319) | Migrate to Manifest-only |
 | 1.1.1 | 2025-03-09 | [54110](https://github.com/airbytehq/airbyte/pull/54110) | Update dependencies |
 | 1.1.0 | 2025-03-03 | [54151](https://github.com/airbytehq/airbyte/pull/54151) | Migrate to incrementalcursors |
 | 1.0.4 | 2025-02-01 | [53081](https://github.com/airbytehq/airbyte/pull/53081) | Update dependencies |
