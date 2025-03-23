@@ -143,9 +143,16 @@ class IncrementalTest(TestCase):
             StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: cursor_value.isoformat(timespec="milliseconds")}),
         )
 
-        assert output.most_recent_state.stream_state == AirbyteStateBlob(
-            {"state_type": "date-range", "slices": [{"start": _to_partitioned_datetime(start), "end": _to_partitioned_datetime(_NOW)}]}
-        )
+        assert output.most_recent_state.stream_state.__dict__ == {
+            "state_type": "date-range",
+            "slices": [
+                {
+                    "start": _to_partitioned_datetime(start),
+                    "end": _to_partitioned_datetime(_NOW),
+                    "most_recent_cursor_value": _to_partitioned_datetime(cursor_value),
+                }
+            ],
+        }
 
     def test_given_partitioned_state_when_read_then_sync_missing_partitions_and_update_state(self) -> None:
         missing_chunk = (_NOW - timedelta(days=5), _NOW - timedelta(days=3))
@@ -178,7 +185,14 @@ class IncrementalTest(TestCase):
 
         output = read(_STREAM_NAME, SyncMode.incremental, self._config, state)
 
-        # the start is granular to the second hence why we have `000` in terms of milliseconds
-        assert output.most_recent_state.stream_state == AirbyteStateBlob(
-            {"state_type": "date-range", "slices": [{"start": _to_partitioned_datetime(start), "end": _to_partitioned_datetime(_NOW)}]}
-        )
+        # most_recent_cursor_value is a copy/paste of the value in `create_http_response`
+        assert output.most_recent_state.stream_state.__dict__ == {
+            "state_type": "date-range",
+            "slices": [
+                {
+                    "start": _to_partitioned_datetime(start),
+                    "end": _to_partitioned_datetime(_NOW),
+                    "most_recent_cursor_value": "2021-01-18T21:18:20.000Z",
+                }
+            ],
+        }

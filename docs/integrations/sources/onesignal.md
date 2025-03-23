@@ -78,6 +78,7 @@ The connector is restricted by normal OneSignal [rate limits](https://documentat
 
 | Version | Date       | Pull Request                                             | Subject                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------- |
+| 1.2.16 | 2025-03-22 | [56237](https://github.com/airbytehq/airbyte/pull/56237) | Update dependencies |
 | 1.2.15 | 2025-03-08 | [55545](https://github.com/airbytehq/airbyte/pull/55545) | Update dependencies |
 | 1.2.14 | 2025-03-01 | [55040](https://github.com/airbytehq/airbyte/pull/55040) | Update dependencies |
 | 1.2.13 | 2025-02-23 | [54587](https://github.com/airbytehq/airbyte/pull/54587) | Update dependencies |
