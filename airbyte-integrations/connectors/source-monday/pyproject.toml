@@ -16,7 +16,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_monday"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "^3.9,<3.11"
 airbyte-cdk = "0.78.6" # Breaks with newer versions of the CDK
 
 [tool.poetry.scripts]
