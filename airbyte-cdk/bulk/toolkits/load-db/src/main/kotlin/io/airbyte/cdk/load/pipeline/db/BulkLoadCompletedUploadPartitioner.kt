@@ -26,7 +26,7 @@ class BulkLoadCompletedUploadPartitioner<T : RemoteObject<*>> :
         return StreamKey(inputKey.stream)
     }
 
-    override fun getPart(outputKey: StreamKey, numParts: Int): Int {
+    override fun getPart(outputKey: StreamKey, inputPart: Int, numParts: Int): Int {
         return Math.floorMod(outputKey.stream.hashCode(), numParts)
     }
 }
