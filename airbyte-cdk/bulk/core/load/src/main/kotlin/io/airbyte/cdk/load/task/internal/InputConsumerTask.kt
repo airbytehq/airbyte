@@ -17,14 +17,12 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
-import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.FileTransferQueueEndOfStream
 import io.airbyte.cdk.load.message.FileTransferQueueMessage
 import io.airbyte.cdk.load.message.FileTransferQueueRecord
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalCheckpointWrapped
 import io.airbyte.cdk.load.message.MessageQueue
-import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEndOfStream
 import io.airbyte.cdk.load.message.PipelineEvent
@@ -32,12 +30,9 @@ import io.airbyte.cdk.load.message.PipelineMessage
 import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpointWrapped
-import io.airbyte.cdk.load.message.StreamEndEvent
 import io.airbyte.cdk.load.message.StreamKey
-import io.airbyte.cdk.load.message.StreamRecordEvent
 import io.airbyte.cdk.load.message.Undefined
 import io.airbyte.cdk.load.pipeline.InputPartitioner
-import io.airbyte.cdk.load.pipeline.LoadPipeline
 import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.DestinationTaskLauncher
@@ -68,11 +63,8 @@ interface InputConsumerTask : Task
 class DefaultInputConsumerTask(
     private val catalog: DestinationCatalog,
     private val inputFlow: ReservingDeserializingInputFlow,
-    private val recordQueueSupplier:
-        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
     val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
     private val syncManager: SyncManager,
-    private val destinationTaskLauncher: DestinationTaskLauncher,
     @Named("fileMessageQueue")
     private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
 
@@ -80,7 +72,6 @@ class DefaultInputConsumerTask(
     @Named("pipelineInputQueue")
     private val pipelineInputQueue:
         PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
-    private val loadPipeline: LoadPipeline? = null,
     private val partitioner: InputPartitioner,
     private val openStreamQueue: QueueWriter<DestinationStream>
 ) : InputConsumerTask {
@@ -89,54 +80,6 @@ class DefaultInputConsumerTask(
     override val terminalCondition: TerminalCondition = OnSyncFailureOnly
 
     private val unopenedStreams = ConcurrentHashMap(catalog.streams.associateBy { it.descriptor })
-
-    private suspend fun handleRecord(
-        reserved: Reserved<DestinationStreamAffinedMessage>,
-        sizeBytes: Long
-    ) {
-        val stream = reserved.value.stream
-        val manager = syncManager.getStreamManager(stream.descriptor)
-        val recordQueue = recordQueueSupplier.get(stream.descriptor)
-        when (val message = reserved.value) {
-            is DestinationRecord -> {
-                val wrapped =
-                    StreamRecordEvent(
-                        index = manager.incrementReadCount(),
-                        sizeBytes = sizeBytes,
-                        payload = message.asRecordSerialized()
-                    )
-                recordQueue.publish(reserved.replace(wrapped))
-            }
-            is DestinationRecordStreamComplete -> {
-                reserved.release() // safe because multiple calls conflate
-                val wrapped = StreamEndEvent(index = manager.markEndOfStream(true))
-                log.info { "Read COMPLETE for stream $stream" }
-                recordQueue.publish(reserved.replace(wrapped))
-                recordQueue.close()
-            }
-            is DestinationRecordStreamIncomplete -> {
-                reserved.release() // safe because multiple calls conflate
-                val wrapped = StreamEndEvent(index = manager.markEndOfStream(false))
-                log.info { "Read INCOMPLETE for stream $stream" }
-                recordQueue.publish(reserved.replace(wrapped))
-                recordQueue.close()
-            }
-            is DestinationFile -> {
-                throw NotImplementedError(
-                    "File transfer should only run on the new pipeline (file)."
-                )
-            }
-            is DestinationFileStreamComplete -> {
-                throw NotImplementedError(
-                    "File transfer should only run on the new pipeline (end-of-stream)."
-                )
-            }
-            is DestinationFileStreamIncomplete ->
-                throw NotImplementedError(
-                    "File transfer should only run on the new pipeline (incomplete)."
-                )
-        }
-    }
 
     private suspend fun handleRecordForPipeline(
         reserved: Reserved<DestinationStreamAffinedMessage>,
@@ -211,18 +154,12 @@ class DefaultInputConsumerTask(
                 val stream = checkpoint.checkpoint.stream
                 val manager = syncManager.getStreamManager(stream)
                 val checkpointId = manager.getCurrentCheckpointId()
-                val (currentIndex, countSinceLast) = manager.markCheckpoint()
-                val indexOrId =
-                    if (loadPipeline == null) {
-                        currentIndex
-                    } else {
-                        checkpointId.id.toLong()
-                    }
+                val (_, countSinceLast) = manager.markCheckpoint()
                 val messageWithCount =
                     checkpoint.withDestinationStats(CheckpointMessage.Stats(countSinceLast))
                 checkpointQueue.publish(
                     reservation.replace(
-                        StreamCheckpointWrapped(sizeBytes, stream, indexOrId, messageWithCount)
+                        StreamCheckpointWrapped(sizeBytes, stream, checkpointId, messageWithCount)
                     )
                 )
             }
@@ -236,14 +173,8 @@ class DefaultInputConsumerTask(
                     catalog.streams.map { stream ->
                         val manager = syncManager.getStreamManager(stream.descriptor)
                         val checkpointId = manager.getCurrentCheckpointId()
-                        val (currentIndex, countSinceLast) = manager.markCheckpoint()
-                        val indexOrId =
-                            if (loadPipeline == null) {
-                                currentIndex
-                            } else {
-                                checkpointId.id.toLong()
-                            }
-                        Triple(stream, indexOrId, countSinceLast)
+                        val (_, countSinceLast) = manager.markCheckpoint()
+                        Triple(stream, checkpointId, countSinceLast)
                     }
                 val totalCount = streamWithIndexAndCount.sumOf { it.third }
                 val messageWithCount =
@@ -271,11 +202,7 @@ class DefaultInputConsumerTask(
                     when (val message = reserved.value) {
                         /* If the input message represents a record. */
                         is DestinationStreamAffinedMessage -> {
-                            if (loadPipeline != null) {
-                                handleRecordForPipeline(reserved.replace(message))
-                            } else {
-                                handleRecord(reserved.replace(message), sizeBytes)
-                            }
+                            handleRecordForPipeline(reserved.replace(message))
                         }
                         is CheckpointMessage ->
                             handleCheckpoint(reserved.replace(message), sizeBytes)
@@ -288,7 +215,6 @@ class DefaultInputConsumerTask(
             syncManager.markInputConsumed()
         } finally {
             log.info { "Closing record queues" }
-            catalog.streams.forEach { recordQueueSupplier.get(it.descriptor).close() }
             fileTransferQueue.close()
             pipelineInputQueue.close()
         }
@@ -299,15 +225,12 @@ interface InputConsumerTaskFactory {
     fun make(
         catalog: DestinationCatalog,
         inputFlow: ReservingDeserializingInputFlow,
-        recordQueueSupplier:
-            MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
         checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
         destinationTaskLauncher: DestinationTaskLauncher,
         fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
 
         // Required by new interface
         pipelineInputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
-        loadPipeline: LoadPipeline?,
         partitioner: InputPartitioner,
         openStreamQueue: QueueWriter<DestinationStream>,
     ): InputConsumerTask
@@ -321,30 +244,24 @@ class DefaultInputConsumerTaskFactory(
     override fun make(
         catalog: DestinationCatalog,
         inputFlow: ReservingDeserializingInputFlow,
-        recordQueueSupplier:
-            MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
         checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
         destinationTaskLauncher: DestinationTaskLauncher,
         fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
 
         // Required by new interface
         pipelineInputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
-        loadPipeline: LoadPipeline?,
         partitioner: InputPartitioner,
         openStreamQueue: QueueWriter<DestinationStream>,
     ): InputConsumerTask {
         return DefaultInputConsumerTask(
             catalog,
             inputFlow,
-            recordQueueSupplier,
             checkpointQueue,
             syncManager,
-            destinationTaskLauncher,
             fileTransferQueue,
 
             // Required by new interface
             pipelineInputQueue,
-            loadPipeline,
             partitioner,
             openStreamQueue,
         )

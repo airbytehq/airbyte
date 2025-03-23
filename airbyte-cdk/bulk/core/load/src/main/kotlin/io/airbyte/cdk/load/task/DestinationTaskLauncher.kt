@@ -9,14 +9,11 @@ import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.FileTransferQueueMessage
 import io.airbyte.cdk.load.message.MessageQueue
-import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.QueueWriter
@@ -31,29 +28,21 @@ import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailSyncTaskFactory
 import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
-import io.airbyte.cdk.load.task.implementor.ProcessBatchTaskFactory
-import io.airbyte.cdk.load.task.implementor.ProcessRecordsTaskFactory
 import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
-import io.airbyte.cdk.load.task.internal.FlushCheckpointsTaskFactory
-import io.airbyte.cdk.load.task.internal.FlushTickTask
 import io.airbyte.cdk.load.task.internal.HeartbeatTask
 import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
 import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
-import io.airbyte.cdk.load.task.internal.SpillToDiskTaskFactory
 import io.airbyte.cdk.load.task.internal.UpdateBatchStateTaskFactory
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.airbyte.cdk.load.util.setOnce
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 /**
  * Governs the task workflow for the entire destination life-cycle.
@@ -98,33 +87,22 @@ class DestinationTaskLauncher(
 
     // Internal Tasks
     private val inputConsumerTaskFactory: InputConsumerTaskFactory,
-    private val spillToDiskTaskFactory: SpillToDiskTaskFactory,
-    private val flushTickTask: FlushTickTask,
 
     // Implementor Tasks
     private val setupTaskFactory: SetupTaskFactory,
     private val openStreamTaskFactory: OpenStreamTaskFactory,
-    private val processRecordsTaskFactory: ProcessRecordsTaskFactory,
-    private val processBatchTaskFactory: ProcessBatchTaskFactory,
     private val closeStreamTaskFactory: CloseStreamTaskFactory,
     private val teardownTaskFactory: TeardownTaskFactory,
 
     // Checkpoint Tasks
-    private val flushCheckpointsTaskFactory: FlushCheckpointsTaskFactory,
     private val updateCheckpointsTask: UpdateCheckpointsTask,
 
     // Exception handling
     private val failStreamTaskFactory: FailStreamTaskFactory,
     private val failSyncTaskFactory: FailSyncTaskFactory,
 
-    // File transfer
-    @Value("\${airbyte.destination.core.file-transfer.enabled}")
-    private val legacyFileTransfer: Boolean,
-
     // Input Consumer requirements
     private val inputFlow: ReservingDeserializingInputFlow,
-    private val recordQueueSupplier:
-        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
     private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
     @Named("fileMessageQueue")
     private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
@@ -141,15 +119,22 @@ class DestinationTaskLauncher(
     @Named("defaultDestinationTaskLauncherHasThrown") private val hasThrown: AtomicBoolean,
     private val heartbeatTask: HeartbeatTask<WithStream, DestinationRecordRaw>,
 ) {
+    init {
+        if (loadPipeline == null) {
+            throw IllegalStateException(
+                "A legal sync requires a declared @Singleton of a type that implements LoadStrategy"
+            )
+        }
+    }
+
     private val log = KotlinLogging.logger {}
 
-    private val batchUpdateLock = Mutex()
     private val succeeded = Channel<Boolean>(Channel.UNLIMITED)
 
     private val teardownIsEnqueued = AtomicBoolean(false)
     private val failSyncIsEnqueued = AtomicBoolean(false)
 
-    private val closeStreamHasRun = ConcurrentHashMap<DestinationStream.Descriptor, AtomicBoolean>()
+    val closeStreamHasRun = ConcurrentHashMap<DestinationStream.Descriptor, AtomicBoolean>()
 
     inner class WrappedTask(
         private val innerTask: Task,
@@ -196,12 +181,10 @@ class DestinationTaskLauncher(
             inputConsumerTaskFactory.make(
                 catalog = catalog,
                 inputFlow = inputFlow,
-                recordQueueSupplier = recordQueueSupplier,
                 checkpointQueue = checkpointQueue,
                 fileTransferQueue = fileTransferQueue,
                 destinationTaskLauncher = this,
                 pipelineInputQueue = pipelineInputQueue,
-                loadPipeline = loadPipeline,
                 partitioner = partitioner,
                 openStreamQueue = openStreamQueue,
             )
@@ -217,39 +200,13 @@ class DestinationTaskLauncher(
             launch(openStreamTaskFactory.make())
         }
 
-        if (loadPipeline != null) {
-            log.info { "Setting up load pipeline" }
-            loadPipeline.start { launch(it) }
-            log.info { "Launching update batch task" }
-            val updateBatchTask = updateBatchTaskFactory.make(this)
-            launch(updateBatchTask)
-            log.info { "Launching heartbeat task" }
-            launch(heartbeatTask)
-        } else {
-            if (!legacyFileTransfer) {
-                // Start a spill-to-disk task for each record stream
-                catalog.streams.forEach { stream ->
-                    log.info { "Starting spill-to-disk task for $stream" }
-                    val spillTask = spillToDiskTaskFactory.make(this, stream.descriptor)
-                    launch(spillTask)
-                }
-
-                repeat(config.numProcessRecordsWorkers) {
-                    log.info { "Launching process records task $it" }
-                    val task = processRecordsTaskFactory.make(this)
-                    launch(task)
-                }
-
-                repeat(config.numProcessBatchWorkers) {
-                    log.info { "Launching process batch task $it" }
-                    val task = processBatchTaskFactory.make(this)
-                    launch(task)
-                }
-            } // else legacy file transfer will be started by the load strategy
-            // Start flush task
-            log.info { "Starting timed file aggregate flush task " }
-            launch(flushTickTask)
-        }
+        log.info { "Setting up load pipeline" }
+        loadPipeline!!.start { launch(it) }
+        log.info { "Launching update batch task" }
+        val updateBatchTask = updateBatchTaskFactory.make(this)
+        launch(updateBatchTask)
+        log.info { "Launching heartbeat task" }
+        launch(heartbeatTask)
 
         log.info { "Starting checkpoint update task" }
         launch(updateCheckpointsTask)
@@ -268,36 +225,6 @@ class DestinationTaskLauncher(
 
     suspend fun handleSetupComplete() {
         syncManager.markSetupComplete()
-        if (loadPipeline == null) {
-            log.info { "Setup task complete, opening streams" }
-            catalog.streams.forEach { openStreamQueue.publish(it) }
-            log.info { "Closing open stream queue" }
-            openStreamQueue.close()
-        }
-    }
-
-    /**
-     * Called for each new batch. Enqueues processing for any incomplete batch, and enqueues closing
-     * the stream if all batches are complete.
-     */
-    suspend fun handleNewBatch(stream: DestinationStream.Descriptor, wrapped: BatchEnvelope<*>) {
-        batchUpdateLock.withLock {
-            val streamManager = syncManager.getStreamManager(stream)
-            streamManager.updateBatchState(wrapped)
-
-            if (wrapped.batch.isPersisted()) {
-                log.info {
-                    "Batch $wrapped is persisted: Starting flush checkpoints task for $stream"
-                }
-                launch(flushCheckpointsTaskFactory.make())
-            }
-
-            if (streamManager.isBatchProcessingComplete()) {
-                handleStreamComplete(stream)
-            } else {
-                log.info { "Batch processing not complete: nothing else to do." }
-            }
-        }
     }
 
     suspend fun handleStreamComplete(stream: DestinationStream.Descriptor) {
