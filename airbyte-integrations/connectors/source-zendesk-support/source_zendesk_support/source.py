@@ -4,19 +4,15 @@
 
 import base64
 import logging
-from datetime import datetime
 from typing import Any, List, Mapping, Optional, Tuple
 
+from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from source_zendesk_support.streams import DATETIME_FORMAT, ZendeskConfigException
-
-from .streams import (
-    UserSettingsStream,
-)
 
 
 logger = logging.getLogger("airbyte")
@@ -46,7 +42,10 @@ class SourceZendeskSupport(YamlDeclarativeSource):
             elif auth.get("credentials") == "api_token":
                 return BasicApiTokenAuthenticator(config["credentials"]["email"], config["credentials"]["api_token"])
             else:
-                raise ZendeskConfigException(message=f"Not implemented authorization method: {config['credentials']}")
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    message=f"Not implemented authorization method: {config['credentials']}",
+                )
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -56,13 +55,21 @@ class SourceZendeskSupport(YamlDeclarativeSource):
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully,
         (False, error) otherwise.
         """
-        auth = self.get_authenticator(config)
+        http_client = HttpClient(
+            name="user_settings",
+            logger=self.logger,
+            authenticator=self.get_authenticator(config),
+        )
         try:
-            start_date = datetime.strptime(config["start_date"], DATETIME_FORMAT) if config["start_date"] else None
-            settings = UserSettingsStream(config["subdomain"], authenticator=auth, start_date=start_date).get_settings()
+            _, response = http_client.send_request(
+                http_method="GET",
+                url=f"https://{config['subdomain']}.zendesk.com/api/v2/account/settings.json",
+                request_kwargs={},
+            )
         except Exception as e:
             return False, e
-        active_features = [k for k, v in settings.get("active_features", {}).items() if v]
+
+        active_features = [k for k, v in response.json().get("settings", {}).get("active_features", {}).items() if v]
         if "organization_access_enabled" not in active_features:
             return (
                 False,
