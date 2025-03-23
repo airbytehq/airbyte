@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
-  dockerImageTag: 3.3.0
+  dockerImageTag: 4.0.0
   dockerRepository: airbyte/source-instagram
   githubIssueLabel: source-instagram
   icon: instagram.svg
@@ -26,6 +26,13 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      4.0.0:
+        message: "This release removes deprecated metrics - `clips_replays_count`, `ig_reels_aggregated_all_plays_count`, `impressions`, and `plays` from `media_insights` stream, and `impressions` from `user_insights` streams. Customers who these streams must take action with their connections. For more details, see our <a href='https://docs.airbyte.com/integrations/sources/instagram-migrations'>migration guide</a>."
+        upgradeDeadline: "2025-04-21"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              ["media_insights", "user_insights"]
       3.0.0:
         message: "The existing Instagram API (v11) has been deprecated. Customers who use streams `Media Insights`, `Story Insights` or `User Lifetime Insights` must take action with their connections. Please follow the to update to the latest Instagram API (v18). For more details, see our <a href='https://docs.airbyte.com/integrations/sources/instagram-migrations'>migration guide</a>."
         upgradeDeadline: "2024-01-05"
