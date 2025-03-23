@@ -58,7 +58,7 @@ class MSSQLConfigurationFactory(private val featureFlags: Set<FeatureFlag>) :
             password = overrides.getOrDefault("password", spec.password),
             jdbcUrlParams = overrides.getOrDefault("jdbcUrlParams", spec.jdbcUrlParams),
             sslMethod = spec.sslMethod,
-            mssqlLoadTypeConfiguration = spec.toLoadConfiguration()
+            mssqlLoadTypeConfiguration = spec.toLoadConfiguration(),
         )
     }
 }
