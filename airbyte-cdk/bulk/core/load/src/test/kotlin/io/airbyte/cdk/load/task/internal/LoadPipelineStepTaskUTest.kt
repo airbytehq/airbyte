@@ -423,7 +423,11 @@ class LoadPipelineStepTaskUTest {
                             return TestKey(output, inputKey.stream)
                         }
 
-                        override fun getPart(outputKey: TestKey, numParts: Int): Int {
+                        override fun getPart(
+                            outputKey: TestKey,
+                            inputPart: Int,
+                            numParts: Int
+                        ): Int {
                             if (outputKey.output) return 1
                             return 0
                         }

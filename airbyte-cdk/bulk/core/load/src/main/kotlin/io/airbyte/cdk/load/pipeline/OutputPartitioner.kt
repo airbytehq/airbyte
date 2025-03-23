@@ -13,5 +13,5 @@ import io.airbyte.cdk.load.message.WithStream
  */
 interface OutputPartitioner<K1 : WithStream, T, K2 : WithStream, U> {
     fun getOutputKey(inputKey: K1, output: U): K2
-    fun getPart(outputKey: K2, numParts: Int): Int
+    fun getPart(outputKey: K2, inputPart: Int, numParts: Int): Int
 }
