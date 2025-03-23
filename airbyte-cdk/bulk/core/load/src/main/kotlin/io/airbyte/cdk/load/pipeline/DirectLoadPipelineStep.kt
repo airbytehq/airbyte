@@ -23,12 +23,20 @@ class DirectLoadPipelineStep<S : DirectLoader>(
     private val log = KotlinLogging.logger {}
     override val numWorkers: Int = directLoaderFactory.inputPartitions
 
+    val maxNumConcurrentKeys =
+        directLoaderFactory.maxNumOpenLoaders?.div(directLoaderFactory.inputPartitions)?.also {
+            check(it > 0) {
+                "maxNumOpenLoaders=${directLoaderFactory.maxNumOpenLoaders} over numWorkers=${directLoaderFactory.inputPartitions} would result in < 1 open loader per worker."
+            }
+        }
+
     override fun taskForPartition(partition: Int): LoadPipelineStepTask<*, *, *, *, *> {
         log.info { "Creating DirectLoad pipeline step task for partition $partition" }
         return taskFactory.createOnlyStep<S, StreamKey, DirectLoadAccResult>(
             accumulator,
             partition,
-            numWorkers
+            numWorkers,
+            maxNumConcurrentKeys = maxNumConcurrentKeys
         )
     }
 }
