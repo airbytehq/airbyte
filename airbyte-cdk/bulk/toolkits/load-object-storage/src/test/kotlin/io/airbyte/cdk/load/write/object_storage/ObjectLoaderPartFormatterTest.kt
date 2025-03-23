@@ -165,7 +165,6 @@ class ObjectLoaderPartFormatterTest {
 
         // part 1->2/2b of 4b total => data sufficient for part, should be first part and nonfinal
         val result2 = threadRecords(1, acc, result.nextState!!)
-        println(result2)
         when (result2) {
             is IntermediateOutput -> {
                 assert(result2.output.part.bytes.contentEquals(makeBytes(2)))

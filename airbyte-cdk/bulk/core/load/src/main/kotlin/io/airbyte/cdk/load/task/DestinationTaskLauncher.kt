@@ -10,29 +10,23 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.ChannelMessageQueue
-import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.message.FileTransferQueueMessage
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
-import io.airbyte.cdk.load.message.QueueWriter
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.BatchUpdate
-import io.airbyte.cdk.load.pipeline.InputPartitioner
 import io.airbyte.cdk.load.pipeline.LoadPipeline
-import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.FailSyncTaskFactory
-import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
+import io.airbyte.cdk.load.task.implementor.OpenStreamTask
 import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
 import io.airbyte.cdk.load.task.internal.HeartbeatTask
-import io.airbyte.cdk.load.task.internal.InputConsumerTaskFactory
-import io.airbyte.cdk.load.task.internal.ReservingDeserializingInputFlow
+import io.airbyte.cdk.load.task.internal.InputConsumerTask
 import io.airbyte.cdk.load.task.internal.UpdateBatchStateTaskFactory
 import io.airbyte.cdk.load.task.internal.UpdateCheckpointsTask
 import io.airbyte.cdk.load.util.setOnce
@@ -86,13 +80,16 @@ class DestinationTaskLauncher(
     private val syncManager: SyncManager,
 
     // Internal Tasks
-    private val inputConsumerTaskFactory: InputConsumerTaskFactory,
+    private val inputConsumerTask: InputConsumerTask,
+    private val heartbeatTask: HeartbeatTask<WithStream, DestinationRecordRaw>,
+    private val updateBatchTask: UpdateBatchStateTaskFactory,
 
     // Implementor Tasks
     private val setupTaskFactory: SetupTaskFactory,
-    private val openStreamTaskFactory: OpenStreamTaskFactory,
+    private val openStreamTask: OpenStreamTask,
     private val closeStreamTaskFactory: CloseStreamTaskFactory,
     private val teardownTaskFactory: TeardownTaskFactory,
+    private val loadPipeline: LoadPipeline?,
 
     // Checkpoint Tasks
     private val updateCheckpointsTask: UpdateCheckpointsTask,
@@ -101,23 +98,13 @@ class DestinationTaskLauncher(
     private val failStreamTaskFactory: FailStreamTaskFactory,
     private val failSyncTaskFactory: FailSyncTaskFactory,
 
-    // Input Consumer requirements
-    private val inputFlow: ReservingDeserializingInputFlow,
-    private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
-    @Named("fileMessageQueue")
-    private val fileTransferQueue: MessageQueue<FileTransferQueueMessage>,
+    // Async queues
     @Named("openStreamQueue") private val openStreamQueue: MessageQueue<DestinationStream>,
-
-    // New interface shim
     @Named("pipelineInputQueue")
     private val pipelineInputQueue:
         PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     @Named("batchStateUpdateQueue") private val batchUpdateQueue: ChannelMessageQueue<BatchUpdate>,
-    private val loadPipeline: LoadPipeline?,
-    private val partitioner: InputPartitioner,
-    private val updateBatchTaskFactory: UpdateBatchStateTaskFactory,
     @Named("defaultDestinationTaskLauncherHasThrown") private val hasThrown: AtomicBoolean,
-    private val heartbeatTask: HeartbeatTask<WithStream, DestinationRecordRaw>,
 ) {
     init {
         if (loadPipeline == null) {
@@ -177,34 +164,21 @@ class DestinationTaskLauncher(
     suspend fun run() {
         // Start the input consumer ASAP
         log.info { "Starting input consumer task" }
-        val inputConsumerTask =
-            inputConsumerTaskFactory.make(
-                catalog = catalog,
-                inputFlow = inputFlow,
-                checkpointQueue = checkpointQueue,
-                fileTransferQueue = fileTransferQueue,
-                destinationTaskLauncher = this,
-                pipelineInputQueue = pipelineInputQueue,
-                partitioner = partitioner,
-                openStreamQueue = openStreamQueue,
-            )
         launch(inputConsumerTask)
 
         // Launch the client interface setup task
         log.info { "Starting startup task" }
-        val setupTask = setupTaskFactory.make(this)
-        launch(setupTask)
+        launch(setupTaskFactory.make(this))
 
         repeat(config.numOpenStreamWorkers) {
             log.info { "Launching open stream task $it" }
-            launch(openStreamTaskFactory.make())
+            launch(openStreamTask)
         }
 
         log.info { "Setting up load pipeline" }
         loadPipeline!!.start { launch(it) }
         log.info { "Launching update batch task" }
-        val updateBatchTask = updateBatchTaskFactory.make(this)
-        launch(updateBatchTask)
+        launch(updateBatchTask.make(this))
         log.info { "Launching heartbeat task" }
         launch(heartbeatTask)
 

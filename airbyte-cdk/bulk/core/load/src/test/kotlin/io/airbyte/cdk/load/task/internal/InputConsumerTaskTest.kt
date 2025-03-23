@@ -89,17 +89,16 @@ class InputConsumerTaskTest {
             }
 
         val task =
-            DefaultInputConsumerTaskFactory(syncManager)
-                .make(
-                    catalog = catalog,
-                    inputFlow = inputFlow,
-                    checkpointQueue = checkpointQueue,
-                    destinationTaskLauncher = mockk(),
-                    fileTransferQueue = mockk(relaxed = true),
-                    pipelineInputQueue = pipelineInputQueue,
-                    partitioner = mockk(relaxed = true),
-                    openStreamQueue = mockk(relaxed = true),
-                )
+            InputConsumerTask(
+                catalog = catalog,
+                inputFlow = inputFlow,
+                checkpointQueue = checkpointQueue,
+                syncManager = syncManager,
+                fileTransferQueue = mockk(relaxed = true),
+                pipelineInputQueue = pipelineInputQueue,
+                partitioner = mockk(relaxed = true),
+                openStreamQueue = mockk(relaxed = true),
+            )
         task.execute()
 
         coVerify(exactly = 3) { pipelineInputQueue.publish(any(), any()) }
@@ -133,17 +132,16 @@ class InputConsumerTaskTest {
             }
 
         val task =
-            DefaultInputConsumerTaskFactory(syncManager)
-                .make(
-                    catalog = catalog,
-                    inputFlow = inputFlow,
-                    checkpointQueue = checkpointQueue,
-                    destinationTaskLauncher = mockk(),
-                    fileTransferQueue = mockk(relaxed = true),
-                    pipelineInputQueue = mockk(relaxed = true),
-                    partitioner = mockk(relaxed = true),
-                    openStreamQueue = mockk(relaxed = true),
-                )
+            InputConsumerTask(
+                catalog = catalog,
+                inputFlow = inputFlow,
+                checkpointQueue = checkpointQueue,
+                syncManager = syncManager,
+                fileTransferQueue = mockk(relaxed = true),
+                pipelineInputQueue = mockk(relaxed = true),
+                partitioner = mockk(relaxed = true),
+                openStreamQueue = mockk(relaxed = true),
+            )
         task.execute()
         coVerifySequence {
             memoryManager.release(2L)
@@ -173,17 +171,16 @@ class InputConsumerTaskTest {
             )
 
         val task =
-            DefaultInputConsumerTaskFactory(syncManager)
-                .make(
-                    catalog = catalog,
-                    inputFlow = inputFlow,
-                    checkpointQueue = checkpointQueue,
-                    destinationTaskLauncher = mockk(),
-                    fileTransferQueue = mockk(relaxed = true),
-                    pipelineInputQueue = mockk(relaxed = true),
-                    partitioner = mockk(relaxed = true),
-                    openStreamQueue = mockk(relaxed = true),
-                )
+            InputConsumerTask(
+                catalog = catalog,
+                inputFlow = inputFlow,
+                checkpointQueue = checkpointQueue,
+                syncManager = syncManager,
+                fileTransferQueue = mockk(relaxed = true),
+                pipelineInputQueue = mockk(relaxed = true),
+                partitioner = mockk(relaxed = true),
+                openStreamQueue = mockk(relaxed = true),
+            )
         coEvery { inputFlow.collect(any()) } coAnswers
             {
                 val collector = firstArg<FlowCollector<Pair<Long, Reserved<DestinationMessage>>>>()
@@ -231,17 +228,16 @@ class InputConsumerTaskTest {
             )
 
         val task =
-            DefaultInputConsumerTaskFactory(syncManager)
-                .make(
-                    catalog = catalog,
-                    inputFlow = inputFlow,
-                    checkpointQueue = checkpointQueue,
-                    destinationTaskLauncher = mockk(),
-                    fileTransferQueue = mockk(relaxed = true),
-                    pipelineInputQueue = mockk(relaxed = true),
-                    partitioner = mockk(relaxed = true),
-                    openStreamQueue = mockk(relaxed = true),
-                )
+            InputConsumerTask(
+                catalog = catalog,
+                inputFlow = inputFlow,
+                checkpointQueue = checkpointQueue,
+                syncManager = syncManager,
+                fileTransferQueue = mockk(relaxed = true),
+                pipelineInputQueue = mockk(relaxed = true),
+                partitioner = mockk(relaxed = true),
+                openStreamQueue = mockk(relaxed = true),
+            )
 
         coEvery { inputFlow.collect(any()) } coAnswers
             {
@@ -304,17 +300,16 @@ class InputConsumerTaskTest {
             }
 
         val task =
-            DefaultInputConsumerTaskFactory(syncManager)
-                .make(
-                    catalog = catalog,
-                    inputFlow = inputFlow,
-                    checkpointQueue = checkpointQueue,
-                    destinationTaskLauncher = mockk(relaxed = true),
-                    fileTransferQueue = mockk(relaxed = true),
-                    pipelineInputQueue = mockk(relaxed = true),
-                    partitioner = mockk(relaxed = true),
-                    openStreamQueue = mockk(relaxed = true),
-                )
+            InputConsumerTask(
+                catalog = catalog,
+                inputFlow = inputFlow,
+                checkpointQueue = checkpointQueue,
+                syncManager = syncManager,
+                fileTransferQueue = mockk(relaxed = true),
+                pipelineInputQueue = mockk(relaxed = true),
+                partitioner = mockk(relaxed = true),
+                openStreamQueue = mockk(relaxed = true),
+            )
 
         assertThrows(IllegalStateException::class) { task.execute() }
     }
