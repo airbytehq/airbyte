@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.pipline.object_storage
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
@@ -131,13 +132,13 @@ class ObjectLoaderPartQueueFactory(
     @Singleton
     @Named("objectLoaderLoadedPartQueue")
     @Requires(bean = ObjectLoader::class)
-    fun objectLoaderLoadedPartQueue():
-        PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult>> {
+    fun <T : RemoteObject<*>> objectLoaderLoadedPartQueue():
+        PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>> {
         return StrictPartitionedQueue(
             (0 until loader.numUploadCompleters)
                 .map {
                     ChannelMessageQueue(
-                        Channel<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult>>(
+                        Channel<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>(
                             OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS / loader.numUploadWorkers
                         )
                     )
