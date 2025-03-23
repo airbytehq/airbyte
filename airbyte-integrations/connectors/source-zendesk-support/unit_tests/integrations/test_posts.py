@@ -77,27 +77,6 @@ class TestPostsStream(TestCase):
         assert len(output.records) == 3
 
     @HttpMocker()
-    def test_given_ignore_pagination_when_read_then_do_not_paginate(self, http_mocker):
-        """
-        Given the db query `select * from actor where actor_definition_id = '79c1aa37-dae3-42ae-b333-d1c105477715' and configuration->>'ignore_pagination' = 'true' and tombstone = false;`, we can see that some connections are using this config. I don't exactly understand the use for that but here is the test since this is used.
-        """
-        config = self._config().with_start_date(_START_DATE).with_ignore_pagination().build()
-        api_token_authenticator = self._get_authenticator(config)
-        http_mocker.get(
-            self._base_posts_request(api_token_authenticator).with_start_time(datetime_to_string(_START_DATE)).build(),
-            PostsResponseBuilder.posts_response(self._base_posts_request(api_token_authenticator).build())
-            .with_record(PostsRecordBuilder.posts_record())
-            .with_record(PostsRecordBuilder.posts_record())
-            .with_pagination()
-            .build(),
-        )
-
-        output = read_stream("posts", SyncMode.full_refresh, config)
-
-        assert len(output.records) == 2
-        assert len(output.errors) == 0
-
-    @HttpMocker()
     def test_when_read_then_set_state_value_to_most_recent_cursor_value(self, http_mocker):
         config = self._config().with_start_date(_START_DATE).build()
         api_token_authenticator = self._get_authenticator(config)

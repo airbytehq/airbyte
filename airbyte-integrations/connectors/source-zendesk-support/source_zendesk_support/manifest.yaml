@@ -252,7 +252,7 @@ definitions:
         pagination_strategy:
           type: CursorPagination
           cursor_value: '{{ response.get("next_page", {}) }}'
-          stop_condition: "{{ config.get('ignore_pagination', False) or last_page_size == 0 }}"
+          stop_condition: "{{ last_page_size == 0 }}"
         page_token_option:
           type: RequestPath
       record_selector:
@@ -508,9 +508,6 @@ definitions:
         path: "community/posts"
       paginator:
         $ref: "#/definitions/links_next_paginator"
-        pagination_strategy:
-          $ref: "#/definitions/links_next_paginator/pagination_strategy"
-          stop_condition: "{{ config.get('ignore_pagination', False) or not response['meta']['has_more'] }}"
       record_selector:
         extractor:
           type: DpathExtractor
@@ -846,9 +843,6 @@ definitions:
       ignore_stream_slicer_parameters_on_paginated_requests: true
       paginator:
         $ref: "#/definitions/after_url_paginator"
-        pagination_strategy:
-          $ref: "#/definitions/after_url_paginator/pagination_strategy"
-          stop_condition: "{{ config.get('ignore_pagination', False) or response.get('end_of_stream') }}"
     $parameters:
       name: "tickets"
       path: "incremental/tickets/cursor.json"
@@ -984,9 +978,6 @@ definitions:
       ignore_stream_slicer_parameters_on_paginated_requests: true
       paginator:
         $ref: "#/definitions/after_url_paginator"
-        pagination_strategy:
-          $ref: "#/definitions/after_url_paginator/pagination_strategy"
-          stop_condition: "{{ config.get('ignore_pagination', False) or response.get('end_of_stream') }}"
       requester:
         $ref: "#/definitions/retriever/requester"
         request_parameters:

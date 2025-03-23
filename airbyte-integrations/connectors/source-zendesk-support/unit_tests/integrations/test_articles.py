@@ -109,27 +109,3 @@ class TestArticlesStream(TestCase):
         )
 
         assert len(output.records) == 1
-
-    @HttpMocker()
-    def test_given_ignore_pagination_when_read_then_do_not_paginate(self, http_mocker):
-        """
-        Given the db query `select * from actor where actor_definition_id = '79c1aa37-dae3-42ae-b333-d1c105477715' and configuration->>'ignore_pagination' = 'true' and tombstone = false;`, we can see that some connections are using this config. I don't exactly understand the use for that but here is the test since this is used.
-        """
-        config = self._config().with_start_date(_START_DATE).with_ignore_pagination().build()
-        api_token_authenticator = self._get_authenticator(config)
-        next_page_http_request = (
-            ArticlesRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(_START_DATE.add(days=10)).build()
-        )
-        http_mocker.get(
-            ArticlesRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(_START_DATE).build(),
-            ArticlesResponseBuilder.response(next_page_http_request)
-            .with_record(ArticlesRecordBuilder.record())
-            .with_record(ArticlesRecordBuilder.record())
-            .with_pagination()
-            .build(),
-        )
-
-        output = read_stream("articles", SyncMode.full_refresh, config)
-
-        assert len(output.records) == 2
-        assert len(output.errors) == 0
