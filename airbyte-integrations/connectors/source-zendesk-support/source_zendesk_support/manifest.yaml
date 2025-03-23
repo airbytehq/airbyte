@@ -870,7 +870,7 @@ definitions:
         datetime_format: "%s"
         cursor_field: "_ab_updated_at"
         start_datetime:
-          datetime: "0" # not used as the API does not take filters in
+          datetime: "0" # not used as the API does not take filters in and we don't define a step so there is only one request
       retriever:
         $ref: "#/definitions/retriever"
         ignore_stream_slicer_parameters_on_paginated_requests: true
