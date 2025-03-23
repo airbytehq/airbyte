@@ -139,7 +139,7 @@ class MSSQLBulkLoaderFactory(
             azureBlobClient,
             stream,
             mssqlBulkLoadHandler,
-            streamStateStore.get(key.stream)!!.formatFilePath
+            (streamStateStore.get(key.stream)!! as MSSQLBulkLoaderStreamState).formatFilePath
         )
     }
 }
