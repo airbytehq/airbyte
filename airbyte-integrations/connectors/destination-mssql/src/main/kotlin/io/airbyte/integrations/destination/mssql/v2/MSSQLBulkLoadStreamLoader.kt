@@ -204,5 +204,5 @@ class MSSQLBulkLoadStreamLoader(
  */
 data class MSSQLStreamState(
     val dataSource: DataSource,
-    val formatFilePath: String,
+    val formatFilePath: String? = null,
 )

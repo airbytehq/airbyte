@@ -268,6 +268,21 @@ internal class StandardInsert :
         super.testUnknownTypes()
     }
 
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+
+    @Test
+    override fun testManyStreamsCompletion() {
+        super.testManyStreamsCompletion()
+    }
+
+    @Test
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+
     companion object {
         @JvmStatic
         @BeforeAll

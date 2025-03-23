@@ -67,5 +67,8 @@ interface DirectLoader : AutoCloseable {
 }
 
 interface DirectLoaderFactory<T : DirectLoader> : LoadStrategy {
+    val maxNumOpenLoaders: Int?
+        get() = null
+
     fun create(streamDescriptor: DestinationStream.Descriptor, part: Int): T
 }

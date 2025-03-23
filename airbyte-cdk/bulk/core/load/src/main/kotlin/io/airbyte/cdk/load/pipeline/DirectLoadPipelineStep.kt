@@ -28,7 +28,8 @@ class DirectLoadPipelineStep<S : DirectLoader>(
         return taskFactory.createOnlyStep<S, StreamKey, DirectLoadAccResult>(
             accumulator,
             partition,
-            numWorkers
+            numWorkers,
+            maxNumConcurrentKeys = directLoaderFactory.maxNumOpenLoaders
         )
     }
 }

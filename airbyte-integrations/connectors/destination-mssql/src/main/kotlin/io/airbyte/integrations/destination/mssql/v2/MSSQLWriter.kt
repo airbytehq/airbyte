@@ -60,7 +60,8 @@ class MSSQLWriter(
                 MSSQLStreamLoader(
                     dataSource = dataSourceNotNull,
                     stream = stream,
-                    sqlBuilder = sqlBuilder
+                    sqlBuilder = sqlBuilder,
+                    streamStateStore = streamStateStore
                 )
             }
         }

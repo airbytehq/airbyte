@@ -9,22 +9,36 @@ import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.OutputPartitioner
 
 /**
- * Distribute the loaded parts to the upload completers by key. (Distributing the completes
- * efficiently is not as important as not forcing the uploaders to coordinate with each other, so
- * instead we focus on operational simplicity: all fact-of-loaded part signals for the same key go
- * to the same upload completer.)
+ * The technically correct partitioning is round-robin, but since we use
+ * [io.airbyte.cdk.load.message.SinglePartitionQueueWithMultiPartitionBroadcast], the partition is
+ * immaterial, so it's simpler just to return 0 here.
  */
+<<<<<<< HEAD
+<<<<<<< HEAD
 class ObjectLoaderLoadedPartPartitioner<K : WithStream, T, U : RemoteObject<*>> :
     OutputPartitioner<K, T, ObjectKey, ObjectLoaderPartLoader.PartResult<U>> {
 
+=======
+class ObjectLoaderLoadedPartPartitioner<K : WithStream, T, U : RemoteObject<*>> :
+    OutputPartitioner<K, T, ObjectKey, ObjectLoaderPartLoader.PartResult<U>> {
+>>>>>>> f84a68faec9 (Load CDK: BulkLoader Interface)
     override fun getOutputKey(
         inputKey: K,
         output: ObjectLoaderPartLoader.PartResult<U>
     ): ObjectKey {
+<<<<<<< HEAD
+=======
+class ObjectLoaderLoadedPartPartitioner<K : WithStream, T> :
+    OutputPartitioner<K, T, ObjectKey, ObjectLoaderPartLoader.PartResult> {
+
+    override fun getOutputKey(inputKey: K, output: ObjectLoaderPartLoader.PartResult): ObjectKey {
+>>>>>>> 55561336811 (Load CDK: Bugfix: ObjectLoader eos can arrive out-of-order)
+=======
+>>>>>>> f84a68faec9 (Load CDK: BulkLoader Interface)
         return ObjectKey(inputKey.stream, output.objectKey)
     }
 
-    override fun getPart(outputKey: ObjectKey, numParts: Int): Int {
-        return Math.floorMod(outputKey.objectKey.hashCode(), numParts)
+    override fun getPart(outputKey: ObjectKey, inputPart: Int, numParts: Int): Int {
+        return 0
     }
 }

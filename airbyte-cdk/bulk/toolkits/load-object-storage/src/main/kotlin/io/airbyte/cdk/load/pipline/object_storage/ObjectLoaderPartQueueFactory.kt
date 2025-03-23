@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
+import io.airbyte.cdk.load.message.QueueCapacityCalculator
 import io.airbyte.cdk.load.message.StrictPartitionedQueue
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.state.ReservationManager
@@ -65,15 +66,20 @@ class ObjectLoaderPartQueueFactory(
     fun objectLoaderClampedPartSizeBytes(
         @Named("objectLoaderMemoryReservation") reservation: Reserved<ObjectLoader>
     ): Long {
-        // 1 per worker, plus at least one per partition leading to the upload workers.
-        val maxNumPartsInMemory = loader.numPartWorkers + (loader.numUploadWorkers * 2)
-        val maxPartSizeBytes = reservation.bytesReserved / maxNumPartsInMemory
+        val calculator =
+            QueueCapacityCalculator(
+                numProducers = loader.numPartWorkers,
+                numConsumers = loader.numUploadWorkers,
+                availableResourceAmount = reservation.bytesReserved,
+                expectedUsagePerMessageAmount = loader.partSizeBytes
+            )
+        val maybeClampedPartSize = calculator.clampedMessageSize
 
-        if (loader.partSizeBytes > maxPartSizeBytes) {
+        if (loader.partSizeBytes > maybeClampedPartSize) {
             log.warn {
-                "Clamping part size from ${loader.partSizeBytes}b to ${maxPartSizeBytes}b to fit $maxNumPartsInMemory parts in ${reservation.bytesReserved}b reserved memory"
+                "Clamping part size from ${loader.partSizeBytes}b to ${maybeClampedPartSize}b to fit ${calculator.numUnits} parts in ${reservation.bytesReserved}b reserved memory"
             }
-            return maxPartSizeBytes
+            return maybeClampedPartSize
         }
 
         return loader.partSizeBytes
@@ -86,14 +92,17 @@ class ObjectLoaderPartQueueFactory(
         @Named("objectLoaderClampedPartSizeBytes") clampedPartSizeBytes: Long,
         @Named("objectLoaderMemoryReservation") reservation: Reserved<ObjectLoader>
     ): Int {
-        val maxNumParts = reservation.bytesReserved / clampedPartSizeBytes
-        val numWorkersHoldingParts = loader.numPartWorkers + loader.numUploadWorkers
-        val maxQueueCapacity = (maxNumParts - numWorkersHoldingParts) / loader.numUploadWorkers
-        // Our earlier calculations should ensure this is always at least 1, but
-        // we'll clamp it to be safe.
-        val capacity = maxQueueCapacity.toInt().coerceAtLeast(1)
+        val calculator =
+            QueueCapacityCalculator(
+                numProducers = loader.numPartWorkers,
+                numConsumers = loader.numUploadWorkers,
+                availableResourceAmount = reservation.bytesReserved,
+                expectedUsagePerMessageAmount = loader.partSizeBytes
+            )
+
+        val capacity = calculator.queuePartitionCapacity
         log.info {
-            "Creating part queue with capacity $capacity for $maxNumParts parts of size $clampedPartSizeBytes (minus $numWorkersHoldingParts held by workers)"
+            "Creating part queue with capacity $capacity ${loader.numUploadWorkers} parts of size $clampedPartSizeBytes"
         }
 
         return capacity

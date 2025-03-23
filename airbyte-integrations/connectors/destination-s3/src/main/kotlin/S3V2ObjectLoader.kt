@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.s3_v2
 
-import io.airbyte.cdk.load.pipeline.RoundRobinInputPartitioner
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 
 /**
@@ -20,5 +19,4 @@ class S3V2ObjectLoader(config: S3V2Configuration<*>) : ObjectLoader {
     override val partSizeBytes: Long = config.partSizeBytes
 }
 
-// @Singleton
-class S3V2RoundRobinInputPartitioner : RoundRobinInputPartitioner()
+// @Singleton class S3V2RoundRobinInputPartitioner : RoundRobinInputPartitioner()

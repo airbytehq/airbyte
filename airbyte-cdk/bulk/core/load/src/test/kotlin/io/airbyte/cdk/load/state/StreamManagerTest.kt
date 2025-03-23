@@ -585,6 +585,7 @@ class StreamManagerTest {
     @Test
     fun `test completion implies persistence`() {
         val manager = DefaultStreamManager(stream1)
+        val taskName = "foo"
 
         val checkpointId1 = manager.getCurrentCheckpointId()
 

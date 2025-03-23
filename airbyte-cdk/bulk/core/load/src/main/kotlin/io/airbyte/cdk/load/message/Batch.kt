@@ -49,6 +49,7 @@ import io.airbyte.cdk.load.command.DestinationStream
  * // etc...
  * ```
  */
+@Deprecated("This serves the old-style StreamLoader interface. See BatchState")
 interface Batch {
     val groupId: String?
 

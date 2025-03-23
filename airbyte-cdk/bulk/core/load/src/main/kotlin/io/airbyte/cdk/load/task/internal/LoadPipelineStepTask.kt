@@ -64,7 +64,8 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
     private val numWorkers: Int,
     private val taskIndex: Int,
     private val streamCompletions:
-        ConcurrentHashMap<Pair<Int, DestinationStream.Descriptor>, AtomicInteger>
+        ConcurrentHashMap<Pair<Int, DestinationStream.Descriptor>, AtomicInteger>,
+    private val maxNumConcurrentKeys: Int? = null,
 ) : Task {
     private val log = KotlinLogging.logger {}
 
@@ -94,6 +95,32 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                                 "$taskName[$part] received input for complete stream ${input.key.stream}. This indicates data was processed out of order and future bookkeeping might be corrupt. Failing hard."
                             )
                         }
+
+                        maxNumConcurrentKeys?.let { maxKeys ->
+                            if (
+                                !stateStore.stateWithCounts.contains(input.key) &&
+                                    stateStore.stateWithCounts.size >= maxKeys
+                            ) {
+                                // Pick the key with the highest input count
+                                val (key, state) =
+                                    stateStore.stateWithCounts.maxByOrNull { it.value.inputCount }!!
+                                stateStore.stateWithCounts.remove(key)
+                                log.info {
+                                    "Saw greater than $maxNumConcurrentKeys keys, evicting highest accumulating $key (inputs=${state.inputCount})"
+                                }
+
+                                val output = batchAccumulator.finish(state.accumulatorState)
+                                handleOutput(
+                                    key,
+                                    state.checkpointCounts,
+                                    output.output,
+                                    state.inputCount
+                                )
+
+                                state.close()
+                            }
+                        }
+
                         // Get or create the accumulator state associated w/ the input key.
                         val stateWithCounts =
                             stateStore.stateWithCounts
@@ -239,7 +266,7 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
         outputQueue?.let {
             val outputKey = outputPartitioner!!.getOutputKey(inputKey, output)
             val message = PipelineMessage(checkpointCounts.toMap(), outputKey, output)
-            val outputPart = outputPartitioner.getPart(outputKey, it.partitions)
+            val outputPart = outputPartitioner.getPart(outputKey, part, it.partitions)
             it.publish(message, outputPart)
         }
 
@@ -286,6 +313,7 @@ class LoadPipelineStepTaskFactory(
         part: Int,
         numWorkers: Int,
         taskIndex: Int,
+        maxNumConcurrentKeys: Int? = null,
     ): LoadPipelineStepTask<S, K1, T, K2, U> {
         return LoadPipelineStepTask(
             batchAccumulator,
@@ -297,7 +325,8 @@ class LoadPipelineStepTaskFactory(
             part,
             numWorkers,
             taskIndex,
-            streamCompletions
+            streamCompletions,
+            maxNumConcurrentKeys
         )
     }
 
@@ -307,6 +336,7 @@ class LoadPipelineStepTaskFactory(
         outputQueue: PartitionedQueue<PipelineEvent<K2, U>>?,
         part: Int,
         numWorkers: Int,
+        maxNumConcurrentKeys: Int? = null,
     ): LoadPipelineStepTask<S, StreamKey, DestinationRecordRaw, K2, U> {
         return create(
             batchAccumulator,
@@ -316,7 +346,8 @@ class LoadPipelineStepTaskFactory(
             batchSizeOverride?.let { RecordCountFlushStrategy(it) },
             part,
             numWorkers,
-            taskIndex = 0
+            taskIndex = 0,
+            maxNumConcurrentKeys = maxNumConcurrentKeys
         )
     }
 
@@ -342,8 +373,9 @@ class LoadPipelineStepTaskFactory(
         batchAccumulator: BatchAccumulator<S, StreamKey, DestinationRecordRaw, U>,
         part: Int,
         numWorkers: Int,
+        maxNumConcurrentKeys: Int? = null,
     ): LoadPipelineStepTask<S, StreamKey, DestinationRecordRaw, K2, U> {
-        return createFirstStep(batchAccumulator, null, null, part, numWorkers)
+        return createFirstStep(batchAccumulator, null, null, part, numWorkers, maxNumConcurrentKeys)
     }
 
     fun <S : AutoCloseable, K1 : WithStream, T, K2 : WithStream, U : Any> createIntermediateStep(
@@ -363,7 +395,7 @@ class LoadPipelineStepTaskFactory(
             null,
             part,
             numWorkers,
-            taskIndex
+            taskIndex,
         )
     }
 }
