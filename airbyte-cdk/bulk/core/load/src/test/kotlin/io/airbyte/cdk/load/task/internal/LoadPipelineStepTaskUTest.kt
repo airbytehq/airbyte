@@ -21,6 +21,8 @@ import io.airbyte.cdk.load.pipeline.FinalOutput
 import io.airbyte.cdk.load.pipeline.NoOutput
 import io.airbyte.cdk.load.pipeline.OutputPartitioner
 import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.test.util.CoroutineTestUtils.Companion.assertDoesNotThrow
+import io.airbyte.cdk.load.test.util.CoroutineTestUtils.Companion.assertThrows
 import io.airbyte.cdk.load.util.setOnce
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -465,4 +467,45 @@ class LoadPipelineStepTaskUTest {
     fun `end-of-stream not forwarded if all tasks do not receive it`() = runEndOfStreamTest(false)
 
     @Test fun `end-of-stream forwarded to all tasks if all receive it`() = runEndOfStreamTest(true)
+
+    @Test
+    fun `records received after end-of-stream throws`() = runTest {
+        val key1 = StreamKey(DestinationStream.Descriptor("namespace", "stream1"))
+        val part = 66666
+
+        val task = createTask(part, batchAccumulatorWithUpdate)
+
+        coEvery { batchUpdateQueue.publish(any()) } returns Unit
+        coEvery { inputFlow.collect(any()) } coAnswers
+            {
+                val collector = firstArg<FlowCollector<PipelineEvent<StreamKey, String>>>()
+
+                // Emit end-of-stream for stream1, end-of-stream for stream2
+                collector.emit(endOfStreamEvent(key1))
+                collector.emit(messageEvent(key1, "value", emptyMap()))
+            }
+
+        assertThrows(IllegalStateException::class) { task.execute() }
+    }
+
+    @Test
+    fun `records received for stream A after end-of-stream B do not throw`() = runTest {
+        val key1 = StreamKey(DestinationStream.Descriptor("namespace", "stream1"))
+        val key2 = StreamKey(DestinationStream.Descriptor("namespace", "stream2"))
+        val part = 66666
+
+        val task = createTask(part, batchAccumulatorWithUpdate)
+
+        coEvery { batchUpdateQueue.publish(any()) } returns Unit
+        coEvery { batchAccumulatorWithUpdate.start(any(), any()) } returns Closeable()
+        coEvery { batchAccumulatorWithUpdate.accept(any(), any()) } returns NoOutput(Closeable())
+        coEvery { inputFlow.collect(any()) } coAnswers
+            {
+                val collector = firstArg<FlowCollector<PipelineEvent<StreamKey, String>>>()
+                collector.emit(endOfStreamEvent(key2))
+                collector.emit(messageEvent(key1, "value", emptyMap()))
+            }
+
+        assertDoesNotThrow { task.execute() }
+    }
 }
