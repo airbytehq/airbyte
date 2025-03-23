@@ -7,8 +7,6 @@ import logging
 from datetime import datetime
 from typing import Any, List, Mapping, Optional, Tuple
 
-import pendulum
-
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
@@ -17,7 +15,6 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from source_zendesk_support.streams import DATETIME_FORMAT, ZendeskConfigException
 
 from .streams import (
-    TicketMetrics,
     UserSettingsStream,
 )
 
@@ -38,21 +35,6 @@ class BasicApiTokenAuthenticator(TokenAuthenticator):
 class SourceZendeskSupport(YamlDeclarativeSource):
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
         super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
-
-    @classmethod
-    def get_default_start_date(cls) -> str:
-        """
-        Gets the default start date for data retrieval.
-
-        The default date is set to the current date and time in UTC minus 2 years.
-
-        Returns:
-            str: The default start date in 'YYYY-MM-DDTHH:mm:ss[Z]' format.
-
-        Note:
-            Start Date is a required request parameter for Zendesk Support API streams.
-        """
-        return pendulum.now(tz="UTC").subtract(years=2).format("YYYY-MM-DDTHH:mm:ss[Z]")
 
     @classmethod
     def get_authenticator(cls, config: Mapping[str, Any]) -> [TokenAuthenticator, BasicApiTokenAuthenticator]:
@@ -89,29 +71,6 @@ class SourceZendeskSupport(YamlDeclarativeSource):
             )
         return True, None
 
-    @classmethod
-    def convert_config2stream_args(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Convert input configs to parameters of the future streams
-        This function is used by unit tests too
-        """
-        return {
-            "subdomain": config["subdomain"],
-            "start_date": config.get("start_date", cls.get_default_start_date()),
-            "authenticator": cls.get_authenticator(config),
-            "ignore_pagination": config.get("ignore_pagination", False),
-        }
-
-    def get_nested_streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """Returns relevant a list of available streams
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
-        args = self.convert_config2stream_args(config)
-
-        streams = [
-            TicketMetrics(**args),
-        ]
-        return streams
-
     def check_enterprise_streams(self, declarative_streams: List[Stream]) -> List[Stream]:
         """Returns relevant a list of available streams
         :param config: A Mapping of the user input configuration as defined in the connector spec.
@@ -137,9 +96,4 @@ class SourceZendeskSupport(YamlDeclarativeSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         declarative_streams = super().streams(config)
-
-        nested_streams = self.get_nested_streams(config)
-        declarative_streams.extend(nested_streams)
-
-        declarative_streams = self.check_enterprise_streams(declarative_streams)
-        return declarative_streams
+        return self.check_enterprise_streams(declarative_streams)
