@@ -889,7 +889,7 @@ definitions:
           fields:
             - path:
                 - "_ab_updated_at"
-              value: "{{ record['updated_at'] }}"
+              value: "{{ format_datetime(record['updated_at'], '%s') }}"
     incremental_stream:
       $ref: "#/definitions/base_incremental_stream"
       schema_loader:
