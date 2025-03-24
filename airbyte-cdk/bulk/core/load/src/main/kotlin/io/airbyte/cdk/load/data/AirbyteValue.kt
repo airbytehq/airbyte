@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.data
 
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.JsonSerializer
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
@@ -153,8 +152,6 @@ private class ObjectValueSerializer : JsonSerializer<ObjectValue>() {
         gen.writePOJO(value.values)
     }
 }
-
-@JvmInline value class UnknownValue(val value: JsonNode) : AirbyteValue
 
 /**
  * Represents an "enriched" (/augmented) Airbyte value with additional metadata.
