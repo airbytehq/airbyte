@@ -141,7 +141,7 @@ Depending on how the refresh endpoint is implemented exactly, additional configu
 - **Token expire property date format** - if not specified, the expiry property is interpreted as the number of seconds the access token will be valid
 - **Access token property name** - the name of the property in the response that contains the access token to do requests. If not specified, it's set to `access_token`
 
-If the API uses other grant types like PKCE are required, it's not possible to use the connector builder with OAuth authentication - check out the [compatibility guide](/connector-development/connector-builder-ui/connector-builder-compatibility#oauth) for more information.
+If the API uses other grant types (like PKCE), it's not possible to use the connector builder with OAuth authentication.
 
 Keep in mind that the OAuth authentication method does not implement a single-click authentication experience for the end user configuring the connector - it will still be necessary to obtain client id, client secret and refresh token from the API and manually enter them into the configuration form.
 
