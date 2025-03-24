@@ -14,7 +14,7 @@ data:
   releases:
     breakingChanges:
       3.0.0:
-        upgradeDeadline: "2025-03-01"
+        upgradeDeadline: "2025-06-01"
         message:
           The authorization method was changed to support only OAuth2 strategy. Due to changes in authorization, users can now bring their own OAuth2 apps, and use it on cloud. For more information, see our migration documentation for source Xero.
           Important - The authentication scheme now uses only the OAuth2 strategy from this version.
