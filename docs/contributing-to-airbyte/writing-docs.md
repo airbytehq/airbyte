@@ -58,7 +58,7 @@ Install these tools on your local machine, first.
 
 Optionally:
 
-1. [Vale](https://vale.sh/docs/install) so you can lint your content.
+1. [Vale](https://vale.sh/docs/install) and [MarkDownLint-cli2](https://github.com/DavidAnson/markdownlint-cli2) so you can lint your content.
 
 ### Fork and clone the repo
 
@@ -274,31 +274,35 @@ Your path needs a leading slash `/` to work
 
 If you're adding a README to a code module, make sure the README has the following components:
 
-  - A brief description of the module
-  - Development prerequisites (like which language or binaries are required for development)
-  - How to install dependencies
-  - How to build and run the code locally and via Docker
-  - Any other information needed for local iteration
+- A brief description of the module
+- Development prerequisites (like which language or binaries are required for development)
+- How to install dependencies
+- How to build and run the code locally and via Docker
+- Any other information needed for local iteration
 
 :::tip
 AI tools like ChatGPT and GitHub Copilot are good at describing code. For open source repositories, you might find it helpful to point one to your code module and ask it to generate a first draft for you. Airbyte employees working on a proprietary repository should follow Airbyte's AI usage policies.
 :::
 
-## Lint your content with Vale {#linting}
+## Lint your content {#linting}
 
-Airbyte uses Vale to ensure standardization and minimum quality for docs content. Vale is an open source command-line tool that brings code-like linting to prose. It's not a general-purpose writing aid or an AI. It simply automates the identification of non-compliance with the style guide, principles for good writing, and other rules Airbyte defines as needed.
+The documentation runs two linters, Vale and MarkDownLint. Vale lints for style, writing, and grammar. MarkDownLint lints for MarkDown structure. For example, Vale tells you when you use passive language and MarkDownLint tells you that you've skipped a heading level. Together, these linters provide broad protection against most common readability, accessibility, and rendering problems.
 
 :::note
-This Vale implementation is new, and it might still generate false positives. Currently, Airbyte doesn't enforce style compliance in pull requests. This might happen in the future. For now, just do your best to comply with Vale's recommendations.
+Vale and MarkDownLint are newly implemented. They might still generate false positives or false negatives. Currently, Airbyte doesn't enforce them on pull requests. This might happen in the future. For now, just do your best to comply with the linters' recommendations.
 :::
 
-### How Vale works
+### Lint with Vale
+
+Airbyte uses Vale to promote standardization and minimum quality for docs content. Vale is an open source command-line tool that brings code-like linting to prose. It's not a general-purpose writing aid or an AI. It simply automates the identification of non-compliance with the style guide, principles for good writing, and other rules Airbyte defines as needed.
+
+#### How Vale works
 
 A configuration file, `//docusaurus/vale.ini`, controls Vale at the highest level. This file specifies the location of Vale's style rules, libraries, vocabularies, and other resources. Those styles and rules exist in `//docs/vale-styles`. Some of them are Airbyte-specific, but most rules come from the [Google](https://github.com/errata-ai/Google) and [Write Good](https://github.com/errata-ai/write-good) libraries. 
 
-The repository imports those libraries from an external source. Don't modify them, or a future update may overwrite your modifications. If you want to improve our rules, modify `//docs/vale-styles/airbyte` or our vocabularies in `//docs/vale-styles/config/airbyte`.
+The repository imports those libraries from an external source. Don't modify them, or a future update may overwrite your modifications. If you want to improve these rules, modify `//docs/vale-styles/airbyte` or our vocabularies in `//docs/vale-styles/config/airbyte`.
 
-### Install Vale
+#### Install Vale
 
 The easiest way to install Vale is with a package manager. This ensures Vale is available in your PATH and allows you to keep up to date with new releases. For more options, see [Vale's documentation](https://vale.sh/docs/install).
 
@@ -328,11 +332,11 @@ The easiest way to install Vale is with a package manager. This ensures Vale is 
    vale sync
    ```
 
-### Run Vale
+#### Run Vale
 
 You can run Vale in a command line tool or you can install an extension for most common code editors.
 
-#### Command line tool
+##### Command line tool
 
 1. Go to the Docusaurus directory.
 
@@ -356,7 +360,7 @@ You can run Vale in a command line tool or you can install an extension for most
 
    - For more command-line tool help, see [Vale's docs](https://vale.sh/docs/cli).
 
-#### In your code editor
+##### In your code editor
 
 Vale has extensions for many popular code editors. For the complete list, see [their docs (under Integrations)](https://vale.sh/docs).
 
@@ -364,9 +368,69 @@ For example, if you use Visual Studio Code, you can install the [Visual Studio C
 
 ![alt text](assets/vale-in-vscode.png)
 
+### Lint with MarkDownLint
+
+MarkDownLint is an open source, command-line library. It lints MarkDown files against common markup and structural issues that can confuse MarkDown interpreters and readers. Since Airbyte publishes docs to multiple contexts that may not interpret MarkDown the same way, this tool helps you write documentation to the CommonMark standard and maximize the likelihood that your content renders properly everywhere it's needed.
+
+#### Use markdownlint-cli2
+
+For those who prefer command line tools, **markdownlint-cli2** is the recommended way to work with MarkDownLint. To install markdownlint-cli2, follow the installation [instructions in GitHub](https://github.com/DavidAnson/markdownlint-cli2?tab=readme-ov-file#install). On a Mac:
+
+```bash
+brew install markdownlint-cli2
+```
+
+To lint files:
+
+1. Change your directory to the `//docusaurus` directory.
+
+2. Run the linter. Here are some helpful commands:
+
+   - To lint a single file:
+
+      ```bash
+      markdownlint-cli2 "../docs/myfolder/myfile.md"
+      ```
+
+   - To lint a single directory but not its subdirectories:
+
+      ```bash
+      markdownlint-cli2 "../docs/myfolder/*.md"
+      ```
+
+   - To lint a directory and its subdirectories:
+
+      ```bash
+      markdownlint-cli2 "...docs/folder/*/*.md
+      ```
+
+   - To auto-fix issues, add a `--fix` modifier. MarkDownLint can fix most issues on its own, but it might not fix them all.
+
+      ```bash
+      markdownlint-cli2 --fix "../docs/myfolder/*.md"
+      ```
+
+For full usage details, see the tool's [GitHub readme](https://github.com/DavidAnson/markdownlint-cli2?tab=readme-ov-file#use).
+
+#### Use the Visual Studio Code extension
+
+If you use Visual Studio Code, the optimal way to work with MarkDownLint is to [install the extension](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint). Once you enable the extension, Visual Studio Code lists rule violations in the Problems tab, and highlights them on your screen as you type, as if they were typos.
+
+You may need to adjust your [settings for MarkDownLint](https://code.visualstudio.com/docs/editor/settings) and specify the location of the configuration file as `/docusaurus/.markdownlint.jsonc`.
+
+You can use the Visual Studio Code extension and `markdownlint-cli2` at the same time.
+
+#### Rule configuration
+
+Airbyte disables a handful of default MarkDownLint rules because the docs intentionally violate them or they're not worth enforcing. These configurations are in `//docusaurus/.markdownlint.jsonc`. If you need to modify these configurations, this configuration file isn't that well documented, but the [Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) seems to provide the best explanation of how it works.
+
+#### Full documentation
+
+See [the GitHub project](https://github.com/DavidAnson/markdownlint?tab=readme-ov-file) for full details about using the different versions of MarkDownLint.
+
 ## Create a pull request
 
-When you're ready to submit your work, create a pull request into `master`. 
+When you're ready to submit your work, create a pull request into `master`.
 
 ### Review and approval
 
