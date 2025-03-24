@@ -21,6 +21,8 @@ if TYPE_CHECKING:
 
     from pipelines.airbyte_ci.connectors.context import ConnectorContext
     from pipelines.models.steps import StepResult
+
+
 async def cache_latest_cdk(context: ConnectorContext) -> None:
     """
     Download the latest CDK version to update the pip cache.
