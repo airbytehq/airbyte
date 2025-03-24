@@ -4,7 +4,6 @@
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.*
-import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineTest
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
@@ -81,7 +80,8 @@ class ParquetMapperBatchPipelineTest {
                         ),
                 )
             )
-        val pipeline = ParquetMapperPipelineTest().create(stream)
+        @Suppress("DEPRECATION")
+        val pipeline = io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineTest().create(stream)
         val schemaMapped = pipeline.finalSchema as ObjectType
         val (recordMapped, _) = pipeline.map(record)
 
