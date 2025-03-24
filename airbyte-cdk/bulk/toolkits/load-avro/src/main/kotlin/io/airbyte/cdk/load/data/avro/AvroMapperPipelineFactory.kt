@@ -9,8 +9,6 @@ import io.airbyte.cdk.load.data.AirbyteSchemaNoopMapper
 import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
 import io.airbyte.cdk.load.data.AirbyteValueNoopMapper
 import io.airbyte.cdk.load.data.FailOnAllUnknownTypesExceptNull
-import io.airbyte.cdk.load.data.MapperPipeline
-import io.airbyte.cdk.load.data.MapperPipelineFactory
 import io.airbyte.cdk.load.data.MergeUnions
 import io.airbyte.cdk.load.data.NullOutOfRangeIntegers
 import io.airbyte.cdk.load.data.SchemalessValuesToJsonString
@@ -27,10 +25,10 @@ import io.airbyte.cdk.load.data.TimeStringToInteger
  */
 @Suppress("DEPRECATION")
 @Deprecated("Use DestinationRecordRaw.asEnrichedDestinationRecordAirbyteValue() logic instead")
-class AvroMapperPipelineFactory : MapperPipelineFactory {
+class AvroMapperPipelineFactory : io.airbyte.cdk.load.data.MapperPipelineFactory {
     @Suppress("DEPRECATION")
-    override fun create(stream: DestinationStream): MapperPipeline =
-        MapperPipeline(
+    override fun create(stream: DestinationStream): io.airbyte.cdk.load.data.MapperPipeline =
+        io.airbyte.cdk.load.data.MapperPipeline(
             stream.schema,
             listOf(
                 FailOnAllUnknownTypesExceptNull() to AirbyteValueNoopMapper(),
