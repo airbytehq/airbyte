@@ -248,7 +248,7 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     ): Operation =
         if (
             record.declaredFields[AIRBYTE_CDC_DELETE_COLUMN] != null &&
-                record.declaredFields[AIRBYTE_CDC_DELETE_COLUMN]!!.value !is NullValue
+                record.declaredFields[AIRBYTE_CDC_DELETE_COLUMN]!!.abValue !is NullValue
         ) {
             Operation.DELETE
         } else if (importType is Dedupe) {
@@ -306,7 +306,7 @@ fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
         }
     }
 
-    value = recurseArray(value, type, name)
+    abValue = recurseArray(abValue, type, name)
 }
 
 data class ChangeDescription(val change: Change, val reason: Reason)
