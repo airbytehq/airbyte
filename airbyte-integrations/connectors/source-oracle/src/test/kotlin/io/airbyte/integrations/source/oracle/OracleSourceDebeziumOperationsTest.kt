@@ -56,7 +56,7 @@ class OracleSourceDebeziumOperationsTest {
 
     @Test
     fun testColdStartProperties() {
-        Assertions.assertDoesNotThrow { ops.generateColdStartProperties() }
+        Assertions.assertDoesNotThrow { ops.generateColdStartProperties(emptyList()) }
     }
 
     @Test

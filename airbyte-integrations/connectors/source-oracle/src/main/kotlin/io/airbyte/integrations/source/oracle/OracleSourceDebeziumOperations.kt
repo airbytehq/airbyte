@@ -178,19 +178,14 @@ class OracleSourceDebeziumOperations(
         return result
     }
 
-    override fun generateColdStartProperties(): Map<String, String> =
+    override fun generateColdStartProperties(streams: List<Stream>): Map<String, String> =
         DebeziumPropertiesBuilder()
             .with(commonProperties)
             // See comment in [generateWarmStartProperties] for why we're setting a custom metric
             // tag here.
             .with("custom.metric.tags", "rnd=${UUID.randomUUID()}")
             .with("snapshot.mode", "recovery")
-            // This extra exclude list is required to support Amazon RDS.
-            // Otherwise, Debezium tries to lock tables in the ADMIN and RDSADMIN schemas
-            // when capturing the schema change history of the database.
-            // For some reason, these tables are not present in the hardcoded ignore-list:
-            // https://debezium.io/documentation/reference/stable/connectors/oracle.html#schemas-that-the-debezium-oracle-connector-excludes-when-capturing-change-events
-            .with("table.exclude.list", """"?RDSADMIN"?\..*,"?ADMIN"?\..*""")
+            .withStreams(streams)
             .buildMap()
 
     override fun generateColdStartOffset(): DebeziumOffset {
@@ -273,6 +268,7 @@ class OracleSourceDebeziumOperations(
                 it.withDatabase("pdb.name", pdbName)
             }
             .with("schema.history.internal.store.only.captured.databases.ddl", "true")
+            .with("schema.history.internal.store.only.captured.tables.ddl", "true")
             .with("converters", "$CONVERTER_KEY,zero_scale,boolean")
             .with("$CONVERTER_KEY.type", OracleAirbyteCustomConverter::class.qualifiedName!!)
             .with("zero_scale.type", NumberToZeroScaleConverter::class.qualifiedName!!)
