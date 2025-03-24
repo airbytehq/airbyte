@@ -12,12 +12,10 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfig
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
 import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.avro.AvroMapperPipelineFactory
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
 import io.airbyte.cdk.load.data.csv.toCsvRecord
 import io.airbyte.cdk.load.data.dataWithAirbyteMeta
-import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineTest
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.file.StreamProcessor
 import io.airbyte.cdk.load.file.avro.toAvroWriter
@@ -140,7 +138,8 @@ class AvroFormattingWriter(
 ) : ObjectStorageFormattingWriter {
     val log = KotlinLogging.logger {}
 
-    private val pipeline = AvroMapperPipelineFactory().create(stream)
+    @Suppress("DEPRECATION")
+    private val pipeline = io.airbyte.cdk.load.data.avro.AvroMapperPipelineFactory().create(stream)
     private val mappedSchema = pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening)
     private val avroSchema = mappedSchema.toAvroSchema(stream.descriptor)
     private val writer =
@@ -175,7 +174,9 @@ class ParquetFormattingWriter(
 ) : ObjectStorageFormattingWriter {
     private val log = KotlinLogging.logger {}
 
-    private val pipeline = ParquetMapperPipelineTest().create(stream)
+    @Suppress("DEPRECATION")
+    private val pipeline =
+        io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineTest().create(stream)
     private val mappedSchema: ObjectType = pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening)
     private val avroSchema: Schema = mappedSchema.toAvroSchema(stream.descriptor)
     private val writer: ParquetWriter =
