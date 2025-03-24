@@ -241,7 +241,6 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                    |
-| 0.4.10 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------|
 | 0.4.9   | 2025-03-21 | [55906](https://github.com/airbytehq/airbyte/pull/55906)   | Use M4 Compatible base image.                                                                                              |
 | 0.4.8   | 2025-01-10 | [51479](https://github.com/airbytehq/airbyte/pull/51479)   | Use a non root base image                                                                                                  |
