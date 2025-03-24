@@ -1,8 +1,6 @@
 package io.airbyte.integrations.source.e2e_test;
 
-import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.SequenceWriter;
 import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.*;
 import io.airbyte.commons.json.Jsons;
@@ -25,21 +23,8 @@ public class DummySource extends BaseConnector implements Source {
                 new IntegrationRunner(source).run(args);
             }
             case READ -> {
-                try (AutoCloseableIterator<AirbyteMessage> iterator = source.read()) {
-                    try (SequenceWriter seqWriter = DummyIterator.OBJECT_MAPPER
-                            .writerFor(AirbyteMessage.class)
-                            .with(new MinimalPrettyPrinter(System.lineSeparator()))
-                            .writeValues(System.out)) {
-                        while (iterator.hasNext()) {
-                            AirbyteMessage message = iterator.next();
-                            seqWriter.write(message);
-                            // Should we flush after each record??
-                            System.out.flush();
-                        }
-                    }
-                }
-                // Ensure all data is flushed at the end.
-                System.out.flush();
+                JavaSocketWriter writer = new JavaSocketWriter();
+                writer.startJavaUnixSocketWriter();
             }
 
             case WRITE -> {
