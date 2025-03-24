@@ -77,8 +77,8 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
-| 1.0.3 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------|
+| 1.0.3 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355)   | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible.               |
 | 1.0.2   | 2025-03-21 | [55906](https://github.com/airbytehq/airbyte/pull/55906) | Upgrade to airbyte/java-connector-base:2.0.1 for M4 compatibility.              |
 | 1.0.1   | 2024-12-18 | [49864](https://github.com/airbytehq/airbyte/pull/49864) | Use a base image: airbyte/java-connector-base:1.0.0                             |
 | 1.0.0   | 2022-12-20 | [17998](https://github.com/airbytehq/airbyte/pull/17998) | Breaking changes: non backwards compatible. Adds delimiter dropdown.            |
