@@ -25,6 +25,7 @@ import io.airbyte.cdk.load.data.TimeStringToInteger
  * - DestinationRecordRaw.asEnrichedDestinationRecordAirbyteValue()
  * - toRecord() method in the s3-data-lake destination
  */
+@Suppress("DEPRECATION")
 @Deprecated("Use DestinationRecordRaw.asEnrichedDestinationRecordAirbyteValue() logic instead")
 class AvroMapperPipelineFactory : MapperPipelineFactory {
     @Suppress("DEPRECATION")
