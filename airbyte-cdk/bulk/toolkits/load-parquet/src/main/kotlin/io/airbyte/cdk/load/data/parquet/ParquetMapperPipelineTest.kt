@@ -27,6 +27,7 @@ import io.airbyte.cdk.load.data.UnionValueToDisjointRecord
  * - DestinationRecordRaw.asEnrichedDestinationRecordAirbyteValue()
  * - toRecord() method in the s3-data-lake destination
  */
+@Deprecated("Use DestinationRecordRaw.asEnrichedDestinationRecordAirbyteValue() logic instead")
 class ParquetMapperPipelineTest : MapperPipelineFactory {
     override fun create(stream: DestinationStream): MapperPipeline =
         MapperPipeline(
@@ -34,6 +35,11 @@ class ParquetMapperPipelineTest : MapperPipelineFactory {
             listOf(
                 FailOnAllUnknownTypesExceptNull() to AirbyteValueNoopMapper(),
                 MergeUnions() to AirbyteValueNoopMapper(),
+                /**
+                 * This recursive behavior is pretty sad and should not be replicated in the future.
+                 * We currently support this to meet legacy requirements for S3 and should be
+                 * avoided at all costs
+                 */
                 AirbyteSchemaNoopMapper() to
                     AirbyteValueDeepCoercingMapper(
                         recurseIntoObjects = true,

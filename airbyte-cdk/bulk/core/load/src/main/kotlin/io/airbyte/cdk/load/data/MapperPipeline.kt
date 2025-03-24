@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.message.Meta.Change
  * - DestinationRecordRaw.asEnrichedDestinationRecordAirbyteValue()
  * - toRecord() method in the s3-data-lake destination
  */
+@Deprecated("Use DestinationRecordRaw.asEnrichedDestinationRecordAirbyteValue() logic instead")
 class MapperPipeline(
     inputSchema: AirbyteType,
     schemaValueMapperPairs: List<Pair<AirbyteSchemaMapper, AirbyteValueMapper>>,
@@ -49,6 +50,7 @@ class MapperPipeline(
  * - DestinationRecordRaw.asEnrichedDestinationRecordAirbyteValue()
  * - toRecord() method in the s3-data-lake destination
  */
+@Deprecated("Use DestinationRecordRaw.asEnrichedDestinationRecordAirbyteValue() logic instead")
 interface MapperPipelineFactory {
     fun create(stream: DestinationStream): MapperPipeline
 }
