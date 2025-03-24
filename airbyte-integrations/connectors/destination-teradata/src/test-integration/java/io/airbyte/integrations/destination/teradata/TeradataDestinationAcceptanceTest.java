@@ -49,7 +49,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
   private static final String DELETE_DATABASE = "DELETE DATABASE \"%s\"";
 
   private static final String DROP_DATABASE = "DROP DATABASE \"%s\"";
-  private static final Pattern ALLOWED_URL_PATTERN = Pattern.compile("^(https?://)(www\\.)?api.clearscape.teradata.com\\.com.*");
+  private static final Pattern ALLOWED_URL_PATTERN = Pattern.compile("^(https?://)(www\\.)?api.clearscape.teradata\\.com.*");
 
   private JsonNode configJson;
   private JdbcDatabase database;
