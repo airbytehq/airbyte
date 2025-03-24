@@ -66,7 +66,8 @@ abstract class MSSQLWriterTest(
         preserveUndeclaredFields = false,
         supportFileTransfer = false,
         commitDataIncrementally = true,
-        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        allTypesBehavior =
+            StronglyTyped(integerCanBeLarge = false, nestedFloatLosesPrecision = false),
         unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
         nullEqualsUnset = true,
         configUpdater = configUpdater,
