@@ -23,6 +23,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.data.toAirbyteValues
@@ -310,6 +311,13 @@ data class DestinationRecordRaw(
         )
     }
 
+    /**
+     * Convert this record to an EnrichedRecord. Crucially, after this conversion, all entries in
+     * [EnrichedDestinationRecordAirbyteValue.allTypedFields] are guaranteed to have
+     * [EnrichedAirbyteValue.value] either be [NullValue], or match [EnrichedAirbyteValue.type]
+     * (e.g. if `type` is [TimestampTypeWithTimezone], then `value` is either `NullValue`, or
+     * [TimestampWithTimezoneValue]).
+     */
     fun asEnrichedDestinationRecordAirbyteValue(): EnrichedDestinationRecordAirbyteValue {
         val rawJson = asRawJson()
 

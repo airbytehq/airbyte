@@ -2000,6 +2000,20 @@ abstract class BasicFunctionalityIntegrationTest(
                         }
                     """.trimIndent(),
                 ),
+                // A record with truncated timestamps (i.e. the seconds value is 0).
+                // Some destinations have specific formatting requirements, and it's easy
+                // to mess these values up.
+                makeRecord(
+                    """
+                        {
+                          "id": 7,
+                          "timestamp_with_timezone": "2023-01-23T11:34:00-01:00",
+                          "timestamp_without_timezone": "2023-01-23T12:34:00",
+                          "time_with_timezone": "11:34:00-01:00",
+                          "time_without_timezone": "12:34:00"
+                        }
+                    """.trimIndent()
+                ),
             ),
         )
 
@@ -2179,6 +2193,21 @@ abstract class BasicFunctionalityIntegrationTest(
                             "integer" to negativeBigInt,
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42, changes = bigIntChanges),
+                ),
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 7,
+                            "timestamp_with_timezone" to
+                                OffsetDateTime.parse("2023-01-23T11:34:00-01:00"),
+                            "timestamp_without_timezone" to
+                                LocalDateTime.parse("2023-01-23T12:34:00"),
+                            "time_with_timezone" to OffsetTime.parse("11:34:00-01:00"),
+                            "time_without_timezone" to LocalTime.parse("12:34:00"),
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
             ),
             stream,
