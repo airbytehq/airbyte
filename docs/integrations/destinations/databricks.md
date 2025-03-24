@@ -90,8 +90,8 @@ with the raw tables, and their format is subject to change without notice.
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                                                                                        | Subject                                                                                                                                                                          |
-| 3.3.6 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 |:--------|:-----------|:--------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.6 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 | 3.3.5 | 2025-03-07 | [55232](https://github.com/airbytehq/airbyte/pull/55232) | fix table name collision multiple connections same schema |
 | 3.3.3 | 2025-01-10 | [51506](https://github.com/airbytehq/airbyte/pull/51506) | Use a non root base image |
 | 3.3.2 | 2024-12-18 | [49898](https://github.com/airbytehq/airbyte/pull/49898) | Use a base image: airbyte/java-connector-base:1.0.0 |
