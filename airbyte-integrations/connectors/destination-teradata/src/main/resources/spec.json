@@ -78,20 +78,6 @@
                 "order": 2
               }
             }
-          },
-          {
-            "title": "BROWSER",
-            "type": "object",
-            "order": 1,
-            "properties": {
-              "auth_type": {
-                "type": "string",
-                "const": "BROWSER",
-                "enum": ["BROWSER"],
-                "default": "BROWSER",
-                "order": 0
-              }
-            }
           }
         ]
       },
