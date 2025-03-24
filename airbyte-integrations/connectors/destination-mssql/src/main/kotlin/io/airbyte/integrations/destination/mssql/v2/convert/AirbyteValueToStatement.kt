@@ -20,6 +20,7 @@ import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.UnknownValue
 import io.airbyte.integrations.destination.mssql.v2.MSSQLQueryBuilder
 import io.airbyte.protocol.models.Jsons
@@ -43,7 +44,11 @@ class AirbyteValueToStatement {
             value: AirbyteValue?,
             field: MSSQLQueryBuilder.NamedField
         ) {
-            if (value != null && value !is NullValue && field.type.type is UnionType) {
+            if (
+                value != null &&
+                    value !is NullValue &&
+                    (field.type.type is UnionType || field.type.type is UnknownType)
+            ) {
                 setAsJsonString(idx, value)
             } else {
                 when (value) {

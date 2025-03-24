@@ -21,6 +21,7 @@ import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
+import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import kotlin.test.assertContains
 import org.apache.iceberg.catalog.Catalog
 import org.junit.jupiter.api.Assumptions
@@ -58,7 +59,7 @@ abstract class IcebergWriteTest(
                 // we stringify objects, so nested floats stay exact
                 nestedFloatLosesPrecision = false
             ),
-        nullUnknownTypes = true,
+        unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
         nullEqualsUnset = true,
         configUpdater = IcebergConfigUpdater,
     ) {
