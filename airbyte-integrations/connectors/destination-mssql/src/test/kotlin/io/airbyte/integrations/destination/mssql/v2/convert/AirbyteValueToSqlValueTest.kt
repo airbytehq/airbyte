@@ -37,16 +37,16 @@ internal class AirbyteValueToSqlValueTest {
         val objectValue =
             ObjectValue(linkedMapOf("id" to IntegerValue(42L), "name" to StringValue("John Doe")))
         val result = converter.convert(objectValue)
-        assertEquals(LinkedHashMap::class.java, result?.javaClass)
-        assertEquals(mapOf("id" to 42.toBigInteger(), "name" to "John Doe"), result)
+        assertEquals(String::class.java, result?.javaClass)
+        assertEquals("""{"id":42,"name":"John Doe"}""", result)
     }
 
     @Test
     fun testConvertArrayValue() {
         val arrayValue = ArrayValue(listOf(StringValue("John Doe"), IntegerValue(42L)))
         val result = converter.convert(arrayValue)
-        assertEquals(ArrayList::class.java, result?.javaClass)
-        assertEquals(listOf("John Doe", 42.toBigInteger()), result)
+        assertEquals(String::class.java, result?.javaClass)
+        assertEquals("""["John Doe",42]""", result)
     }
 
     @Test
