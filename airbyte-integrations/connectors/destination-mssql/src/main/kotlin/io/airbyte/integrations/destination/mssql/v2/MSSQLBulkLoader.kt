@@ -112,8 +112,8 @@ class MSSQLBulkLoaderFactory(
     private val bulkLoadConfig: MSSQLBulkLoadConfiguration,
     private val streamStateStore: StreamStateStore<MSSQLStreamState>
 ) : BulkLoaderFactory<StreamKey, AzureBlob> {
-    override val numPartWorkers: Int = config.numProcessRecordsWorkers
-    override val numUploadWorkers: Int = config.numProcessBatchWorkers
+    override val numPartWorkers: Int = 2
+    override val numUploadWorkers: Int = 5
     override val maxNumConcurrentLoads: Int = 1
 
     override val objectSizeBytes: Long = 200 * 1024 * 1024 // 200 MB

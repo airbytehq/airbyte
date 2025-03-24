@@ -78,6 +78,18 @@ class MSSQLSpecification : ConfigurationSpecification(), LoadTypeSpecification {
     @get:JsonProperty("load_type")
     @get:JsonSchemaInject(json = """{"always_show": true,"order":8}""")
     override val loadType: LoadType = InsertLoadSpecification()
+
+    @get:JsonProperty("tmp_num_part_formatters")
+    val numPartFormatters: Int? = null
+
+    @get:JsonProperty("tmp_num_part_loaders")
+    val numPartLoaders: Int? = null
+
+    @get:JsonProperty("tmp_max_memory_ratio_reserved_for_parts")
+    val maxMemoryRatioReservedForParts: Double? = null
+
+    @get:JsonProperty("tmp_part_size_mb")
+    val partSizeMb: Int? = null
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "name")
