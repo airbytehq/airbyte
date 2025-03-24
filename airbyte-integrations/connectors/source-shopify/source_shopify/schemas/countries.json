@@ -49,7 +49,7 @@
     },
     "translatedName": {
       "description": "Translated name of the country",
-      "type": ["null", "boolean"]
+      "type": ["null", "string"]
     },
     "shop_url": {
       "description": "URL for the shop related to this country.",
