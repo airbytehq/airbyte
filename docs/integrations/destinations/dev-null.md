@@ -48,7 +48,6 @@ This mode throws an exception after receiving a configurable number of messages.
 The OSS and Cloud variants have the same version number starting from version `0.2.2`.
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                       |
-| 0.7.21 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 |:------------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
 | 0.7.20      | 2025-03-21 | [55906](https://github.com/airbytehq/airbyte/pull/55906) | CDK: Pass DestinationRecordRaw around instead of DestinationRecordAirbyteValue                |
 | 0.7.19      | 2025-03-13 | [55737](https://github.com/airbytehq/airbyte/pull/55737) | CDK: Pass DestinationRecordRaw around instead of DestinationRecordAirbyteValue                |
