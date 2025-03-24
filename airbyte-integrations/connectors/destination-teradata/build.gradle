@@ -1,7 +1,6 @@
 plugins {
     id 'application'
     id 'airbyte-java-connector'
-    id 'jacoco'
 }
 
 airbyteJavaConnector {
@@ -15,14 +14,6 @@ java {
     compileJava {
         options.compilerArgs.remove("-Werror")
     }
-}
-
-test {
-    finalizedBy jacocoTestReport
-}
-
-jacocoTestReport {
-    dependsOn test
 }
 
 airbyteJavaConnector.addCdkDependencies()
