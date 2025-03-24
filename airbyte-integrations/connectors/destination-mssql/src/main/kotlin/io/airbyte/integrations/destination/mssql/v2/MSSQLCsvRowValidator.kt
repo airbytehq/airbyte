@@ -34,9 +34,10 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
 
-private object LIMITS {
+object LIMITS {
     // Maximum value for BIGINT in SQL Server
     val MAX_BIGINT = BigInteger("9223372036854775807")
+    val MIN_BIGINT = BigInteger("-9223372036854775808")
 
     val TRUE = IntegerValue(1)
     val FALSE = IntegerValue(0)
@@ -155,8 +156,8 @@ class MSSQLCsvRowValidator(private val validateValuesPreLoad: Boolean) {
         value: IntegerValue,
         meta: Meta
     ): AirbyteValue {
-        // If the integer is bigger than BIGINT, then we must nullify it.
-        if (value.value > LIMITS.MAX_BIGINT) {
+        // If the integer exceeds BIGINT range, then we must nullify it.
+        if (value.value < LIMITS.MIN_BIGINT || LIMITS.MAX_BIGINT < value.value) {
             meta.nullify(
                 columnName,
                 AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION

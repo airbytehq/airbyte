@@ -52,7 +52,6 @@ import io.airbyte.integrations.destination.mssql.v2.convert.MssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.ResultSetToAirbyteValue.Companion.getAirbyteNamedValue
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.math.BigInteger
 import java.sql.Connection
 import java.sql.Date
 import java.sql.PreparedStatement
@@ -377,11 +376,7 @@ class MSSQLQueryBuilder(
                     )
                 IntegerType -> {
                     val intValue = (value.value as IntegerValue).value
-                    // TODO use existing LIMITS constants
-                    if (
-                        intValue < BigInteger("-9223372036854775808") ||
-                            BigInteger("9223372036854775807") < intValue
-                    ) {
+                    if (intValue < LIMITS.MIN_BIGINT || LIMITS.MAX_BIGINT < intValue) {
                         value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
                     } else {
                         statement.setLong(statementIndex, intValue.longValueExact())
