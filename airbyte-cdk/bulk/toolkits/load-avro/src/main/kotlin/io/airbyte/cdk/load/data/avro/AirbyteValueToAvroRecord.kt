@@ -35,10 +35,6 @@ import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecord
 
 class AirbyteValueToAvroRecord {
-    /**
-     * This recursive behavior is pretty sad and should not be replicated in the future. We
-     * currently support this to meet legacy requirements for S3 and should be avoided at all costs
-     */
     fun convert(airbyteValue: AirbyteValue, airbyteSchema: AirbyteType, schema: Schema): Any? {
         try {
             if (airbyteValue == NullValue) {
