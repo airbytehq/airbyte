@@ -51,27 +51,27 @@ class EnrichedDestinationRecordAirbyteValueTest {
 
         // Check the types of meta fields
         val rawIdField = metaFields[Meta.COLUMN_NAME_AB_RAW_ID]!!
-        assertTrue(rawIdField.value is StringValue)
+        assertTrue(rawIdField.abValue is StringValue)
         assertEquals(Meta.AirbyteMetaFields.RAW_ID.type, rawIdField.type)
 
         val extractedAtField = metaFields[Meta.COLUMN_NAME_AB_EXTRACTED_AT]!!
-        assertTrue(extractedAtField.value is IntegerValue)
-        assertEquals(emittedAtMs, (extractedAtField.value as IntegerValue).value.toLong())
+        assertTrue(extractedAtField.abValue is IntegerValue)
+        assertEquals(emittedAtMs, (extractedAtField.abValue as IntegerValue).value.toLong())
         assertEquals(Meta.AirbyteMetaFields.EXTRACTED_AT.type, extractedAtField.type)
 
         val metaField = metaFields[Meta.COLUMN_NAME_AB_META]!!
-        assertTrue(metaField.value is ObjectValue)
-        val metaObj = metaField.value as ObjectValue
+        assertTrue(metaField.abValue is ObjectValue)
+        val metaObj = metaField.abValue as ObjectValue
         assertEquals(2, metaObj.values.size)
         assertEquals(IntegerValue(destinationStream.syncId), metaObj.values["sync_id"])
         assertTrue(metaObj.values["changes"] is ArrayValue)
         assertEquals(Meta.AirbyteMetaFields.META.type, metaField.type)
 
         val generationIdField = metaFields[Meta.COLUMN_NAME_AB_GENERATION_ID]!!
-        assertTrue(generationIdField.value is IntegerValue)
+        assertTrue(generationIdField.abValue is IntegerValue)
         assertEquals(
             destinationStream.generationId,
-            (generationIdField.value as IntegerValue).value.toLong()
+            (generationIdField.abValue as IntegerValue).value.toLong()
         )
         assertEquals(Meta.AirbyteMetaFields.GENERATION_ID.type, generationIdField.type)
     }
@@ -80,8 +80,20 @@ class EnrichedDestinationRecordAirbyteValueTest {
     fun `test allTypedFields property`() {
         val declaredFields =
             mapOf(
-                "field1" to EnrichedAirbyteValue(StringValue("value1"), StringType, "field1"),
-                "field2" to EnrichedAirbyteValue(IntegerValue(42), IntegerType, "field2")
+                "field1" to
+                    EnrichedAirbyteValue(
+                        StringValue("value1"),
+                        StringType,
+                        "field1",
+                        airbyteMetaField = null
+                    ),
+                "field2" to
+                    EnrichedAirbyteValue(
+                        IntegerValue(42),
+                        IntegerType,
+                        "field2",
+                        airbyteMetaField = null
+                    )
             )
 
         val record =
@@ -106,7 +118,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
             assertEquals(value.type, allFields[key]?.type)
             // Don't compare value directly for RAW_ID as it generates a random UUID
             if (key != Meta.COLUMN_NAME_AB_RAW_ID) {
-                assertEquals(value.value::class, allFields[key]?.value!!::class)
+                assertEquals(value.abValue::class, allFields[key]?.abValue!!::class)
             }
         }
     }
@@ -114,10 +126,22 @@ class EnrichedDestinationRecordAirbyteValueTest {
     @Test
     fun `test proper collection of changes in meta field`() {
         // Create fields with changes
-        val field1 = EnrichedAirbyteValue(StringValue("value1"), StringType, "field1")
+        val field1 =
+            EnrichedAirbyteValue(
+                StringValue("value1"),
+                StringType,
+                "field1",
+                airbyteMetaField = null
+            )
         field1.truncate(Reason.DESTINATION_RECORD_SIZE_LIMITATION, StringValue("val"))
 
-        val field2 = EnrichedAirbyteValue(IntegerValue(1000000), IntegerType, "field2")
+        val field2 =
+            EnrichedAirbyteValue(
+                IntegerValue(1000000),
+                IntegerType,
+                "field2",
+                airbyteMetaField = null
+            )
         field2.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
 
         val declaredFields = mapOf("field1" to field1, "field2" to field2)
@@ -146,7 +170,7 @@ class EnrichedDestinationRecordAirbyteValueTest {
 
         // Get the changes array from the meta field
         val metaField = record.airbyteMetaFields[Meta.COLUMN_NAME_AB_META]!!
-        val metaObj = metaField.value as ObjectValue
+        val metaObj = metaField.abValue as ObjectValue
         val changesArray = metaObj.values["changes"] as ArrayValue
 
         // Should contain 3 changes total: 1 from meta and 2 from declared fields
@@ -207,9 +231,9 @@ class EnrichedDestinationRecordAirbyteValueTest {
             )
 
         val rawId1 =
-            (record1.airbyteMetaFields[Meta.COLUMN_NAME_AB_RAW_ID]!!.value as StringValue).value
+            (record1.airbyteMetaFields[Meta.COLUMN_NAME_AB_RAW_ID]!!.abValue as StringValue).value
         val rawId2 =
-            (record2.airbyteMetaFields[Meta.COLUMN_NAME_AB_RAW_ID]!!.value as StringValue).value
+            (record2.airbyteMetaFields[Meta.COLUMN_NAME_AB_RAW_ID]!!.abValue as StringValue).value
 
         // Validate UUID format
         val uuidRegex = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
