@@ -9,7 +9,7 @@ Airbyte's documentation is in the [Airbyte repository](https://github.com/airbyt
 
 ## Open source contributions welcome
 
-Open source contributors are a vital part of Airbyte. Technical writers are welcome to use any content you author in your portfolio. 
+Open source contributors are a vital part of Airbyte. Technical writers are welcome to use any content you author in your portfolio.
 
 If you're interested in becoming a regular contributor, join Airbyte's [Contributor program](https://airbyte.com/community/contributor-program). Airbyte pays for high-quality work on select issues. AI-generated content isn't eligible for the contributor program. You're welcome to use AI as a research tool and editing partner, but paid submissions must be principally human-generated.
 
@@ -159,18 +159,19 @@ Since the docs site is based on Docusaurus, it inherits all of Docusaurus' capab
 
 ### Tabs
 
-Use tabs to display mutually exclusive concepts in a concise way. See [Tabs](https://docusaurus.io/docs/markdown-features/tabs). 
+Use tabs to display mutually exclusive concepts in a concise way. See [Tabs](https://docusaurus.io/docs/markdown-features/tabs).
 
 :::note
 We maintain a separate `Tabs` implementation to support rendering tabs in Airbyte's in-app documentation. Our in-app renderer creates some additional rules that aren't necessarily true in other Docusaurus implementations:
 
 - Always use empty lines to separate different Markup elements (tags, paragraphs, lists, etc.)
 - Do not indent `TabItem` tags and their content according to normal HTML conventions. Different Markdown rendering tools handle indented tags inconsistently.
+
 :::
 
 ### Code blocks
 
-Code blocks are used to represent sample code and command line input and output with easy-to-read syntax highlighting. See [Code blocks](https://docusaurus.io/docs/markdown-features/code-blocks). 
+Code blocks are used to represent sample code and command line input and output with easy-to-read syntax highlighting. See [Code blocks](https://docusaurus.io/docs/markdown-features/code-blocks).
 
 Not all languages are turned on. If syntax highlighting doesn't work for your language, add it to `docusaurus/docusaurus.config.js`'s `module.exports.themeConfig.prism.additionalLanguages` property. Then, restart your local server to test the new language.
 
@@ -298,7 +299,7 @@ Airbyte uses Vale to promote standardization and minimum quality for docs conten
 
 #### How Vale works
 
-A configuration file, `//docusaurus/vale.ini`, controls Vale at the highest level. This file specifies the location of Vale's style rules, libraries, vocabularies, and other resources. Those styles and rules exist in `//docs/vale-styles`. Some of them are Airbyte-specific, but most rules come from the [Google](https://github.com/errata-ai/Google) and [Write Good](https://github.com/errata-ai/write-good) libraries. 
+A configuration file, `//docusaurus/vale.ini`, controls Vale at the highest level. This file specifies the location of Vale's style rules, libraries, vocabularies, and other resources. Those styles and rules exist in `//docs/vale-styles`. Some of them are Airbyte-specific, but most rules come from the [Google](https://github.com/errata-ai/Google) and [Write Good](https://github.com/errata-ai/write-good) libraries.
 
 The repository imports those libraries from an external source. Don't modify them, or a future update may overwrite your modifications. If you want to improve these rules, modify `//docs/vale-styles/airbyte` or our vocabularies in `//docs/vale-styles/config/airbyte`.
 
@@ -439,11 +440,11 @@ New pull requests with docs changes are automatically submitted to [#docs-prs](h
 Vercel builds a preview of the updated docs site automatically. If you're a community contributor, someone from Airbyte must authorize that build before it proceeds.
 
 :::tip Collaboration tip
-If you're not finished but want to collaborate with others, create a draft pull request. Vercel will still build your docs site, creating a preview others can see, and you can continue to work on your branch to incorporate feedback.
+If you're not finished but want to collaborate with others, create a draft pull request. Vercel still builds your docs site, creating a preview others can see, and you can continue to work on your branch to incorporate feedback.
 :::
 
 :::note
-Before we accept your contribution, you need to sign the Contributor License Agreement (CLA). By signing a CLA, we can ensure that the community is free and confident in its ability to use your contributions. You will be prompted to sign the CLA while opening a pull request.
+Before Airbyte accepts your contribution, you need to sign the Contributor License Agreement (CLA). By signing a CLA, Airbyte can ensure that the community is free and confident in its ability to use your contributions. GitHub prompts you to sign the CLA when you open your first pull request.
 :::
 
 ## Deploy the documentation site
