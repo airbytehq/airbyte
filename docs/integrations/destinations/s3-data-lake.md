@@ -307,7 +307,8 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                        |
 |:--------|:-----------| :--------------------------------------------------------- |:-------------------------------------------------------------------------------|
-| 0.3.21 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
+| 0.3.22  | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
+| 0.3.21  | 2025-03-22 | [\#56347](https://github.com/airbytehq/airbyte/pull/56347) | Bugfix: stream start does not always await iceberg setup                       |
 | 0.3.20  | 2025-03-24 | [\#55849](https://github.com/airbytehq/airbyte/pull/55849) | Internal refactoring                                                           |
 | 0.3.19  | 2025-03-19 | [\#55798](https://github.com/airbytehq/airbyte/pull/55798) | CDK: Typing improvements                                                       |
 | 0.3.18  | 2025-03-18 | [\#55811](https://github.com/airbytehq/airbyte/pull/55811) | CDK: Pass DestinationStream around vs Descriptor                               |
