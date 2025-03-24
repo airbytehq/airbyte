@@ -259,6 +259,10 @@
       "description": "The ID of the device used to place the order",
       "type": ["null", "string"]
     },
+    "duties_included": {
+      "description": "Whether duties included in the subtotal price of the order.",
+      "type": ["null", "boolean"]
+    },
     "discount_applications": {
       "type": ["null", "array"],
       "items": {
@@ -340,6 +344,10 @@
       "description": "The app ID of the merchant of record",
       "type": ["null", "string"]
     },
+    "merchant_business_entity_id": {
+      "description": "The business entity ID of the merchant of record.",
+      "type": ["null", "string"]
+    },
     "name": {
       "description": "The name of the order",
       "type": ["null", "string"]
@@ -417,6 +425,36 @@
     "payment_terms": {
       "description": "The terms of payment for the order",
       "type": ["null", "string"]
+    },
+    "total_cash_rounding_payment_adjustment_set": {
+      "description": "The money set that represents the amount adjusted on the order total due to cash rounding.",
+      "type": ["null", "object"],
+      "properties": {
+        "presentment_money": {
+          "description": "The amount in the customer's presentment currency.",
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "string"]
+            },
+            "currency_code": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "shop_money": {
+          "description": "The amount in the shop's local currency.",
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "string"]
+            },
+            "currency_code": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
     },
     "phone": {
       "description": "The phone number of the customer",
