@@ -151,8 +151,8 @@ With the field `File Extension`, it is possible to save the output files with ex
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
-| 0.2.6 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.6 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 | 0.2.5   | 2025-03-21 | [55906](https://github.com/airbytehq/airbyte/pull/55906)   | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible.                                                                                               |                                                                                                          |
 | 0.2.4   | 2025-01-10 | [51507](https://github.com/airbytehq/airbyte/pull/51507)   | Use a non root base image |
 | 0.2.3   | 2024-12-18 | [49910](https://github.com/airbytehq/airbyte/pull/49910)   | Use a base image: airbyte/java-connector-base:1.0.0 |
