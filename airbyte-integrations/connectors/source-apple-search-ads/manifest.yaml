@@ -1,9 +1,18 @@
-version: 6.33.4
+version: 6.41.3
 
 type: DeclarativeSource
 
-description: |
-  Connector for Apple Search Ads.
+description: >-
+  Add extract `countryOrRegion` value from `metadata` field and add it as a new
+  separate one.
+
+  Now when `metadata` field is used as a primary key to run a proper
+  deduplication for metrics grouped by `countryOrRegion` it may cause duplicate
+  if `metadata` has changes for other keys but with the same `date` and
+  `campaignid`.
+
+  Adding an ability to set just `countryOrRegion` as primary key instead of the
+  whole `metadata` field solves the issue
 
 check:
   type: CheckStream
@@ -60,6 +69,8 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 1000
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -120,6 +131,8 @@ definitions:
               partition_field: campaign_id
               stream:
                 $ref: "#/definitions/streams/campaigns"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -182,6 +195,8 @@ definitions:
               partition_field: adgroup_id
               stream:
                 $ref: "#/definitions/streams/adgroups"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -253,6 +268,8 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 1000
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
@@ -273,14 +290,22 @@ definitions:
       transformations:
         - type: AddFields
           fields:
-            - path:
+            - type: AddedFieldDefinition
+              path:
                 - campaignId
               value: "{{ record.metadata.campaignId }}"
         - type: AddFields
           fields:
-            - path:
+            - type: AddedFieldDefinition
+              path:
                 - date
               value: "{{ stream_slice.start_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - countryorregion
+              value: "{{ record.metadata.countryOrRegion }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -360,6 +385,8 @@ definitions:
               partition_field: campaign_id
               stream:
                 $ref: "#/definitions/streams/campaigns"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
@@ -380,14 +407,22 @@ definitions:
       transformations:
         - type: AddFields
           fields:
-            - path:
+            - type: AddedFieldDefinition
+              path:
                 - adGroupId
               value: "{{ record.metadata.adGroupId }}"
         - type: AddFields
           fields:
-            - path:
+            - type: AddedFieldDefinition
+              path:
                 - date
               value: "{{ stream_slice.start_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - countryorregion
+              value: "{{ record.metadata.countryOrRegion }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -470,6 +505,8 @@ definitions:
               partition_field: campaign_id
               stream:
                 $ref: "#/definitions/streams/campaigns"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
@@ -490,14 +527,22 @@ definitions:
       transformations:
         - type: AddFields
           fields:
-            - path:
+            - type: AddedFieldDefinition
+              path:
                 - keywordId
               value: "{{ record.metadata.keywordId }}"
         - type: AddFields
           fields:
-            - path:
+            - type: AddedFieldDefinition
+              path:
                 - date
               value: "{{ stream_slice.start_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - countryorregion
+              value: "{{ record.metadata.countryOrRegion }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -512,6 +557,7 @@ definitions:
       client_secret: "{{ config.client_secret }}"
       token_refresh_endpoint: >-
         https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg
+      refresh_request_body: {}
 
 streams:
   - $ref: "#/definitions/streams/campaigns"
@@ -656,7 +702,7 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     adgroups_report_daily:
-      streamHash: 69ae81a549ddf4cf49525e4731ce3f0672850294
+      streamHash: 55fd5a511833be4580713815c5bb721ad241f03b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -664,7 +710,7 @@ metadata:
       primaryKeysAreUnique: true
     keywords_report_daily:
       hasRecords: true
-      streamHash: 9e3168136c48dbdc3e29e620f048eb3824023132
+      streamHash: 236c9e467ad57836f09f2bc7adc815eecbdf7d77
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
