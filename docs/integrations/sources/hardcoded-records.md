@@ -149,6 +149,7 @@ None!
 
 | Version | Date       | Pull Request                                             | Subject                  |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------|
+| 0.0.33 | 2025-03-22 | [56044](https://github.com/airbytehq/airbyte/pull/56044) | Update dependencies |
 | 0.0.32 | 2025-03-08 | [55481](https://github.com/airbytehq/airbyte/pull/55481) | Update dependencies |
 | 0.0.31 | 2025-03-04 | [55196](https://github.com/airbytehq/airbyte/pull/55196) | fix(source-hardcoded-records): use latest CDK |
 | 0.0.30 | 2025-03-01 | [54814](https://github.com/airbytehq/airbyte/pull/54814) | Update dependencies |
