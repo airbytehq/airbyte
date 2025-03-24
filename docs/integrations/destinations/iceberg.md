@@ -79,7 +79,6 @@ specify the target size of compacted Iceberg data file.
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                                        |
-| 0.2.6 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 |:--------|:-----------|:----------------------------------------------------------|:---------------------------------------------------------------|
 | 0.2.5 | 2025-03-21 | [55908](https://github.com/airbytehq/airbyte/pull/55908) | Update docs to redirect users to destination-s3-data-lake |
 | 0.2.4 | 2025-01-10 | [51492](https://github.com/airbytehq/airbyte/pull/51492) | Use a non root base image |
