@@ -77,7 +77,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version | Date       | Pull Request                                              | Subject                                                                                           |
 |:--------|:-----------| :-------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
-| 2.3.0   | 2025-03-18 | [55225](https://github.com/airbytehq/airbyte/pull/55225) | Update CDK to v6 |
+| 2.3.0-rc.1   | 2025-03-18 | [55225](https://github.com/airbytehq/airbyte/pull/55225) | Update CDK to v6 |
 | 2.2.0   | 2025-03-14 | [52780](https://github.com/airbytehq/airbyte/pull/52780) | Add optional config parameter to control which boards are fetched when syncing the `Boards` stream |
 | 2.1.13  | 2025-02-01 | [52780](https://github.com/airbytehq/airbyte/pull/52780) | Update dependencies |
 | 2.1.12  | 2025-01-25 | [51833](https://github.com/airbytehq/airbyte/pull/51833) | Update dependencies |
