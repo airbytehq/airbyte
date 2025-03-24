@@ -911,6 +911,20 @@ definitions:
         requester:
           $ref: "#/definitions/retriever/requester"
           path: "tickets/{{ stream_partition.ticket_id }}/metrics"
+          error_handler:
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - http_codes: [403]
+                action: IGNORE
+                failure_type: config_error
+                error_message: "Please ensure the authenticated user has access to stream: {self.name}. If the issue persists, contact Zendesk support."
+              - http_codes: [404]
+                action: IGNORE
+                failure_type: config_error
+                error_message: "Not found. Ticket was deleted. If the issue persists, contact Zendesk support."
         paginator:
           type: NoPagination
         record_selector:
