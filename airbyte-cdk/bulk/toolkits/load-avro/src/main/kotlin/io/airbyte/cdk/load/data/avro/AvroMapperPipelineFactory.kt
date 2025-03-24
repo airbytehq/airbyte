@@ -27,6 +27,7 @@ import io.airbyte.cdk.load.data.TimeStringToInteger
  */
 @Deprecated("Use DestinationRecordRaw.asEnrichedDestinationRecordAirbyteValue() logic instead")
 class AvroMapperPipelineFactory : MapperPipelineFactory {
+    @Suppress("DEPRECATION")
     override fun create(stream: DestinationStream): MapperPipeline =
         MapperPipeline(
             stream.schema,
