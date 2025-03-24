@@ -61,7 +61,7 @@ You can use SQL to configure connector definitions, affecting all connectors of 
 2. Run the following commend with the resource requirements and the connection definition id filled in.
 
    ```sql
-   update actor_definition set resource_requirements = '{"jobSpecific": [{"jobType": "sync", "resourceRequirements": {"cpu_limit": "2", "cpu_request": "2", "memory_limit": "3072Mi", "memory_request": "3072Mi"}}]}' where id = '<id-from-step-1>';
+   update actor_definition set resource_requirements = '{"jobSpecific": [{"jobType": "sync", "resourceRequirements": {"cpu_limit": "2", "cpu_request": "2", "memory_limit": "2048Mi", "memory_request": "2048Mi"}}]}' where id = '<id-from-step-1>';
    ```
 
 ## Configuring Connector-Specific Requirements
@@ -94,7 +94,7 @@ Database Connectors:
 2. Connect to the database and run the following command with the connection id and resource requirements filled in.
 
 ```sql
-update connection set resource_requirements = '{"cpu_limit": "2", "cpu_request": "2", "memory_limit": "3072Mi", "memory_request": "3072Mi"}' where id = '<id-from-step-1>';
+update connection set resource_requirements = '{"cpu_limit": "2", "cpu_request": "2", "memory_limit": "2048Mi", "memory_request": "2048Mi"}' where id = '<id-from-step-1>';
 ```
 
 ## Debugging Connection Resources {#debugging}
