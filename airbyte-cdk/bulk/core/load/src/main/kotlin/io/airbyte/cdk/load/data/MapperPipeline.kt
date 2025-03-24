@@ -52,5 +52,5 @@ class MapperPipeline(
  */
 @Deprecated("Use DestinationRecordRaw.asEnrichedDestinationRecordAirbyteValue() logic instead")
 interface MapperPipelineFactory {
-    fun create(stream: DestinationStream): MapperPipeline
+    @Suppress("DEPRECATION") fun create(stream: DestinationStream): MapperPipeline
 }
