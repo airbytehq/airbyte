@@ -314,7 +314,7 @@ data class DestinationRecordRaw(
     /**
      * Convert this record to an EnrichedRecord. Crucially, after this conversion, all entries in
      * [EnrichedDestinationRecordAirbyteValue.allTypedFields] are guaranteed to have
-     * [EnrichedAirbyteValue.value] either be [NullValue], or match [EnrichedAirbyteValue.type]
+     * [EnrichedAirbyteValue.abValue] either be [NullValue], or match [EnrichedAirbyteValue.type]
      * (e.g. if `type` is [TimestampTypeWithTimezone], then `value` is either `NullValue`, or
      * [TimestampWithTimezoneValue]).
      */
@@ -344,13 +344,13 @@ data class DestinationRecordRaw(
 
                     val enrichedValue =
                         EnrichedAirbyteValue(
-                            value = NullValue,
+                            abValue = NullValue,
                             type = fieldType,
                             name = fieldName,
                             airbyteMetaField = null,
                         )
                     AirbyteValueCoercer.coerce(fieldValue.toAirbyteValue(), fieldType)?.let {
-                        enrichedValue.value = it
+                        enrichedValue.abValue = it
                     }
                         ?: enrichedValue.nullify(Reason.DESTINATION_SERIALIZATION_ERROR)
 

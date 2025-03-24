@@ -353,7 +353,7 @@ class MSSQLQueryBuilder(
         schema.forEachIndexed { index, field ->
             val statementIndex = index + 1
             val value = populatedFields[field.name]
-            if (value == null || value.value == NullValue) {
+            if (value == null || value.abValue == NullValue) {
                 statement.setAsNullValue(statementIndex, field.type.type)
                 return@forEachIndexed
             }
@@ -368,14 +368,14 @@ class MSSQLQueryBuilder(
 
             when (value.type) {
                 BooleanType ->
-                    statement.setBoolean(statementIndex, (value.value as BooleanValue).value)
+                    statement.setBoolean(statementIndex, (value.abValue as BooleanValue).value)
                 DateType ->
                     statement.setDate(
                         statementIndex,
-                        Date.valueOf((value.value as DateValue).value)
+                        Date.valueOf((value.abValue as DateValue).value)
                     )
                 IntegerType -> {
-                    val intValue = (value.value as IntegerValue).value
+                    val intValue = (value.abValue as IntegerValue).value
                     if (intValue < LIMITS.MIN_BIGINT || LIMITS.MAX_BIGINT < intValue) {
                         value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
                     } else {
@@ -385,29 +385,29 @@ class MSSQLQueryBuilder(
                 NumberType ->
                     statement.setDouble(
                         statementIndex,
-                        (value.value as NumberValue).value.toDouble()
+                        (value.abValue as NumberValue).value.toDouble()
                     )
                 StringType ->
-                    statement.setString(statementIndex, (value.value as StringValue).value)
+                    statement.setString(statementIndex, (value.abValue as StringValue).value)
                 TimeTypeWithTimezone ->
                     statement.setObject(
                         statementIndex,
-                        (value.value as TimeWithTimezoneValue).value
+                        (value.abValue as TimeWithTimezoneValue).value
                     )
                 TimeTypeWithoutTimezone ->
                     statement.setObject(
                         statementIndex,
-                        (value.value as TimeWithoutTimezoneValue).value
+                        (value.abValue as TimeWithoutTimezoneValue).value
                     )
                 TimestampTypeWithTimezone ->
                     statement.setObject(
                         statementIndex,
-                        (value.value as TimestampWithTimezoneValue).value
+                        (value.abValue as TimestampWithTimezoneValue).value
                     )
                 TimestampTypeWithoutTimezone ->
                     statement.setObject(
                         statementIndex,
-                        (value.value as TimestampWithoutTimezoneValue).value
+                        (value.abValue as TimestampWithoutTimezoneValue).value
                     )
 
                 // Serialize complex types to string
@@ -418,7 +418,7 @@ class MSSQLQueryBuilder(
                 ObjectTypeWithoutSchema,
                 is UnionType,
                 is UnknownType ->
-                    statement.setString(statementIndex, value.value.serializeToString())
+                    statement.setString(statementIndex, value.abValue.serializeToString())
             }
         }
 
@@ -427,7 +427,7 @@ class MSSQLQueryBuilder(
         airbyteMetaStatementIndex?.let { statementIndex ->
             statement.setString(
                 statementIndex,
-                enrichedRecord.airbyteMeta.value.serializeToString()
+                enrichedRecord.airbyteMeta.abValue.serializeToString()
             )
         }
     }

@@ -20,7 +20,7 @@ class EnrichedAirbyteValueTest {
         val enriched = EnrichedAirbyteValue(initialValue, type, name, airbyteMetaField = null)
         enriched.nullify(Reason.DESTINATION_SERIALIZATION_ERROR)
 
-        assertEquals(NullValue, enriched.value)
+        assertEquals(NullValue, enriched.abValue)
         assertEquals(1, enriched.changes.size)
 
         val change = enriched.changes[0]
@@ -38,7 +38,7 @@ class EnrichedAirbyteValueTest {
         val enriched = EnrichedAirbyteValue(initialValue, type, name, airbyteMetaField = null)
         enriched.nullify()
 
-        assertEquals(NullValue, enriched.value)
+        assertEquals(NullValue, enriched.abValue)
         assertEquals(1, enriched.changes.size)
 
         val change = enriched.changes[0]
@@ -56,7 +56,7 @@ class EnrichedAirbyteValueTest {
         val enriched = EnrichedAirbyteValue(initialValue, type, name, airbyteMetaField = null)
         enriched.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
 
-        assertEquals(NullValue, enriched.value)
+        assertEquals(NullValue, enriched.abValue)
         assertEquals(1, enriched.changes.size)
 
         val change = enriched.changes[0]
@@ -75,7 +75,7 @@ class EnrichedAirbyteValueTest {
         val enriched = EnrichedAirbyteValue(initialValue, type, name, airbyteMetaField = null)
         enriched.truncate(Reason.DESTINATION_RECORD_SIZE_LIMITATION, truncatedValue)
 
-        assertEquals(truncatedValue, enriched.value)
+        assertEquals(truncatedValue, enriched.abValue)
         assertEquals(1, enriched.changes.size)
 
         val change = enriched.changes[0]
@@ -94,7 +94,7 @@ class EnrichedAirbyteValueTest {
         val enriched = EnrichedAirbyteValue(initialValue, type, name, airbyteMetaField = null)
         enriched.truncate(newValue = truncatedValue)
 
-        assertEquals(truncatedValue, enriched.value)
+        assertEquals(truncatedValue, enriched.abValue)
         assertEquals(1, enriched.changes.size)
 
         val change = enriched.changes[0]
@@ -113,7 +113,7 @@ class EnrichedAirbyteValueTest {
         val enriched = EnrichedAirbyteValue(initialValue, type, name, airbyteMetaField = null)
         enriched.truncate(Reason.DESTINATION_SERIALIZATION_ERROR, truncatedValue)
 
-        assertEquals(truncatedValue, enriched.value)
+        assertEquals(truncatedValue, enriched.abValue)
         assertEquals(1, enriched.changes.size)
 
         val change = enriched.changes[0]
@@ -138,7 +138,7 @@ class EnrichedAirbyteValueTest {
         enriched.nullify(Reason.DESTINATION_SERIALIZATION_ERROR)
 
         // Verify final state
-        assertEquals(NullValue, enriched.value)
+        assertEquals(NullValue, enriched.abValue)
         assertEquals(2, enriched.changes.size)
 
         // First change

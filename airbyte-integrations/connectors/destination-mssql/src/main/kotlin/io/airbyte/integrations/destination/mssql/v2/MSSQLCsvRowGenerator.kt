@@ -54,10 +54,10 @@ class MSSQLCsvRowGenerator(private val validateValuesPreLoad: Boolean) {
 
         if (validateValuesPreLoad) {
             enrichedRecord.declaredFields.values.forEach { value ->
-                if (value.value is NullValue) {
+                if (value.abValue is NullValue) {
                     return@forEach
                 }
-                val actualValue = value.value
+                val actualValue = value.abValue
                 when (value.type) {
                     // Enforce numeric range
                     is IntegerType -> {
@@ -70,7 +70,7 @@ class MSSQLCsvRowGenerator(private val validateValuesPreLoad: Boolean) {
                     }
                     is NumberType -> {
                         // Force to BigDecimal -> re-box as NumberValue
-                        value.value =
+                        value.abValue =
                             NumberValue(
                                 (actualValue as NumberValue).value.toDouble().toBigDecimal()
                             )
@@ -78,21 +78,21 @@ class MSSQLCsvRowGenerator(private val validateValuesPreLoad: Boolean) {
 
                     // SQL server expects booleans as 0 or 1
                     is BooleanType ->
-                        value.value =
+                        value.abValue =
                             if ((actualValue as BooleanValue).value) LIMITS.TRUE else LIMITS.FALSE
 
                     // MSSQL requires a specific timestamp format - in particular,
                     // "2000-01-01T00:00Z" causes an error.
                     // MSSQL requires "2000-01-01T00:00:00Z".
                     is TimestampTypeWithTimezone ->
-                        value.value =
+                        value.abValue =
                             StringValue(
                                 (actualValue as TimestampWithTimezoneValue)
                                     .value
                                     .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                             )
                     is TimestampTypeWithoutTimezone ->
-                        value.value =
+                        value.abValue =
                             StringValue(
                                 (actualValue as TimestampWithoutTimezoneValue)
                                     .value
@@ -103,7 +103,7 @@ class MSSQLCsvRowGenerator(private val validateValuesPreLoad: Boolean) {
                     is ArrayType,
                     is ObjectType,
                     is UnionType,
-                    is UnknownType -> value.value = StringValue(actualValue.serializeToString())
+                    is UnknownType -> value.abValue = StringValue(actualValue.serializeToString())
                     else -> {}
                 }
             }
@@ -112,10 +112,10 @@ class MSSQLCsvRowGenerator(private val validateValuesPreLoad: Boolean) {
         val values = enrichedRecord.allTypedFields
         return schema.properties.map { (columnName, _) ->
             val value = values[columnName]
-            if (value == null || value.value is NullValue || !validateValuesPreLoad) {
-                return@map value?.value.toCsvValue()
+            if (value == null || value.abValue is NullValue || !validateValuesPreLoad) {
+                return@map value?.abValue.toCsvValue()
             }
-            value.value.toCsvValue()
+            value.abValue.toCsvValue()
         }
     }
 }
