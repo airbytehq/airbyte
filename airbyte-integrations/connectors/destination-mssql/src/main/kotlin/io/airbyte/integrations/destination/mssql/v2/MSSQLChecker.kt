@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.file.object_storage.MSSQLCSVFormattingWriter
 import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
 import io.airbyte.integrations.destination.mssql.v2.config.AzureBlobStorageClientCreator
 import io.airbyte.integrations.destination.mssql.v2.config.BulkLoadConfiguration
@@ -133,7 +132,7 @@ class MSSQLChecker(private val dataSourceFactory: MSSQLDataSourceFactory) :
             MSSQLCSVFormattingWriter(stream, outputStream, true).use { csvWriter ->
                 val destinationRecord =
                     DestinationRecordAirbyteValue(
-                        stream.descriptor,
+                        stream,
                         ObjectValue(
                             linkedMapOf(COLUMN_NAME to IntegerValue(TEST_ID_VALUE.toBigInteger()))
                         ),
