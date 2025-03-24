@@ -231,10 +231,6 @@ class TeradataDestination :
 
     companion object {
 
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(
-                TeradataDestination::class.java,
-            )
         private var queryBand = TeradataConstants.DEFAULT_QUERY_BAND
 
         @Throws(Exception::class)
