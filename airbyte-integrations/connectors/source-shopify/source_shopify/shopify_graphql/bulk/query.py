@@ -3302,6 +3302,7 @@ class DeliveryProfile(DeliveryZoneList):
       }
     }
     """
+
     page_size = 1
     sub_page_size = 100
 

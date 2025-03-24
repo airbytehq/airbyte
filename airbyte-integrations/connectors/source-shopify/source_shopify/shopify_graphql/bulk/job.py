@@ -4,8 +4,8 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from time import sleep, time
 from enum import Enum
+from time import sleep, time
 from typing import Any, Final, Iterable, List, Mapping, Optional
 
 import pendulum as pdm
@@ -29,8 +29,10 @@ class BulkOperationUserErrorCode(Enum):
     Possible error codes that can be returned by BulkOperationUserError.
     https://shopify.dev/docs/api/admin-graphql/latest/enums/BulkOperationUserErrorCode
     """
+
     INVALID = "INVALID"
     OPERATION_IN_PROGRESS = "OPERATION_IN_PROGRESS"
+
 
 @dataclass
 class ShopifyBulkManager:
