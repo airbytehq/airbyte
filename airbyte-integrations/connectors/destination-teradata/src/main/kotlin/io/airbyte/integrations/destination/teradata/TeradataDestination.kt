@@ -22,8 +22,6 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.regex.Pattern
 import javax.sql.DataSource
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * The TeradataDestination class is responsible for handling the connection to the Teradata database
