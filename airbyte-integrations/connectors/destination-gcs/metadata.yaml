@@ -20,7 +20,7 @@ data:
             type: GSM
   connectorType: destination
   definitionId: ca8f6566-e555-4b40-943a-545bf123117a
-  dockerImageTag: 0.4.9
+  dockerImageTag: 0.4.10
   dockerRepository: airbyte/destination-gcs
   documentationUrl: https://docs.airbyte.com/integrations/destinations/gcs
   githubIssueLabel: destination-gcs

@@ -212,6 +212,7 @@ tutorials:
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                          |
+| 2.9.3 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2.9.2 | 2025-01-10 | [51482](https://github.com/airbytehq/airbyte/pull/51482) | Use a non root base image |
 | 2.9.1 | 2024-12-18 | [49902](https://github.com/airbytehq/airbyte/pull/49902) | Use a base image: airbyte/java-connector-base:1.0.0 |
