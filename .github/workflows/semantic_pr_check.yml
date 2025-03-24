@@ -1,0 +1,51 @@
+name: "Verify Semantic PR Title"
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - ready_for_review
+
+permissions:
+  pull-requests: read
+
+jobs:
+  validate_pr_title:
+    name: Validate PR title
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        if: ${{ github.event.pull_request.draft == false }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Configure which types are allowed (newline-delimited).
+          # These are intentionally case-insensitive, allowing title casing or all lowercase.
+          # See: https://github.com/commitizen/conventional-commit-types/blob/master/index.json
+          types: |
+            fix
+            Fix
+            feat
+            Feat
+            docs
+            Docs
+            ci
+            CI
+            chore
+            Chore
+            build
+            Build
+            tests
+            Tests
+            
+      - name: Check for "do not merge" in PR title
+        if: ${{ github.event.pull_request.draft == false }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const title = context.payload.pull_request.title.toLowerCase();
+            if (title.includes('do not merge') || title.includes('do-not-merge')) {
+              core.setFailed('PR title contains "do not merge" or "do-not-merge". Please remove this before merging.');
+            }
