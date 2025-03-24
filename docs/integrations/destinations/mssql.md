@@ -47,15 +47,15 @@ You'll need the following information to configure the MSSQL destination:
   - The host name of the MSSQL database.
 - **Port**
   - The port of the MSSQL database.
-- **Database Name** 
+- **Database Name**
   - The name of the MSSQL database.
-- **Default Schema** 
+- **Default Schema**
   - The default schema tables are written to if the source does not specify a namespace. The usual value for this field is "public".
-- **Username** 
+- **Username**
   - The username which is used to access the database.
-- **Password** 
+- **Password**
   - The password associated with this username.
-- **JDBC URL Parameters** 
+- **JDBC URL Parameters**
   - Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).
 - **SSL Method**
   - The SSL configuration supports three modes: Unencrypted, Encrypted \(trust server certificate\), and Encrypted \(verify certificate\).
@@ -110,13 +110,13 @@ Follow these steps to configure MSSQL with Azure Blob Storage for bulk uploads.
 
 See the official [Microsoft documentation](https://learn.microsoft.com/en-us/sql/t-sql/statements/create-external-data-source-transact-sql?view=sql-server-2017&tabs=dedicated#e-create-an-external-data-source-for-bulk-operations-retrieving-data-from-azure-storage) for more details. Below is a simplified overview:
 
-1. **(Optional) Create a Master Encryption Key**  
+1. **(Optional) Create a Master Encryption Key**
    If your environment requires a master key to store credentials securely, create one:
    ```sql
    CREATE MASTER KEY ENCRYPTION BY PASSWORD = '<your_password>';
    ```
 
-2. **Create a Database Scoped Credential**  
+2. **Create a Database Scoped Credential**
    Configure a credential that grants MSSQL access to your Blob Storage using the SAS token:
    ```sql
    CREATE DATABASE SCOPED CREDENTIAL <credential_name>
@@ -124,7 +124,7 @@ See the official [Microsoft documentation](https://learn.microsoft.com/en-us/sql
         SECRET = '<your_sas_token>';
    ```
 
-3. **Create an External Data Source**  
+3. **Create an External Data Source**
    Point MSSQL to your Blob container using the credential:
    ```sql
    CREATE EXTERNAL DATA SOURCE <data_source_name>
@@ -158,6 +158,8 @@ See the [Getting Started: Configuration section](#configuration) of this guide f
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                             |
 |:-----------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 2.0.4      | 2025-03-20 | [55886](https://github.com/airbytehq/airbyte/pull/55886)   | Internal refactor                                                                                   |
+| 2.0.3      | 2025-03-18 | [55811](https://github.com/airbytehq/airbyte/pull/55811)   | CDK: Pass DestinationStream around vs Descriptor                                                                               |
 | 2.0.2      | 2025-03-12 | [55720](https://github.com/airbytehq/airbyte/pull/55720)   | Restore definition ID                                                                               |
 | 2.0.1      | 2025-03-12 | [55718](https://github.com/airbytehq/airbyte/pull/55718)   | Fix breaking change information in metadata.yaml                                                    |
 | 2.0.0      | 2025-03-11 | [55684](https://github.com/airbytehq/airbyte/pull/55684)   | Release 2.0.0                                                                                       |

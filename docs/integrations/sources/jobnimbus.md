@@ -23,6 +23,7 @@ The JobNimbus Airbyte connector enables seamless integration between JobNimbus, 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.16 | 2025-03-22 | [56010](https://github.com/airbytehq/airbyte/pull/56010) | Update dependencies |
 | 0.0.15 | 2025-03-08 | [55453](https://github.com/airbytehq/airbyte/pull/55453) | Update dependencies |
 | 0.0.14 | 2025-03-01 | [54819](https://github.com/airbytehq/airbyte/pull/54819) | Update dependencies |
 | 0.0.13 | 2025-02-22 | [54302](https://github.com/airbytehq/airbyte/pull/54302) | Update dependencies |
