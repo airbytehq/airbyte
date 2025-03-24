@@ -95,8 +95,8 @@ Once you've configured PubSub as a destination, delete the Service Account Key f
   <summary>Expand to review</summary>
 
 | Version | Date              | Pull Request                                             | Subject                                                    |
-| 0.2.3 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 | :------ | :---------------- | :------------------------------------------------------- | :--------------------------------------------------------- |
+| 0.2.3 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 | 0.2.2 | 2025-01-10 | [51481](https://github.com/airbytehq/airbyte/pull/51481) | Use a non root base image |
 | 0.2.1 | 2024-12-18 | [49878](https://github.com/airbytehq/airbyte/pull/49878) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.2.0   | August 16, 2022   | [15705](https://github.com/airbytehq/airbyte/pull/15705) | Add configuration for Batching and Ordering                |

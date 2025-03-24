@@ -110,8 +110,8 @@ Using this feature requires additional configuration, when creating the destinat
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
-| 1.0.4 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
+| 1.0.4 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 | 1.0.4 | 2025-01-10 | [51498](https://github.com/airbytehq/airbyte/pull/51498) | Use a non root base image |
 | 1.0.3 | 2024-12-18 | [49865](https://github.com/airbytehq/airbyte/pull/49865) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 1.0.3 | 2024-06-26 | [40566](https://github.com/airbytehq/airbyte/pull/40566) | Remove strict-encrypt variant |
