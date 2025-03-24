@@ -9,8 +9,6 @@ import io.airbyte.cdk.load.data.AirbyteSchemaNoopMapper
 import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper
 import io.airbyte.cdk.load.data.AirbyteValueNoopMapper
 import io.airbyte.cdk.load.data.FailOnAllUnknownTypesExceptNull
-import io.airbyte.cdk.load.data.MapperPipeline
-import io.airbyte.cdk.load.data.MapperPipelineFactory
 import io.airbyte.cdk.load.data.MergeUnions
 import io.airbyte.cdk.load.data.NullOutOfRangeIntegers
 import io.airbyte.cdk.load.data.SchemalessValuesToJsonString
@@ -28,9 +26,11 @@ import io.airbyte.cdk.load.data.UnionValueToDisjointRecord
  * - toRecord() method in the s3-data-lake destination
  */
 @Deprecated("Use DestinationRecordRaw.asEnrichedDestinationRecordAirbyteValue() logic instead")
-class ParquetMapperPipelineTest : MapperPipelineFactory {
-    override fun create(stream: DestinationStream): MapperPipeline =
-        MapperPipeline(
+@Suppress("DEPRECATION")
+class ParquetMapperPipelineTest : io.airbyte.cdk.load.data.MapperPipelineFactory {
+    @Suppress("DEPRECATION")
+    override fun create(stream: DestinationStream): io.airbyte.cdk.load.data.MapperPipeline =
+        io.airbyte.cdk.load.data.MapperPipeline(
             stream.schema,
             listOf(
                 FailOnAllUnknownTypesExceptNull() to AirbyteValueNoopMapper(),
