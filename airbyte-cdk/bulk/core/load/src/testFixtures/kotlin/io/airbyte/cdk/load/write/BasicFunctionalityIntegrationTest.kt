@@ -1990,13 +1990,24 @@ abstract class BasicFunctionalityIntegrationTest(
                         }
                     """.trimIndent()
                 ),
+                // Another record that verifies numeric behavior.
+                // -99999999999999999999999999999999 is out of range for int64.
+                makeRecord(
+                    """
+                        {
+                          "id": 6,
+                          "integer": -99999999999999999999999999999999
+                        }
+                    """.trimIndent(),
+                ),
             ),
         )
 
         val nestedFloat: BigDecimal
         val topLevelFloat: BigDecimal
-        val bigInt: BigInteger?
+        val positiveBigInt: BigInteger?
         val bigIntChanges: List<Change>
+        val negativeBigInt: BigInteger?
         val badValuesData: Map<String, Any?>
         val badValuesChanges: MutableList<Change>
         when (allTypesBehavior) {
@@ -2013,12 +2024,13 @@ abstract class BasicFunctionalityIntegrationTest(
                     } else {
                         BigDecimal("50000.0000000000000001")
                     }
-                bigInt =
-                    if (allTypesBehavior.integerCanBeLarge) {
-                        BigInteger("99999999999999999999999999999999")
-                    } else {
-                        null
-                    }
+                if (allTypesBehavior.integerCanBeLarge) {
+                    positiveBigInt = BigInteger("99999999999999999999999999999999")
+                    negativeBigInt = BigInteger("-99999999999999999999999999999999")
+                } else {
+                    positiveBigInt = null
+                    negativeBigInt = null
+                }
                 bigIntChanges =
                     if (allTypesBehavior.integerCanBeLarge) {
                         emptyList()
@@ -2073,7 +2085,8 @@ abstract class BasicFunctionalityIntegrationTest(
             Untyped -> {
                 nestedFloat = BigDecimal("50000.0000000000000001")
                 topLevelFloat = BigDecimal("50000.0000000000000001")
-                bigInt = BigInteger("99999999999999999999999999999999")
+                positiveBigInt = BigInteger("99999999999999999999999999999999")
+                negativeBigInt = BigInteger("-99999999999999999999999999999999")
                 bigIntChanges = emptyList()
                 badValuesData =
                     // note that the values have different types than what's declared in the schema
@@ -2147,7 +2160,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             "id" to 4,
                             "struct" to schematizedObject(linkedMapOf("foo" to nestedFloat)),
                             "number" to topLevelFloat,
-                            "integer" to bigInt,
+                            "integer" to positiveBigInt,
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42, changes = bigIntChanges),
                 ),
@@ -2156,6 +2169,16 @@ abstract class BasicFunctionalityIntegrationTest(
                     generationId = 42,
                     data = badValuesData,
                     airbyteMeta = OutputRecord.Meta(syncId = 42, changes = badValuesChanges),
+                ),
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 6,
+                            "integer" to negativeBigInt,
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = bigIntChanges),
                 ),
             ),
             stream,
