@@ -16,7 +16,7 @@ data:
             type: GSM
   connectorType: destination
   definitionId: 356668e2-7e34-47f3-a3b0-67a8a481b692
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   dockerRepository: airbyte/destination-pubsub
   documentationUrl: https://docs.airbyte.com/integrations/destinations/pubsub
   githubIssueLabel: destination-pubsub
