@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.pipeline
 
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import kotlin.math.abs
@@ -14,13 +14,16 @@ import kotlin.math.abs
  * partitioned by a hash of the stream name and namespace.
  */
 interface InputPartitioner {
-    fun getPartition(record: DestinationRecordAirbyteValue, numParts: Int): Int
+    fun getPartition(record: DestinationRecordRaw, numParts: Int): Int
 }
 
+/**
+ * The default input partitioner, which partitions by the stream name. TODO: Should be round-robin?
+ */
 @Singleton
 @Secondary
 class ByStreamInputPartitioner : InputPartitioner {
-    override fun getPartition(record: DestinationRecordAirbyteValue, numParts: Int): Int {
+    override fun getPartition(record: DestinationRecordRaw, numParts: Int): Int {
         return abs(record.stream.hashCode()) % numParts
     }
 }
