@@ -39,6 +39,21 @@ The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-js
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.3.16 | 2025-03-22 | [56172](https://github.com/airbytehq/airbyte/pull/56172) | Update dependencies |
+| 0.3.15 | 2025-03-08 | [55569](https://github.com/airbytehq/airbyte/pull/55569) | Update dependencies |
+| 0.3.14 | 2025-03-01 | [55073](https://github.com/airbytehq/airbyte/pull/55073) | Update dependencies |
+| 0.3.13 | 2025-02-23 | [54598](https://github.com/airbytehq/airbyte/pull/54598) | Update dependencies |
+| 0.3.12 | 2025-02-15 | [54015](https://github.com/airbytehq/airbyte/pull/54015) | Update dependencies |
+| 0.3.11 | 2025-02-08 | [53472](https://github.com/airbytehq/airbyte/pull/53472) | Update dependencies |
+| 0.3.10 | 2025-02-01 | [52980](https://github.com/airbytehq/airbyte/pull/52980) | Update dependencies |
+| 0.3.9 | 2025-01-25 | [51878](https://github.com/airbytehq/airbyte/pull/51878) | Update dependencies |
+| 0.3.8 | 2025-01-11 | [51308](https://github.com/airbytehq/airbyte/pull/51308) | Update dependencies |
+| 0.3.7 | 2024-12-28 | [50708](https://github.com/airbytehq/airbyte/pull/50708) | Update dependencies |
+| 0.3.6 | 2024-12-21 | [50261](https://github.com/airbytehq/airbyte/pull/50261) | Update dependencies |
+| 0.3.5 | 2024-12-14 | [49689](https://github.com/airbytehq/airbyte/pull/49689) | Update dependencies |
+| 0.3.4 | 2024-12-12 | [49337](https://github.com/airbytehq/airbyte/pull/49337) | Update dependencies |
+| 0.3.3 | 2024-12-09 | [48220](https://github.com/airbytehq/airbyte/pull/48220) | Update dependencies |
+| 0.3.2 | 2024-10-29 | [47927](https://github.com/airbytehq/airbyte/pull/47927) | Update dependencies |
 | 0.3.1 | 2024-10-28 | [47461](https://github.com/airbytehq/airbyte/pull/47461) | Update dependencies |
 | 0.3.0 | 2024-08-26 | [44791](https://github.com/airbytehq/airbyte/pull/44791) | Refactor connector to manifest-only format |
 | 0.2.15 | 2024-08-24 | [44749](https://github.com/airbytehq/airbyte/pull/44749) | Update dependencies |

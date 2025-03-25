@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2a2552ca-9f78-4c1c-9eb7-4d0dc66d72df
-  dockerImageTag: 0.5.0
+  dockerImageTag: 0.5.4
   dockerRepository: airbyte/source-woocommerce
   documentationUrl: https://docs.airbyte.com/integrations/sources/woocommerce
   githubIssueLabel: source-woocommerce
@@ -46,5 +46,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.11.1@sha256:f48a7ddc1f3acecbd8eb6a10a3146e8d0396e9a4dede77beafb76924f416df65
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.12.4@sha256:b73460101d4ff373826b56f00ef2012b635f5eab04c429892547dd055cd779dc
 metadataSpecVersion: "1.0"

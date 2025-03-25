@@ -22,7 +22,7 @@ The Vectara destination connector supports Full Refresh Overwrite, Full Refresh 
 
 All streams will be output into a corpus in Vectara whose name must be specified in the config.
 
-Note that there are no restrictions in naming the Vectara corpus and if a corpus with the specified name is not found, a new corpus with that name will be created. Also, if multiple corpora exists with the same name, an error will be returned as Airbyte will be unable to determine the prefered corpus.
+Note that there are no restrictions in naming the Vectara corpus and if a corpus with the specified name is not found, a new corpus with that name will be created. Also, if multiple corpora exists with the same name, an error will be returned as Airbyte will be unable to determine the preferred corpus.
 
 ### Features
 
@@ -68,6 +68,9 @@ In addition, in the connector UI you define two set of fields for this connector
 
 | Version | Date       | Pull Request                                              | Subject                                                      |
 |:--------| :--------- | :-------------------------------------------------------- | :----------------------------------------------------------- |
+| 0.2.31 | 2024-11-25 | [48659](https://github.com/airbytehq/airbyte/pull/48659) | Update dependencies |
+| 0.2.30 | 2024-11-04 | [48222](https://github.com/airbytehq/airbyte/pull/48222) | Update dependencies |
+| 0.2.29 | 2024-10-29 | [47744](https://github.com/airbytehq/airbyte/pull/47744) | Update dependencies |
 | 0.2.28 | 2024-10-23 | [47084](https://github.com/airbytehq/airbyte/pull/47084) | Update dependencies |
 | 0.2.27 | 2024-10-12 | [46812](https://github.com/airbytehq/airbyte/pull/46812) | Update dependencies |
 | 0.2.26 | 2024-10-05 | [46438](https://github.com/airbytehq/airbyte/pull/46438) | Update dependencies |

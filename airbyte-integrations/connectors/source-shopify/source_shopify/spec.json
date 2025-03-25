@@ -115,10 +115,10 @@
       "job_checkpoint_interval": {
         "type": "integer",
         "title": "BULK Job checkpoint (rows collected)",
-        "description": "The threshold, after which the single BULK Job should be checkpointed.",
+        "description": "The threshold, after which the single BULK Job should be checkpointed (min: 15k, max: 1M)",
         "default": 100000,
         "minimum": 15000,
-        "maximum": 200000
+        "maximum": 1000000
       }
     }
   },

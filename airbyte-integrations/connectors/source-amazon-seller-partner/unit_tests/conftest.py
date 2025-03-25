@@ -8,6 +8,9 @@ from typing import Any, Dict
 
 import pytest
 
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
+
+
 os.environ["DEPLOYMENT_MODE"] = "testing"
 
 
@@ -25,12 +28,14 @@ def init_kwargs() -> Dict[str, Any]:
 
 @pytest.fixture
 def report_init_kwargs(init_kwargs) -> Dict[str, Any]:
-    return {
-        "stream_name": "GET_TEST_REPORT",
-        **init_kwargs
-    }
+    return {"stream_name": "GET_TEST_REPORT", "authenticator": NoAuth({}), **init_kwargs}
 
 
 @pytest.fixture
 def http_mocker() -> None:
     """This fixture is needed to pass http_mocker parameter from the @HttpMocker decorator to a test"""
+
+
+@pytest.fixture(autouse=True)
+def time_mocker(mocker) -> None:
+    mocker.patch("time.sleep", lambda x: None)

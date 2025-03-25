@@ -10,6 +10,7 @@ import requests
 from source_zendesk_support.source import SourceZendeskSupport
 from source_zendesk_support.streams import Users
 
+
 _ANY_ATTEMPT_COUNT = 10
 
 
@@ -24,7 +25,7 @@ def test_config():
 
 
 def prepare_config(config: Dict):
-    return SourceZendeskSupport().convert_config2stream_args(config)
+    return SourceZendeskSupport(config=config, catalog=None, state=None).convert_config2stream_args(config)
 
 
 @pytest.mark.parametrize(

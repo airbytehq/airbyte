@@ -8,6 +8,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from jinja2 import Environment, PackageLoader, select_autoescape
+
+from pipelines import hacks
 from pipelines.airbyte_ci.connectors.build_image.steps import run_connector_build
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
@@ -24,6 +26,7 @@ if TYPE_CHECKING:
 
     from anyio import Semaphore
     from github import PullRequest
+
     from pipelines.models.steps import StepResult
 
 UP_TO_DATE_PR_LABEL = "up-to-date"
@@ -88,11 +91,10 @@ async def run_connector_up_to_date_pipeline(
             upgrade_base_image_in_metadata_result = await upgrade_base_image_in_metadata.run()
             step_results.append(upgrade_base_image_in_metadata_result)
             if upgrade_base_image_in_metadata_result.success:
-                connector_directory = upgrade_base_image_in_metadata_result.output
+                connector_directory = upgrade_base_image_in_metadata_result.output["updated_connector_directory"]
                 exported_modified_files = await upgrade_base_image_in_metadata.export_modified_files(context.connector.code_directory)
                 context.logger.info(f"Exported files following the base image upgrade: {exported_modified_files}")
                 all_modified_files.update(exported_modified_files)
-                connector_directory = upgrade_base_image_in_metadata_result.output
 
             if context.connector.is_using_poetry:
                 # We run the poetry update step after the base image upgrade because the base image upgrade may change the python environment
@@ -157,8 +159,12 @@ async def run_connector_up_to_date_pipeline(
                 documentation_directory = await context.get_repo_dir(
                     include=[str(context.connector.local_connector_documentation_directory)]
                 ).directory(str(context.connector.local_connector_documentation_directory))
+
+                changelog_entry_comment = hacks.determine_changelog_entry_comment(
+                    upgrade_base_image_in_metadata_result, CHANGELOG_ENTRY_COMMENT
+                )
                 add_changelog_entry = AddChangelogEntry(
-                    context, documentation_directory, new_version, CHANGELOG_ENTRY_COMMENT, created_pr.number
+                    context, documentation_directory, new_version, changelog_entry_comment, created_pr.number
                 )
                 add_changelog_entry_result = await add_changelog_entry.run()
                 step_results.append(add_changelog_entry_result)

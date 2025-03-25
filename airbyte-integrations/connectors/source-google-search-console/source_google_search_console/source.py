@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 import jsonschema
 import pendulum
 import requests
+
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -39,6 +40,7 @@ from source_google_search_console.streams import (
     Sitemaps,
     Sites,
 )
+
 
 custom_reports_schema = {
     "type": "array",

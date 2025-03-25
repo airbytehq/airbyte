@@ -6,6 +6,7 @@ import sgqlc.types
 import sgqlc.types.datetime
 import sgqlc.types.relay
 
+
 github_schema = sgqlc.types.Schema()
 
 

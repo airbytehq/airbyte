@@ -9,39 +9,40 @@ import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 class AirbyteValueWithMetaToOutputRecord {
     fun convert(value: ObjectValue): OutputRecord {
-        val meta = value.values[DestinationRecord.Meta.COLUMN_NAME_AB_META] as ObjectValue
+        val meta = value.values[Meta.COLUMN_NAME_AB_META] as ObjectValue
         return OutputRecord(
             rawId =
-                UUID.fromString(
-                    (value.values[DestinationRecord.Meta.COLUMN_NAME_AB_RAW_ID] as StringValue)
-                        .value
-                ),
+                UUID.fromString((value.values[Meta.COLUMN_NAME_AB_RAW_ID] as StringValue).value),
             extractedAt =
                 Instant.ofEpochMilli(
-                    (value.values[DestinationRecord.Meta.COLUMN_NAME_AB_EXTRACTED_AT]
-                            as IntegerValue)
-                        .value
+                    value.values[Meta.COLUMN_NAME_AB_EXTRACTED_AT].let { v ->
+                        when (v) {
+                            is IntegerValue -> v.value.toLong()
+                            is TimestampWithTimezoneValue -> v.value.toEpochSecond()
+                            else -> throw IllegalArgumentException("Invalid extractedAt value: $v")
+                        }
+                    }
                 ),
             loadedAt = null,
-            data = value.values[DestinationRecord.Meta.COLUMN_NAME_DATA] as ObjectValue,
+            data = value.values[Meta.COLUMN_NAME_DATA] as ObjectValue,
             generationId =
-                (value.values[DestinationRecord.Meta.COLUMN_NAME_AB_GENERATION_ID] as IntegerValue)
-                    .value,
+                (value.values[Meta.COLUMN_NAME_AB_GENERATION_ID] as IntegerValue).value.toLong(),
             airbyteMeta =
                 OutputRecord.Meta(
-                    syncId = (meta.values["sync_id"] as IntegerValue).value,
+                    syncId = (meta.values["sync_id"] as IntegerValue).value.toLong(),
                     changes =
                         (meta.values["changes"] as ArrayValue)
                             .values
                             .map {
-                                DestinationRecord.Change(
+                                Meta.Change(
                                     field =
                                         ((it as ObjectValue).values["field"] as StringValue).value,
                                     change =
@@ -58,6 +59,18 @@ class AirbyteValueWithMetaToOutputRecord {
                 )
         )
     }
+}
+
+fun AirbyteValue.maybeUnflatten(wasFlattened: Boolean): ObjectValue {
+    this as ObjectValue
+    if (!wasFlattened) {
+        return this
+    }
+    val (meta, data) = this.values.toList().partition { Meta.COLUMN_NAMES.contains(it.first) }
+    val properties = LinkedHashMap(meta.toMap())
+    val dataObject = ObjectValue(LinkedHashMap(data.toMap()))
+    properties[Meta.COLUMN_NAME_DATA] = dataObject
+    return ObjectValue(properties)
 }
 
 fun AirbyteValue.toOutputRecord(): OutputRecord {

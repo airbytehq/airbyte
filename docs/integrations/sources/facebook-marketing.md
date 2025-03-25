@@ -269,6 +269,27 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.2 | 2025-03-22 | [55991](https://github.com/airbytehq/airbyte/pull/55991) | Update dependencies |
+| 3.4.1 | 2024-03-14 | [55760](https://github.com/airbytehq/airbyte/pull/55760) | Fixed KeyError during discovery due to outdated breakdown schema |
+| 3.4.0 | 2024-12-24 | [50418](https://github.com/airbytehq/airbyte/pull/50418) | Add `learning_stage_info` field to `ad_sets` stream |
+| 3.3.35 | 2025-03-08 | [55307](https://github.com/airbytehq/airbyte/pull/55307) | Update dependencies |
+| 3.3.34 | 2025-03-01 | [54990](https://github.com/airbytehq/airbyte/pull/54990) | Update dependencies |
+| 3.3.33 | 2025-02-22 | [54386](https://github.com/airbytehq/airbyte/pull/54386) | Update dependencies |
+| 3.3.32 | 2025-02-15 | [53721](https://github.com/airbytehq/airbyte/pull/53721) | Update dependencies |
+| 3.3.31 | 2025-02-11 | [53626](https://github.com/airbytehq/airbyte/pull/53626) | Log Utilization type |
+| 3.3.30 | 2025-02-08 | [53330](https://github.com/airbytehq/airbyte/pull/53330) | Update dependencies |
+| 3.3.29 | 2025-02-01 | [52835](https://github.com/airbytehq/airbyte/pull/52835) | Update dependencies |
+| 3.3.28 | 2025-01-27 | [52032](https://github.com/airbytehq/airbyte/pull/52032) | Update to API version 21
+| 3.3.27 | 2025-01-25 | [52365](https://github.com/airbytehq/airbyte/pull/52365) | Update dependencies |
+| 3.3.26 | 2025-01-18 | [51706](https://github.com/airbytehq/airbyte/pull/51706) | Update dependencies |
+| 3.3.25 | 2025-01-11 | [51080](https://github.com/airbytehq/airbyte/pull/51080) | Update dependencies |
+| 3.3.24 | 2025-01-04 | [50922](https://github.com/airbytehq/airbyte/pull/50922) | Update dependencies |
+| 3.3.23 | 2024-12-28 | [50533](https://github.com/airbytehq/airbyte/pull/50533) | Update dependencies |
+| 3.3.22 | 2024-12-21 | [50014](https://github.com/airbytehq/airbyte/pull/50014) | Update dependencies |
+| 3.3.21 | 2024-12-14 | [49197](https://github.com/airbytehq/airbyte/pull/49197) | Update dependencies |
+| 3.3.20 | 2024-11-25 | [48632](https://github.com/airbytehq/airbyte/pull/48632) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 3.3.19 | 2024-11-04 | [48155](https://github.com/airbytehq/airbyte/pull/48155) | Update dependencies |
+| 3.3.18 | 2024-10-29 | [47894](https://github.com/airbytehq/airbyte/pull/47894) | Update dependencies |
 | 3.3.17 | 2024-10-28 | [43787](https://github.com/airbytehq/airbyte/pull/43787) | Update dependencies |
 | 3.3.16 | 2024-07-15 | [46546](https://github.com/airbytehq/airbyte/pull/46546) | Raise exception on missing stream |
 | 3.3.15 | 2024-07-15 | [42562](https://github.com/airbytehq/airbyte/pull/42562) | Add friendly messages for "reduce fields" and "start date" errors |

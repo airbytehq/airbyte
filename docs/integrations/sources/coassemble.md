@@ -26,6 +26,21 @@ See the [Coassemble API docs](https://developers.coassemble.com/get-started) for
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.17 | 2025-03-22 | [55977](https://github.com/airbytehq/airbyte/pull/55977) | Update dependencies |
+| 0.0.16 | 2025-03-08 | [55333](https://github.com/airbytehq/airbyte/pull/55333) | Update dependencies |
+| 0.0.15 | 2025-03-01 | [54940](https://github.com/airbytehq/airbyte/pull/54940) | Update dependencies |
+| 0.0.14 | 2025-02-22 | [54419](https://github.com/airbytehq/airbyte/pull/54419) | Update dependencies |
+| 0.0.13 | 2025-02-15 | [53757](https://github.com/airbytehq/airbyte/pull/53757) | Update dependencies |
+| 0.0.12 | 2025-02-08 | [53331](https://github.com/airbytehq/airbyte/pull/53331) | Update dependencies |
+| 0.0.11 | 2025-02-01 | [52795](https://github.com/airbytehq/airbyte/pull/52795) | Update dependencies |
+| 0.0.10 | 2025-01-25 | [52339](https://github.com/airbytehq/airbyte/pull/52339) | Update dependencies |
+| 0.0.9 | 2025-01-18 | [51699](https://github.com/airbytehq/airbyte/pull/51699) | Update dependencies |
+| 0.0.8 | 2025-01-11 | [51123](https://github.com/airbytehq/airbyte/pull/51123) | Update dependencies |
+| 0.0.7 | 2024-12-28 | [50570](https://github.com/airbytehq/airbyte/pull/50570) | Update dependencies |
+| 0.0.6 | 2024-12-21 | [50025](https://github.com/airbytehq/airbyte/pull/50025) | Update dependencies |
+| 0.0.5 | 2024-12-14 | [49483](https://github.com/airbytehq/airbyte/pull/49483) | Update dependencies |
+| 0.0.4 | 2024-12-12 | [48926](https://github.com/airbytehq/airbyte/pull/48926) | Update dependencies |
+| 0.0.3 | 2024-11-04 | [47865](https://github.com/airbytehq/airbyte/pull/47865) | Update dependencies |
 | 0.0.2 | 2024-10-28 | [47526](https://github.com/airbytehq/airbyte/pull/47526) | Update dependencies |
 | 0.0.1 | 2024-09-19 | | Initial release by [@topefolorunso](https://github.com/topefolorunso) via Connector Builder |
 

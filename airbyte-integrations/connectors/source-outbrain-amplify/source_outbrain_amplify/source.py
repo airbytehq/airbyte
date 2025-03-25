@@ -8,12 +8,14 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 
 from .auth import OutbrainAmplifyAuthenticator
+
 
 DEFAULT_END_DATE = pendulum.now()
 DEFAULT_GEO_LOCATION_BREAKDOWN = "region"
@@ -122,7 +124,6 @@ class CampaignsByMarketers(OutbrainAmplifyStream, HttpSubStream):
     def stream_slices(
         self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         parent_stream_slices = self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
@@ -174,7 +175,6 @@ class CampaignsGeoLocation(OutbrainAmplifyStream, HttpSubStream):
     def stream_slices(
         self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         parent_stream_slices = self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
@@ -223,7 +223,6 @@ class PromotedLinksForCampaigns(OutbrainAmplifyStream, HttpSubStream):
     def stream_slices(
         self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         parent_stream_slices = self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
@@ -267,7 +266,6 @@ class PromotedLinksSequenceForCampaigns(OutbrainAmplifyStream, HttpSubStream):
     def stream_slices(
         self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         parent_stream_slices = self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
@@ -323,7 +321,6 @@ class BudgetsForMarketers(OutbrainAmplifyStream, HttpSubStream):
     def stream_slices(
         self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         parent_stream_slices = self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
@@ -376,7 +373,6 @@ class PerformanceReportCampaignsByMarketers(OutbrainAmplifyStream, HttpSubStream
     def stream_slices(
         self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         parent_stream_slices = self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
@@ -437,7 +433,6 @@ class PerformanceReportPeriodicByMarketers(OutbrainAmplifyStream, HttpSubStream)
     def stream_slices(
         self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         parent_stream_slices = self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
@@ -500,7 +495,6 @@ class PerformanceReportPeriodicByMarketersCampaign(OutbrainAmplifyStream, HttpSu
     def stream_slices(
         self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         parent_stream_slices = self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
@@ -569,7 +563,6 @@ class PerformanceReportPeriodicContentByPromotedLinksCampaign(OutbrainAmplifyStr
     def stream_slices(
         self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         parent_stream_slices = self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
@@ -635,7 +628,6 @@ class PerformanceReportMarketersByPublisher(OutbrainAmplifyStream, HttpSubStream
     def stream_slices(
         self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         parent_stream_slices = self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
@@ -696,7 +688,6 @@ class PerformanceReportPublishersByCampaigns(OutbrainAmplifyStream, HttpSubStrea
     def stream_slices(
         self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         parent_stream_slices = self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
@@ -759,7 +750,6 @@ class PerformanceReportMarketersByPlatforms(OutbrainAmplifyStream, HttpSubStream
     def stream_slices(
         self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         parent_stream_slices = self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
@@ -820,7 +810,6 @@ class PerformanceReportMarketersCampaignsByPlatforms(OutbrainAmplifyStream, Http
     def stream_slices(
         self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         parent_stream_slices = self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
@@ -883,7 +872,6 @@ class PerformanceReportMarketersByGeoPerformance(OutbrainAmplifyStream, HttpSubS
     def stream_slices(
         self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         parent_stream_slices = self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
@@ -946,7 +934,6 @@ class PerformanceReportMarketersCampaignsByGeo(OutbrainAmplifyStream, HttpSubStr
     def stream_slices(
         self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         parent_stream_slices = self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
@@ -1011,7 +998,6 @@ class PerformanceReportMarketersByInterest(OutbrainAmplifyStream, HttpSubStream)
     def stream_slices(
         self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         parent_stream_slices = self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
@@ -1051,7 +1037,6 @@ class PerformanceReportMarketersByInterest(OutbrainAmplifyStream, HttpSubStream)
 
 
 class IncrementalOutbrainAmplifyStream(OutbrainAmplifyStream, ABC):
-
     state_checkpoint_interval = None
 
     @property
@@ -1098,7 +1083,7 @@ class SourceOutbrainAmplify(AbstractSource):
 
         # Budget for Marketers stream.
         # 1. Budget stream based on marketers id.
-        stream.extend([BudgetsForMarketers(authenticator=auth, config=config, parent=Marketers(authenticator=auth, config=config))]),
+        (stream.extend([BudgetsForMarketers(authenticator=auth, config=config, parent=Marketers(authenticator=auth, config=config))]),)
 
         # Promoted Links stream.
         # 1. Promoted Links stream for campaigns.

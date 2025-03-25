@@ -9,10 +9,7 @@ class ReportCheckStatusRecordBuilder(RecordBuilder):
     @classmethod
     def status_record(cls) -> "ReportCheckStatusRecordBuilder":
         return cls(
-            find_template("report_status_response", __file__),
-            id_path=None,
-            status_path=FieldPath("status"),
-            url_path=FieldPath("url")
+            find_template("report_status_response", __file__), id_path=None, status_path=FieldPath("status"), url_path=FieldPath("url")
         )
 
     def __init__(
@@ -21,7 +18,7 @@ class ReportCheckStatusRecordBuilder(RecordBuilder):
         id_path: Optional[Path] = None,
         status_path: Optional[Path] = None,
         url_path: Optional[Path] = None,
-        cursor_path: Optional[Union[FieldPath, NestedPath]] = None
+        cursor_path: Optional[Union[FieldPath, NestedPath]] = None,
     ):
         super().__init__(template, id_path, cursor_path)
         self._status_path = status_path

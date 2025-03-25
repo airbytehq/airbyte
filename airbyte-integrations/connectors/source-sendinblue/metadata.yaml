@@ -9,11 +9,11 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.14.0@sha256:accdf6c1bbcabd45b40f836692e4f3b1a1e1f0b28267973802ee212cd9c2c16a
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.17.0@sha256:9c6bfd080a247b7781ce5b25687e7c44e29d31315d0bf656584b38810521bbaa
   connectorSubtype: api
   connectorType: source
   definitionId: 2e88fa20-a2f6-43cc-bba6-98a0a3f244fb
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   dockerRepository: airbyte/source-sendinblue
   documentationUrl: https://docs.airbyte.com/integrations/sources/sendinblue
   githubIssueLabel: source-sendinblue

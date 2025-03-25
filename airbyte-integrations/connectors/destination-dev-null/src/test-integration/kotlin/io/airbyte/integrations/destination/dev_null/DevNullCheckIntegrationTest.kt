@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test
 
 class DevNullCheckIntegrationTest :
     CheckIntegrationTest<DevNullSpecificationOss>(
-        DevNullSpecificationOss::class.java,
         successConfigFilenames =
             listOf(
                 CheckTestConfig(DevNullTestUtils.loggingConfigPath),

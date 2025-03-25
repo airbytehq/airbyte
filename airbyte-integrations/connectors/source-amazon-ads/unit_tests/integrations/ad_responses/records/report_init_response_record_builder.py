@@ -12,7 +12,7 @@ class ReportInitResponseRecordBuilder(RecordBuilder):
             find_template("report_init_response", __file__),
             id_path=FieldPath("reportId"),
             status_path=FieldPath("status"),
-            cursor_path=None
+            cursor_path=None,
         )
 
     def __init__(
@@ -20,7 +20,7 @@ class ReportInitResponseRecordBuilder(RecordBuilder):
         template: Dict[str, Any],
         id_path: Optional[Path] = None,
         status_path: Optional[Path] = None,
-        cursor_path: Optional[Union[FieldPath, NestedPath]] = None
+        cursor_path: Optional[Union[FieldPath, NestedPath]] = None,
     ):
         super().__init__(template, id_path, cursor_path)
         self._status_path = status_path

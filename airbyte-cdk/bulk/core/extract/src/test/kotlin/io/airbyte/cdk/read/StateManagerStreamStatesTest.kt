@@ -159,6 +159,11 @@ class StateManagerStreamStatesTest {
             stateManager.scoped(stream).current(),
         )
         Assertions.assertEquals(listOf<CatalogValidationFailure>(), handler.get())
+
+        val emptyCheckpoint: List<AirbyteStateMessage> = stateManager.checkpoint()
+        // check if state manager hasn't set for this stream, state would be null and thus skipped.
+        Assertions.assertTrue(emptyCheckpoint.isEmpty())
+
         // update state manager with fake work result
         stateManager
             .scoped(stream)

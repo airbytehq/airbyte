@@ -6,22 +6,28 @@ from __future__ import annotations
 import logging
 import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Literal
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Sequence
+from urllib.parse import parse_qsl, urlparse
 
 import pyarrow as pa
-from airbyte_cdk import DestinationSyncMode
-from airbyte_cdk.sql import exceptions as exc
-from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN
-from airbyte_cdk.sql.secrets import SecretString
-from airbyte_cdk.sql.shared.sql_processor import SqlConfig, SqlProcessorBase, SQLRuntimeError
 from duckdb_engine import DuckDBEngineWarning
 from overrides import overrides
 from pydantic import Field
-from sqlalchemy import Executable, TextClause, text
+from sqlalchemy import Executable, TextClause, create_engine, text
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
+
+from airbyte_cdk import DestinationSyncMode
+from airbyte_cdk.sql import exceptions as exc
+from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, DEBUG_MODE
+from airbyte_cdk.sql.secrets import SecretString
+from airbyte_cdk.sql.shared.sql_processor import SqlConfig, SqlProcessorBase, SQLRuntimeError
+
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import Connection, Engine
+
+BUFFER_TABLE_NAME = "_airbyte_temp_buffer_data"
+MOTHERDUCK_SCHEME = "md"
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +56,16 @@ class DuckDBConfig(SqlConfig):
             message="duckdb-engine doesn't yet support reflection on indices",
             category=DuckDBEngineWarning,
         )
-        return SecretString(f"duckdb:///{self.db_path!s}")
+        parsed_db_path = urlparse(self.db_path)
+        if parsed_db_path.scheme == MOTHERDUCK_SCHEME:
+            path = f"{MOTHERDUCK_SCHEME}:{parsed_db_path.path}"
+        else:
+            path = parsed_db_path.path
+        return SecretString(f"duckdb:///{path!s}")
+
+    def get_duckdb_config(self) -> Dict[str, Any]:
+        """Get config dictionary to pass to duckdb"""
+        return dict(parse_qsl(urlparse(self.db_path).query))
 
     @overrides
     def get_database_name(self) -> str:
@@ -73,21 +88,30 @@ class DuckDBConfig(SqlConfig):
         return (
             ("/" in db_path_str or "\\" in db_path_str)
             and db_path_str != ":memory:"
-            and "md:" not in db_path_str
+            and f"{MOTHERDUCK_SCHEME}:" not in db_path_str
             and "motherduck:" not in db_path_str
         )
 
     @overrides
     def get_sql_engine(self) -> Engine:
-        """Return the SQL Alchemy engine.
+        """
+        Return a new SQL engine to use.
 
-        This method is overridden to ensure that the database parent directory is created if it
-        doesn't exist.
+        This method is overridden to:
+            - ensure that the database parent directory is created if it doesn't exist.
+            - pass the DuckDB query parameters (such as motherduck_token) via the config
         """
         if self._is_file_based_db():
             Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
 
-        return super().get_sql_engine()
+        return create_engine(
+            url=self.get_sql_alchemy_url(),
+            echo=DEBUG_MODE,
+            execution_options={
+                "schema_translate_map": {None: self.schema_name},
+            },
+            future=True,
+        )
 
 
 class DuckDBSqlProcessor(SqlProcessorBase):
@@ -100,6 +124,46 @@ class DuckDBSqlProcessor(SqlProcessorBase):
 
     supports_merge_insert = False
     sql_config: DuckDBConfig
+
+    def _execute_sql(self, sql: str | TextClause | Executable) -> Sequence[Any]:
+        """Execute the given SQL statement."""
+        if isinstance(sql, str):
+            sql = text(sql)
+
+        with self.get_sql_connection() as conn:
+            try:
+                result = conn.execute(sql)
+            except (
+                ProgrammingError,
+                SQLAlchemyError,
+            ) as ex:
+                msg = f"Error when executing SQL:\n{sql}\n{type(ex).__name__}{ex!s}"
+                raise SQLRuntimeError(msg) from None  # from ex
+
+            return result.fetchall()
+
+    def _execute_sql_with_buffer(self, sql: str | TextClause | Executable, buffer_data: pa.Table | None) -> Sequence[Any]:
+        """
+        Execute the given SQL statement.
+
+        Explicitly register a buffer table to read from.
+        """
+        if isinstance(sql, str):
+            sql = text(sql)
+
+        with self.get_sql_connection() as conn:
+            try:
+                # This table will now be queryable from DuckDB under the name BUFFER_TABLE_NAME
+                conn.execute(text("register(:name, :df)"), {"name": BUFFER_TABLE_NAME, "df": buffer_data})
+                result = conn.execute(sql)
+            except (
+                ProgrammingError,
+                SQLAlchemyError,
+            ) as ex:
+                msg = f"Error when executing SQL:\n{sql}\n{type(ex).__name__}{ex!s}"
+                raise SQLRuntimeError(msg) from None  # from ex
+
+            return result.fetchall()
 
     @overrides
     def _setup(self) -> None:
@@ -116,7 +180,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         primary_keys: list[str] | None = None,
     ) -> None:
         if primary_keys:
-            pk_str = ", ".join(primary_keys)
+            pk_str = ", ".join(map(self._quote_identifier, primary_keys))
             column_definition_str += f",\n  PRIMARY KEY ({pk_str})"
 
         cmd = f"""
@@ -164,12 +228,12 @@ class DuckDBSqlProcessor(SqlProcessorBase):
 
     def _write_with_executemany(self, buffer: Dict[str, Dict[str, List[Any]]], stream_name: str, table_name: str) -> None:
         column_names_list = list(buffer[stream_name].keys())
-        column_names = ", ".join(column_names_list)
+        column_names_str = ", ".join(map(self._quote_identifier, column_names_list))
         params = ", ".join(["?"] * len(column_names_list))
         sql = f"""
         -- Write with executemany
         INSERT INTO {self._fully_qualified(table_name)}
-            ({column_names})
+            ({column_names_str})
         VALUES ({params})
         """
         entries_to_write = buffer[stream_name]
@@ -182,12 +246,12 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         columns = list(self._get_sql_column_definitions(stream_name).keys())
         if len(columns) != len(pa_table.column_names):
             warnings.warn(f"Schema has colums: {columns}, buffer has columns: {pa_table.column_names}")
-        column_names = ", ".join(pa_table.column_names)
+        column_names = ", ".join(map(self._quote_identifier, pa_table.column_names))
         sql = f"""
         -- Write from PyArrow table
-        INSERT INTO {full_table_name} ({column_names}) SELECT {column_names} FROM pa_table
+        INSERT INTO {full_table_name} ({column_names}) SELECT {column_names} FROM {BUFFER_TABLE_NAME}
         """
-        self._execute_sql(sql)
+        self._execute_sql_with_buffer(sql, buffer_data=pa_table)
 
     def _write_temp_table_to_target_table(
         self,
@@ -197,17 +261,10 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         sync_mode: DestinationSyncMode,
     ) -> None:
         """Write the temp table into the final table using the provided write strategy."""
-        if sync_mode == DestinationSyncMode.overwrite:
-            # Note: No need to check for schema compatibility
-            # here, because we are fully replacing the table.
-            self._swap_temp_table_with_final_table(
-                stream_name=stream_name,
-                temp_table_name=temp_table_name,
-                final_table_name=final_table_name,
-            )
-            return
-
-        if sync_mode == DestinationSyncMode.append:
+        if sync_mode == DestinationSyncMode.append or sync_mode == DestinationSyncMode.overwrite:
+            # Because overwrite drops the table and reinsert all the data
+            # we can use the same logic as append.
+            # The table is dropped during (_ensure_table_exists)
             self._ensure_compatible_table_schema(
                 stream_name=stream_name,
                 table_name=final_table_name,
@@ -262,6 +319,36 @@ class DuckDBSqlProcessor(SqlProcessorBase):
             self._execute_sql(sql)
             return new_table_name
         return table_name
+
+    def _ensure_table_exists(self, stream_name: str, table_name: str, sync_mode: DestinationSyncMode) -> None:
+        if sync_mode == DestinationSyncMode.overwrite:
+            # delete the tables
+            logger.info(f"Dropping tables for overwrite: {table_name}")
+
+            self._drop_temp_table(table_name, if_exists=True)
+
+        # Get the SQL column definitions
+        sql_columns = self._get_sql_column_definitions(stream_name)
+        column_definition_str = ",\n                ".join(
+            f"{self._quote_identifier(column_name)} {sql_type}" for column_name, sql_type in sql_columns.items()
+        )
+
+        # create the table if needed
+        primary_keys = self.catalog_provider.get_primary_keys(stream_name)
+        self._create_table_if_not_exists(
+            table_name=table_name,
+            column_definition_str=column_definition_str,
+            primary_keys=primary_keys,
+        )
+
+    def prepare_stream_table(self, stream_name: str, sync_mode: DestinationSyncMode) -> None:
+        """
+        Ensure schema and table exist, create any missing columns
+        """
+        self._ensure_schema_exists()
+        table_name = self.normalizer.normalize(stream_name)
+        self._ensure_table_exists(stream_name=stream_name, table_name=table_name, sync_mode=sync_mode)
+        self._ensure_compatible_table_schema(stream_name=stream_name, table_name=table_name)
 
     def write_stream_data_from_buffer(
         self,

@@ -7,7 +7,6 @@ import pathlib
 from base64 import b64encode
 from typing import Any, List, Mapping
 
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from streams import (
     DashboardsGenerator,
     FiltersGenerator,
@@ -28,6 +27,8 @@ from streams import (
     WorkflowSchemesGenerator,
     WorkflowsGenerator,
 )
+
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
 class Generator:

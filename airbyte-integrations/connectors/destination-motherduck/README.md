@@ -1,7 +1,7 @@
-# Duckdb Destination
+# MotherDuck Destination
 
-This is the repository for the Duckdb destination connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/destinations/duckdb).
+This is the repository for the MotherDuck destination connector, written in Python.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/destinations/motherduck).
 
 ## Local development
 
@@ -37,12 +37,12 @@ should work as you expect.
 
 #### Create credentials
 
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/destinations/duckdb)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `destination_duckdb/spec.json` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/destinations/motherduck)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `destination_motherduck/spec.json` file.
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `destination duckdb test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `destination motherduck test creds`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector
@@ -64,9 +64,9 @@ You can follow install instructions [here](https://github.com/airbytehq/airbyte/
 Then running the following command will build your connector:
 
 ```bash
-airbyte-ci connectors --name destination-duckdb build
+airbyte-ci connectors --name destination-motherduck build
 ```
-Once the command is done, you will find your connector image in your local docker registry: `airbyte/destination-duckdb:dev`.
+Once the command is done, you will find your connector image in your local docker registry: `airbyte/destination-motherduck:dev`.
 
 ##### Customizing our build process
 When contributing on our connector you might need to customize the build process to add a system dependency or set an env var.
@@ -103,7 +103,7 @@ If you would like to patch our connector and build your own a simple approach wo
 
 1. Create your own Dockerfile based on the latest version of the connector image.
 ```Dockerfile
-FROM airbyte/destination-duckdb:latest
+FROM airbyte/destination-motherduck:latest
 
 COPY . ./airbyte/integration_code
 RUN pip install ./airbyte/integration_code
@@ -116,19 +116,19 @@ Please use this as an example. This is not optimized.
 
 2. Build your image:
 ```bash
-docker build -t airbyte/destination-duckdb:dev .
+docker build -t airbyte/destination-motherduck:dev .
 # Running the spec command against your patched connector
-docker run airbyte/destination-duckdb:dev spec
+docker run airbyte/destination-motherduck:dev spec
 ```
 #### Run
 
 Then run any of the connector commands as follows:
 
 ```
-docker run --rm airbyte/destination-duckdb:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-duckdb:dev check --config /secrets/config.json
+docker run --rm airbyte/destination-motherduck:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-motherduck:dev check --config /secrets/config.json
 # messages.jsonl is a file containing line-separated JSON representing AirbyteMessages
-cat integration_tests/messages.jsonl | docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-duckdb:dev write --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+cat integration_tests/messages.jsonl | docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-motherduck:dev write --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ## Testing
@@ -136,7 +136,7 @@ cat integration_tests/messages.jsonl | docker run --rm -v $(pwd)/secrets:/secret
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
 
 ```bash
-airbyte-ci connectors --name=destination-duckdb test
+airbyte-ci connectors --name=destination-motherduck test
 ```
 
 ### Customizing acceptance Tests
@@ -156,10 +156,10 @@ We split dependencies between two groups, dependencies that are:
 
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
 
-1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=destination-duckdb test`
+1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=destination-motherduck test`
 2. Bump the connector version in `metadata.yaml`: increment the `dockerImageTag` value. Please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors).
 3. Make sure the `metadata.yaml` content is up to date.
-4. Make the connector documentation and its changelog is up to date (`docs/integrations/destinations/duckdb.md`).
+4. Make the connector documentation and its changelog is up to date (`docs/integrations/destinations/motherduck.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.

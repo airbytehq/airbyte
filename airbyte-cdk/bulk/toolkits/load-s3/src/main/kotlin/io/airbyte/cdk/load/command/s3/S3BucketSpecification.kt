@@ -6,43 +6,46 @@ package io.airbyte.cdk.load.command.s3
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 
-enum class S3BucketRegion {
-    `af-south-1`,
-    `ap-east-1`,
-    `ap-northeast-1`,
-    `ap-northeast-2`,
-    `ap-northeast-3`,
-    `ap-south-1`,
-    `ap-south-2`,
-    `ap-southeast-1`,
-    `ap-southeast-2`,
-    `ap-southeast-3`,
-    `ap-southeast-4`,
-    `ca-central-1`,
-    `ca-west-1`,
-    `cn-north-1`,
-    `cn-northwest-1`,
-    `eu-central-1`,
-    `eu-central-2`,
-    `eu-north-1`,
-    `eu-south-1`,
-    `eu-south-2`,
-    `eu-west-1`,
-    `eu-west-2`,
-    `eu-west-3`,
-    `il-central-1`,
-    `me-central-1`,
-    `me-south-1`,
-    `sa-east-1`,
-    `us-east-1`,
-    `us-east-2`,
-    `us-gov-east-1`,
-    `us-gov-west-1`,
-    `us-west-1`,
-    `us-west-2`
+// First region is a kotlin-legal empty string
+enum class S3BucketRegion(@get:JsonValue val region: String) {
+    NO_REGION(""),
+    `af-south-1`("af-south-1"),
+    `ap-east-1`("ap-east-1"),
+    `ap-northeast-1`("ap-northeast-1"),
+    `ap-northeast-2`("ap-northeast-2"),
+    `ap-northeast-3`("ap-northeast-3"),
+    `ap-south-1`("ap-south-1"),
+    `ap-south-2`("ap-south-2"),
+    `ap-southeast-1`("ap-southeast-1"),
+    `ap-southeast-2`("ap-southeast-2"),
+    `ap-southeast-3`("ap-southeast-3"),
+    `ap-southeast-4`("ap-southeast-4"),
+    `ca-central-1`("ca-central-1"),
+    `ca-west-1`("ca-west-1"),
+    `cn-north-1`("cn-north-1"),
+    `cn-northwest-1`("cn-northwest-1"),
+    `eu-central-1`("eu-central-1"),
+    `eu-central-2`("eu-central-2"),
+    `eu-north-1`("eu-north-1"),
+    `eu-south-1`("eu-south-1"),
+    `eu-south-2`("eu-south-2"),
+    `eu-west-1`("eu-west-1"),
+    `eu-west-2`("eu-west-2"),
+    `eu-west-3`("eu-west-3"),
+    `il-central-1`("il-central-1"),
+    `me-central-1`("me-central-1"),
+    `me-south-1`("me-south-1"),
+    `sa-east-1`("sa-east-1"),
+    `us-east-1`("us-east-1"),
+    `us-east-2`("us-east-2"),
+    `us-gov-east-1`("us-gov-east-1"),
+    `us-gov-west-1`("us-gov-west-1"),
+    `us-west-1`("us-west-1"),
+    `us-west-2`("us-west-2")
 }
 
 /**
@@ -66,7 +69,7 @@ interface S3BucketSpecification {
     )
     @get:JsonProperty("s3_bucket_region", defaultValue = "")
     @get:JsonSchemaInject(json = """{"examples":["us-east-1"]}""")
-    val s3BucketRegion: S3BucketRegion
+    val s3BucketRegion: S3BucketRegion?
 
     @get:JsonSchemaTitle("S3 Endpoint")
     @get:JsonPropertyDescription(
@@ -77,7 +80,11 @@ interface S3BucketSpecification {
     val s3Endpoint: String?
 
     fun toS3BucketConfiguration(): S3BucketConfiguration {
-        return S3BucketConfiguration(s3BucketName, s3BucketRegion, s3Endpoint)
+        return S3BucketConfiguration(
+            s3BucketName,
+            s3BucketRegion ?: S3BucketRegion.NO_REGION,
+            s3Endpoint
+        )
     }
 }
 

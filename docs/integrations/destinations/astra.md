@@ -43,6 +43,21 @@ This page contains the setup guide and reference information for the destination
 
 | Version | Date       | Pull Request | Subject                                                   |
 |:--------| :--------- | :----------- |:----------------------------------------------------------|
+| 0.1.43 | 2025-03-22 | [56098](https://github.com/airbytehq/airbyte/pull/56098) | Update dependencies |
+| 0.1.42 | 2025-03-08 | [55394](https://github.com/airbytehq/airbyte/pull/55394) | Update dependencies |
+| 0.1.41 | 2025-03-01 | [54871](https://github.com/airbytehq/airbyte/pull/54871) | Update dependencies |
+| 0.1.40 | 2025-02-22 | [54244](https://github.com/airbytehq/airbyte/pull/54244) | Update dependencies |
+| 0.1.39 | 2025-02-15 | [53883](https://github.com/airbytehq/airbyte/pull/53883) | Update dependencies |
+| 0.1.38 | 2025-02-08 | [53388](https://github.com/airbytehq/airbyte/pull/53388) | Update dependencies |
+| 0.1.37 | 2025-02-01 | [52943](https://github.com/airbytehq/airbyte/pull/52943) | Update dependencies |
+| 0.1.36 | 2025-01-25 | [52179](https://github.com/airbytehq/airbyte/pull/52179) | Update dependencies |
+| 0.1.35 | 2025-01-11 | [51295](https://github.com/airbytehq/airbyte/pull/51295) | Update dependencies |
+| 0.1.34 | 2025-01-04 | [50910](https://github.com/airbytehq/airbyte/pull/50910) | Update dependencies |
+| 0.1.33 | 2024-12-28 | [50446](https://github.com/airbytehq/airbyte/pull/50446) | Update dependencies |
+| 0.1.32 | 2024-12-21 | [50213](https://github.com/airbytehq/airbyte/pull/50213) | Update dependencies |
+| 0.1.31 | 2024-12-14 | [49288](https://github.com/airbytehq/airbyte/pull/49288) | Update dependencies |
+| 0.1.30 | 2024-11-25 | [48674](https://github.com/airbytehq/airbyte/pull/48674) | Update dependencies |
+| 0.1.29 | 2024-10-29 | [47105](https://github.com/airbytehq/airbyte/pull/47105) | Update dependencies |
 | 0.1.28 | 2024-10-12 | [46857](https://github.com/airbytehq/airbyte/pull/46857) | Update dependencies |
 | 0.1.27 | 2024-10-05 | [46402](https://github.com/airbytehq/airbyte/pull/46402) | Update dependencies |
 | 0.1.26 | 2024-09-28 | [46179](https://github.com/airbytehq/airbyte/pull/46179) | Update dependencies |

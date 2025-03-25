@@ -14,9 +14,8 @@ class AirbyteValueToJson {
             is ArrayValue ->
                 JsonNodeFactory.instance.arrayNode().addAll(value.values.map { convert(it) })
             is BooleanValue -> JsonNodeFactory.instance.booleanNode(value.value)
-            is DateValue -> JsonNodeFactory.instance.textNode(value.value)
+            is DateValue -> JsonNodeFactory.instance.textNode(value.value.toString())
             is IntegerValue -> JsonNodeFactory.instance.numberNode(value.value)
-            is IntValue -> JsonNodeFactory.instance.numberNode(value.value)
             is NullValue -> JsonNodeFactory.instance.nullNode()
             is NumberValue -> JsonNodeFactory.instance.numberNode(value.value)
             is ObjectValue -> {
@@ -25,9 +24,13 @@ class AirbyteValueToJson {
                 objNode
             }
             is StringValue -> JsonNodeFactory.instance.textNode(value.value)
-            is TimeValue -> JsonNodeFactory.instance.textNode(value.value)
-            is TimestampValue -> JsonNodeFactory.instance.textNode(value.value)
-            is UnknownValue -> throw IllegalArgumentException("Unknown value: $value")
+            is TimeWithTimezoneValue -> JsonNodeFactory.instance.textNode(value.value.toString())
+            is TimeWithoutTimezoneValue -> JsonNodeFactory.instance.textNode(value.value.toString())
+            is TimestampWithTimezoneValue ->
+                JsonNodeFactory.instance.textNode(value.value.toString())
+            is TimestampWithoutTimezoneValue ->
+                JsonNodeFactory.instance.textNode(value.value.toString())
+            is UnknownValue -> value.value
         }
     }
 }

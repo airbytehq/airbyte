@@ -30,6 +30,22 @@ Due to some limitation of SmartWaiver API it can have situations where you won't
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.17 | 2025-03-22 | [56247](https://github.com/airbytehq/airbyte/pull/56247) | Update dependencies |
+| 0.0.16 | 2025-03-08 | [55608](https://github.com/airbytehq/airbyte/pull/55608) | Update dependencies |
+| 0.0.15 | 2025-03-01 | [55127](https://github.com/airbytehq/airbyte/pull/55127) | Update dependencies |
+| 0.0.14 | 2025-02-22 | [54532](https://github.com/airbytehq/airbyte/pull/54532) | Update dependencies |
+| 0.0.13 | 2025-02-15 | [54060](https://github.com/airbytehq/airbyte/pull/54060) | Update dependencies |
+| 0.0.12 | 2025-02-08 | [53538](https://github.com/airbytehq/airbyte/pull/53538) | Update dependencies |
+| 0.0.11 | 2025-02-01 | [53105](https://github.com/airbytehq/airbyte/pull/53105) | Update dependencies |
+| 0.0.10 | 2025-01-25 | [52390](https://github.com/airbytehq/airbyte/pull/52390) | Update dependencies |
+| 0.0.9 | 2025-01-18 | [51989](https://github.com/airbytehq/airbyte/pull/51989) | Update dependencies |
+| 0.0.8 | 2025-01-11 | [51378](https://github.com/airbytehq/airbyte/pull/51378) | Update dependencies |
+| 0.0.7 | 2024-12-28 | [50757](https://github.com/airbytehq/airbyte/pull/50757) | Update dependencies |
+| 0.0.6 | 2024-12-21 | [50304](https://github.com/airbytehq/airbyte/pull/50304) | Update dependencies |
+| 0.0.5 | 2024-12-14 | [49732](https://github.com/airbytehq/airbyte/pull/49732) | Update dependencies |
+| 0.0.4 | 2024-12-12 | [49435](https://github.com/airbytehq/airbyte/pull/49435) | Update dependencies |
+| 0.0.3 | 2024-12-11 | [49117](https://github.com/airbytehq/airbyte/pull/49117) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 0.0.2 | 2024-10-29 | [47825](https://github.com/airbytehq/airbyte/pull/47825) | Update dependencies |
 | 0.0.1 | 2024-10-09 | | Initial release by [@avirajsingh7](https://github.com/avirajsingh7) via Connector Builder |
 
 </details>

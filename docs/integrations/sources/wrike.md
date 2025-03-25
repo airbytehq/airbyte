@@ -50,6 +50,21 @@ The Wrike connector should not run into Wrike API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- |:-----------------------------------------------------------------------|
+| 0.3.18 | 2025-03-22 | [56317](https://github.com/airbytehq/airbyte/pull/56317) | Update dependencies |
+| 0.3.17 | 2025-03-08 | [55589](https://github.com/airbytehq/airbyte/pull/55589) | Update dependencies |
+| 0.3.16 | 2025-03-01 | [55118](https://github.com/airbytehq/airbyte/pull/55118) | Update dependencies |
+| 0.3.15 | 2025-02-22 | [54501](https://github.com/airbytehq/airbyte/pull/54501) | Update dependencies |
+| 0.3.14 | 2025-02-15 | [54030](https://github.com/airbytehq/airbyte/pull/54030) | Update dependencies |
+| 0.3.13 | 2025-02-08 | [53573](https://github.com/airbytehq/airbyte/pull/53573) | Update dependencies |
+| 0.3.12 | 2025-02-01 | [53080](https://github.com/airbytehq/airbyte/pull/53080) | Update dependencies |
+| 0.3.11 | 2025-01-25 | [52430](https://github.com/airbytehq/airbyte/pull/52430) | Update dependencies |
+| 0.3.10 | 2025-01-18 | [52020](https://github.com/airbytehq/airbyte/pull/52020) | Update dependencies |
+| 0.3.9 | 2025-01-11 | [51400](https://github.com/airbytehq/airbyte/pull/51400) | Update dependencies |
+| 0.3.8 | 2024-12-28 | [50752](https://github.com/airbytehq/airbyte/pull/50752) | Update dependencies |
+| 0.3.7 | 2024-12-21 | [50321](https://github.com/airbytehq/airbyte/pull/50321) | Update dependencies |
+| 0.3.6 | 2024-12-14 | [49794](https://github.com/airbytehq/airbyte/pull/49794) | Update dependencies |
+| 0.3.5 | 2024-12-12 | [48237](https://github.com/airbytehq/airbyte/pull/48237) | Update dependencies |
+| 0.3.4 | 2024-10-29 | [47801](https://github.com/airbytehq/airbyte/pull/47801) | Update dependencies |
 | 0.3.3 | 2024-10-28 | [47668](https://github.com/airbytehq/airbyte/pull/47668) | Update dependencies |
 | 0.3.2 | 2024-10-22 | [47234](https://github.com/airbytehq/airbyte/pull/47234) | Update dependencies |
 | 0.3.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |

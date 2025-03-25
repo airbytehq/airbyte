@@ -6,18 +6,23 @@ import json
 import logging
 import tempfile
 from datetime import datetime, timedelta
-from io import IOBase
+from io import IOBase, StringIO
 from typing import Iterable, List, Optional
 
 import pytz
 import smart_open
-from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from google.cloud import storage
 from google.oauth2 import credentials, service_account
+
+from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from source_gcs.config import Config
 from source_gcs.helpers import GCSRemoteFile
 from source_gcs.zip_helper import ZipHelper
+
+
+# google can raise warnings for end user credentials, wrapping it to Logger
+logging.captureWarnings(True)
 
 ERROR_MESSAGE_ACCESS = (
     "We don't have access to {uri}. The file appears to have become unreachable during sync."
@@ -50,7 +55,9 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             raise ValueError("Source config is missing; cannot create the GCS client.")
         if self._gcs_client is None:
             credentials = self._get_credentials()
-            self._gcs_client = storage.Client(credentials=credentials)
+            # using default project to avoid getting project from env, applies only for OAuth creds
+            project = getattr(credentials, "project_id", "default")
+            self._gcs_client = storage.Client(project=project, credentials=credentials)
         return self._gcs_client
 
     def _get_credentials(self):
@@ -91,7 +98,6 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                     last_modified = blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
 
                     if not start_date or last_modified >= start_date:
-
                         if self.config.credentials.auth_type == "Client":
                             uri = f"gs://{blob.bucket.name}/{blob.name}"
                         else:
@@ -133,6 +139,8 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             result = smart_open.open(
                 file.uri, mode=mode.value, compression=compression, encoding=encoding, transport_params={"client": self.gcs_client}
             )
+            if not result.seekable():
+                result = StringIO(result.read())
         except OSError as oe:
             logger.warning(ERROR_MESSAGE_ACCESS.format(uri=file.uri, bucket=self.config.bucket))
             logger.exception(oe)

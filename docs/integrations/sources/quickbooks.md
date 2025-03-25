@@ -107,7 +107,16 @@ This Source is capable of syncing the following [Streams](https://developer.intu
   <summary>Expand to review</summary>
 
 | Version     | Date       | Pull Request                                             | Subject                                                            |
-| :---------- | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------- |
+|:------------|:-----------|:---------------------------------------------------------| :----------------------------------------------------------------- |
+| 4.1.1 | 2025-03-22 | [56202](https://github.com/airbytehq/airbyte/pull/56202) | Update dependencies |
+| 4.1.0 | 2025-03-14 | [55776](https://github.com/airbytehq/airbyte/pull/55776) | Promoting release candidate 4.1.0-rc.1 to a main version. |
+| 4.1.0-rc.1 | 2025-03-10 | [55263](https://github.com/airbytehq/airbyte/pull/55263) | Migrate to manifest-only |
+| 4.0.4 | 2025-03-08 | [55527](https://github.com/airbytehq/airbyte/pull/55527) | Update dependencies |
+| 4.0.3 | 2025-03-01 | [55075](https://github.com/airbytehq/airbyte/pull/55075) | Update dependencies |
+| 4.0.2 | 2025-02-23 | [54573](https://github.com/airbytehq/airbyte/pull/54573) | Update dependencies |
+| 4.0.1 | 2025-02-15 | [46789](https://github.com/airbytehq/airbyte/pull/46789) | Update dependencies |
+| 4.0.0 | 2025-01-18 | [51615](https://github.com/airbytehq/airbyte/pull/51615) | Remove nested credentials object from config to enable overwriting of new refresh token in config |
+| 3.0.26 | 2024-11-01 | [48089](https://github.com/airbytehq/airbyte/pull/48089) | Promoting release candidate 3.0.26-rc.1 to a main version. |
 | 3.0.26-rc.1 | 2024-09-10 | [44560](https://github.com/airbytehq/airbyte/pull/44560) | Replace Custom Components with Airbyte CDK features                |
 | 3.0.25      | 2024-10-05 | [46424](https://github.com/airbytehq/airbyte/pull/46424) | Update dependencies                                                |
 | 3.0.24      | 2024-09-28 | [46142](https://github.com/airbytehq/airbyte/pull/46142) | Update dependencies                                                |

@@ -5,6 +5,7 @@
 
 import inflection
 import pytest
+
 from connector_acceptance_test.config import Config
 
 
