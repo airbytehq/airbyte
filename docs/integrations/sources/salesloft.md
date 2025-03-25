@@ -106,6 +106,7 @@ Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Top
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
+| 1.5.1 | 2025-03-16 | [55779](https://github.com/airbytehq/airbyte/pull/55779) | Adding missing columns too emails_scoped_fields stream |
 | 1.5.0 | 2025-03-06 | [55229](https://github.com/airbytehq/airbyte/pull/55229) | Add emails_scoped_fields stream. Remove body and subject fields from email stream |
 | 1.4.0 | 2025-02-18 | [54136](https://github.com/airbytehq/airbyte/pull/54136) | add body and subject fields to email stream |
 | 1.3.1 | 2024-12-03 | [48770](https://github.com/airbytehq/airbyte/pull/48770) | Remove duplication in manifest, fix query param updated_at[gt] |
