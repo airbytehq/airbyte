@@ -70,34 +70,40 @@ class TeradataDestinationTest {
     }
 
     private fun getAdditionalParams(sslMethod: String): Map<String, Any> {
-        val additionalParameters: Map<String, Any> = when (sslMethod) {
-            "verify-ca", "verify-full" -> {
-                ImmutableMap.of(
-                    TeradataConstants.PARAM_SSL_MODE, Jsons.jsonNode(ImmutableMap.of(
-                    TeradataConstants.PARAM_MODE, sslMethod,
-                    TeradataConstants.CA_CERT_KEY, "dummycertificatecontent"))
-                )
+        val additionalParameters: Map<String, Any> =
+            when (sslMethod) {
+                "verify-ca",
+                "verify-full" -> {
+                    ImmutableMap.of(
+                        TeradataConstants.PARAM_SSL_MODE,
+                        Jsons.jsonNode(
+                            ImmutableMap.of(
+                                TeradataConstants.PARAM_MODE,
+                                sslMethod,
+                                TeradataConstants.CA_CERT_KEY,
+                                "dummycertificatecontent"
+                            )
+                        )
+                    )
+                }
+                else -> {
+                    ImmutableMap.of(
+                        TeradataConstants.PARAM_SSL_MODE,
+                        Jsons.jsonNode(ImmutableMap.of(TeradataConstants.PARAM_MODE, sslMethod))
+                    )
+                }
             }
-            else -> {
-                ImmutableMap.of(
-                    TeradataConstants.PARAM_SSL_MODE, Jsons.jsonNode(ImmutableMap.of(
-                    TeradataConstants.PARAM_MODE, sslMethod))
-                )
-            }
-        }
         return additionalParameters
     }
 
     private fun getBrowserAuthParams(): Map<String, Any> {
-        return ImmutableMap
-            .builder<String, Any>()
+        return ImmutableMap.builder<String, Any>()
             .put(TeradataConstants.AUTH_TYPE, "BROWSER")
             .build()
     }
 
     private fun getLDAPAuthParams(): Map<String, Any> {
-        return ImmutableMap
-            .builder<String, Any>()
+        return ImmutableMap.builder<String, Any>()
             .put(TeradataConstants.AUTH_TYPE, "LDAP")
             .put(JdbcUtils.USERNAME_KEY, "username")
             .put(JdbcUtils.PASSWORD_KEY, "verysecure")
@@ -105,8 +111,7 @@ class TeradataDestinationTest {
     }
 
     private fun getTD2AuthParams(): Map<String, Any> {
-        return ImmutableMap
-            .builder<String, Any>()
+        return ImmutableMap.builder<String, Any>()
             .put(TeradataConstants.AUTH_TYPE, "TD2")
             .put(JdbcUtils.USERNAME_KEY, "username")
             .put(JdbcUtils.PASSWORD_KEY, "verysecure")
@@ -114,8 +119,7 @@ class TeradataDestinationTest {
     }
 
     private fun baseParameters(): Map<String, Any> {
-        return ImmutableMap
-            .builder<String, Any>()
+        return ImmutableMap.builder<String, Any>()
             .put(JdbcUtils.HOST_KEY, "localhost")
             .put(JdbcUtils.SCHEMA_KEY, "db")
             .put(TeradataConstants.LOG_MECH, getTD2AuthParams())
@@ -123,8 +127,7 @@ class TeradataDestinationTest {
     }
 
     private fun sslBaseParameters(): Map<String, Any> {
-        return ImmutableMap
-            .builder<String, Any>()
+        return ImmutableMap.builder<String, Any>()
             .put(TeradataConstants.PARAM_SSL, "true")
             .put(JdbcUtils.HOST_KEY, getHostName())
             .put(JdbcUtils.SCHEMA_KEY, getSchemaName())
@@ -137,33 +140,51 @@ class TeradataDestinationTest {
     }
 
     private fun buildConfigForLDAPAuth(): JsonNode {
-        return Jsons.jsonNode(ImmutableMap.of(
-            JdbcUtils.HOST_KEY, getHostName(),
-            TeradataConstants.LOG_MECH, getLDAPAuthParams()
-        ))
+        return Jsons.jsonNode(
+            ImmutableMap.of(
+                JdbcUtils.HOST_KEY,
+                getHostName(),
+                TeradataConstants.LOG_MECH,
+                getLDAPAuthParams()
+            )
+        )
     }
 
     private fun buildConfigForBrowserAuth(): JsonNode {
-        return Jsons.jsonNode(ImmutableMap.of(
-            JdbcUtils.HOST_KEY, getHostName(),
-            TeradataConstants.LOG_MECH, getBrowserAuthParams()
-        ))
+        return Jsons.jsonNode(
+            ImmutableMap.of(
+                JdbcUtils.HOST_KEY,
+                getHostName(),
+                TeradataConstants.LOG_MECH,
+                getBrowserAuthParams()
+            )
+        )
     }
 
     private fun buildConfigDefaultSchema(): JsonNode {
-        return Jsons.jsonNode(ImmutableMap.of(
-            JdbcUtils.HOST_KEY, getHostName(),
-            TeradataConstants.LOG_MECH, getTD2AuthParams()
-        ))
+        return Jsons.jsonNode(
+            ImmutableMap.of(
+                JdbcUtils.HOST_KEY,
+                getHostName(),
+                TeradataConstants.LOG_MECH,
+                getTD2AuthParams()
+            )
+        )
     }
 
     private fun buildConfigWithExtraJdbcParameters(extraParam: String): JsonNode {
-        return Jsons.jsonNode(ImmutableMap.of(
-            JdbcUtils.HOST_KEY, getHostName(),
-            TeradataConstants.LOG_MECH, getTD2AuthParams(),
-            JdbcUtils.SCHEMA_KEY, getSchemaName(),
-            JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam
-        ))
+        return Jsons.jsonNode(
+            ImmutableMap.of(
+                JdbcUtils.HOST_KEY,
+                getHostName(),
+                TeradataConstants.LOG_MECH,
+                getTD2AuthParams(),
+                JdbcUtils.SCHEMA_KEY,
+                getSchemaName(),
+                JdbcUtils.JDBC_URL_PARAMS_KEY,
+                extraParam
+            )
+        )
     }
 
     companion object {
@@ -181,13 +202,28 @@ class TeradataDestinationTest {
                 Arguments.of("org=test", "org=test;appname=airbyte;"),
                 Arguments.of("org=teradata-internal-telem", TeradataConstants.DEFAULT_QUERY_BAND),
                 Arguments.of("org=teradata-internal-telem;", TeradataConstants.DEFAULT_QUERY_BAND),
-                Arguments.of(TeradataConstants.DEFAULT_QUERY_BAND, TeradataConstants.DEFAULT_QUERY_BAND),
-                Arguments.of("invalid_queryband", "invalid_queryband;org=teradata-internal-telem;appname=airbyte;"),
-                Arguments.of("org=teradata-internal-telem;appname=test;", "org=teradata-internal-telem;appname=test_airbyte;"),
+                Arguments.of(
+                    TeradataConstants.DEFAULT_QUERY_BAND,
+                    TeradataConstants.DEFAULT_QUERY_BAND
+                ),
+                Arguments.of(
+                    "invalid_queryband",
+                    "invalid_queryband;org=teradata-internal-telem;appname=airbyte;"
+                ),
+                Arguments.of(
+                    "org=teradata-internal-telem;appname=test;",
+                    "org=teradata-internal-telem;appname=test_airbyte;"
+                ),
                 Arguments.of("org=custom;appname=custom;", "org=custom;appname=custom_airbyte;"),
                 Arguments.of("org=custom;appname=custom", "org=custom;appname=custom_airbyte"),
-                Arguments.of("org=teradata-internal-telem;appname=airbyte", "org=teradata-internal-telem;appname=airbyte"),
-                Arguments.of("org = teradata-internal-telem;appname = airbyte", "org = teradata-internal-telem;appname = airbyte")
+                Arguments.of(
+                    "org=teradata-internal-telem;appname=airbyte",
+                    "org=teradata-internal-telem;appname=airbyte"
+                ),
+                Arguments.of(
+                    "org = teradata-internal-telem;appname = airbyte",
+                    "org = teradata-internal-telem;appname = airbyte"
+                )
             )
         }
     }
@@ -245,7 +281,8 @@ class TeradataDestinationTest {
 
     @Test
     fun testJdbcUrlExtraParams() {
-        val jdbcConfig = destination.toJdbcConfig(buildConfigWithExtraJdbcParameters(EXTRA_JDBC_PARAMS))
+        val jdbcConfig =
+            destination.toJdbcConfig(buildConfigWithExtraJdbcParameters(EXTRA_JDBC_PARAMS))
         assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText())
         assertEquals("username", jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText())
         assertEquals("db", jdbcConfig.get(JdbcUtils.SCHEMA_KEY).asText())
@@ -256,7 +293,10 @@ class TeradataDestinationTest {
     fun testDefaultSchemaName() {
         val jdbcConfig = destination.toJdbcConfig(buildConfigDefaultSchema())
         assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText())
-        assertEquals(TeradataConstants.DEFAULT_SCHEMA_NAME, jdbcConfig.get(JdbcUtils.SCHEMA_KEY).asText())
+        assertEquals(
+            TeradataConstants.DEFAULT_SCHEMA_NAME,
+            jdbcConfig.get(JdbcUtils.SCHEMA_KEY).asText()
+        )
     }
 
     @Test
@@ -270,21 +310,30 @@ class TeradataDestinationTest {
     fun testSSLDefaultMode() {
         val jdbcConfig = createConfig(true)
         val properties: Map<String, String> = destination.getDefaultConnectionProperties(jdbcConfig)
-        assertEquals(TeradataConstants.REQUIRE, properties[TeradataConstants.PARAM_SSLMODE].toString())
+        assertEquals(
+            TeradataConstants.REQUIRE,
+            properties[TeradataConstants.PARAM_SSLMODE].toString()
+        )
     }
 
     @Test
     fun testSSLAllowMode() {
         val jdbcConfig = createConfig(TeradataConstants.ALLOW)
         val properties: Map<String, String> = destination.getDefaultConnectionProperties(jdbcConfig)
-        assertEquals(TeradataConstants.ALLOW, properties[TeradataConstants.PARAM_SSLMODE].toString())
+        assertEquals(
+            TeradataConstants.ALLOW,
+            properties[TeradataConstants.PARAM_SSLMODE].toString()
+        )
     }
 
     @Test
     fun testSSLVerfifyCAMode() {
         val jdbcConfig = createConfig(TeradataConstants.VERIFY_CA)
         val properties: Map<String, String> = destination.getDefaultConnectionProperties(jdbcConfig)
-        assertEquals(TeradataConstants.VERIFY_CA, properties[TeradataConstants.PARAM_SSLMODE].toString())
+        assertEquals(
+            TeradataConstants.VERIFY_CA,
+            properties[TeradataConstants.PARAM_SSLMODE].toString()
+        )
         assertNotNull(properties[TeradataConstants.PARAM_SSLCA].toString())
     }
 
@@ -292,7 +341,10 @@ class TeradataDestinationTest {
     fun testSSLVerfifyFullMode() {
         val jdbcConfig = createConfig(TeradataConstants.VERIFY_FULL)
         val properties: Map<String, String> = destination.getDefaultConnectionProperties(jdbcConfig)
-        assertEquals(TeradataConstants.VERIFY_FULL, properties[TeradataConstants.PARAM_SSLMODE].toString())
+        assertEquals(
+            TeradataConstants.VERIFY_FULL,
+            properties[TeradataConstants.PARAM_SSLMODE].toString()
+        )
         assertNotNull(properties[TeradataConstants.PARAM_SSLCA].toString())
     }
 
@@ -300,9 +352,8 @@ class TeradataDestinationTest {
     @MethodSource("provideQueryBandTestCases")
     fun testQueryBandCustom(queryBandInput: String, expectedQueryBand: String) {
         val baseParameters: Map<String, Any> = baseParameters() // Adjust to your method
-        val map_custom_QB: ImmutableMap<String, Any> = ImmutableMap.of(
-            TeradataConstants.QUERY_BAND_KEY, queryBandInput
-        )
+        val map_custom_QB: ImmutableMap<String, Any> =
+            ImmutableMap.of(TeradataConstants.QUERY_BAND_KEY, queryBandInput)
 
         val jdbcConfig = Jsons.jsonNode(MoreMaps.merge(map_custom_QB, baseParameters))
         destination.getDefaultConnectionProperties(jdbcConfig)

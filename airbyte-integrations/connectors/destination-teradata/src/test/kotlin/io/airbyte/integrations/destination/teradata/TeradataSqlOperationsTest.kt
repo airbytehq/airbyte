@@ -4,41 +4,35 @@
 
 package io.airbyte.integrations.destination.teradata
 
-
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.SQLException
 import java.util.ArrayList
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Captor
 import org.mockito.InjectMocks
 import org.mockito.Mock
-import org.mockito.MockitoAnnotations
-import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.*
+import org.mockito.MockitoAnnotations
 
 class TeradataSqlOperationsTest {
 
-    @Mock
-    private lateinit var database: JdbcDatabase
+    @Mock private lateinit var database: JdbcDatabase
 
-    @InjectMocks
-    private lateinit var teradataSqlOperations: TeradataSqlOperations
+    @InjectMocks private lateinit var teradataSqlOperations: TeradataSqlOperations
 
-    @Mock
-    private lateinit var mockConnection: Connection
+    @Mock private lateinit var mockConnection: Connection
 
-    @Mock
-    private lateinit var mockPreparedStatement: PreparedStatement
+    @Mock private lateinit var mockPreparedStatement: PreparedStatement
 
-    @Captor
-    private lateinit var stringCaptor: ArgumentCaptor<String>
+    @Captor private lateinit var stringCaptor: ArgumentCaptor<String>
 
     @BeforeEach
     @Throws(SQLException::class)

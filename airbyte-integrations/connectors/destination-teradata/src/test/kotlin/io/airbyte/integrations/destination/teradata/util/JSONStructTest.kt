@@ -4,21 +4,17 @@
 
 package io.airbyte.integrations.destination.teradata.util
 
+import java.sql.SQLException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.sql.SQLException
 
-/**
- * Class representing a JSONStruct.
- */
+/** Class representing a JSONStruct. */
 class JSONStruct(private val sqlTypeName: String, private val attributes: Array<Any>) {
 
-    /**
-     * Returns the attributes.
-     */
+    /** Returns the attributes. */
     fun getAttributes(): Array<Any> {
         return attributes
     }
@@ -45,20 +41,13 @@ class JSONStruct(private val sqlTypeName: String, private val attributes: Array<
     }
 }
 
-/**
- * Unit tests for the JSONStruct class.
- */
+/** Unit tests for the JSONStruct class. */
 class JSONStructTest {
 
     private lateinit var struct: JSONStruct
-    private val json: String = "{\n" +
-        "\t\"id\":123,\n" +
-        "\t\"name\":\"Pankaj Kumar\",\n" +
-        "}"
+    private val json: String = "{\n" + "\t\"id\":123,\n" + "\t\"name\":\"Pankaj Kumar\",\n" + "}"
 
-    /**
-     * Setup method to initialize objects before each test.
-     */
+    /** Setup method to initialize objects before each test. */
     @BeforeEach
     fun setup() {
         struct = JSONStruct("JSON", arrayOf(json))
@@ -75,15 +64,14 @@ class JSONStructTest {
         assertEquals(json, struct.getAttributes()[0])
     }
 
-    /**
-     * Test the getAttributes method when an exception is expected.
-     */
+    /** Test the getAttributes method when an exception is expected. */
     @Test
     fun testGetAttributesException() {
-        val exception = assertThrows(SQLException::class.java) {
-            val inputMap: MutableMap<String, Class<*>> = HashMap()
-            struct.getAttributes(inputMap)
-        }
+        val exception =
+            assertThrows(SQLException::class.java) {
+                val inputMap: MutableMap<String, Class<*>> = HashMap()
+                struct.getAttributes(inputMap)
+            }
         val expectedMessage = "getAttributes (Map) NOT SUPPORTED"
         val actualMessage = exception.message
         assertTrue(actualMessage!!.contains(expectedMessage))
