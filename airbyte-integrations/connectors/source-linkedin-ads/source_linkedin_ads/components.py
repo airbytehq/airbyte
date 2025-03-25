@@ -287,7 +287,7 @@ class CampaignAnalyticsDatetimeBasedCursor(AnalyticsDatetimeBasedCursor):
     def stream_slices(self) -> Iterable[StreamSlice]:
         # if campaign is completed use runSchedule.end as endDate
         campaign_current_status = self.partition.extra_fields["status"]
-        campaign_current_motified_time = self.partition.extra_fields["lastModified"]
+        campaign_current_modified_time = self.partition.extra_fields["lastModified"]
 
         # if the status and last modification time of the campaign did not change
         # and campaign is PAUSED, REMOVED or COMPLETED then we do not have to check for new data.
@@ -299,12 +299,12 @@ class CampaignAnalyticsDatetimeBasedCursor(AnalyticsDatetimeBasedCursor):
         ):
             parent_extras = self.parent_state["extra"]
             campaign_former_status = parent_extras["status"]
-            campaign_former_motified_time = parent_extras["lastModified"]
+            campaign_former_modified_time = parent_extras["lastModified"]
 
             if (
-                campaign_former_status in ["PAUSED", "REMOVED", "COMPLETED"]
+                campaign_former_status in ["PAUSED", "REMOVED", "COMPLETED", "ARCHIVED", "CANCELED"]
                 and campaign_former_status == campaign_current_status
-                and campaign_current_motified_time == campaign_former_motified_time
+                and campaign_current_modified_time == campaign_former_modified_time
             ):
                 # meaning nothing changed since last sync, so we do not have to fetch new data for this campaign.
                 return []
@@ -318,7 +318,7 @@ class CampaignAnalyticsDatetimeBasedCursor(AnalyticsDatetimeBasedCursor):
             else:  # some campaigns may miss scheduling, in this case assume now is the end date.
                 now = datetime.datetime.now(tz=self._timezone)
                 end_datetime = now
-        elif campaign_current_status in ["PAUSED", "REMOVED"]:
+        elif campaign_current_status in ["PAUSED", "REMOVED", "ARCHIVED", "CANCELED"]:
             # for PAUSED and REMOVED campaigns, do not check data after the last modification time.
             last_modified_date = self.partition.extra_fields["lastModified"]
             end_datetime = datetime.datetime.strptime(last_modified_date, "%Y-%m-%dT%H:%M:%S%z")
