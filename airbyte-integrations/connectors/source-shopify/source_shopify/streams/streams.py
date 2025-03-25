@@ -336,6 +336,7 @@ class ProfileLocationGroups(IncrementalShopifyGraphQlBulkStream):
     bulk_query: ProfileLocationGroups = ProfileLocationGroups
     filter_field = None
 
+
 class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
     # https://shopify.dev/docs/api/admin-graphql/latest/queries/deliveryProfiles
     _page_cursor = None
@@ -358,9 +359,7 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
             if profile_location_groups:
                 sub_page_info = (
                     # only first one
-                    profile_location_groups[0]
-                    .get("locationGroupZones", {})
-                    .get("pageInfo", {})
+                    profile_location_groups[0].get("locationGroupZones", {}).get("pageInfo", {})
                 )
 
         if not sub_page_info["hasNextPage"] and not page_info["hasNextPage"]:

@@ -2754,8 +2754,6 @@ class ProductVariant(ShopifyBulkQuery):
         image = record.get("image", {})
         record["image_src"] = image.get("image_src") if image else None
         record["image_url"] = image.get("image_url") if image else None
-        # unnest `fulfillment_service` from `fulfillmentService`
-        record["fulfillment_service"] = record.get("fulfillmentService", {}).get("fulfillment_service")
         # cast the `price` to number, could be literally `None`
         price = record.get("price")
         record["price"] = float(price) if price else None
@@ -3244,12 +3242,12 @@ class ProfileLocationGroups(ShopifyBulkQuery):
     record_composition = {"new_record": "DeliveryProfile"}
 
     query_nodes: List[Field] = [
-            "__typename",
-            Field(
-                        name="profileLocationGroups",
-                        fields=[Field(name="locationGroup", fields=["id"])],
-                    ),
-                ]
+        "__typename",
+        Field(
+            name="profileLocationGroups",
+            fields=[Field(name="locationGroup", fields=["id"])],
+        ),
+    ]
 
 
 class DeliveryProfile(DeliveryZoneList):
