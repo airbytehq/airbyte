@@ -10,7 +10,7 @@ airbyteBulkConnector {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestination'
+    mainClass = 'io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestinationKt'
 
     applicationDefaultJvmArgs = [
             '-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
