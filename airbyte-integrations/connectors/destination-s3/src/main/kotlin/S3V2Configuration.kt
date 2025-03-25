@@ -58,8 +58,10 @@ data class S3V2Configuration<T : OutputStream>(
 
 @Singleton
 class S3V2ConfigurationFactory :
-    DestinationConfigurationFactory<S3V2Specification, S3V2Configuration<*>> {
-    override fun makeWithoutExceptionHandling(pojo: S3V2Specification): S3V2Configuration<*> {
+    DestinationConfigurationFactory<S3V2SpecificationDeprecated, S3V2Configuration<*>> {
+    override fun makeWithoutExceptionHandling(
+        pojo: S3V2SpecificationDeprecated
+    ): S3V2Configuration<*> {
         return S3V2Configuration(
             awsAccessKeyConfiguration = pojo.toAWSAccessKeyConfiguration(),
             awsArnRoleConfiguration = pojo.toAWSArnRoleConfiguration(),
