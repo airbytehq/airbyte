@@ -6,7 +6,19 @@ package io.airbyte.cdk.load.data.json
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
-import io.airbyte.cdk.load.data.*
+import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.ArrayValue
+import io.airbyte.cdk.load.data.BooleanValue
+import io.airbyte.cdk.load.data.DateValue
+import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 
 class AirbyteValueToJson {
     fun convert(value: AirbyteValue): JsonNode {
@@ -30,7 +42,6 @@ class AirbyteValueToJson {
                 JsonNodeFactory.instance.textNode(value.value.toString())
             is TimestampWithoutTimezoneValue ->
                 JsonNodeFactory.instance.textNode(value.value.toString())
-            is UnknownValue -> value.value
         }
     }
 }

@@ -2,6 +2,10 @@
   "$schema": "http://json-schema.org/draft-07/schema",
   "type": ["null", "object"],
   "properties": {
+    "conversionId": {
+      "description": "The unique identifier for the form submission",
+      "type": ["null", "string"]
+    },
     "submittedAt": {
       "description": "The timestamp when the form was submitted.",
       "type": ["null", "integer"]

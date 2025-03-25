@@ -19,12 +19,10 @@ import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
-import io.airbyte.cdk.load.data.UnknownValue
 import io.airbyte.cdk.load.data.iceberg.parquet.AirbyteValueToIcebergRecord
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
 import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.protocol.models.Jsons
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -165,13 +163,6 @@ class AirbyteValueToIcebergRecordTest {
     }
 
     @Test
-    fun `convert throws exception for UnknownValue`() {
-        assertThrows<IllegalArgumentException> {
-            converter.convert(UnknownValue(Jsons.emptyObject()), Types.StringType.get())
-        }
-    }
-
-    @Test
     fun `toIcebergRecord correctly converts ObjectValue to GenericRecord`() {
         val schema =
             Schema(
@@ -200,12 +191,14 @@ class AirbyteValueToIcebergRecordTest {
                         IntegerValue(123L),
                         IntegerType,
                         "id",
+                        airbyteMetaField = null,
                     ),
                 "name" to
                     EnrichedAirbyteValue(
                         StringValue("John Doe"),
                         StringType,
                         "name",
+                        airbyteMetaField = null,
                     ),
                 "meta" to
                     EnrichedAirbyteValue(
@@ -223,6 +216,7 @@ class AirbyteValueToIcebergRecordTest {
                         ),
                         Meta.AirbyteMetaFields.META.type,
                         "meta",
+                        airbyteMetaField = Meta.AirbyteMetaFields.META,
                     )
             )
 
@@ -256,9 +250,15 @@ class AirbyteValueToIcebergRecordTest {
                         IntegerValue(123L),
                         IntegerType,
                         "id",
+                        airbyteMetaField = null,
                     ),
                 "name" to
-                    EnrichedAirbyteValue(StringValue("Should be ignored"), StringType, "name"),
+                    EnrichedAirbyteValue(
+                        StringValue("Should be ignored"),
+                        StringType,
+                        "name",
+                        airbyteMetaField = null
+                    ),
             )
 
         val result = objectValue.toIcebergRecord(schema)

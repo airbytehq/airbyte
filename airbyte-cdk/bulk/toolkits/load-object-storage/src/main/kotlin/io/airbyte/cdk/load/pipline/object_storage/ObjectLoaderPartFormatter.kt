@@ -104,7 +104,7 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
         input: DestinationRecordRaw,
         state: State<T>
     ): BatchAccumulatorResult<State<T>, FormattedPart> {
-        state.writer.accept(input.asDestinationRecordAirbyteValue())
+        state.writer.accept(input)
         val dataSufficient = state.writer.bufferSize >= partSizeBytes || batchSizeOverride != null
         return if (dataSufficient) {
             val part = makePart(state)

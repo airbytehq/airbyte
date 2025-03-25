@@ -87,12 +87,33 @@ public class TeradataDestinationTest {
     return additionalParameters;
   }
 
+  private Map<String, Object> getBrowserAuthParams() {
+    return ImmutableMap.<String, Object>builder()
+        .put(TeradataConstants.AUTH_TYPE, "BROWSER")
+        .build();
+  }
+
+  private Map<String, Object> getLDAPAuthParams() {
+    return ImmutableMap.<String, Object>builder()
+        .put(TeradataConstants.AUTH_TYPE, "LDAP")
+        .put(JdbcUtils.USERNAME_KEY, "username")
+        .put(JdbcUtils.PASSWORD_KEY, "verysecure")
+        .build();
+  }
+
+  private Map<String, Object> getTD2AuthParams() {
+    return ImmutableMap.<String, Object>builder()
+        .put(TeradataConstants.AUTH_TYPE, "TD2")
+        .put(JdbcUtils.USERNAME_KEY, "username")
+        .put(JdbcUtils.PASSWORD_KEY, "verysecure")
+        .build();
+  }
+
   private Map<String, Object> baseParameters() {
     return ImmutableMap.<String, Object>builder()
         .put(JdbcUtils.HOST_KEY, "localhost")
         .put(JdbcUtils.SCHEMA_KEY, "db")
-        .put(JdbcUtils.USERNAME_KEY, "username")
-        .put(JdbcUtils.PASSWORD_KEY, "verysecure")
+        .put(TeradataConstants.LOG_MECH, getTD2AuthParams())
         .build();
   }
 
@@ -101,8 +122,7 @@ public class TeradataDestinationTest {
         .put(TeradataConstants.PARAM_SSL, "true")
         .put(JdbcUtils.HOST_KEY, getHostName())
         .put(JdbcUtils.SCHEMA_KEY, getSchemaName())
-        .put(JdbcUtils.USERNAME_KEY, getUserName())
-        .put(JdbcUtils.PASSWORD_KEY, getPassword())
+        .put(TeradataConstants.LOG_MECH, getTD2AuthParams())
         .build();
   }
 
@@ -110,18 +130,28 @@ public class TeradataDestinationTest {
     return Jsons.jsonNode(baseParameters());
   }
 
+  private JsonNode buildConfigForLDAPAuth() {
+    return Jsons.jsonNode(ImmutableMap.of(
+        JdbcUtils.HOST_KEY, getHostName(),
+        TeradataConstants.LOG_MECH, getLDAPAuthParams()));
+  }
+
+  private JsonNode buildConfigForBrowserAuth() {
+    return Jsons.jsonNode(ImmutableMap.of(
+        JdbcUtils.HOST_KEY, getHostName(),
+        TeradataConstants.LOG_MECH, getBrowserAuthParams()));
+  }
+
   private JsonNode buildConfigDefaultSchema() {
     return Jsons.jsonNode(ImmutableMap.of(
         JdbcUtils.HOST_KEY, getHostName(),
-        JdbcUtils.USERNAME_KEY, getUserName(),
-        JdbcUtils.PASSWORD_KEY, getPassword()));
+        TeradataConstants.LOG_MECH, getTD2AuthParams()));
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
     return Jsons.jsonNode(ImmutableMap.of(
         JdbcUtils.HOST_KEY, getHostName(),
-        JdbcUtils.USERNAME_KEY, getUserName(),
-        JdbcUtils.PASSWORD_KEY, getPassword(),
+        TeradataConstants.LOG_MECH, getTD2AuthParams(),
         JdbcUtils.SCHEMA_KEY, getSchemaName(),
         JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
   }
@@ -151,11 +181,43 @@ public class TeradataDestinationTest {
   }
 
   @Test
+  void testAuthTypeLDAPConnection() {
+    JsonNode rawConfig = buildConfigForLDAPAuth();
+    final JsonNode jdbcConfig = destination.toJdbcConfig(rawConfig);
+    final Map<String, String> connProps = destination.getConnectionProperties(rawConfig);
+    assertEquals("LDAP", connProps.get(TeradataConstants.LOG_MECH));
+    assertEquals("username", jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText());
+    assertEquals("verysecure", jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText());
+  }
+
+  @Test
+  void testAuthTypeTD2Connection() {
+    JsonNode rawConfig = buildConfigNoJdbcParameters();
+    final JsonNode jdbcConfig = destination.toJdbcConfig(rawConfig);
+    final Map<String, String> connProps = destination.getConnectionProperties(rawConfig);
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+    assertNull(connProps.get(TeradataConstants.AUTH_TYPE));
+    assertEquals("username", jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText());
+    assertEquals("verysecure", jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText());
+  }
+
+  @Test
+  void testAuthTypeBrowserConnection() {
+    JsonNode rawConfig = buildConfigForBrowserAuth();
+    final JsonNode jdbcConfig = destination.toJdbcConfig(rawConfig);
+    final Map<String, String> connProps = destination.getConnectionProperties(rawConfig);
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+    assertEquals("BROWSER", connProps.get(TeradataConstants.LOG_MECH));
+    assertNull(jdbcConfig.get(JdbcUtils.USERNAME_KEY));
+    assertNull(jdbcConfig.get(JdbcUtils.PASSWORD_KEY));
+  }
+
+  @Test
   void testJdbcUrlAndConfigNoExtraParams() {
     final JsonNode jdbcConfig = destination.toJdbcConfig(buildConfigNoJdbcParameters());
     assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
-    assertEquals("username", jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText());
     assertEquals("db", jdbcConfig.get(JdbcUtils.SCHEMA_KEY).asText());
+    assertEquals("username", jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText());
     assertEquals("verysecure", jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText());
   }
 
@@ -163,19 +225,20 @@ public class TeradataDestinationTest {
   void testJdbcUrlEmptyExtraParams() {
     final JsonNode jdbcConfig = destination.toJdbcConfig(buildConfigWithExtraJdbcParameters(""));
     assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
-    assertEquals("username", jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText());
     assertEquals("db", jdbcConfig.get(JdbcUtils.SCHEMA_KEY).asText());
+    assertEquals("username", jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText());
+    assertEquals("verysecure", jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText());
     assertEquals("", jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
   }
 
   @Test
   void testJdbcUrlExtraParams() {
-
     final JsonNode jdbcConfig = destination.toJdbcConfig(buildConfigWithExtraJdbcParameters(EXTRA_JDBC_PARAMS));
     assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
     assertEquals("username", jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText());
     assertEquals("db", jdbcConfig.get(JdbcUtils.SCHEMA_KEY).asText());
     assertEquals(EXTRA_JDBC_PARAMS, jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+
   }
 
   @Test

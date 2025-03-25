@@ -95,8 +95,7 @@ object AirbyteValueCoercer {
                 is TimeWithTimezoneValue,
                 is TimeWithoutTimezoneValue,
                 is TimestampWithTimezoneValue,
-                is TimestampWithoutTimezoneValue,
-                is UnknownValue ->
+                is TimestampWithoutTimezoneValue ->
                     throw IllegalArgumentException(
                         "Invalid value type ${value.javaClass.canonicalName}"
                     )

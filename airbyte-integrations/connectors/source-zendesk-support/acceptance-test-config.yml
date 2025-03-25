@@ -32,6 +32,8 @@ acceptance_tests:
             bypass_reason: "not available in current subscription plan"
           - name: "post_comment_votes"
             bypass_reason: "not available in current subscription plan"
+          - name: "ticket_activities"
+            bypass_reason: "There is a retention period which requires too much maintenance"
           - name: "tags"
             bypass_reason: "API issue" # TODO: remove this after all changes being merged
   incremental:
