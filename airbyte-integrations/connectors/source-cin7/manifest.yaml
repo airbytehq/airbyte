@@ -37,7 +37,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/ref/accountBank
+          path: ref/accountBank
           http_method: GET
           request_headers:
             api-auth-accountid: "{{ config[\"accountid\"] }}"
@@ -78,7 +78,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/ref/attributeset
+          path: ref/attributeset
           http_method: GET
           request_headers:
             api-auth-accountid: "{{ config[\"accountid\"] }}"
@@ -119,7 +119,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/ref/account
+          path: ref/account
           http_method: GET
           request_headers:
             api-auth-accountid: "{{ config[\"accountid\"] }}"
@@ -160,7 +160,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/ref/brand
+          path: ref/brand
           http_method: GET
           request_headers:
             api-auth-accountid: "{{ config[\"accountid\"] }}"
@@ -201,7 +201,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/ref/carrier
+          path: ref/carrier
           http_method: GET
           request_headers:
             api-auth-accountid: "{{ config[\"accountid\"] }}"
@@ -242,7 +242,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/customer
+          path: customer
           http_method: GET
           request_parameters:
             IncludeDeprecated: "true"
@@ -286,7 +286,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/reference/deals
+          path: reference/deals
           http_method: GET
           request_headers:
             api-auth-accountid: "{{ config[\"accountid\"] }}"
@@ -327,7 +327,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/ref/location
+          path: ref/location
           http_method: GET
           request_headers:
             api-auth-accountid: "{{ config[\"accountid\"] }}"
@@ -368,16 +368,16 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/product
+          path: product
           http_method: GET
           request_parameters:
-            IncludeDeprecated: "true"
             IncludeBOM: "true"
-            IncludeSuppliers: "true"
             IncludeMovements: "true"
+            IncludeSuppliers: "true"
+            IncludeDeprecated: "true"
             IncludeAttachments: "true"
-            IncludeReorderLevels: "true"
             IncludeCustomPrices: "true"
+            IncludeReorderLevels: "true"
           request_headers:
             api-auth-accountid: "{{ config[\"accountid\"] }}"
             api-auth-applicationkey: "{{ config[\"api_key\"] }}"
@@ -417,7 +417,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/purchaseList
+          path: purchaseList
           http_method: GET
           request_headers:
             api-auth-accountid: "{{ config[\"accountid\"] }}"
@@ -458,7 +458,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/supplier
+          path: supplier
           http_method: GET
           request_parameters:
             IncludeDeprecated: "true"
@@ -499,7 +499,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/crm/opportunity
+          path: crm/opportunity
           http_method: GET
           request_headers:
             api-auth-accountid: "{{ config[\"accountid\"] }}"
@@ -540,7 +540,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/saleList
+          path: saleList
           http_method: GET
           request_headers:
             api-auth-accountid: "{{ config[\"accountid\"] }}"
@@ -581,7 +581,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/ref/tax
+          path: ref/tax
           http_method: GET
           request_headers:
             api-auth-accountid: "{{ config[\"accountid\"] }}"
@@ -622,7 +622,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/ref/category
+          path: ref/category
           http_method: GET
           request_headers:
             api-auth-accountid: "{{ config[\"accountid\"] }}"
@@ -663,7 +663,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/productFamily
+          path: productFamily
           http_method: GET
           request_headers:
             api-auth-accountid: "{{ config[\"accountid\"] }}"
@@ -704,7 +704,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/purchase
+          path: purchase
           http_method: GET
           request_parameters:
             CombineAdditionalCharges: "true"
@@ -723,8 +723,8 @@ definitions:
               parent_key: ID
               request_option:
                 type: RequestOption
-                inject_into: request_parameter
                 field_name: ID
+                inject_into: request_parameter
               partition_field: ID
               stream:
                 $ref: "#/definitions/streams/purchase_list"
@@ -741,7 +741,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/crm/lead
+          path: crm/lead
           http_method: GET
           request_headers:
             api-auth-accountid: "{{ config[\"accountid\"] }}"
@@ -773,9 +773,49 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/leads"
+    sales:
+      type: DeclarativeStream
+      name: sales
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: sale
+          http_method: GET
+          request_parameters:
+            CombineAdditionalCharges: "true"
+            IncludeTransactions: "true"
+          request_headers:
+            api-auth-accountid: "{{ config[\"accountid\"] }}"
+            api-auth-applicationkey: "{{ config[\"api_key\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: SaleID
+              request_option:
+                type: RequestOption
+                field_name: ID
+                inject_into: request_parameter
+              partition_field: ID
+              stream:
+                $ref: "#/definitions/streams/sale_list"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sales"
   base_requester:
     type: HttpRequester
-    url_base: https://inventory.dearsystems.com/externalapi/
+    url_base: https://inventory.dearsystems.com/externalapi/v2/
 
 streams:
   - $ref: "#/definitions/streams/bank_accounts"
@@ -796,6 +836,7 @@ streams:
   - $ref: "#/definitions/streams/product_family"
   - $ref: "#/definitions/streams/purchases"
   - $ref: "#/definitions/streams/leads"
+  - $ref: "#/definitions/streams/sales"
 
 spec:
   type: Spec
@@ -839,6 +880,7 @@ metadata:
     product_family: true
     purchases: true
     leads: true
+    sales: true
   testedStreams:
     bank_accounts:
       hasRecords: true
@@ -869,26 +911,26 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     carriers:
-      hasRecords: true
-      streamHash: 429698392d53bdb03fa88b3593621d72c2ec6e3c
+      streamHash: 93f0d97f1106e83b190b29d14e443bb156247d42
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     customers:
+      hasRecords: true
       streamHash: 56cf59b8d01777551dcb4f1748c7a3ccba4afe62
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     deals:
+      hasRecords: false
       streamHash: 098f4b8282734a2ffda4e71b6958d829b7dc1cd4
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: false
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     locations:
       hasRecords: true
       streamHash: 38e5a19d32f8c68f73cf889280168a42924a54a9
@@ -897,70 +939,77 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     products:
+      hasRecords: true
       streamHash: e6112bce84df42e32e05cd257326ef7032e5a115
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     purchase_list:
+      hasRecords: true
       streamHash: 147d200fc8c304882d8ccd283cfa6fb3063abcd2
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     suppliers:
+      hasRecords: true
       streamHash: 9f4c4d4a838632eec3fc3596e5be1e28c3cf8c98
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     opportunities:
+      hasRecords: true
       streamHash: 2264f428e389c3d55b27b9e72c76738db3b3e37d
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     sale_list:
+      hasRecords: true
       streamHash: ba929746eafa3485d45b9c7b6c5d7173e80b04ff
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     taxes:
-      streamHash: 0909c6a60631e4616df3a2ea5f64210cb21e6cfa
+      streamHash: 35da8fd56fd121f5a8a55b369eaef5ba42ea5f60
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     product_categories:
+      hasRecords: true
       streamHash: a83fc39a84fbe26fda6730f398fbbf501f86f8ca
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     product_family:
+      hasRecords: false
       streamHash: 5bc293448d2cdf3d3a2420840d8cca07fbc3c235
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: false
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     purchases:
+      hasRecords: true
       streamHash: ff07ff0133c17577d1e7fd124ba439f57f157393
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     leads:
+      hasRecords: true
       streamHash: 6395dcff17029b78cbe70e0b92f3e3c38d8c30cd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sales:
+      streamHash: 3ec91696ce197d68829f2c651a5e186ebadd28c7
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -3769,3 +3818,1258 @@ schemas:
         type:
           - string
           - "null"
+  sales:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      AdditionalAttributes:
+        type:
+          - object
+          - "null"
+        properties:
+          AdditionalAttribute1:
+            type:
+              - string
+              - "null"
+          AdditionalAttribute10:
+            type:
+              - string
+              - "null"
+          AdditionalAttribute2:
+            type:
+              - string
+              - "null"
+          AdditionalAttribute3:
+            type:
+              - string
+              - "null"
+          AdditionalAttribute4:
+            type:
+              - string
+              - "null"
+          AdditionalAttribute5:
+            type:
+              - string
+              - "null"
+          AdditionalAttribute6:
+            type:
+              - string
+              - "null"
+          AdditionalAttribute7:
+            type:
+              - string
+              - "null"
+          AdditionalAttribute8:
+            type:
+              - string
+              - "null"
+          AdditionalAttribute9:
+            type:
+              - string
+              - "null"
+      Attachments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            ContentType:
+              type:
+                - string
+                - "null"
+            DownloadUrl:
+              type:
+                - string
+                - "null"
+            FileName:
+              type:
+                - string
+                - "null"
+            ID:
+              type:
+                - string
+                - "null"
+      BaseCurrency:
+        type:
+          - string
+          - "null"
+      BillingAddress:
+        type:
+          - object
+          - "null"
+        properties:
+          City:
+            type:
+              - string
+              - "null"
+          Country:
+            type:
+              - string
+              - "null"
+          DisplayAddressLine1:
+            type:
+              - string
+              - "null"
+          DisplayAddressLine2:
+            type:
+              - string
+              - "null"
+          Line1:
+            type:
+              - string
+              - "null"
+          Line2:
+            type:
+              - string
+              - "null"
+          Postcode:
+            type:
+              - string
+              - "null"
+          State:
+            type:
+              - string
+              - "null"
+      COGSAmount:
+        type:
+          - number
+          - "null"
+      Carrier:
+        type:
+          - string
+          - "null"
+      CombinedInvoiceStatus:
+        type:
+          - string
+          - "null"
+      CombinedPackingStatus:
+        type:
+          - string
+          - "null"
+      CombinedPaymentStatus:
+        type:
+          - string
+          - "null"
+      CombinedPickingStatus:
+        type:
+          - string
+          - "null"
+      CombinedShippingStatus:
+        type:
+          - string
+          - "null"
+      CombinedTrackingNumbers:
+        type:
+          - string
+          - "null"
+      Contact:
+        type:
+          - string
+          - "null"
+      CreditNotes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            CreditNoteConversionRate:
+              type:
+                - number
+                - "null"
+            CreditNoteDate:
+              type:
+                - string
+                - "null"
+            CreditNoteInvoiceNumber:
+              type:
+                - string
+                - "null"
+            Lines:
+              type:
+                - array
+                - "null"
+            Memo:
+              type:
+                - string
+                - "null"
+            Refunds:
+              type:
+                - array
+                - "null"
+            Restock:
+              type:
+                - array
+                - "null"
+            RestockStatus:
+              type:
+                - string
+                - "null"
+            Status:
+              type:
+                - string
+                - "null"
+            TaskID:
+              type:
+                - string
+                - "null"
+            Tax:
+              type:
+                - number
+                - "null"
+            Total:
+              type:
+                - number
+                - "null"
+            TotalBeforeTax:
+              type:
+                - number
+                - "null"
+      CurrencyRate:
+        type:
+          - number
+          - "null"
+      Customer:
+        type:
+          - string
+          - "null"
+      CustomerCurrency:
+        type:
+          - string
+          - "null"
+      CustomerID:
+        type:
+          - string
+          - "null"
+      CustomerReference:
+        type:
+          - string
+          - "null"
+      DefaultAccount:
+        type:
+          - string
+          - "null"
+      Email:
+        type:
+          - string
+          - "null"
+      ExternalID:
+        type:
+          - string
+          - "null"
+      FulFilmentStatus:
+        type:
+          - string
+          - "null"
+      Fulfilments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            FulFilmentStatus:
+              type:
+                - string
+                - "null"
+            FulfillmentNumber:
+              type:
+                - number
+                - "null"
+            Pack:
+              type:
+                - object
+                - "null"
+              properties:
+                Lines:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      Box:
+                        type:
+                          - string
+                          - "null"
+                      DimensionsUnits:
+                        type:
+                          - string
+                          - "null"
+                      Location:
+                        type:
+                          - string
+                          - "null"
+                      LocationID:
+                        type:
+                          - string
+                          - "null"
+                      Name:
+                        type:
+                          - string
+                          - "null"
+                      NonInventory:
+                        type:
+                          - boolean
+                          - "null"
+                      ProductCustomField1:
+                        type:
+                          - string
+                          - "null"
+                      ProductCustomField10:
+                        type:
+                          - string
+                          - "null"
+                      ProductCustomField2:
+                        type:
+                          - string
+                          - "null"
+                      ProductCustomField3:
+                        type:
+                          - string
+                          - "null"
+                      ProductCustomField4:
+                        type:
+                          - string
+                          - "null"
+                      ProductCustomField5:
+                        type:
+                          - string
+                          - "null"
+                      ProductCustomField6:
+                        type:
+                          - string
+                          - "null"
+                      ProductCustomField7:
+                        type:
+                          - string
+                          - "null"
+                      ProductCustomField8:
+                        type:
+                          - string
+                          - "null"
+                      ProductCustomField9:
+                        type:
+                          - string
+                          - "null"
+                      ProductHeight:
+                        type:
+                          - number
+                          - "null"
+                      ProductID:
+                        type:
+                          - string
+                          - "null"
+                      ProductLength:
+                        type:
+                          - number
+                          - "null"
+                      ProductWeight:
+                        type:
+                          - number
+                          - "null"
+                      ProductWidth:
+                        type:
+                          - number
+                          - "null"
+                      Quantity:
+                        type:
+                          - number
+                          - "null"
+                      SKU:
+                        type:
+                          - string
+                          - "null"
+                      WeightUnits:
+                        type:
+                          - string
+                          - "null"
+                Status:
+                  type:
+                    - string
+                    - "null"
+            Pick:
+              type:
+                - object
+                - "null"
+              properties:
+                Lines:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      DimensionsUnits:
+                        type:
+                          - string
+                          - "null"
+                      Location:
+                        type:
+                          - string
+                          - "null"
+                      LocationID:
+                        type:
+                          - string
+                          - "null"
+                      Name:
+                        type:
+                          - string
+                          - "null"
+                      NonInventory:
+                        type:
+                          - boolean
+                          - "null"
+                      ProductCustomField1:
+                        type:
+                          - string
+                          - "null"
+                      ProductCustomField10:
+                        type:
+                          - string
+                          - "null"
+                      ProductCustomField2:
+                        type:
+                          - string
+                          - "null"
+                      ProductCustomField3:
+                        type:
+                          - string
+                          - "null"
+                      ProductCustomField4:
+                        type:
+                          - string
+                          - "null"
+                      ProductCustomField5:
+                        type:
+                          - string
+                          - "null"
+                      ProductCustomField6:
+                        type:
+                          - string
+                          - "null"
+                      ProductCustomField7:
+                        type:
+                          - string
+                          - "null"
+                      ProductCustomField8:
+                        type:
+                          - string
+                          - "null"
+                      ProductCustomField9:
+                        type:
+                          - string
+                          - "null"
+                      ProductHeight:
+                        type:
+                          - number
+                          - "null"
+                      ProductID:
+                        type:
+                          - string
+                          - "null"
+                      ProductLength:
+                        type:
+                          - number
+                          - "null"
+                      ProductWeight:
+                        type:
+                          - number
+                          - "null"
+                      ProductWidth:
+                        type:
+                          - number
+                          - "null"
+                      Quantity:
+                        type:
+                          - number
+                          - "null"
+                      SKU:
+                        type:
+                          - string
+                          - "null"
+                      WeightUnits:
+                        type:
+                          - string
+                          - "null"
+                Status:
+                  type:
+                    - string
+                    - "null"
+            Ship:
+              type:
+                - object
+                - "null"
+              properties:
+                Lines:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      Boxes:
+                        type:
+                          - string
+                          - "null"
+                      Carrier:
+                        type:
+                          - string
+                          - "null"
+                      ID:
+                        type:
+                          - string
+                          - "null"
+                      IsShipped:
+                        type:
+                          - boolean
+                          - "null"
+                      ShipmentDate:
+                        type:
+                          - string
+                          - "null"
+                      TrackingURL:
+                        type:
+                          - string
+                          - "null"
+                ShippingAddress:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    City:
+                      type:
+                        - string
+                        - "null"
+                    Company:
+                      type:
+                        - string
+                        - "null"
+                    Contact:
+                      type:
+                        - string
+                        - "null"
+                    Country:
+                      type:
+                        - string
+                        - "null"
+                    DisplayAddressLine1:
+                      type:
+                        - string
+                        - "null"
+                    DisplayAddressLine2:
+                      type:
+                        - string
+                        - "null"
+                    Line1:
+                      type:
+                        - string
+                        - "null"
+                    Line2:
+                      type:
+                        - string
+                        - "null"
+                    Postcode:
+                      type:
+                        - string
+                        - "null"
+                    ShipToOther:
+                      type:
+                        - boolean
+                        - "null"
+                    State:
+                      type:
+                        - string
+                        - "null"
+                ShippingNotes:
+                  type:
+                    - string
+                    - "null"
+                Status:
+                  type:
+                    - string
+                    - "null"
+            TaskID:
+              type:
+                - string
+                - "null"
+      ID:
+        type: string
+      InventoryMovements:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            COGS:
+              type:
+                - number
+                - "null"
+            Date:
+              type:
+                - string
+                - "null"
+            DimensionsUnits:
+              type:
+                - string
+                - "null"
+            ProductCustomField1:
+              type:
+                - string
+                - "null"
+            ProductCustomField10:
+              type:
+                - string
+                - "null"
+            ProductCustomField2:
+              type:
+                - string
+                - "null"
+            ProductCustomField3:
+              type:
+                - string
+                - "null"
+            ProductCustomField4:
+              type:
+                - string
+                - "null"
+            ProductCustomField5:
+              type:
+                - string
+                - "null"
+            ProductCustomField6:
+              type:
+                - string
+                - "null"
+            ProductCustomField7:
+              type:
+                - string
+                - "null"
+            ProductCustomField8:
+              type:
+                - string
+                - "null"
+            ProductCustomField9:
+              type:
+                - string
+                - "null"
+            ProductHeight:
+              type:
+                - number
+                - "null"
+            ProductID:
+              type:
+                - string
+                - "null"
+            ProductLength:
+              type:
+                - number
+                - "null"
+            ProductWeight:
+              type:
+                - number
+                - "null"
+            ProductWidth:
+              type:
+                - number
+                - "null"
+            TaskID:
+              type:
+                - string
+                - "null"
+            WeightUnits:
+              type:
+                - string
+                - "null"
+      Invoices:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            BillingAddressLine1:
+              type:
+                - string
+                - "null"
+            BillingAddressLine2:
+              type:
+                - string
+                - "null"
+            CurrencyConversionRate:
+              type:
+                - number
+                - "null"
+            InvoiceDate:
+              type:
+                - string
+                - "null"
+            InvoiceDueDate:
+              type:
+                - string
+                - "null"
+            InvoiceNumber:
+              type:
+                - string
+                - "null"
+            Lines:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  Account:
+                    type:
+                      - string
+                      - "null"
+                  AverageCost:
+                    type:
+                      - number
+                      - "null"
+                  Comment:
+                    type:
+                      - string
+                      - "null"
+                  DimensionsUnits:
+                    type:
+                      - string
+                      - "null"
+                  Discount:
+                    type:
+                      - number
+                      - "null"
+                  Name:
+                    type:
+                      - string
+                      - "null"
+                  Price:
+                    type:
+                      - number
+                      - "null"
+                  ProductCustomField1:
+                    type:
+                      - string
+                      - "null"
+                  ProductCustomField10:
+                    type:
+                      - string
+                      - "null"
+                  ProductCustomField2:
+                    type:
+                      - string
+                      - "null"
+                  ProductCustomField3:
+                    type:
+                      - string
+                      - "null"
+                  ProductCustomField4:
+                    type:
+                      - string
+                      - "null"
+                  ProductCustomField5:
+                    type:
+                      - string
+                      - "null"
+                  ProductCustomField6:
+                    type:
+                      - string
+                      - "null"
+                  ProductCustomField7:
+                    type:
+                      - string
+                      - "null"
+                  ProductCustomField8:
+                    type:
+                      - string
+                      - "null"
+                  ProductCustomField9:
+                    type:
+                      - string
+                      - "null"
+                  ProductHeight:
+                    type:
+                      - number
+                      - "null"
+                  ProductID:
+                    type:
+                      - string
+                      - "null"
+                  ProductLength:
+                    type:
+                      - number
+                      - "null"
+                  ProductWeight:
+                    type:
+                      - number
+                      - "null"
+                  ProductWidth:
+                    type:
+                      - number
+                      - "null"
+                  Quantity:
+                    type:
+                      - number
+                      - "null"
+                  SKU:
+                    type:
+                      - string
+                      - "null"
+                  Tax:
+                    type:
+                      - number
+                      - "null"
+                  TaxRule:
+                    type:
+                      - string
+                      - "null"
+                  Total:
+                    type:
+                      - number
+                      - "null"
+                  WeightUnits:
+                    type:
+                      - string
+                      - "null"
+            Memo:
+              type:
+                - string
+                - "null"
+            Paid:
+              type:
+                - number
+                - "null"
+            Payments:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  Account:
+                    type:
+                      - string
+                      - "null"
+                  Amount:
+                    type:
+                      - number
+                      - "null"
+                  CurrencyRate:
+                    type:
+                      - number
+                      - "null"
+                  DateCreated:
+                    type:
+                      - string
+                      - "null"
+                  DatePaid:
+                    type:
+                      - string
+                      - "null"
+                  ID:
+                    type:
+                      - string
+                      - "null"
+                  Reference:
+                    type:
+                      - string
+                      - "null"
+            Status:
+              type:
+                - string
+                - "null"
+            TaskID:
+              type:
+                - string
+                - "null"
+            Tax:
+              type:
+                - number
+                - "null"
+            Total:
+              type:
+                - number
+                - "null"
+            TotalBeforeTax:
+              type:
+                - number
+                - "null"
+      LastModifiedOn:
+        type:
+          - string
+          - "null"
+      Location:
+        type:
+          - string
+          - "null"
+      ManualJournals:
+        type:
+          - object
+          - "null"
+        properties:
+          Lines:
+            type:
+              - array
+              - "null"
+          Status:
+            type:
+              - string
+              - "null"
+      Note:
+        type:
+          - string
+          - "null"
+      Order:
+        type:
+          - object
+          - "null"
+        properties:
+          Lines:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                AverageCost:
+                  type:
+                    - number
+                    - "null"
+                BackorderQuantity:
+                  type:
+                    - number
+                    - "null"
+                Comment:
+                  type:
+                    - string
+                    - "null"
+                DimensionsUnits:
+                  type:
+                    - string
+                    - "null"
+                Discount:
+                  type:
+                    - number
+                    - "null"
+                DropShip:
+                  type:
+                    - boolean
+                    - "null"
+                Name:
+                  type:
+                    - string
+                    - "null"
+                Price:
+                  type:
+                    - number
+                    - "null"
+                ProductCustomField1:
+                  type:
+                    - string
+                    - "null"
+                ProductCustomField10:
+                  type:
+                    - string
+                    - "null"
+                ProductCustomField2:
+                  type:
+                    - string
+                    - "null"
+                ProductCustomField3:
+                  type:
+                    - string
+                    - "null"
+                ProductCustomField4:
+                  type:
+                    - string
+                    - "null"
+                ProductCustomField5:
+                  type:
+                    - string
+                    - "null"
+                ProductCustomField6:
+                  type:
+                    - string
+                    - "null"
+                ProductCustomField7:
+                  type:
+                    - string
+                    - "null"
+                ProductCustomField8:
+                  type:
+                    - string
+                    - "null"
+                ProductCustomField9:
+                  type:
+                    - string
+                    - "null"
+                ProductHeight:
+                  type:
+                    - number
+                    - "null"
+                ProductID:
+                  type:
+                    - string
+                    - "null"
+                ProductLength:
+                  type:
+                    - number
+                    - "null"
+                ProductWeight:
+                  type:
+                    - number
+                    - "null"
+                ProductWidth:
+                  type:
+                    - number
+                    - "null"
+                Quantity:
+                  type:
+                    - number
+                    - "null"
+                SKU:
+                  type:
+                    - string
+                    - "null"
+                Tax:
+                  type:
+                    - number
+                    - "null"
+                TaxRule:
+                  type:
+                    - string
+                    - "null"
+                Total:
+                  type:
+                    - number
+                    - "null"
+                WeightUnits:
+                  type:
+                    - string
+                    - "null"
+          Memo:
+            type:
+              - string
+              - "null"
+          SaleOrderNumber:
+            type:
+              - string
+              - "null"
+          Status:
+            type:
+              - string
+              - "null"
+          Tax:
+            type:
+              - number
+              - "null"
+          Total:
+            type:
+              - number
+              - "null"
+          TotalBeforeTax:
+            type:
+              - number
+              - "null"
+      Phone:
+        type:
+          - string
+          - "null"
+      PriceTier:
+        type:
+          - string
+          - "null"
+      Quote:
+        type:
+          - object
+          - "null"
+        properties:
+          Lines:
+            type:
+              - array
+              - "null"
+          Memo:
+            type:
+              - string
+              - "null"
+          Prepayments:
+            type:
+              - array
+              - "null"
+          Status:
+            type:
+              - string
+              - "null"
+          Tax:
+            type:
+              - number
+              - "null"
+          Total:
+            type:
+              - number
+              - "null"
+          TotalBeforeTax:
+            type:
+              - number
+              - "null"
+      SaleOrderDate:
+        type:
+          - string
+          - "null"
+      SalesRepresentative:
+        type:
+          - string
+          - "null"
+      ServiceOnly:
+        type:
+          - boolean
+          - "null"
+      ShippingAddress:
+        type:
+          - object
+          - "null"
+        properties:
+          City:
+            type:
+              - string
+              - "null"
+          Company:
+            type:
+              - string
+              - "null"
+          Contact:
+            type:
+              - string
+              - "null"
+          Country:
+            type:
+              - string
+              - "null"
+          DisplayAddressLine1:
+            type:
+              - string
+              - "null"
+          DisplayAddressLine2:
+            type:
+              - string
+              - "null"
+          ID:
+            type:
+              - string
+              - "null"
+          Line1:
+            type:
+              - string
+              - "null"
+          Line2:
+            type:
+              - string
+              - "null"
+          Postcode:
+            type:
+              - string
+              - "null"
+          ShipToOther:
+            type:
+              - boolean
+              - "null"
+          State:
+            type:
+              - string
+              - "null"
+      ShippingNotes:
+        type:
+          - string
+          - "null"
+      SkipQuote:
+        type:
+          - boolean
+          - "null"
+      SourceChannel:
+        type:
+          - string
+          - "null"
+      Status:
+        type:
+          - string
+          - "null"
+      TaxCalculation:
+        type:
+          - string
+          - "null"
+      TaxRule:
+        type:
+          - string
+          - "null"
+      Terms:
+        type:
+          - string
+          - "null"
+      Transactions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            Amount:
+              type:
+                - number
+                - "null"
+            Credit:
+              type:
+                - string
+                - "null"
+            Debit:
+              type:
+                - string
+                - "null"
+            Description:
+              type:
+                - string
+                - "null"
+            EffectiveDate:
+              type:
+                - string
+                - "null"
+            TaskID:
+              type:
+                - string
+                - "null"
+            TransactionID:
+              type:
+                - string
+                - "null"
+      Type:
+        type:
+          - string
+          - "null"
+    required:
+      - ID
