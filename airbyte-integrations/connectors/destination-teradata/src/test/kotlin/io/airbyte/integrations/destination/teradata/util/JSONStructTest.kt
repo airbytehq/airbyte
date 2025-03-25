@@ -11,35 +11,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-/** Class representing a JSONStruct. */
-class JSONStruct(private val sqlTypeName: String, private val attributes: Array<Any>) {
-
-    /** Returns the attributes. */
-    fun getAttributes(): Array<Any> {
-        return attributes
-    }
-
-    /**
-     * Returns the attributes using the provided map.
-     *
-     * @param map A map of attribute names to their classes.
-     * @throws SQLException always thrown with a specific message.
-     */
-    @Throws(SQLException::class)
-    fun getAttributes(map: Map<String, Class<*>>): Array<Any> {
-        throw SQLException("getAttributes (Map) NOT SUPPORTED")
-    }
-
-    /**
-     * Returns the SQL type name.
-     *
-     * @throws SQLException if an SQL exception occurs.
-     */
-    @Throws(SQLException::class)
-    fun getSQLTypeName(): String {
-        return sqlTypeName
-    }
-}
 
 /** Unit tests for the JSONStruct class. */
 class JSONStructTest {
