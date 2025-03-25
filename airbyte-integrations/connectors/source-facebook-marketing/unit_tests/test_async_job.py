@@ -334,15 +334,16 @@ class TestInsightAsyncJob:
         api.call().json.return_value = {"data": [{"some_data": 123}, {"some_data": 77}]}
         ads_insights = AdsInsights(api=api)
         ads_insights._set_data({"items": [{"some_data": 123}, {"some_data": 77}]})
-        with mocker.patch(
+        mocker.patch(
             "facebook_business.adobjects.objectparser.ObjectParser.parse_multiple",
             side_effect=[
                 FacebookBadObjectError("Bad data to set object data"),
                 ads_insights,
             ],
-        ):
-            # in case this is not retried, an error will be raised
-            job.get_result()
+        )
+
+        # in case this is not retried, an error will be raised
+        job.get_result()
 
     def test_get_result_when_job_is_not_started(self, job):
         with pytest.raises(

@@ -16,8 +16,8 @@ from source_microsoft_sharepoint.utils import PlaceholderUrlBuilder
 
 
 class SourceMicrosoftSharePoint(FileBasedSource):
-    SCOPES = ["offline_access", "Files.Read.All"]
-    IDENTITIES_SCOPES = ["User.Read.All", "Group.Read.All", "Sites.Read.All", "Application.Read.All", "Device.Read.All"]
+    SCOPES = ["offline_access", "Files.Read.All", "Sites.Read.All", "Sites.Selected"]
+    IDENTITIES_SCOPES = ["User.Read.All", "Group.Read.All", "Application.Read.All", "Device.Read.All"]
 
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: Optional[TState]):
         super().__init__(

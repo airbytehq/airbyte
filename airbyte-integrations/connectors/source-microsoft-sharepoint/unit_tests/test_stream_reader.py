@@ -39,6 +39,7 @@ def setup_reader_class():
     config.start_date = None
     config.credentials = Mock()
     config.folder_path = "."
+    config.site_url = ""
     config.credentials.auth_type = "Client"
     config.search_scope = "ALL"
     reader.config = config  # Set up the necessary configuration
@@ -193,17 +194,44 @@ def test_open_file(mock_smart_open, file_extension, expected_compression):
 
 
 @pytest.mark.parametrize(
-    "file_extension, expected_paths",
+    "file_uri, file_extension, expected_paths",
     [
-        ("txt.gz", {"bytes": ANY, "file_relative_path": "file.txt.gz", "file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.gz"}),
-        ("txt.bz2", {"bytes": ANY, "file_relative_path": "file.txt.bz2", "file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.bz2"}),
-        ("txt", {"bytes": ANY, "file_relative_path": "file.txt", "file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt"}),
+        (
+            "https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file",
+            "txt.gz",
+            {"bytes": ANY, "file_relative_path": "file.txt.gz", "file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.gz"},
+        ),
+        (
+            "https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file",
+            "txt.bz2",
+            {"bytes": ANY, "file_relative_path": "file.txt.bz2", "file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.bz2"},
+        ),
+        (
+            "https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file",
+            "txt",
+            {"bytes": ANY, "file_relative_path": "file.txt", "file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt"},
+        ),
+        (
+            "https://my_favorite_sharepoint.sharepoint.com/sites/NOT_DEFAULT_SITE/Shared%20Documents/file",
+            "txt.gz",
+            {"bytes": ANY, "file_relative_path": "file.txt.gz", "file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.gz"},
+        ),
+        (
+            "https://my_favorite_sharepoint.sharepoint.com/sites/NOT_DEFAULT_SITE/Shared%20Documents/file",
+            "txt.bz2",
+            {"bytes": ANY, "file_relative_path": "file.txt.bz2", "file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt.bz2"},
+        ),
+        (
+            "https://my_favorite_sharepoint.sharepoint.com/sites/NOT_DEFAULT_SITE/Shared%20Documents/file",
+            "txt",
+            {"bytes": ANY, "file_relative_path": "file.txt", "file_url": f"{TEST_LOCAL_DIRECTORY}/file.txt"},
+        ),
     ],
 )
 @patch("source_microsoft_sharepoint.stream_reader.SourceMicrosoftSharePointStreamReader.get_access_token")
 @patch("source_microsoft_sharepoint.stream_reader.requests.get")
 @patch("source_microsoft_sharepoint.stream_reader.requests.head")
-def test_get_file(mock_requests_head, mock_requests_get, mock_get_access_token, file_extension, expected_paths):
+def test_get_file(mock_requests_head, mock_requests_get, mock_get_access_token, file_uri, file_extension, expected_paths):
     """
     Test the get_file method in SourceMicrosoftSharePointStreamReader.
 
@@ -218,7 +246,7 @@ def test_get_file(mock_requests_head, mock_requests_get, mock_get_access_token, 
         file_extension (str): The file extension to test (e.g., 'txt.gz').
         expected_paths (dict): The expected paths and file size in the result.
     """
-    file_uri = f"https://my_favorite_sharepoint.sharepoint.com/Shared%20Documents/file.{file_extension}"
+    file_uri = f"{file_uri}.{file_extension}"
     mock_file = Mock(download_url=f"https://example.com/file.{file_extension}", uri=file_uri)
     mock_logger = Mock()
     mock_get_access_token.return_value = "dummy_access_token"
