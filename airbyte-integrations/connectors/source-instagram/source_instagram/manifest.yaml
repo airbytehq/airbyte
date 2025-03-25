@@ -256,7 +256,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Users"        
+          $ref: "#/schemas/Users"
     UserLifetimeInsights:
       type: DeclarativeStream
       name: user_lifetime_insights
@@ -517,8 +517,8 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: "{{ stream_partition.media_insights_info.media_id }}/insights" 
-          http_method: GET  
+          path: "{{ stream_partition.media_insights_info.media_id }}/insights"
+          http_method: GET
           request_parameters:
             metric: >-
               {% if stream_partition.media_insights_info.media_product_type ==
@@ -568,7 +568,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: 
+            field_path:
               - data
         partition_router:
           - type: ListPartitionRouter
@@ -576,12 +576,12 @@ definitions:
               - action_type
             cursor_field: breakdown
           - type: SubstreamPartitionRouter
-            parent_stream_configs:  
-            - type: ParentStreamConfig
-              parent_key: media_insights_info
-              partition_field: media_insights_info
-              stream:
-                $ref: "#/definitions/streams/Media"
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: media_insights_info
+                partition_field: media_insights_info
+                stream:
+                  $ref: "#/definitions/streams/Media"
       transformations:
         - type: AddFields
           fields:
@@ -634,7 +634,7 @@ definitions:
             - - description
         - type: RemoveFields
           field_pointers:
-            - - values    
+            - - values
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -649,15 +649,15 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: "{{ stream_partition.media_insights_info.media_id }}/insights" 
-          http_method: GET  
+          path: "{{ stream_partition.media_insights_info.media_id }}/insights"
+          http_method: GET
           request_parameters:
             metric: >-
-             {% if stream_partition.media_insights_info.media_product_type ==
-                "STORY" %}{{
-                'navigation'
-                }}{%
-                endif %}
+              {% if stream_partition.media_insights_info.media_product_type ==
+                 "STORY" %}{{
+                 'navigation'
+                 }}{%
+                 endif %}
             breakdown: "{{ stream_partition.breakdown }}"
           error_handler:
             type: CompositeErrorHandler
@@ -698,7 +698,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: 
+            field_path:
               - data
         partition_router:
           - type: ListPartitionRouter
@@ -706,12 +706,12 @@ definitions:
               - story_navigation_action_type
             cursor_field: breakdown
           - type: SubstreamPartitionRouter
-            parent_stream_configs:  
-            - type: ParentStreamConfig
-              parent_key: media_insights_info
-              partition_field: media_insights_info
-              stream:
-                $ref: "#/definitions/streams/Media"
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: media_insights_info
+                partition_field: media_insights_info
+                stream:
+                  $ref: "#/definitions/streams/Media"
       transformations:
         - type: AddFields
           fields:
@@ -764,11 +764,11 @@ definitions:
             - - description
         - type: RemoveFields
           field_pointers:
-            - - values     
+            - - values
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Navigation"                
+          $ref: "#/schemas/Navigation"
     Api:
       type: DeclarativeStream
       name: Api
@@ -868,7 +868,7 @@ metadata:
     Api: true
     ProfileActivity: true
     Navigation: true
-   
+
   yamlComponents:
     streams:
       Media:
@@ -884,9 +884,9 @@ metadata:
       StoryInsights:
         - transformations
       ProfileActivity:
-        - transformations  
+        - transformations
       Navigation:
-        - transformations      
+        - transformations
 
 schemas:
   Media:
@@ -1147,7 +1147,7 @@ schemas:
           - "null"
           - integer
     required:
-      - id 
+      - id
   Users:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1434,7 +1434,7 @@ schemas:
         description: The breakdown of the insights data, such as age, gender, location, etc.
         type:
           - "null"
-          - string    
+          - string
       metric:
         description: The specific metric or measure tracked in the insights data
         type:
@@ -1444,10 +1444,10 @@ schemas:
         description: The actual value of the metric for the given breakdown and page
         type:
           - "null"
-          - object 
+          - object
     required:
       - id
-      - breakdown 
+      - breakdown
   Navigation:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1472,7 +1472,7 @@ schemas:
         description: The breakdown of the insights data, such as age, gender, location, etc.
         type:
           - "null"
-          - string    
+          - string
       metric:
         description: The specific metric or measure tracked in the insights data
         type:
@@ -1482,7 +1482,7 @@ schemas:
         description: The actual value of the metric for the given breakdown and page
         type:
           - "null"
-          - object 
+          - object
     required:
       - id
       - breakdown

@@ -57,15 +57,18 @@ _METRICS = {
     MEDIA_ID_VIDEO_FEED: ["profile_activity"],
 }
 
+
 def _get_parent_request() -> RequestBuilder:
     return RequestBuilder.get_media_endpoint(item_id=BUSINESS_ACCOUNT_ID).with_limit(100).with_fields(PARENT_FIELDS)
 
 
 def _get_child_request(media_id, metric) -> RequestBuilder:
-    return (RequestBuilder.get_profile_activity_endpoint(item_id=media_id)
-            .with_custom_param("metric", metric, with_format=True)
-            .with_custom_param("period", "lifetime")
-            .with_custom_param("breakdown", "action_type"))
+    return (
+        RequestBuilder.get_profile_activity_endpoint(item_id=media_id)
+        .with_custom_param("metric", metric, with_format=True)
+        .with_custom_param("period", "lifetime")
+        .with_custom_param("breakdown", "action_type")
+    )
 
 
 def _get_response(stream_name: str, test: str = None, with_pagination_strategy: bool = True) -> HttpResponseBuilder:
@@ -131,4 +134,3 @@ class TestFullRefresh(TestCase):
         for breakdown in ["action_type"]:
             assert breakdown in output.records[0].record.data["breakdown"]
         assert output.records[0].record.data["value"].get("bio_link_clicked") == 2
-    

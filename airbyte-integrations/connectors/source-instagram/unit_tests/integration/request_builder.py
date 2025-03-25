@@ -38,7 +38,7 @@ class RequestBuilder:
     @classmethod
     def get_media_insights_endpoint(cls, item_id: str) -> RequestBuilder:
         return cls(resource="insights").with_item_id(item_id)
-    
+
     @classmethod
     def get_stories_endpoint(cls, item_id: str) -> RequestBuilder:
         return cls(resource="stories").with_item_id(item_id)
@@ -50,15 +50,14 @@ class RequestBuilder:
     @classmethod
     def get_user_lifetime_insights_endpoint(cls, item_id: str) -> RequestBuilder:
         return cls(resource="insights").with_item_id(item_id)
-    
+
     @classmethod
     def get_profile_activity_endpoint(cls, item_id: str) -> RequestBuilder:
         return cls(resource="insights").with_item_id(item_id)
-    
+
     @classmethod
     def get_navigation_endpoint(cls, item_id: str) -> RequestBuilder:
         return cls(resource="insights").with_item_id(item_id)
-
 
     def __init__(self, resource: Optional[str] = "") -> None:
         self._item_id = None

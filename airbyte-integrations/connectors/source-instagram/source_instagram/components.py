@@ -237,4 +237,3 @@ class InstagramBreakDownResultsTransformation(RecordTransformation):
             res = record.pop("total_value")
             record["value"] = {res.get("dimension_values", [""])[0]: res.get("value") for res in res["breakdowns"][0]["results"]}
         return record
-        

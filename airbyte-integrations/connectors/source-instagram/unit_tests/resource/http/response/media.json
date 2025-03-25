@@ -1,6 +1,6 @@
 {
   "data": [
-      {
+    {
       "caption": "a caption",
       "comments_count": 3,
       "id": "18026588782970433",
@@ -17,7 +17,7 @@
       "shortcode": "HGagdsy38",
       "timestamp": "2024-03-16T15:00:08+00:00",
       "username": "username",
-      "thumbnail_url":"https://fakecontent.cdninstagram.com/v/somepath/"
+      "thumbnail_url": "https://fakecontent.cdninstagram.com/v/somepath/"
     },
     {
       "caption": "a caption",

@@ -597,7 +597,7 @@
             "type": ["null", "object"]
           }
         },
-        "required": ["id","breakdown"]
+        "required": ["id", "breakdown"]
       },
       "supported_sync_modes": ["full_refresh"],
       "source_defined_primary_key": [["id"], ["breakdown"]],
@@ -635,7 +635,7 @@
             "type": ["null", "object"]
           }
         },
-        "required": ["id","breakdown"]
+        "required": ["id", "breakdown"]
       },
       "supported_sync_modes": ["full_refresh"],
       "source_defined_primary_key": [["id"], ["breakdown"]],

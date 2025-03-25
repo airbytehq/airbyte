@@ -56,14 +56,17 @@ _METRICS = {
     MEDIA_ID_STORY: ["navigation"],
 }
 
+
 def _get_parent_request() -> RequestBuilder:
     return RequestBuilder.get_media_endpoint(item_id=BUSINESS_ACCOUNT_ID).with_limit(100).with_fields(PARENT_FIELDS)
 
 
 def _get_child_request(media_id, metric) -> RequestBuilder:
-    return (RequestBuilder.get_navigation_endpoint(item_id=media_id)
-            .with_custom_param("metric", metric, with_format=True)
-            .with_custom_param("breakdown", "story_navigation_action_type"))
+    return (
+        RequestBuilder.get_navigation_endpoint(item_id=media_id)
+        .with_custom_param("metric", metric, with_format=True)
+        .with_custom_param("breakdown", "story_navigation_action_type")
+    )
 
 
 def _get_response(stream_name: str, test: str = None, with_pagination_strategy: bool = True) -> HttpResponseBuilder:
@@ -115,7 +118,7 @@ class TestFullRefresh(TestCase):
             .with_record(_record(stream_name=_PARENT_STREAM_NAME, test=test))
             .build(),
         )
-        
+
         http_mocker.get(
             _get_child_request(media_id=MEDIA_ID_STORY, metric=_METRICS[MEDIA_ID_STORY]).build(),
             HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 200),
@@ -129,4 +132,3 @@ class TestFullRefresh(TestCase):
         for breakdown in ["action_type"]:
             assert breakdown in output.records[0].record.data["breakdown"]
         assert output.records[0].record.data["value"].get("tap_forward") == 2
-    
