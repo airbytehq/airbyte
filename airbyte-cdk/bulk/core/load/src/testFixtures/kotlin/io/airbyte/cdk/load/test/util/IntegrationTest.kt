@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.cdk.load.test.util.destination_process.NonDockerizedDestination
+import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
@@ -128,6 +129,24 @@ abstract class IntegrationTest(
             }
     }
 
+    /**
+     * Convenience wrapper for syncs that are expected to fail. Example usage:
+     * ```
+     * val failure = expectFailure {
+     *   runSync(...)
+     * }
+     * assertContains(failure.message, "Invalid widget")
+     * ```
+     */
+    fun expectFailure(
+        failureType: AirbyteErrorTraceMessage.FailureType =
+            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
+        f: () -> Unit,
+    ): AirbyteErrorTraceMessage {
+        val e = assertThrows<DestinationUncleanExitException> { f() }
+        return e.traceMessages.first { it.failureType == failureType }
+    }
+
     /** Convenience wrapper for [runSync] using a single stream. */
     fun runSync(
         configContents: String,
@@ -189,8 +208,7 @@ abstract class IntegrationTest(
                 configContents,
                 catalog.asProtocolObject(),
                 useFileTransfer = useFileTransfer,
-                micronautProperties =
-                    micronautProperties + fileTransferProperty + defaultMicronautProperties,
+                micronautProperties = micronautProperties + fileTransferProperty,
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }
@@ -198,7 +216,7 @@ abstract class IntegrationTest(
             if (streamStatus != null) {
                 catalog.streams.forEach {
                     destination.sendMessage(
-                        DestinationRecordStreamComplete(it.descriptor, System.currentTimeMillis())
+                        DestinationRecordStreamComplete(it, System.currentTimeMillis())
                             .asProtocolMessage()
                     )
                 }
@@ -218,6 +236,10 @@ abstract class IntegrationTest(
      *
      * A common pattern is to call [runSyncUntilStateAck], and then call `dumpAndDiffRecords(...,
      * allowUnexpectedRecord = true)` to verify that [records] were written to the destination.
+     *
+     * This forces the connector to run with microbatching enabled - without that option, tests
+     * using this method would take significantly longer, because they would need to push 100MB
+     * (ish) to the destination before it would ack a state message.
      */
     fun runSyncUntilStateAck(
         configContents: String,
@@ -233,7 +255,7 @@ abstract class IntegrationTest(
                 configContents,
                 DestinationCatalog(listOf(stream)).asProtocolObject(),
                 useFileTransfer,
-                micronautProperties = micronautProperties + defaultMicronautProperties,
+                micronautProperties = micronautProperties + micronautPropertyEnableMicrobatching,
             )
         return runBlocking(Dispatchers.IO) {
             launch {
@@ -280,10 +302,15 @@ abstract class IntegrationTest(
     fun updateConfig(config: String): String = configUpdater.update(config)
 
     companion object {
-        val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}")
+        val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}.*")
         val randomizedNamespaceDateFormatter: DateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyyMMdd")
-        val defaultMicronautProperties: Map<Property, String> =
+
+        /**
+         * When set, this property forces the CDK to invoke processRecords once per record. This
+         * allows tests which depend on state acks to run quickly.
+         */
+        val micronautPropertyEnableMicrobatching: Map<Property, String> =
             mapOf(EnvVarConstants.RECORD_BATCH_SIZE to "1")
 
         /**
@@ -294,8 +321,11 @@ abstract class IntegrationTest(
         fun isNamespaceOld(namespace: String, retentionDays: Long = 30): Boolean {
             val cleanupCutoffDate = LocalDate.now().minusDays(retentionDays)
             val matchResult = randomizedNamespaceRegex.find(namespace)
+            if (matchResult == null || matchResult.groups.isEmpty()) {
+                return false
+            }
             val namespaceCreationDate =
-                LocalDate.parse(matchResult!!.groupValues[1], randomizedNamespaceDateFormatter)
+                LocalDate.parse(matchResult.groupValues[1], randomizedNamespaceDateFormatter)
             return namespaceCreationDate.isBefore(cleanupCutoffDate)
         }
 
@@ -310,7 +340,7 @@ abstract class IntegrationTest(
          * You probably don't want to actually interact with this. This is generally intended to
          * support a specific legacy behavior. Prefer using micronaut properties when possible.
          */
-        @SystemStub private lateinit var nonDockerMockEnvVars: EnvironmentVariables
+        @SystemStub internal lateinit var nonDockerMockEnvVars: EnvironmentVariables
 
         @JvmStatic
         @BeforeAll

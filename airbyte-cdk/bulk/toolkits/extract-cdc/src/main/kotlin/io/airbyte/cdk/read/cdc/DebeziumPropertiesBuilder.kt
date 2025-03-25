@@ -34,6 +34,7 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
         // default values from debezium CommonConnectorConfig
         with("max.batch.size", "2048")
         with("max.queue.size", "8192")
+        with("max.queue.size.in.bytes", BYTE_VALUE_256_MB)
         // Disabling retries because debezium startup time might exceed our 60-second wait limit
         // The maximum number of retries on connection errors before failing (-1 = no limit, 0 =
         // disabled, > 0 = num of retries).
@@ -116,6 +117,12 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
 
     /** Tells Debezium which tables and columns we care about. */
     fun withStreams(streams: List<Stream>): DebeziumPropertiesBuilder {
+        if (streams.isEmpty()) {
+            return apply {
+                with("table.include.list", "$^")
+                with("column.include.list", "$^")
+            }
+        }
         val tableIncludeList: List<String> =
             streams.map { Pattern.quote("${it.namespace}.${it.name}") }
         val columnIncludeList: List<String> =
@@ -149,7 +156,7 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
     }
 
     companion object {
-
+        private const val BYTE_VALUE_256_MB = (256 * 1024 * 1024).toString()
         fun joinIncludeList(includes: List<String>): String =
             includes.map { it.replace(",", "\\,") }.joinToString(",")
 

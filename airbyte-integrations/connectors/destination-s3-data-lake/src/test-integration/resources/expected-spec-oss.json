@@ -47,7 +47,7 @@
       },
       "warehouse_location" : {
         "type" : "string",
-        "description" : "The root location of the data warehouse used by the Iceberg catalog. Typically includes a bucket name and path within that bucket. Must include the storage protocol (such as \"s3://\" for Amazon S3).",
+        "description" : "The root location of the data warehouse used by the Iceberg catalog. Typically includes a bucket name and path within that bucket. For AWS Glue and Nessie, must include the storage protocol (such as \"s3://\" for Amazon S3).",
         "title" : "Warehouse Location",
         "examples" : [ "s3://your-bucket/path/to/store/files/in" ],
         "always_show" : true,
@@ -90,10 +90,10 @@
             "namespace" : {
               "type" : "string",
               "description" : "The Nessie namespace to be used in the Table identifier. \n           This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n           `Destination-defined` or `Source-defined`",
-              "title" : "Namespace"
+              "title" : "Default namespace"
             }
           },
-          "required" : [ "catalog_type", "server_uri" ]
+          "required" : [ "catalog_type", "server_uri", "namespace" ]
         }, {
           "title" : "Glue Catalog",
           "type" : "object",
@@ -113,16 +113,16 @@
             },
             "role_arn" : {
               "type" : "string",
-              "description" : "The Role ARN.",
+              "description" : "The ARN of the AWS role to assume. Only usable in Airbyte Cloud.",
               "title" : "Role ARN"
             },
             "database_name" : {
               "type" : "string",
               "description" : "The Glue database name. This will ONLY be used if the `Destination Namespace` setting for the connection is set to `Destination-defined` or `Source-defined`",
-              "title" : "Database Name"
+              "title" : "Default database"
             }
           },
-          "required" : [ "catalog_type", "glue_id" ]
+          "required" : [ "catalog_type", "glue_id", "database_name" ]
         }, {
           "title" : "Rest Catalog",
           "type" : "object",
@@ -143,10 +143,10 @@
             "namespace" : {
               "type" : "string",
               "description" : "The namespace to be used in the Table identifier. \n           This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n           `Destination-defined` or `Source-defined`",
-              "title" : "Namespace"
+              "title" : "Default namespace"
             }
           },
-          "required" : [ "catalog_type", "server_uri" ]
+          "required" : [ "catalog_type", "server_uri", "namespace" ]
         } ],
         "description" : "Specifies the type of Iceberg catalog (e.g., NESSIE, GLUE, REST) and its associated configuration.",
         "title" : "Catalog Type",

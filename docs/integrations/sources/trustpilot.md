@@ -61,6 +61,14 @@ The Trustpilot connector should not run into any limits under normal usage. Plea
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 0.4.5 | 2025-03-22 | [56310](https://github.com/airbytehq/airbyte/pull/56310) | Update dependencies |
+| 0.4.4 | 2025-03-08 | [55599](https://github.com/airbytehq/airbyte/pull/55599) | Update dependencies |
+| 0.4.3 | 2025-03-01 | [55080](https://github.com/airbytehq/airbyte/pull/55080) | Update dependencies |
+| 0.4.2 | 2025-02-22 | [54466](https://github.com/airbytehq/airbyte/pull/54466) | Update dependencies |
+| 0.4.1 | 2025-02-15 | [54050](https://github.com/airbytehq/airbyte/pull/54050) | Update dependencies |
+| 0.4.0 | 2025-02-11 | [53630](https://github.com/airbytehq/airbyte/pull/53630) | Fix token_refresh method |
+| 0.3.11 | 2025-02-08 | [53531](https://github.com/airbytehq/airbyte/pull/53531) | Update dependencies |
+| 0.3.10 | 2025-02-01 | [53104](https://github.com/airbytehq/airbyte/pull/53104) | Update dependencies |
 | 0.3.9 | 2025-01-25 | [52408](https://github.com/airbytehq/airbyte/pull/52408) | Update dependencies |
 | 0.3.8 | 2025-01-18 | [52025](https://github.com/airbytehq/airbyte/pull/52025) | Update dependencies |
 | 0.3.7 | 2025-01-11 | [51413](https://github.com/airbytehq/airbyte/pull/51413) | Update dependencies |

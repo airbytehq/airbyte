@@ -121,27 +121,29 @@ deduplicated.
 
 ### Raw Table schema
 
-| Airbyte field          | Description                                                        | Column type |
-| ---------------------- | ------------------------------------------------------------------ | ----------- |
-| \_airbyte_raw_id       | A UUID assigned to each processed event                            | STRING      |
-| \_airbyte_extracted_at | A timestamp for when the event was pulled from the data source     | TIMESTAMP   |
-| \_airbyte_loaded_at    | Timestamp to indicate when the record was loaded into Typed tables | TIMESTAMP   |
-| \_airbyte_data         | A JSON blob with the event data.                                   | STRING      |
+The raw table contains these fields:
+- `_airbyte_raw_id`
+- `_airbyte_generation_id`
+- `_airbyte_extracted_at`
+- `_airbyte_loaded_at`
+- `_airbyte_meta`
+- `_airbyte_data`
+
+`_airbyte_data` is a JSON blob with the event data. See [here](/understanding-airbyte/airbyte-metadata-fields)
+for more information about the other fields.
 
 **Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table
 could be subject to change in future versions.
 
 ### Final Table schema
 
-- `airbyte_raw_id`: A UUID assigned by Airbyte to each event that is processed. The column type in
-  BigQuery is `String`.
-- `airbyte_extracted_at`: A timestamp representing when the event was pulled from the data source.
-  The column type in BigQuery is `Timestamp`.
-- `_airbyte_meta`: A JSON blob representing typing errors. You can query these results to audit
-  misformatted or unexpected data. The column type in BigQuery is `JSON`. ... and a column of the
-  proper data type for each of the top-level properties from your source's schema. Arrays and
-  Objects will remain as JSON columns in BigQuery. Learn more about Typing and Deduping
-  [here](/using-airbyte/core-concepts/typing-deduping)
+The final table contains these fields, in addition to the columns declared in your stream schema:
+- `airbyte_raw_id`
+- `_airbyte_generation_id`
+- `airbyte_extracted_at`
+- `_airbyte_meta`
+
+Again, see [here](/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
 
 The output tables in BigQuery are partitioned by the Time-unit column `airbyte_extracted_at` at a
 daily granularity and clustered by `airbyte_extracted_at` and the table Primary Keys. Partitions
@@ -211,6 +213,7 @@ tutorials:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.9.3 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 | 2.9.2 | 2025-01-10 | [51482](https://github.com/airbytehq/airbyte/pull/51482) | Use a non root base image |
 | 2.9.1 | 2024-12-18 | [49902](https://github.com/airbytehq/airbyte/pull/49902) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 2.9.0 | 2024-09-18 | [45433](https://github.com/airbytehq/airbyte/pull/45433) | upgrade all dependencies |

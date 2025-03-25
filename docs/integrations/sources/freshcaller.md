@@ -46,6 +46,7 @@ Please read [How to find your API key](https://support.freshdesk.com/en/support/
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.4.25 | 2025-02-01 | [52843](https://github.com/airbytehq/airbyte/pull/52843) | Update dependencies |
 | 0.4.24 | 2025-01-25 | [52310](https://github.com/airbytehq/airbyte/pull/52310) | Update dependencies |
 | 0.4.23 | 2025-01-18 | [51638](https://github.com/airbytehq/airbyte/pull/51638) | Update dependencies |
 | 0.4.22 | 2025-01-11 | [51137](https://github.com/airbytehq/airbyte/pull/51137) | Update dependencies |

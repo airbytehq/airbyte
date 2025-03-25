@@ -28,7 +28,6 @@ if TYPE_CHECKING:
 
     import dagger
 
-    from pipelines.airbyte_ci.format.format_command import FormatCommand
     from pipelines.models.contexts.pipeline_context import PipelineContext
 
 
@@ -112,7 +111,7 @@ class StepResult(Result):
 class CommandResult(Result):
     """A dataclass to capture the result of a command."""
 
-    command: click.Command | FormatCommand
+    command: click.Command
 
     def __repr__(self) -> str:  # noqa D105
         return f"{self.command.name}: {self.status.value}"

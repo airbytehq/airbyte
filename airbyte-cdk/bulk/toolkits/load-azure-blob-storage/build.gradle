@@ -1,0 +1,13 @@
+dependencies {
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
+    implementation("com.azure:azure-storage-blob:12.29.0")
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-aws')
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-object-storage')
+
+    testImplementation("io.mockk:mockk:1.13.16")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.4")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.4")
+
+}

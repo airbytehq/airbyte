@@ -7,6 +7,7 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateValue
+import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
@@ -16,7 +17,6 @@ import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
-import io.airbyte.cdk.load.data.UnknownValue
 import java.time.ZoneOffset
 import org.apache.iceberg.Schema
 import org.apache.iceberg.data.GenericRecord
@@ -69,7 +69,10 @@ class AirbyteValueToIcebergRecord {
             is StringValue -> return airbyteValue.value
             is TimeWithTimezoneValue ->
                 return when (type.typeId()) {
-                    Type.TypeID.TIME -> airbyteValue.value.toLocalTime()
+                    // Iceberg doesn't have a time_tz type.
+                    // So just convert this value to UTC, and then drop the offset.
+                    Type.TypeID.TIME ->
+                        airbyteValue.value.withOffsetSameInstant(ZoneOffset.UTC).toLocalTime()
                     else ->
                         throw IllegalArgumentException(
                             "${type.typeId()} type is not allowed for TimeValue"
@@ -117,18 +120,20 @@ class AirbyteValueToIcebergRecord {
                             "${type.typeId()} type is not allowed for TimestampValue"
                         )
                 }
-            is UnknownValue -> throw IllegalArgumentException("Unknown type is not supported")
         }
     }
 }
 
-fun ObjectValue.toIcebergRecord(schema: Schema): GenericRecord {
-    val record = GenericRecord.create(schema)
+fun Map<String, EnrichedAirbyteValue>.toIcebergRecord(icebergSchema: Schema): GenericRecord {
+    val record = GenericRecord.create(icebergSchema)
     val airbyteValueToIcebergRecord = AirbyteValueToIcebergRecord()
-    schema.asStruct().fields().forEach { field ->
-        val value = this.values[field.name()]
+    icebergSchema.asStruct().fields().forEach { field ->
+        val value = this[field.name()]
         if (value != null) {
-            record.setField(field.name(), airbyteValueToIcebergRecord.convert(value, field.type()))
+            record.setField(
+                field.name(),
+                airbyteValueToIcebergRecord.convert(value.abValue, field.type())
+            )
         }
     }
     return record

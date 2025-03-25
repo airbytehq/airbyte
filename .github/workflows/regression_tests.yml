@@ -33,6 +33,10 @@ on:
         description: Use the local CDK when building the target connector
         default: "false"
         type: boolean
+      disable_proxy:
+        description: Disable proxy for requests
+        default: "false"
+        type: boolean
       connection_subset:
         description: The subset of connections to select from.
         required: true
@@ -51,7 +55,9 @@ jobs:
         id: install_python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
 
       - name: Checkout Airbyte
         uses: actions/checkout@v4
@@ -114,6 +120,15 @@ jobs:
             echo "READ_WITH_STATE_FLAG=" >> $GITHUB_ENV
           fi
 
+      - name: Setup Proxy Flag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if ${{ github.event.inputs.disable_proxy }}; then
+            echo "DISABLE_PROXY_FLAG=--connector_live_tests.disable-proxy" >> $GITHUB_ENV
+          else
+            echo "DISABLE_PROXY_FLAG=" >> $GITHUB_ENV
+          fi
+
       - name: Setup Connection Subset Option
         if: github.event_name == 'workflow_dispatch'
         run: |
@@ -135,4 +150,4 @@ jobs:
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} --name ${{ github.event.inputs.connector_name }} test --only-step connector_live_tests --connector_live_tests.test-suite=regression --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url=${{ github.event.inputs.pr_url }} ${{ env.READ_WITH_STATE_FLAG }} ${{ env.STREAM_PARAMS }} ${{ env.CONNECTION_SUBSET }} --global-status-check-context="Regression Tests" --global-status-check-description='Running regression tests'
+          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} --name ${{ github.event.inputs.connector_name }} test --only-step connector_live_tests --connector_live_tests.test-suite=regression --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url=${{ github.event.inputs.pr_url }} ${{ env.READ_WITH_STATE_FLAG }} ${{ env.DISABLE_PROXY_FLAG }} ${{ env.STREAM_PARAMS }} ${{ env.CONNECTION_SUBSET }} --global-status-check-context="Regression Tests" --global-status-check-description='Running regression tests'

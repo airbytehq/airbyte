@@ -236,6 +236,14 @@ Google Cloud Storage (GCS) supports following file formats:
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.8.11 | 2025-03-22 | [55956](https://github.com/airbytehq/airbyte/pull/55956) | Update dependencies |
+| 0.8.10 | 2025-03-08 | [55314](https://github.com/airbytehq/airbyte/pull/55314) | Update dependencies |
+| 0.8.9 | 2025-03-01 | [54973](https://github.com/airbytehq/airbyte/pull/54973) | Update dependencies |
+| 0.8.8 | 2025-02-25 | [54677](https://github.com/airbytehq/airbyte/pull/54677) | Fix io.UnsupportedOperation: underlying stream is not seekable |
+| 0.8.7 | 2025-02-22 | [54458](https://github.com/airbytehq/airbyte/pull/54458) | Update dependencies |
+| 0.8.6 | 2025-02-15 | [53712](https://github.com/airbytehq/airbyte/pull/53712) | Update dependencies |
+| 0.8.5 | 2025-02-08 | [53365](https://github.com/airbytehq/airbyte/pull/53365) | Update dependencies |
+| 0.8.4 | 2025-02-01 | [52379](https://github.com/airbytehq/airbyte/pull/52379) | Update dependencies |
 | 0.8.3 | 2025-01-18 | [49174](https://github.com/airbytehq/airbyte/pull/49174) | Update dependencies |
 | 0.8.2 | 2024-11-25 | [48647](https://github.com/airbytehq/airbyte/pull/48647) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.8.1 | 2024-10-28 | [45923](https://github.com/airbytehq/airbyte/pull/45923) | Update logging |

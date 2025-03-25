@@ -49,6 +49,13 @@ OAuth application is [here](https://app.retently.com/settings/oauth).
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.14 | 2025-03-22 | [56214](https://github.com/airbytehq/airbyte/pull/56214) | Update dependencies |
+| 0.3.13 | 2025-03-08 | [55568](https://github.com/airbytehq/airbyte/pull/55568) | Update dependencies |
+| 0.3.12 | 2025-03-01 | [55001](https://github.com/airbytehq/airbyte/pull/55001) | Update dependencies |
+| 0.3.11 | 2025-02-23 | [54582](https://github.com/airbytehq/airbyte/pull/54582) | Update dependencies |
+| 0.3.10 | 2025-02-15 | [53995](https://github.com/airbytehq/airbyte/pull/53995) | Update dependencies |
+| 0.3.9 | 2025-02-08 | [53490](https://github.com/airbytehq/airbyte/pull/53490) | Update dependencies |
+| 0.3.8 | 2025-02-01 | [53019](https://github.com/airbytehq/airbyte/pull/53019) | Update dependencies |
 | 0.3.7 | 2025-01-25 | [52463](https://github.com/airbytehq/airbyte/pull/52463) | Update dependencies |
 | 0.3.6 | 2025-01-18 | [51873](https://github.com/airbytehq/airbyte/pull/51873) | Update dependencies |
 | 0.3.5 | 2025-01-11 | [51346](https://github.com/airbytehq/airbyte/pull/51346) | Update dependencies |

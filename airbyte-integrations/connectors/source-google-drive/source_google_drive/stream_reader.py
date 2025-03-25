@@ -6,11 +6,13 @@
 import io
 import json
 import logging
+import uuid
 from datetime import datetime
 from io import IOBase
 from os.path import getsize
-from typing import Dict, Iterable, List, Optional, Set
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple
 
+import pytz
 from google.oauth2 import credentials, service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
@@ -19,10 +21,12 @@ from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
 from source_google_drive.utils import get_folder_id
 
 from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
-from .spec import SourceGoogleDriveSpec
+from .spec import RemoteIdentity, RemoteIdentityType, RemotePermissions, SourceGoogleDriveSpec
 
 
 FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
@@ -87,27 +91,33 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         assert isinstance(value, SourceGoogleDriveSpec)
         self._config = value
 
-    @property
-    def google_drive_service(self):
+    def _build_google_service(self, service_name: str, version: str, scopes: List[str] = None):
         if self.config is None:
             # We shouldn't hit this; config should always get set before attempting to
             # list or read files.
-            raise ValueError("Source config is missing; cannot create the Google Drive client.")
+            raise ValueError(f"Source config is missing; cannot create the Google {service_name} client.")
         try:
-            if self._drive_service is None:
-                if self.config.credentials.auth_type == "Client":
-                    creds = credentials.Credentials.from_authorized_user_info(self.config.credentials.dict())
-                else:
-                    creds = service_account.Credentials.from_service_account_info(json.loads(self.config.credentials.service_account_info))
-                self._drive_service = build("drive", "v3", credentials=creds)
+            if self.config.credentials.auth_type == "Client":
+                creds = credentials.Credentials.from_authorized_user_info(self.config.credentials.dict())
+            else:
+                creds = service_account.Credentials.from_service_account_info(
+                    json.loads(self.config.credentials.service_account_info), scopes=scopes
+                )
+            google_service = build(service_name, version, credentials=creds)
         except Exception as e:
             raise AirbyteTracedException(
                 internal_message=str(e),
-                message="Could not authenticate with Google Drive. Please check your credentials.",
+                message=f"Could not authenticate with Google {service_name}. Please check your credentials.",
                 failure_type=FailureType.config_error,
                 exception=e,
             )
 
+        return google_service
+
+    @property
+    def google_drive_service(self):
+        if self._drive_service is None:
+            self._drive_service = self._build_google_service("drive", "v3")
         return self._drive_service
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:

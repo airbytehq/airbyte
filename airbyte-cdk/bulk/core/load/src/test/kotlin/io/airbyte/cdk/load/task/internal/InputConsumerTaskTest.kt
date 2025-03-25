@@ -100,6 +100,10 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(),
                     fileTransferQueue = mockk(relaxed = true),
+                    recordQueueForPipeline = mockk(relaxed = true),
+                    loadPipeline = null,
+                    partitioner = mockk(relaxed = true),
+                    openStreamQueue = mockk(relaxed = true),
                 )
         task.execute()
 
@@ -107,7 +111,7 @@ class InputConsumerTaskTest {
             queue1.publish(
                 match {
                     it.value is StreamRecordEvent &&
-                        (it.value as StreamRecordEvent).payload.stream == STREAM1
+                        (it.value as StreamRecordEvent).payload.stream.descriptor == STREAM1
                 }
             )
         }
@@ -115,12 +119,12 @@ class InputConsumerTaskTest {
             queue2.publish(
                 match {
                     it.value is StreamRecordEvent &&
-                        (it.value as StreamRecordEvent).payload.stream == STREAM2
+                        (it.value as StreamRecordEvent).payload.stream.descriptor == STREAM2
                 }
             )
         }
-        assert(syncManager.getStreamManager(stream1.descriptor).recordCount() == 1L)
-        assert(syncManager.getStreamManager(stream2.descriptor).recordCount() == 2L)
+        assert(syncManager.getStreamManager(stream1.descriptor).readCount() == 1L)
+        assert(syncManager.getStreamManager(stream2.descriptor).readCount() == 2L)
     }
 
     @Test
@@ -157,6 +161,10 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(),
                     fileTransferQueue = mockk(relaxed = true),
+                    recordQueueForPipeline = mockk(relaxed = true),
+                    loadPipeline = null,
+                    partitioner = mockk(relaxed = true),
+                    openStreamQueue = mockk(relaxed = true),
                 )
         task.execute()
         coVerifySequence {
@@ -164,9 +172,9 @@ class InputConsumerTaskTest {
             memoryManager.release(3L)
         }
 
-        assert(syncManager.getStreamManager(stream1.descriptor).recordCount() == 1L)
+        assert(syncManager.getStreamManager(stream1.descriptor).readCount() == 1L)
         assert(syncManager.getStreamManager(stream1.descriptor).endOfStreamRead())
-        assert(syncManager.getStreamManager(stream2.descriptor).recordCount() == 0L)
+        assert(syncManager.getStreamManager(stream2.descriptor).readCount() == 0L)
         assert(syncManager.getStreamManager(stream2.descriptor).endOfStreamRead())
     }
 
@@ -195,6 +203,10 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(),
                     fileTransferQueue = mockk(relaxed = true),
+                    recordQueueForPipeline = mockk(relaxed = true),
+                    loadPipeline = null,
+                    partitioner = mockk(relaxed = true),
+                    openStreamQueue = mockk(relaxed = true),
                 )
         coEvery { inputFlow.collect(any()) } coAnswers
             {
@@ -251,6 +263,10 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(),
                     fileTransferQueue = mockk(relaxed = true),
+                    recordQueueForPipeline = mockk(relaxed = true),
+                    loadPipeline = null,
+                    partitioner = mockk(relaxed = true),
+                    openStreamQueue = mockk(relaxed = true),
                 )
 
         coEvery { inputFlow.collect(any()) } coAnswers
@@ -324,6 +340,10 @@ class InputConsumerTaskTest {
                     checkpointQueue = checkpointQueue,
                     destinationTaskLauncher = mockk(relaxed = true),
                     fileTransferQueue = mockk(relaxed = true),
+                    recordQueueForPipeline = mockk(relaxed = true),
+                    loadPipeline = null,
+                    partitioner = mockk(relaxed = true),
+                    openStreamQueue = mockk(relaxed = true),
                 )
 
         assertThrows(IllegalStateException::class) { task.execute() }
