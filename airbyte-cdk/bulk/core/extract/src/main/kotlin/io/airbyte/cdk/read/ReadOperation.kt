@@ -58,6 +58,7 @@ class ReadOperation(
                     while (feedJobs.any { it.isActive }) {
                         val currentJobTree: String = renderTree(rootJob)
                         if (currentJobTree != previousJobTree) {
+                            log.info { "Mem ${Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()} / ${Runtime.getRuntime().totalMemory()}" }
                             log.info { "coroutine state:\n$currentJobTree" }
                             previousJobTree = currentJobTree
                         }
