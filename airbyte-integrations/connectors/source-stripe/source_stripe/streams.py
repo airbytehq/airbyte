@@ -816,155 +816,72 @@ class UpdatedCursorIncrementalStripeSubStream(UpdatedCursorIncrementalStripeStre
         else:
             yield from UpdatedCursorIncrementalStripeStream.stream_slices(self, sync_mode, cursor_field, stream_state)
 
-
 class CustomerBalanceTransactions(ParentIncrementalStripeSubStream):
     """
     Custom connector that incrementally collects the id from customers and customer from invoices.
     It collects these customer IDs and makes a call to retrieve the customer balance transactions.
     It implements a 2 day window to catch transactions created during previous run or right before
     the invoice/customer event. To move the cursor along it will also cap to 7 days ago after initial
-    sync.
-    API docs: https://stripe.com/docs/api/customer_balance_transactions/list
+    sync. API docs: https://stripe.com/docs/api/customer_balance_transactions/list
     """
-
     def __init__(self, cursor_field: str, parents: List[StripeSubStream], *args, **kwargs):
         super().__init__(cursor_field=cursor_field, parent=parents[0], *args, **kwargs)
-        self._cursor_field = cursor_field
         self.parent_streams = parents
-        self._state = None
-
-    def _normalize_state(self, state: Optional[Mapping[str, Any]]) -> dict:
-        """Converts any state format to current format"""
-        normalized_state = {
-            "cursor": self.start_date,
-            "parents": {p.name: self.start_date for p in self.parent_streams}
-        }
-        if not state:
-            return normalized_state
-        # Handle legacy format (old keys)
-        if f"{self.name}_cursor_created" in state:
-            normalized_state["cursor"] = state.get(f"{self.name}_cursor_created", self.start_date)
-            for p in self.parent_streams:
-                normalized_state["parents"][p.name] = state.get(f"{p.name}_cursor_updated", self.start_date)
-        # Handle new format
-        elif "cursor" in state:
-            normalized_state["cursor"] = state.get("cursor", self.start_date)
-            if "parents" in state:
-                for p in self.parent_streams:
-                    normalized_state["parents"][p.name] = state["parents"].get(p.name, self.start_date)
-        return normalized_state
-
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        if self._state is None:
-            self._state = self._normalize_state(None)
-        return self._state
-
-    @state.setter
-    def state(self, value: MutableMapping[str, Any]) -> None:
-        self._state = self._normalize_state(value)
 
     @property
     def state_checkpoint_interval(self) -> int:
-        """Force state emission even with empty batches"""
-        return 1
+        return 1  # force state write
 
-    def _get_updated_state(self, current_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Simplified state update with 2-day lookback and 7-day floor"""
-        current_state = self._normalize_state(current_state)
-        now = int(datetime.utcnow().timestamp())
-        min_cursor = now - int(timedelta(days=7).total_seconds())
-
-        record_cursor = latest_record.get(self._cursor_field, now)
-        new_cursor = max(
-            record_cursor - int(timedelta(days=2).total_seconds()),
-            min_cursor,
-            current_state.get("cursor", self.start_date)
-        )
-
-        current_parents = current_state.get("parents", {})
-        updated_parents = {
-            p.name: max(
-                current_parents.get(p.name, self.start_date),
-                new_cursor
-            )
-            for p in self.parent_streams
-        }
-
-        return {
-            "cursor": new_cursor,
-            "parents": updated_parents
-        }
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        Generate stream slices for the child stream by combining slices from all parent streams.
-        """
+    def stream_slices(self, sync_mode: SyncMode, cursor_field=None, stream_state=None):
+        stream_state = stream_state or {}
+        normalized_state = self.normalize_state(stream_state)
         seen = set()
-        any_parent_has_records = False
-        self.state = stream_state
-        current_state = self.state
-
-        parent_state_template = {
-            "cursor": None,  # Will be set per-parent
-            "parents": current_state["parents"]  # Maintain reference to main state
-        }
+        any_records = False
 
         for parent in self.parent_streams:
-            parent_state = parent_state_template.copy()
-            parent_state["cursor"] = current_state["parents"][parent.name]
-            self.logger.info(
-                f"Processing parent stream: {parent.name}\n"
-                f"  Using state: {parent_state}\n"
-                f"  (Start date: {self.start_date} ({datetime.utcfromtimestamp(self.start_date)}))"
-            )
-            parent_slices = parent.stream_slices(sync_mode=sync_mode, cursor_field=parent.cursor_field, stream_state=parent_state)
+            parent_cursor = normalized_state["parents"][parent.name]
+            self.logger.info(f"Starting parent stream {parent.name} with state {stream_state} with cursor {parent_cursor} other {parent.cursor_field}")
+            parent_state = {"cursor": parent_cursor}
+            slices = parent.stream_slices(sync_mode=sync_mode, cursor_field=parent.cursor_field, stream_state=stream_state) #parent_state
 
-            for stream_slice in parent_slices:
-                parent_records = parent.read_records(sync_mode=sync_mode, cursor_field=parent.cursor_field, stream_slice=stream_slice, stream_state=parent_state)
+            for stream_slice in slices:
+                records = parent.read_records(sync_mode=sync_mode, cursor_field=parent.cursor_field, stream_slice=stream_slice, stream_state=stream_state) #parent_state
+                for r in records:
+                    if parent.name == "invoices":
+                        parent_id = r.get("customer")
+                    else:  # e.g., "customers" stream
+                        parent_id = r.get("id")
 
-                for record in parent_records:
-                    parent_id = record.get("customer") or record.get("id")
-                    balance = record.get("balance", 0) or record.get("total", 0)
-                    if parent_id and parent_id not in seen and balance != 0:
+                    self.logger.info(f"Customer ID {parent_id}")
+                    if True: #parent_id and parent_id not in seen:
                         seen.add(parent_id)
-                        any_parent_has_records = True
+                        any_records = True
                         yield {"parent": {"id": parent_id}}
 
-        if not any_parent_has_records:
+        if not any_records:
             yield {"parent": {"id": "empty_slice"}}
 
-    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None,) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, sync_mode, cursor_field=None, stream_slice=None, stream_state=None):
+        state = self.normalize_state(stream_state)
+        lookback = state["cursor"] - int(timedelta(days=2).total_seconds())
 
-        lookback_cursor = max(
-            self.state["cursor"] - int(timedelta(days=2).total_seconds()),
-            self.start_date,
-            int(datetime.utcnow().timestamp()) - int(timedelta(days=7).total_seconds())
-        )
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            #if record.get("created", 0) > lookback:
+            yield record
 
-        for record in super().read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-        ):
-            if record.get("created", 0) > lookback_cursor:
-                yield record
-
-    def read(self, *args, **kwargs) -> Iterable[StreamData]:
-        """Override the parent read() method to force state update"""
+    def read(self, *args, **kwargs):
         has_records = False
 
-        for message in super().read(*args, **kwargs):
-            if message.type == MessageType.RECORD:
-                has_records = True
-            yield message
+        for record in super().read(*args, **kwargs):
+            has_records = True
+            yield record
 
         if not has_records:
-            current_state = self.state
             now = int(datetime.utcnow().timestamp())
-            synthetic_record = {self._cursor_field: now}
-            new_state = self._get_updated_state(current_state=current_state, latest_record=synthetic_record)
-            self.logger.info(f"Persisting updated state: {new_state}")
+            synthetic = {self.cursor_field: now}
+            state = self.normalize_state(kwargs.get("stream_state"))
+            new_state = self.get_updated_state(state, synthetic)
+            self.logger.info(f"Persisting synthetic state: {new_state}")
             yield AirbyteMessage(
                 type=MessageType.STATE,
                 state=AirbyteStateMessage(
@@ -975,3 +892,32 @@ class CustomerBalanceTransactions(ParentIncrementalStripeSubStream):
                     )
                 )
             )
+
+    def normalize_state(self, state: Optional[Mapping[str, Any]]) -> dict:
+        """Unifies legacy and new state format."""
+        state = (state or {}).get("data", state or {})
+        normalized = {
+            "cursor": state.get(f"{self.name}_cursor_created") or state.get("created") or state.get("updated") or state.get("cursor") or self.start_date,
+            "parents": {
+                p.name: state.get(f"{p.name}_cursor_updated") or state.get("updated") or state.get("created") or state.get("parents", {}).get(p.name) or self.start_date
+                for p in self.parent_streams
+            }
+        }
+        return normalized
+
+    def get_updated_state(self, current_state: Mapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+
+        previous_cursor = (current_state or {}).get("cursor", self.start_date)
+        latest_cursor_minus_2 = latest_record.get(self.cursor_field, previous_cursor) - int(timedelta(days=7).total_seconds())
+        today_minus_7 = int(datetime.utcnow().timestamp()) - int(timedelta(days=7).total_seconds())
+        new_cursor = max(latest_cursor_minus_2, today_minus_7)
+
+        updated_parents = {
+            p.name: new_cursor
+            for p in self.parent_streams
+        }
+
+        return {
+            "cursor": new_cursor,
+            "parents": updated_parents
+        }
