@@ -112,7 +112,7 @@ The Stripe source connector supports the following streams:
 - [Payouts](https://stripe.com/docs/api/payouts/list) \(Incremental\)
 - [Payout Balance Transactions](https://docs.stripe.com/api/balance_transactions/list) \(Incremental\)
   :::note
-  This stream is built with a call using payout_id from the payout stream (parent) as a parmeter to the balance transaction API to get balance transactions that comprised the actual amount of the payout. Check [the Stripe docs](https://docs.stripe.com/api/balance_transactions/list) for more details.
+  This stream is built with a call using payout_id from the payout stream (parent) as a parameter to the balance transaction API to get balance transactions that comprised the actual amount of the payout. Check [the Stripe docs](https://docs.stripe.com/api/balance_transactions/list) for more details.
   :::
 - [Promotion Code](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
 - [Persons](https://stripe.com/docs/api/persons/list) \(Incremental\)
@@ -247,8 +247,9 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 5.9.0-rc.1 | 2025-03-18 | [54162](https://github.com/airbytehq/airbyte/pull/54162)  | Migrate to low-code                                                                                                                                                                                                           |
-| 5.8.12     | 2025-03-10 | [55682](https://github.com/airbytehq/airbyte/pull/55682)  | Promoting release candidate 5.8.10-rc.1 to a main version.                                                                                                                                                                    |
-| 5.8.11     | 2025-03-08 | [55598](https://github.com/airbytehq/airbyte/pull/55598)  | Update dependencies                                                                                                                                                                                                           |
+| 5.8.13 | 2025-03-22 | [56276](https://github.com/airbytehq/airbyte/pull/56276) | Update dependencies |
+| 5.8.12 | 2025-03-10 | [55682](https://github.com/airbytehq/airbyte/pull/55682) | Promoting release candidate 5.8.10-rc.1 to a main version. |
+| 5.8.11 | 2025-03-08 | [55598](https://github.com/airbytehq/airbyte/pull/55598) | Update dependencies |
 | 5.8.10-rc1 | 2025-02-22 | [53670](https://github.com/airbytehq/airbyte/pull/53670)  | Update pritbuffer logic                                                                                                                                                                                                       |
 | 5.8.9      | 2025-03-01 | [55117](https://github.com/airbytehq/airbyte/pull/55117)  | Update dependencies                                                                                                                                                                                                           |
 | 5.8.8      | 2025-02-28 | [54711](https://github.com/airbytehq/airbyte/pull/54711)  | Add retry error handler for `requests.exceptions.InvalidURL'                                                                                                                                                                  |

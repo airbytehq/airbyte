@@ -46,6 +46,7 @@ class MapperPipelineTest {
     }
 
     private fun makePipeline(schema: AirbyteType) =
+        @Suppress("DEPRECATION")
         MapperPipeline(
             schema,
             listOf(
