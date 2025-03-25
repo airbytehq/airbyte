@@ -47,8 +47,7 @@ repos:
       - id: addlicense
         name: Add license headers
         entry: .github/scripts/add_copyright.sh
-        language: script
-        additional_dependencies: [github.com/google/addlicense@v1.1.1]
+        language: system
         files: \.(java|kt|py)$
 
       - id: spotless
