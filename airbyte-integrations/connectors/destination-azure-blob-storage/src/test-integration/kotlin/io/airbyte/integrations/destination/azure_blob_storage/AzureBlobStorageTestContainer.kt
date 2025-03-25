@@ -11,14 +11,15 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.setOnce
 import java.util.concurrent.atomic.AtomicBoolean
-import org.testcontainers.containers.GenericContainer
+import org.testcontainers.azure.AzuriteContainer
+import org.testcontainers.utility.DockerImageName
 
 object AzureBlobStorageTestContainer {
-    private const val PORT = 10000
     private const val ACCOUNT_NAME = "devstoreaccount1"
     private const val CONTAINER_NAME = "container-name"
 
-    private val container = AzureBlobStorageContainer().withExposedPorts(PORT)
+    private val container =
+        AzuriteContainer(DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.33.0"))
     private val hasStarted = AtomicBoolean(false)
 
     fun start() {
@@ -31,7 +32,7 @@ object AzureBlobStorageTestContainer {
     // process exits (via ryuk)
 
     private val endpointUrl
-        get() = "http://${container.host}:${container.getMappedPort(PORT)}/$ACCOUNT_NAME"
+        get() = "http://${container.host}:${container.firstMappedPort}/$ACCOUNT_NAME"
 
     // TODO return an actual object, this is copied out of old code
     val config: Any
@@ -70,8 +71,3 @@ object AzureBlobStorageTestContainer {
                 .buildClient()
         }
 }
-
-// Azurite emulator for easier local azure storage development and testing
-// https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=docker-hub
-class AzureBlobStorageContainer :
-    GenericContainer<AzureBlobStorageContainer>("mcr.microsoft.com/azure-storage/azurite")

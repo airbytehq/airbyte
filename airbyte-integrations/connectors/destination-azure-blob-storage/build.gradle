@@ -47,3 +47,7 @@ configurations.all {
 //     testImplementation 'org.apache.commons:commons-lang3:3.11'
 //     testImplementation "org.testcontainers:junit-jupiter:1.17.5"
 // }
+
+dependencies {
+    integrationTestImplementation 'org.testcontainers:azure:1.20.6'
+}

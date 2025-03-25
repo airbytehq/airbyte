@@ -9,6 +9,7 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
+import org.apache.commons.io.IOUtils
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
@@ -40,7 +41,7 @@ class X {
         blobClient.blockBlobClient.upload(
             BinaryData.fromBytes("file contents".toByteArray(Charsets.UTF_8))
         )
-        println()
+        println(IOUtils.toString(blobClient.openInputStream(), Charsets.UTF_8))
     }
 
     companion object {
