@@ -6,14 +6,13 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.iceberg.parquet.IcebergParquetPipelineFactory
-import io.airbyte.cdk.load.message.Batch
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
-import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.StreamProcessingFailed
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamLoader
-import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableCleaner
-import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeTableWriterFactory
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
@@ -26,15 +25,15 @@ private val logger = KotlinLogging.logger {}
 class S3DataLakeStreamLoader(
     private val icebergConfiguration: S3DataLakeConfiguration,
     override val stream: DestinationStream,
-    private val s3DataLakeTableSynchronizer: S3DataLakeTableSynchronizer,
-    private val s3DataLakeTableWriterFactory: S3DataLakeTableWriterFactory,
+    private val icebergTableSynchronizer: IcebergTableSynchronizer,
     private val s3DataLakeUtil: S3DataLakeUtil,
+    private val icebergUtil: IcebergUtil,
     private val stagingBranchName: String,
-    private val mainBranchName: String
+    private val mainBranchName: String,
+    private val streamStateStore: StreamStateStore<S3DataLakeStreamState>,
 ) : StreamLoader {
     private lateinit var table: Table
     private lateinit var targetSchema: Schema
-    private val pipeline = IcebergParquetPipelineFactory().create(stream)
 
     // If we're executing a truncate, then force the schema change.
     internal val columnTypeChangeBehavior: ColumnTypeChangeBehavior =
@@ -43,8 +42,7 @@ class S3DataLakeStreamLoader(
         } else {
             ColumnTypeChangeBehavior.SAFE_SUPERTYPE
         }
-    private val incomingSchema =
-        s3DataLakeUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
+    private val incomingSchema = icebergUtil.toIcebergSchema(stream = stream)
 
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
@@ -52,9 +50,10 @@ class S3DataLakeStreamLoader(
     )
     override suspend fun start() {
         val properties = s3DataLakeUtil.toCatalogProperties(config = icebergConfiguration)
-        val catalog = s3DataLakeUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
+        val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
+        s3DataLakeUtil.createNamespaceWithGlueHandling(stream.descriptor, catalog)
         table =
-            s3DataLakeUtil.createTable(
+            icebergUtil.createTable(
                 streamDescriptor = stream.descriptor,
                 catalog = catalog,
                 schema = incomingSchema,
@@ -82,47 +81,13 @@ class S3DataLakeStreamLoader(
                 "branch $DEFAULT_STAGING_BRANCH already exists for stream ${stream.descriptor}"
             }
         }
-    }
 
-    override suspend fun processRecords(
-        records: Iterator<DestinationRecordAirbyteValue>,
-        totalSizeBytes: Long,
-        endOfStream: Boolean
-    ): Batch {
-        s3DataLakeTableWriterFactory
-            .create(
+        val state =
+            S3DataLakeStreamState(
                 table = table,
-                generationId = s3DataLakeUtil.constructGenerationIdSuffix(stream),
-                importType = stream.importType,
                 schema = targetSchema,
             )
-            .use { writer ->
-                logger.info { "Writing records to branch $stagingBranchName" }
-                records.forEach { record ->
-                    val icebergRecord =
-                        s3DataLakeUtil.toRecord(
-                            record = record,
-                            stream = stream,
-                            tableSchema = targetSchema,
-                            pipeline = pipeline,
-                        )
-                    writer.write(icebergRecord)
-                }
-                val writeResult = writer.complete()
-                if (writeResult.deleteFiles().isNotEmpty()) {
-                    val delta = table.newRowDelta().toBranch(stagingBranchName)
-                    writeResult.dataFiles().forEach { delta.addRows(it) }
-                    writeResult.deleteFiles().forEach { delta.addDeletes(it) }
-                    delta.commit()
-                } else {
-                    val append = table.newAppend().toBranch(stagingBranchName)
-                    writeResult.dataFiles().forEach { append.appendFile(it) }
-                    append.commit()
-                }
-                logger.info { "Finished writing records to $stagingBranchName" }
-            }
-
-        return SimpleBatch(Batch.State.COMPLETE)
+        streamStateStore.put(stream.descriptor, state)
     }
 
     override suspend fun close(streamFailure: StreamProcessingFailed?) {
@@ -139,16 +104,17 @@ class S3DataLakeStreamLoader(
             table.refresh()
             computeOrExecuteSchemaUpdate().pendingUpdate?.commit()
             table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
+
             if (stream.minimumGenerationId > 0) {
                 logger.info {
                     "Detected a minimum generation ID (${stream.minimumGenerationId}). Preparing to delete obsolete generation IDs."
                 }
                 val generationIdsToDelete =
                     (0 until stream.minimumGenerationId).map(
-                        s3DataLakeUtil::constructGenerationIdSuffix
+                        icebergUtil::constructGenerationIdSuffix
                     )
-                val s3DataLakeTableCleaner = S3DataLakeTableCleaner(s3DataLakeUtil = s3DataLakeUtil)
-                s3DataLakeTableCleaner.deleteGenerationId(
+                val icebergTableCleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
+                icebergTableCleaner.deleteGenerationId(
                     table,
                     stagingBranchName,
                     generationIdsToDelete
@@ -173,7 +139,7 @@ class S3DataLakeStreamLoader(
      * the end of the sync, to get a fresh [UpdateSchema] instance.
      */
     private fun computeOrExecuteSchemaUpdate() =
-        s3DataLakeTableSynchronizer.maybeApplySchemaChanges(
+        icebergTableSynchronizer.maybeApplySchemaChanges(
             table,
             incomingSchema,
             columnTypeChangeBehavior,

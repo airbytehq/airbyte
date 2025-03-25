@@ -11,6 +11,8 @@ import com.fasterxml.jackson.databind.JsonSerializer
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.node.NullNode
+import io.airbyte.cdk.load.message.Meta
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.*
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
@@ -153,3 +155,52 @@ private class ObjectValueSerializer : JsonSerializer<ObjectValue>() {
 }
 
 @JvmInline value class UnknownValue(val value: JsonNode) : AirbyteValue
+
+/**
+ * Represents an "enriched" (/augmented) Airbyte value with additional metadata.
+ *
+ * @property abValue The actual [AirbyteValue]
+ * @property type The type ([AirbyteType]) of the [AirbyteValue]
+ * @property changes List of [Meta.Change]s that have been applied to this value
+ * @property name Field name
+ */
+class EnrichedAirbyteValue(
+    var abValue: AirbyteValue,
+    val type: AirbyteType,
+    val name: String,
+    val changes: MutableList<Meta.Change> = mutableListOf(),
+    val airbyteMetaField: Meta.AirbyteMetaFields?,
+) {
+    init {
+        require(name.isNotBlank()) { "Field name cannot be blank" }
+    }
+
+    /**
+     * Creates a nullified version of this value with the specified reason.
+     *
+     * @param reason The [Reason] for nullification, defaults to DESTINATION_SERIALIZATION_ERROR
+     */
+    fun nullify(reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR) {
+        val nullChange = Meta.Change(field = name, change = Change.NULLED, reason = reason)
+
+        abValue = NullValue
+        changes.add(nullChange)
+    }
+
+    /**
+     * Creates a truncated version of this value with the specified reason and new value.
+     *
+     * @param reason The [Reason] for truncation, defaults to DESTINATION_RECORD_SIZE_LIMITATION
+     * @param newValue The new (truncated) value to use
+     */
+    fun truncate(
+        reason: Reason = Reason.DESTINATION_RECORD_SIZE_LIMITATION,
+        newValue: AirbyteValue
+    ) {
+        val truncateChange = Meta.Change(field = name, change = Change.TRUNCATED, reason = reason)
+
+        // Return a copy with null value and the new change added to the changes list
+        abValue = newValue
+        changes.add(truncateChange)
+    }
+}

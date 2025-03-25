@@ -21,7 +21,8 @@ EMPTY_LIST_RESPONSE = {"code": 0, "message": "ok", "data": {"list": []}}
 class TestAdsReportHourly(TestCase):
     stream_name = "ads_reports_hourly"
     advertiser_id = "872746382648"
-    cursor = "2024-01-01 10:00:00"
+    cursor = "2024-01-01"
+    legacy_cursor = "2024-01-01 10:00:00"
     cursor_field = "stat_time_hour"
     metrics = [
         "campaign_name",
@@ -100,14 +101,14 @@ class TestAdsReportHourly(TestCase):
             config_to_build = config_to_build.with_include_deleted()
         return config_to_build.build()
 
-    def state(self):
+    def state(self, cursor: str = None):
         return (
             StateBuilder()
             .with_stream_state(
                 stream_name=self.stream_name,
                 state={
                     "states": [
-                        {"partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}, "cursor": {self.cursor_field: self.cursor}}
+                        {"partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}, "cursor": {self.cursor_field: cursor}}
                     ]
                 },
             )
@@ -161,15 +162,32 @@ class TestAdsReportHourly(TestCase):
         self.mock_response(http_mocker)
 
         output = read(
-            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=None),
+            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=self.state(cursor=self.cursor)),
             config=self.config(),
             catalog=self.catalog(sync_mode=SyncMode.incremental),
-            state=self.state(),
+            state=self.state(cursor=self.cursor),
+        )
+
+        assert len(output.records) == 2
+        assert output.state_messages[1].state.stream.stream_state.states == [
+            {"cursor": {"stat_time_hour": self.legacy_cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
+        ]
+
+    @HttpMocker()
+    def test_read_with_legacy_state(self, http_mocker: HttpMocker):
+        mock_advertisers_slices(http_mocker, self.config())
+        self.mock_response(http_mocker)
+
+        output = read(
+            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=self.state(cursor=self.legacy_cursor)),
+            config=self.config(),
+            catalog=self.catalog(sync_mode=SyncMode.incremental),
+            state=self.state(cursor=self.legacy_cursor),
         )
 
         assert len(output.records) == 1
-        assert output.state_messages[0].state.stream.stream_state.states == [
-            {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
+        assert output.state_messages[1].state.stream.stream_state.states == [
+            {"cursor": {"stat_time_hour": self.legacy_cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
 
     @HttpMocker()
@@ -345,14 +363,14 @@ class TestAdGroupsReportsHourly(TestCase):
         )
 
         output = read(
-            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=None),
+            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=self.state()),
             config=self.config(),
             catalog=self.catalog(sync_mode=SyncMode.incremental),
             state=self.state(),
         )
 
         assert len(output.records) == 1
-        assert output.state_messages[0].state.stream.stream_state.states == [
+        assert output.state_messages[1].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
 
@@ -506,14 +524,14 @@ class TestAdvertisersReportsHourly(TestCase):
         self.mock_response(http_mocker)
 
         output = read(
-            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=None),
+            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=self.state()),
             config=self.config(),
             catalog=self.catalog(sync_mode=SyncMode.incremental),
             state=self.state(),
         )
 
         assert len(output.records) == 1
-        assert output.state_messages[0].state.stream.stream_state.states == [
+        assert output.state_messages[1].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
 
@@ -624,14 +642,14 @@ class TestCampaignsReportsHourly(TestCase):
         self.mock_response(http_mocker)
 
         output = read(
-            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=None),
+            source=SourceTiktokMarketing(config=self.config(), catalog=None, state=self.state()),
             config=self.config(),
             catalog=self.catalog(sync_mode=SyncMode.incremental),
             state=self.state(),
         )
 
         assert len(output.records) == 1
-        assert output.state_messages[0].state.stream.stream_state.states == [
+        assert output.state_messages[1].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
 

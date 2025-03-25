@@ -10,7 +10,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
@@ -75,7 +75,7 @@ class DefaultProcessRecordsTask(
                         file.localFile.inputStream().use {
                             val records =
                                 if (file.isEmpty) {
-                                    emptyList<DestinationRecordAirbyteValue>().listIterator()
+                                    emptyList<DestinationRecordRaw>().listIterator()
                                 } else {
                                     it.toRecordIterator()
                                 }
@@ -97,7 +97,7 @@ class DefaultProcessRecordsTask(
                 accumulators.forEach { (streamDescriptor, acc) ->
                     val finalBatch =
                         acc.processRecords(
-                            emptyList<DestinationRecordAirbyteValue>().listIterator(),
+                            emptyList<DestinationRecordRaw>().listIterator(),
                             0,
                             true
                         )
@@ -122,7 +122,7 @@ class DefaultProcessRecordsTask(
         }
     }
 
-    private fun InputStream.toRecordIterator(): Iterator<DestinationRecordAirbyteValue> {
+    private fun InputStream.toRecordIterator(): Iterator<DestinationRecordRaw> {
         return lineSequence()
             .map {
                 when (val message = deserializer.deserialize(it)) {
@@ -136,7 +136,7 @@ class DefaultProcessRecordsTask(
             .takeWhile {
                 it !is DestinationRecordStreamComplete && it !is DestinationRecordStreamIncomplete
             }
-            .map { (it as DestinationRecord).asRecordMarshaledToAirbyteValue() }
+            .map { (it as DestinationRecord).asDestinationRecordRaw() }
             .iterator()
     }
 }

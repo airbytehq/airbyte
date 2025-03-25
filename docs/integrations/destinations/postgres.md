@@ -267,6 +267,8 @@ _where_ it is deployed.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                  |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 2.4.4 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
+| 2.4.3 | 2025-02-14 | [53686](https://github.com/airbytehq/airbyte/pull/53686) | Add option to use unconstrained `DECIMAL` type for numeric columns. |
 | 2.4.2 | 2025-01-10 | [51483](https://github.com/airbytehq/airbyte/pull/51483) | Use a non root base image |
 | 2.4.1 | 2024-12-18 | [49885](https://github.com/airbytehq/airbyte/pull/49885) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 2.4.0   | 2024-08-18 | [\#45434](https://github.com/airbytehq/airbyte/pull/45434) | upgrade all dependencies.                                                          |

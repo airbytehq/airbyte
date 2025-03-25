@@ -2,5 +2,7 @@
   "org_id": "REPLACEME",
   "client_id": "REPLACEME",
   "client_secret": "REPLACEME",
-  "start_date": "2022-11-11"
+  "start_date": "2022-11-11",
+  "backoff_factor": 10,
+  "lookback_window": 3
 }

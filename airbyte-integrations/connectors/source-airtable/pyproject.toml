@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "4.5.0-rc.4"
+version = "4.5.1"
 name = "source-airtable"
 description = "Source implementation for Airtable."
 authors = [ "Airbyte <anhtuan.nguyen@me.com>",]
@@ -25,7 +25,7 @@ source-airtable = "source_airtable.run:run"
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
-pytest = "^6.1"
+pytest = "^8.0.0"
 
 
 [tool.poe]

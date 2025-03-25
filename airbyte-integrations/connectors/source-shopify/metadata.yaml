@@ -7,11 +7,11 @@ data:
       - ${shop}.myshopify.com
       - shopify.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
+    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
   connectorSubtype: api
   connectorType: source
   definitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
-  dockerImageTag: 2.6.1
+  dockerImageTag: 2.6.7
   dockerRepository: airbyte/source-shopify
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
   erdUrl: https://dbdocs.io/airbyteio/source-shopify?view=relationships
@@ -78,7 +78,7 @@ data:
       2.6.1:
         message:
           "The `ProductsGraphQL` and the `CustomerSavedSearch` streams have been deprecated by Shopify and removed from Airbyte.
-          Please the `Products` stream instead. As of 2025-01-16, Spotify no longer provides data for the affected streams. More details here: https://github.com/airbytehq/airbyte/pull/51037."
+          Please use the `Products` stream instead. As of 2025-01-16, Shopify no longer provides data for the affected streams. More details here: https://github.com/airbytehq/airbyte/pull/51037."
         upgradeDeadline: "2025-01-16"
         scopedImpact:
           - scopeType: stream

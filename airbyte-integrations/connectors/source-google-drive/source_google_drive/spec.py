@@ -1,15 +1,52 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
-from typing import Any, Dict, Literal, Union
+import uuid
+from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, Literal, Optional, Union
 
 import dpath.util
 from pydantic.v1 import BaseModel, Field
 
 from airbyte_cdk import OneOfOptionConfig
-from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import (
+    AbstractFileBasedSpec,
+    DeliverRawFiles,
+    DeliverRecords,
+)
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import (
+    DeliverPermissions as DeliverPermissionsBase,
+)
+
+
+class RemoteIdentityType(Enum):
+    USER = "user"
+    GROUP = "group"
+
+
+class RemoteIdentity(BaseModel):
+    id: uuid.UUID
+    remote_id: str
+    parent_id: str | None = None
+    name: str | None = None
+    description: str | None = None
+    email_address: str | None = None
+    member_email_addresses: list[str] | None = None
+    type: RemoteIdentityType
+    modified_at: datetime
+
+
+class RemotePermissions(BaseModel):
+    id: str
+    file_path: str
+    allowed_identity_remote_ids: list[str] | None = None
+    denied_identity_remote_ids: list[str] | None = None
+    publicly_accessible: bool = False
+
+
+class DeliverPermissions(DeliverPermissionsBase):
+    domain: Optional[str] = Field(title="Domain", description="The Google domain of the identities.", airbyte_hidden=False, order=1)
 
 
 class OAuthCredentials(BaseModel):
@@ -60,7 +97,7 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
         pattern_descriptor="https://drive.google.com/drive/folders/MY-FOLDER-ID",
     )
 
-    delivery_method: DeliverRecords | DeliverRawFiles = Field(
+    delivery_method: DeliverRecords | DeliverRawFiles | DeliverPermissions = Field(
         title="Delivery Method",
         discriminator="delivery_type",
         type="object",

@@ -6,11 +6,11 @@ data:
     hosts:
       - strava.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.33.1@sha256:06468f2b0acdb0126a29757f67025f8f837014f70e3f079e10e304b0e1a6be4b
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.41.8@sha256:702857eda56f90ea5f2eea387c5e7f7919f7fddc4148c6c0c9e7dc1879bcc93b
   connectorSubtype: api
   connectorType: source
   definitionId: 7a4327c4-315a-11ec-8d3d-0242ac130003
-  dockerImageTag: 0.3.9
+  dockerImageTag: 0.3.14
   dockerRepository: airbyte/source-strava
   documentationUrl: https://docs.airbyte.com/integrations/sources/strava
   githubIssueLabel: source-strava
