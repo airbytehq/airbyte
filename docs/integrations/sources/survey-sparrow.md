@@ -49,6 +49,8 @@ In order to get access token, follow these steps:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.16 | 2025-03-22 | [56265](https://github.com/airbytehq/airbyte/pull/56265) | Update dependencies |
+| 0.3.15 | 2025-03-08 | [55574](https://github.com/airbytehq/airbyte/pull/55574) | Update dependencies |
 | 0.3.14 | 2025-03-01 | [55094](https://github.com/airbytehq/airbyte/pull/55094) | Update dependencies |
 | 0.3.13 | 2025-02-22 | [54469](https://github.com/airbytehq/airbyte/pull/54469) | Update dependencies |
 | 0.3.12 | 2025-02-15 | [54029](https://github.com/airbytehq/airbyte/pull/54029) | Update dependencies |

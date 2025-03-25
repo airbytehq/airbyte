@@ -92,10 +92,7 @@ class SpillToDiskTaskTest {
                     StreamRecordEvent(
                         3L,
                         2L,
-                        DestinationRecordSerialized(
-                            MockDestinationCatalogFactory.stream1.descriptor,
-                            ""
-                        )
+                        DestinationRecordSerialized(MockDestinationCatalogFactory.stream1, "")
                     )
                 // flush strategy returns true, so we flush
                 coEvery { flushStrategy.shouldFlush(any(), any(), any()) } returns true
@@ -132,10 +129,7 @@ class SpillToDiskTaskTest {
                     StreamRecordEvent(
                         3L,
                         2L,
-                        DestinationRecordSerialized(
-                            MockDestinationCatalogFactory.stream1.descriptor,
-                            ""
-                        )
+                        DestinationRecordSerialized(MockDestinationCatalogFactory.stream1, "")
                     )
 
                 // must publish 1 record message so range isn't empty
@@ -254,7 +248,7 @@ class SpillToDiskTaskTest {
                             sizeBytes = Fixtures.SERIALIZED_SIZE_BYTES,
                             payload =
                                 DestinationRecordSerialized(
-                                    MockDestinationCatalogFactory.stream1.descriptor,
+                                    MockDestinationCatalogFactory.stream1,
                                     "",
                                 ),
                         ),
