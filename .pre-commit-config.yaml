@@ -46,8 +46,8 @@ repos:
     hooks:
       - id: addlicense
         name: Add license headers
-        entry: addlicense -c "Airbyte, Inc." -l apache -v -y "$(date +%Y)"
-        language: golang
+        entry: .github/scripts/add_copyright.sh
+        language: script
         additional_dependencies: [github.com/google/addlicense@v1.1.1]
         files: \.(java|kt|py)$
 
