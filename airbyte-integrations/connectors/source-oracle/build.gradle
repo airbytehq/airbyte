@@ -14,7 +14,8 @@ application {
 
 dependencies {
     implementation 'com.oracle.database.jdbc:ojdbc11-production:23.4.0.24.05'
-    implementation 'io.debezium:debezium-connector-oracle'
 
-    testImplementation 'org.testcontainers:oracle-xe'
+    implementation 'io.debezium:debezium-connector-oracle:3.0.0.Final'
+
+    testImplementation 'org.testcontainers:oracle-xe:1.20.2'
 }
