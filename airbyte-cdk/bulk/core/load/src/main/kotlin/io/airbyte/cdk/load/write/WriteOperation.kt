@@ -44,10 +44,7 @@ class WriteOperation(
             log.info { "Running override task" }
             writeOpOverride.execute()
             log.info { "Write operation override took ${System.currentTimeMillis() - now} ms" }
-            throw IllegalStateException(
-                "WriteOpOverride is not intended for production use. This exception exists to prevent accidental release. To create a test tag, comment out this exception and uncomment `return @runBlocking` below."
-            )
-            // return@runBlocking
+            return@runBlocking
         }
 
         taskLauncher.run()

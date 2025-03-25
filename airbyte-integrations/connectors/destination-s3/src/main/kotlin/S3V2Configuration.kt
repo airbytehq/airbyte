@@ -46,6 +46,7 @@ data class S3V2Configuration<T : OutputStream>(
     val maxMemoryRatioReservedForParts: Double = 0.4,
     val objectSizeBytes: Long = 200L * 1024 * 1024,
     val partSizeBytes: Long = 10L * 1024 * 1024,
+    val devNull: Boolean = false
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
@@ -67,6 +68,10 @@ class S3V2ConfigurationFactory :
             objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
+            maxMemoryRatioReservedForParts = pojo.maxMemoryRatioReservedForParts ?: 0.2,
+            partSizeBytes = (pojo.partSizeMb ?: 10L) * 1024 * 1024,
+            devNull = pojo.devNull ?: false,
+            numUploadWorkers = pojo.numUploadWorkers ?: 5,
         )
     }
 }
