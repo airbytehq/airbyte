@@ -597,6 +597,12 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      startdatetime:
+        type:
+          - "null"
+          - string
+        description: Datetime for extensive calls.
+        format: date-time
       collaboration:
         type:
           - object
