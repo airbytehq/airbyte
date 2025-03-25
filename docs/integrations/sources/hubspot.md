@@ -338,6 +338,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.0 | 2025-03-25 | [x](https://github.com/airbytehq/airbyte/pull/x) | Migrate from v1 Contact Lists API to v3 Lists API |
 | 4.5.1 | 2025-03-22 | [53818](https://github.com/airbytehq/airbyte/pull/53818) | Update dependencies |
 | 4.5.0 | 2025-03-10 | [54177](https://github.com/airbytehq/airbyte/pull/54177) | Add option to cast fields from stream json schema per list of fields |
 | 4.4.9 | 2025-02-01 | [52729](https://github.com/airbytehq/airbyte/pull/52729) | Update dependencies |

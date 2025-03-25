@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerImageTag: 4.5.1
+  dockerImageTag: 5.0.0
   dockerRepository: airbyte/source-hubspot
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   erdUrl: https://dbdocs.io/airbyteio/source-hubspot?view=relationships
@@ -33,6 +33,15 @@ data:
     rolloutConfiguration:
       enableProgressiveRollout: false
     breakingChanges:
+      5.0.0:
+        message: >-
+          This update migrates from the V1 Contact Lists API to the improved V3 Lists API.
+          Users will need to refresh their schema and reset affected streams after upgrading.
+        upgradeDeadline: 2025-05-30
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              ["contact_lists", "contacts_list_memberships"]
       4.0.0:
         message: >-
           This update brings extended schema with data type changes for the streams
