@@ -17,7 +17,7 @@ abstract class AzureBlobStorageWriteTest(
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = configContents,
-        configSpecClass = TODO(),
+        configSpecClass = AzureBlobStorageSpecification::class.java,
         dataDumper = TODO(),
         destinationCleaner = NoopDestinationCleaner,
         isStreamSchemaRetroactive = false,
