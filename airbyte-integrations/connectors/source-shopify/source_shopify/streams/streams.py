@@ -341,31 +341,37 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
     _page_cursor = None
     _sub_page_cursor = None
 
+    _synced_countries_ids = []
+
     query = DeliveryProfile
     response_field = "deliveryProfiles"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        # TODO: add test for pagination
         json_response = response.json().get("data", {})
         page_info = json_response.get("deliveryProfiles", {}).get("pageInfo", {})
+
+        sub_page_info = {"hasNextPage": False}
         # only one top page in query
-        sub_page_info = (
-            # only first one
-            json_response.get("deliveryProfiles", {})
-            .get("nodes", [{}])[0]
-            # only one location group id in query
-            .get("profileLocationGroups", [{}])[0]
-            .get("locationGroupZones", {})
-            .get("pageInfo", {})
-        )
+        delivery_profiles_nodes = json_response.get("deliveryProfiles", {}).get("nodes")
+        if delivery_profiles_nodes:
+            profile_location_groups = delivery_profiles_nodes[0].get("profileLocationGroups")
+            if profile_location_groups:
+                sub_page_info = (
+                    # only first one
+                    profile_location_groups[0]
+                    .get("locationGroupZones", {})
+                    .get("pageInfo", {})
+                )
+
         if not sub_page_info["hasNextPage"] and not page_info["hasNextPage"]:
             return None
         if sub_page_info["hasNextPage"]:
             # The cursor to retrieve nodes after in the connection. Typically, you should pass the endCursor of the previous page as after.
             self._sub_page_cursor = sub_page_info["endCursor"]
-        if page_info["hasNextPage"]:
+        if page_info["hasNextPage"] and not sub_page_info["hasNextPage"]:
             # The cursor to retrieve nodes after in the connection. Typically, you should pass the endCursor of the previous page as after.
             self._page_cursor = page_info["endCursor"]
+            self._sub_page_cursor = None
 
         return {
             "cursor": self._page_cursor,
@@ -382,7 +388,7 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
         return {
             "query": self.query(location_group_id=location_group_id, location_group_zones_cursor=self._sub_page_cursor).get(
                 query_args={
-                    "cursor": '"' + self._page_cursor + '"' if self._page_cursor else None,
+                    "cursor": self._page_cursor,
                 }
             ),
         }
@@ -392,7 +398,10 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
             for location_group in node.get("profileLocationGroups", []):
                 for location_group_zone in location_group.get("locationGroupZones", {}).get("nodes", []):
                     for country in location_group_zone.get("zone", {}).get("countries"):
-                        yield self._process_country(country)
+                        country = self._process_country(country)
+                        if country["id"] not in self._synced_countries_ids:
+                            self._synced_countries_ids.append(country["id"])
+                            yield country
 
     def _process_country(self, country: Mapping[str, Any]) -> Mapping[str, Any]:
         country["id"] = int(country["id"].split("/")[-1])

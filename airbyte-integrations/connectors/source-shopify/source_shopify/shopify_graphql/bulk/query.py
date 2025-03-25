@@ -3222,7 +3222,8 @@ class DeliveryZoneList:
 
         if query_args:
             if query_args.get("cursor"):
-                arguments.append(Argument(name="after", value=query_args["cursor"]))
+                cursor = '"' + query_args["cursor"] + '"'
+                arguments.append(Argument(name="after", value=cursor))
 
         query = Query(name=name, arguments=arguments, fields=self.query_nodes)
         # return constructed query
