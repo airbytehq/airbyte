@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
-  dockerImageTag: 2.0.32
+  dockerImageTag: 2.1.0
   dockerRepository: airbyte/source-pinterest
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
@@ -78,6 +78,11 @@ data:
             alias: airbyte-connector-testing-secret-store
         - name: SECRET_SOURCE-PINTEREST__OAUTH_CREDS
           fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-PINTEREST_ACCOUNT_ID__CREDS
+          fileName: config_account_id.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
