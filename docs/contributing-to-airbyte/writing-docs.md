@@ -383,26 +383,22 @@ brew install markdownlint-cli2
 
 To lint files:
 
-1. Change your directory to the `//docusaurus` directory.
-
-2. Run the linter. Here are some helpful commands:
-
    - To lint a single file:
 
       ```bash
-      markdownlint-cli2 "../docs/myfolder/myfile.md"
+      markdownlint-cli2 "./docs/myfolder/myfile.md"
       ```
 
    - To lint a single directory but not its subdirectories:
 
       ```bash
-      markdownlint-cli2 "../docs/myfolder/*.md"
+      markdownlint-cli2 "./docs/myfolder/*.md"
       ```
 
    - To lint a directory and its subdirectories recursively:
 
       ```bash
-      markdownlint-cli2 "..docs/folder/**/*.md
+      markdownlint-cli2 "./docs/folder/**/*.md
       ```
 
    - To auto-fix issues, add a `--fix` modifier. MarkDownLint can fix most issues on its own, but it might not fix them all.
