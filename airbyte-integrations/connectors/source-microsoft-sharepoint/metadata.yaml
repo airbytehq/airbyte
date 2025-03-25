@@ -36,8 +36,8 @@ data:
     jobSpecific:
       - jobType: check_connection
         resourceRequirements:
-          memory_limit: 1024mi
-          memory_request: 1024mi
+          memory_limit: 2048mi
+          memory_request: 2048mi
   tags:
     - language:python
     - cdk:python-file-based
