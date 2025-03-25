@@ -4,51 +4,39 @@
 
 package io.airbyte.integrations.destination.azure_blob_storage
 
-import com.azure.core.util.BinaryData
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.load.ObjectStorageDataDumper
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
-import org.apache.commons.io.IOUtils
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
 
 class AzureBlobStorageDataDumper : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
         stream: DestinationStream
-    ): List<OutputRecord> {
-        val blobs =
-            AzureBlobStorageTestContainer.client.listBlobsByHierarchy(
-                "${stream.descriptor.namespace}/${stream.descriptor.name}"
-            )
-        return emptyList()
-    }
+    ): List<OutputRecord> = getObjectStorageDataDumper(spec, stream).dump()
 
     override fun dumpFile(
         spec: ConfigurationSpecification,
         stream: DestinationStream
-    ): List<String> {
-        TODO("Not yet implemented")
-    }
-}
+    ): List<String> = getObjectStorageDataDumper(spec, stream).dumpFile()
 
-class X {
-    @Test
-    fun arst() {
-        val storageClient = AzureBlobStorageTestContainer.client
-        val blobClient = storageClient.getBlobClient("namespace/name")
-        blobClient.blockBlobClient.upload(
-            BinaryData.fromBytes("file contents".toByteArray(Charsets.UTF_8))
-        )
-        println(IOUtils.toString(blobClient.openInputStream(), Charsets.UTF_8))
-    }
-
-    companion object {
-        @BeforeAll
-        @JvmStatic
-        fun setup() {
-            AzureBlobStorageTestContainer.start()
-        }
+    private fun getObjectStorageDataDumper(
+        spec: ConfigurationSpecification,
+        stream: DestinationStream
+    ): ObjectStorageDataDumper {
+        //        val config =
+        //            S3V2ConfigurationFactory().makeWithoutExceptionHandling(spec as
+        // AzureBlobStorageSpecification)
+        //        val s3Client = S3ClientFactory.make(config, S3V2TestUtils.assumeRoleCredentials)
+        //        val pathFactory = ObjectStoragePathFactory.from(config)
+        //        return ObjectStorageDataDumper(
+        //            stream,
+        //            s3Client,
+        //            pathFactory,
+        //            config.objectStorageFormatConfiguration,
+        //            config.objectStorageCompressionConfiguration,
+        //        )
+        TODO()
     }
 }
