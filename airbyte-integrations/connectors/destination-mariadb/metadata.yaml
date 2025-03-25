@@ -1,0 +1,29 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.openai.com
+      - api.cohere.ai
+      - ${embedding.api_base}
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  connectorBuildOptions:
+    baseImage: docker.io/library/python:3.11.11-slim-bookworm@sha256:6ed5bff4d7d377e2a27d9285553b8c21cfccc4f00881de1b24c9bc8d90016e82
+  connectorSubtype: vectorstore
+  definitionId: 0c3ed9a1-f7df-4243-9b18-fdf0f4393cbe
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-testconnector
+  githubIssueLabel: destination-testconnector
+
+  license: MIT
+  name: MariaDB
+
+
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python
+
+metadataSpecVersion: "1.0"

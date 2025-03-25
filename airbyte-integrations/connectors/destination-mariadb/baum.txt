@@ -1,0 +1,706 @@
+airbyte 0.12.1 PyAirbyte
+├── airbyte-api >=0.49.2,<0.50.0
+│   ├── certifi >=2023.7.22 
+│   ├── charset-normalizer >=3.2.0 
+│   ├── dataclasses-json >=0.6.4 
+│   │   ├── marshmallow >=3.18.0,<4.0.0 
+│   │   │   └── packaging >=17.0 
+│   │   └── typing-inspect >=0.4.0,<1 
+│   │       ├── mypy-extensions >=0.3.0 
+│   │       └── typing-extensions >=3.7.4 
+│   ├── idna >=3.4 
+│   ├── jsonpath-python >=1.0.6 
+│   ├── marshmallow >=3.19.0 (circular dependency aborted here)
+│   ├── mypy-extensions >=1.0.0 (circular dependency aborted here)
+│   ├── packaging >=23.1 (circular dependency aborted here)
+│   ├── python-dateutil >=2.8.2 
+│   │   └── six >=1.5 
+│   ├── requests >=2.31.0 
+│   │   ├── certifi >=2017.4.17 (circular dependency aborted here)
+│   │   ├── charset-normalizer >=2,<4 (circular dependency aborted here)
+│   │   ├── idna >=2.5,<4 (circular dependency aborted here)
+│   │   └── urllib3 >=1.21.1,<3 
+│   ├── six >=1.16.0 (circular dependency aborted here)
+│   ├── typing-extensions >=4.7.1 (circular dependency aborted here)
+│   ├── typing-inspect >=0.9.0 (circular dependency aborted here)
+│   └── urllib3 >=1.26.18 (circular dependency aborted here)
+├── airbyte-cdk >=1.2.1,<2.0.0
+│   ├── airbyte-protocol-models >=0.9.0,<1.0 
+│   │   └── pydantic >=1.9.2,<2.0.0 
+│   │       └── typing-extensions >=4.2.0 
+│   ├── backoff * 
+│   ├── cachetools * 
+│   ├── cohere 4.21 
+│   │   ├── aiohttp >=3.0,<4.0 
+│   │   │   ├── aiohappyeyeballs >=2.3.0 
+│   │   │   ├── aiosignal >=1.1.2 
+│   │   │   │   └── frozenlist >=1.1.0 
+│   │   │   ├── async-timeout >=4.0,<6.0 
+│   │   │   ├── attrs >=17.3.0 
+│   │   │   ├── frozenlist >=1.1.1 (circular dependency aborted here)
+│   │   │   ├── multidict >=4.5,<7.0 
+│   │   │   │   └── typing-extensions >=4.1.0 (circular dependency aborted here)
+│   │   │   ├── propcache >=0.2.0 
+│   │   │   └── yarl >=1.17.0,<2.0 
+│   │   │       ├── idna >=2.0 
+│   │   │       ├── multidict >=4.0 (circular dependency aborted here)
+│   │   │       └── propcache >=0.2.0 (circular dependency aborted here)
+│   │   ├── backoff >=2.0,<3.0 (circular dependency aborted here)
+│   │   ├── fastavro 1.8.2 
+│   │   ├── importlib-metadata >=6.0,<7.0 
+│   │   │   └── zipp >=0.5 
+│   │   ├── requests >=2.25.0,<3.0.0 
+│   │   │   ├── certifi >=2017.4.17 
+│   │   │   ├── charset-normalizer >=2,<4 
+│   │   │   ├── idna >=2.5,<4 (circular dependency aborted here)
+│   │   │   └── urllib3 >=1.21.1,<3 
+│   │   └── urllib3 >=1.26,<3 (circular dependency aborted here)
+│   ├── cryptography >=42.0.5,<43.0.0 
+│   │   └── cffi >=1.12 
+│   │       └── pycparser * 
+│   ├── deprecated >=1.2,<1.3 
+│   │   └── wrapt >=1.10,<2 
+│   ├── dpath >=2.1.6,<3.0.0 
+│   ├── genson 1.2.2 
+│   ├── isodate >=0.6.1,<0.7.0 
+│   │   └── six * 
+│   ├── jinja2 >=3.1.2,<3.2.0 
+│   │   └── markupsafe >=2.0 
+│   ├── jsonref >=0.2,<0.3 
+│   ├── jsonschema >=3.2.0,<3.3.0 
+│   │   ├── attrs >=17.4.0 (circular dependency aborted here)
+│   │   ├── pyrsistent >=0.14.0 
+│   │   ├── setuptools * 
+│   │   └── six >=1.11.0 (circular dependency aborted here)
+│   ├── langchain 0.1.16 
+│   │   ├── aiohttp >=3.8.3,<4.0.0 (circular dependency aborted here)
+│   │   ├── async-timeout >=4.0.0,<5.0.0 (circular dependency aborted here)
+│   │   ├── dataclasses-json >=0.5.7,<0.7 
+│   │   │   ├── marshmallow >=3.18.0,<4.0.0 
+│   │   │   │   └── packaging >=17.0 
+│   │   │   └── typing-inspect >=0.4.0,<1 
+│   │   │       ├── mypy-extensions >=0.3.0 
+│   │   │       └── typing-extensions >=3.7.4 (circular dependency aborted here)
+│   │   ├── jsonpatch >=1.33,<2.0 
+│   │   │   └── jsonpointer >=1.9 
+│   │   ├── langchain-community >=0.0.32,<0.1 
+│   │   │   ├── aiohttp >=3.8.3,<4.0.0 (circular dependency aborted here)
+│   │   │   ├── dataclasses-json >=0.5.7,<0.7 (circular dependency aborted here)
+│   │   │   ├── langchain-core >=0.1.41,<0.2.0 
+│   │   │   │   ├── jsonpatch >=1.33,<2.0 (circular dependency aborted here)
+│   │   │   │   ├── langsmith >=0.1.0,<0.2.0 
+│   │   │   │   │   ├── httpx >=0.23.0,<1 
+│   │   │   │   │   │   ├── anyio * 
+│   │   │   │   │   │   │   ├── exceptiongroup >=1.0.2 
+│   │   │   │   │   │   │   ├── idna >=2.8 (circular dependency aborted here)
+│   │   │   │   │   │   │   ├── sniffio >=1.1 
+│   │   │   │   │   │   │   └── typing-extensions >=4.5 (circular dependency aborted here)
+│   │   │   │   │   │   ├── certifi * (circular dependency aborted here)
+│   │   │   │   │   │   ├── httpcore ==1.* 
+│   │   │   │   │   │   │   ├── certifi * (circular dependency aborted here)
+│   │   │   │   │   │   │   └── h11 >=0.13,<0.15 
+│   │   │   │   │   │   └── idna * (circular dependency aborted here)
+│   │   │   │   │   ├── orjson >=3.9.14,<4.0.0 
+│   │   │   │   │   ├── pydantic >=1,<3 (circular dependency aborted here)
+│   │   │   │   │   ├── requests >=2,<3 (circular dependency aborted here)
+│   │   │   │   │   └── requests-toolbelt >=1.0.0,<2.0.0 
+│   │   │   │   │       └── requests >=2.0.1,<3.0.0 (circular dependency aborted here)
+│   │   │   │   ├── packaging >=23.2,<24.0 (circular dependency aborted here)
+│   │   │   │   ├── pydantic >=1,<3 (circular dependency aborted here)
+│   │   │   │   ├── pyyaml >=5.3 
+│   │   │   │   └── tenacity >=8.1.0,<9.0.0 
+│   │   │   ├── langsmith >=0.1.0,<0.2.0 (circular dependency aborted here)
+│   │   │   ├── numpy >=1,<2 
+│   │   │   ├── pyyaml >=5.3 (circular dependency aborted here)
+│   │   │   ├── requests >=2,<3 (circular dependency aborted here)
+│   │   │   ├── sqlalchemy >=1.4,<3 
+│   │   │   │   └── greenlet !=0.4.17 
+│   │   │   └── tenacity >=8.1.0,<9.0.0 (circular dependency aborted here)
+│   │   ├── langchain-core >=0.1.42,<0.2.0 (circular dependency aborted here)
+│   │   ├── langchain-text-splitters >=0.0.1,<0.1 
+│   │   │   └── langchain-core >=0.1.28,<0.3 (circular dependency aborted here)
+│   │   ├── langsmith >=0.1.17,<0.2.0 (circular dependency aborted here)
+│   │   ├── numpy >=1,<2 (circular dependency aborted here)
+│   │   ├── pydantic >=1,<3 (circular dependency aborted here)
+│   │   ├── pyyaml >=5.3 (circular dependency aborted here)
+│   │   ├── requests >=2,<3 (circular dependency aborted here)
+│   │   ├── sqlalchemy >=1.4,<3 (circular dependency aborted here)
+│   │   └── tenacity >=8.1.0,<9.0.0 (circular dependency aborted here)
+│   ├── langchain-core 0.1.42 (circular dependency aborted here)
+│   ├── openai 0.27.9 
+│   │   ├── aiohttp * (circular dependency aborted here)
+│   │   ├── matplotlib * 
+│   │   │   ├── contourpy >=1.0.1 
+│   │   │   │   └── numpy >=1.23 (circular dependency aborted here)
+│   │   │   ├── cycler >=0.10 
+│   │   │   ├── fonttools >=4.22.0 
+│   │   │   ├── importlib-resources >=3.2.0 
+│   │   │   │   └── zipp >=3.1.0 (circular dependency aborted here)
+│   │   │   ├── kiwisolver >=1.3.1 
+│   │   │   ├── numpy >=1.23 (circular dependency aborted here)
+│   │   │   ├── packaging >=20.0 (circular dependency aborted here)
+│   │   │   ├── pillow >=8 
+│   │   │   ├── pyparsing >=2.3.1 
+│   │   │   └── python-dateutil >=2.7 
+│   │   │       └── six >=1.5 (circular dependency aborted here)
+│   │   ├── numpy * (circular dependency aborted here)
+│   │   ├── openpyxl >=3.0.7 
+│   │   │   └── et-xmlfile * 
+│   │   ├── pandas >=1.2.3 
+│   │   │   ├── numpy >=1.23.2,<2 (circular dependency aborted here)
+│   │   │   ├── numpy >=1.22.4,<2 (circular dependency aborted here)
+│   │   │   ├── python-dateutil >=2.8.2 (circular dependency aborted here)
+│   │   │   ├── pytz >=2020.1 
+│   │   │   └── tzdata >=2022.1 
+│   │   ├── pandas-stubs >=1.1.0.11 
+│   │   │   ├── numpy >=1.23.5 (circular dependency aborted here)
+│   │   │   └── types-pytz >=2022.1.1 
+│   │   ├── plotly * 
+│   │   │   ├── narwhals >=1.15.1 
+│   │   │   └── packaging * (circular dependency aborted here)
+│   │   ├── requests >=2.20 (circular dependency aborted here)
+│   │   ├── scikit-learn >=1.0.2 
+│   │   │   ├── joblib >=1.2.0 
+│   │   │   ├── numpy >=1.19.5 (circular dependency aborted here)
+│   │   │   ├── scipy >=1.6.0 
+│   │   │   │   └── numpy >=1.22.4,<2.3 (circular dependency aborted here)
+│   │   │   └── threadpoolctl >=3.1.0 
+│   │   ├── scipy * (circular dependency aborted here)
+│   │   ├── tenacity >=8.0.1 (circular dependency aborted here)
+│   │   └── tqdm * 
+│   │       └── colorama * 
+│   ├── pendulum <3.0.0 
+│   │   ├── python-dateutil >=2.6,<3.0 (circular dependency aborted here)
+│   │   └── pytzdata >=2020.1 
+│   ├── pydantic >=1.10.8,<2.0.0 (circular dependency aborted here)
+│   ├── pyjwt >=2.8.0,<3.0.0 
+│   ├── pyrate-limiter >=3.1.0,<3.2.0 
+│   ├── python-dateutil * (circular dependency aborted here)
+│   ├── pytz 2024.1 (circular dependency aborted here)
+│   ├── pyyaml >=6.0.1,<7.0.0 (circular dependency aborted here)
+│   ├── requests * (circular dependency aborted here)
+│   ├── requests-cache * 
+│   │   ├── attrs >=21.2 (circular dependency aborted here)
+│   │   ├── cattrs >=22.2 
+│   │   │   ├── attrs >=23.1.0 (circular dependency aborted here)
+│   │   │   ├── exceptiongroup >=1.1.1 (circular dependency aborted here)
+│   │   │   └── typing-extensions >=4.1.0,<4.6.3 || >4.6.3 (circular dependency aborted here)
+│   │   ├── platformdirs >=2.5 
+│   │   ├── requests >=2.22 (circular dependency aborted here)
+│   │   ├── url-normalize >=1.4 
+│   │   │   └── six * (circular dependency aborted here)
+│   │   └── urllib3 >=1.25.5 (circular dependency aborted here)
+│   ├── tiktoken 0.4.0 
+│   │   ├── regex >=2022.1.18 
+│   │   └── requests >=2.26.0 (circular dependency aborted here)
+│   └── wcmatch 8.4 
+│       └── bracex >=2.1.1 
+├── duckdb >=1.0.0,<2.0.0
+├── duckdb-engine >=0.13.0,<0.14.0
+│   ├── duckdb >=0.5.0 
+│   ├── packaging >=21 
+│   └── sqlalchemy >=1.3.22 
+│       └── greenlet !=0.4.17 
+├── google-auth >=2.27.0,<3.0
+│   ├── cachetools >=2.0.0,<6.0 
+│   ├── pyasn1-modules >=0.2.1 
+│   │   └── pyasn1 >=0.4.6,<0.7.0 
+│   └── rsa >=3.1.4,<5 
+│       └── pyasn1 >=0.1.3 (circular dependency aborted here)
+├── google-cloud-bigquery >=3.12.0,<4.0
+│   ├── google-api-core >=2.11.1,<3.0.0dev 
+│   │   ├── google-auth >=2.14.1,<3.0.0 
+│   │   │   ├── cachetools >=2.0.0,<6.0 
+│   │   │   ├── pyasn1-modules >=0.2.1 
+│   │   │   │   └── pyasn1 >=0.4.6,<0.7.0 
+│   │   │   └── rsa >=3.1.4,<5 
+│   │   │       └── pyasn1 >=0.1.3 (circular dependency aborted here)
+│   │   ├── googleapis-common-protos >=1.56.2,<2.0.0 
+│   │   │   ├── grpcio >=1.44.0,<2.0.0 
+│   │   │   └── protobuf >=3.20.2,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<7.0.0 
+│   │   ├── grpcio >=1.49.1,<2.0dev (circular dependency aborted here)
+│   │   ├── grpcio >=1.33.2,<2.0dev (circular dependency aborted here)
+│   │   ├── grpcio-status >=1.49.1,<2.0.dev0 
+│   │   │   ├── googleapis-common-protos >=1.5.5 (circular dependency aborted here)
+│   │   │   ├── grpcio >=1.62.3 (circular dependency aborted here)
+│   │   │   └── protobuf >=4.21.6 (circular dependency aborted here)
+│   │   ├── grpcio-status >=1.33.2,<2.0.dev0 (circular dependency aborted here)
+│   │   ├── proto-plus >=1.22.3,<2.0.0 
+│   │   │   └── protobuf >=3.19.0,<7.0.0 (circular dependency aborted here)
+│   │   ├── protobuf >=3.19.5,<3.20.0 || >3.20.0,<3.20.1 || >3.20.1,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<7.0.0 (circular dependency aborted here)
+│   │   └── requests >=2.18.0,<3.0.0 
+│   │       ├── certifi >=2017.4.17 
+│   │       ├── charset-normalizer >=2,<4 
+│   │       ├── idna >=2.5,<4 
+│   │       └── urllib3 >=1.21.1,<3 
+│   ├── google-auth >=2.14.1,<3.0.0dev (circular dependency aborted here)
+│   ├── google-cloud-core >=2.4.1,<3.0.0dev 
+│   │   ├── google-api-core >=1.31.6,<2.0.dev0 || >2.3.0,<3.0.0dev (circular dependency aborted here)
+│   │   └── google-auth >=1.25.0,<3.0dev (circular dependency aborted here)
+│   ├── google-resumable-media >=2.0.0,<3.0dev 
+│   │   └── google-crc32c >=1.0,<2.0dev 
+│   ├── packaging >=20.0.0 
+│   ├── python-dateutil >=2.7.3,<3.0dev 
+│   │   └── six >=1.5 
+│   └── requests >=2.21.0,<3.0.0dev (circular dependency aborted here)
+├── google-cloud-bigquery-storage >=2.25.0,<3.0.0
+│   ├── google-api-core >=1.34.0,<2.0.dev0 || >=2.11.dev0,<3.0.0 
+│   │   ├── google-auth >=2.14.1,<3.0.0 
+│   │   │   ├── cachetools >=2.0.0,<6.0 
+│   │   │   ├── pyasn1-modules >=0.2.1 
+│   │   │   │   └── pyasn1 >=0.4.6,<0.7.0 
+│   │   │   └── rsa >=3.1.4,<5 
+│   │   │       └── pyasn1 >=0.1.3 (circular dependency aborted here)
+│   │   ├── googleapis-common-protos >=1.56.2,<2.0.0 
+│   │   │   ├── grpcio >=1.44.0,<2.0.0 
+│   │   │   └── protobuf >=3.20.2,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<7.0.0 
+│   │   ├── grpcio >=1.49.1,<2.0dev (circular dependency aborted here)
+│   │   ├── grpcio >=1.33.2,<2.0dev (circular dependency aborted here)
+│   │   ├── grpcio-status >=1.49.1,<2.0.dev0 
+│   │   │   ├── googleapis-common-protos >=1.5.5 (circular dependency aborted here)
+│   │   │   ├── grpcio >=1.62.3 (circular dependency aborted here)
+│   │   │   └── protobuf >=4.21.6 (circular dependency aborted here)
+│   │   ├── grpcio-status >=1.33.2,<2.0.dev0 (circular dependency aborted here)
+│   │   ├── proto-plus >=1.22.3,<2.0.0 
+│   │   │   └── protobuf >=3.19.0,<7.0.0 (circular dependency aborted here)
+│   │   ├── protobuf >=3.19.5,<3.20.0 || >3.20.0,<3.20.1 || >3.20.1,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<7.0.0 (circular dependency aborted here)
+│   │   └── requests >=2.18.0,<3.0.0 
+│   │       ├── certifi >=2017.4.17 
+│   │       ├── charset-normalizer >=2,<4 
+│   │       ├── idna >=2.5,<4 
+│   │       └── urllib3 >=1.21.1,<3 
+│   ├── google-auth >=2.14.1,<3.0.0 (circular dependency aborted here)
+│   ├── proto-plus >=1.22.2,<2.0.0 (circular dependency aborted here)
+│   ├── proto-plus >=1.22.0,<2.0.0 (circular dependency aborted here)
+│   └── protobuf >=3.20.2,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<7.0.0 (circular dependency aborted here)
+├── google-cloud-secret-manager >=2.17.0,<3.0.0
+│   ├── google-api-core >=1.34.1,<2.0.dev0 || >=2.11.dev0,<3.0.0 
+│   │   ├── google-auth >=2.14.1,<3.0.0 
+│   │   │   ├── cachetools >=2.0.0,<6.0 
+│   │   │   ├── pyasn1-modules >=0.2.1 
+│   │   │   │   └── pyasn1 >=0.4.6,<0.7.0 
+│   │   │   └── rsa >=3.1.4,<5 
+│   │   │       └── pyasn1 >=0.1.3 (circular dependency aborted here)
+│   │   ├── googleapis-common-protos >=1.56.2,<2.0.0 
+│   │   │   ├── grpcio >=1.44.0,<2.0.0 
+│   │   │   └── protobuf >=3.20.2,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<7.0.0 
+│   │   ├── grpcio >=1.49.1,<2.0dev (circular dependency aborted here)
+│   │   ├── grpcio >=1.33.2,<2.0dev (circular dependency aborted here)
+│   │   ├── grpcio-status >=1.49.1,<2.0.dev0 
+│   │   │   ├── googleapis-common-protos >=1.5.5 (circular dependency aborted here)
+│   │   │   ├── grpcio >=1.62.3 (circular dependency aborted here)
+│   │   │   └── protobuf >=4.21.6 (circular dependency aborted here)
+│   │   ├── grpcio-status >=1.33.2,<2.0.dev0 (circular dependency aborted here)
+│   │   ├── proto-plus >=1.22.3,<2.0.0 
+│   │   │   └── protobuf >=3.19.0,<7.0.0 (circular dependency aborted here)
+│   │   ├── protobuf >=3.19.5,<3.20.0 || >3.20.0,<3.20.1 || >3.20.1,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<7.0.0 (circular dependency aborted here)
+│   │   └── requests >=2.18.0,<3.0.0 
+│   │       ├── certifi >=2017.4.17 
+│   │       ├── charset-normalizer >=2,<4 
+│   │       ├── idna >=2.5,<4 
+│   │       └── urllib3 >=1.21.1,<3 
+│   ├── google-auth >=2.14.1,<2.24.0 || >2.24.0,<2.25.0 || >2.25.0,<3.0.0 (circular dependency aborted here)
+│   ├── grpc-google-iam-v1 >=0.14.0,<1.0.0 
+│   │   ├── googleapis-common-protos >=1.56.0,<2.0.0 (circular dependency aborted here)
+│   │   ├── grpcio >=1.44.0,<2.0.0 (circular dependency aborted here)
+│   │   └── protobuf >=3.20.2,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<7.0.0 (circular dependency aborted here)
+│   ├── proto-plus >=1.22.3,<2.0.0 (circular dependency aborted here)
+│   └── protobuf >=3.20.2,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<7.0.0 (circular dependency aborted here)
+├── jsonschema >=3.2.0,<5.0
+│   ├── attrs >=17.4.0 
+│   ├── pyrsistent >=0.14.0 
+│   ├── setuptools * 
+│   └── six >=1.11.0 
+├── orjson 3.9.15
+├── overrides >=7.4.0,<8.0.0
+├── pandas >=1.5.3,<=2.1.4
+│   ├── numpy >=1.23.2,<2 
+│   ├── numpy >=1.22.4,<2 (circular dependency aborted here)
+│   ├── python-dateutil >=2.8.2 
+│   │   └── six >=1.5 
+│   ├── pytz >=2020.1 
+│   └── tzdata >=2022.1 
+├── pendulum <=3.0.0
+│   ├── python-dateutil >=2.6,<3.0 
+│   │   └── six >=1.5 
+│   └── pytzdata >=2020.1 
+├── psycopg2-binary >=2.9.9,<3.0.0
+├── pydantic <=2.0
+│   └── typing-extensions >=4.2.0 
+├── python-dotenv >=1.0.1,<2.0.0
+├── python-ulid >=2.2.0,<3.0.0
+├── requests <=2.31.0
+│   ├── certifi >=2017.4.17 
+│   ├── charset-normalizer >=2,<4 
+│   ├── idna >=2.5,<4 
+│   └── urllib3 >=1.21.1,<3 
+├── rich >=13.7.0,<14.0.0
+│   ├── markdown-it-py >=2.2.0 
+│   │   └── mdurl >=0.1,<1.0 
+│   ├── pygments >=2.13.0,<3.0.0 
+│   └── typing-extensions >=4.0.0,<5.0 
+├── snowflake-connector-python >=3.10.0,<4.0.0
+│   ├── asn1crypto >0.24.0,<2.0.0 
+│   ├── certifi >=2017.4.17 
+│   ├── cffi >=1.9,<2.0.0 
+│   │   └── pycparser * 
+│   ├── charset-normalizer >=2,<4 
+│   ├── cryptography >=3.1.0 
+│   │   └── cffi >=1.12 (circular dependency aborted here)
+│   ├── filelock >=3.5,<4 
+│   ├── idna >=2.5,<4 
+│   ├── packaging * 
+│   ├── platformdirs >=2.6.0,<5.0.0 
+│   ├── pyjwt <3.0.0 
+│   ├── pyopenssl >=22.0.0,<26.0.0 
+│   │   ├── cryptography >=41.0.5,<45 (circular dependency aborted here)
+│   │   └── typing-extensions >=4.9 
+│   ├── pytz * 
+│   ├── requests <3.0.0 
+│   │   ├── certifi >=2017.4.17 (circular dependency aborted here)
+│   │   ├── charset-normalizer >=2,<4 (circular dependency aborted here)
+│   │   ├── idna >=2.5,<4 (circular dependency aborted here)
+│   │   └── urllib3 >=1.21.1,<3 
+│   ├── sortedcontainers >=2.4.0 
+│   ├── tomlkit * 
+│   ├── typing-extensions >=4.3,<5 (circular dependency aborted here)
+│   └── urllib3 >=1.21.1,<2.0.0 (circular dependency aborted here)
+├── snowflake-sqlalchemy >=1.5.1,<2.0.0
+│   ├── snowflake-connector-python <4.0.0 
+│   │   ├── asn1crypto >0.24.0,<2.0.0 
+│   │   ├── certifi >=2017.4.17 
+│   │   ├── cffi >=1.9,<2.0.0 
+│   │   │   └── pycparser * 
+│   │   ├── charset-normalizer >=2,<4 
+│   │   ├── cryptography >=3.1.0 
+│   │   │   └── cffi >=1.12 (circular dependency aborted here)
+│   │   ├── filelock >=3.5,<4 
+│   │   ├── idna >=2.5,<4 
+│   │   ├── packaging * 
+│   │   ├── platformdirs >=2.6.0,<5.0.0 
+│   │   ├── pyjwt <3.0.0 
+│   │   ├── pyopenssl >=22.0.0,<26.0.0 
+│   │   │   ├── cryptography >=41.0.5,<45 (circular dependency aborted here)
+│   │   │   └── typing-extensions >=4.9 
+│   │   ├── pytz * 
+│   │   ├── requests <3.0.0 
+│   │   │   ├── certifi >=2017.4.17 (circular dependency aborted here)
+│   │   │   ├── charset-normalizer >=2,<4 (circular dependency aborted here)
+│   │   │   ├── idna >=2.5,<4 (circular dependency aborted here)
+│   │   │   └── urllib3 >=1.21.1,<3 
+│   │   ├── sortedcontainers >=2.4.0 
+│   │   ├── tomlkit * 
+│   │   ├── typing-extensions >=4.3,<5 (circular dependency aborted here)
+│   │   └── urllib3 >=1.21.1,<2.0.0 (circular dependency aborted here)
+│   └── sqlalchemy >=1.4.19 
+│       └── greenlet !=0.4.17 
+├── sqlalchemy 1.4.51
+│   └── greenlet !=0.4.17 
+├── sqlalchemy-bigquery 1.9.0
+│   ├── google-api-core >=1.31.5,<2.0.dev0 || >2.3.0,<3.0.0dev 
+│   │   ├── google-auth >=2.14.1,<3.0.0 
+│   │   │   ├── cachetools >=2.0.0,<6.0 
+│   │   │   ├── pyasn1-modules >=0.2.1 
+│   │   │   │   └── pyasn1 >=0.4.6,<0.7.0 
+│   │   │   └── rsa >=3.1.4,<5 
+│   │   │       └── pyasn1 >=0.1.3 (circular dependency aborted here)
+│   │   ├── googleapis-common-protos >=1.56.2,<2.0.0 
+│   │   │   ├── grpcio >=1.44.0,<2.0.0 
+│   │   │   └── protobuf >=3.20.2,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<7.0.0 
+│   │   ├── grpcio >=1.49.1,<2.0dev (circular dependency aborted here)
+│   │   ├── grpcio >=1.33.2,<2.0dev (circular dependency aborted here)
+│   │   ├── grpcio-status >=1.49.1,<2.0.dev0 
+│   │   │   ├── googleapis-common-protos >=1.5.5 (circular dependency aborted here)
+│   │   │   ├── grpcio >=1.62.3 (circular dependency aborted here)
+│   │   │   └── protobuf >=4.21.6 (circular dependency aborted here)
+│   │   ├── grpcio-status >=1.33.2,<2.0.dev0 (circular dependency aborted here)
+│   │   ├── proto-plus >=1.22.3,<2.0.0 
+│   │   │   └── protobuf >=3.19.0,<7.0.0 (circular dependency aborted here)
+│   │   ├── protobuf >=3.19.5,<3.20.0 || >3.20.0,<3.20.1 || >3.20.1,<4.21.0 || >4.21.0,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4.21.4 || >4.21.4,<4.21.5 || >4.21.5,<7.0.0 (circular dependency aborted here)
+│   │   └── requests >=2.18.0,<3.0.0 
+│   │       ├── certifi >=2017.4.17 
+│   │       ├── charset-normalizer >=2,<4 
+│   │       ├── idna >=2.5,<4 
+│   │       └── urllib3 >=1.21.1,<3 
+│   ├── google-auth >=1.25.0,<3.0.0dev (circular dependency aborted here)
+│   ├── google-cloud-bigquery >=2.25.2,<4.0.0dev 
+│   │   ├── google-api-core >=2.11.1,<3.0.0dev (circular dependency aborted here)
+│   │   ├── google-auth >=2.14.1,<3.0.0dev (circular dependency aborted here)
+│   │   ├── google-cloud-core >=2.4.1,<3.0.0dev 
+│   │   │   ├── google-api-core >=1.31.6,<2.0.dev0 || >2.3.0,<3.0.0dev (circular dependency aborted here)
+│   │   │   └── google-auth >=1.25.0,<3.0dev (circular dependency aborted here)
+│   │   ├── google-resumable-media >=2.0.0,<3.0dev 
+│   │   │   └── google-crc32c >=1.0,<2.0dev 
+│   │   ├── packaging >=20.0.0 
+│   │   ├── python-dateutil >=2.7.3,<3.0dev 
+│   │   │   └── six >=1.5 
+│   │   └── requests >=2.21.0,<3.0.0dev (circular dependency aborted here)
+│   ├── packaging * (circular dependency aborted here)
+│   └── sqlalchemy >=1.2.0,<2.0.0dev 
+│       └── greenlet !=0.4.17 
+├── types-pyyaml >=6.0.12.12,<7.0.0.0
+└── ulid >=1.1,<2.0
+airbyte-cdk 1.8.0 A framework for writing Airbyte Connectors.
+├── airbyte-protocol-models >=0.9.0,<1.0
+│   └── pydantic >=1.9.2,<2.0.0 
+│       └── typing-extensions >=4.2.0 
+├── backoff *
+├── cachetools *
+├── cohere 4.21
+│   ├── aiohttp >=3.0,<4.0 
+│   │   ├── aiohappyeyeballs >=2.3.0 
+│   │   ├── aiosignal >=1.1.2 
+│   │   │   └── frozenlist >=1.1.0 
+│   │   ├── async-timeout >=4.0,<6.0 
+│   │   ├── attrs >=17.3.0 
+│   │   ├── frozenlist >=1.1.1 (circular dependency aborted here)
+│   │   ├── multidict >=4.5,<7.0 
+│   │   │   └── typing-extensions >=4.1.0 
+│   │   ├── propcache >=0.2.0 
+│   │   └── yarl >=1.17.0,<2.0 
+│   │       ├── idna >=2.0 
+│   │       ├── multidict >=4.0 (circular dependency aborted here)
+│   │       └── propcache >=0.2.0 (circular dependency aborted here)
+│   ├── backoff >=2.0,<3.0 
+│   ├── fastavro 1.8.2 
+│   ├── importlib-metadata >=6.0,<7.0 
+│   │   └── zipp >=0.5 
+│   ├── requests >=2.25.0,<3.0.0 
+│   │   ├── certifi >=2017.4.17 
+│   │   ├── charset-normalizer >=2,<4 
+│   │   ├── idna >=2.5,<4 (circular dependency aborted here)
+│   │   └── urllib3 >=1.21.1,<3 
+│   └── urllib3 >=1.26,<3 (circular dependency aborted here)
+├── cryptography >=42.0.5,<43.0.0
+│   └── cffi >=1.12 
+│       └── pycparser * 
+├── deprecated >=1.2,<1.3
+│   └── wrapt >=1.10,<2 
+├── dpath >=2.1.6,<3.0.0
+├── genson 1.2.2
+├── isodate >=0.6.1,<0.7.0
+│   └── six * 
+├── jinja2 >=3.1.2,<3.2.0
+│   └── markupsafe >=2.0 
+├── jsonref >=0.2,<0.3
+├── jsonschema >=3.2.0,<3.3.0
+│   ├── attrs >=17.4.0 
+│   ├── pyrsistent >=0.14.0 
+│   ├── setuptools * 
+│   └── six >=1.11.0 
+├── langchain 0.1.16
+│   ├── aiohttp >=3.8.3,<4.0.0 
+│   │   ├── aiohappyeyeballs >=2.3.0 
+│   │   ├── aiosignal >=1.1.2 
+│   │   │   └── frozenlist >=1.1.0 
+│   │   ├── async-timeout >=4.0,<6.0 
+│   │   ├── attrs >=17.3.0 
+│   │   ├── frozenlist >=1.1.1 (circular dependency aborted here)
+│   │   ├── multidict >=4.5,<7.0 
+│   │   │   └── typing-extensions >=4.1.0 
+│   │   ├── propcache >=0.2.0 
+│   │   └── yarl >=1.17.0,<2.0 
+│   │       ├── idna >=2.0 
+│   │       ├── multidict >=4.0 (circular dependency aborted here)
+│   │       └── propcache >=0.2.0 (circular dependency aborted here)
+│   ├── async-timeout >=4.0.0,<5.0.0 (circular dependency aborted here)
+│   ├── dataclasses-json >=0.5.7,<0.7 
+│   │   ├── marshmallow >=3.18.0,<4.0.0 
+│   │   │   └── packaging >=17.0 
+│   │   └── typing-inspect >=0.4.0,<1 
+│   │       ├── mypy-extensions >=0.3.0 
+│   │       └── typing-extensions >=3.7.4 (circular dependency aborted here)
+│   ├── jsonpatch >=1.33,<2.0 
+│   │   └── jsonpointer >=1.9 
+│   ├── langchain-community >=0.0.32,<0.1 
+│   │   ├── aiohttp >=3.8.3,<4.0.0 (circular dependency aborted here)
+│   │   ├── dataclasses-json >=0.5.7,<0.7 (circular dependency aborted here)
+│   │   ├── langchain-core >=0.1.41,<0.2.0 
+│   │   │   ├── jsonpatch >=1.33,<2.0 (circular dependency aborted here)
+│   │   │   ├── langsmith >=0.1.0,<0.2.0 
+│   │   │   │   ├── httpx >=0.23.0,<1 
+│   │   │   │   │   ├── anyio * 
+│   │   │   │   │   │   ├── exceptiongroup >=1.0.2 
+│   │   │   │   │   │   ├── idna >=2.8 (circular dependency aborted here)
+│   │   │   │   │   │   ├── sniffio >=1.1 
+│   │   │   │   │   │   └── typing-extensions >=4.5 (circular dependency aborted here)
+│   │   │   │   │   ├── certifi * 
+│   │   │   │   │   ├── httpcore ==1.* 
+│   │   │   │   │   │   ├── certifi * (circular dependency aborted here)
+│   │   │   │   │   │   └── h11 >=0.13,<0.15 
+│   │   │   │   │   └── idna * (circular dependency aborted here)
+│   │   │   │   ├── orjson >=3.9.14,<4.0.0 
+│   │   │   │   ├── pydantic >=1,<3 
+│   │   │   │   │   └── typing-extensions >=4.2.0 (circular dependency aborted here)
+│   │   │   │   ├── requests >=2,<3 
+│   │   │   │   │   ├── certifi >=2017.4.17 (circular dependency aborted here)
+│   │   │   │   │   ├── charset-normalizer >=2,<4 
+│   │   │   │   │   ├── idna >=2.5,<4 (circular dependency aborted here)
+│   │   │   │   │   └── urllib3 >=1.21.1,<3 
+│   │   │   │   └── requests-toolbelt >=1.0.0,<2.0.0 
+│   │   │   │       └── requests >=2.0.1,<3.0.0 (circular dependency aborted here)
+│   │   │   ├── packaging >=23.2,<24.0 (circular dependency aborted here)
+│   │   │   ├── pydantic >=1,<3 (circular dependency aborted here)
+│   │   │   ├── pyyaml >=5.3 
+│   │   │   └── tenacity >=8.1.0,<9.0.0 
+│   │   ├── langsmith >=0.1.0,<0.2.0 (circular dependency aborted here)
+│   │   ├── numpy >=1,<2 
+│   │   ├── pyyaml >=5.3 (circular dependency aborted here)
+│   │   ├── requests >=2,<3 (circular dependency aborted here)
+│   │   ├── sqlalchemy >=1.4,<3 
+│   │   │   └── greenlet !=0.4.17 
+│   │   └── tenacity >=8.1.0,<9.0.0 (circular dependency aborted here)
+│   ├── langchain-core >=0.1.42,<0.2.0 (circular dependency aborted here)
+│   ├── langchain-text-splitters >=0.0.1,<0.1 
+│   │   └── langchain-core >=0.1.28,<0.3 (circular dependency aborted here)
+│   ├── langsmith >=0.1.17,<0.2.0 (circular dependency aborted here)
+│   ├── numpy >=1,<2 (circular dependency aborted here)
+│   ├── pydantic >=1,<3 (circular dependency aborted here)
+│   ├── pyyaml >=5.3 (circular dependency aborted here)
+│   ├── requests >=2,<3 (circular dependency aborted here)
+│   ├── sqlalchemy >=1.4,<3 (circular dependency aborted here)
+│   └── tenacity >=8.1.0,<9.0.0 (circular dependency aborted here)
+├── langchain-core 0.1.42
+│   ├── jsonpatch >=1.33,<2.0 
+│   │   └── jsonpointer >=1.9 
+│   ├── langsmith >=0.1.0,<0.2.0 
+│   │   ├── httpx >=0.23.0,<1 
+│   │   │   ├── anyio * 
+│   │   │   │   ├── exceptiongroup >=1.0.2 
+│   │   │   │   ├── idna >=2.8 
+│   │   │   │   ├── sniffio >=1.1 
+│   │   │   │   └── typing-extensions >=4.5 
+│   │   │   ├── certifi * 
+│   │   │   ├── httpcore ==1.* 
+│   │   │   │   ├── certifi * (circular dependency aborted here)
+│   │   │   │   └── h11 >=0.13,<0.15 
+│   │   │   └── idna * (circular dependency aborted here)
+│   │   ├── orjson >=3.9.14,<4.0.0 
+│   │   ├── pydantic >=1,<3 
+│   │   │   └── typing-extensions >=4.2.0 (circular dependency aborted here)
+│   │   ├── requests >=2,<3 
+│   │   │   ├── certifi >=2017.4.17 (circular dependency aborted here)
+│   │   │   ├── charset-normalizer >=2,<4 
+│   │   │   ├── idna >=2.5,<4 (circular dependency aborted here)
+│   │   │   └── urllib3 >=1.21.1,<3 
+│   │   └── requests-toolbelt >=1.0.0,<2.0.0 
+│   │       └── requests >=2.0.1,<3.0.0 (circular dependency aborted here)
+│   ├── packaging >=23.2,<24.0 
+│   ├── pydantic >=1,<3 (circular dependency aborted here)
+│   ├── pyyaml >=5.3 
+│   └── tenacity >=8.1.0,<9.0.0 
+├── openai 0.27.9
+│   ├── aiohttp * 
+│   │   ├── aiohappyeyeballs >=2.3.0 
+│   │   ├── aiosignal >=1.1.2 
+│   │   │   └── frozenlist >=1.1.0 
+│   │   ├── async-timeout >=4.0,<6.0 
+│   │   ├── attrs >=17.3.0 
+│   │   ├── frozenlist >=1.1.1 (circular dependency aborted here)
+│   │   ├── multidict >=4.5,<7.0 
+│   │   │   └── typing-extensions >=4.1.0 
+│   │   ├── propcache >=0.2.0 
+│   │   └── yarl >=1.17.0,<2.0 
+│   │       ├── idna >=2.0 
+│   │       ├── multidict >=4.0 (circular dependency aborted here)
+│   │       └── propcache >=0.2.0 (circular dependency aborted here)
+│   ├── matplotlib * 
+│   │   ├── contourpy >=1.0.1 
+│   │   │   └── numpy >=1.23 
+│   │   ├── cycler >=0.10 
+│   │   ├── fonttools >=4.22.0 
+│   │   ├── importlib-resources >=3.2.0 
+│   │   │   └── zipp >=3.1.0 
+│   │   ├── kiwisolver >=1.3.1 
+│   │   ├── numpy >=1.23 (circular dependency aborted here)
+│   │   ├── packaging >=20.0 
+│   │   ├── pillow >=8 
+│   │   ├── pyparsing >=2.3.1 
+│   │   └── python-dateutil >=2.7 
+│   │       └── six >=1.5 
+│   ├── numpy * (circular dependency aborted here)
+│   ├── openpyxl >=3.0.7 
+│   │   └── et-xmlfile * 
+│   ├── pandas >=1.2.3 
+│   │   ├── numpy >=1.23.2,<2 (circular dependency aborted here)
+│   │   ├── numpy >=1.22.4,<2 (circular dependency aborted here)
+│   │   ├── python-dateutil >=2.8.2 (circular dependency aborted here)
+│   │   ├── pytz >=2020.1 
+│   │   └── tzdata >=2022.1 
+│   ├── pandas-stubs >=1.1.0.11 
+│   │   ├── numpy >=1.23.5 (circular dependency aborted here)
+│   │   └── types-pytz >=2022.1.1 
+│   ├── plotly * 
+│   │   ├── narwhals >=1.15.1 
+│   │   └── packaging * (circular dependency aborted here)
+│   ├── requests >=2.20 
+│   │   ├── certifi >=2017.4.17 
+│   │   ├── charset-normalizer >=2,<4 
+│   │   ├── idna >=2.5,<4 (circular dependency aborted here)
+│   │   └── urllib3 >=1.21.1,<3 
+│   ├── scikit-learn >=1.0.2 
+│   │   ├── joblib >=1.2.0 
+│   │   ├── numpy >=1.19.5 (circular dependency aborted here)
+│   │   ├── scipy >=1.6.0 
+│   │   │   └── numpy >=1.22.4,<2.3 (circular dependency aborted here)
+│   │   └── threadpoolctl >=3.1.0 
+│   ├── scipy * (circular dependency aborted here)
+│   ├── tenacity >=8.0.1 
+│   └── tqdm * 
+│       └── colorama * 
+├── pendulum <3.0.0
+│   ├── python-dateutil >=2.6,<3.0 
+│   │   └── six >=1.5 
+│   └── pytzdata >=2020.1 
+├── pydantic >=1.10.8,<2.0.0
+│   └── typing-extensions >=4.2.0 
+├── pyjwt >=2.8.0,<3.0.0
+├── pyrate-limiter >=3.1.0,<3.2.0
+├── python-dateutil *
+│   └── six >=1.5 
+├── pytz 2024.1
+├── pyyaml >=6.0.1,<7.0.0
+├── requests *
+│   ├── certifi >=2017.4.17 
+│   ├── charset-normalizer >=2,<4 
+│   ├── idna >=2.5,<4 
+│   └── urllib3 >=1.21.1,<3 
+├── requests-cache *
+│   ├── attrs >=21.2 
+│   ├── cattrs >=22.2 
+│   │   ├── attrs >=23.1.0 (circular dependency aborted here)
+│   │   ├── exceptiongroup >=1.1.1 
+│   │   └── typing-extensions >=4.1.0,<4.6.3 || >4.6.3 
+│   ├── platformdirs >=2.5 
+│   ├── requests >=2.22 
+│   │   ├── certifi >=2017.4.17 
+│   │   ├── charset-normalizer >=2,<4 
+│   │   ├── idna >=2.5,<4 
+│   │   └── urllib3 >=1.21.1,<3 
+│   ├── url-normalize >=1.4 
+│   │   └── six * 
+│   └── urllib3 >=1.25.5 (circular dependency aborted here)
+├── tiktoken 0.4.0
+│   ├── regex >=2022.1.18 
+│   └── requests >=2.26.0 
+│       ├── certifi >=2017.4.17 
+│       ├── charset-normalizer >=2,<4 
+│       ├── idna >=2.5,<4 
+│       └── urllib3 >=1.21.1,<3 
+└── wcmatch 8.4
+    └── bracex >=2.1.1 
+coverage 7.7.1 Code coverage measurement for Python
+mypy 1.15.0 Optional static typing for Python
+├── mypy-extensions >=1.0.0
+├── tomli >=1.1.0
+└── typing-extensions >=4.6.0
+pytest 8.3.5 pytest: simple powerful testing with Python
+├── colorama *
+├── exceptiongroup >=1.0.0rc8
+├── iniconfig *
+├── packaging *
+├── pluggy >=1.5,<2
+└── tomli >=1
+ruff 0.3.7 An extremely fast Python linter and code formatter, written in Rust.
+sqlalchemy 1.4.51 Database Abstraction Library
+└── greenlet !=0.4.17
