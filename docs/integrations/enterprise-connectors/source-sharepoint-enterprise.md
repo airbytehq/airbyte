@@ -7,8 +7,6 @@ provide enhanced capabilities and support for critical enterprise systems.
 To learn more about enterprise connectors, please [talk to our sales team](https://airbyte.com/company/talk-to-sales).
 :::
 
-# Microsoft SharePoint
-
 <HideInUI>
 
 This page contains the setup guide and reference information for the [Microsoft SharePoint](https://portal.azure.com) source connector.
@@ -232,7 +230,7 @@ The Document file type format is a special format that allows you to extract tex
 
 One record will be emitted for each document. Keep in mind that large files can emit large records that might not fit into every destination as each destination has different limitations for string fields.
 
-Before parsing each document, the connector exports Google Document files to Docx format internally. Google Sheets, Google Slides, and drawings are internally exported and parsed by the connector as PDFs.
+Before parsing each document, the connector exports Word Document files to Docx format internally. Excel spreadsheets and Powerpoint presentations are internally exported and parsed by the connector as PDFs.
 
 <HideInUI>
 
@@ -263,7 +261,7 @@ Format options will not be taken into account. Instead, files will be transferre
 This mode allows to sync Sharepoint files permissions (ACLs) and Identities (users and groups) from your Sharepoint site. The Identities Stream is enabled by default.
 
 
-##### Preserve Sub-Directories in File Paths
+#### Preserve Sub-Directories in File Paths
 
 If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files will be synced by their names only. This option is ignored when file-based replication is not enabled.
 
