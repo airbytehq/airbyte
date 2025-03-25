@@ -31,9 +31,6 @@ import io.airbyte.cdk.load.file.parquet.ParquetWriterConfigurationProvider
  * legacy S3 destination, in the future if we add avro and parquet back we will add back a less
  * complicated version
  */
-@Deprecated(
-    message = "We will not be using the Avro and Parquet format from this class in the future."
-)
 interface DeprecatedObjectStorageFormatSpecificationProvider {
     @get:JsonSchemaTitle("Output Format")
     @get:JsonPropertyDescription(
@@ -101,10 +98,6 @@ interface DeprecatedObjectStorageFormatSpecificationProvider {
     JsonSubTypes.Type(value = JsonFormatSpecification::class, name = "JSONL"),
     JsonSubTypes.Type(value = AvroFormatSpecification::class, name = "Avro"),
     JsonSubTypes.Type(value = ParquetFormatSpecification::class, name = "Parquet")
-)
-@Deprecated(
-    message =
-        "This is part of the ObjectStorageFormatSpecificationProvider class that has been deprecated"
 )
 sealed class DeprecatedObjectStorageFormatSpecification(
     @JsonSchemaTitle("Format Type") open val formatType: Type
