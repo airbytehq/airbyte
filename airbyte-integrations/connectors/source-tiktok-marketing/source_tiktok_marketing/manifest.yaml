@@ -24,6 +24,7 @@ definitions:
       response_filters:
         - predicate: "{{ response.get('code') == 40100 }}"
           action: RATE_LIMITED
+          error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
         - predicate: "{{ response.get('code') != 0 }}"
           action: FAIL
           error_message: "{{ response['message'] }}"
@@ -37,15 +38,6 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path: ["data", "list"]
-
-  record_selector_with_filter_by_modify_time:
-    $ref: "#/definitions/record_selector"
-    record_filter:
-      type: CustomRecordFilter
-      class_name: "source_tiktok_marketing.components.semi_incremental_record_filter.PerPartitionRecordFilter"
-      condition: "{{ record['modify_time'] >= stream_state.get('modify_time', config.get('start_date', '')) }}"
-      $parameters:
-        partition_field: advertiser_id
 
   retriever:
     type: SimpleRetriever
@@ -370,23 +362,11 @@ definitions:
       schema:
         $ref: "#/definitions/schemas/creative_assets_videos"
 
-  record_selector_for_daily_reports_streams:
-    $ref: "#/definitions/record_selector"
-    record_filter:
-      type: CustomRecordFilter
-      class_name: "source_tiktok_marketing.components.semi_incremental_record_filter.PerPartitionRecordFilter"
-      condition: "{{ record['dimensions']['stat_time_day'] >= stream_state.get('stat_time_day', config.get('start_date', '')) }}"
-      $parameters:
-        partition_field: advertiser_id
-
   record_selector_for_hourly_reports_streams:
     $ref: "#/definitions/record_selector"
     record_filter:
-      type: CustomRecordFilter
-      class_name: "source_tiktok_marketing.components.semi_incremental_record_filter.PerPartitionRecordFilter"
-      condition: "{{ record['dimensions']['stat_time_hour'] >= stream_state.get('stat_time_hour', config.get('start_date', '')) }}"
-      $parameters:
-        partition_field: advertiser_id
+      type: RecordFilter
+      condition: "{{ record['dimensions']['stat_time_hour'] >= stream_interval['start_time'] }}"
 
   base_report_retriever:
     type: SimpleRetriever
@@ -405,7 +385,7 @@ definitions:
         $ref: "#/definitions/authenticator"
       request_body_json: {}
     record_selector:
-      $ref: "#/definitions/record_selector_for_daily_reports_streams"
+      $ref: "#/definitions/record_selector"
     paginator:
       $ref: "#/definitions/paginator_page_increment"
       pagination_strategy:
@@ -431,28 +411,27 @@ definitions:
       datetime_format: "%Y-%m-%d"
     end_datetime:
       type: MinMaxDatetime
-      datetime: "{{ config.get('end_date', today_utc()) }}"
+      datetime: "{{ config.get('end_date') if config.get('end_date') else format_datetime(now_utc(), '%Y-%m-%d') }}"
       datetime_format: "%Y-%m-%d"
 
   report_hourly_incremental_sync:
-    type: CustomIncrementalSync
-    class_name: source_tiktok_marketing.components.hourly_datetime_based_cursor.HourlyDatetimeBasedCursor
+    type: DatetimeBasedCursor
     cursor_field: "stat_time_hour"
     lookback_window: "P{{ config.get('attribution_window', 0) }}D"
     cursor_granularity: "PT1H"
     step: P1D
     cursor_datetime_formats:
-      - "%Y-%m-%d %H:%M:%S"
+      - "%Y-%m-%d"
       - "%Y-%m-%dT%H:%M:%SZ"
-    datetime_format: "%Y-%m-%d"
+    datetime_format: "%Y-%m-%d %H:%M:%S"
     start_datetime:
       type: MinMaxDatetime
-      datetime: "{{ config.get('start_date', '2016-09-01') }}"
-      datetime_format: "%Y-%m-%d"
+      datetime: "{{ format_datetime(config.get('start_date', '2016-09-01'), '%Y-%m-%d %H:%M:%S', '%Y-%m-%d') }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
     end_datetime:
       type: MinMaxDatetime
-      datetime: "{{ config.get('end_date', today_utc()) }}"
-      datetime_format: "%Y-%m-%d"
+      datetime: "{{ format_datetime((str_to_datetime(config.get('end_date')) if config.get('end_date') else now_utc()) + duration('P1D'), '%Y-%m-%d %H:%M:%S') }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
 
   base_report_daily:
     schema_loader:
@@ -462,9 +441,36 @@ definitions:
     retriever:
       $ref: "#/definitions/base_report_retriever"
       record_selector:
-        $ref: "#/definitions/record_selector_for_daily_reports_streams"
+        $ref: "#/definitions/record_selector"
     incremental_sync:
       $ref: "#/definitions/report_daily_incremental_sync"
+
+  base_report_hourly_retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/requester"
+      request_parameters:
+        service_type: "AUCTION"
+        report_type: "BASIC"
+        data_level: '{{ parameters["data_level"] }}'
+        dimensions: '{{ parameters["dimensions"] | string }}'
+        metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency", "video_play_actions", "video_watched_2s", "video_watched_6s", "average_video_play", "average_video_play_per_user", "video_views_p25", "video_views_p50", "video_views_p75", "video_views_p100", "profile_visits", "likes", "comments", "shares", "follows", "clicks_on_music_disc", "real_time_app_install", "real_time_app_install_cost", "app_install"]) | string }}'
+        start_date: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%d %H:%M:%S') }}"
+        end_date: "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%d', '%Y-%m-%d %H:%M:%S') }}"
+        filtering: '{{ parameters["filtering"] | string if parameters.get("filtering") and config.get("include_deleted", False)}}'
+      authenticator:
+        $ref: "#/definitions/authenticator"
+      request_body_json: {}
+    record_selector:
+      $ref: "#/definitions/record_selector_for_hourly_reports_streams"
+    paginator:
+      $ref: "#/definitions/paginator_page_increment"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 1000
+        start_from_page: 1
+    partition_router:
+      $ref: "#/definitions/single_id_partition_router"
 
   base_report_hourly:
     schema_loader:
@@ -472,7 +478,7 @@ definitions:
       schema:
         $ref: "#/definitions/schemas/base_report"
     retriever:
-      $ref: "#/definitions/base_report_retriever"
+      $ref: "#/definitions/base_report_hourly_retriever"
       record_selector:
         $ref: "#/definitions/record_selector_for_hourly_reports_streams"
     incremental_sync:
@@ -709,7 +715,7 @@ definitions:
         $ref: "#/definitions/authenticator"
       request_body_json: {}
     record_selector:
-      $ref: "#/definitions/record_selector_for_daily_reports_streams"
+      $ref: "#/definitions/record_selector"
     paginator:
       $ref: "#/definitions/paginator_page_increment"
       pagination_strategy:
@@ -1619,6 +1625,224 @@ definitions:
             value: "{{ record.dimensions.age }}"
       - type: CustomTransformation
         class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  spark_ads_stream:
+    type: DeclarativeStream
+    name: spark_ads
+    primary_key:
+      - spark_ads_post_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        path: tt_video/list/
+      record_selector:
+        $ref: "#/definitions/record_selector"
+      paginator:
+        $ref: "#/definitions/paginator_page_increment"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 50
+          start_from_page: 1
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: advertiser_id
+            request_option:
+              type: RequestOption
+              inject_into: request_parameter
+              field_name: advertiser_id
+            partition_field: advertiser_id
+            stream:
+              $ref: "#/definitions/advertisers_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - spark_ads_post_id
+            value: "{{ record['item_info']['item_id'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/spark_ads"
+
+  pixels:
+    type: DeclarativeStream
+    name: pixels
+    primary_key:
+      - pixel_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        path: pixel/list/
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - pixels
+        schema_normalization: Default
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        page_size_option:
+          type: RequestOption
+          field_name: page_size
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 20
+          start_from_page: 1
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: advertiser_id
+            request_option:
+              type: RequestOption
+              field_name: advertiser_id
+              inject_into: request_parameter
+            partition_field: advertiser_id
+            stream:
+              $ref: "#/definitions/advertisers_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/pixels"
+
+  pixel_instant_page_events:
+    type: DeclarativeStream
+    name: pixel_instant_page_events
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        path: pixel/instant_page/event/
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - list
+        schema_normalization: Default
+      partition_router:
+        - type: ListPartitionRouter
+          values:
+            - APP_PROMOTION
+            - WEB_CONVERSIONS
+            - REACH
+            - TRAFFIC
+            - VIDEO_VIEWS
+            - PRODUCT_SALES
+            - ENGAGEMENT
+            - LEAD_GENERATION
+            - RF_REACH
+            - TOPVIEW_REACH
+          cursor_field: objective_type
+          request_option:
+            type: RequestOption
+            field_name: objective_type
+            inject_into: request_parameter
+        - type: ListPartitionRouter
+          values:
+            - CLICK
+            - CONVERT
+            - INSTALL
+            - IN_APP_EVENT
+            - SHOW
+            - REACH
+            - LEAD_GENERATION
+            - CONVERSATION
+            - FOLLOWERS
+            - PAGE_VISIT
+            - VALUE
+            - AUTOMATIC_VALUE_OPTIMIZATION
+            - GMV
+            - PURCHASES
+            - INITIATE_CHECKOUTS
+            - MT_LIVE_ROOM
+            - PRODUCT_CLICK_IN_LIVE
+            - ENGAGED_VIEW
+            - ENGAGED_VIEW_FIFTEEN
+            - TRAFFIC_LANDING_PAGE_VIEW
+            - DESTINATION_VISIT
+            - PREFERRED_LEAD
+          cursor_field: optimization_goal
+          request_option:
+            type: RequestOption
+            field_name: optimization_goal
+            inject_into: request_parameter
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: advertiser_id
+              request_option:
+                type: RequestOption
+                field_name: advertiser_id
+                inject_into: request_parameter
+              partition_field: advertiser_id
+              stream:
+                $ref: "#/definitions/advertisers_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/pixel_instant_page_events"
+
+  pixel_events_statistics:
+    type: DeclarativeStream
+    name: pixel_events_statistics
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        path: pixel/event/stats/
+        http_method: GET
+        request_parameters:
+          pixel_ids: "{{ [stream_partition['pixel_id']] }}"
+          date_range: >-
+            {"start_date":{{
+            day_delta(29, format='%Y-%m-%d') }},"end_date":{{ format_datetime(now_utc(),
+            '%Y-%m-%d') }}}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - list
+        schema_normalization: Default
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: advertiser_id
+              request_option:
+                type: RequestOption
+                field_name: advertiser_id
+                inject_into: request_parameter
+              partition_field: advertiser_id
+              stream:
+                $ref: "#/definitions/advertisers_stream"
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: pixel_id
+              partition_field: pixel_id
+              stream:
+                $ref: "#/definitions/pixels"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/pixel_events_statistics"
 
   schemas:
     advertiser_ids:
@@ -4112,6 +4336,438 @@ definitions:
               type:
                 - "null"
                 - string
+    spark_ads:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        spark_ads_post_id:
+          type:
+            - "null"
+            - string
+        user_info:
+          type:
+            - "null"
+            - object
+          properties:
+            tiktok_name:
+              type:
+                - "null"
+                - string
+            identity_id:
+              type:
+                - "null"
+                - string
+            identity_type:
+              type:
+                - "null"
+                - string
+        item_info:
+          type:
+            - "null"
+            - object
+          properties:
+            anchor_list:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  status:
+                    type:
+                      - "null"
+                      - string
+                  product_regions:
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - string
+                  url:
+                    type:
+                      - "null"
+                      - string
+                  title:
+                    type:
+                      - "null"
+                      - string
+            text:
+              type:
+                - "null"
+                - string
+            status:
+              type:
+                - "null"
+                - string
+            auth_code:
+              type:
+                - "null"
+                - string
+            item_id:
+              type:
+                - "null"
+                - string
+            item_type:
+              type:
+                - "null"
+                - string
+            carousel_info:
+              type:
+                - "null"
+                - object
+        auth_info:
+          type:
+            - "null"
+            - object
+          properties:
+            auth_start_time:
+              type:
+                - "null"
+                - string
+              format: date-time
+            ad_auth_status:
+              type:
+                - "null"
+                - string
+            invite_start_time:
+              type:
+                - "null"
+                - string
+              format: date-time
+            auth_end_time:
+              type:
+                - "null"
+                - string
+              format: date-time
+        video_info:
+          type:
+            - "null"
+            - object
+          properties:
+            duration:
+              type:
+                - "null"
+                - number
+            preview_url:
+              type:
+                - "null"
+                - string
+            bit_rate:
+              type:
+                - "null"
+                - integer
+            height:
+              type:
+                - "null"
+                - integer
+            width:
+              type:
+                - "null"
+                - integer
+            signature:
+              type:
+                - "null"
+                - string
+            size:
+              type:
+                - "null"
+                - integer
+            poster_url:
+              type:
+                - "null"
+                - string
+    pixels:
+      type: object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        pixel_id:
+          description: Pixel ID
+          type:
+            - "null"
+            - string
+        pixel_code:
+          description: Pixel Code. The ID you see on the Events Manager platform.
+          type:
+            - "null"
+            - string
+        pixel_name:
+          description: Pixel Name
+          type:
+            - "null"
+            - string
+        pixel_category:
+          description: The Pixel data connection event category for the Pixel.
+          type:
+            - "null"
+            - string
+        pixel_script:
+          description: Pixel code, generated by the system.
+          type:
+            - "null"
+            - string
+        create_time:
+          description: Time when the pixel was created, in the format of YYYY-MM-DD HH:MM:SS.
+          type:
+            - "null"
+            - string
+          format: date-time
+        pixel_setup_mode:
+          description: Setup mode of the pixel.
+          type:
+            - "null"
+            - string
+        partner_name:
+          description: Partner name
+          type:
+            - "null"
+            - string
+        advanced_matching_fields:
+          description: Advanced Matching settings for the pixel
+          type:
+            - "null"
+            - object
+          properties:
+            phone_number:
+              description: Whether phone number is enabled for Advanced Matching
+              type:
+                - "null"
+                - boolean
+            email:
+              description: Whether email is enabled for Advanced Matching
+              type:
+                - "null"
+                - boolean
+        asset_ownership:
+          description: Asset ownership data
+          type:
+            - "null"
+            - object
+          properties:
+            asset_relation_status:
+              description: Asset relationship status.
+              type:
+                - "null"
+                - string
+            ownership_status:
+              description: Whether the pixel is owned by the advertiser (advertiser_id).
+              type:
+                - "null"
+                - boolean
+            owner_bc_id:
+              description: ID of the Business Center that owns the pixel as an asset.
+              type:
+                - "null"
+                - string
+        events:
+          description: A list of Pixel Events.
+          type:
+            - "null"
+            - array
+          items:
+            type:
+              - "null"
+              - object
+            properties:
+              currency_value:
+                description: Event conversion value (if not specified when the event was created, it returns " ").
+                type:
+                  - "null"
+                  - string
+              currency:
+                description: Event corresponding currency.
+                type:
+                  - "null"
+                  - boolean
+              name:
+                description: Event name.
+                type:
+                  - "null"
+                  - string
+              deprecated:
+                description: Whether the event is deprecated.
+                type:
+                  - "null"
+                  - boolean
+              event_type:
+                description: Returned only for a Standard Pixel Event. Standard Pixel Event type.
+                type:
+                  - "null"
+                  - string
+              optimization_event:
+                description: The conversion event type for a Standard Pixel Event (event_type).
+                type:
+                  - "null"
+                  - string
+              custom_event_type:
+                description: Returned only for a Custom Pixel Event. Custom Pixel Event type.
+                type:
+                  - "null"
+                  - string
+              event_code:
+                description: Event Code.
+                type:
+                  - "null"
+                  - string
+              event_id:
+                description: Event ID.
+                type:
+                  - "null"
+                  - string
+              statistic_type:
+                description: Statistics type
+                type:
+                  - "null"
+                  - string
+              rules:
+                description: Data connection event rules
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    operator:
+                      description: Operator
+                      type:
+                        - "null"
+                        - string
+                    trigger:
+                      description: Event trigger type
+                      type:
+                        - "null"
+                        - string
+                    value:
+                      description: Variable value.
+                      type:
+                        - "null"
+                        - string
+                    variable:
+                      description: Variable type
+                      type:
+                        - "null"
+                        - string
+    pixel_instant_page_events:
+      type: object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        business_type:
+          description: Business type.
+          type:
+            - "null"
+            - string
+        instant_page_events:
+          description: Instant page events
+          type:
+            - "null"
+            - object
+          properties:
+            objective_types:
+              description: List of objective types
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  objective_type:
+                    description: Objective type.
+                    type:
+                      - "null"
+                      - string
+                  optimization_goals:
+                    description: List of optimization goals
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        optimization_goal:
+                          description: Optimization goal
+                          type:
+                            - "null"
+                            - string
+                        optimization_events:
+                          description: List of external actions.
+                          type:
+                            - "null"
+                            - array
+                          items:
+                            type:
+                              - "null"
+                              - string
+    pixel_events_statistics:
+      type: object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        pixel_id:
+          description: Pixel ID.
+          type:
+            - "null"
+            - string
+        statistics:
+          description: Statistics.
+          type:
+            - "null"
+            - array
+          items:
+            type:
+              - "null"
+              - object
+            properties:
+              pixel_event_type:
+                description: Standard Pixel Event type.
+                type:
+                  - "null"
+                  - string
+              custom_event_type:
+                description: Custom Pixel Event type. Custom Events are actions that TikTok partners can define themselves beyond the predefined Standard Events list.
+                type:
+                  - "null"
+                  - string
+              attributed_count:
+                description: Attributed events (number of events attributed to your ad).
+                type:
+                  - "null"
+                  - integer
+              preview_count:
+                description: Number of preview events (number of events generated by ad preview).
+                type:
+                  - "null"
+                  - integer
+              total_count:
+                description: Total number of pixel events for a specific event type (pixel_event_type or custom_event_type) received from all data sources.
+                type:
+                  - "null"
+                  - integer
+              browser_event_total_count:
+                description: Number of pixel events for a specific event type received from web browser.
+                type:
+                  - "null"
+                  - integer
+              server_event_total_count:
+                description: Number of pixel events for a specific event type received from server.
+                type:
+                  - "null"
+                  - integer
 
 streams:
   - $ref: "#/definitions/advertiser_ids_stream"
@@ -4150,6 +4806,10 @@ streams:
   - $ref: "#/definitions/campaigns_reports_lifetime_stream"
   - $ref: "#/definitions/ad_groups_reports_lifetime_stream"
   - $ref: "#/definitions/advertisers_audience_reports_lifetime_stream"
+  - $ref: "#/definitions/spark_ads_stream"
+  - $ref: "#/definitions/pixels"
+  - $ref: "#/definitions/pixel_instant_page_events"
+  - $ref: "#/definitions/pixel_events_statistics"
 
 spec:
   type: Spec
@@ -4314,7 +4974,7 @@ spec:
 # If time allows it, we can definitely try to scope this number a bit better empirically.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 3
+  default_concurrency: "{{ config.get('concurrency_level', 3) }}"
   max_concurrency: 20
 
 metadata:

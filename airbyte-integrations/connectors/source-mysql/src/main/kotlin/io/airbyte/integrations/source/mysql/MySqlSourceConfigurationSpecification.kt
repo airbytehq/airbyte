@@ -101,6 +101,7 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
         "The encryption method with is used when communicating with the database.",
     )
     @JsonSchemaInject(json = """{"order":8}""")
+    @JsonSchemaDefault("required")
     fun getEncryptionValue(): EncryptionSpecification? = encryptionJson ?: encryption.asEncryption()
 
     @JsonIgnore
@@ -285,7 +286,7 @@ class SslVerifyIdentity : EncryptionSpecification {
 
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.ssl_mode")
 class MicronautPropertiesFriendlyEncryptionSpecification {
-    var mode: String = "preferred"
+    var mode: String = "required"
     var sslCertificate: String? = null
 
     @JsonValue

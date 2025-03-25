@@ -7,6 +7,7 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateValue
+import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
@@ -125,13 +126,16 @@ class AirbyteValueToIcebergRecord {
     }
 }
 
-fun ObjectValue.toIcebergRecord(schema: Schema): GenericRecord {
-    val record = GenericRecord.create(schema)
+fun Map<String, EnrichedAirbyteValue>.toIcebergRecord(icebergSchema: Schema): GenericRecord {
+    val record = GenericRecord.create(icebergSchema)
     val airbyteValueToIcebergRecord = AirbyteValueToIcebergRecord()
-    schema.asStruct().fields().forEach { field ->
-        val value = this.values[field.name()]
+    icebergSchema.asStruct().fields().forEach { field ->
+        val value = this[field.name()]
         if (value != null) {
-            record.setField(field.name(), airbyteValueToIcebergRecord.convert(value, field.type()))
+            record.setField(
+                field.name(),
+                airbyteValueToIcebergRecord.convert(value.abValue, field.type())
+            )
         }
     }
     return record

@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pipelines"
-version = "5.1.0"
+version = "5.2.2"
 description = "Packaged maintained by the connector operations team to perform CI for connectors' pipelines"
 authors = ["Airbyte <contact@airbyte.io>"]
 
@@ -31,7 +31,6 @@ segment-analytics-python = "^2.2.3"
 pygit2 = "^1.13.1"
 asyncclick = "^8.1.3.4"
 certifi = ">=2024"
-tomli = "^2.0.1"
 tomli-w = "^1.0.0"
 dpath = "^2.1.6"
 xmltodict = "^0.13.0"
