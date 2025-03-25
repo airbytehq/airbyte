@@ -4,4 +4,6 @@
 
 package io.airbyte.integrations.destination.azure_blob_storage
 
-class AzureBlobStorageSpecification {}
+import io.airbyte.cdk.command.ConfigurationSpecification
+
+class AzureBlobStorageSpecification : ConfigurationSpecification() {}
