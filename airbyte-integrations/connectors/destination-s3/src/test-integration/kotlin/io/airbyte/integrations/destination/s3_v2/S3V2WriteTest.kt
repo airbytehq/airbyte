@@ -46,7 +46,7 @@ abstract class S3V2WriteTest(
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
-        S3V2SpecificationDeprecated::class.java,
+        S3V2Specification::class.java,
         S3V2DataDumper,
         NoopDestinationCleaner,
         expectedRecordMapper,

@@ -22,7 +22,7 @@ import jakarta.inject.Singleton
 @Singleton
 @JsonSchemaTitle("S3 V2 Destination Spec")
 @JsonSchemaInject()
-class S3V2SpecificationDeprecated :
+class S3V2Specification :
     ConfigurationSpecification(),
     AWSAccessKeySpecification,
     AWSArnRoleSpecification,

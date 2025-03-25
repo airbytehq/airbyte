@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 
 class S3V2CheckTest :
-    CheckIntegrationTest<S3V2SpecificationDeprecated>(
+    CheckIntegrationTest<S3V2Specification>(
         successConfigFilenames =
             listOf(
                 CheckTestConfig(
