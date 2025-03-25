@@ -103,6 +103,7 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
+| 1.7.3 | 2025-03-25 | [53695](https://github.com/airbytehq/airbyte/pull/53695) | fix object_types string to array |
 | 1.7.3 | 2025-02-15 | [53695](https://github.com/airbytehq/airbyte/pull/53695) | Fix parameter of `categories`, `discounts`, `items`, `modifier_list` `taxes` |
 | 1.7.2 | 2024-10-29 | [47869](https://github.com/airbytehq/airbyte/pull/47869) | Update dependencies |
 | 1.7.1 | 2024-10-28 | [47608](https://github.com/airbytehq/airbyte/pull/47608) | Update dependencies |
