@@ -40,8 +40,7 @@ data:
         upgradeDeadline: "2025-05-30"
         scopedImpact:
           - scopeType: stream
-            impactedScopes:
-              ["contact_lists", "contacts_list_memberships"]
+            impactedScopes: ["contact_lists", "contacts_list_memberships"]
       4.0.0:
         message: >-
           This update brings extended schema with data type changes for the streams

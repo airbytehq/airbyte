@@ -1495,6 +1495,7 @@ class ContactLists(IncrementalStream):
             if record["objectTypeId"] == "0-1":
                 yield record
 
+
 # class ContactsAllBase(ClientSideIncrementalStream):
 class ContactsAllBase(Stream):
     url = "/contacts/v1/lists/all/contacts/all"
@@ -1602,6 +1603,7 @@ class ContactsListMemberships(ContactsAllBase, ClientSideIncrementalStream):
             list_memberships = response.json().get("results", [])
             record["list-memberships"] = list_memberships
         yield from super()._transform(records)
+
 
 class ContactsFormSubmissions(ContactsAllBase, ResumableFullRefreshMixin, ABC):
     records_field = "form-submissions"
