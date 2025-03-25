@@ -40,27 +40,27 @@ interface DeprecatedObjectStorageFormatSpecificationProvider {
 
     fun toObjectStorageFormatConfiguration(): ObjectStorageFormatConfiguration {
         return when (format) {
-            is JsonFormatSpecificationDeprecated ->
+            is JsonFormatSpecification ->
                 JsonFormatConfiguration(
                     rootLevelFlattening =
-                        (format as JsonFormatSpecificationDeprecated).flattening ==
+                        (format as JsonFormatSpecification).flattening ==
                             FlatteningSpecificationProvider.Flattening.ROOT_LEVEL_FLATTENING
                 )
-            is CSVFormatSpecificationDeprecated ->
+            is CSVFormatSpecification ->
                 CSVFormatConfiguration(
                     rootLevelFlattening =
-                        (format as CSVFormatSpecificationDeprecated).flattening ==
+                        (format as CSVFormatSpecification).flattening ==
                             FlatteningSpecificationProvider.Flattening.ROOT_LEVEL_FLATTENING
                 )
-            is AvroFormatSpecificationDeprecated ->
+            is AvroFormatSpecification ->
                 AvroFormatConfiguration(
                     avroCompressionConfiguration =
-                        (format as AvroFormatSpecificationDeprecated)
+                        (format as AvroFormatSpecification)
                             .compressionCodec
                             .toCompressionConfiguration()
                 )
-            is ParquetFormatSpecificationDeprecated -> {
-                (format as ParquetFormatSpecificationDeprecated).let {
+            is ParquetFormatSpecification -> {
+                (format as ParquetFormatSpecification).let {
                     ParquetFormatConfiguration(
                         parquetWriterConfiguration =
                             ParquetWriterConfiguration(
@@ -93,10 +93,10 @@ interface DeprecatedObjectStorageFormatSpecificationProvider {
     property = "format_type"
 )
 @JsonSubTypes(
-    JsonSubTypes.Type(value = CSVFormatSpecificationDeprecated::class, name = "CSV"),
-    JsonSubTypes.Type(value = JsonFormatSpecificationDeprecated::class, name = "JSONL"),
-    JsonSubTypes.Type(value = AvroFormatSpecificationDeprecated::class, name = "Avro"),
-    JsonSubTypes.Type(value = ParquetFormatSpecificationDeprecated::class, name = "Parquet")
+    JsonSubTypes.Type(value = CSVFormatSpecification::class, name = "CSV"),
+    JsonSubTypes.Type(value = JsonFormatSpecification::class, name = "JSONL"),
+    JsonSubTypes.Type(value = AvroFormatSpecification::class, name = "Avro"),
+    JsonSubTypes.Type(value = ParquetFormatSpecification::class, name = "Parquet")
 )
 @Deprecated(
     message =
@@ -126,7 +126,7 @@ interface FlatteningSpecificationProvider {
 
 /** CSV */
 @JsonSchemaTitle("CSV: Comma-Separated Values")
-class CSVFormatSpecificationDeprecated(
+class CSVFormatSpecification(
     @JsonSchemaTitle("Format Type")
     @JsonProperty("format_type")
     override val formatType: Type = Type.CSV
@@ -142,7 +142,7 @@ class CSVFormatSpecificationDeprecated(
 
 /** JSONL */
 @JsonSchemaTitle("JSON Lines: Newline-delimited JSON")
-class JsonFormatSpecificationDeprecated(
+class JsonFormatSpecification(
     @JsonSchemaTitle("Format Type")
     @JsonProperty("format_type")
     override val formatType: Type = Type.JSONL
@@ -158,7 +158,7 @@ class JsonFormatSpecificationDeprecated(
 
 /** AVRO */
 @JsonSchemaTitle("Avro: Apache Avro")
-class AvroFormatSpecificationDeprecated(
+class AvroFormatSpecification(
     @JsonSchemaTitle("Format Type")
     @JsonProperty("format_type")
     @JsonSchemaInject(json = """{"order":0}""")
@@ -177,7 +177,7 @@ class AvroFormatSpecificationDeprecated(
 
 /** Parquet */
 @JsonSchemaTitle("Parquet: Columnar Storage")
-class ParquetFormatSpecificationDeprecated(
+class ParquetFormatSpecification(
     @JsonSchemaTitle("Format Type")
     @JsonProperty("format_type")
     override val formatType: Type = Type.PARQUET
