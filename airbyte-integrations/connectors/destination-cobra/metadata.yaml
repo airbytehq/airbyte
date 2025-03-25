@@ -18,7 +18,7 @@ data:
   connectorSubtype: api
   connectorType: destination
   definitionId: 227f7285-74af-44cf-9055-66d24695aee6
-  dockerImageTag: 0.0.4
+  dockerImageTag: 0.0.5
   dockerRepository: airbyte/destination-cobra
   githubIssueLabel: destination-cobra
   icon: salesforce.svg

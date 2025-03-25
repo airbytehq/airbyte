@@ -14,6 +14,8 @@ class SalesforceRecordAssembler:
         self._url_base = url_base
 
     def assemble(self, sf_object: str, record: Dict[str, Any]) -> Dict[str, Any]:
+        # Note that we assemble here even if the record only has the field `Id` which is the case for the delete operation.
+        # The drawback seems to be minimal though i.e. that we do one API call to get the field types for the object.
         type_by_field = self._get_type_by_field(sf_object)
 
         sf_record = deepcopy(record)

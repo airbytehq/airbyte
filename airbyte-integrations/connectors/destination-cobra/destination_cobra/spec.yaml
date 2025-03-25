@@ -68,6 +68,7 @@ connectionSpecification:
               - INSERT
               - UPDATE
               - UPSERT
+              - DELETE
           upsert_key:
             title: Upsert key
             description: "Given the operation is an upsert, a field representing an external ID needs to be provided"

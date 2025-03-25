@@ -240,7 +240,7 @@ class RecordProcessor:
         string_io = StringIO()
         writer = csv.DictWriter(string_io, fieldnames=keys, lineterminator="\n")
         writer.writeheader()
-        writer.writerows(map(lambda record: self._assembler.assemble(sf_object, record.data), batch.get()))  # TODO normalize datetime
+        writer.writerows(map(lambda record: self._assembler.assemble(sf_object, record.data), batch.get()))
         return string_io.getvalue()
 
     @staticmethod

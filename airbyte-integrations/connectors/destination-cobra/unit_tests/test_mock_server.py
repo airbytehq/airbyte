@@ -307,7 +307,7 @@ class DestinationCobraTest(TestCase):
     @patch("time.sleep", return_value=None)
     @HttpMocker()
     def test_given_update_operation_and_record_with_id_when_write_then_complete_successfully(self, sleep, http_mocker) -> None:
-        config = self._config().with_stream_mapping(_INPUT_STREAM, _SALESFORCE_OBJECT, "INSERT").build()
+        config = self._config().with_stream_mapping(_INPUT_STREAM, _SALESFORCE_OBJECT, "UPDATE").build()
         self._given_authentication(http_mocker, config, _INSTANCE_URL, _ACCESS_TOKEN)
         self._mock_salesforce_describe(
             http_mocker,
@@ -316,8 +316,35 @@ class DestinationCobraTest(TestCase):
         )
 
         record_data = {"Id": _A_RECORD_ID, "field_to_be_updated": "new data"}
-        self._given_successful_jobs(http_mocker, "insert", f"Id,field_to_be_updated\n{_A_RECORD_ID},new data\n")
+        self._given_successful_jobs(http_mocker, "update", f"Id,field_to_be_updated\n{_A_RECORD_ID},new data\n")
         self._mock_failed_results(http_mocker, _A_JOB_ID, '"sf__Id","sf__Error",Id,field_to_be_updated')
+
+        output = list(
+            self._destination(config).write(
+                config,
+                _ANY_CATALOG,
+                [AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream=_INPUT_STREAM, data=record_data, emitted_at=0))],
+            )
+        )
+
+        # HttpMocker validates that all expected requests were made
+        assert len(output) == 1
+        assert output[0].log.message == "Sync completed"
+
+    @patch("time.sleep", return_value=None)
+    @HttpMocker()
+    def test_given_delete_operation_and_record_with_id_when_write_then_complete_successfully(self, sleep, http_mocker) -> None:
+        config = self._config().with_stream_mapping(_INPUT_STREAM, _SALESFORCE_OBJECT, "DELETE").build()
+        self._given_authentication(http_mocker, config, _INSTANCE_URL, _ACCESS_TOKEN)
+        self._mock_salesforce_describe(
+            http_mocker,
+            _SALESFORCE_OBJECT,
+            [SalesforceFieldBuilder().with_name("Id").with_type("id")],
+        )
+
+        record_data = {"Id": _A_RECORD_ID}
+        self._given_successful_jobs(http_mocker, "delete", f"Id\n{_A_RECORD_ID}\n")
+        self._mock_failed_results(http_mocker, _A_JOB_ID, '"sf__Id","sf__Error",Id')
 
         output = list(
             self._destination(config).write(
