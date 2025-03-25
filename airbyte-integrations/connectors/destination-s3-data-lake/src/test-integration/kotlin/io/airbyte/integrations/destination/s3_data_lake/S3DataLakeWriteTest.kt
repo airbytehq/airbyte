@@ -90,6 +90,11 @@ class GlueWriteTest :
         val failure = expectFailure { runSync(updatedConfig, catalog, messages = emptyList()) }
         assertContains(failure.message, "Detected naming conflicts between streams")
     }
+
+    @Test
+    override fun testUnknownTypes() {
+        super.testUnknownTypes()
+    }
 }
 
 class GlueAssumeRoleWriteTest :
