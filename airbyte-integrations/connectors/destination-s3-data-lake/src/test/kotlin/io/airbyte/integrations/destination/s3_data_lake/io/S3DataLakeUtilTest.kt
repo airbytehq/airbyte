@@ -210,8 +210,20 @@ internal class S3DataLakeUtilTest {
                 stream = airbyteStream,
                 declaredFields =
                     mapOf(
-                        "id" to EnrichedAirbyteValue(IntegerValue(42L), IntegerType, "id"),
-                        "name" to EnrichedAirbyteValue(StringValue("John Doe"), StringType, "name")
+                        "id" to
+                            EnrichedAirbyteValue(
+                                IntegerValue(42L),
+                                IntegerType,
+                                "id",
+                                airbyteMetaField = null
+                            ),
+                        "name" to
+                            EnrichedAirbyteValue(
+                                StringValue("John Doe"),
+                                StringType,
+                                "name",
+                                airbyteMetaField = null
+                            )
                     ),
                 undeclaredFields = emptyMap(),
                 emittedAtMs = System.currentTimeMillis(),
@@ -259,13 +271,26 @@ internal class S3DataLakeUtilTest {
                 stream = airbyteStream,
                 declaredFields =
                     mapOf(
-                        "id" to EnrichedAirbyteValue(IntegerValue(42L), IntegerType, "id"),
-                        "name" to EnrichedAirbyteValue(StringValue("John Doe"), StringType, "name"),
+                        "id" to
+                            EnrichedAirbyteValue(
+                                IntegerValue(42L),
+                                IntegerType,
+                                "id",
+                                airbyteMetaField = null
+                            ),
+                        "name" to
+                            EnrichedAirbyteValue(
+                                StringValue("John Doe"),
+                                StringType,
+                                "name",
+                                airbyteMetaField = null
+                            ),
                         AIRBYTE_CDC_DELETE_COLUMN to
                             EnrichedAirbyteValue(
                                 TimestampWithTimezoneValue("2024-01-01T00:00:00Z"),
                                 TimestampTypeWithTimezone,
-                                AIRBYTE_CDC_DELETE_COLUMN
+                                AIRBYTE_CDC_DELETE_COLUMN,
+                                airbyteMetaField = null,
                             ),
                     ),
                 undeclaredFields = emptyMap(),
@@ -312,8 +337,20 @@ internal class S3DataLakeUtilTest {
                 stream = airbyteStream,
                 declaredFields =
                     mapOf(
-                        "id" to EnrichedAirbyteValue(IntegerValue(42L), IntegerType, "id"),
-                        "name" to EnrichedAirbyteValue(StringValue("John Doe"), StringType, "name"),
+                        "id" to
+                            EnrichedAirbyteValue(
+                                IntegerValue(42L),
+                                IntegerType,
+                                "id",
+                                airbyteMetaField = null
+                            ),
+                        "name" to
+                            EnrichedAirbyteValue(
+                                StringValue("John Doe"),
+                                StringType,
+                                "name",
+                                airbyteMetaField = null
+                            ),
                     ),
                 undeclaredFields = emptyMap(),
                 emittedAtMs = System.currentTimeMillis(),
