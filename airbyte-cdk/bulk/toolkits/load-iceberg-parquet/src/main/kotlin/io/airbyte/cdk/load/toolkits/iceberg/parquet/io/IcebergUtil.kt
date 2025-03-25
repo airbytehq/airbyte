@@ -7,15 +7,36 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
-import io.airbyte.cdk.load.data.MapperPipeline
+import io.airbyte.cdk.load.data.AirbyteType
+import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.AirbyteValueCoercer
+import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
+import io.airbyte.cdk.load.data.ArrayValue
+import io.airbyte.cdk.load.data.EnrichedAirbyteValue
+import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
-import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergRecord
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
+import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.math.BigDecimal
+import java.math.BigInteger
 import javax.inject.Singleton
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.CatalogUtil
@@ -129,41 +150,90 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     }
 
     /**
-     * Converts an Airbyte [DestinationRecordAirbyteValue] into an Iceberg [Record]. The converted
-     * record will be wrapped to include [Operation] information, which is used by the writer to
-     * determine how to write the data to the underlying Iceberg files.
+     * Converts an Airbyte [EnrichedDestinationRecordAirbyteValue] into an Iceberg [Record]. The
+     * converted record will be wrapped to include [Operation] information, which is used by the
+     * writer to determine how to write the data to the underlying Iceberg files.
      *
-     * @param record The Airbyte [DestinationRecordAirbyteValue] record to be converted for writing
-     * by Iceberg.
+     * @param record The Airbyte [EnrichedDestinationRecordAirbyteValue] record to be converted for
+     * writing by Iceberg.
      * @param stream The Airbyte [DestinationStream] that contains information about the stream.
      * @param tableSchema The Iceberg [Table] [Schema].
-     * @param pipeline The [MapperPipeline] used to convert the Airbyte record to an Iceberg record.
-     * @return An Iceberg [Record] representation of the Airbyte [DestinationRecordAirbyteValue].
+     * @return An Iceberg [Record] representation of the [EnrichedDestinationRecordAirbyteValue].
      */
     fun toRecord(
-        record: DestinationRecordAirbyteValue,
+        record: EnrichedDestinationRecordAirbyteValue,
         stream: DestinationStream,
         tableSchema: Schema,
-        pipeline: MapperPipeline
     ): Record {
-        val dataMapped =
-            pipeline
-                .map(record.data, record.meta?.changes)
-                .withAirbyteMeta(stream, record.emittedAtMs, true)
-        // TODO figure out how to detect the actual operation value
+        record.declaredFields.forEach { (_, value) ->
+            value.transformValueRecursingIntoArrays { element, elementType ->
+                when (elementType) {
+                    // Convert complex types to string
+                    // (note that schemaless arrays are stringified, but schematized arrays are not)
+                    ArrayTypeWithoutSchema,
+                    is ObjectType,
+                    ObjectTypeWithEmptySchema,
+                    ObjectTypeWithoutSchema,
+                    is UnionType,
+                    is UnknownType ->
+                        // serializing to string is a non-lossy operation, so don't generate a
+                        // Meta.Change object.
+                        ChangedValue(
+                            StringValue(element.serializeToString()),
+                            changeDescription = null
+                        )
+
+                    // Null out numeric values that exceed int64/float64
+                    is NumberType -> nullOutOfRangeNumber(element)
+                    is IntegerType -> nullOutOfRangeInt(element)
+
+                    // otherwise, don't change anything
+                    else -> null
+                }
+            }
+        }
+
         return RecordWrapper(
-            delegate = dataMapped.toIcebergRecord(tableSchema),
+            delegate = record.allTypedFields.toIcebergRecord(tableSchema),
             operation = getOperation(record = record, importType = stream.importType)
         )
     }
 
-    fun toIcebergSchema(stream: DestinationStream, pipeline: MapperPipeline): Schema {
+    private fun nullOutOfRangeInt(numberValue: AirbyteValue): ChangedValue? {
+        return if (
+            BigInteger.valueOf(Long.MIN_VALUE) <= (numberValue as IntegerValue).value &&
+                numberValue.value <= BigInteger.valueOf(Long.MAX_VALUE)
+        ) {
+            null
+        } else {
+            ChangedValue(
+                NullValue,
+                ChangeDescription(Change.NULLED, Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+            )
+        }
+    }
+
+    private fun nullOutOfRangeNumber(numberValue: AirbyteValue): ChangedValue? {
+        return if (
+            BigDecimal(Double.MIN_VALUE) <= (numberValue as NumberValue).value &&
+                numberValue.value <= BigDecimal(Double.MAX_VALUE)
+        ) {
+            null
+        } else {
+            ChangedValue(
+                NullValue,
+                ChangeDescription(Change.NULLED, Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+            )
+        }
+    }
+
+    fun toIcebergSchema(stream: DestinationStream): Schema {
         val primaryKeys =
             when (stream.importType) {
                 is Dedupe -> (stream.importType as Dedupe).primaryKey
                 else -> emptyList()
             }
-        return pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(primaryKeys)
+        return stream.schema.withAirbyteMeta(true).toIcebergSchema(primaryKeys)
     }
 
     private fun getSortOrder(schema: Schema): SortOrder {
@@ -173,13 +243,12 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     }
 
     private fun getOperation(
-        record: DestinationRecordAirbyteValue,
+        record: EnrichedDestinationRecordAirbyteValue,
         importType: ImportType,
     ): Operation =
         if (
-            record.data is ObjectValue &&
-                (record.data as ObjectValue).values[AIRBYTE_CDC_DELETE_COLUMN] != null &&
-                (record.data as ObjectValue).values[AIRBYTE_CDC_DELETE_COLUMN] !is NullValue
+            record.declaredFields[AIRBYTE_CDC_DELETE_COLUMN] != null &&
+                record.declaredFields[AIRBYTE_CDC_DELETE_COLUMN]!!.abValue !is NullValue
         ) {
             Operation.DELETE
         } else if (importType is Dedupe) {
@@ -188,3 +257,58 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
             Operation.INSERT
         }
 }
+
+/**
+ * Our Airbyte<>Iceberg schema conversion generates strongly-typed arrays.
+ *
+ * This function applies a function to every non-array-typed value, recursing into arrays as needed.
+ * [transformer] may assume that the AirbyteValue is a valid value for the AirbyteType. For example,
+ * if [transformer] is called with a [NumberType], it is safe to cast the value to [NumberValue].
+ */
+fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
+    transformer: (AirbyteValue, AirbyteType) -> ChangedValue?
+) {
+    /**
+     * Recurse through ArrayValues, until we find a non-ArrayType field, coercing to ArrayValue as
+     * needed, then apply [transformer]. If [transformer] returns a [ChangedValue], modify the
+     * original ArrayValue's element (and populate [EnrichedAirbyteValue.changes] if needed).
+     */
+    fun recurseArray(
+        currentValue: AirbyteValue,
+        currentType: AirbyteType,
+        path: String,
+    ): AirbyteValue {
+        if (currentValue == NullValue) {
+            return NullValue
+        } else if (currentType is ArrayType) {
+            // If the type is another array, we recurse deeper.
+            val coercedArray = AirbyteValueCoercer.coerceArray(currentValue)
+            if (coercedArray == null) {
+                changes.add(
+                    Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR),
+                )
+                return NullValue
+            }
+            return ArrayValue(
+                coercedArray.values.mapIndexed { index, element ->
+                    val newPath = "$path.$index"
+                    recurseArray(element, currentType.items.type, newPath)
+                }
+            )
+        } else {
+            // If we're at a leaf node, call the transformer.
+            val transformedValue = transformer(currentValue, currentType) ?: return currentValue
+            val (newValue, changeDescription) = transformedValue
+            changeDescription?.let { (change, reason) ->
+                changes.add(Meta.Change(path, change, reason))
+            }
+            return newValue
+        }
+    }
+
+    abValue = recurseArray(abValue, type, name)
+}
+
+data class ChangeDescription(val change: Change, val reason: Reason)
+
+data class ChangedValue(val newValue: AirbyteValue, val changeDescription: ChangeDescription?)
