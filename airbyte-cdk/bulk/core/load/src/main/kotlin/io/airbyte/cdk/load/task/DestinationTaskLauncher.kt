@@ -292,6 +292,7 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     }
 
     override suspend fun handleSetupComplete() {
+        syncManager.markSetupComplete()
         if (loadPipeline == null) {
             log.info { "Setup task complete, opening streams" }
             catalog.streams.forEach { openStreamQueue.publish(it) }
