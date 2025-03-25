@@ -9,14 +9,14 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.ChannelMessageQueue
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.message.StrictPartitionedQueue
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.state.ReservationManager
-import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
 import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.airbyte.cdk.load.write.LoadStrategy
@@ -120,8 +120,8 @@ class SyncBeanFactory {
     @Named("recordQueue")
     fun recordQueue(
         loadStrategy: LoadStrategy? = null,
-    ): PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>> {
-        return PartitionedQueue(
+    ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
+        return StrictPartitionedQueue(
             Array(loadStrategy?.inputPartitions ?: 1) {
                 ChannelMessageQueue(Channel(Channel.UNLIMITED))
             }
