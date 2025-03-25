@@ -10,15 +10,13 @@ import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
 
-abstract class AzureBlobStorageWriteTest(
-    configContents: String,
-    stringifySchemalessObjects: Boolean,
-) :
+abstract class AzureBlobStorageWriteTest(configContents: String) :
     BasicFunctionalityIntegrationTest(
         configContents = configContents,
         configSpecClass = AzureBlobStorageSpecification::class.java,
-        dataDumper = TODO(),
+        dataDumper = AzureBlobStorageDataDumper(),
         destinationCleaner = NoopDestinationCleaner,
         isStreamSchemaRetroactive = false,
         supportsDedup = false,
@@ -39,3 +37,7 @@ abstract class AzureBlobStorageWriteTest(
         }
     }
 }
+
+@Disabled class AzureBlobStorageCsvWriteTest : AzureBlobStorageWriteTest(TODO())
+
+@Disabled class AzureBlobStorageJsonlWriteTest : AzureBlobStorageWriteTest(TODO())
