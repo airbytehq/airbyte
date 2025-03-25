@@ -26,6 +26,10 @@ import io.airbyte.cdk.load.file.parquet.ParquetWriterConfigurationProvider
  *
  * See [io.airbyte.cdk.load.command.DestinationConfiguration] for more details on how to use this
  * interface.
+ *
+ * This class has been deprecated. The Avro and Parquet formats from this class exist to support the
+ * legacy S3 destination, in the future if we add avro and parquet back we will add back a less
+ * complicated version
  */
 @Deprecated(
     message = "We will not be using the Avro and Parquet format from this class in the future."
