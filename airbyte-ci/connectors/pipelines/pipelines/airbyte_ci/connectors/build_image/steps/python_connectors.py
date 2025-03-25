@@ -6,6 +6,7 @@
 from typing import Any
 
 from dagger import Container, Platform
+
 from pipelines.airbyte_ci.connectors.build_image.steps import build_customization
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -90,6 +91,8 @@ class BuildConnectorImages(BuildConnectorImagesBase):
 
         connector_container = build_customization.apply_airbyte_entrypoint(base_connector_container, self.context.connector)
         customized_connector = await build_customization.post_install_hooks(self.context.connector, connector_container, self.logger)
+        # Make sure the user has access to /tmp
+        customized_connector = customized_connector.with_exec(["chown", "-R", f"{user}:{user}", "/tmp"])
         return customized_connector.with_user(user)
 
     async def _build_from_dockerfile(self, platform: Platform) -> Container:

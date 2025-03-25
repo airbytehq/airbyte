@@ -261,7 +261,9 @@ table tr:last-child td:last-child {
   border-bottom-right-radius: 10px;
 }
 
-
+table th code {
+  color: var(--ifm-color-content);
+}
 
 table td code {
   background-color: var(--color-blue-30);
@@ -277,4 +279,9 @@ table tr:hover {
 }
 table thead tr:hover {
   background-color: transparent;
+}
+
+svg.inline-svg {
+  max-height: 1em;
+  max-width: 1em;
 }

@@ -44,6 +44,20 @@ This Source is capable of syncing the following Streams:
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.3.18 | 2025-03-22 | [56260](https://github.com/airbytehq/airbyte/pull/56260) | Update dependencies |
+| 0.3.17 | 2025-03-08 | [55638](https://github.com/airbytehq/airbyte/pull/55638) | Update dependencies |
+| 0.3.16 | 2025-03-01 | [55145](https://github.com/airbytehq/airbyte/pull/55145) | Update dependencies |
+| 0.3.15 | 2025-02-22 | [54502](https://github.com/airbytehq/airbyte/pull/54502) | Update dependencies |
+| 0.3.14 | 2025-02-15 | [54092](https://github.com/airbytehq/airbyte/pull/54092) | Update dependencies |
+| 0.3.13 | 2025-02-08 | [53528](https://github.com/airbytehq/airbyte/pull/53528) | Update dependencies |
+| 0.3.12 | 2025-02-01 | [53100](https://github.com/airbytehq/airbyte/pull/53100) | Update dependencies |
+| 0.3.11 | 2025-01-25 | [52412](https://github.com/airbytehq/airbyte/pull/52412) | Update dependencies |
+| 0.3.10 | 2025-01-18 | [52007](https://github.com/airbytehq/airbyte/pull/52007) | Update dependencies |
+| 0.3.9 | 2025-01-11 | [51396](https://github.com/airbytehq/airbyte/pull/51396) | Update dependencies |
+| 0.3.8 | 2024-12-28 | [50820](https://github.com/airbytehq/airbyte/pull/50820) | Update dependencies |
+| 0.3.7 | 2024-12-21 | [50316](https://github.com/airbytehq/airbyte/pull/50316) | Update dependencies |
+| 0.3.6 | 2024-12-14 | [49760](https://github.com/airbytehq/airbyte/pull/49760) | Update dependencies |
+| 0.3.5 | 2024-12-12 | [49422](https://github.com/airbytehq/airbyte/pull/49422) | Update dependencies |
 | 0.3.4 | 2024-12-11 | [48178](https://github.com/airbytehq/airbyte/pull/48178) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.3.3 | 2024-10-29 | [47858](https://github.com/airbytehq/airbyte/pull/47858) | Update dependencies |
 | 0.3.2 | 2024-10-28 | [47564](https://github.com/airbytehq/airbyte/pull/47564) | Update dependencies |

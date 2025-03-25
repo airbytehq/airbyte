@@ -64,6 +64,18 @@ The Pendo source connector supports the following [sync modes](https://docs.airb
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.15 | 2025-03-22 | [56161](https://github.com/airbytehq/airbyte/pull/56161) | Update dependencies |
+| 0.2.14 | 2025-03-08 | [55559](https://github.com/airbytehq/airbyte/pull/55559) | Update dependencies |
+| 0.2.13 | 2025-03-01 | [55031](https://github.com/airbytehq/airbyte/pull/55031) | Update dependencies |
+| 0.2.12 | 2025-02-23 | [54580](https://github.com/airbytehq/airbyte/pull/54580) | Update dependencies |
+| 0.2.11 | 2025-02-15 | [54003](https://github.com/airbytehq/airbyte/pull/54003) | Update dependencies |
+| 0.2.10 | 2025-02-08 | [53456](https://github.com/airbytehq/airbyte/pull/53456) | Update dependencies |
+| 0.2.9 | 2025-02-01 | [52970](https://github.com/airbytehq/airbyte/pull/52970) | Update dependencies |
+| 0.2.8 | 2025-01-25 | [52524](https://github.com/airbytehq/airbyte/pull/52524) | Update dependencies |
+| 0.2.7 | 2025-01-18 | [51901](https://github.com/airbytehq/airbyte/pull/51901) | Update dependencies |
+| 0.2.6 | 2025-01-11 | [51299](https://github.com/airbytehq/airbyte/pull/51299) | Update dependencies |
+| 0.2.5 | 2025-01-04 | [50244](https://github.com/airbytehq/airbyte/pull/50244) | Update dependencies |
+| 0.2.4 | 2024-12-14 | [48313](https://github.com/airbytehq/airbyte/pull/48313) | Update dependencies |
 | 0.2.3 | 2024-10-29 | [47847](https://github.com/airbytehq/airbyte/pull/47847) | Update dependencies |
 | 0.2.2 | 2024-10-28 | [47563](https://github.com/airbytehq/airbyte/pull/47563) | Update dependencies |
 | 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |

@@ -7,7 +7,6 @@ from unittest.mock import patch
 
 import pendulum
 import pytest
-from airbyte_cdk.models import SyncMode
 from source_hubspot.streams import (
     Campaigns,
     Companies,
@@ -43,6 +42,8 @@ from source_hubspot.streams import (
     Tickets,
     Workflows,
 )
+
+from airbyte_cdk.models import SyncMode
 
 from .utils import read_full_refresh, read_incremental
 
@@ -169,9 +170,7 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
     contact_lists_v1_response = [
         {
             "json": {
-                "contacts": [
-                    {"vid": "test_id", "merge-audits": [{"canonical-vid": 2, "vid-to-merge": 5608, "timestamp": 1653322839932}]}
-                ]
+                "contacts": [{"vid": "test_id", "merge-audits": [{"canonical-vid": 2, "vid-to-merge": 5608, "timestamp": 1653322839932}]}]
             },
             "status_code": 200,
         }
@@ -193,6 +192,7 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
     records = read_full_refresh(stream)
     assert records
 
+
 @pytest.mark.parametrize(
     "stream, endpoint, cursor_value",
     [
@@ -203,10 +203,12 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
     ids=[
         "Contacts stream with v2 field transformations",
         "Deals stream with v2 field transformations",
-        "DealsArchived stream with v2 field transformations"
-    ]
+        "DealsArchived stream with v2 field transformations",
+    ],
 )
-def test_stream_read_with_legacy_field_transformation(stream, endpoint, cursor_value, requests_mock, common_params, fake_properties_list, migrated_properties_list):
+def test_stream_read_with_legacy_field_transformation(
+    stream, endpoint, cursor_value, requests_mock, common_params, fake_properties_list, migrated_properties_list
+):
     stream = stream(**common_params)
     responses = [
         {
@@ -221,7 +223,7 @@ def test_stream_read_with_legacy_field_transformation(stream, endpoint, cursor_v
                             "hs_v2_date_exited_prospect": "2024-02-01T00:00:00Z",
                             "hs_v2_cumulative_time_in_prsopect": "1 month",
                             "hs_v2_some_other_property_in_prospect": "Great property",
-                        }
+                        },
                     }
                     | cursor_value
                 ],
@@ -246,44 +248,40 @@ def test_stream_read_with_legacy_field_transformation(stream, endpoint, cursor_v
     records = read_full_refresh(stream)
     assert records
     expected_record = {
-            "id": "test_id",
-            "created": "2022-02-25T16:43:11Z",
-            "properties": {
-                "hs_v2_date_entered_prospect": "2024-01-01T00:00:00Z",
-                "hs_v2_date_exited_prospect": "2024-02-01T00:00:00Z",
-                "hs_v2_latest_time_in_prospect": "1 month",
-                "hs_v2_cumulative_time_in_prsopect": "1 month",
-                "hs_v2_some_other_property_in_prospect": "Great property",
-                "hs_time_in_prospect": "1 month",
-                "hs_date_exited_prospect": "2024-02-01T00:00:00Z",
-            },
-            "properties_hs_v2_date_entered_prospect": "2024-01-01T00:00:00Z",
-            "properties_hs_v2_date_exited_prospect": "2024-02-01T00:00:00Z",
-            "properties_hs_v2_latest_time_in_prospect": "1 month",
-            "properties_hs_v2_cumulative_time_in_prsopect": "1 month",
-            "properties_hs_v2_some_other_property_in_prospect": "Great property",
-            "properties_hs_time_in_prospect": "1 month",
-            "properties_hs_date_exited_prospect": "2024-02-01T00:00:00Z",
-        } | cursor_value
+        "id": "test_id",
+        "created": "2022-02-25T16:43:11Z",
+        "properties": {
+            "hs_v2_date_entered_prospect": "2024-01-01T00:00:00Z",
+            "hs_v2_date_exited_prospect": "2024-02-01T00:00:00Z",
+            "hs_v2_latest_time_in_prospect": "1 month",
+            "hs_v2_cumulative_time_in_prsopect": "1 month",
+            "hs_v2_some_other_property_in_prospect": "Great property",
+            "hs_time_in_prospect": "1 month",
+            "hs_date_exited_prospect": "2024-02-01T00:00:00Z",
+        },
+        "properties_hs_v2_date_entered_prospect": "2024-01-01T00:00:00Z",
+        "properties_hs_v2_date_exited_prospect": "2024-02-01T00:00:00Z",
+        "properties_hs_v2_latest_time_in_prospect": "1 month",
+        "properties_hs_v2_cumulative_time_in_prsopect": "1 month",
+        "properties_hs_v2_some_other_property_in_prospect": "Great property",
+        "properties_hs_time_in_prospect": "1 month",
+        "properties_hs_date_exited_prospect": "2024-02-01T00:00:00Z",
+    } | cursor_value
     if isinstance(stream, Contacts):
         expected_record = expected_record | {"properties_hs_lifecyclestage_prospect_date": "2024-01-01T00:00:00Z"}
         expected_record["properties"] = expected_record["properties"] | {"hs_lifecyclestage_prospect_date": "2024-01-01T00:00:00Z"}
     else:
-        expected_record = expected_record | {"properties_hs_date_entered_prospect": "2024-01-01T00:00:00Z" }
-        expected_record["properties"] = expected_record["properties"] | {"hs_date_entered_prospect": "2024-01-01T00:00:00Z" }
+        expected_record = expected_record | {"properties_hs_date_entered_prospect": "2024-01-01T00:00:00Z"}
+        expected_record["properties"] = expected_record["properties"] | {"hs_date_entered_prospect": "2024-01-01T00:00:00Z"}
     assert records[0] == expected_record
 
 
-
 @pytest.mark.parametrize("sync_mode", [SyncMode.full_refresh, SyncMode.incremental])
-def test_crm_search_streams_with_no_associations(sync_mode, common_params,  requests_mock, fake_properties_list):
+def test_crm_search_streams_with_no_associations(sync_mode, common_params, requests_mock, fake_properties_list):
     stream = DealSplits(**common_params)
     stream_state = {
         "type": "STREAM",
-        "stream": {
-            "stream_descriptor": { "name": "deal_splits" },
-            "stream_state": { "updatedAt": "2021-01-01T00:00:00.000000Z" }
-        }
+        "stream": {"stream_descriptor": {"name": "deal_splits"}, "stream_state": {"updatedAt": "2021-01-01T00:00:00.000000Z"}},
     }
     cursor_value = {"updatedAt": "2022-02-25T16:43:11Z"}
     responses = [
@@ -583,7 +581,7 @@ def test_contacts_merged_audit_stream_doesnt_call_hubspot_to_get_json_schema(req
 
 def test_get_custom_objects_metadata_success(requests_mock, custom_object_schema, expected_custom_object_json_schema, api):
     requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
-    for (entity, fully_qualified_name, schema, custom_properties) in api.get_custom_objects_metadata():
+    for entity, fully_qualified_name, schema, custom_properties in api.get_custom_objects_metadata():
         assert entity == "animals"
         assert fully_qualified_name == "p19936848_Animal"
         assert schema == expected_custom_object_json_schema
@@ -741,3 +739,120 @@ def test_contacts_membership_transform(common_params):
         }
     ]
     assert [{"membership": 1, "canonical-vid": 1} for _ in versions] == list(stream._transform(records=records))
+
+
+@pytest.mark.parametrize(
+    "stream, cursor_value, data_to_cast, expected_casted_data",
+    [
+        (MarketingEmails, {"updatedAt": "2022-02-25T16:43:11Z"}, {"rootMicId": 123456}, {"rootMicId": "123456"}),
+        (MarketingEmails, {"updatedAt": "2022-02-25T16:43:11Z"}, {"rootMicId": None}, {"rootMicId": None}),
+        (MarketingEmails, {"updatedAt": "2022-02-25T16:43:11Z"}, {"rootMicId": "123456"}, {"rootMicId": "123456"}),
+        (MarketingEmails, {"updatedAt": "2022-02-25T16:43:11Z"}, {"rootMicId": 1234.56}, {"rootMicId": "1234.56"}),
+    ],
+)
+def test_cast_record_fields_with_schema_if_needed(stream, cursor_value, requests_mock, common_params, data_to_cast, expected_casted_data):
+    """
+    Test that the stream cast record fields with stream json schema if needed
+    """
+    stream = stream(**common_params)
+    responses = [
+        {
+            "json": {
+                stream.data_field: [
+                    {
+                        "id": "test_id",
+                        "created": "2022-02-25T16:43:11Z",
+                    }
+                    | data_to_cast
+                    | cursor_value
+                ],
+            }
+        }
+    ]
+
+    is_form_submission = isinstance(stream, FormSubmissions)
+    stream._sync_mode = SyncMode.full_refresh
+    stream_url = stream.url + "/test_id" if is_form_submission else stream.url
+    stream._sync_mode = None
+
+    requests_mock.register_uri("GET", stream_url, responses)
+    records = read_full_refresh(stream)
+    record = records[0]
+    for casted_key, casted_value in expected_casted_data.items():
+        assert record[casted_key] == casted_value
+
+
+@pytest.mark.parametrize(
+    "stream, endpoint, cursor_value, fake_properties_list_response, data_to_cast, expected_casted_data",
+    [
+        (
+            Deals,
+            "deal",
+            {"updatedAt": "2022-02-25T16:43:11Z"},
+            [("hs_closed_amount", "string")],
+            {"hs_closed_amount": 123456},
+            {"hs_closed_amount": "123456"},
+        ),
+        (
+            Deals,
+            "deal",
+            {"updatedAt": "2022-02-25T16:43:11Z"},
+            [("hs_closed_amount", "integer")],
+            {"hs_closed_amount": "123456"},
+            {"hs_closed_amount": 123456},
+        ),
+        (
+            Deals,
+            "deal",
+            {"updatedAt": "2022-02-25T16:43:11Z"},
+            [("hs_closed_amount", "number")],
+            {"hs_closed_amount": "123456.10"},
+            {"hs_closed_amount": 123456.10},
+        ),
+        (
+            Deals,
+            "deal",
+            {"updatedAt": "2022-02-25T16:43:11Z"},
+            [("hs_closed_amount", "boolean")],
+            {"hs_closed_amount": "1"},
+            {"hs_closed_amount": True},
+        ),
+    ],
+)
+def test_cast_record_fields_if_needed(
+    stream, endpoint, cursor_value, fake_properties_list_response, requests_mock, common_params, data_to_cast, expected_casted_data
+):
+    """
+    Test that the stream cast record fields in properties key with properties endpoint response if needed
+    """
+    stream = stream(**common_params)
+    responses = [
+        {
+            "json": {
+                stream.data_field: [{"id": "test_id", "created": "2022-02-25T16:43:11Z", "properties": data_to_cast} | cursor_value],
+            }
+        }
+    ]
+
+    properties_response = [
+        {
+            "json": [
+                {"name": property_name, "type": property_type, "updatedAt": 1571085954360, "createdAt": 1565059306048}
+                for property_name, property_type in fake_properties_list_response
+            ],
+            "status_code": 200,
+        }
+    ]
+
+    is_form_submission = isinstance(stream, FormSubmissions)
+    stream._sync_mode = SyncMode.full_refresh
+    stream_url = stream.url + "/test_id" if is_form_submission else stream.url
+    stream._sync_mode = None
+
+    requests_mock.register_uri("GET", stream_url, responses)
+    requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
+    records = read_full_refresh(stream)
+    assert records
+    record = records[0]
+    for casted_key, casted_value in expected_casted_data.items():
+        assert record["properties"][casted_key] == casted_value

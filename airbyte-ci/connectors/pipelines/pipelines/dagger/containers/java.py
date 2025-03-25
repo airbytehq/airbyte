@@ -5,13 +5,15 @@
 import datetime
 
 from dagger import CacheVolume, Container, File, Platform
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions.connector.hooks import finalize_build
 from pipelines.dagger.actions.connector.normalization import DESTINATION_NORMALIZATION_BUILD_CONFIGURATION, with_normalization
-from pipelines.helpers.utils import sh_dash_c
+from pipelines.helpers.utils import deprecated, sh_dash_c
 
 
+@deprecated("This function is deprecated. Please declare an explicit base image to use in the java connector metadata.")
 def with_integration_base(context: PipelineContext, build_platform: Platform) -> Container:
     return (
         context.dagger_client.container(platform=build_platform)
@@ -24,6 +26,7 @@ def with_integration_base(context: PipelineContext, build_platform: Platform) ->
     )
 
 
+@deprecated("This function is deprecated. Please declare an explicit base image to use in the java connector metadata.")
 def with_integration_base_java(context: PipelineContext, build_platform: Platform) -> Container:
     integration_base = with_integration_base(context, build_platform)
     yum_packages_to_install = [
@@ -72,6 +75,7 @@ def with_integration_base_java(context: PipelineContext, build_platform: Platfor
     )
 
 
+@deprecated("This function is deprecated. Please declare an explicit base image to use in the java connector metadata.")
 def with_integration_base_java_and_normalization(context: ConnectorContext, build_platform: Platform) -> Container:
     yum_packages_to_install = [
         "python3",
@@ -158,22 +162,32 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
             )
         )
     )
-
-    if (
+    # TODO: remove the condition below once all connectors have a base image declared in their metadata.
+    if "connectorBuildOptions" in context.connector.metadata and "baseImage" in context.connector.metadata["connectorBuildOptions"]:
+        base_image_address = context.connector.metadata["connectorBuildOptions"]["baseImage"]
+        context.logger.info(f"Using base image {base_image_address} from connector metadata to build connector.")
+        base = context.dagger_client.container(platform=build_platform).from_(base_image_address)
+    elif (
         context.connector.supports_normalization
         and DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["supports_in_connector_normalization"]
     ):
-        base = with_integration_base_java_and_normalization(context, build_platform)
-        entrypoint = ["/airbyte/run_with_normalization.sh"]
+        context.logger.warn(
+            f"Connector {context.connector.technical_name} has in-connector normalization enabled. This is supposed to be deprecated. "
+            f"Please declare a base image address in the connector metadata.yaml file (connectorBuildOptions.baseImage)."
+        )
+        base = with_integration_base_java_and_normalization(context, build_platform).with_entrypoint(["/airbyte/run_with_normalization.sh"])
     else:
-        base = with_integration_base_java(context, build_platform)
-        entrypoint = ["/airbyte/base.sh"]
+        context.logger.warn(
+            f"Connector {context.connector.technical_name} does not declare a base image in its connector metadata. "
+            f"Please declare a base image address in the connector metadata.yaml file (connectorBuildOptions.baseImage)."
+        )
+        base = with_integration_base_java(context, build_platform).with_entrypoint(["/airbyte/base.sh"])
 
+    current_user = (await base.with_exec(["whoami"]).stdout()).strip()
     connector_container = (
         base.with_workdir("/airbyte")
         .with_env_variable("APPLICATION", application)
-        .with_mounted_directory("built_artifacts", build_stage.directory("/airbyte"))
+        .with_mounted_directory("built_artifacts", build_stage.directory("/airbyte"), owner=current_user)
         .with_exec(sh_dash_c(["mv built_artifacts/* ."]))
-        .with_entrypoint(entrypoint)
     )
     return await finalize_build(context, connector_container)

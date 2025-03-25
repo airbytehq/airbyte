@@ -12,6 +12,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, List, Mapping, Optional
 
+from orjson import orjson
+
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import (
     AirbyteErrorTraceMessage,
@@ -27,7 +29,6 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
-from orjson import orjson
 
 
 class SourceLocalYaml(YamlDeclarativeSource):

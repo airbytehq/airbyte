@@ -17,8 +17,9 @@ from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
 from orchestrator.ops.slack import send_slack_message
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 
+
 GROUP_NAME = "github"
-TOOLING_TEAM_SLACK_TEAM_ID = "S077R8636CV"
+EXTENSIBILITY_TEAM_SLACK_TEAM_ID = "S077U1TH43D"
 # We give 6 hours for the metadata to be updated
 # This is an empirical value that we can adjust if needed
 # When our auto-merge pipeline runs it can merge hundreds of up-to-date PRs following.
@@ -171,7 +172,9 @@ def stale_gcs_latest_metadata_file(context, github_metadata_definitions: list, l
     any_stale = len(stale_connectors_df) > 0
     if any_stale and stale_report_channel:
         stale_report_md = stale_connectors_df.to_markdown(index=False)
-        send_slack_message(context, stale_report_channel, f"🚨 Stale metadata detected! (cc. <!subteam^{TOOLING_TEAM_SLACK_TEAM_ID}>)")
+        send_slack_message(
+            context, stale_report_channel, f"🚨 Stale metadata detected! (cc. <!subteam^{EXTENSIBILITY_TEAM_SLACK_TEAM_ID}>)"
+        )
         send_slack_message(context, stale_report_channel, stale_report_md, enable_code_block_wrapping=True)
     if not any_stale and publish_update_channel:
         message = textwrap.dedent(

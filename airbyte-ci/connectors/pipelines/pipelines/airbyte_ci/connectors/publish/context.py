@@ -9,6 +9,7 @@ from typing import List, Optional
 
 import asyncclick as click
 from github import PullRequest
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import PUBLISH_FAILURE_SLACK_CHANNEL, PUBLISH_UPDATES_SLACK_CHANNEL, ContextState
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
@@ -136,7 +137,6 @@ class PublishConnectorContext(ConnectorContext):
             return [PUBLISH_UPDATES_SLACK_CHANNEL]
 
     def create_slack_message(self) -> str:
-
         docker_hub_url = f"https://hub.docker.com/r/{self.connector.metadata['dockerRepository']}/tags"
         message = f"*{self.rollout_mode.value} <{docker_hub_url}|{self.docker_image}>*\n"
         if self.is_ci:
@@ -160,5 +160,5 @@ class PublishConnectorContext(ConnectorContext):
             assert self.report is not None, "Report should be set when state is successful"
             message += f"⏲️ Run duration: {format_duration(self.report.run_duration)}\n"
         if self.state is ContextState.FAILURE:
-            message += "\ncc. <!subteam^S077R8636CV>"
+            message += "\ncc. <!subteam^S077U1TH43D>"
         return message

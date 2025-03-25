@@ -47,6 +47,20 @@ Using this connector we can extract data from various streams such as contacts ,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.16 | 2025-03-22 | [56187](https://github.com/airbytehq/airbyte/pull/56187) | Update dependencies |
+| 0.0.15 | 2025-03-08 | [55549](https://github.com/airbytehq/airbyte/pull/55549) | Update dependencies |
+| 0.0.14 | 2025-03-01 | [54828](https://github.com/airbytehq/airbyte/pull/54828) | Update dependencies |
+| 0.0.13 | 2025-02-23 | [54549](https://github.com/airbytehq/airbyte/pull/54549) | Update dependencies |
+| 0.0.12 | 2025-02-15 | [53959](https://github.com/airbytehq/airbyte/pull/53959) | Update dependencies |
+| 0.0.11 | 2025-02-08 | [53254](https://github.com/airbytehq/airbyte/pull/53254) | Update dependencies |
+| 0.0.10 | 2025-02-01 | [52757](https://github.com/airbytehq/airbyte/pull/52757) | Update dependencies |
+| 0.0.9 | 2025-01-25 | [52274](https://github.com/airbytehq/airbyte/pull/52274) | Update dependencies |
+| 0.0.8 | 2025-01-18 | [51825](https://github.com/airbytehq/airbyte/pull/51825) | Update dependencies |
+| 0.0.7 | 2025-01-11 | [51160](https://github.com/airbytehq/airbyte/pull/51160) | Update dependencies |
+| 0.0.6 | 2024-12-28 | [50615](https://github.com/airbytehq/airbyte/pull/50615) | Update dependencies |
+| 0.0.5 | 2024-12-21 | [50130](https://github.com/airbytehq/airbyte/pull/50130) | Update dependencies |
+| 0.0.4 | 2024-12-14 | [49641](https://github.com/airbytehq/airbyte/pull/49641) | Update dependencies |
+| 0.0.3 | 2024-12-12 | [49228](https://github.com/airbytehq/airbyte/pull/49228) | Update dependencies |
 | 0.0.2 | 2024-12-11 | [48988](https://github.com/airbytehq/airbyte/pull/48988) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.1 | 2024-11-08 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 

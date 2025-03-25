@@ -7,6 +7,7 @@
 from typing import List, Sequence, Tuple
 
 from dagger import Container, File
+
 from pipelines.airbyte_ci.connectors.build_image.steps.manifest_only_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
@@ -14,7 +15,6 @@ from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, I
 from pipelines.airbyte_ci.connectors.test.steps.python_connectors import PytestStep
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
-from pipelines.models.steps import StepResult
 
 
 def get_test_steps(context: ConnectorTestContext) -> STEP_TREE:
@@ -64,7 +64,7 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
 
     title = "Manifest-only unit tests"
     test_directory_name = "unit_tests"
-    common_test_dependencies = ["pytest"]
+    common_test_dependencies = ["pytest", "requests-mock"]
 
     async def install_testing_environment(
         self,
@@ -82,10 +82,6 @@ class ManifestOnlyConnectorUnitTests(PytestStep):
         test_environment = built_connector_container.with_workdir(f"{connector_path}/unit_tests").with_exec(
             ["ln", "-s", "/source-declarative-manifest", connector_path]
         )
-
-        # Specify the root user for installation of dependencies.
-        # This is necessary to install poetry dependencies in rootless containers.
-        test_environment = test_environment.with_user("root")
 
         return await super().install_testing_environment(
             test_environment,

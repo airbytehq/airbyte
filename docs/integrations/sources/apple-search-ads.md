@@ -19,8 +19,13 @@ This page contains the setup guide and reference information for the Apple Searc
 4. Enter a name for your source.
 5. For **Org Id**, enter the Id of your organization (found in the Apple Search Ads UI).
 6. Enter the **Client ID** and the **Client Secret** from [Step 1](#step-1-set-up-apple-search-ads).
-7. For **Start Date** and **End Date**, enter the date in YYYY-MM-DD format. For DAILY reports, the Start Date can't be earlier than 90 days from today. If the End Date field is left blank, Airbyte will replicate data to today.
-8. Click **Set up source**.
+7. For **Start Date** and **End Date**, enter the date in YYYY-MM-DD format. For DAILY reports, the Start Date can't be
+   earlier than 90 days from today. If the End Date field is left blank, Airbyte will replicate data to today.
+8. When syncing large amounts of data over vast durations, you can customize **Exponential Backoff Factor** in order to
+   reduce the chance of synchronization failures in case of Apple's rate limit kicking in.
+9. You can also decrease the **Lookback Window** in order to sync smaller amounts of data on each incremental sync,
+   at the cost of missing late data attributions.
+10. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -43,6 +48,12 @@ The Apple Ads source connector supports the following streams. For more informat
 
 ### Report Streams
 
+::: note
+The usual primary keys for reports are `date` and `campaignId`.
+However, there are cases where active fields must be selected as primary keys to ensure data deduplication is correct.
+One example is `countryOrRegion`.
+:::
+
 - [campaigns_report_daily](https://developer.apple.com/documentation/apple_search_ads/get_campaign-level_reports)
 - [adgroups_report_daily](https://developer.apple.com/documentation/apple_search_ads/get__ad_group-level_reports)
 - [keywords_report_daily](https://developer.apple.com/documentation/apple_search_ads/get_keyword-level_reports)
@@ -59,9 +70,30 @@ However, at this moment and as indicated in the stream names, the connector only
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
-| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
-| 0.2.1  | 2024-11-08 | [48440](https://github.com/airbytehq/airbyte/pull/48440) | Set authentication grant_type to client_credentials |
-| 0.2.0  | 2024-10-01 | [46288](https://github.com/airbytehq/airbyte/pull/46288) | Migrate to Manifest-only |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| 0.7.1 | 2025-03-22 | [56109](https://github.com/airbytehq/airbyte/pull/56109) | Update dependencies |
+| 0.7.0 | 2025-03-20 | [55839](https://github.com/airbytehq/airbyte/pull/55839) | countryOrRegion metadata info included |
+| 0.6.0 | 2025-03-20 | [55785](https://github.com/airbytehq/airbyte/pull/55785) | Add timezone config parameter |
+| 0.5.1 | 2025-03-08 | [55366](https://github.com/airbytehq/airbyte/pull/55366) | Update dependencies |
+| 0.5.0 | 2025-03-05 | [55210](https://github.com/airbytehq/airbyte/pull/55210) | Remove primary keys |
+| 0.4.3 | 2025-03-01 | [54873](https://github.com/airbytehq/airbyte/pull/54873) | Update dependencies |
+| 0.4.2 | 2025-02-24 | [54646](https://github.com/airbytehq/airbyte/pull/54646) | Fix paginator settings for incremental report streams |
+| 0.4.1 | 2025-02-22 | [54284](https://github.com/airbytehq/airbyte/pull/54284) | Update dependencies |
+| 0.4.0 | 2025-02-20 | [54170](https://github.com/airbytehq/airbyte/pull/54170) | Externalize backoff factor and lookback window configurations |
+| 0.3.3 | 2025-02-15 | [53920](https://github.com/airbytehq/airbyte/pull/53920) | Update dependencies |
+| 0.3.2 | 2025-02-14 | [53685](https://github.com/airbytehq/airbyte/pull/53685) | Fix granularity to daily |
+| 0.3.1 | 2025-02-08 | [53422](https://github.com/airbytehq/airbyte/pull/53422) | Update dependencies |
+| 0.3.0 | 2025-02-03 | [53136](https://github.com/airbytehq/airbyte/pull/53136) | Update API version to V5 |
+| 0.2.9 | 2025-02-01 | [52899](https://github.com/airbytehq/airbyte/pull/52899) | Update dependencies |
+| 0.2.8 | 2025-01-25 | [52197](https://github.com/airbytehq/airbyte/pull/52197) | Update dependencies |
+| 0.2.7 | 2025-01-18 | [51745](https://github.com/airbytehq/airbyte/pull/51745) | Update dependencies |
+| 0.2.6 | 2025-01-11 | [51249](https://github.com/airbytehq/airbyte/pull/51249) | Update dependencies |
+| 0.2.5 | 2024-12-28 | [50469](https://github.com/airbytehq/airbyte/pull/50469) | Update dependencies |
+| 0.2.4 | 2024-12-21 | [50155](https://github.com/airbytehq/airbyte/pull/50155) | Update dependencies |
+| 0.2.3 | 2024-12-14 | [49561](https://github.com/airbytehq/airbyte/pull/49561) | Update dependencies |
+| 0.2.2 | 2024-12-12 | [47751](https://github.com/airbytehq/airbyte/pull/47751) | Update dependencies |
+| 0.2.1 | 2024-11-08 | [48440](https://github.com/airbytehq/airbyte/pull/48440) | Set authentication grant_type to client_credentials |
+| 0.2.0 | 2024-10-01 | [46288](https://github.com/airbytehq/airbyte/pull/46288) | Migrate to Manifest-only |
 | 0.1.20 | 2024-09-28 | [46153](https://github.com/airbytehq/airbyte/pull/46153) | Update dependencies |
 | 0.1.19 | 2024-09-21 | [45803](https://github.com/airbytehq/airbyte/pull/45803) | Update dependencies |
 | 0.1.18 | 2024-09-14 | [45474](https://github.com/airbytehq/airbyte/pull/45474) | Update dependencies |

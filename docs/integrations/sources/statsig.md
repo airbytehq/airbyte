@@ -43,6 +43,20 @@ See the [API docs](https://docs.statsig.com/http-api) for steps to generate the 
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.16 | 2025-03-22 | [56319](https://github.com/airbytehq/airbyte/pull/56319) | Update dependencies |
+| 0.0.15 | 2025-03-08 | [55596](https://github.com/airbytehq/airbyte/pull/55596) | Update dependencies |
+| 0.0.14 | 2025-03-01 | [55104](https://github.com/airbytehq/airbyte/pull/55104) | Update dependencies |
+| 0.0.13 | 2025-02-22 | [54492](https://github.com/airbytehq/airbyte/pull/54492) | Update dependencies |
+| 0.0.12 | 2025-02-15 | [54101](https://github.com/airbytehq/airbyte/pull/54101) | Update dependencies |
+| 0.0.11 | 2025-02-08 | [53586](https://github.com/airbytehq/airbyte/pull/53586) | Update dependencies |
+| 0.0.10 | 2025-02-01 | [53076](https://github.com/airbytehq/airbyte/pull/53076) | Update dependencies |
+| 0.0.9 | 2025-01-25 | [52458](https://github.com/airbytehq/airbyte/pull/52458) | Update dependencies |
+| 0.0.8 | 2025-01-18 | [51986](https://github.com/airbytehq/airbyte/pull/51986) | Update dependencies |
+| 0.0.7 | 2025-01-11 | [51440](https://github.com/airbytehq/airbyte/pull/51440) | Update dependencies |
+| 0.0.6 | 2024-12-28 | [50755](https://github.com/airbytehq/airbyte/pull/50755) | Update dependencies |
+| 0.0.5 | 2024-12-21 | [50310](https://github.com/airbytehq/airbyte/pull/50310) | Update dependencies |
+| 0.0.4 | 2024-12-14 | [49776](https://github.com/airbytehq/airbyte/pull/49776) | Update dependencies |
+| 0.0.3 | 2024-12-12 | [49419](https://github.com/airbytehq/airbyte/pull/49419) | Update dependencies |
 | 0.0.2 | 2024-10-28 | [47473](https://github.com/airbytehq/airbyte/pull/47473) | Update dependencies |
 | 0.0.1 | 2024-09-27 | | Initial release by [@topefolorunso](https://github.com/topefolorunso) via Connector Builder |
 

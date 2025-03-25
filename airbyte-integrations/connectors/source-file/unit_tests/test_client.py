@@ -8,12 +8,13 @@ from unittest.mock import patch, sentinel
 
 import pandas as pd
 import pytest
-from airbyte_cdk.utils import AirbyteTracedException
 from pandas import read_csv, read_excel, testing
 from paramiko import SSHException
 from source_file.client import Client, URLFile
 from source_file.utils import backoff_handler
 from urllib3.exceptions import ProtocolError
+
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 @pytest.fixture
@@ -99,8 +100,7 @@ def test_load_dataframes_xlsx(config, absolute_path, test_files, file_name, shou
         assert read_file.equals(expected)
 
 
-@pytest.mark.parametrize("file_format, file_path", [("json", "formats/json/demo.json"),
-                                                    ("jsonl", "formats/jsonl/jsonl_nested.jsonl")])
+@pytest.mark.parametrize("file_format, file_path", [("json", "formats/json/demo.json"), ("jsonl", "formats/jsonl/jsonl_nested.jsonl")])
 def test_load_nested_json(client, config, absolute_path, test_files, file_format, file_path):
     if file_format == "jsonl":
         config["format"] = file_format
@@ -131,11 +131,60 @@ def test_cache_stream(client, absolute_path, test_files):
     f = f"{absolute_path}/{test_files}/test.csv"
     with open(f, mode="rb") as file:
         assert client._cache_stream(file)
-        
+
+
 def test_unzip_stream(client, absolute_path, test_files):
     f = f"{absolute_path}/{test_files}/test.csv.zip"
     with open(f, mode="rb") as file:
         assert client._unzip(file)
+
+
+def test_unzip_canonical_ext(absolute_path, test_files):
+    config = {
+        "dataset_name": "BBB",
+        "format": "csv",
+        "url": f"{absolute_path}/{test_files}/test.csv.zip",
+        "provider": {"storage": "local"},
+        "reader_options": {"encoding": "utf-8"},
+    }
+
+    client = Client(**config)
+
+    with patch.object(client, "_unzip", wraps=client._unzip) as monkey:
+        next(client.read())
+        monkey.assert_called()
+
+
+def test_unzip_capitalized_ext(absolute_path, test_files):
+    config = {
+        "dataset_name": "CCC",
+        "format": "csv",
+        "url": f"{absolute_path}/{test_files}/test.csv.Zip",
+        "provider": {"storage": "local"},
+        "reader_options": {"encoding": "utf-8"},
+    }
+
+    client = Client(**config)
+
+    with patch.object(client, "_unzip", wraps=client._unzip) as monkey:
+        next(client.read())
+        monkey.assert_called()
+
+
+def test_unzip_all_caps_ext(absolute_path, test_files):
+    config = {
+        "dataset_name": "CCC",
+        "format": "csv",
+        "url": f"{absolute_path}/{test_files}/test.csv.ZIP",
+        "provider": {"storage": "local"},
+        "reader_options": {"encoding": "utf-8"},
+    }
+
+    client = Client(**config)
+
+    with patch.object(client, "_unzip", wraps=client._unzip) as monkey:
+        next(client.read())
+        monkey.assert_called()
 
 
 def test_open_aws_url():
@@ -223,9 +272,10 @@ def test_urlfile_open_backoff_sftp(monkeypatch, mocker):
 def test_backoff_handler(caplog):
     details = {"tries": 1, "wait": 1}
     backoff_handler(details)
-    expected = [('airbyte', 20, 'Caught retryable error after 1 tries. Waiting 1 seconds then retrying...')]
+    expected = [("airbyte", 20, "Caught retryable error after 1 tries. Waiting 1 seconds then retrying...")]
 
     assert caplog.record_tuples == expected
+
 
 def generate_excel_file(data):
     """

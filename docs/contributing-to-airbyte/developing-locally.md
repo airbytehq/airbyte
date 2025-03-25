@@ -286,23 +286,21 @@ The command to run formatting varies slightly depending on which part of the cod
 
 ### Connector
 
-We wrapped all our code formatting tools in [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md).
-Follow the instructions on the `airbyte-ci` page to install `airbyte-ci`.
+We wrapped our code formatting tools in [pre-commit](https://pre-commit.com). You can install this and other local dev tools by running `make tools.install`.
 
-You can run `airbyte-ci format fix all` to format all the code your local `airbyte` repository.
-We wrapped this command in a pre-push hook so that you can't push code that is not formatted.
+You can run `pre-commit` to format modified files, or `pre-commit run --all-files` to format all the code your local `airbyte` repository.
 
-To install the pre-push hook, run:
+We wrapped this command in a pre-push hook which you can enable with:
 
 ```bash
-make tools.pre-commit.setup
+make tools.git-hooks.install
 ```
 
-This will install `airbyte-ci` and the pre-push hook.
+You can also uninstall git hooks with:
 
-The pre-push hook runs formatting on all the repo files.
-If the hook attempts to format a file that is not part of your contribution, it means that formatting is also broken in
-the master branch. Please open a separate PR to fix the formatting in the master branch.
+```bash
+make tools.git-hooks.clean
+```
 
 ### Platform
 

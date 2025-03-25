@@ -28,6 +28,20 @@ The Airbyte connector for [TicketTailor](https://tickettailor.com) enables seaml
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.15 | 2025-03-22 | [56303](https://github.com/airbytehq/airbyte/pull/56303) | Update dependencies |
+| 0.0.14 | 2025-03-08 | [55578](https://github.com/airbytehq/airbyte/pull/55578) | Update dependencies |
+| 0.0.13 | 2025-03-01 | [55115](https://github.com/airbytehq/airbyte/pull/55115) | Update dependencies |
+| 0.0.12 | 2025-02-22 | [54519](https://github.com/airbytehq/airbyte/pull/54519) | Update dependencies |
+| 0.0.11 | 2025-02-15 | [54068](https://github.com/airbytehq/airbyte/pull/54068) | Update dependencies |
+| 0.0.10 | 2025-02-08 | [53544](https://github.com/airbytehq/airbyte/pull/53544) | Update dependencies |
+| 0.0.9 | 2025-02-01 | [53055](https://github.com/airbytehq/airbyte/pull/53055) | Update dependencies |
+| 0.0.8 | 2025-01-25 | [52404](https://github.com/airbytehq/airbyte/pull/52404) | Update dependencies |
+| 0.0.7 | 2025-01-18 | [51952](https://github.com/airbytehq/airbyte/pull/51952) | Update dependencies |
+| 0.0.6 | 2025-01-11 | [51414](https://github.com/airbytehq/airbyte/pull/51414) | Update dependencies |
+| 0.0.5 | 2024-12-28 | [50750](https://github.com/airbytehq/airbyte/pull/50750) | Update dependencies |
+| 0.0.4 | 2024-12-21 | [50327](https://github.com/airbytehq/airbyte/pull/50327) | Update dependencies |
+| 0.0.3 | 2024-12-14 | [49784](https://github.com/airbytehq/airbyte/pull/49784) | Update dependencies |
+| 0.0.2 | 2024-12-12 | [49374](https://github.com/airbytehq/airbyte/pull/49374) | Update dependencies |
 | 0.0.1 | 2024-11-06 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>

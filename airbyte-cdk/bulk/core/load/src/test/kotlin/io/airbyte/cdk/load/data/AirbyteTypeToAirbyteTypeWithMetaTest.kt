@@ -4,17 +4,16 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.Meta
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class AirbyteTypeToAirbyteTypeWithMetaTest {
     private val expectedMeta =
         linkedMapOf(
-            DestinationRecord.Meta.COLUMN_NAME_AB_RAW_ID to FieldType(StringType, nullable = false),
-            DestinationRecord.Meta.COLUMN_NAME_AB_EXTRACTED_AT to
-                FieldType(IntegerType, nullable = false),
-            DestinationRecord.Meta.COLUMN_NAME_AB_META to
+            Meta.COLUMN_NAME_AB_RAW_ID to FieldType(StringType, nullable = false),
+            Meta.COLUMN_NAME_AB_EXTRACTED_AT to FieldType(IntegerType, nullable = false),
+            Meta.COLUMN_NAME_AB_META to
                 FieldType(
                     ObjectType(
                         linkedMapOf(
@@ -42,8 +41,7 @@ internal class AirbyteTypeToAirbyteTypeWithMetaTest {
                     ),
                     nullable = false
                 ),
-            DestinationRecord.Meta.COLUMN_NAME_AB_GENERATION_ID to
-                FieldType(IntegerType, nullable = false)
+            Meta.COLUMN_NAME_AB_GENERATION_ID to FieldType(IntegerType, nullable = false)
         )
 
     @Test
@@ -58,8 +56,7 @@ internal class AirbyteTypeToAirbyteTypeWithMetaTest {
             )
         val withMeta = schema.withAirbyteMeta(flatten = false)
         val expected = ObjectType(expectedMeta)
-        expected.properties[DestinationRecord.Meta.COLUMN_NAME_DATA] =
-            FieldType(schema, nullable = false)
+        expected.properties[Meta.COLUMN_NAME_DATA] = FieldType(schema, nullable = false)
         assertEquals(expected, withMeta)
     }
 

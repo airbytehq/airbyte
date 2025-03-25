@@ -47,6 +47,15 @@ Please follow the [their documentation for generating an App API Key](https://cu
 
 | Version | Date       | Pull Request                                                   | Subject                    |
 | :------ | :--------- | :------------------------------------------------------------- | :------------------------- |
+| 0.3.13 | 2025-03-22 | [55918](https://github.com/airbytehq/airbyte/pull/55918) | Update dependencies |
+| 0.3.12 | 2025-03-08 | [55311](https://github.com/airbytehq/airbyte/pull/55311) | Update dependencies |
+| 0.3.11 | 2025-03-01 | [54942](https://github.com/airbytehq/airbyte/pull/54942) | Update dependencies |
+| 0.3.10 | 2025-02-22 | [54374](https://github.com/airbytehq/airbyte/pull/54374) | Update dependencies |
+| 0.3.9 | 2025-02-15 | [51670](https://github.com/airbytehq/airbyte/pull/51670) | Update dependencies |
+| 0.3.8 | 2025-01-11 | [51062](https://github.com/airbytehq/airbyte/pull/51062) | Update dependencies |
+| 0.3.7 | 2025-01-04 | [50582](https://github.com/airbytehq/airbyte/pull/50582) | Update dependencies |
+| 0.3.6 | 2024-12-21 | [49999](https://github.com/airbytehq/airbyte/pull/49999) | Update dependencies |
+| 0.3.5 | 2024-12-14 | [49490](https://github.com/airbytehq/airbyte/pull/49490) | Update dependencies |
 | 0.3.4 | 2024-12-12 | [48923](https://github.com/airbytehq/airbyte/pull/48923) | Update dependencies |
 | 0.3.3 | 2024-11-04 | [48225](https://github.com/airbytehq/airbyte/pull/48225) | Update dependencies |
 | 0.3.2 | 2024-10-28 | [47464](https://github.com/airbytehq/airbyte/pull/47464) | Update dependencies |

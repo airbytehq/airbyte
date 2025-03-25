@@ -227,7 +227,7 @@ The HubSpot source connector supports the following streams:
   - Fewer than 10,000 records are being synced
 - **EngagementsAll** if either of these criteria are not met.
 
-Because of this, the `engagements` stream can be slow to sync if it hasn't synced within the last 30 days and/or is generating large volumes of new data. To accomodate for this limitation, we recommend scheduling more frequent syncs.
+Because of this, the `engagements` stream can be slow to sync if it hasn't synced within the last 30 days and/or is generating large volumes of new data. To accommodate for this limitation, we recommend scheduling more frequent syncs.
 
 ### Notes on the `Forms` and `Form Submissions` stream
 
@@ -338,6 +338,15 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.5.1 | 2025-03-22 | [53818](https://github.com/airbytehq/airbyte/pull/53818) | Update dependencies |
+| 4.5.0 | 2025-03-10 | [54177](https://github.com/airbytehq/airbyte/pull/54177) | Add option to cast fields from stream json schema per list of fields |
+| 4.4.9 | 2025-02-01 | [52729](https://github.com/airbytehq/airbyte/pull/52729) | Update dependencies |
+| 4.4.8 | 2025-01-25 | [52295](https://github.com/airbytehq/airbyte/pull/52295) | Update dependencies |
+| 4.4.7 | 2025-01-11 | [51146](https://github.com/airbytehq/airbyte/pull/51146) | Update dependencies |
+| 4.4.6 | 2025-01-04 | [50898](https://github.com/airbytehq/airbyte/pull/50898) | Update dependencies |
+| 4.4.5 | 2024-12-28 | [50669](https://github.com/airbytehq/airbyte/pull/50669) | Update dependencies |
+| 4.4.4 | 2024-12-21 | [50138](https://github.com/airbytehq/airbyte/pull/50138) | Update dependencies |
+| 4.4.3 | 2024-12-14 | [48984](https://github.com/airbytehq/airbyte/pull/48984) | Update dependencies |
 | 4.4.2 | 2024-12-10 | [48480](https://github.com/airbytehq/airbyte/pull/48480) | Adds individual read scopes to LineItems Stream |
 | 4.4.1 | 2024-11-25 | [48662](https://github.com/airbytehq/airbyte/pull/48662) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 4.4.0 | 2024-11-18 | [48548](https://github.com/airbytehq/airbyte/pull/48548) | Promoting release candidate 4.4.0-rc.1 to a main version. |

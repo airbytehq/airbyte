@@ -36,6 +36,20 @@ A manifest only source for Productboard. https://www.productboard.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |---------|------------|----------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| 0.0.20 | 2025-03-22 | [56183](https://github.com/airbytehq/airbyte/pull/56183) | Update dependencies |
+| 0.0.19 | 2025-03-08 | [55540](https://github.com/airbytehq/airbyte/pull/55540) | Update dependencies |
+| 0.0.18 | 2025-03-01 | [54999](https://github.com/airbytehq/airbyte/pull/54999) | Update dependencies |
+| 0.0.17 | 2025-02-23 | [54577](https://github.com/airbytehq/airbyte/pull/54577) | Update dependencies |
+| 0.0.16 | 2025-02-15 | [53946](https://github.com/airbytehq/airbyte/pull/53946) | Update dependencies |
+| 0.0.15 | 2025-02-08 | [53485](https://github.com/airbytehq/airbyte/pull/53485) | Update dependencies |
+| 0.0.14 | 2025-02-01 | [53008](https://github.com/airbytehq/airbyte/pull/53008) | Update dependencies |
+| 0.0.13 | 2025-01-25 | [52504](https://github.com/airbytehq/airbyte/pull/52504) | Update dependencies |
+| 0.0.12 | 2025-01-18 | [51902](https://github.com/airbytehq/airbyte/pull/51902) | Update dependencies |
+| 0.0.11 | 2025-01-11 | [51300](https://github.com/airbytehq/airbyte/pull/51300) | Update dependencies |
+| 0.0.10 | 2024-12-28 | [50705](https://github.com/airbytehq/airbyte/pull/50705) | Update dependencies |
+| 0.0.9 | 2024-12-21 | [50290](https://github.com/airbytehq/airbyte/pull/50290) | Update dependencies |
+| 0.0.8 | 2024-12-14 | [49686](https://github.com/airbytehq/airbyte/pull/49686) | Update dependencies |
+| 0.0.7 | 2024-12-12 | [49331](https://github.com/airbytehq/airbyte/pull/49331) | Update dependencies |
 | 0.0.6 | 2024-12-11 | [49087](https://github.com/airbytehq/airbyte/pull/49087) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.5 | 2024-11-05 | [48365](https://github.com/airbytehq/airbyte/pull/48365) | Revert to source-declarative-manifest v5.17.0 |
 | 0.0.4 | 2024-11-05 | [48324](https://github.com/airbytehq/airbyte/pull/48324) | Update dependencies |

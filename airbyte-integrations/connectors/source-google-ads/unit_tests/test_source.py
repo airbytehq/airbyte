@@ -10,8 +10,6 @@ from unittest.mock import Mock, call
 
 import pendulum
 import pytest
-from airbyte_cdk import AirbyteTracedException
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, FailureType, SyncMode
 from pendulum import duration, today
 from source_google_ads.custom_query_stream import IncrementalCustomQuery
 from source_google_ads.google_ads import GoogleAds
@@ -19,6 +17,9 @@ from source_google_ads.models import CustomerModel
 from source_google_ads.source import SourceGoogleAds
 from source_google_ads.streams import AdGroupAdLegacy, chunk_date_range
 from source_google_ads.utils import GAQL
+
+from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, FailureType, SyncMode
 
 from .common import MockGoogleAdsClient
 

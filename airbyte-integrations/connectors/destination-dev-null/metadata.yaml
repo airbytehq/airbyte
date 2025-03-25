@@ -1,9 +1,18 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3
   connectorSubtype: file
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
   connectorType: destination
   definitionId: a7bcc9d8-13b3-4e49-b80d-d020b90045e3
-  dockerImageTag: 0.7.12
+  dockerImageTag: 0.7.20
   dockerRepository: airbyte/destination-dev-null
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/dev-null
   githubIssueLabel: destination-dev-null
   icon: airbyte.svg
   license: MIT
@@ -17,15 +26,8 @@ data:
   releases:
     rolloutConfiguration:
       enableProgressiveRollout: false
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/dev-null
-  tags:
-    - language:java
-  ab_internal:
-    sl: 100
-    ql: 100
   supportLevel: community
   supportsRefreshes: true
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

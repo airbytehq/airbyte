@@ -14,11 +14,12 @@ from typing import Any, List, Mapping, Optional, Union
 import dagger
 import docker
 import pytest
+from anyio import Path as AnyioPath
+from pydantic import ValidationError
+
 from airbyte_protocol.models import AirbyteMessage, ConfiguredAirbyteCatalog, OrchestratorType
 from airbyte_protocol.models import Type as AirbyteMessageType
-from anyio import Path as AnyioPath
 from connector_acceptance_test.utils import SecretDict
-from pydantic import ValidationError
 
 
 def splitlines_generator(input_string: str):

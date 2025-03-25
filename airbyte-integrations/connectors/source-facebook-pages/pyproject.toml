@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.0.23"
+version = "1.0.32"
 name = "source-facebook-pages"
 description = "Source implementation for Facebook Pages."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -23,6 +23,14 @@ airbyte-cdk = "^0"
 source-facebook-pages = "source_facebook_pages.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.1"
+pytest = "^8.0.0"
 pytest-mock = "^3.6.1"
 requests-mock = "^1.11.0"
+
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

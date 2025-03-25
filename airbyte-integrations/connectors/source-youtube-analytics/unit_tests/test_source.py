@@ -6,8 +6,9 @@ import json
 import os
 from unittest.mock import MagicMock
 
-from airbyte_cdk.sources.streams.http.auth.core import NoAuth
 from source_youtube_analytics.source import SourceYoutubeAnalytics
+
+from airbyte_cdk.sources.streams.http.auth.core import NoAuth
 
 
 def test_check_connection(requests_mock):

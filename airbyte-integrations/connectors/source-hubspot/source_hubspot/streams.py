@@ -10,11 +10,13 @@ from abc import ABC, abstractmethod
 from datetime import timedelta
 from functools import cached_property, lru_cache
 from http import HTTPStatus
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import backoff
 import pendulum as pendulum
 import requests
+from requests import HTTPError, codes
+
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import Source
@@ -29,7 +31,6 @@ from airbyte_cdk.sources.utils import casing
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
-from requests import HTTPError, codes
 from source_hubspot.components import NewtoLegacyFieldTransformation
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
@@ -43,6 +44,7 @@ from source_hubspot.helpers import (
     IURLPropertyRepresentation,
     StoreAsIs,
 )
+
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
@@ -332,6 +334,7 @@ class Stream(HttpStream, ABC):
     """Base class for all streams. Responsible for data fetching and pagination"""
 
     entity: str = None
+    cast_fields: List = None
     updated_at_field: str = None
     created_at_field: str = None
 
@@ -673,34 +676,91 @@ class Stream(HttpStream, ABC):
 
         return casted_value
 
+    def _cast_record(
+        self,
+        record: Mapping,
+        properties: Mapping[str, Any] = None,
+        properties_key: str = None,
+        logging_message: str = "",
+        field_validation: Callable = None,
+    ):
+        """
+        Cast record fields by provided properties schema.
+        They can be either fields in record root or in properties key provided.
+        :param record: record to cast
+
+        :param properties: properties schema to cast record by
+        :param properties_key: key in record where properties are stored
+        :param logging_message: message to log when field is discarded
+        :param field_validation: function to validate field before casting
+        :return: record
+        """
+
+        def get_record_items():
+            if properties_key:
+                return record[properties_key].items()
+            return record.items()
+
+        for field_name, field_value in get_record_items():
+            if field_validation and not field_validation(field_name, field_value):
+                continue
+            if field_name not in properties:
+                self.logger.info("{}: record id:{}, property_value: {}".format(logging_message, record.get("id"), field_name))
+                continue
+            declared_field_types = properties[field_name].get("type", [])
+            if not isinstance(declared_field_types, Iterable):
+                declared_field_types = [declared_field_types]
+            declared_format = properties[field_name].get("format")
+            record_to_cast = record[properties_key] if properties_key else record
+            record_to_cast[field_name] = self._cast_value(
+                declared_field_types=declared_field_types, field_name=field_name, field_value=field_value, declared_format=declared_format
+            )
+        return record
+
     def _cast_record_fields_if_needed(self, record: Mapping, properties: Mapping[str, Any] = None) -> Mapping:
+        """
+        Cast fields in properties key in record to the Schema returned by "/properties/v2/{self.entity}/properties" endpoint.
+        Properties request (self.properties) is cached, so it is not called for each record.
+        """
         if not self.entity or not record.get("properties"):
             return record
 
         properties = properties or self.properties
 
-        for field_name, field_value in record["properties"].items():
-            if field_name not in properties:
-                self.logger.info(
-                    "Property discarded: not maching with properties schema: record id:{}, property_value: {}".format(
-                        record.get("id"), field_name
-                    )
-                )
-                continue
-            declared_field_types = properties[field_name].get("type", [])
-            if not isinstance(declared_field_types, Iterable):
-                declared_field_types = [declared_field_types]
-            format = properties[field_name].get("format")
-            record["properties"][field_name] = self._cast_value(
-                declared_field_types=declared_field_types, field_name=field_name, field_value=field_value, declared_format=format
-            )
+        return self._cast_record(
+            record=record,
+            properties=properties,
+            logging_message="Property discarded: not matching with properties schema",
+            properties_key="properties",
+        )
 
-        return record
+    def _cast_record_fields_with_schema_if_needed(self, record: Mapping) -> Mapping:
+        """
+        Cast specific record items from the response to the JSON Schema type.
+        We've found hubspot changing types and not properly documented, then we cast to expected schema.
+        For now, we just cast specific fields.
+        """
+        if not self.cast_fields:
+            return record
+
+        properties = self.get_json_schema().get("properties")
+
+        def field_validation(field_name: str, field_value: Any):
+            # properties fields is cast by _cast_record_fields_if_needed
+            return field_name in self.cast_fields and field_name != "properties"
+
+        return self._cast_record(
+            record=record,
+            properties=properties,
+            logging_message="Property discarded: not matching with stream schema",
+            field_validation=field_validation,
+        )
 
     def _transform(self, records: Iterable) -> Iterable:
         """Preprocess record before emitting"""
         for record in records:
             record = self._cast_record_fields_if_needed(record)
+            record = self._cast_record_fields_with_schema_if_needed(record)
             if self.created_at_field and self.updated_at_field and record.get(self.updated_at_field) is None:
                 record[self.updated_at_field] = record[self.created_at_field]
             if self._transformations:
@@ -1515,14 +1575,12 @@ class ContactsListMemberships(ContactsAllBase, ClientSideIncrementalStream):
 
 
 class ContactsFormSubmissions(ContactsAllBase, ResumableFullRefreshMixin, ABC):
-
     records_field = "form-submissions"
     filter_field = "formSubmissionMode"
     filter_value = "all"
 
 
 class ContactsMergedAudit(ContactsAllBase, ResumableFullRefreshMixin, ABC):
-
     records_field = "merge-audits"
     unnest_fields = ["merged_from_email", "merged_to_email"]
 
@@ -1892,6 +1950,7 @@ class MarketingEmails(Stream):
     created_at_field = "created"
     primary_key = "id"
     scopes = {"content"}
+    cast_fields = ["rootMicId"]
 
 
 class Owners(ClientSideIncrementalStream):
@@ -2137,7 +2196,6 @@ class PropertyHistoryV3(PropertyHistory):
 
 
 class CompaniesPropertyHistory(PropertyHistoryV3):
-
     scopes = {"crm.objects.companies.read"}
     properties_scopes = {"crm.schemas.companies.read"}
     entity = "companies"
@@ -2419,7 +2477,6 @@ class WebAnalyticsStream(CheckpointMixin, HttpSubStream, Stream):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         now = pendulum.now(tz="UTC")
         for parent_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
-
             object_id = parent_slice["parent"][self.object_id_field]
 
             # We require this workaround to shorten the duration of the acceptance test run.

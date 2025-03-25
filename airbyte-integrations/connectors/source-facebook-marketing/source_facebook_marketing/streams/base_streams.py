@@ -9,15 +9,17 @@ from functools import cache
 from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
+from facebook_business.adobjects.abstractobject import AbstractObject
+from facebook_business.exceptions import FacebookRequestError
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from facebook_business.adobjects.abstractobject import AbstractObject
-from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams.common import traced_exception
 
 from .common import deep_merge
+
 
 if TYPE_CHECKING:  # pragma: no cover
     from source_facebook_marketing.api import API

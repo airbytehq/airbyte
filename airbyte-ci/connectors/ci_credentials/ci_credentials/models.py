@@ -8,6 +8,7 @@ from __future__ import (  # Used to evaluate type hints at runtime, a NameError:
 
 from dataclasses import dataclass
 
+
 DEFAULT_SECRET_FILE = "config"
 
 

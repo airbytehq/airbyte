@@ -17,6 +17,7 @@ from googleapiclient.errors import HttpError as GoogleApiHttpError
 
 from .utils import rate_limit_handling
 
+
 SCOPES = ["https://www.googleapis.com/auth/admin.directory.user.readonly", "https://www.googleapis.com/auth/admin.directory.group.readonly"]
 
 

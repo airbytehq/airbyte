@@ -39,6 +39,20 @@ This Airbyte connector for Mode allows you to seamlessly sync data between Mode 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.16 | 2025-03-22 | [56056](https://github.com/airbytehq/airbyte/pull/56056) | Update dependencies |
+| 0.0.15 | 2025-03-08 | [55460](https://github.com/airbytehq/airbyte/pull/55460) | Update dependencies |
+| 0.0.14 | 2025-03-01 | [54744](https://github.com/airbytehq/airbyte/pull/54744) | Update dependencies |
+| 0.0.13 | 2025-02-22 | [54332](https://github.com/airbytehq/airbyte/pull/54332) | Update dependencies |
+| 0.0.12 | 2025-02-15 | [53834](https://github.com/airbytehq/airbyte/pull/53834) | Update dependencies |
+| 0.0.11 | 2025-02-08 | [53272](https://github.com/airbytehq/airbyte/pull/53272) | Update dependencies |
+| 0.0.10 | 2025-02-01 | [52765](https://github.com/airbytehq/airbyte/pull/52765) | Update dependencies |
+| 0.0.9 | 2025-01-25 | [52276](https://github.com/airbytehq/airbyte/pull/52276) | Update dependencies |
+| 0.0.8 | 2025-01-18 | [51839](https://github.com/airbytehq/airbyte/pull/51839) | Update dependencies |
+| 0.0.7 | 2025-01-11 | [51162](https://github.com/airbytehq/airbyte/pull/51162) | Update dependencies |
+| 0.0.6 | 2024-12-28 | [50652](https://github.com/airbytehq/airbyte/pull/50652) | Update dependencies |
+| 0.0.5 | 2024-12-21 | [50131](https://github.com/airbytehq/airbyte/pull/50131) | Update dependencies |
+| 0.0.4 | 2024-12-14 | [49620](https://github.com/airbytehq/airbyte/pull/49620) | Update dependencies |
+| 0.0.3 | 2024-12-12 | [48997](https://github.com/airbytehq/airbyte/pull/48997) | Update dependencies |
 | 0.0.2 | 2024-11-04 | [47868](https://github.com/airbytehq/airbyte/pull/47868) | Update dependencies |
 | 0.0.1 | 2024-10-12 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 

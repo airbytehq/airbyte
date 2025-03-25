@@ -68,6 +68,19 @@ Google Webfont's [API reference](https://developers.google.com/fonts/docs/develo
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- |:--------------------------------------------------------------------------------|
+| 0.2.16 | 2025-03-22 | [56054](https://github.com/airbytehq/airbyte/pull/56054) | Update dependencies |
+| 0.2.15 | 2025-03-08 | [55512](https://github.com/airbytehq/airbyte/pull/55512) | Update dependencies |
+| 0.2.14 | 2025-03-01 | [54784](https://github.com/airbytehq/airbyte/pull/54784) | Update dependencies |
+| 0.2.13 | 2025-02-22 | [54315](https://github.com/airbytehq/airbyte/pull/54315) | Update dependencies |
+| 0.2.12 | 2025-02-15 | [53816](https://github.com/airbytehq/airbyte/pull/53816) | Update dependencies |
+| 0.2.11 | 2025-02-08 | [53293](https://github.com/airbytehq/airbyte/pull/53293) | Update dependencies |
+| 0.2.10 | 2025-02-01 | [52833](https://github.com/airbytehq/airbyte/pull/52833) | Update dependencies |
+| 0.2.9 | 2025-01-25 | [52248](https://github.com/airbytehq/airbyte/pull/52248) | Update dependencies |
+| 0.2.8 | 2025-01-18 | [51788](https://github.com/airbytehq/airbyte/pull/51788) | Update dependencies |
+| 0.2.7 | 2025-01-11 | [51150](https://github.com/airbytehq/airbyte/pull/51150) | Update dependencies |
+| 0.2.6 | 2024-12-28 | [50099](https://github.com/airbytehq/airbyte/pull/50099) | Update dependencies |
+| 0.2.5 | 2024-12-14 | [49616](https://github.com/airbytehq/airbyte/pull/49616) | Update dependencies |
+| 0.2.4 | 2024-12-12 | [49232](https://github.com/airbytehq/airbyte/pull/49232) | Update dependencies |
 | 0.2.3 | 2024-12-11 | [48141](https://github.com/airbytehq/airbyte/pull/48141) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.2 | 2024-10-29 | [47891](https://github.com/airbytehq/airbyte/pull/47891) | Update dependencies |
 | 0.2.1 | 2024-10-28 | [47623](https://github.com/airbytehq/airbyte/pull/47623) | Update dependencies |

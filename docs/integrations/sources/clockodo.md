@@ -40,6 +40,19 @@ The Airbyte connector for Clockodo enables seamless data integration between Clo
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.15 | 2025-03-22 | [55957](https://github.com/airbytehq/airbyte/pull/55957) | Update dependencies |
+| 0.0.14 | 2025-03-08 | [55279](https://github.com/airbytehq/airbyte/pull/55279) | Update dependencies |
+| 0.0.13 | 2025-03-01 | [54979](https://github.com/airbytehq/airbyte/pull/54979) | Update dependencies |
+| 0.0.12 | 2025-02-22 | [54389](https://github.com/airbytehq/airbyte/pull/54389) | Update dependencies |
+| 0.0.11 | 2025-02-15 | [53732](https://github.com/airbytehq/airbyte/pull/53732) | Update dependencies |
+| 0.0.10 | 2025-02-08 | [53430](https://github.com/airbytehq/airbyte/pull/53430) | Update dependencies |
+| 0.0.9 | 2025-02-01 | [52889](https://github.com/airbytehq/airbyte/pull/52889) | Update dependencies |
+| 0.0.8 | 2025-01-25 | [52370](https://github.com/airbytehq/airbyte/pull/52370) | Update dependencies |
+| 0.0.7 | 2025-01-18 | [51648](https://github.com/airbytehq/airbyte/pull/51648) | Update dependencies |
+| 0.0.6 | 2025-01-11 | [51135](https://github.com/airbytehq/airbyte/pull/51135) | Update dependencies |
+| 0.0.5 | 2024-12-28 | [50547](https://github.com/airbytehq/airbyte/pull/50547) | Update dependencies |
+| 0.0.4 | 2024-12-21 | [50067](https://github.com/airbytehq/airbyte/pull/50067) | Update dependencies |
+| 0.0.3 | 2024-12-14 | [49482](https://github.com/airbytehq/airbyte/pull/49482) | Update dependencies |
 | 0.0.2 | 2024-12-12 | [49163](https://github.com/airbytehq/airbyte/pull/49163) | Update dependencies |
 | 0.0.1 | 2024-10-28 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 

@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
@@ -26,8 +27,10 @@ from .streams import (
     PostVotes,
     TicketMetrics,
     Tickets,
+    UserIdentities,
     UserSettingsStream,
 )
+
 
 logger = logging.getLogger("airbyte")
 
@@ -83,16 +86,16 @@ class SourceZendeskSupport(YamlDeclarativeSource):
         """
         auth = self.get_authenticator(config)
         try:
-            datetime.strptime(config["start_date"], DATETIME_FORMAT)
-            settings = UserSettingsStream(config["subdomain"], authenticator=auth, start_date=None).get_settings()
+            start_date = datetime.strptime(config["start_date"], DATETIME_FORMAT) if config["start_date"] else None
+            settings = UserSettingsStream(config["subdomain"], authenticator=auth, start_date=start_date).get_settings()
         except Exception as e:
             return False, e
         active_features = [k for k, v in settings.get("active_features", {}).items() if v]
         if "organization_access_enabled" not in active_features:
             return (
                 False,
-                "Please verify that the account linked to the API key has admin permissions and try again."
-                "For more information visit https://support.zendesk.com/hc/en-us/articles/4408832171034-About-team-member-product-roles-and-access.",
+                "Please verify that the account linked to the API key has organization_access_enabled and try again."
+                "For more information visit https://support.zendesk.com/hc/en-us/articles/4408821417114-About-the-Organizations-page#topic_n2f_23d_nqb.",
             )
         return True, None
 
@@ -127,6 +130,7 @@ class SourceZendeskSupport(YamlDeclarativeSource):
             PostVotes(**args),
             tickets,
             TicketMetrics(**args),
+            UserIdentities(**args),
         ]
         return streams
 
