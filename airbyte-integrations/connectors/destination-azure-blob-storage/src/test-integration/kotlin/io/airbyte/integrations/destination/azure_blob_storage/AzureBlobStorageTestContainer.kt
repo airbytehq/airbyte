@@ -24,6 +24,7 @@ object AzureBlobStorageTestContainer {
     fun start() {
         if (hasStarted.setOnce()) {
             container.start()
+            client.serviceClient.createBlobContainer(CONTAINER_NAME)
         }
     }
     // intentionally no stop method - testcontainers automatically stop when their parent java
