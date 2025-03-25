@@ -338,7 +338,8 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.0.0 | 2025-03-25 | [x](https://github.com/airbytehq/airbyte/pull/x) | Migrate from v1 Contact Lists API to v3 Lists API |
+| 5.0.0 | 2025-03-25 | [56393](https://github.com/airbytehq/airbyte/pull/56393) | Migrate from v1 Contact Lists API to v3 Lists API |
+| 4.5.4 | 2025-03-25 | [55822](https://github.com/airbytehq/airbyte/pull/55822) | add userIdIncludingInactive to owners and owners_archived streams |
 | 4.5.3 | 2025-03-24 | [52729](https://github.com/airbytehq/airbyte/pull/55245) | Add conversionId to `form_submissions` schema |
 | 4.5.2 | 2024-12-14 | [48480](https://github.com/airbytehq/airbyte/pull/4914) | Improves Forms stream by adding the formTypes query parameter to support all form types. This enhancement also propagates to the FormSubmission stream. |
 | 4.5.1 | 2025-03-22 | [53818](https://github.com/airbytehq/airbyte/pull/53818) | Update dependencies |
