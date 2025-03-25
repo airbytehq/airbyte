@@ -33,7 +33,6 @@ DIRECTORIES_TO_ALWAYS_MOUNT = [
     "airbyte-ci",
     "airbyte-cdk",
     PYPROJECT_TOML_FILE_PATH,
-    "LICENSE_SHORT",
     "poetry.lock",
     "spotless-maven-pom.xml",
     "tools/gradle/codestyle/java-google-style.xml",
