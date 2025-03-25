@@ -11,31 +11,51 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.Overwrite
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
+import io.airbyte.cdk.load.data.BooleanType
+import io.airbyte.cdk.load.data.BooleanValue
+import io.airbyte.cdk.load.data.DateType
+import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimeTypeWithTimezone
+import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
+import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteTypeToMssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setAsNullValue
-import io.airbyte.integrations.destination.mssql.v2.convert.AirbyteValueToStatement.Companion.setValue
 import io.airbyte.integrations.destination.mssql.v2.convert.MssqlType
 import io.airbyte.integrations.destination.mssql.v2.convert.ResultSetToAirbyteValue.Companion.getAirbyteNamedValue
-import io.airbyte.protocol.models.Jsons
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.lang.ArithmeticException
 import java.sql.Connection
+import java.sql.Date
 import java.sql.PreparedStatement
 import java.sql.ResultSet
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -198,19 +218,6 @@ class MSSQLQueryBuilder(
             )
 
         val airbyteFields = airbyteFinalTableFields.map { it.name }.toSet()
-
-        private fun AirbyteRecordMessageMeta.trackChange(
-            fieldName: String,
-            change: AirbyteRecordMessageMetaChange.Change,
-            reason: AirbyteRecordMessageMetaChange.Reason,
-        ) {
-            this.changes.add(
-                AirbyteRecordMessageMetaChange()
-                    .withField(fieldName)
-                    .withChange(change)
-                    .withReason(reason)
-            )
-        }
     }
 
     data class NamedField(val name: String, val type: FieldType)
@@ -336,61 +343,92 @@ class MSSQLQueryBuilder(
 
     fun populateStatement(
         statement: PreparedStatement,
-        record: DestinationRecordAirbyteValue,
+        plainRecord: DestinationRecordRaw,
         schema: List<NamedField>
     ) {
-        val recordObject = record.data as ObjectValue
-        var airbyteMetaStatementIndex: Int? = null
-        val airbyteMeta =
-            AirbyteRecordMessageMeta().apply {
-                changes =
-                    record.meta?.changes?.map { it.asProtocolObject() }?.toMutableList()
-                        ?: mutableListOf()
-                setAdditionalProperty("sync_id", stream.syncId)
-            }
+        val enrichedRecord = plainRecord.asEnrichedDestinationRecordAirbyteValue()
+        val populatedFields = enrichedRecord.allTypedFields
 
+        var airbyteMetaStatementIndex: Int? = null
         schema.forEachIndexed { index, field ->
             val statementIndex = index + 1
-            if (field.name in airbyteFields) {
-                when (field.name) {
-                    COLUMN_NAME_AB_RAW_ID ->
-                        statement.setString(statementIndex, UUID.randomUUID().toString())
-                    COLUMN_NAME_AB_EXTRACTED_AT ->
-                        statement.setLong(statementIndex, record.emittedAtMs)
-                    COLUMN_NAME_AB_GENERATION_ID ->
-                        statement.setLong(statementIndex, stream.generationId)
-                    COLUMN_NAME_AB_META -> airbyteMetaStatementIndex = statementIndex
-                }
-            } else {
-                try {
-                    val value = recordObject.values[field.name]
-                    statement.setValue(statementIndex, value, field)
-                } catch (e: Exception) {
-                    statement.setAsNullValue(statementIndex, field.type.type)
-                    when (e) {
-                        is ArithmeticException ->
-                            airbyteMeta.trackChange(
-                                field.name,
-                                AirbyteRecordMessageMetaChange.Change.NULLED,
-                                AirbyteRecordMessageMetaChange.Reason
-                                    .DESTINATION_FIELD_SIZE_LIMITATION,
-                            )
-                        else ->
-                            airbyteMeta.trackChange(
-                                field.name,
-                                AirbyteRecordMessageMetaChange.Change.NULLED,
-                                AirbyteRecordMessageMetaChange.Reason
-                                    .DESTINATION_SERIALIZATION_ERROR,
-                            )
+            val value = populatedFields[field.name]
+            if (value == null || value.abValue == NullValue) {
+                statement.setAsNullValue(statementIndex, field.type.type)
+                return@forEachIndexed
+            }
+            if (value.airbyteMetaField == Meta.AirbyteMetaFields.META) {
+                // don't populate _airbyte_meta yet - we might run into errors in the other fields
+                // for this record.
+                // Instead, we grab the statement index, and populate airbyte_meta after processing
+                // all the other fields.
+                airbyteMetaStatementIndex = statementIndex
+                return@forEachIndexed
+            }
+
+            when (value.type) {
+                BooleanType ->
+                    statement.setBoolean(statementIndex, (value.abValue as BooleanValue).value)
+                DateType ->
+                    statement.setDate(
+                        statementIndex,
+                        Date.valueOf((value.abValue as DateValue).value)
+                    )
+                IntegerType -> {
+                    val intValue = (value.abValue as IntegerValue).value
+                    if (intValue < LIMITS.MIN_BIGINT || LIMITS.MAX_BIGINT < intValue) {
+                        value.nullify(Reason.DESTINATION_FIELD_SIZE_LIMITATION)
+                    } else {
+                        statement.setLong(statementIndex, intValue.longValueExact())
                     }
                 }
+                NumberType ->
+                    statement.setDouble(
+                        statementIndex,
+                        (value.abValue as NumberValue).value.toDouble()
+                    )
+                StringType ->
+                    statement.setString(statementIndex, (value.abValue as StringValue).value)
+                TimeTypeWithTimezone ->
+                    statement.setObject(
+                        statementIndex,
+                        (value.abValue as TimeWithTimezoneValue).value
+                    )
+                TimeTypeWithoutTimezone ->
+                    statement.setObject(
+                        statementIndex,
+                        (value.abValue as TimeWithoutTimezoneValue).value
+                    )
+                TimestampTypeWithTimezone ->
+                    statement.setObject(
+                        statementIndex,
+                        (value.abValue as TimestampWithTimezoneValue).value
+                    )
+                TimestampTypeWithoutTimezone ->
+                    statement.setObject(
+                        statementIndex,
+                        (value.abValue as TimestampWithoutTimezoneValue).value
+                    )
+
+                // Serialize complex types to string
+                is ArrayType,
+                ArrayTypeWithoutSchema,
+                is ObjectType,
+                ObjectTypeWithEmptySchema,
+                ObjectTypeWithoutSchema,
+                is UnionType,
+                is UnknownType ->
+                    statement.setString(statementIndex, value.abValue.serializeToString())
             }
         }
+
+        // Now that we're done processing the rest of the record, populate airbyte_meta into the
+        // prepared statement.
         airbyteMetaStatementIndex?.let { statementIndex ->
-            if (airbyteMeta.changes.isEmpty()) {
-                airbyteMeta.changes = null
-            }
-            statement.setString(statementIndex, Jsons.serialize(airbyteMeta))
+            statement.setString(
+                statementIndex,
+                enrichedRecord.airbyteMeta.abValue.serializeToString()
+            )
         }
     }
 

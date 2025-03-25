@@ -68,6 +68,7 @@ MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_refere
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ |:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------|
+| 0.3.15 | 2025-03-22 | [56078](https://github.com/airbytehq/airbyte/pull/56078) | Update dependencies |
 | 0.3.14 | 2025-03-08 | [55465](https://github.com/airbytehq/airbyte/pull/55465) | Update dependencies |
 | 0.3.13 | 2025-03-01 | [54810](https://github.com/airbytehq/airbyte/pull/54810) | Update dependencies |
 | 0.3.12 | 2025-02-22 | [54297](https://github.com/airbytehq/airbyte/pull/54297) | Update dependencies |

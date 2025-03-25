@@ -35,18 +35,3 @@ class CustomExtractor(RecordExtractor):
             extracted_records.append(extracted_record)
 
         return extracted_records
-
-
-@dataclass
-class CustomIncrementalSync(DatetimeBasedCursor):
-    def get_request_params(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        params = {}
-        if self.cursor_field.string in stream_state:
-            params[f"filter[{self.cursor_field.string}]"] = stream_state[self.cursor_field.string] + "..inf"
-        return params

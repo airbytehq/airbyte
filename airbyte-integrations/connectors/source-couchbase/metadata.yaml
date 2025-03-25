@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 8fa13fb7-2cf7-4c5e-9a91-bae6f71f1fb7
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/source-couchbase
   documentationUrl: https://docs.airbyte.com/integrations/sources/couchbase
   githubIssueLabel: source-couchbase

@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.iceberg.parquet.IcebergParquetPipelineFactory
 import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
@@ -35,7 +34,6 @@ class S3DataLakeStreamLoader(
 ) : StreamLoader {
     private lateinit var table: Table
     private lateinit var targetSchema: Schema
-    private val pipeline = IcebergParquetPipelineFactory().create(stream)
 
     // If we're executing a truncate, then force the schema change.
     internal val columnTypeChangeBehavior: ColumnTypeChangeBehavior =
@@ -44,7 +42,7 @@ class S3DataLakeStreamLoader(
         } else {
             ColumnTypeChangeBehavior.SAFE_SUPERTYPE
         }
-    private val incomingSchema = icebergUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
+    private val incomingSchema = icebergUtil.toIcebergSchema(stream = stream)
 
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",

@@ -45,6 +45,7 @@ After you connect a source and the first stream synchronization succeeds, your r
 
 | Version | Date       | Pull Request                                             | Subject                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------- |
-| 0.1.0   | 2025-01-10 | [48875](https://github.com/airbytehq/airbyte/pull/48875) | Initial release                        |
+| 0.1.1 | 2025-03-22 | [56097](https://github.com/airbytehq/airbyte/pull/56097) | Update dependencies |
+| 0.1.0 | 2025-01-10 | [48875](https://github.com/airbytehq/airbyte/pull/48875) | Initial release |
 
 </details>

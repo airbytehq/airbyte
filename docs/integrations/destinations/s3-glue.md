@@ -309,6 +309,7 @@ the output filename will have an extra extension (GZIP: `.jsonl.gz`).
 
 | Version | Date       | Pull Request                                              | Subject                                                                                 |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------------------------------------------------- |
+| 0.1.11  | 2025-03-21 | [#55908](https://github.com/airbytehq/airbyte/pull/55908) | Update docs to redirect users to destination-s3-data-lake                               |
 | 0.1.10  | 2024-10-29 | [#48820](https://github.com/airbytehq/airbyte/pull/48820) | revert back to CDK 0.2.0                                                                |
 | 0.1.9   | 2024-10-28 | [#47201](https://github.com/airbytehq/airbyte/pull/47201) | build against latest CDK                                                                |
 | 0.1.8   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region                                                       |

@@ -9,15 +9,15 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.file.object_storage.MSSQLCSVFormattingWriter
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.integrations.destination.mssql.v2.config.AzureBlobStorageClientCreator
 import io.airbyte.integrations.destination.mssql.v2.config.BulkLoadConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLDataSourceFactory
+import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.sql.Connection
@@ -131,15 +131,23 @@ class MSSQLChecker(private val dataSourceFactory: MSSQLDataSourceFactory) :
     private fun createTestCsvData(stream: DestinationStream): ByteArray {
         return ByteArrayOutputStream().use { outputStream ->
             MSSQLCSVFormattingWriter(stream, outputStream, true).use { csvWriter ->
+                // TODO this is kind of dumb
                 val destinationRecord =
-                    DestinationRecordAirbyteValue(
-                        stream,
-                        ObjectValue(
-                            linkedMapOf(COLUMN_NAME to IntegerValue(TEST_ID_VALUE.toBigInteger()))
-                        ),
-                        0L,
-                        null,
-                    )
+                    AirbyteMessage()
+                        .withType(AirbyteMessage.Type.RECORD)
+                        .withRecord(
+                            AirbyteRecordMessage()
+                                .withEmittedAt(0)
+                                .withData(Jsons.valueToTree(mapOf(COLUMN_NAME to TEST_ID_VALUE)))
+                        )
+                        .let { message ->
+                            DestinationRecordRaw(
+                                stream,
+                                message,
+                                Jsons.writeValueAsString(message),
+                                stream.schema
+                            )
+                        }
                 csvWriter.accept(destinationRecord)
                 csvWriter.flush()
             }
