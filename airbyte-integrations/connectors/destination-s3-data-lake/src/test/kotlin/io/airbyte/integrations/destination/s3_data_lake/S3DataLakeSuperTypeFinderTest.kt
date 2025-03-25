@@ -5,6 +5,8 @@
 package io.airbyte.integrations.destination.s3_data_lake
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergSuperTypeFinder
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTypesComparator
 import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Type.TypeID.DOUBLE
 import org.apache.iceberg.types.Type.TypeID.LONG
@@ -15,10 +17,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 
-/** Comprehensive test suite for [S3DataLakeSuperTypeFinder]. */
+/** Comprehensive test suite for [IcebergSuperTypeFinder]. */
 class S3DataLakeSuperTypeFinderTest {
 
-    private val superTypeFinder = S3DataLakeSuperTypeFinder(S3DataLakeTypesComparator())
+    private val superTypeFinder = IcebergSuperTypeFinder(IcebergTypesComparator())
 
     @Test
     fun testIdenticalPrimitiveTypes() {

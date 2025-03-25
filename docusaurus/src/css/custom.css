@@ -281,6 +281,7 @@ table thead tr:hover {
   background-color: transparent;
 }
 
-.markdown li > p {
-  margin: 0px !important;
+svg.inline-svg {
+  max-height: 1em;
+  max-width: 1em;
 }

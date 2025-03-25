@@ -31,7 +31,7 @@ Visit `https://app.brevo.com/settings/keys/api` for getting your api key.
 | crm_pipeline_stages | id | DefaultPaginator | ❌ |  ❌  |
 | crm_pipeline_details_all | pipeline | DefaultPaginator | ❌ |  ❌  |
 | crm_attributes_deals |  | DefaultPaginator | ❌ |  ❌  |
-| crm_deals | id | DefaultPaginator | ✅ |  ❌  |
+| crm_deals | id | DefaultPaginator | ✅ |  ✅  |
 | crm_tasktypes | id | DefaultPaginator | ❌ |  ❌  |
 | crm_tasks | id | DefaultPaginator | ✅ |  ✅  |
 | crm_notes | id | DefaultPaginator | ❌ |  ✅  |
@@ -49,6 +49,12 @@ Visit `https://app.brevo.com/settings/keys/api` for getting your api key.
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.2.0 | 2025-03-24 | [56369](https://github.com/airbytehq/airbyte/pull/56369) | Fix/Add incremental on Contacts/Crm deals |
+| 0.1.8 | 2025-03-22 | [55367](https://github.com/airbytehq/airbyte/pull/55367) | Update dependencies |
+| 0.1.7 | 2025-03-01 | [54874](https://github.com/airbytehq/airbyte/pull/54874) | Update dependencies |
+| 0.1.6 | 2025-02-25 | [54674](https://github.com/airbytehq/airbyte/pull/54674) | Fix bug authenticator |
+| 0.1.5 | 2025-02-22 | [54223](https://github.com/airbytehq/airbyte/pull/54223) | Update dependencies |
+| 0.1.4 | 2025-02-15 | [48282](https://github.com/airbytehq/airbyte/pull/48282) | Update dependencies |
 | 0.1.3 | 2024-11-28 | [48737](https://github.com/airbytehq/airbyte/pull/48737) | Update pagination |
 | 0.1.2 | 2024-10-29 | [47922](https://github.com/airbytehq/airbyte/pull/47922) | Update dependencies |
 | 0.1.1 | 2024-10-28 | [47622](https://github.com/airbytehq/airbyte/pull/47622) | Update dependencies |

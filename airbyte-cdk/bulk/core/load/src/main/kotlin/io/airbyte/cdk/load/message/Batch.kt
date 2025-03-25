@@ -57,15 +57,17 @@ interface Batch {
         PROCESSED,
         STAGED,
         PERSISTED,
-        COMPLETE
+        COMPLETE;
+
+        fun isPersisted(): Boolean =
+            when (this) {
+                PERSISTED,
+                COMPLETE -> true
+                else -> false
+            }
     }
 
-    fun isPersisted(): Boolean =
-        when (state) {
-            State.PERSISTED,
-            State.COMPLETE -> true
-            else -> false
-        }
+    fun isPersisted(): Boolean = state.isPersisted()
 
     val state: State
 
