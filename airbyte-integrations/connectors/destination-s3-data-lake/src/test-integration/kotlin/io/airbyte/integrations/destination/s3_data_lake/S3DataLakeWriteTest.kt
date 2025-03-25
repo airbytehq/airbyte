@@ -100,8 +100,8 @@ class GlueWriteTest :
     }
 
     @Test
-    override fun testBasicTypes() {
-        super.testBasicTypes()
+    override fun testUnknownTypes() {
+        super.testUnknownTypes()
     }
 
     /**

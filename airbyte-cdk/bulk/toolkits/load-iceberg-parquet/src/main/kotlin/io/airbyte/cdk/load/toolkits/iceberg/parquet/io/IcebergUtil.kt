@@ -277,7 +277,6 @@ fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
         currentValue: AirbyteValue,
         currentType: AirbyteType,
         path: String,
-        isRoot: Boolean,
     ): AirbyteValue {
         if (currentValue == NullValue) {
             return NullValue
@@ -293,30 +292,19 @@ fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
             return ArrayValue(
                 coercedArray.values.mapIndexed { index, element ->
                     val newPath = "$path.$index"
-                    recurseArray(element, currentType.items.type, newPath, isRoot = false)
+                    recurseArray(element, currentType.items.type, newPath)
                 }
             )
         } else {
-            val valueToTransform =
-                if (isRoot) {
-                    currentValue
-                } else {
-                    // If we're at a leaf node, call the transformer.
-                    val coercedValue = AirbyteValueCoercer.coerce(currentValue, currentType)
-                    if (coercedValue == null) {
-                        changes.add(
-                            Meta.Change(
-                                path,
-                                Change.NULLED,
-                                Reason.DESTINATION_SERIALIZATION_ERROR
-                            ),
-                        )
-                        return NullValue
-                    }
-                    coercedValue
-                }
-            val transformedValue =
-                transformer(valueToTransform, currentType) ?: return valueToTransform
+            // If we're at a leaf node, call the transformer.
+            val coercedValue = AirbyteValueCoercer.coerce(currentValue, currentType)
+            if (coercedValue == null) {
+                changes.add(
+                    Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR),
+                )
+                return NullValue
+            }
+            val transformedValue = transformer(coercedValue, currentType) ?: return coercedValue
             val (newValue, changeDescription) = transformedValue
             changeDescription?.let { (change, reason) ->
                 changes.add(Meta.Change(path, change, reason))
@@ -325,7 +313,7 @@ fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
         }
     }
 
-    abValue = recurseArray(abValue, type, name, isRoot = true)
+    abValue = recurseArray(abValue, type, name)
 }
 
 data class ChangeDescription(val change: Change, val reason: Reason)
