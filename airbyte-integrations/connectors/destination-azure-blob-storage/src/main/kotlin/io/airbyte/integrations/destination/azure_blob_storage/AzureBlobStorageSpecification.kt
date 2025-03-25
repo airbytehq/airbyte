@@ -4,4 +4,12 @@
 
 package io.airbyte.integrations.destination.azure_blob_storage
 
-class AzureBlobStorageSpecification {}
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
+import io.airbyte.cdk.command.ConfigurationSpecification
+import jakarta.inject.Singleton
+
+@Singleton
+@JsonSchemaTitle("Azure Blob Storage Destination Spec")
+@JsonSchemaInject()
+class AzureBlobStorageSpecification() : ConfigurationSpecification() {}
