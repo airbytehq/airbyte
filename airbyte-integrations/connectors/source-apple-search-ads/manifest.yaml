@@ -1,12 +1,18 @@
-version: 6.41.5
+version: 6.41.3
 
 type: DeclarativeSource
 
 description: >-
-  This change is related to PR 55839. The newly added field `countryorregion` is
-  still missing in the schema of the report streams.
+  Add extract `countryOrRegion` value from `metadata` field and add it as a new
+  separate one.
 
-  With this PR I try to resolve that issue and make it available in connections
+  Now when `metadata` field is used as a primary key to run a proper
+  deduplication for metrics grouped by `countryOrRegion` it may cause duplicate
+  if `metadata` has changes for other keys but with the same `date` and
+  `campaignid`.
+
+  Adding an ability to set just `countryOrRegion` as primary key instead of the
+  whole `metadata` field solves the issue
 
 check:
   type: CheckStream
@@ -546,12 +552,12 @@ definitions:
     url_base: https://api.searchads.apple.com/api/v5
     authenticator:
       type: OAuthAuthenticator
-      client_id: "{{ config[\"client_id\"] }}"
-      client_secret: "{{ config[\"client_secret\"] }}"
-      refresh_request_body: {}
+      client_id: "{{ config.client_id }}"
+      grant_type: client_credentials
+      client_secret: "{{ config.client_secret }}"
       token_refresh_endpoint: >-
         https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg
-      grant_type: client_credentials
+      refresh_request_body: {}
 
 streams:
   - $ref: "#/definitions/streams/campaigns"
@@ -637,6 +643,7 @@ spec:
           - 10
       timezone:
         type: string
+        default: UTC
         description: >-
           The timezone for the reporting data. Use 'ORTZ' for Organization Time
           Zone or 'UTC' for Coordinated Universal Time. Default is UTC.
@@ -645,7 +652,6 @@ spec:
           - UTC
         order: 7
         title: Time Zone
-        default: UTC
     additionalProperties: true
 
 metadata:
@@ -656,1145 +662,662 @@ metadata:
     campaigns_report_daily: false
     adgroups_report_daily: false
     keywords_report_daily: false
+  yamlComponents:
+    streams:
+      campaigns_report_daily:
+        - errorHandler
+      adgroups_report_daily:
+        - errorHandler
+      keywords_report_daily:
+        - errorHandler
+    global:
+      - authenticator
   testedStreams:
     campaigns:
-      streamHash: d780d2b41f6a8037c18f722f9ce9c3491029b2da
+      streamHash: 695200dfcda5d952c3d0c21948db4780caa38393
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     adgroups:
-      streamHash: 9a557426e8573b7c1afc5635098fee8543661d2e
+      streamHash: fe4a079447f9e32ab0e6bd33cbb87620aa946b70
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     keywords:
-      streamHash: bdd5a54a04343476092798c78261538ab6be82af
+      streamHash: 8419d91ef05fe6a37e6a731972cc63f7db413ec3
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     campaigns_report_daily:
-      streamHash: ef035d0aeefcd94a2cf8e8a65f509c7be18ca46d
+      streamHash: 0f716882a4c4cf2af1d32eaa5e4bfae1df650d1b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     adgroups_report_daily:
-      streamHash: 63b9b95ad72c26b0b4c04d58b6242823c34cb4be
+      streamHash: 55fd5a511833be4580713815c5bb721ad241f03b
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     keywords_report_daily:
-      streamHash: 5adaae30e072b870623aa12f900e6cabe9045057
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 236c9e467ad57836f09f2bc7adc815eecbdf7d77
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
   campaigns:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
     properties:
       adChannelType:
-        type:
-          - string
-          - "null"
+        type: string
       adamId:
-        type:
-          - number
-          - "null"
+        type: integer
       billingEvent:
-        type:
-          - string
-          - "null"
+        type: string
       budgetAmount:
-        type:
-          - object
-          - "null"
-        properties:
-          amount:
-            type:
-              - string
-              - "null"
-          currency:
-            type:
-              - string
-              - "null"
+        anyOf:
+          - type: "null"
+          - type: object
+            properties:
+              amount:
+                type: string
+              currency:
+                type: string
       budgetOrders:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - number
-            - "null"
+        type: array
       countriesOrRegions:
-        type:
-          - array
-          - "null"
+        type: array
         items:
-          type:
-            - string
-            - "null"
+          type: string
       countryOrRegionServingStateReasons:
-        type:
-          - object
-          - "null"
-        properties:
-          CN:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
+        type: object
       creationTime:
-        type:
-          - string
-          - "null"
+        type: string
       dailyBudgetAmount:
-        type:
-          - object
-          - "null"
+        type: object
         properties:
           amount:
-            type:
-              - string
-              - "null"
+            type: string
           currency:
-            type:
-              - string
-              - "null"
+            type: string
       deleted:
-        type:
-          - boolean
-          - "null"
+        type: boolean
       displayStatus:
-        type:
-          - string
-          - "null"
+        type: string
+      endTime:
+        type: "null"
       id:
-        type: number
+        type: integer
       locInvoiceDetails:
-        type:
-          - object
-          - "null"
+        type: object
         properties:
           billingContactEmail:
-            type:
-              - string
-              - "null"
+            type: string
           buyerEmail:
-            type:
-              - string
-              - "null"
+            type: string
           buyerName:
-            type:
-              - string
-              - "null"
+            type: string
           clientName:
             type:
-              - string
               - "null"
+              - string
           orderNumber:
             type:
-              - string
               - "null"
+              - string
       modificationTime:
-        type:
-          - string
-          - "null"
+        type: string
       name:
-        type:
-          - string
-          - "null"
+        type: string
       orgId:
-        type:
-          - number
-          - "null"
+        type: integer
       paymentModel:
-        type:
-          - string
-          - "null"
+        type: string
       sapinLawResponse:
-        type:
-          - string
-          - "null"
+        type: string
       servingStateReasons:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
+        type: "null"
       servingStatus:
-        type:
-          - string
-          - "null"
+        type: string
       startTime:
-        type:
-          - string
-          - "null"
+        type: string
       status:
-        type:
-          - string
-          - "null"
+        type: string
       supplySources:
-        type:
-          - array
-          - "null"
+        type: array
         items:
-          type:
-            - string
-            - "null"
-    required:
-      - id
-    additionalProperties: true
+          type: string
   adgroups:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
     properties:
       automatedKeywordsOptIn:
-        type:
-          - boolean
-          - "null"
+        type: boolean
       campaignId:
-        type:
-          - number
-          - "null"
+        type: integer
       cpaGoal:
-        type:
-          - object
-          - "null"
-        properties:
-          amount:
-            type:
-              - string
-              - "null"
-          currency:
-            type:
-              - string
-              - "null"
+        type: "null"
       creationTime:
-        type:
-          - string
-          - "null"
+        type: string
       defaultBidAmount:
-        type:
-          - object
-          - "null"
+        type: object
         properties:
           amount:
-            type:
-              - string
-              - "null"
+            type: string
           currency:
-            type:
-              - string
-              - "null"
+            type: string
       deleted:
-        type:
-          - boolean
-          - "null"
+        type: boolean
       displayStatus:
-        type:
-          - string
-          - "null"
+        type: string
+      endTime:
+        type: "null"
       id:
-        type: number
+        type: integer
       modificationTime:
-        type:
-          - string
-          - "null"
+        type: string
       name:
-        type:
-          - string
-          - "null"
+        type: string
       orgId:
-        type:
-          - number
-          - "null"
+        type: integer
       pricingModel:
-        type:
-          - string
-          - "null"
+        type: string
       servingStateReasons:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
+        anyOf:
+          - type: "null"
+          - type: array
+            items:
+              type: string
       servingStatus:
-        type:
-          - string
-          - "null"
+        type: string
       startTime:
-        type:
-          - string
-          - "null"
+        type: string
       status:
-        type:
-          - string
-          - "null"
+        type: string
       targetingDimensions:
-        type:
-          - object
-          - "null"
+        type: object
         properties:
-          age:
-            type:
-              - object
-              - "null"
-            properties:
-              included:
-                type:
-                  - array
-                  - "null"
-          appCategories:
-            type:
-              - object
-              - "null"
-            properties:
-              excluded:
-                type:
-                  - array
-                  - "null"
-              included:
-                type:
-                  - array
-                  - "null"
-          appDownloaders:
-            type:
-              - object
-              - "null"
-            properties:
-              excluded:
-                type:
-                  - array
-                  - "null"
-              included:
-                type:
-                  - array
-                  - "null"
-          daypart:
-            type:
-              - object
-              - "null"
-            properties:
-              userTime:
-                type:
-                  - object
-                  - "null"
+          adminArea:
+            anyOf:
+              - type: "null"
+              - type: object
                 properties:
                   included:
-                    type:
-                      - array
-                      - "null"
+                    type: array
+                    items:
+                      type: string
+          age:
+            anyOf:
+              - type: "null"
+              - type: object
+                properties:
+                  included:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        maxAge:
+                          type: "null"
+                        minAge:
+                          type:
+                            - integer
+                            - "null"
+          appCategories:
+            type: object
+            properties:
+              excluded:
+                anyOf:
+                  - type: "null"
+                  - type: array
+                    items:
+                      type: integer
+              included:
+                anyOf:
+                  - type: "null"
+                  - type: array
+                    items:
+                      type: integer
+          appDownloaders:
+            type: object
+            properties:
+              excluded:
+                type: array
+                items:
+                  type: string
+              included:
+                type: array
+                items:
+                  type: string
+          country:
+            anyOf:
+              - type: "null"
+              - type: object
+                properties:
+                  included:
+                    type: array
+                    items:
+                      type: string
+          daypart:
+            type: "null"
           deviceClass:
-            type:
-              - object
-              - "null"
+            type: object
             properties:
               included:
-                type:
-                  - array
-                  - "null"
+                type: array
                 items:
-                  type:
-                    - string
-                    - "null"
+                  type: string
           gender:
-            type:
-              - object
-              - "null"
-            properties: {}
-    required:
-      - id
-    additionalProperties: true
+            type: "null"
+          locality:
+            anyOf:
+              - type: "null"
+              - type: object
+                properties:
+                  included:
+                    type: array
+                    items:
+                      type: string
   keywords:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
     properties:
       adGroupId:
-        type:
-          - number
-          - "null"
+        type: integer
       bidAmount:
-        type:
-          - object
-          - "null"
+        type: object
         properties:
           amount:
-            type:
-              - string
-              - "null"
+            type: string
           currency:
-            type:
-              - string
-              - "null"
+            type: string
       campaignId:
-        type:
-          - number
-          - "null"
+        type: integer
       creationTime:
-        type:
-          - string
-          - "null"
+        type: string
       deleted:
-        type:
-          - boolean
-          - "null"
+        type: boolean
       id:
-        type: number
+        type: integer
       matchType:
-        type:
-          - string
-          - "null"
+        type: string
       modificationTime:
-        type:
-          - string
-          - "null"
+        type: string
       status:
-        type:
-          - string
-          - "null"
+        type: string
       text:
-        type:
-          - string
-          - "null"
-    required:
-      - id
-    additionalProperties: true
+        type: string
   campaigns_report_daily:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
     properties:
+      countryorregion:
+        type: string
       metadata:
-        type:
-          - object
-          - "null"
+        type: object
         properties:
           adChannelType:
-            type:
-              - string
-              - "null"
+            type: string
           app:
-            type:
-              - object
-              - "null"
+            type: object
             properties:
               adamId:
-                type:
-                  - number
-                  - "null"
+                type: integer
               appName:
-                type:
-                  - string
-                  - "null"
+                type: string
           billingEvent:
-            type:
-              - string
-              - "null"
+            type: string
           campaignId:
-            type:
-              - number
-              - "null"
+            type: integer
           campaignName:
-            type:
-              - string
-              - "null"
+            type: string
           campaignStatus:
-            type:
-              - string
-              - "null"
+            type: string
           countriesOrRegions:
-            type:
-              - array
-              - "null"
+            type: array
             items:
-              type:
-                - string
-                - "null"
+              type: string
           countryOrRegion:
-            type:
-              - string
-              - "null"
+            type: string
           countryOrRegionServingStateReasons:
-            type:
-              - object
-              - "null"
+            type: object
           dailyBudget:
-            type:
-              - object
-              - "null"
+            type: object
             properties:
               amount:
-                type:
-                  - string
-                  - "null"
+                type: string
               currency:
-                type:
-                  - string
-                  - "null"
+                type: string
           deleted:
-            type:
-              - boolean
-              - "null"
+            type: boolean
           displayStatus:
-            type:
-              - string
-              - "null"
+            type: string
           modificationTime:
-            type:
-              - string
-              - "null"
+            type: string
           orgId:
-            type:
-              - number
-              - "null"
+            type: integer
           servingStateReasons:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
+            type: "null"
           servingStatus:
-            type:
-              - string
-              - "null"
+            type: string
           supplySources:
-            type:
-              - array
-              - "null"
+            type: array
             items:
-              type:
-                - string
-                - "null"
-      campaignId:
-        type:
-          - number
-          - "null"
-      countryorregion:
-        type:
-          - string
-          - "null"
-      date:
-        type: string
-      granularity:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            avgCPM:
-              type:
-                - object
-                - "null"
-              properties:
-                amount:
-                  type:
-                    - string
-                    - "null"
-                currency:
-                  type:
-                    - string
-                    - "null"
-            avgCPT:
-              type:
-                - object
-                - "null"
-              properties:
-                amount:
-                  type:
-                    - string
-                    - "null"
-                currency:
-                  type:
-                    - string
-                    - "null"
-            date:
-              type:
-                - string
-                - "null"
-            impressions:
-              type:
-                - number
-                - "null"
-            localSpend:
-              type:
-                - object
-                - "null"
-              properties:
-                amount:
-                  type:
-                    - string
-                    - "null"
-                currency:
-                  type:
-                    - string
-                    - "null"
-            tapInstallCPI:
-              type:
-                - object
-                - "null"
-              properties:
-                amount:
-                  type:
-                    - string
-                    - "null"
-                currency:
-                  type:
-                    - string
-                    - "null"
-            tapInstallRate:
-              type:
-                - number
-                - "null"
-            tapInstalls:
-              type:
-                - number
-                - "null"
-            tapNewDownloads:
-              type:
-                - number
-                - "null"
-            tapRedownloads:
-              type:
-                - number
-                - "null"
-            taps:
-              type:
-                - number
-                - "null"
-            totalAvgCPI:
-              type:
-                - object
-                - "null"
-              properties:
-                amount:
-                  type:
-                    - string
-                    - "null"
-                currency:
-                  type:
-                    - string
-                    - "null"
-            totalInstallRate:
-              type:
-                - number
-                - "null"
-            totalInstalls:
-              type:
-                - number
-                - "null"
-            totalNewDownloads:
-              type:
-                - number
-                - "null"
-            totalRedownloads:
-              type:
-                - number
-                - "null"
-            ttr:
-              type:
-                - number
-                - "null"
-            viewInstalls:
-              type:
-                - number
-                - "null"
-            viewNewDownloads:
-              type:
-                - number
-                - "null"
-            viewRedownloads:
-              type:
-                - number
-                - "null"
-      other:
-        type:
-          - boolean
-          - "null"
-    required:
-      - date
-    additionalProperties: true
-  adgroups_report_daily:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
-      metadata:
-        type:
-          - object
-          - "null"
-        properties:
-          adGroupDisplayStatus:
-            type:
-              - string
-              - "null"
-          adGroupId:
-            type:
-              - number
-              - "null"
-          adGroupName:
-            type:
-              - string
-              - "null"
-          adGroupServingStatus:
-            type:
-              - string
-              - "null"
-          adGroupStatus:
-            type:
-              - string
-              - "null"
-          automatedKeywordsOptIn:
-            type:
-              - boolean
-              - "null"
-          campaignId:
-            type:
-              - number
-              - "null"
-          countryOrRegion:
-            type:
-              - string
-              - "null"
-          defaultBidAmount:
-            type:
-              - object
-              - "null"
-            properties:
-              amount:
-                type:
-                  - string
-                  - "null"
-              currency:
-                type:
-                  - string
-                  - "null"
-          deleted:
-            type:
-              - boolean
-              - "null"
-          modificationTime:
-            type:
-              - string
-              - "null"
-          orgId:
-            type:
-              - number
-              - "null"
-          pricingModel:
-            type:
-              - string
-              - "null"
-          startTime:
-            type:
-              - string
-              - "null"
-      adGroupId:
-        type:
-          - number
-          - "null"
-      countryorregion:
-        type:
-          - string
-          - "null"
-      date:
-        type: string
-      granularity:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            avgCPM:
-              type:
-                - object
-                - "null"
-              properties:
-                amount:
-                  type:
-                    - string
-                    - "null"
-                currency:
-                  type:
-                    - string
-                    - "null"
-            avgCPT:
-              type:
-                - object
-                - "null"
-              properties:
-                amount:
-                  type:
-                    - string
-                    - "null"
-                currency:
-                  type:
-                    - string
-                    - "null"
-            date:
-              type:
-                - string
-                - "null"
-            impressions:
-              type:
-                - number
-                - "null"
-            localSpend:
-              type:
-                - object
-                - "null"
-              properties:
-                amount:
-                  type:
-                    - string
-                    - "null"
-                currency:
-                  type:
-                    - string
-                    - "null"
-            tapInstallCPI:
-              type:
-                - object
-                - "null"
-              properties:
-                amount:
-                  type:
-                    - string
-                    - "null"
-                currency:
-                  type:
-                    - string
-                    - "null"
-            tapInstallRate:
-              type:
-                - number
-                - "null"
-            tapInstalls:
-              type:
-                - number
-                - "null"
-            tapNewDownloads:
-              type:
-                - number
-                - "null"
-            tapRedownloads:
-              type:
-                - number
-                - "null"
-            taps:
-              type:
-                - number
-                - "null"
-            totalAvgCPI:
-              type:
-                - object
-                - "null"
-              properties:
-                amount:
-                  type:
-                    - string
-                    - "null"
-                currency:
-                  type:
-                    - string
-                    - "null"
-            totalInstallRate:
-              type:
-                - number
-                - "null"
-            totalInstalls:
-              type:
-                - number
-                - "null"
-            totalNewDownloads:
-              type:
-                - number
-                - "null"
-            totalRedownloads:
-              type:
-                - number
-                - "null"
-            ttr:
-              type:
-                - number
-                - "null"
-            viewInstalls:
-              type:
-                - number
-                - "null"
-            viewNewDownloads:
-              type:
-                - number
-                - "null"
-            viewRedownloads:
-              type:
-                - number
-                - "null"
-      other:
-        type:
-          - boolean
-          - "null"
-    required:
-      - date
-    additionalProperties: true
-  keywords_report_daily:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
-      metadata:
-        type:
-          - object
-          - "null"
-        properties:
-          adGroupDeleted:
-            type:
-              - boolean
-              - "null"
-          adGroupId:
-            type:
-              - number
-              - "null"
-          adGroupName:
-            type:
-              - string
-              - "null"
-          bidAmount:
-            type:
-              - object
-              - "null"
-            properties:
-              amount:
-                type:
-                  - string
-                  - "null"
-              currency:
-                type:
-                  - string
-                  - "null"
-          campaignId:
-            type:
-              - number
-              - "null"
-          countryOrRegion:
-            type:
-              - string
-              - "null"
-          deleted:
-            type:
-              - boolean
-              - "null"
-          keyword:
-            type:
-              - string
-              - "null"
-          keywordDisplayStatus:
-            type:
-              - string
-              - "null"
-          keywordId:
-            type:
-              - number
-              - "null"
-          keywordStatus:
-            type:
-              - string
-              - "null"
-          matchType:
-            type:
-              - string
-              - "null"
-          modificationTime:
-            type:
-              - string
-              - "null"
-          orgId:
-            type:
-              - number
-              - "null"
-      countryorregion:
-        type:
-          - string
-          - "null"
-      date:
-        type: string
-      granularity:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            avgCPT:
-              type:
-                - object
-                - "null"
-              properties:
-                amount:
-                  type:
-                    - string
-                    - "null"
-                currency:
-                  type:
-                    - string
-                    - "null"
-            date:
-              type:
-                - string
-                - "null"
-            impressions:
-              type:
-                - number
-                - "null"
-            localSpend:
-              type:
-                - object
-                - "null"
-              properties:
-                amount:
-                  type:
-                    - string
-                    - "null"
-                currency:
-                  type:
-                    - string
-                    - "null"
-            tapInstallCPI:
-              type:
-                - object
-                - "null"
-              properties:
-                amount:
-                  type:
-                    - string
-                    - "null"
-                currency:
-                  type:
-                    - string
-                    - "null"
-            tapInstallRate:
-              type:
-                - number
-                - "null"
-            tapInstalls:
-              type:
-                - number
-                - "null"
-            tapNewDownloads:
-              type:
-                - number
-                - "null"
-            tapRedownloads:
-              type:
-                - number
-                - "null"
-            taps:
-              type:
-                - number
-                - "null"
-            totalAvgCPI:
-              type:
-                - object
-                - "null"
-              properties:
-                amount:
-                  type:
-                    - string
-                    - "null"
-                currency:
-                  type:
-                    - string
-                    - "null"
-            totalInstallRate:
-              type:
-                - number
-                - "null"
-            totalInstalls:
-              type:
-                - number
-                - "null"
-            totalNewDownloads:
-              type:
-                - number
-                - "null"
-            totalRedownloads:
-              type:
-                - number
-                - "null"
-            ttr:
-              type:
-                - number
-                - "null"
-            viewInstalls:
-              type:
-                - number
-                - "null"
-            viewNewDownloads:
-              type:
-                - number
-                - "null"
-            viewRedownloads:
-              type:
-                - number
-                - "null"
-      insights:
-        type:
-          - object
-          - "null"
-        properties:
-          bidRecommendation:
-            type:
-              - object
-              - "null"
-            properties:
-              suggestedBidAmount:
-                type:
-                  - object
-                  - "null"
+              type: string
+          totalBudget:
+            anyOf:
+              - type: "null"
+              - type: object
                 properties:
                   amount:
-                    type:
-                      - string
-                      - "null"
+                    type: string
                   currency:
-                    type:
-                      - string
-                      - "null"
-      keywordId:
-        type:
-          - number
-          - "null"
+                    type: string
+      campaignId:
+        type: integer
+      date:
+        type: string
+      granularity:
+        type: array
+        items:
+          type: object
+          properties:
+            avgCPM:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            avgCPT:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            date:
+              type: string
+            impressions:
+              type: integer
+            latOffInstalls:
+              type: integer
+            latOnInstalls:
+              type: integer
+            localSpend:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            tapInstallCPI:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            tapInstallRate:
+              type: number
+            tapInstalls:
+              type: integer
+            tapNewDownloads:
+              type: integer
+            tapRedownloads:
+              type: integer
+            taps:
+              type: integer
+            ttr:
+              type: number
       other:
-        type:
-          - boolean
-          - "null"
-    required:
-      - date
+        type: boolean
+  adgroups_report_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
+    properties:
+      countryorregion:
+        type: string
+      metadata:
+        type: object
+        properties:
+          adGroupDisplayStatus:
+            type: string
+          adGroupId:
+            type: integer
+          adGroupName:
+            type: string
+          adGroupServingStateReasons:
+            type: "null"
+          adGroupServingStatus:
+            type: string
+          adGroupStatus:
+            type: string
+          automatedKeywordsOptIn:
+            type: boolean
+          campaignId:
+            type: integer
+          countryOrRegion:
+            type: string
+          cpaGoal:
+            type: "null"
+          defaultBidAmount:
+            type: object
+            properties:
+              amount:
+                type: string
+              currency:
+                type: string
+          deleted:
+            type: boolean
+          endTime:
+            type: "null"
+          modificationTime:
+            type: string
+          orgId:
+            type: integer
+          pricingModel:
+            type: string
+          startTime:
+            type: string
+      adGroupId:
+        type: integer
+      date:
+        type: string
+      granularity:
+        type: array
+        items:
+          type: object
+          properties:
+            avgCPM:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            avgCPT:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            date:
+              type: string
+            impressions:
+              type: integer
+            latOffInstalls:
+              type: integer
+            latOnInstalls:
+              type: integer
+            localSpend:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            tapInstallCPI:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            tapInstallRate:
+              type: number
+            tapInstalls:
+              type: integer
+            tapNewDownloads:
+              type: integer
+            tapRedownloads:
+              type: integer
+            taps:
+              type: integer
+            ttr:
+              type: number
+      other:
+        type: boolean
+  keywords_report_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      countryorregion:
+        type: string
+      metadata:
+        type: object
+        properties:
+          adGroupDeleted:
+            type: boolean
+          adGroupId:
+            type: integer
+          adGroupName:
+            type: string
+          bidAmount:
+            type: object
+            properties:
+              amount:
+                type: string
+              currency:
+                type: string
+          countryOrRegion:
+            type: string
+          deleted:
+            type: boolean
+          keyword:
+            type: string
+          keywordDisplayStatus:
+            type: string
+          keywordId:
+            type: integer
+          keywordStatus:
+            type: string
+          matchType:
+            type: string
+          modificationTime:
+            type: string
+      date:
+        type: string
+      granularity:
+        type: array
+        items:
+          type: object
+          properties:
+            avgCPT:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            date:
+              type: string
+            impressions:
+              type: integer
+            latOffInstalls:
+              type: integer
+            latOnInstalls:
+              type: integer
+            localSpend:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            tapInstallCPI:
+              type: object
+              properties:
+                amount:
+                  type: string
+                currency:
+                  type: string
+            tapInstallRate:
+              type: number
+            tapInstalls:
+              type: integer
+            tapNewDownloads:
+              type: integer
+            tapRedownloads:
+              type: integer
+            taps:
+              type: integer
+            ttr:
+              type: number
+      insights:
+        type: object
+        properties:
+          bidRecommendation:
+            type: object
+            properties:
+              bidMax:
+                anyOf:
+                  - type: "null"
+                  - type: object
+                    properties:
+                      amount:
+                        type: string
+                      currency:
+                        type: string
+              bidMin:
+                anyOf:
+                  - type: "null"
+                  - type: object
+                    properties:
+                      amount:
+                        type: string
+                      currency:
+                        type: string
+              suggestedBidAmount:
+                anyOf:
+                  - type: "null"
+                  - type: object
+                    properties:
+                      amount:
+                        type: string
+                      currency:
+                        type: string
+      keywordId:
+        type: integer
+      other:
+        type: boolean
