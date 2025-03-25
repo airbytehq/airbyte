@@ -883,33 +883,33 @@ metadata:
     sales: true
   testedStreams:
     bank_accounts:
-      hasRecords: true
-      streamHash: 9675478de2bb6d064a94d038f9275a108d922795
+      streamHash: 526e86a80a76e0c6a16f2ea29d6c340e97bca755
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     attribute_sets:
-      hasRecords: true
-      streamHash: bdbc194f5e7c595d105577a79904162538663c6e
+      streamHash: f0c7f8b8ebb4a0baf37f1a3bd8fed8c4b95d81fb
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     accounts:
-      hasRecords: true
-      streamHash: 67477e194c9ed885035b9a08866d4238ec1fe629
+      streamHash: eccee12b9abf12f56ecf1b4c1028989886ad5cf0
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     brands:
-      hasRecords: true
-      streamHash: 483569b42eef4b9687dd0907a48eaa85c350d996
+      streamHash: 1ba54400c734142717e4d0fe3763dfde55b9d338
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     carriers:
       streamHash: 93f0d97f1106e83b190b29d14e443bb156247d42
       hasResponse: true
@@ -918,61 +918,61 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     customers:
-      hasRecords: true
-      streamHash: 56cf59b8d01777551dcb4f1748c7a3ccba4afe62
+      streamHash: 6296df9b787332829b7ef937890a192ab2327064
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     deals:
+      streamHash: ccd5ea21059bad7b3de4f188f7817a4a52545f61
+      hasResponse: true
+      responsesAreSuccessful: true
       hasRecords: false
-      streamHash: 098f4b8282734a2ffda4e71b6958d829b7dc1cd4
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: true
+      primaryKeysAreUnique: true
     locations:
-      hasRecords: true
-      streamHash: 38e5a19d32f8c68f73cf889280168a42924a54a9
+      streamHash: 8a9fa74817d1a9806df4a5f74c238ce8bc365481
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     products:
-      hasRecords: true
-      streamHash: e6112bce84df42e32e05cd257326ef7032e5a115
+      streamHash: 6ebd8ea38c0ff2575ce639ed1dd3654aa3a2c1af
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     purchase_list:
-      hasRecords: true
-      streamHash: 147d200fc8c304882d8ccd283cfa6fb3063abcd2
+      streamHash: 889dfe3ec1409384b9b2c23f548b9f14ef4fabe6
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     suppliers:
-      hasRecords: true
-      streamHash: 9f4c4d4a838632eec3fc3596e5be1e28c3cf8c98
+      streamHash: 99bf8924483f5e62fe53b7d5f66b7e00c320ede3
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     opportunities:
-      hasRecords: true
-      streamHash: 2264f428e389c3d55b27b9e72c76738db3b3e37d
+      streamHash: c9acbe6d72d2297c4a41bab9a0161ddc4372630b
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     sale_list:
-      hasRecords: true
-      streamHash: ba929746eafa3485d45b9c7b6c5d7173e80b04ff
+      streamHash: 0ead96cb1f1327398c16fa24550389c199436480
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     taxes:
       streamHash: 35da8fd56fd121f5a8a55b369eaef5ba42ea5f60
       hasResponse: true
@@ -981,35 +981,35 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     product_categories:
-      hasRecords: true
-      streamHash: a83fc39a84fbe26fda6730f398fbbf501f86f8ca
+      streamHash: ed87d64b338c7e844c64941cce5607f405210332
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     product_family:
+      streamHash: 10b0b2e569ee4e0ffe3d23d913e5fe5783e95b3f
+      hasResponse: true
+      responsesAreSuccessful: true
       hasRecords: false
-      streamHash: 5bc293448d2cdf3d3a2420840d8cca07fbc3c235
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: true
+      primaryKeysAreUnique: true
     purchases:
-      hasRecords: true
-      streamHash: ff07ff0133c17577d1e7fd124ba439f57f157393
+      streamHash: 072f6b07306ea30517902cb4480514c9416604f0
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     leads:
-      hasRecords: true
-      streamHash: 6395dcff17029b78cbe70e0b92f3e3c38d8c30cd
+      streamHash: d919e07dd580d9c743ce7cb7b5eb0aaf85205f14
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     sales:
-      streamHash: 3ec91696ce197d68829f2c651a5e186ebadd28c7
+      streamHash: 6f22d78e9dde6d13bfdec222f81ab3b34e2bb092
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
