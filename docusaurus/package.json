@@ -72,7 +72,7 @@
     "@babel/preset-env": "7.23.6",
     "@babel/preset-react": "7.23.3",
     "@babel/preset-typescript": "7.23.3",
-    "@babel/runtime-corejs3": "7.23.6",
+    "@babel/runtime-corejs3": "7.26.10",
     "@cmfcmf/docusaurus-search-local": "^1.1.0",
     "@docsearch/react": "3.1.0",
     "@docusaurus/core": "^3.7.0",
@@ -110,7 +110,7 @@
     "dotenv": "^16.4.5",
     "html-loader": "^4.2.0",
     "js-yaml": "^4.1.0",
-    "json-schema-faker": "^0.5.4",
+    "json-schema-faker": "^0.5.8",
     "lodash": "^4.17.21",
     "node-fetch": "^3.3.2",
     "nth-check": "2.0.1",
@@ -139,7 +139,8 @@
     "yaml-loader": "^0.8.0"
   },
   "resolutions": {
-    "dompurify": "3.1.6"
+    "dompurify": "3.2.4",
+    "jsonpath-plus": "10.3.0"
   },
   "browserslist": {
     "production": [

@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-help-scout
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.1@sha256:52ad641b57995fbd43975d64f9a68fac15fcb80687df0f7acc27c4942a3b6bbb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.41.8@sha256:702857eda56f90ea5f2eea387c5e7f7919f7fddc4148c6c0c9e7dc1879bcc93b
   connectorSubtype: api
   connectorType: source
   definitionId: 96377d38-0bc6-47c0-9c84-c0fcc0f8ce40
-  dockerImageTag: 0.0.5
+  dockerImageTag: 0.0.8
   dockerRepository: airbyte/source-help-scout
   githubIssueLabel: source-help-scout
   icon: icon.svg

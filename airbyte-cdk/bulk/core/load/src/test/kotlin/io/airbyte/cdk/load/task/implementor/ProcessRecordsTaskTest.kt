@@ -12,7 +12,7 @@ import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
@@ -66,7 +66,7 @@ class ProcessRecordsTaskTest {
         coEvery { deserializer.deserialize(any()) } answers
             {
                 DestinationRecord(
-                    stream = MockDestinationCatalogFactory.stream1.descriptor,
+                    stream = MockDestinationCatalogFactory.stream1,
                     message =
                         AirbyteMessage()
                             .withRecord(
@@ -96,7 +96,7 @@ class ProcessRecordsTaskTest {
     class MockBatch(
         override val groupId: String?,
         override val state: Batch.State,
-        recordIterator: Iterator<DestinationRecordAirbyteValue>
+        recordIterator: Iterator<DestinationRecordRaw>
     ) : Batch {
         val records = recordIterator.asSequence().toList()
     }
@@ -162,7 +162,11 @@ class ProcessRecordsTaskTest {
                 it.batch is MockBatch &&
                 (it.batch as MockBatch)
                     .records
-                    .map { record -> (record.data as IntegerValue).value.toString() }
+                    .map { record ->
+                        (record.asDestinationRecordAirbyteValue().data as IntegerValue)
+                            .value
+                            .toString()
+                    }
                     .toSet() == serializedRecords.toSet()
         }
 

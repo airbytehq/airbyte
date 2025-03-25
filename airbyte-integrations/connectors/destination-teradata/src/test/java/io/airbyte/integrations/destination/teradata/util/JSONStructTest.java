@@ -48,8 +48,8 @@ public class JSONStructTest {
   @Test
   void testGetAttributesException() {
     SQLException exception = assertThrows(SQLException.class, () -> {
-      Map<Integer, String> map = new HashMap<>();
-      struct.getAttributes(map);
+      Map<String, Class<?>> inputMap = new HashMap<>();
+      struct.getAttributes(inputMap);
     });
     String expectedMessage = "getAttributes (Map) NOT SUPPORTED";
     String actualMessage = exception.getMessage();

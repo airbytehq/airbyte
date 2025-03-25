@@ -512,6 +512,13 @@
           "default": ".",
           "order": 4,
           "type": "string"
+        },
+        "site_url": {
+          "title": "Site URL",
+          "description": "Url of SharePoint site to search for files. Leave empty to search in the main site.",
+          "default": "",
+          "order": 5,
+          "type": "string"
         }
       },
       "required": ["streams", "credentials"]
@@ -531,13 +538,29 @@
             }
           }
         },
+        "oauth_connector_input_specification": {
+          "consent_url": "https://login.microsoftonline.com/{{tenant_id}}/oauth2/v2.0/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}&{{scope_param}}&response_type=code",
+          "access_token_url": "https://login.microsoftonline.com/{{tenant_id}}/oauth2/v2.0/token",
+          "scope": "offline_access Files.Read.All Sites.Read.All",
+          "access_token_headers": {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "access_token_params": {
+            "code": "{{ auth_code_value }}",
+            "client_id": "{{ client_id_value }}",
+            "redirect_uri": "{{ redirect_uri_value }}",
+            "client_secret": "{{ client_secret_value }}",
+            "grant_type": "authorization_code"
+          }
+        },
         "complete_oauth_output_specification": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
             "refresh_token": {
               "type": "string",
-              "path_in_connector_config": ["credentials", "refresh_token"]
+              "path_in_connector_config": ["credentials", "refresh_token"],
+              "path_in_oauth_response": ["refresh_token"]
             }
           }
         },

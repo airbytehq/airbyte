@@ -20,6 +20,7 @@ import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
+import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.cdk.load.write.Untyped
 import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assumptions
@@ -37,11 +38,10 @@ abstract class S3V2WriteTest(
     schematizedArrayBehavior: SchematizedNestedValueBehavior,
     unionBehavior: UnionBehavior,
     preserveUndeclaredFields: Boolean,
-    /** This is false for staging mode, and true for non-staging mode. */
     commitDataIncrementally: Boolean = true,
     allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
-    nullUnknownTypes: Boolean = false,
+    unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     private val mergesUnions: Boolean = false
 ) :
     BasicFunctionalityIntegrationTest(
@@ -63,7 +63,7 @@ abstract class S3V2WriteTest(
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
         supportFileTransfer = true,
-        nullUnknownTypes = nullUnknownTypes,
+        unknownTypesBehavior = unknownTypesBehavior,
     ) {
     @Disabled("Irrelevant for file destinations")
     @Test
@@ -395,7 +395,7 @@ class S3V2WriteTestAvroUncompressed :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        nullUnknownTypes = true,
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
         mergesUnions = true
     )
 
@@ -410,7 +410,7 @@ class S3V2WriteTestAvroBzip2 :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        nullUnknownTypes = true,
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
         mergesUnions = true
     )
 
@@ -425,7 +425,7 @@ class S3V2WriteTestParquetUncompressed :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        nullUnknownTypes = true,
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
         mergesUnions = true
     )
 
@@ -440,7 +440,7 @@ class S3V2WriteTestParquetSnappy :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        nullUnknownTypes = true,
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
         mergesUnions = true
     )
 
