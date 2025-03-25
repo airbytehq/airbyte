@@ -23,7 +23,7 @@ definitions:
           request_parameters:
             q: search
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202502"
           error_handlers:
             type: CustomErrorHandler
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
@@ -73,7 +73,7 @@ definitions:
             count: "500"
             accounts: urn:li:sponsoredAccount:{{stream_slice.get('account_id')}}
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202502"
           error_handlers:
             type: CustomErrorHandler
             class_name: "source_linkedin_ads.components.LinkedInAdsErrorHandler"
@@ -138,7 +138,7 @@ definitions:
             q: search
             search: "(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))"
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -210,7 +210,7 @@ definitions:
             q: search
             search: "(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))"
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -278,7 +278,7 @@ definitions:
           request_parameters:
             q: criteria
           request_headers:
-            Linkedin-Version: "202410"
+            Linkedin-Version: "202502"
             X-RestLi-Method: FINDER
           error_handlers:
             type: CompositeErrorHandler
@@ -369,7 +369,7 @@ definitions:
             account: urn:li:sponsoredAccount:{{stream_slice.get('account_id')}}
             count: "500"
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -432,7 +432,7 @@ definitions:
             q: owner
             count: "500"
           request_headers:
-            LinkedIn-Version: "202406"
+            LinkedIn-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -483,7 +483,7 @@ definitions:
             q: owner
             count: "500"
           request_headers:
-            LinkedIn-Version: "202406"
+            LinkedIn-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -545,7 +545,7 @@ definitions:
             dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
             fields: "{{stream_slice['fields']}}"
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -626,7 +626,7 @@ definitions:
             dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
             fields: "{{stream_slice['fields']}}"
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -707,7 +707,7 @@ definitions:
             dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
             fields: "{{stream_slice['fields']}}"
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -788,7 +788,7 @@ definitions:
             dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
             fields: "{{stream_slice['fields']}}"
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -869,7 +869,7 @@ definitions:
             dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
             fields: "{{stream_slice['fields']}}"
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -950,7 +950,7 @@ definitions:
             dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
             fields: "{{stream_slice['fields']}}"
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -1031,7 +1031,7 @@ definitions:
             dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
             fields: "{{stream_slice['fields']}}"
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -1112,7 +1112,7 @@ definitions:
             dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
             fields: "{{stream_slice['fields']}}"
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -1193,7 +1193,7 @@ definitions:
             dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
             fields: "{{stream_slice['fields']}}"
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -1274,7 +1274,7 @@ definitions:
             dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
             fields: "{{stream_slice['fields']}}"
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -1355,7 +1355,7 @@ definitions:
             dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
             fields: "{{stream_slice['fields']}}"
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -1437,7 +1437,7 @@ definitions:
             dateRange: "(start:(year:{{stream_slice.get('start.year')}},month:{{stream_slice.get('start.month')}},day:{{stream_slice.get('start.day')}}),end:(year:{{stream_slice.get('end.year')}},month:{{stream_slice.get('end.month')}},day:{{stream_slice.get('end.day')}}))"
             fields: "{{stream_slice['fields']}}"
           request_headers:
-            Linkedin-Version: "202404"
+            Linkedin-Version: "202502"
             X-Restli-Protocol-Version: 2.0.0
           error_handlers:
             type: CustomErrorHandler
@@ -2532,7 +2532,7 @@ schemas:
       Lead Forms are used to request data from members responding to the Lead Form.
       Lead Forms can include multiple questions, hidden fields, and custom consent checkboxes.
       Many of these components are structured as sub-objects of the Lead Form.
-      For details: https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync?view=li-lms-2024-06&tabs=http#lead-form-schema
+      For details: https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync?view=li-lms-2025-02&tabs=http#lead-form-schema
     additionalProperties: true
     properties:
       id:
@@ -2722,7 +2722,7 @@ schemas:
     description: |
       The Lead Form Responses API returns the response data for leads that filled out a Lead Form.
       Collecting Lead Form responses requires the viewer is the owner of the Lead Form.
-      For details: https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync?view=li-lms-2024-06&tabs=http#lead-form-response-schema
+      For details: https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync?view=li-lms-2025-02&tabs=http#lead-form-response-schema
     additionalProperties: true
     properties:
       id:
@@ -2890,7 +2890,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -3397,7 +3397,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -3904,7 +3904,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -4411,7 +4411,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -4918,7 +4918,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -5425,7 +5425,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -5932,7 +5932,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -6439,7 +6439,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -6946,7 +6946,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -7453,7 +7453,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -7960,7 +7960,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"

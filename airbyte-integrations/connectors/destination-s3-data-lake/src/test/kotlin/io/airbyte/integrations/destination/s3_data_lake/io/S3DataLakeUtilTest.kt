@@ -12,16 +12,16 @@ import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketRegion
+import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
-import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineFactory
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
@@ -206,16 +206,29 @@ internal class S3DataLakeUtilTest {
                 syncId = 1,
             )
         val airbyteRecord =
-            DestinationRecordAirbyteValue(
-                stream = airbyteStream.descriptor,
-                data =
-                    ObjectValue(
-                        linkedMapOf("id" to IntegerValue(42L), "name" to StringValue("John Doe"))
+            EnrichedDestinationRecordAirbyteValue(
+                stream = airbyteStream,
+                declaredFields =
+                    mapOf(
+                        "id" to
+                            EnrichedAirbyteValue(
+                                IntegerValue(42L),
+                                IntegerType,
+                                "id",
+                                airbyteMetaField = null
+                            ),
+                        "name" to
+                            EnrichedAirbyteValue(
+                                StringValue("John Doe"),
+                                StringType,
+                                "name",
+                                airbyteMetaField = null
+                            )
                     ),
+                undeclaredFields = emptyMap(),
                 emittedAtMs = System.currentTimeMillis(),
                 meta = Meta(),
             )
-        val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
         val columns =
             mutableListOf(
                 Types.NestedField.required(1, "id", Types.IntegerType.get()),
@@ -225,7 +238,6 @@ internal class S3DataLakeUtilTest {
         val icebergRecord =
             icebergUtil.toRecord(
                 record = airbyteRecord,
-                pipeline = pipeline,
                 tableSchema = schema,
                 stream = airbyteStream
             )
@@ -246,6 +258,8 @@ internal class S3DataLakeUtilTest {
                         linkedMapOf(
                             "id" to FieldType(IntegerType, nullable = true),
                             "name" to FieldType(StringType, nullable = true),
+                            AIRBYTE_CDC_DELETE_COLUMN to
+                                FieldType(TimestampTypeWithTimezone, nullable = true),
                         )
                     ),
                 generationId = 1,
@@ -253,21 +267,36 @@ internal class S3DataLakeUtilTest {
                 syncId = 1,
             )
         val airbyteRecord =
-            DestinationRecordAirbyteValue(
-                stream = airbyteStream.descriptor,
-                data =
-                    ObjectValue(
-                        linkedMapOf(
-                            "id" to IntegerValue(42L),
-                            "name" to StringValue("John Doe"),
-                            AIRBYTE_CDC_DELETE_COLUMN to
+            EnrichedDestinationRecordAirbyteValue(
+                stream = airbyteStream,
+                declaredFields =
+                    mapOf(
+                        "id" to
+                            EnrichedAirbyteValue(
+                                IntegerValue(42L),
+                                IntegerType,
+                                "id",
+                                airbyteMetaField = null
+                            ),
+                        "name" to
+                            EnrichedAirbyteValue(
+                                StringValue("John Doe"),
+                                StringType,
+                                "name",
+                                airbyteMetaField = null
+                            ),
+                        AIRBYTE_CDC_DELETE_COLUMN to
+                            EnrichedAirbyteValue(
                                 TimestampWithTimezoneValue("2024-01-01T00:00:00Z"),
-                        )
+                                TimestampTypeWithTimezone,
+                                AIRBYTE_CDC_DELETE_COLUMN,
+                                airbyteMetaField = null,
+                            ),
                     ),
+                undeclaredFields = emptyMap(),
                 emittedAtMs = System.currentTimeMillis(),
                 meta = Meta(),
             )
-        val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
         val columns =
             mutableListOf(
                 Types.NestedField.required(1, "id", Types.IntegerType.get()),
@@ -277,7 +306,6 @@ internal class S3DataLakeUtilTest {
         val icebergRecord =
             icebergUtil.toRecord(
                 record = airbyteRecord,
-                pipeline = pipeline,
                 tableSchema = schema,
                 stream = airbyteStream
             )
@@ -305,16 +333,29 @@ internal class S3DataLakeUtilTest {
                 syncId = 1,
             )
         val airbyteRecord =
-            DestinationRecordAirbyteValue(
-                stream = airbyteStream.descriptor,
-                data =
-                    ObjectValue(
-                        linkedMapOf("id" to IntegerValue(42L), "name" to StringValue("John Doe"))
+            EnrichedDestinationRecordAirbyteValue(
+                stream = airbyteStream,
+                declaredFields =
+                    mapOf(
+                        "id" to
+                            EnrichedAirbyteValue(
+                                IntegerValue(42L),
+                                IntegerType,
+                                "id",
+                                airbyteMetaField = null
+                            ),
+                        "name" to
+                            EnrichedAirbyteValue(
+                                StringValue("John Doe"),
+                                StringType,
+                                "name",
+                                airbyteMetaField = null
+                            ),
                     ),
+                undeclaredFields = emptyMap(),
                 emittedAtMs = System.currentTimeMillis(),
                 meta = Meta(),
             )
-        val pipeline = ParquetMapperPipelineFactory().create(airbyteStream)
         val columns =
             mutableListOf(
                 Types.NestedField.required(1, "id", Types.IntegerType.get()),
@@ -324,7 +365,6 @@ internal class S3DataLakeUtilTest {
         val icebergRecord =
             icebergUtil.toRecord(
                 record = airbyteRecord,
-                pipeline = pipeline,
                 tableSchema = schema,
                 stream = airbyteStream
             )
@@ -366,7 +406,6 @@ internal class S3DataLakeUtilTest {
                 icebergCatalogConfiguration = icebergCatalogConfiguration,
                 s3BucketConfiguration = s3BucketConfiguration,
                 numProcessRecordsWorkers = 1,
-                numProcessBatchWorkers = 1,
             )
         val catalogProperties = s3DataLakeUtil.toCatalogProperties(config = configuration)
         assertEquals(ICEBERG_CATALOG_TYPE_NESSIE, catalogProperties[ICEBERG_CATALOG_TYPE])
@@ -458,8 +497,7 @@ internal class S3DataLakeUtilTest {
                 minimumGenerationId = 1,
                 syncId = 1,
             )
-        val pipeline = ParquetMapperPipelineFactory().create(stream)
-        val schema = icebergUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
+        val schema = icebergUtil.toIcebergSchema(stream = stream)
         assertEquals(primaryKeys.toSet(), schema.identifierFieldNames())
         assertEquals(6, schema.columns().size)
         assertNotNull(schema.findField("id"))
@@ -488,8 +526,7 @@ internal class S3DataLakeUtilTest {
                 minimumGenerationId = 1,
                 syncId = 1,
             )
-        val pipeline = ParquetMapperPipelineFactory().create(stream)
-        val schema = icebergUtil.toIcebergSchema(stream = stream, pipeline = pipeline)
+        val schema = icebergUtil.toIcebergSchema(stream = stream)
         assertEquals(emptySet<String>(), schema.identifierFieldNames())
         assertEquals(6, schema.columns().size)
         assertNotNull(schema.findField("id"))

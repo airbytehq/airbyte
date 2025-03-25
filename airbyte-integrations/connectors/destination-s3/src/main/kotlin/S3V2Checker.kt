@@ -30,12 +30,7 @@ class S3V2Checker<T : OutputStream>(
         runBlocking {
             val s3Client = S3ClientFactory.make(config, assumeRoleCredentials)
             val pathFactory = ObjectStoragePathFactory.from(config, timeProvider)
-            val path =
-                if (pathFactory.supportsStaging) {
-                    pathFactory.getStagingDirectory(mockStream())
-                } else {
-                    pathFactory.getFinalDirectory(mockStream())
-                }
+            val path = pathFactory.getFinalDirectory(mockStream())
             val key = Paths.get(path, "_EXAMPLE").toString()
             log.info { "Checking if destination can write to $path" }
             var s3Object: S3Object? = null

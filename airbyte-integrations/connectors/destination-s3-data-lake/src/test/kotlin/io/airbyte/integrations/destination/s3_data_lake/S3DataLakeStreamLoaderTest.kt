@@ -14,7 +14,6 @@ import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketRegion
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.MapperPipeline
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
@@ -27,10 +26,11 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergSuperTypeFinder
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTypesComparator
-import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableWriterFactory
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import io.mockk.every
+import io.mockk.impl.annotations.MockK
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
@@ -45,9 +45,17 @@ import org.apache.iceberg.io.CloseableIterable
 import org.apache.iceberg.types.Type.PrimitiveType
 import org.apache.iceberg.types.Types
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class S3DataLakeStreamLoaderTest {
+    @MockK(relaxed = true)
+    private lateinit var streamStateStore: StreamStateStore<S3DataLakeStreamState>
+
+    @BeforeEach
+    fun setup() {
+        every { streamStateStore.put(any(), any()) } returns Unit
+    }
 
     @Test
     fun testCreateStreamLoader() {
@@ -106,7 +114,6 @@ internal class S3DataLakeStreamLoaderTest {
                 ),
                 Types.NestedField.of(12, false, COLUMN_NAME_AB_GENERATION_ID, Types.LongType.get()),
             )
-        val icebergTableWriterFactory: IcebergTableWriterFactory = mockk()
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
             every { accessKeyId } returns "access-key"
             every { secretAccessKey } returns "secret-access-key"
@@ -138,10 +145,9 @@ internal class S3DataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
-            every { toIcebergSchema(any(), any<MapperPipeline>()) } answers
+            every { toIcebergSchema(any()) } answers
                 {
-                    val pipeline = secondArg() as MapperPipeline
-                    pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
+                    stream.schema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
         }
         val streamLoader =
@@ -152,11 +158,11 @@ internal class S3DataLakeStreamLoaderTest {
                     IcebergTypesComparator(),
                     IcebergSuperTypeFinder(IcebergTypesComparator()),
                 ),
-                icebergTableWriterFactory,
                 s3DataLakeUtil,
                 icebergUtil,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,
                 mainBranchName = "main",
+                streamStateStore = streamStateStore,
             )
         assertNotNull(streamLoader)
     }
@@ -183,7 +189,6 @@ internal class S3DataLakeStreamLoaderTest {
             Schema(
                 Types.NestedField.of(2, true, "name", Types.StringType.get()),
             )
-        val icebergTableWriterFactory: IcebergTableWriterFactory = mockk()
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
             every { accessKeyId } returns "access-key"
             every { secretAccessKey } returns "secret-access-key"
@@ -236,10 +241,9 @@ internal class S3DataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
-            every { toIcebergSchema(any(), any<MapperPipeline>()) } answers
+            every { toIcebergSchema(any()) } answers
                 {
-                    val pipeline = secondArg() as MapperPipeline
-                    pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
+                    stream.schema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
             every { constructGenerationIdSuffix(any() as Long) } returns ""
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } just runs
@@ -252,11 +256,11 @@ internal class S3DataLakeStreamLoaderTest {
                     IcebergTypesComparator(),
                     IcebergSuperTypeFinder(IcebergTypesComparator()),
                 ),
-                icebergTableWriterFactory,
                 s3DataLakeUtil,
                 icebergUtil,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,
                 mainBranchName = "main",
+                streamStateStore = streamStateStore,
             )
         runBlocking { streamLoader.start() }
 
@@ -335,7 +339,6 @@ internal class S3DataLakeStreamLoaderTest {
                 Types.NestedField.of(12, false, COLUMN_NAME_AB_GENERATION_ID, Types.LongType.get()),
             )
         val icebergSchema = Schema(columns, emptySet())
-        val icebergTableWriterFactory: IcebergTableWriterFactory = mockk()
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
             every { accessKeyId } returns "access-key"
             every { secretAccessKey } returns "secret-access-key"
@@ -388,10 +391,9 @@ internal class S3DataLakeStreamLoaderTest {
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
             every { createTable(any(), any(), any(), any()) } returns table
-            every { toIcebergSchema(any(), any<MapperPipeline>()) } answers
+            every { toIcebergSchema(any()) } answers
                 {
-                    val pipeline = secondArg() as MapperPipeline
-                    pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(listOf(primaryKeys))
+                    stream.schema.withAirbyteMeta(true).toIcebergSchema(listOf(primaryKeys))
                 }
             every { constructGenerationIdSuffix(any() as Long) } returns ""
             every { assertGenerationIdSuffixIsOfValidFormat(any()) } just runs
@@ -404,11 +406,11 @@ internal class S3DataLakeStreamLoaderTest {
                     IcebergTypesComparator(),
                     IcebergSuperTypeFinder(IcebergTypesComparator()),
                 ),
-                icebergTableWriterFactory,
                 s3DataLakeUtil,
                 icebergUtil,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,
                 mainBranchName = "main",
+                streamStateStore = streamStateStore,
             )
         runBlocking { streamLoader.start() }
 
@@ -444,13 +446,11 @@ internal class S3DataLakeStreamLoaderTest {
                 syncId = 1,
             )
         val icebergConfiguration: S3DataLakeConfiguration = mockk()
-        val icebergTableWriterFactory: IcebergTableWriterFactory = mockk()
         val s3DataLakeUtil: S3DataLakeUtil = mockk()
         val icebergUtil: IcebergUtil = mockk {
-            every { toIcebergSchema(any(), any<MapperPipeline>()) } answers
+            every { toIcebergSchema(any()) } answers
                 {
-                    val pipeline = secondArg() as MapperPipeline
-                    pipeline.finalSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
+                    stream.schema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
         }
         val streamLoader =
@@ -461,11 +461,11 @@ internal class S3DataLakeStreamLoaderTest {
                     IcebergTypesComparator(),
                     IcebergSuperTypeFinder(IcebergTypesComparator()),
                 ),
-                icebergTableWriterFactory,
                 s3DataLakeUtil,
                 icebergUtil,
                 stagingBranchName = DEFAULT_STAGING_BRANCH,
                 mainBranchName = "main",
+                streamStateStore = streamStateStore,
             )
 
         assertEquals(

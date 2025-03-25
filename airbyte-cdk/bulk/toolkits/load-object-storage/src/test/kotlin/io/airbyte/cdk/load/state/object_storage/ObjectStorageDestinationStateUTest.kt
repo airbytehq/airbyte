@@ -32,7 +32,7 @@ class ObjectStorageDestinationStateUTest {
     @BeforeEach
     fun setup() {
         every { stream.descriptor } returns DestinationStream.Descriptor("test", "stream")
-        every { pathFactory.getLongestStreamConstantPrefix(any(), any()) } returns ""
+        every { pathFactory.getLongestStreamConstantPrefix(any()) } returns ""
     }
 
     @Test
