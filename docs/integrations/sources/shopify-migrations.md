@@ -7,7 +7,10 @@ This version contains schema changes for the following streams:
 ### Countries
 Due to API deprecation of [Admin REST endpoint](https://shopify.dev/docs/api/admin-rest/2024-04/resources/country) Countries stream now uses [Admin GrapthQl to retrieve all countries](https://shopify.dev/docs/api/admin-graphql/latest/queries/deliveryProfiles).
 
-**Note**: now stream requires `read_shipping` access scope.
+**Important**: now stream requires `read_shipping` access scope. The source returns list of available streams according to existing scopes.
+To obtain the scope follow this steps:
+If you are using **OAuth2.0** authorization method, you need to Re-authenticate the source on Settings page to fetch new scope. 
+If you are using **API password** authorization method, ensure that your custom app have `read_shipping` access scope, if not add the scope and Re-authenticate the source on Settings page.
 
 Fields **removed** from schema:
 * `country.tax`
