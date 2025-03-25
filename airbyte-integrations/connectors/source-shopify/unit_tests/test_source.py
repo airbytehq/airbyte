@@ -338,6 +338,7 @@ def test_user_scopes_generate_full_list_of_streams(config, mocker):
         "read_locations",
         "read_inventory",
         "read_merchant_managed_fulfillment_orders",
+        "read_shipping",
         "read_shopify_payments_payouts",
         "read_online_store_pages",
     ]
