@@ -399,10 +399,10 @@ To lint files:
       markdownlint-cli2 "../docs/myfolder/*.md"
       ```
 
-   - To lint a directory and its subdirectories:
+   - To lint a directory and its subdirectories recursively:
 
       ```bash
-      markdownlint-cli2 "...docs/folder/*/*.md
+      markdownlint-cli2 "..docs/folder/**/*.md
       ```
 
    - To auto-fix issues, add a `--fix` modifier. MarkDownLint can fix most issues on its own, but it might not fix them all.
