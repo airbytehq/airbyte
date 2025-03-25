@@ -135,14 +135,14 @@ class DestinationRecordRawTest {
         // Check coerced string field
         val stringField = enrichedRecord.declaredFields["string_field"]
         assertNotNull(stringField)
-        assertTrue(stringField?.value is StringValue)
-        assertEquals("42", (stringField?.value as StringValue).value)
+        assertTrue(stringField?.abValue is StringValue)
+        assertEquals("42", (stringField?.abValue as StringValue).value)
 
         // Check coerced integer field
         val integerField = enrichedRecord.declaredFields["integer_field"]
         assertNotNull(integerField)
-        assertTrue(integerField?.value is IntegerValue)
-        assertEquals(BigInteger.valueOf(123), (integerField?.value as IntegerValue).value)
+        assertTrue(integerField?.abValue is IntegerValue)
+        assertEquals(BigInteger.valueOf(123), (integerField?.abValue as IntegerValue).value)
 
         // Check coerced boolean field - might be nullified or coerced depending on implementation
         val booleanField = enrichedRecord.declaredFields["boolean_field"]
@@ -151,7 +151,7 @@ class DestinationRecordRawTest {
         // Check coerced number field
         val numberField = enrichedRecord.declaredFields["number_field"]
         assertNotNull(numberField)
-        assertTrue(numberField?.value is NumberValue)
+        assertTrue(numberField?.abValue is NumberValue)
     }
 
     @Test
@@ -189,12 +189,12 @@ class DestinationRecordRawTest {
         // Check valid field is preserved
         val stringField = enrichedRecord.declaredFields["string_field"]
         assertNotNull(stringField)
-        assertTrue(stringField?.value is StringValue)
+        assertTrue(stringField?.abValue is StringValue)
 
         // Check invalid integer is nullified with change recorded
         val integerField = enrichedRecord.declaredFields["integer_field"]
         assertNotNull(integerField)
-        assertEquals(NullValue, integerField?.value)
+        assertEquals(NullValue, integerField?.abValue)
         assertTrue(integerField?.changes?.isNotEmpty() ?: false)
         assertEquals(
             AirbyteRecordMessageMetaChange.Change.NULLED,
@@ -204,7 +204,7 @@ class DestinationRecordRawTest {
         // Check invalid array is nullified with change recorded
         val arrayField = enrichedRecord.declaredFields["array_field"]
         assertNotNull(arrayField)
-        assertEquals(NullValue, arrayField?.value)
+        assertEquals(NullValue, arrayField?.abValue)
         assertTrue(arrayField?.changes?.isNotEmpty() ?: false)
     }
 
@@ -393,13 +393,13 @@ class DestinationRecordRawTest {
         // Check nested object
         val nestedObject = enrichedRecord.declaredFields["nested_object"]
         assertNotNull(nestedObject)
-        assertTrue(nestedObject?.value is ObjectValue)
+        assertTrue(nestedObject?.abValue is ObjectValue)
 
         // Check array of objects
         val arrayOfObjects = enrichedRecord.declaredFields["array_of_objects"]
         assertNotNull(arrayOfObjects)
-        assertTrue(arrayOfObjects?.value is ArrayValue)
-        assertEquals(2, (arrayOfObjects?.value as ArrayValue).values.size)
+        assertTrue(arrayOfObjects?.abValue is ArrayValue)
+        assertEquals(2, (arrayOfObjects?.abValue as ArrayValue).values.size)
     }
 
     @Test

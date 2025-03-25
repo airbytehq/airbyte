@@ -1902,6 +1902,16 @@ class Forms(ClientSideIncrementalStream):
     primary_key = "id"
     scopes = {"forms"}
 
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params["formTypes"] = ["hubspot", "captured", "flow", "blog_comment", "all"]
+        return params
+
 
 class FormSubmissions(ClientSideIncrementalStream):
     """Marketing Forms, API v1
