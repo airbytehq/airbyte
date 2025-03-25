@@ -11,6 +11,8 @@ import io.airbyte.cdk.load.file.object_storage.PathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.state.DestinationState
 import io.airbyte.cdk.load.state.DestinationStatePersister
+import io.airbyte.cdk.load.write.object_storage.ObjectLoader
+import io.airbyte.cdk.load.write.object_storage.generationIdMetadataKey
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
@@ -25,6 +27,7 @@ class ObjectStorageDestinationState(
     private val stream: DestinationStream,
     private val client: ObjectStorageClient<*>,
     private val pathFactory: PathFactory,
+    private val objectLoader: ObjectLoader? = null,
 ) : DestinationState {
     private val log = KotlinLogging.logger {}
 
@@ -34,11 +37,7 @@ class ObjectStorageDestinationState(
         pathFactory.getPathMatcher(stream, suffixPattern = OPTIONAL_ORDINAL_SUFFIX_PATTERN)
 
     companion object {
-        const val METADATA_GENERATION_ID_KEY = "ab-generation-id"
         const val OPTIONAL_ORDINAL_SUFFIX_PATTERN = "(-[0-9]+)?"
-
-        fun metadataFor(stream: DestinationStream): Map<String, String> =
-            mapOf(METADATA_GENERATION_ID_KEY to stream.generationId.toString())
     }
 
     /**
@@ -64,7 +63,10 @@ class ObjectStorageDestinationState(
             .toList() // Force the list call to complete before initiating metadata calls
             .mapNotNull { obj ->
                 val generationId =
-                    client.getMetadata(obj.key)[METADATA_GENERATION_ID_KEY]?.toLongOrNull() ?: 0L
+                    client
+                        .getMetadata(obj.key)[objectLoader.generationIdMetadataKey]
+                        ?.toLongOrNull()
+                        ?: 0L
                 if (generationId < stream.minimumGenerationId) {
                     Pair(generationId, obj)
                 } else {
@@ -118,10 +120,11 @@ class ObjectStorageDestinationState(
 @Singleton
 class ObjectStorageFallbackPersister(
     private val client: ObjectStorageClient<*>,
-    private val pathFactory: PathFactory
+    private val pathFactory: PathFactory,
+    private val objectLoader: ObjectLoader?,
 ) : DestinationStatePersister<ObjectStorageDestinationState> {
     override suspend fun load(stream: DestinationStream): ObjectStorageDestinationState {
-        return ObjectStorageDestinationState(stream, client, pathFactory)
+        return ObjectStorageDestinationState(stream, client, pathFactory, objectLoader)
     }
 
     override suspend fun persist(stream: DestinationStream, state: ObjectStorageDestinationState) {
