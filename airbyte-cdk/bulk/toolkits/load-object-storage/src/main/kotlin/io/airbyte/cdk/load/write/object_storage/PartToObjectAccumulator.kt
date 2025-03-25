@@ -58,10 +58,15 @@ class PartToObjectAccumulator<T : RemoteObject<*>>(
         upload.partBookkeeper.add(batch.part)
         if (upload.partBookkeeper.isComplete) {
             val obj = streamingUpload.complete()
+            val empty = upload.partBookkeeper.isEmpty
             uploadsInProgress.remove(batch.part.key)
 
             log.info { "Completed upload of ${obj.key}" }
-            return LoadedObject(remoteObject = obj, fileNumber = batch.part.fileNumber)
+            return LoadedObject(
+                remoteObject = obj,
+                fileNumber = batch.part.fileNumber,
+                isEmpty = empty
+            )
         } else {
             return IncompletePartialUpload(batch.part.key)
         }
