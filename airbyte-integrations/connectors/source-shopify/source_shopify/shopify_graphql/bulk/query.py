@@ -3236,22 +3236,19 @@ class DeliveryZoneList:
         return self.resolve(query)
 
 
-class ProfileLocationGroups(DeliveryZoneList):
-    @property
-    def query_nodes(self) -> Optional[Union[List[Field], List[str]]]:
-        query_nodes: List[Field] = [
-            Field(name="pageInfo", fields=["hasNextPage", "endCursor"]),
+class ProfileLocationGroups(ShopifyBulkQuery):
+    query_name = "deliveryProfiles"
+    filter_field = None
+
+    record_composition = {"new_record": "DeliveryProfile"}
+
+    query_nodes: List[Field] = [
+            "__typename",
             Field(
-                name="nodes",
-                fields=[
-                    Field(
                         name="profileLocationGroups",
                         fields=[Field(name="locationGroup", fields=["id"])],
                     ),
-                ],
-            ),
-        ]
-        return query_nodes
+                ]
 
 
 class DeliveryProfile(DeliveryZoneList):

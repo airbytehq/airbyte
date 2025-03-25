@@ -332,33 +332,9 @@ class CustomerAddress(IncrementalShopifyGraphQlBulkStream):
     cursor_field = "id"
 
 
-class ProfileLocationGroups(FullRefreshShopifyGraphQlBulkStream):
-    # https://shopify.dev/docs/api/admin-graphql/latest/queries/deliveryProfiles
-    query = ProfileLocationGroups
-    response_field = "deliveryProfiles"
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        page_info = response.json()["data"]["deliveryProfiles"]["pageInfo"]
-        if page_info["hasNextPage"]:
-            # The cursor to retrieve nodes after in the connection. Typically, you should pass the endCursor of the previous page as after.
-            return {"cursor": page_info["endCursor"]}
-        return None
-
-    def request_body_json(
-        self,
-        stream_state: Optional[Mapping[str, Any]],
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping[str, Any]]:
-        return {
-            "query": self.query().get(query_args={"cursor": next_page_token["cursor"] if next_page_token else None}),
-        }
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        for node in super().parse_response(response, **kwargs):
-            for location_group in node.get("profileLocationGroups", []):
-                yield location_group.get("locationGroup")
-
+class ProfileLocationGroups(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: ProfileLocationGroups = ProfileLocationGroups
+    filter_field = None
 
 class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
     # https://shopify.dev/docs/api/admin-graphql/latest/queries/deliveryProfiles
@@ -402,10 +378,11 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
+        location_group_id = stream_slice["parent"]["profile_location_groups"][0]["locationGroup"]["id"]
         return {
-            "query": self.query(location_group_id=stream_slice["parent"]["id"], location_group_zones_cursor=self._sub_page_cursor).get(
+            "query": self.query(location_group_id=location_group_id, location_group_zones_cursor=self._sub_page_cursor).get(
                 query_args={
-                    "cursor": self._page_cursor,
+                    "cursor": '"' + self._page_cursor + '"' if self._page_cursor else None,
                 }
             ),
         }
