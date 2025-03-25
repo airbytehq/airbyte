@@ -182,6 +182,13 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
     // overrides test in coming releases
   }
 
+  @Test
+  public void testQueryBand() throws Exception {
+    dataSource = getDataSource(configJson);
+    database = destination.getDatabase(dataSource);
+    Assertions.assertEquals(TeradataConstants.DEFAULT_QUERY_BAND, destination.getQueryBand());
+  }
+
   protected DataSource getDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = destination.toJdbcConfig(config);
     return DataSourceFactory.create(jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),

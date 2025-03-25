@@ -13,8 +13,12 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.integrations.destination.teradata.util.TeradataConstants;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class TeradataDestinationTest {
 
@@ -122,6 +126,30 @@ public class TeradataDestinationTest {
         JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
   }
 
+  private static Stream<Arguments> provideQueryBandTestCases() {
+    return Stream.of(
+        // Each test case includes the input query band and the expected result
+        org.junit.jupiter.params.provider.Arguments.of("", TeradataConstants.DEFAULT_QUERY_BAND),
+        org.junit.jupiter.params.provider.Arguments.of("    ", TeradataConstants.DEFAULT_QUERY_BAND),
+        org.junit.jupiter.params.provider.Arguments.of("appname=test", "appname=test_airbyte;org=teradata-internal-telem;"),
+        org.junit.jupiter.params.provider.Arguments.of("appname=test;", "appname=test_airbyte;org=teradata-internal-telem;"),
+        org.junit.jupiter.params.provider.Arguments.of("appname=airbyte", "appname=airbyte;org=teradata-internal-telem;"),
+        org.junit.jupiter.params.provider.Arguments.of("appname=airbyte;", "appname=airbyte;org=teradata-internal-telem;"),
+        org.junit.jupiter.params.provider.Arguments.of("org=test;", "org=test;appname=airbyte;"),
+        org.junit.jupiter.params.provider.Arguments.of("org=test", "org=test;appname=airbyte;"),
+        org.junit.jupiter.params.provider.Arguments.of("org=teradata-internal-telem", TeradataConstants.DEFAULT_QUERY_BAND),
+        org.junit.jupiter.params.provider.Arguments.of("org=teradata-internal-telem;", TeradataConstants.DEFAULT_QUERY_BAND),
+        org.junit.jupiter.params.provider.Arguments.of(TeradataConstants.DEFAULT_QUERY_BAND, TeradataConstants.DEFAULT_QUERY_BAND),
+        org.junit.jupiter.params.provider.Arguments.of("invalid_queryband", "invalid_queryband;org=teradata-internal-telem;appname=airbyte;"),
+        org.junit.jupiter.params.provider.Arguments.of("org=teradata-internal-telem;appname=test;",
+            "org=teradata-internal-telem;appname=test_airbyte;"),
+        org.junit.jupiter.params.provider.Arguments.of("org=custom;appname=custom;", "org=custom;appname=custom_airbyte;"),
+        org.junit.jupiter.params.provider.Arguments.of("org=custom;appname=custom", "org=custom;appname=custom_airbyte"),
+        org.junit.jupiter.params.provider.Arguments.of("org=teradata-internal-telem;appname=airbyte", "org=teradata-internal-telem;appname=airbyte"),
+        org.junit.jupiter.params.provider.Arguments.of("org = teradata-internal-telem;appname = airbyte",
+            "org = teradata-internal-telem;appname = airbyte"));
+  }
+
   @Test
   void testJdbcUrlAndConfigNoExtraParams() {
     final JsonNode jdbcConfig = destination.toJdbcConfig(buildConfigNoJdbcParameters());
@@ -192,6 +220,19 @@ public class TeradataDestinationTest {
     final Map<String, String> properties = destination.getDefaultConnectionProperties(jdbcConfig);
     assertEquals(TeradataConstants.VERIFY_FULL, properties.get(TeradataConstants.PARAM_SSLMODE).toString());
     assertNotNull(properties.get(TeradataConstants.PARAM_SSLCA).toString());
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideQueryBandTestCases")
+  void testQueryBandCustom(String queryBandInput, String expectedQueryBand) {
+    Map<String, Object> baseParameters = baseParameters(); // Adjust to your method
+    ImmutableMap<String, Object> map_custom_QB = ImmutableMap.of(
+        TeradataConstants.QUERY_BAND_KEY, queryBandInput);
+
+    final JsonNode jdbcConfig = Jsons.jsonNode(MoreMaps.merge(map_custom_QB, baseParameters));
+    destination.getDefaultConnectionProperties(jdbcConfig);
+
+    assertEquals(expectedQueryBand, destination.getQueryBand());
   }
 
 }

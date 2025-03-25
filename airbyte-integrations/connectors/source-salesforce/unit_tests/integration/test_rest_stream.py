@@ -12,7 +12,7 @@ from salesforce_describe_response_builder import SalesforceDescribeResponseBuild
 from source_salesforce.api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS
 from source_salesforce.streams import LOOKBACK_SECONDS
 
-from airbyte_cdk.models import AirbyteStateBlob, SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 from integration.utils import create_base_url, given_authentication, given_stream, read
@@ -37,14 +37,13 @@ def create_http_request(stream_name: str, field_names: List[str], access_token: 
     )
 
 
-def create_http_response(field_names: List[str], record_count: int = 1) -> HttpResponse:
+def create_http_response(field_names: List[str], record_count: int = 1, cursor_value: str = "2021-01-18T21:18:20.000Z") -> HttpResponse:
     """
     This method does not handle field types for now which may cause some test failures on change if we start considering using some
     fields for calculation. One example of that would be cursor field parsing to datetime.
     """
     records = [
-        {field: "2021-01-18T21:18:20.000Z" if field in {"SystemModstamp"} else f"{field}_value" for field in field_names}
-        for i in range(record_count)
+        {field: cursor_value if field in {"SystemModstamp"} else f"{field}_value" for field in field_names} for i in range(record_count)
     ]
     return HttpResponse(json.dumps({"records": records}))
 
@@ -156,6 +155,7 @@ class IncrementalTest(TestCase):
 
     def test_given_partitioned_state_when_read_then_sync_missing_partitions_and_update_state(self) -> None:
         missing_chunk = (_NOW - timedelta(days=5), _NOW - timedelta(days=3))
+        cursor_value = _to_partitioned_datetime(_NOW - timedelta(days=2))
         most_recent_state_value = _NOW - timedelta(days=1)
         start = _calculate_start_time(_NOW - timedelta(days=10))
         state = StateBuilder().with_stream_state(
@@ -163,8 +163,16 @@ class IncrementalTest(TestCase):
             {
                 "state_type": "date-range",
                 "slices": [
-                    {"start": start.strftime("%Y-%m-%dT%H:%M:%S.000") + "Z", "end": _to_partitioned_datetime(missing_chunk[0])},
-                    {"start": _to_partitioned_datetime(missing_chunk[1]), "end": _to_partitioned_datetime(most_recent_state_value)},
+                    {
+                        "start": start.strftime("%Y-%m-%dT%H:%M:%S.000") + "Z",
+                        "end": _to_partitioned_datetime(missing_chunk[0]),
+                        "most_recent_cursor_value": _to_partitioned_datetime(missing_chunk[0]),
+                    },
+                    {
+                        "start": _to_partitioned_datetime(missing_chunk[1]),
+                        "end": _to_partitioned_datetime(most_recent_state_value),
+                        "most_recent_cursor_value": _to_partitioned_datetime(missing_chunk[1]),
+                    },
                 ],
             },
         )
@@ -180,7 +188,7 @@ class IncrementalTest(TestCase):
             HttpRequest(
                 f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(most_recent_state_value - _LOOKBACK_WINDOW)}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"
             ),
-            create_http_response([_A_FIELD_NAME, _CURSOR_FIELD], record_count=1),
+            create_http_response([_A_FIELD_NAME, _CURSOR_FIELD], record_count=1, cursor_value=cursor_value),
         )
 
         output = read(_STREAM_NAME, SyncMode.incremental, self._config, state)
@@ -192,7 +200,7 @@ class IncrementalTest(TestCase):
                 {
                     "start": _to_partitioned_datetime(start),
                     "end": _to_partitioned_datetime(_NOW),
-                    "most_recent_cursor_value": "2021-01-18T21:18:20.000Z",
+                    "most_recent_cursor_value": cursor_value,
                 }
             ],
         }

@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.task
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
@@ -183,6 +184,13 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
                 } else {
                     log.info { "Skipping exception handling, because it has already run." }
                 }
+            } catch (t: Throwable) {
+                log.error(t) { "Critical error in task $innerTask" }
+                if (hasThrown.setOnce()) {
+                    handleException(SystemErrorException(t.message, t))
+                } else {
+                    log.info { "Skipping exception handling, because it has already run." }
+                }
             }
         }
 
@@ -284,6 +292,7 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     }
 
     override suspend fun handleSetupComplete() {
+        syncManager.markSetupComplete()
         if (loadPipeline == null) {
             log.info { "Setup task complete, opening streams" }
             catalog.streams.forEach { openStreamQueue.publish(it) }
