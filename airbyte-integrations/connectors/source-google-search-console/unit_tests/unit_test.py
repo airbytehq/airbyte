@@ -8,7 +8,6 @@ from urllib.parse import quote_plus
 
 import pytest
 import requests
-from pytest_lazyfixture import lazy_fixture
 from source_google_search_console.source import SourceGoogleSearchConsole
 from source_google_search_console.streams import (
     ROW_LIMIT,
@@ -142,7 +141,7 @@ def test_bad_aggregation_type_should_retry(requests_mock, bad_aggregation_type):
     url = stream.url_base + stream.path(None, slice)
     requests_mock.get(url, status_code=400, json=bad_aggregation_type)
     test_response = requests.get(url)
-    # before should_retry, the aggregation_type should be set to `by_propety`
+    # before should_retry, the aggregation_type should be set to `by_property`
     assert stream.aggregation_type == QueryAggregationType.by_property
     # trigger should retry
     assert stream.should_retry(test_response) is False
@@ -229,29 +228,25 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
         )
 
 
-@pytest.mark.parametrize(
-    "test_config, expected",
-    [
-        (
-            lazy_fixture("config"),
-            (
-                False,
-                "UnauthorizedOauthError('Unable to connect with provided OAuth credentials. The `access token` or `refresh token` is expired. Please re-authrenticate using valid account credenials.')",
-            ),
-        ),
-        (
-            lazy_fixture("service_account_config"),
-            (
-                False,
-                "UnauthorizedServiceAccountError('Unable to connect with provided Service Account credentials. Make sure the `sevice account credentials` provided are valid.')",
-            ),
-        ),
-    ],
-)
-def test_unauthorized_creds_exceptions(test_config, expected, requests_mock):
+def test_unauthorized_oauth(config, requests_mock):
     source = SourceGoogleSearchConsole()
     requests_mock.post("https://oauth2.googleapis.com/token", status_code=401, json={})
-    actual = source.check_connection(logger, test_config)
+    actual = source.check_connection(logger, config)
+    expected = (
+        False,
+        "UnauthorizedOauthError('Unable to connect with provided OAuth credentials. The `access token` or `refresh token` is expired. Please re-authrenticate using valid account credenials.')",
+    )
+    assert actual == expected
+
+
+def test_unauthorized_service_account(service_account_config, requests_mock):
+    source = SourceGoogleSearchConsole()
+    requests_mock.post("https://oauth2.googleapis.com/token", status_code=401, json={})
+    actual = source.check_connection(logger, service_account_config)
+    expected = (
+        False,
+        "UnauthorizedServiceAccountError('Unable to connect with provided Service Account credentials. Make sure the `sevice account credentials` provided are valid.')",
+    )
     assert actual == expected
 
 
