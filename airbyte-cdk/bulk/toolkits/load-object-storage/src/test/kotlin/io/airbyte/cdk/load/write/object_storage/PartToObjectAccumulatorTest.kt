@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.Part
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.airbyte.cdk.load.message.object_storage.LoadablePart
-import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState
+import io.airbyte.cdk.load.state.object_storage.IdentityMetadataKeyMapper
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -31,7 +31,7 @@ class PartToObjectAccumulatorTest {
         client = mockk(relaxed = true)
         streamingUpload = mockk(relaxed = true)
         coEvery { stream.descriptor } returns streamDescriptor
-        metadata = ObjectStorageDestinationState.metadataFor(stream)
+        metadata = IdentityMetadataKeyMapper().metadataFor(stream)
         coEvery { client.startStreamingUpload(any(), any()) } returns streamingUpload
         coEvery { streamingUpload.uploadPart(any(), any()) } returns Unit
         coEvery { streamingUpload.complete() } returns mockk(relaxed = true)
@@ -59,7 +59,7 @@ class PartToObjectAccumulatorTest {
 
     @Test
     fun `test part accumulation`() = runTest {
-        val acc = PartToObjectAccumulator(stream, client)
+        val acc = PartToObjectAccumulator(stream, client, IdentityMetadataKeyMapper())
 
         // First part triggers starting the upload
         val firstPartFile1 = makePart(1, 1)

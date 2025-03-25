@@ -25,6 +25,12 @@ class ObjectStorageDestinationStateUTest {
     data class MockObj(override val key: String, override val storageConfig: Unit = Unit) :
         RemoteObject<Unit>
 
+    object TestMetadataKeyMapper : MetadataKeyMapper {
+        override fun map(key: String): String {
+            return "test-mapper-$key"
+        }
+    }
+
     @MockK lateinit var stream: DestinationStream
     @MockK lateinit var client: ObjectStorageClient<*>
     @MockK lateinit var pathFactory: ObjectStoragePathFactory
@@ -59,7 +65,7 @@ class ObjectStorageDestinationStateUTest {
                 PathMatcher(Regex("(dog|cat|turtle-1)$suffix"), mapOf("suffix" to 2))
             }
 
-        val persister = ObjectStorageFallbackPersister(client, pathFactory)
+        val persister = ObjectStorageFallbackPersister(client, pathFactory, TestMetadataKeyMapper)
         val state = persister.load(stream)
 
         assertEquals("dog-4", state.ensureUnique("dog"))
@@ -97,7 +103,7 @@ class ObjectStorageDestinationStateUTest {
                 )
             }
 
-        val persister = ObjectStorageFallbackPersister(client, pathFactory)
+        val persister = ObjectStorageFallbackPersister(client, pathFactory, TestMetadataKeyMapper)
         val state = persister.load(stream)
 
         assertEquals(2L, state.getPartIdCounter("dog/").get())
@@ -140,10 +146,12 @@ class ObjectStorageDestinationStateUTest {
         coEvery { client.getMetadata(any()) } answers
             {
                 val key = firstArg<String>()
-                mapOf("ab-generation-id" to key.split("/").last())
+                // Note that because we use TestMetadataKeyMapper, the "ab-generation-id" key
+                // is prefixed with "test-mapper-"
+                mapOf("test-mapper-ab-generation-id" to key.split("/").last())
             }
 
-        val persister = ObjectStorageFallbackPersister(client, pathFactory)
+        val persister = ObjectStorageFallbackPersister(client, pathFactory, TestMetadataKeyMapper)
 
         val dogStream = mockk<DestinationStream>(relaxed = true)
         every { dogStream.descriptor } returns DestinationStream.Descriptor("test", "dog")

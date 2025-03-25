@@ -22,6 +22,7 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.object_storage.LoadedObject
 import io.airbyte.cdk.load.state.StreamProcessingFailed
+import io.airbyte.cdk.load.state.object_storage.MetadataKeyMapper
 import io.airbyte.cdk.load.write.BatchAccumulator
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.cdk.load.write.object_storage.PartToObjectAccumulator
@@ -46,7 +47,8 @@ class MSSQLBulkLoadStreamLoader(
 
     // Bulk-load related collaborators
     private val mssqlFormatFileCreator = MSSQLFormatFileCreator(dataSource, stream, azureBlobClient)
-    private val objectAccumulator = PartToObjectAccumulator(stream, azureBlobClient)
+    private val objectAccumulator =
+        PartToObjectAccumulator(stream, azureBlobClient, metadataKeyMapper)
     private val mssqlBulkLoadHandler =
         MSSQLBulkLoadHandler(
             dataSource,

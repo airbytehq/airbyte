@@ -9,9 +9,12 @@ import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.models.BlobStorageException
 import com.azure.storage.blob.models.ListBlobsOptions
 import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfiguration
+import io.airbyte.cdk.load.data.Transformations
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
+import io.airbyte.cdk.load.state.object_storage.MetadataKeyMapper
+import jakarta.inject.Singleton
 import java.io.InputStream
 import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.Flow
@@ -82,7 +85,7 @@ class AzureBlobClient(
         return props?.metadata ?: emptyMap()
     }
 
-    suspend fun getProperties(key: String): OffsetDateTime? {
+    fun getProperties(key: String): OffsetDateTime? {
         val blobClient =
             serviceClient.getBlobContainerClient(blobConfig.containerName).getBlobClient(key)
 
@@ -132,5 +135,23 @@ class AzureBlobClient(
                 .getBlockBlobClient()
 
         return AzureBlobStreamingUpload(blobClient, blobConfig, metadata)
+    }
+}
+
+@Singleton
+class AzureBlobStorageMetadataKeyMapper : MetadataKeyMapper {
+    override fun map(key: String): String {
+        var mangledMetadataKey = key
+        // Key must start with a letter or underscore
+        if (mangledMetadataKey.isEmpty() || !mangledMetadataKey.contains(Regex("^[a-zA-Z_]"))) {
+            mangledMetadataKey = ESCAPE_PREFIX + mangledMetadataKey
+        }
+        // Key must be letters, numbers, or underscores
+        mangledMetadataKey = Transformations.toAlphanumericAndUnderscore(mangledMetadataKey)
+        return mangledMetadataKey
+    }
+
+    companion object {
+        private const val ESCAPE_PREFIX = "ab_"
     }
 }

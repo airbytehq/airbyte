@@ -39,7 +39,7 @@ class AzureBlobStreamingUploadTest {
                 containerName = "fakeContainer",
                 sharedAccessSignature = "null"
             )
-        metadata = mapOf("env" to "dev", "author" to "testUser", "ab-generation-id" to "0")
+        metadata = mapOf("env" to "dev", "author" to "testUser", "ab_generation_id" to "0")
 
         // By default, let's assume blobName returns something
         every { blockBlobClient.blobName } returns "testBlob"
@@ -85,18 +85,24 @@ class AzureBlobStreamingUploadTest {
         // We want to ensure commitBlockList is NOT called
         val blobItem = mockk<BlockBlobItem>()
         every { blockBlobClient.commitBlockList(any(), any()) } returns blobItem
-        every { blockBlobClient.setMetadata(mapOf("env" to "dev", "author" to "testUser")) } just
-            runs
+        // note that generation ID metadata is changed from ab-generation-id -> ab_generation_id
+        every {
+            blockBlobClient.setMetadata(
+                mapOf("env" to "dev", "author" to "testUser", "ab_generation_id" to "0")
+            )
+        } just runs
 
         // Act
         val resultBlob = streamingUpload.complete()
 
         // Assert
-        // 1) No block list calls
-        verify(exactly = 0) { blockBlobClient.commitBlockList(any(), any()) }
+        // 1) We committed the empty blob
+        verify(exactly = 1) { blockBlobClient.commitBlockList(emptyList(), true) }
         // 2) Metadata still set (the code checks for empty map, but here it's non-empty).
         verify(exactly = 1) {
-            blockBlobClient.setMetadata(mapOf("env" to "dev", "author" to "testUser"))
+            blockBlobClient.setMetadata(
+                mapOf("env" to "dev", "author" to "testUser", "ab_generation_id" to "0")
+            )
         }
 
         // 3) Return object is AzureBlob
@@ -133,7 +139,9 @@ class AzureBlobStreamingUploadTest {
             )
         }
         verify(exactly = 1) {
-            blockBlobClient.setMetadata(mapOf("env" to "dev", "author" to "testUser"))
+            blockBlobClient.setMetadata(
+                mapOf("env" to "dev", "author" to "testUser", "ab_generation_id" to "0")
+            )
         }
         // Confirm the returned object
         assertEquals("testBlob", resultBlob.key)
@@ -161,7 +169,9 @@ class AzureBlobStreamingUploadTest {
         verify(exactly = 1) { blockBlobClient.commitBlockList(any(), true) }
         // setMetadata also only once
         verify(exactly = 1) {
-            blockBlobClient.setMetadata(mapOf("env" to "dev", "author" to "testUser"))
+            blockBlobClient.setMetadata(
+                mapOf("env" to "dev", "author" to "testUser", "ab_generation_id" to "0")
+            )
         }
         // Both calls return the same AzureBlob reference
         assertEquals("testBlob", firstCall.key)

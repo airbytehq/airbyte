@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.object_storage.IncompletePartialUpload
 import io.airbyte.cdk.load.message.object_storage.LoadablePart
 import io.airbyte.cdk.load.message.object_storage.LoadedObject
-import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState
+import io.airbyte.cdk.load.state.object_storage.MetadataKeyMapper
 import io.airbyte.cdk.load.util.setOnce
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.ConcurrentHashMap
@@ -25,6 +25,7 @@ import kotlinx.coroutines.CompletableDeferred
 class PartToObjectAccumulator<T : RemoteObject<*>>(
     private val stream: DestinationStream,
     private val client: ObjectStorageClient<T>,
+    private val metadataKeyMapper: MetadataKeyMapper,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -41,7 +42,7 @@ class PartToObjectAccumulator<T : RemoteObject<*>>(
         if (upload.hasStarted.setOnce()) {
             // Start the upload if we haven't already. Note that the `complete`
             // here refers to the completable deferred, not the streaming upload.
-            val metadata = ObjectStorageDestinationState.metadataFor(stream)
+            val metadata = metadataKeyMapper.metadataFor(stream)
             val streamingUpload = client.startStreamingUpload(batch.part.key, metadata)
             upload.streamingUpload.complete(streamingUpload)
         }

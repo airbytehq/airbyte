@@ -14,8 +14,8 @@ import io.airbyte.cdk.load.pipeline.BatchAccumulator
 import io.airbyte.cdk.load.pipeline.BatchAccumulatorResult
 import io.airbyte.cdk.load.pipeline.FinalOutput
 import io.airbyte.cdk.load.pipeline.IntermediateOutput
-import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
+import io.airbyte.cdk.load.write.object_storage.metadataFor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
@@ -41,6 +41,7 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
     private val client: ObjectStorageClient<T>,
     private val catalog: DestinationCatalog,
     private val uploads: UploadsInProgress<T>,
+    private val objectLoader: ObjectLoader?,
 ) :
     BatchAccumulator<
         ObjectLoaderPartLoader.State<T>,
@@ -82,7 +83,7 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
                 CoroutineScope(Dispatchers.IO).async {
                     client.startStreamingUpload(
                         key.objectKey,
-                        metadata = ObjectStorageDestinationState.metadataFor(stream)
+                        metadata = objectLoader.metadataFor(stream)
                     )
                 },
             )
