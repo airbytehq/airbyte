@@ -48,6 +48,14 @@ definitions:
         action: FAIL
         error_message: "{{ response.details }}"
 
+  report_polling_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    response_filters:
+      - http_codes: [401]
+        action: RETRY
+        error_message: "Unauthorized error while report status checking. Known error. Please, retry the request or restart sync."
+
   oauth_authenticator:
     type: OAuthAuthenticator
     refresh_request_body: {}
@@ -2197,6 +2205,8 @@ definitions:
       request_headers:
         Amazon-Advertising-API-Scope: "{{ stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
         Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+      error_handler:
+        $ref: "#/definitions/report_polling_error_handler"
 
     download_requester:
       type: HttpRequester
