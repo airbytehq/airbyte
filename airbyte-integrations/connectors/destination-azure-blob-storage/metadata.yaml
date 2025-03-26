@@ -9,16 +9,6 @@ data:
     - suite: unitTests
     - suite: integrationTests
       testSecrets:
-        - fileName: config_gcs_staging.json
-          name: SECRET_DESTINATION-AZURE-BLOB-STORAGE-GCS-STAGING__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: config_s3_staging.json
-          name: SECRET_DESTINATION-AZURE-BLOB-STORAGE-S3-STAGING__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
         - fileName: config.json
           name: SECRET_DESTINATION-AZURE-BLOB-STORAGE__CREDS
           secretStore:
