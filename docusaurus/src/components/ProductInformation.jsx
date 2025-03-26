@@ -32,7 +32,7 @@ export const ProductInformation = ({ products }) => {
       <Badge available={cloud}>Cloud {cloudTeams ? <span className={styles.withAddon}>with Teams add-on</span> : ""}</Badge>
       <Badge available={ossCommunity}>Self-Managed Community (OSS)</Badge>
       <Badge available={ossEnterprise}>Self-Managed Enterprise</Badge>
-      <Badge available={embedded}>Embedded</Badge>
+      {embedded && <Badge available={true}>Embedded</Badge>}
       <a href="https://airbyte.com/product/features" target="_blank" className={styles.helpIcon} title="Feature comparison">
         <FontAwesomeIcon icon={faQuestionCircle} />
       </a>
