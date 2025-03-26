@@ -32,6 +32,13 @@ data:
   releaseStage: alpha
   releaseDate: 2024-02-02
   documentationUrl: https://docs.airbyte.com/integrations/sources/microsoft-sharepoint
+  data:
+  resourceRequirements:
+   jobSpecific:
+    - jobType: check_connection
+      resourceRequirements:
+        memory_limit: 1024mi
+        memory_request: 1024mi
   tags:
     - language:python
     - cdk:python-file-based
