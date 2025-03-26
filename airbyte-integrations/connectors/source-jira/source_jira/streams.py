@@ -12,8 +12,6 @@ from urllib.parse import parse_qsl
 
 import pendulum
 import requests
-from requests.exceptions import HTTPError
-
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.checkpoint.checkpoint_reader import FULL_REFRESH_COMPLETE_STATE
@@ -23,10 +21,11 @@ from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from requests.exceptions import HTTPError
 from source_jira.type_transfromer import DateTimeTransformer
+import json
 
 from .utils import read_full_refresh, read_incremental, safe_max
-
 
 API_VERSION = 3
 
@@ -175,6 +174,7 @@ class JiraStream(HttpStream, ABC):
 
 
 class FullRefreshJiraStream(JiraStream):
+
     """
     This is a temporary solution to avoid incorrect state handling.
     See comments below for more info:
@@ -393,7 +393,17 @@ class PullRequests(IncrementalJiraStream):
     extract_field = "detail"
     raise_on_http_errors = False
 
-    pr_regex = r"(?P<prDetails>PullRequestOverallDetails{openCount=(?P<open>[0-9]+), mergedCount=(?P<merged>[0-9]+), declinedCount=(?P<declined>[0-9]+)})|(?P<pr>pullrequest={dataType=pullrequest, state=(?P<state>[a-zA-Z]+), stateCount=(?P<count>[0-9]+)})"
+    # Combined regex to check for pull requests and extract byInstanceType in one pass
+    # First part checks for pull requests
+    # Second part captures the byInstanceType section
+    combined_regex = r'(?:' + \
+                        r'(?P<prDetails>PullRequestOverallDetails{openCount=(?P<open>[0-9]+), mergedCount=(?P<merged>[0-9]+), declinedCount=(?P<declined>[0-9]+)})' + \
+                        r'|' + \
+                        r'(?P<pr>pullrequest={dataType=pullrequest, state=(?P<state>[a-zA-Z]+), stateCount=(?P<count>[0-9]+)})' + \
+                        r')' + \
+                        r'|' + \
+                        r'"byInstanceType":\s*(?P<byInstanceType>\{(?:[^{}]|(?:\{[^{}]*\}))*\})'
+
 
     def __init__(self, issues_stream: Issues, issue_fields_stream: IssueFields, **kwargs):
         super().__init__(**kwargs)
@@ -407,25 +417,60 @@ class PullRequests(IncrementalJiraStream):
     def path(self, **kwargs) -> str:
         return "issue/detail"
 
-    # Currently, only GitHub pull requests are supported by this stream. The
-    # requirements for supporting other systems are unclear.
     def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_slice=stream_slice, **kwargs)
         params["issueId"] = stream_slice["id"]
-        params["applicationType"] = "GitHub"
+        params["applicationType"] = stream_slice["vcs_platform"]
         params["dataType"] = "branch"
         return params
 
-    def has_pull_requests(self, dev_field) -> bool:
-        if not dev_field or dev_field == "{}":
-            return False
-        matches = 0
-        for match in re.finditer(self.pr_regex, dev_field, re.MULTILINE):
+    def get_vcs_platforms(self, dev_field: str) -> list[str]:
+        """
+        Extract all VCS platform names (like GitHub, GitLab, etc.) from a custom field.
+        Returns a list of platform names found in the byInstanceType section.
+        
+        Args:
+            content: The development field string from Jira
+            
+        Returns:
+            List of VCS platform names found
+        """
+        
+        # Find all matches
+        matches = list(re.finditer(self.combined_regex, dev_field, re.MULTILINE))
+        
+        # Check if there are pull requests
+        has_prs = False
+        for match in matches:
             if match.group("prDetails"):
-                matches += int(match.group("open")) + int(match.group("merged")) + int(match.group("declined"))
+                total = int(match.group("open")) + int(match.group("merged")) + int(match.group("declined"))
+                if total > 0:
+                    has_prs = True
+                    break
             elif match.group("pr"):
-                matches += int(match.group("count"))
-        return matches > 0
+                if int(match.group("count")) > 0:
+                    has_prs = True
+                    break
+        
+        if not has_prs:
+            return []
+        
+        by_instance_type = None
+        for match in matches:
+            if match.group("byInstanceType"):
+                by_instance_type = match.group("byInstanceType")
+                break
+        
+        if not by_instance_type:
+            return []
+        
+
+        # Try to parse this as a JSON object
+        by_instance_type_data = json.loads(by_instance_type)
+        
+        # The keys in this object are the VCS platform names
+        vcs_platforms = list(by_instance_type_data.keys())
+        return vcs_platforms
 
     def read_records(
         self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
@@ -434,9 +479,14 @@ class PullRequests(IncrementalJiraStream):
         dev_field_ids = field_ids_by_name.get("Development", [])
         for issue in read_incremental(self.issues_stream, stream_state=stream_state):
             for dev_field_id in dev_field_ids:
-                if self.has_pull_requests(issue["fields"].get(dev_field_id)):
+                vcs_platforms = self.get_vcs_platforms(issue["fields"].get(dev_field_id))
+                for vcs_platform in vcs_platforms:
                     yield from super().read_records(
-                        stream_slice={"id": issue["id"], self.cursor_field: issue["fields"][self.cursor_field]}, **kwargs
+                        stream_slice={
+                            "id": issue["id"], 
+                            "vcs_platform": vcs_platform,
+                            self.cursor_field: issue["fields"][self.cursor_field]},
+                            **kwargs
                     )
                     break
 

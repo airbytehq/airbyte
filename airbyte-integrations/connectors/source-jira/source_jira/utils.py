@@ -3,9 +3,9 @@
 #
 
 from typing import Any, MutableMapping
-
+import re
+import json
 from airbyte_cdk.sources.streams import Stream
-
 
 _NO_STATE: MutableMapping[str, Any] = {}
 
