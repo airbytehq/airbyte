@@ -3,10 +3,10 @@
 #
 import json
 import math
-import requests
 from unittest.mock import MagicMock, patch
 
 import pytest
+import requests
 from source_shopify.auth import ShopifyAuthenticator
 from source_shopify.source import ConnectionCheckTest, ShopifyScopes, SourceShopify
 from source_shopify.streams.streams import (
