@@ -216,7 +216,7 @@ abstract class IntegrationTest(
             if (streamStatus != null) {
                 catalog.streams.forEach {
                     destination.sendMessage(
-                        DestinationRecordStreamComplete(it.descriptor, System.currentTimeMillis())
+                        DestinationRecordStreamComplete(it, System.currentTimeMillis())
                             .asProtocolMessage()
                     )
                 }
@@ -302,7 +302,7 @@ abstract class IntegrationTest(
     fun updateConfig(config: String): String = configUpdater.update(config)
 
     companion object {
-        val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}")
+        val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}.*")
         val randomizedNamespaceDateFormatter: DateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyyMMdd")
 

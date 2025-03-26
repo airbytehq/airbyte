@@ -14,6 +14,7 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,14 @@ public class TeradataSqlOperationsTest {
   }
 
   @Test
+  void testEmptyInsertRecordsInternal() throws SQLException {
+    List<AirbyteRecordMessage> records = new ArrayList<>();
+    String schemaName = "test_schema";
+    String tableName = "test_table";
+    teradataSqlOperations.insertRecordsInternal(database, records, schemaName, tableName);
+  }
+
+  @Test
   void testInsertRecordsInternal() throws SQLException {
     // Arrange
     AirbyteRecordMessage record1 = mock(AirbyteRecordMessage.class);
@@ -54,40 +63,50 @@ public class TeradataSqlOperationsTest {
   }
 
   @Test
+  void testIsSchemaExists() throws Exception {
+    doReturn(1).when(database).queryInt(anyString());
+    teradataSqlOperations.isSchemaExists(database, "schema");
+    verify(database, times(1)).queryInt(stringCaptor.capture());
+    assertTrue(stringCaptor.getValue().contains("SELECT COUNT(1) FROM DBC.Databases"));
+  }
+
+  @Test
+  void testIsSchemaNotExists() throws Exception {
+    doReturn(0).when(database).queryInt(anyString());
+    teradataSqlOperations.isSchemaExists(database, "schema");
+    verify(database, times(1)).queryInt(stringCaptor.capture());
+    assertTrue(stringCaptor.getValue().contains("SELECT COUNT(1) FROM DBC.Databases"));
+  }
+
+  @Test
   void testCreateSchemaIfNotExists() throws Exception {
     // Test case where schema does not exist
     doNothing().when(database).execute(anyString());
-
+    doReturn(0).when(database).queryInt(anyString());
     teradataSqlOperations.createSchemaIfNotExists(database, "schema");
-
+    verify(database, times(1)).queryInt(stringCaptor.capture());
+    assertTrue(stringCaptor.getValue().contains("SELECT COUNT(1) FROM DBC.Databases"));
     verify(database, times(1)).execute(stringCaptor.capture());
-    assertTrue(stringCaptor.getValue().contains("CREATE DATABASE \"schema\""));
-
-    // Test case where schema already exists
-    doThrow(new SQLException("Database already exists")).when(database).execute(anyString());
-    teradataSqlOperations.createSchemaIfNotExists(database, "schema");
-
-    verify(database, times(2)).execute(stringCaptor.capture());
     assertTrue(stringCaptor.getValue().contains("CREATE DATABASE \"schema\""));
   }
 
   @Test
-  void testCreateTableIfNotExists() throws SQLException {
-    // Test case where table does not exist
+  void testCreateSchemaIfExists() throws Exception {
+    // Test case where schema already exists
     doNothing().when(database).execute(anyString());
+    doReturn(1).when(database).queryInt(anyString());
+    teradataSqlOperations.createSchemaIfNotExists(database, "schema");
+    verify(database, times(1)).queryInt(stringCaptor.capture());
+    assertTrue(stringCaptor.getValue().contains("SELECT COUNT(1) FROM DBC.Databases"));
+    verify(database, times(0)).execute("");
+  }
 
+  @Test
+  void testIsTableExists() throws Exception {
+    doReturn(1).when(database).queryInt(anyString());
     teradataSqlOperations.createTableIfNotExists(database, "schema", "table");
-
-    verify(database, times(1)).execute(stringCaptor.capture());
-    assertTrue(stringCaptor.getValue().contains("CREATE SET TABLE schema.table"));
-
-    // Test case where table already exists
-    doThrow(new SQLException("Table already exists")).when(database).execute(anyString());
-
-    teradataSqlOperations.createTableIfNotExists(database, "schema", "table");
-
-    verify(database, times(2)).execute(stringCaptor.capture());
-    assertTrue(stringCaptor.getValue().contains("CREATE SET TABLE schema.table"));
+    verify(database, times(1)).queryInt(stringCaptor.capture());
+    assertTrue(stringCaptor.getValue().contains("SELECT COUNT(1) FROM DBC.TABLES"));
   }
 
   @Test
@@ -96,6 +115,29 @@ public class TeradataSqlOperationsTest {
     assertEquals(
         "CREATE SET TABLE schema.table, FALLBACK ( _airbyte_ab_id VARCHAR(256), _airbyte_data JSON, _airbyte_emitted_at TIMESTAMP(6))  UNIQUE PRIMARY INDEX (_airbyte_ab_id) ",
         query);
+  }
+
+  @Test
+  void testCreateTableIfNotExists() throws Exception {
+    // Test case where schema does not exist
+    doNothing().when(database).execute(anyString());
+    doReturn(0).when(database).queryInt(anyString());
+    teradataSqlOperations.createTableIfNotExists(database, "schema", "table");
+    verify(database, times(1)).queryInt(stringCaptor.capture());
+    assertTrue(stringCaptor.getValue().contains("SELECT COUNT(1) FROM DBC.TABLES"));
+    verify(database, times(1)).execute(stringCaptor.capture());
+    assertTrue(stringCaptor.getValue().contains("CREATE SET TABLE"));
+  }
+
+  @Test
+  void testCreateTableIfExists() throws Exception {
+    // Test case where schema already exists
+    doNothing().when(database).execute(anyString());
+    doReturn(1).when(database).queryInt(anyString());
+    teradataSqlOperations.createTableIfNotExists(database, "schema", "table");
+    verify(database, times(1)).queryInt(stringCaptor.capture());
+    assertTrue(stringCaptor.getValue().contains("SELECT COUNT(1) FROM DBC.TABLES"));
+    verify(database, times(0)).execute("");
   }
 
   @Test
@@ -112,6 +154,22 @@ public class TeradataSqlOperationsTest {
   void testTruncateTableQuery() {
     String query = teradataSqlOperations.truncateTableQuery(database, "schema", "table");
     assertEquals("DELETE schema.table ALL;\n", query);
+  }
+
+  @Test
+  void testExecuteTransactionEmptyQueries() throws Exception {
+    List<String> queries = new ArrayList<>();
+
+    // Test case where transaction executes successfully
+    doNothing().when(database).execute(anyString());
+
+    teradataSqlOperations.executeTransaction(database, queries);
+
+    verify(database, times(0)).execute("");
+
+    // Test case where transaction fails
+    doThrow(new SQLException("Execution failed")).when(database).execute(anyString());
+
   }
 
   @Test
