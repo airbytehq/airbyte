@@ -46,18 +46,18 @@ def test_service_account_client():
         (TEST_CLIENT, "retries", 100),
         (AUTHORIZED_CLIENT, "drive.retries", 100),
         (AUTHORIZED_CLIENT, "sheet.retries", 100),
-            (TEST_SERVICE_CLIENT, "retries", 100),
-            (AUTHORIZED_SERVICE_CLIENT, "drive.retries", 100),
-            (AUTHORIZED_SERVICE_CLIENT, "sheet.retries", 100),
+        (TEST_SERVICE_CLIENT, "retries", 100),
+        (AUTHORIZED_SERVICE_CLIENT, "drive.retries", 100),
+        (AUTHORIZED_SERVICE_CLIENT, "sheet.retries", 100),
     ],
     ids=[
         "client_main_retries",
         "client_drive_retries",
         "client_sheet_retries",
-            "service_client_main_retries",
-            "service_client_drive_retries",
-            "service_client_sheet_retries",
-        ]
+        "service_client_main_retries",
+        "service_client_drive_retries",
+        "service_client_sheet_retries",
+    ],
 )
 def test_max_retries_are_set(client_instance, property, expected_retries):
     if "." in property:
