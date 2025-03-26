@@ -28,7 +28,6 @@ def get_config(config_path: str = "secrets/config_oauth.json") -> Mapping[str, A
 
 def get_service_config(config_path: str = "secrets/config_service.json") -> Mapping[str, Any]:
     with open(config_path, "r") as f:
-        print("CONFIG...", config_path)
         return json.loads(f.read())
 
 
