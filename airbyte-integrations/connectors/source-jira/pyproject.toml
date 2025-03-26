@@ -17,7 +17,7 @@ include = "source_jira"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "^6"
+airbyte-cdk = "6.31"
 
 [tool.poetry.scripts]
 source-jira = "source_jira.run:run"
@@ -28,6 +28,7 @@ pytest = "^8.0.0"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
 responses = "^0.22.0"
+pendulum = "<3.0.0"
 
 
 [tool.poe]
