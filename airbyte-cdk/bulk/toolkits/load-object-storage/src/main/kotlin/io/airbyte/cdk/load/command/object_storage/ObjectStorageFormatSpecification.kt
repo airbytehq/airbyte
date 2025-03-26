@@ -65,14 +65,9 @@ class CSVFormatSpecification(
     @JsonSchemaTitle("Format Type")
     @JsonProperty("format_type")
     override val formatType: Type = Type.CSV
-) :
-    ObjectStorageFormatSpecification(formatType),
-    FlatteningSpecificationProvider,
-    ObjectStorageCompressionSpecificationProvider {
+) : ObjectStorageFormatSpecification(formatType), FlatteningSpecificationProvider {
     override val flattening: FlatteningSpecificationProvider.Flattening =
         FlatteningSpecificationProvider.Flattening.NO_FLATTENING
-    override val compression: ObjectStorageCompressionSpecification? =
-        GZIPCompressionSpecification()
 }
 
 /** JSONL */
@@ -81,14 +76,9 @@ class JsonFormatSpecification(
     @JsonSchemaTitle("Format Type")
     @JsonProperty("format_type")
     override val formatType: Type = Type.JSONL
-) :
-    ObjectStorageFormatSpecification(formatType),
-    FlatteningSpecificationProvider,
-    ObjectStorageCompressionSpecificationProvider {
+) : ObjectStorageFormatSpecification(formatType), FlatteningSpecificationProvider {
     override val flattening: FlatteningSpecificationProvider.Flattening? =
         FlatteningSpecificationProvider.Flattening.NO_FLATTENING
-    override val compression: ObjectStorageCompressionSpecification? =
-        GZIPCompressionSpecification()
 }
 
 interface FlatteningSpecificationProvider {
