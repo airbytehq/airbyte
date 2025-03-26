@@ -160,7 +160,7 @@ open class TeradataDestinationAcceptanceTest : JdbcDestinationAcceptanceTest() {
         namespace: String,
         streamSchema: JsonNode
     ): List<JsonNode> {
-        return retrieveRecordsFromTable(namingResolver.getIdentifier(streamName), namespace)
+        return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
     }
 
     @Throws(SQLException::class)
