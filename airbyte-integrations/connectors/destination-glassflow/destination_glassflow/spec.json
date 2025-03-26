@@ -1,0 +1,28 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/glassflow",
+  "supported_destination_sync_modes": ["append"],
+  "supportsIncremental": false,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Destination Glassflow",
+    "type": "object",
+    "required": ["pipeline_id", "pipeline_access_token"],
+    "properties": {
+      "pipeline_id": {
+        "title": "Pipeline ID",
+        "type": "string",
+        "description": "The GlassFlow pipeline id.",
+        "order": 0
+      },
+      "pipeline_access_token": {
+        "title": "Pipeline Access Token",
+        "type": "string",
+        "description": "The GlassFlow pipeline access token.",
+        "airbyte_secret": true,
+        "order": 1
+      }
+    }
+  }
+}
