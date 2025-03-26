@@ -18,11 +18,8 @@ TEST_CLIENT: pygsheets_client = GoogleSheetsClient(TEST_CONFIG)
 # authorized client
 AUTHORIZED_CLIENT: pygsheets_client = TEST_CLIENT.authorize()
 # service account client - if using service account tests
-TEST_SERVICE_CLIENT = None
-AUTHORIZED_SERVICE_CLIENT = None
-if "TEST_SERVICE_CONFIG" in globals():
-    TEST_SERVICE_CLIENT = GoogleSheetsClient(TEST_SERVICE_CONFIG)
-    AUTHORIZED_SERVICE_CLIENT = TEST_SERVICE_CLIENT.authorize()
+TEST_SERVICE_CLIENT = GoogleSheetsClient(TEST_SERVICE_CONFIG)
+AUTHORIZED_SERVICE_CLIENT = TEST_SERVICE_CLIENT.authorize()
 
 # ----- BEGIN TESTS -----
 
@@ -35,7 +32,6 @@ def test_oauth_client():
         assert i in client.oauth.to_json()
 
 
-@pytest.mark.skipif(TEST_SERVICE_CLIENT is None, reason="No service account config provided")
 def test_service_account_client():
     client = TEST_SERVICE_CLIENT.authorize()
     assert isinstance(client, pygsheets_client)
@@ -50,30 +46,18 @@ def test_service_account_client():
         (TEST_CLIENT, "retries", 100),
         (AUTHORIZED_CLIENT, "drive.retries", 100),
         (AUTHORIZED_CLIENT, "sheet.retries", 100),
-    ]
-    + (
-        []
-        if TEST_SERVICE_CLIENT is None
-        else [
             (TEST_SERVICE_CLIENT, "retries", 100),
             (AUTHORIZED_SERVICE_CLIENT, "drive.retries", 100),
             (AUTHORIZED_SERVICE_CLIENT, "sheet.retries", 100),
-        ]
-    ),
+    ],
     ids=[
         "client_main_retries",
         "client_drive_retries",
         "client_sheet_retries",
-    ]
-    + (
-        []
-        if TEST_SERVICE_CLIENT is None
-        else [
             "service_client_main_retries",
             "service_client_drive_retries",
             "service_client_sheet_retries",
         ]
-    ),
 )
 def test_max_retries_are_set(client_instance, property, expected_retries):
     if "." in property:

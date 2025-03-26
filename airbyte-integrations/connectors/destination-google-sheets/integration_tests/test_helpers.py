@@ -27,17 +27,15 @@ def get_config(config_path: str = "secrets/config_oauth.json") -> Mapping[str, A
 
 
 def get_service_config(config_path: str = "secrets/config_service.json") -> Mapping[str, Any]:
-    if os.path.exists("integration_tests/sample_config_service.json"):
-        with open("integration_tests/sample_config_service.json", "r") as f:
-            TEST_SERVICE_CONFIG = json.loads(f.read())
-    else:
-        with open(config_path, "r") as f:
-            TEST_SERVICE_CONFIG = json.loads(f.read())
-    return TEST_SERVICE_CONFIG
+    with open(config_path, "r") as f:
+        print("CONFIG...", config_path)
+        return json.loads(f.read())
 
 
 # using real config from secrets/config_oauth.json
 TEST_CONFIG: dict = get_config()
+TEST_SERVICE_CONFIG = get_service_config()
+
 # client instance
 TEST_CLIENT: pygsheets_client = GoogleSheetsClient(TEST_CONFIG).authorize()
 # get test spreadsheet_id
@@ -50,9 +48,6 @@ TEST_STREAM: str = "test_stream"
 TEST_CATALOG_PATH: str = "integration_tests/configured_catalog.json"
 # reading prepared catalog with streams
 TEST_CATALOG: ConfiguredAirbyteCatalog = ConfiguredAirbyteCatalog.parse_file(TEST_CATALOG_PATH)
-
-TEST_SERVICE_CONFIG = get_service_config()
-
 # ----- BEGIN TESTS -----
 
 

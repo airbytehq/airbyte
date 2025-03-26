@@ -35,6 +35,7 @@ class GoogleSheetsClient:
         auth_type = credentials.get("auth_type")
 
         if auth_type == "service":
+            print(self.config)
             service_account_info = credentials.get("service_account_info")
             if isinstance(service_account_info, str):
                 service_account_info = json.loads(service_account_info)
