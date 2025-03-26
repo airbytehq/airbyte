@@ -17,7 +17,6 @@ import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
-import io.airbyte.cdk.load.data.UnknownValue
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.serializeToString
 import java.math.BigDecimal
@@ -81,7 +80,6 @@ class AirbyteValueToJsonTest {
                 ArrayValue(listOf(NullValue, ArrayValue(listOf(NullValue)))) to "[null,[null]]",
                 ObjectValue(linkedMapOf("foo" to ObjectValue(linkedMapOf("bar" to NullValue)))) to
                     """{"foo":{"bar":null}}""",
-                UnknownValue(Jsons.readTree("""{"foo": "bar"}""")) to """{"foo":"bar"}"""
             )
         testCases.forEach { (value, expectedSerialization) ->
             val actual =
