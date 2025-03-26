@@ -338,7 +338,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.5.5 | 2025-03-26 | [](https://github.com/airbytehq/airbyte/pull/) | Disabled `blog_comment` and `all` form-types for `Forms` and `FormSubmissions` stream |
+| 4.5.5 | 2025-03-26 | [56416](https://github.com/airbytehq/airbyte/pull/56416) | Disabled `blog_comment` and `all` form-types for `Forms` and `FormSubmissions` stream |
 | 4.5.4 | 2025-03-25 | [55822](https://github.com/airbytehq/airbyte/pull/55822) | add userIdIncludingInactive to owners and owners_archived streams |
 | 4.5.3 | 2025-03-24 | [52729](https://github.com/airbytehq/airbyte/pull/55245) | Add conversionId to `form_submissions` schema |
 | 4.5.2 | 2024-12-14 | [48480](https://github.com/airbytehq/airbyte/pull/49141) | Improves Forms stream by adding the formTypes query parameter to support all form types. This enhancement also propagates to the FormSubmission stream. |
