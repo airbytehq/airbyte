@@ -9,7 +9,7 @@ Airbyte's documentation is in the [Airbyte repository](https://github.com/airbyt
 
 ## Open source contributions welcome
 
-Open source contributors are a vital part of Airbyte. Technical writers are welcome to use any content you author in your portfolio. 
+Open source contributors are a vital part of Airbyte. Technical writers are welcome to use any content you author in your portfolio.
 
 If you're interested in becoming a regular contributor, join Airbyte's [Contributor program](https://airbyte.com/community/contributor-program). Airbyte pays for high-quality work on select issues. AI-generated content isn't eligible for the contributor program. You're welcome to use AI as a research tool and editing partner, but paid submissions must be principally human-generated.
 
@@ -58,7 +58,7 @@ Install these tools on your local machine, first.
 
 Optionally:
 
-1. [Vale](https://vale.sh/docs/install) so you can lint your content.
+1. [Vale](https://vale.sh/docs/install) and [MarkDownLint-cli2](https://github.com/DavidAnson/markdownlint-cli2) so you can lint your content.
 
 ### Fork and clone the repo
 
@@ -159,18 +159,19 @@ Since the docs site is based on Docusaurus, it inherits all of Docusaurus' capab
 
 ### Tabs
 
-Use tabs to display mutually exclusive concepts in a concise way. See [Tabs](https://docusaurus.io/docs/markdown-features/tabs). 
+Use tabs to display mutually exclusive concepts in a concise way. See [Tabs](https://docusaurus.io/docs/markdown-features/tabs).
 
 :::note
 We maintain a separate `Tabs` implementation to support rendering tabs in Airbyte's in-app documentation. Our in-app renderer creates some additional rules that aren't necessarily true in other Docusaurus implementations:
 
 - Always use empty lines to separate different Markup elements (tags, paragraphs, lists, etc.)
 - Do not indent `TabItem` tags and their content according to normal HTML conventions. Different Markdown rendering tools handle indented tags inconsistently.
+
 :::
 
 ### Code blocks
 
-Code blocks are used to represent sample code and command line input and output with easy-to-read syntax highlighting. See [Code blocks](https://docusaurus.io/docs/markdown-features/code-blocks). 
+Code blocks are used to represent sample code and command line input and output with easy-to-read syntax highlighting. See [Code blocks](https://docusaurus.io/docs/markdown-features/code-blocks).
 
 Not all languages are turned on. If syntax highlighting doesn't work for your language, add it to `docusaurus/docusaurus.config.js`'s `module.exports.themeConfig.prism.additionalLanguages` property. Then, restart your local server to test the new language.
 
@@ -275,31 +276,35 @@ Your path needs a leading slash `/` to work
 
 If you're adding a README to a code module, make sure the README has the following components:
 
-  - A brief description of the module
-  - Development prerequisites (like which language or binaries are required for development)
-  - How to install dependencies
-  - How to build and run the code locally and via Docker
-  - Any other information needed for local iteration
+- A brief description of the module
+- Development prerequisites (like which language or binaries are required for development)
+- How to install dependencies
+- How to build and run the code locally and via Docker
+- Any other information needed for local iteration
 
 :::tip
 AI tools like ChatGPT and GitHub Copilot are good at describing code. For open source repositories, you might find it helpful to point one to your code module and ask it to generate a first draft for you. Airbyte employees working on a proprietary repository should follow Airbyte's AI usage policies.
 :::
 
-## Lint your content with Vale {#linting}
+## Lint your content {#linting}
 
-Airbyte uses Vale to ensure standardization and minimum quality for docs content. Vale is an open source command-line tool that brings code-like linting to prose. It's not a general-purpose writing aid or an AI. It simply automates the identification of non-compliance with the style guide, principles for good writing, and other rules Airbyte defines as needed.
+The documentation runs two linters, Vale and MarkDownLint. Vale lints for style, writing, and grammar. MarkDownLint lints for MarkDown structure. For example, Vale tells you when you use passive language and MarkDownLint tells you that you've skipped a heading level. Together, these linters provide broad protection against most common readability, accessibility, and rendering problems.
 
 :::note
-This Vale implementation is new, and it might still generate false positives. Currently, Airbyte doesn't enforce style compliance in pull requests. This might happen in the future. For now, just do your best to comply with Vale's recommendations.
+Vale and MarkDownLint are newly implemented. They might still generate false positives or false negatives. Currently, Airbyte doesn't enforce them on pull requests. This might happen in the future. For now, just do your best to comply with the linters' recommendations.
 :::
 
-### How Vale works
+### Lint with Vale
 
-A configuration file, `//docusaurus/vale.ini`, controls Vale at the highest level. This file specifies the location of Vale's style rules, libraries, vocabularies, and other resources. Those styles and rules exist in `//docs/vale-styles`. Some of them are Airbyte-specific, but most rules come from the [Google](https://github.com/errata-ai/Google) and [Write Good](https://github.com/errata-ai/write-good) libraries. 
+Airbyte uses Vale to promote standardization and minimum quality for docs content. Vale is an open source command-line tool that brings code-like linting to prose. It's not a general-purpose writing aid or an AI. It simply automates the identification of non-compliance with the style guide, principles for good writing, and other rules Airbyte defines as needed.
 
-The repository imports those libraries from an external source. Don't modify them, or a future update may overwrite your modifications. If you want to improve our rules, modify `//docs/vale-styles/airbyte` or our vocabularies in `//docs/vale-styles/config/airbyte`.
+#### How Vale works
 
-### Install Vale
+A configuration file, `//docusaurus/vale.ini`, controls Vale at the highest level. This file specifies the location of Vale's style rules, libraries, vocabularies, and other resources. Those styles and rules exist in `//docs/vale-styles`. Some of them are Airbyte-specific, but most rules come from the [Google](https://github.com/errata-ai/Google) and [Write Good](https://github.com/errata-ai/write-good) libraries.
+
+The repository imports those libraries from an external source. Don't modify them, or a future update may overwrite your modifications. If you want to improve these rules, modify `//docs/vale-styles/airbyte` or our vocabularies in `//docs/vale-styles/config/airbyte`.
+
+#### Install Vale
 
 The easiest way to install Vale is with a package manager. This ensures Vale is available in your PATH and allows you to keep up to date with new releases. For more options, see [Vale's documentation](https://vale.sh/docs/install).
 
@@ -329,11 +334,11 @@ The easiest way to install Vale is with a package manager. This ensures Vale is 
    vale sync
    ```
 
-### Run Vale
+#### Run Vale
 
 You can run Vale in a command line tool or you can install an extension for most common code editors.
 
-#### Command line tool
+##### Command line tool
 
 1. Go to the Docusaurus directory.
 
@@ -357,7 +362,7 @@ You can run Vale in a command line tool or you can install an extension for most
 
    - For more command-line tool help, see [Vale's docs](https://vale.sh/docs/cli).
 
-#### In your code editor
+##### In your code editor
 
 Vale has extensions for many popular code editors. For the complete list, see [their docs (under Integrations)](https://vale.sh/docs).
 
@@ -365,9 +370,65 @@ For example, if you use Visual Studio Code, you can install the [Visual Studio C
 
 ![alt text](assets/vale-in-vscode.png)
 
+### Lint with MarkDownLint
+
+MarkDownLint is an open source, command-line library. It lints MarkDown files against common markup and structural issues that can confuse MarkDown interpreters and readers. Since Airbyte publishes docs to multiple contexts that may not interpret MarkDown the same way, this tool helps you write documentation to the CommonMark standard and maximize the likelihood that your content renders properly everywhere it's needed.
+
+#### Use markdownlint-cli2
+
+For those who prefer command line tools, **markdownlint-cli2** is the recommended way to work with MarkDownLint. To install markdownlint-cli2, follow the installation [instructions in GitHub](https://github.com/DavidAnson/markdownlint-cli2?tab=readme-ov-file#install). On a Mac:
+
+```bash
+brew install markdownlint-cli2
+```
+
+To lint files:
+
+   - To lint a single file:
+
+      ```bash
+      markdownlint-cli2 "./docs/myfolder/myfile.md"
+      ```
+
+   - To lint a single directory but not its subdirectories:
+
+      ```bash
+      markdownlint-cli2 "./docs/myfolder/*.md"
+      ```
+
+   - To lint a directory and its subdirectories recursively:
+
+      ```bash
+      markdownlint-cli2 "./docs/folder/**/*.md
+      ```
+
+   - To auto-fix issues, add a `--fix` modifier. MarkDownLint can fix most issues on its own, but it might not fix them all.
+
+      ```bash
+      markdownlint-cli2 --fix "../docs/myfolder/*.md"
+      ```
+
+For full usage details, see the tool's [GitHub readme](https://github.com/DavidAnson/markdownlint-cli2?tab=readme-ov-file#use).
+
+#### Use the Visual Studio Code extension
+
+If you use Visual Studio Code, the optimal way to work with MarkDownLint is to [install the extension](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint). Once you enable the extension, Visual Studio Code lists rule violations in the Problems tab, and highlights them on your screen as you type, as if they were typos.
+
+You may need to adjust your [settings for MarkDownLint](https://code.visualstudio.com/docs/editor/settings) and specify the location of the configuration file as `/docusaurus/.markdownlint.jsonc`.
+
+You can use the Visual Studio Code extension and `markdownlint-cli2` at the same time.
+
+#### Rule configuration
+
+Airbyte disables a handful of default MarkDownLint rules because the docs intentionally violate them or they're not worth enforcing. These configurations are in `//docusaurus/.markdownlint.jsonc`. If you need to modify these configurations, this configuration file isn't that well documented, but the [Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) seems to provide the best explanation of how it works.
+
+#### Full documentation
+
+See [the GitHub project](https://github.com/DavidAnson/markdownlint?tab=readme-ov-file) for full details about using the different versions of MarkDownLint.
+
 ## Create a pull request
 
-When you're ready to submit your work, create a pull request into `master`. 
+When you're ready to submit your work, create a pull request into `master`.
 
 ### Review and approval
 
@@ -376,11 +437,11 @@ New pull requests with docs changes are automatically submitted to [#docs-prs](h
 Vercel builds a preview of the updated docs site automatically. If you're a community contributor, someone from Airbyte must authorize that build before it proceeds.
 
 :::tip Collaboration tip
-If you're not finished but want to collaborate with others, create a draft pull request. Vercel will still build your docs site, creating a preview others can see, and you can continue to work on your branch to incorporate feedback.
+If you're not finished but want to collaborate with others, create a draft pull request. Vercel still builds your docs site, creating a preview others can see, and you can continue to work on your branch to incorporate feedback.
 :::
 
 :::note
-Before we accept your contribution, you need to sign the Contributor License Agreement (CLA). By signing a CLA, we can ensure that the community is free and confident in its ability to use your contributions. You will be prompted to sign the CLA while opening a pull request.
+Before Airbyte accepts your contribution, you need to sign the Contributor License Agreement (CLA). By signing a CLA, Airbyte can ensure that the community is free and confident in its ability to use your contributions. GitHub prompts you to sign the CLA when you open your first pull request.
 :::
 
 ## Deploy the documentation site
