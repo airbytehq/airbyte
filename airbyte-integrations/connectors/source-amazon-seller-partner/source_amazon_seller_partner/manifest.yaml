@@ -406,11 +406,11 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           # start date and end date should not be more than 180 days apart.
-          datetime: "{{ config['replication_start_date'] if config.get('replication_start_date') else (now_utc() - duration('P180D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc() - duration('PT5M'), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           field_name: PostedAfter
@@ -418,7 +418,7 @@ definitions:
         end_time_option:
           field_name: PostedBefore
           inject_into: request_parameter
-        step: "{{ config['financial_events_step'] }}"
+        step: "{{ config.get('financial_events_step', 'P180D') }}"
         cursor_granularity: "PT1S"
       transformations:
         - type: AddFields

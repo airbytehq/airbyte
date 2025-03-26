@@ -240,7 +240,7 @@ Create a separate connection for streams which usually fail with error above "Fa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.6.1 | 2024-10-01 | [55238](https://github.com/airbytehq/airbyte/pull/55238)     |Fix daterange in `DatetimeBasedCursor` and Added configurable step size for financial events streams (`list_financial_event_groups`, `list_financial_events`)|
+| 4.6.1 | 2025-03-26 | [55238](https://github.com/airbytehq/airbyte/pull/55238)     |Fix daterange in `DatetimeBasedCursor` and Added configurable step size for financial events streams (`list_financial_event_groups`, `list_financial_events`)|
 | 4.6.0 | 2025-02-24 | [53225](https://github.com/airbytehq/airbyte/pull/53225) | Add API Budget |
 | 4.5.3 | 2025-02-22 | [53928](https://github.com/airbytehq/airbyte/pull/53928) | Update dependencies |
 | 4.5.2 | 2025-02-17 | [53693](https://github.com/airbytehq/airbyte/pull/53693) | Add app_id to server configuration (OAuth) |

@@ -219,7 +219,7 @@
         "description": "The time window size for fetching financial events data in chunks. Options are 1 day (P1D), 7 days (P7D), or 14 days (P14D), based on API limitations.\n\n- **Smaller step sizes (e.g., 1 day)** are better for large data volumes. They fetch smaller chunks per request, reducing the risk of timeouts or overwhelming the API, though more requests may slow syncing and increase the chance of hitting rate limits.\n- **Larger step sizes (e.g., 14 days)** are better for smaller data volumes. They fetch more data per request, speeding up syncing and reducing the number of API calls, which minimizes strain on rate limits.\n\nSelect a step size that matches your data volume to optimize syncing speed and API performance.",
         "type": "string",
         "enum": ["P1D", "P7D", "P14D", "P30D", "P60D", "P90D", "P180D"],
-        "default": "P14D",
+        "default": "P180D",
         "order": 13
       }
     }
