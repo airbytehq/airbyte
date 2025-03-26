@@ -23,7 +23,7 @@ public class DummySource extends BaseConnector implements Source {
                 new IntegrationRunner(source).run(args);
             }
             case READ -> {
-                JavaSocketWriter writer = new JavaSocketWriter();
+                JavaImprovedSocketWriter writer = new JavaImprovedSocketWriter();
                 writer.startJavaUnixSocketWriter();
             }
 
