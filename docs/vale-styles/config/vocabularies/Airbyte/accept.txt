@@ -12,9 +12,12 @@ Cloud Enterprise
 abctl
 PyAirbyte
 [Nn]amespace
+Connector Builder
+abctl
+Low-Code CDK
 
 #
-# Common Terms we use
+# Common terms Airbyte uses
 #
 
 repo
@@ -27,6 +30,7 @@ Vale
 OpenTelemetry
 Datadog
 [Dd]eduplication
+Python
 
 # Common acronyms and initialisms that don't need definitions
 
@@ -34,16 +38,23 @@ AWS
 GCP
 REST
 IAM
+CSV
+CSVs
+API
+APIs
 
 # Airbyte connectors
 
 Nessie
 S3 Data Lake
 
-# Companies and products
+# Companies, products, and jargon
 
 Glue
+[Gg]raph[Qq][Ll]
 
-# Acceptable non-words that should not trigger spellcheck
+# Acceptable non-words that shouldn't trigger spellcheck
 
 [Nn]ulled
+[Nn]amespaces
+[Ii]nitialisms
