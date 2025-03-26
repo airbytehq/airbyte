@@ -45,7 +45,7 @@ Fields **added** to schema:
 
 Due to API version upgrade `admin_graphql_api_id` now contains `gid://shopify/OnlineStore<StreamEntity>/<ID>`(Updated naming to reflect actual purpose) instead `gid://shopify/<StreamEntity>/<ID>`(Legacy naming from older Admin API).
 
-**Important**: if you relly on `admin_graphql_api_id` field value in your destination, please clear affected streams and re-sync the data.
+**Important**: if you rely on `admin_graphql_api_id` field value in your destination, please clear affected streams and re-sync the data.
 
 ### Refresh affected schemas
 
