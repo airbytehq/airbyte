@@ -36,7 +36,7 @@ class TeradataSqlOperations : JdbcSqlOperations() {
      * @throws SQLException If an SQL error occurs during the insert operation.
      */
     @Throws(SQLException::class)
-    override fun insertRecordsInternal(
+    public override fun insertRecordsInternal(
         database: JdbcDatabase,
         records: List<AirbyteRecordMessage>,
         schemaName: String,
