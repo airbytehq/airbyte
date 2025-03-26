@@ -819,19 +819,19 @@ spec:
 
 metadata:
   autoImportSchema:
-    activity_logs: false
-    admins: false
-    tags: false
-    teams: false
-    segments: false
-    companies: false
-    company_attributes: false
-    contact_attributes: false
-    contacts: false
-    conversations: false
-    conversation_parts: false
-    company_segments: false
-    tickets: false
+    activity_logs: true
+    admins: true
+    tags: true
+    teams: true
+    segments: true
+    companies: true
+    company_attributes: true
+    contact_attributes: true
+    contacts: true
+    conversations: true
+    conversation_parts: true
+    company_segments: true
+    tickets: true
   yamlComponents:
     streams:
       activity_logs:
@@ -2769,6 +2769,166 @@ schemas:
           - "null"
           - integer
         description: Timestamp since waiting for a response
+      ai_agent:
+        type:
+          - "null"
+          - object
+        description: Data related to AI Agent involvement in the conversation
+        properties:
+          source_type:
+            type:
+              - "null"
+              - string
+            description: The type of the source that triggered AI Agent involvement
+            enum:
+              - "essentials_plan_setup"
+              - "profile"
+              - "workflow"
+              - "workflow_preview"
+              - "fin_preview"
+          source_id:
+            type:
+              - "null"
+              - string
+            description: The ID of the source that triggered AI Agent involvement
+          triggered_at:
+            type:
+              - "null"
+              - integer
+            description: The timestamp when AI Agent was triggered, represented as a Unix timestamp
+          source_title:
+            type:
+              - "null"
+              - string
+            description: The title of the source that triggered AI Agent involvement. Returns null if the source_type is 'essentials_plan_setup'.
+          last_answer_type:
+            type:
+              - "null"
+              - string
+            description: The type of the last answer delivered by AI Agent. Returns null if no answer has been delivered.
+            enum:
+              - "ai_answer"
+              - "custom_answer"
+          resolution_state:
+            type:
+              - "null"
+              - string
+            description: The resolution state of AI Agent. Returns null if no AI or custom answer has been delivered.
+            enum:
+              - "assumed_resolution"
+              - "confirmed_resolution"
+              - "routed_to_team"
+              - "abandoned"
+          rating:
+            type:
+              - "null"
+              - integer
+            description: The customer satisfaction rating given to AI Agent, on a scale from 1 to 5
+          rating_remark:
+            type:
+              - "null"
+              - string
+            description: The customer satisfaction rating remark provided for AI Agent
+          content_sources:
+            type:
+              - "null"
+              - object
+            description: The content sources used by AI Agent in the conversation
+            properties:
+              type:
+                type:
+                  - "null"
+                  - string
+                description: The type of the content source list
+                example: "content_source_list"
+              total_count:
+                type:
+                  - "null"
+                  - integer
+                description: The total number of content sources used by AI Agent in the conversation
+              content_sources:
+                type:
+                  - "null"
+                  - array
+                description: The list of content sources utilized by AI Agent
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    content_type:
+                      type:
+                        - "null"
+                        - string
+                      description: The type of the content source
+                      enum:
+                        - "file"
+                        - "article"
+                        - "external_content"
+                        - "content_snippet"
+                        - "workflow_connector_action"
+                    url:
+                      type:
+                        - "null"
+                        - string
+                      description: The internal URL linking to the content source, accessible to teammates
+                    title:
+                      type:
+                        - "null"
+                        - string
+                      description: The title of the content source
+                    locale:
+                      type:
+                        - "null"
+                        - string
+                      description: The ISO 639 language code of the content source
+      linked_objects:
+        type:
+          - "null"
+          - object
+        description: Linked objects associated with the conversation
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+            description: The type of linked objects list
+            example: "linked_object.list"
+          data:
+            type:
+              - "null"
+              - array
+            description: Array of linked object data
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                type:
+                  type:
+                    - "null"
+                    - string
+                  description: The type of the linked object
+                id:
+                  type:
+                    - "null"
+                    - string
+                  description: The ID of the linked object
+          has_more:
+            type:
+              - "null"
+              - boolean
+            description: Indicates whether there are additional linked objects beyond those returned
+          total_count:
+            type:
+              - "null"
+              - integer
+            description: The total number of linked objects associated with the conversation
+          url:
+            type:
+              - "null"
+              - string
+            description: The URL to access additional linked objects, if applicable  
   conversation_parts:
     type: object
     additionalProperties: true
