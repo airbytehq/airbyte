@@ -48,7 +48,7 @@ Visit `https://developer.mixmax.com/reference/getting-started-with-the-api` for 
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
-| 0.1.0 | 2025-03-26 | [XXXX](https://github.com/airbytehq/airbyte/pull/XXX) | Adding polls, qa, unsubscribes, and yesno endpoints |
+| 0.1.0 | 2025-03-26 | [56417](https://github.com/airbytehq/airbyte/pull/56417) | Adding polls, qa, unsubscribes, and yesno endpoints |
 | 0.0.19 | 2025-03-22 | [56001](https://github.com/airbytehq/airbyte/pull/56001) | Update dependencies |
 | 0.0.18 | 2025-03-08 | [55489](https://github.com/airbytehq/airbyte/pull/55489) | Update dependencies |
 | 0.0.17 | 2025-03-01 | [54809](https://github.com/airbytehq/airbyte/pull/54809) | Update dependencies |
