@@ -2929,6 +2929,11 @@ schemas:
               - "null"
               - string
             description: The URL to access additional linked objects, if applicable  
+      ai_agent_participated:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether AI Agent participated in the conversation
   conversation_parts:
     type: object
     additionalProperties: true
