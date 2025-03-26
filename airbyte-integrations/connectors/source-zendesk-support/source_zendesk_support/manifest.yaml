@@ -265,14 +265,8 @@ definitions:
     name: "article_attachments"
     primary_key: "id"
     schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/schema#
-        properties:
-          id:
-            type: integer
-        additionalProperties: true
+      type: JsonFileSchemaLoader
+      file_path: "./source_zendesk_support/schemas/article_attachments.json"
     retriever:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
@@ -1055,7 +1049,6 @@ definitions:
 streams:
   # Full refresh streams
   - $ref: "#/definitions/account_attributes_stream"
-  - $ref: "#/definitions/article_attachments_stream"
   - $ref: "#/definitions/attribute_definitions_stream"
   - $ref: "#/definitions/brands_stream"
   - $ref: "#/definitions/custom_roles_stream"
@@ -1071,6 +1064,7 @@ streams:
   - $ref: "#/definitions/sections_stream"
   # Incremental streams
   - $ref: "#/definitions/articles_stream"
+  - $ref: "#/definitions/article_attachments_stream"
   - $ref: "#/definitions/article_comments_stream"
   - $ref: "#/definitions/article_votes_stream"
   - $ref: "#/definitions/article_comment_votes_stream"
