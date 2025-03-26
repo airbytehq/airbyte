@@ -18,7 +18,6 @@ import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
-import io.airbyte.cdk.load.data.UnknownValue
 import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.util.serializeToString
 
@@ -41,7 +40,6 @@ fun AirbyteValue?.toCsvValue(): Any {
             is DateValue -> it.value
             is TimeWithTimezoneValue -> it.value
             is TimeWithoutTimezoneValue -> it.value
-            is UnknownValue -> ""
         }
     }
         ?: ""
