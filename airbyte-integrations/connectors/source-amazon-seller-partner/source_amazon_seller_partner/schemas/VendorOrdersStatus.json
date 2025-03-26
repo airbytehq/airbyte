@@ -17,6 +17,11 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "changedBefore": {
+      "description": "Cursor indicator",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "lastUpdatedDate": {
       "description": "Purchase order last updated date and time",
       "type": ["null", "string"],
