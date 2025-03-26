@@ -20,6 +20,8 @@ class AzureBlobStorageConfiguration(
     // Client-facing configuration
     override val baseAzureBlobStorageConfiguration: BaseAzureBlobStorageConfiguration,
     override val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration,
+    val azureBlobStorageEndpointDomainName: String,
+    val azureBlobStorageSpillSize: Int,
 
     // Internal configuration
     override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
@@ -49,6 +51,8 @@ class AzureBlobStorageConfigurationFactory :
         return AzureBlobStorageConfiguration(
             baseAzureBlobStorageConfiguration = pojo.toBaseAzureBlobStorageConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
+            azureBlobStorageEndpointDomainName = pojo.azureBlobStorageEndpointDomainName,
+            azureBlobStorageSpillSize = pojo.azureBlobStorageSpillSize
         )
     }
 }
