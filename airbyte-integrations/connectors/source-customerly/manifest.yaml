@@ -1,0 +1,747 @@
+version: 6.5.2
+
+type: DeclarativeSource
+
+description: Connector for customerly.io
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    leads:
+      type: DeclarativeStream
+      name: leads
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 0
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: leads/list
+          http_method: GET
+          request_parameters:
+            sort: last_update
+            sort_direction: desc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - leads
+          schema_normalization: Default
+      primary_key:
+        - crmhero_user_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/leads"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - ab_test
+              value: "{{ record['attributes']['ab_test'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - ab_test_var
+              value: "{{ record['attributes']['ab_test_var'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - create_date
+              value: "{{ record['attributes']['create_date'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - role
+              value: "{{ record['attributes']['role'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - sub_active
+              value: "{{ record['attributes']['sub_active'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - sub_status
+              value: "{{ record['attributes']['sub_status'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - username
+              value: "{{ record['attributes']['username'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - initiated_checkout_at
+              value: "{{ record['attributes']['initiated_checkout_at'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - utm_source
+        - type: RemoveFields
+          field_pointers:
+            - - was_lead
+        - type: RemoveFields
+          field_pointers:
+            - - ip_address
+        - type: RemoveFields
+          field_pointers:
+            - - isp
+        - type: RemoveFields
+          field_pointers:
+            - - browser_version
+        - type: RemoveFields
+          field_pointers:
+            - - last_page_viewed
+        - type: RemoveFields
+          field_pointers:
+            - - last_page_viewed_at
+        - type: RemoveFields
+          field_pointers:
+            - - android_app_name
+        - type: RemoveFields
+          field_pointers:
+            - - android_app_version
+        - type: RemoveFields
+          field_pointers:
+            - - android_device
+        - type: RemoveFields
+          field_pointers:
+            - - android_last_seen_at
+        - type: RemoveFields
+          field_pointers:
+            - - android_os_version
+        - type: RemoveFields
+          field_pointers:
+            - - android_session
+        - type: RemoveFields
+          field_pointers:
+            - - ios_app_name
+        - type: RemoveFields
+          field_pointers:
+            - - ios_app_version
+        - type: RemoveFields
+          field_pointers:
+            - - ios_device
+        - type: RemoveFields
+          field_pointers:
+            - - ios_last_seen_at
+        - type: RemoveFields
+          field_pointers:
+            - - ios_os_version
+        - type: RemoveFields
+          field_pointers:
+            - - ios_session
+        - type: RemoveFields
+          field_pointers:
+            - - referrer
+        - type: RemoveFields
+          field_pointers:
+            - - utm_campaign
+        - type: RemoveFields
+          field_pointers:
+            - - utm_content
+        - type: RemoveFields
+          field_pointers:
+            - - utm_medium
+        - type: RemoveFields
+          field_pointers:
+            - - utm_source
+        - type: RemoveFields
+          field_pointers:
+            - - utm_term
+        - type: RemoveFields
+          field_pointers:
+            - - picture_background
+        - type: RemoveFields
+          field_pointers:
+            - - picture_gravatar
+        - type: RemoveFields
+          field_pointers:
+            - - picture_gravatar_last_update
+        - type: RemoveFields
+          field_pointers:
+            - - picture_gravatar
+        - type: RemoveFields
+          field_pointers:
+            - - facebook_profile_id
+        - type: RemoveFields
+          field_pointers:
+            - - name
+        - type: RemoveFields
+          field_pointers:
+            - - is_user
+        - type: RemoveFields
+          field_pointers:
+            - - rating
+        - type: RemoveFields
+          field_pointers:
+            - - web_session
+        - type: RemoveFields
+          field_pointers:
+            - - app_id
+        - type: RemoveFields
+          field_pointers:
+            - - is_name_autogenerated
+        - type: RemoveFields
+          field_pointers:
+            - - picture_initials
+        - type: RemoveFields
+          field_pointers:
+            - - spam
+        - type: RemoveFields
+          field_pointers:
+            - - bounce
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_update
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "2024-01-01"
+          datetime_format: "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+    users:
+      type: DeclarativeStream
+      name: users
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 0
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users/list
+          http_method: GET
+          request_parameters:
+            sort: last_update
+            sort_direction: desc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - users
+          schema_normalization: Default
+      primary_key:
+        - user_id
+        - email
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - ab_test
+              value: "{{ record['attributes']['ab_test'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - ab_test_var
+              value: "{{ record['attributes']['ab_test_var'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - create_date
+              value: "{{ record['attributes']['create_date'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - role
+              value: "{{ record['attributes']['role'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - sub_active
+              value: "{{ record['attributes']['sub_active'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - sub_status
+              value: "{{ record['attributes']['sub_status'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - username
+              value: "{{ record['attributes']['username'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - initiated_checkout_at
+              value: "{{ record['attributes']['initiated_checkout_at'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - utm_source
+        - type: RemoveFields
+          field_pointers:
+            - - was_lead
+        - type: RemoveFields
+          field_pointers:
+            - - ip_address
+        - type: RemoveFields
+          field_pointers:
+            - - isp
+        - type: RemoveFields
+          field_pointers:
+            - - browser_version
+        - type: RemoveFields
+          field_pointers:
+            - - last_page_viewed
+        - type: RemoveFields
+          field_pointers:
+            - - last_page_viewed_at
+        - type: RemoveFields
+          field_pointers:
+            - - android_app_name
+        - type: RemoveFields
+          field_pointers:
+            - - android_app_version
+        - type: RemoveFields
+          field_pointers:
+            - - android_device
+        - type: RemoveFields
+          field_pointers:
+            - - android_last_seen_at
+        - type: RemoveFields
+          field_pointers:
+            - - android_os_version
+        - type: RemoveFields
+          field_pointers:
+            - - android_session
+        - type: RemoveFields
+          field_pointers:
+            - - ios_app_name
+        - type: RemoveFields
+          field_pointers:
+            - - ios_app_version
+        - type: RemoveFields
+          field_pointers:
+            - - ios_device
+        - type: RemoveFields
+          field_pointers:
+            - - ios_last_seen_at
+        - type: RemoveFields
+          field_pointers:
+            - - ios_os_version
+        - type: RemoveFields
+          field_pointers:
+            - - ios_session
+        - type: RemoveFields
+          field_pointers:
+            - - referrer
+        - type: RemoveFields
+          field_pointers:
+            - - utm_campaign
+        - type: RemoveFields
+          field_pointers:
+            - - utm_content
+        - type: RemoveFields
+          field_pointers:
+            - - utm_medium
+        - type: RemoveFields
+          field_pointers:
+            - - utm_source
+        - type: RemoveFields
+          field_pointers:
+            - - utm_term
+        - type: RemoveFields
+          field_pointers:
+            - - picture_background
+        - type: RemoveFields
+          field_pointers:
+            - - picture_gravatar
+        - type: RemoveFields
+          field_pointers:
+            - - picture_gravatar_last_update
+        - type: RemoveFields
+          field_pointers:
+            - - picture_gravatar
+        - type: RemoveFields
+          field_pointers:
+            - - facebook_profile_id
+        - type: RemoveFields
+          field_pointers:
+            - - name
+        - type: RemoveFields
+          field_pointers:
+            - - is_user
+        - type: RemoveFields
+          field_pointers:
+            - - rating
+        - type: RemoveFields
+          field_pointers:
+            - - web_session
+        - type: RemoveFields
+          field_pointers:
+            - - app_id
+        - type: RemoveFields
+          field_pointers:
+            - - is_name_autogenerated
+        - type: RemoveFields
+          field_pointers:
+            - - picture_initials
+        - type: RemoveFields
+          field_pointers:
+            - - spam
+        - type: RemoveFields
+          field_pointers:
+            - - bounce
+        - type: RemoveFields
+          field_pointers:
+            - - attributes
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_update
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "2024-01-01"
+          datetime_format: "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.customerly.io/v1/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/leads"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    leads:
+      hasRecords: true
+      streamHash: 7b31efcc26e955e5ae2969e4453bd5124a5c2797
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      hasRecords: true
+      streamHash: 79976ce70a608e62853c83d36f2a5935eed4e021
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  yamlComponents:
+    streams:
+      leads:
+        - incrementalSync
+      users:
+        - incrementalSync
+  autoImportSchema:
+    leads: true
+    users: true
+
+schemas:
+  leads:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - crmhero_user_id
+      - last_update
+    properties:
+      os:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      region:
+        type:
+          - string
+          - "null"
+      ab_test:
+        type:
+          - number
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      latitude:
+        type:
+          - number
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+      continent:
+        type:
+          - string
+          - "null"
+      longitude:
+        type:
+          - number
+          - "null"
+      os_version:
+        type:
+          - string
+          - "null"
+      sub_active:
+        type:
+          - string
+          - "null"
+      sub_status:
+        type:
+          - string
+          - "null"
+      ab_test_var:
+        type:
+          - number
+          - string
+          - "null"
+      create_date:
+        type:
+          - number
+          - string
+          - "null"
+      last_update:
+        type: string
+      postal_code:
+        type:
+          - string
+          - "null"
+      region_code:
+        type:
+          - string
+          - "null"
+      unsubscribe:
+        type:
+          - number
+          - "null"
+      browser_name:
+        type:
+          - string
+          - "null"
+      country_code:
+        type:
+          - string
+          - "null"
+      first_seen_at:
+        type:
+          - number
+          - "null"
+      last_activity:
+        type:
+          - number
+          - "null"
+      continent_code:
+        type:
+          - string
+          - "null"
+      crmhero_user_id:
+        type: number
+      browser_language:
+        type:
+          - string
+          - "null"
+      initiated_checkout_at:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - user_id
+      - email
+      - last_update
+    properties:
+      os:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+      email:
+        type: string
+      region:
+        type:
+          - string
+          - "null"
+      ab_test:
+        type:
+          - number
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      user_id:
+        type: string
+      latitude:
+        type:
+          - number
+          - "null"
+      nps_vote:
+        type:
+          - number
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+      continent:
+        type:
+          - string
+          - "null"
+      longitude:
+        type:
+          - number
+          - "null"
+      os_version:
+        type:
+          - string
+          - "null"
+      sub_active:
+        type:
+          - number
+          - string
+          - "null"
+      sub_status:
+        type:
+          - string
+          - "null"
+      ab_test_var:
+        type:
+          - number
+          - string
+          - "null"
+      create_date:
+        type:
+          - number
+          - string
+          - "null"
+      last_update:
+        type: string
+      postal_code:
+        type:
+          - string
+          - "null"
+      region_code:
+        type:
+          - string
+          - "null"
+      unsubscribe:
+        type:
+          - number
+          - "null"
+      browser_name:
+        type:
+          - string
+          - "null"
+      country_code:
+        type:
+          - string
+          - "null"
+      first_seen_at:
+        type:
+          - number
+          - "null"
+      last_activity:
+        type:
+          - number
+          - "null"
+      continent_code:
+        type:
+          - string
+          - "null"
+      crmhero_user_id:
+        type:
+          - number
+          - "null"
+      browser_language:
+        type:
+          - string
+          - "null"
+      initiated_checkout_at:
+        type:
+          - number
+          - string
+          - "null"
+    additionalProperties: true

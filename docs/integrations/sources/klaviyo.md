@@ -95,6 +95,9 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.14.5 | 2025-03-22 | [56017](https://github.com/airbytehq/airbyte/pull/56017) | Update dependencies |
+| 2.14.4  | 2025-03-14 | [tbd](https://github.com/airbytehq/airbyte/pull/tbd)       | Add back step to streams that can process date ranges in parallel                                                                                                      |
+| 2.14.3  | 2025-03-08 | [55479](https://github.com/airbytehq/airbyte/pull/55479)   | Update dependencies                                                                                                                                                    |
 | 2.14.2  | 2025-03-03 | [54720](https://github.com/airbytehq/airbyte/pull/54720)   | Add event_properties option to events request                                                                                                                          |
 | 2.14.1  | 2025-03-01 | [54770](https://github.com/airbytehq/airbyte/pull/54770)   | Update dependencies                                                                                                                                                    |
 | 2.14.0  | 2025-02-26 | [54166](https://github.com/airbytehq/airbyte/pull/54166)   | Migrate to Manifest-only                                                                                                                                               |
