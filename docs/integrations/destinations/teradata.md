@@ -90,19 +90,19 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                    | Subject                                                  |
-|:--------|:-----------|:------------------------------------------------|:---------------------------------------------------------|
-| 0.2.1   | 2025-03-26 |                                                 | Migrated unit and integration tests to Kotlin            |
-| 0.2.0   | 2025-03-24 | https://github.com/airbytehq/airbyte/pull/56362 | Added LDAP and SSO authentication mechanism              |
-| 0.1.9   | 2025-03-17 | https://github.com/airbytehq/airbyte/pull/55800 | Added Query Band Support                                 |
-| 0.1.8   | 2025-03-14 | https://github.com/airbytehq/airbyte/pull/55771 | Migration to Kotlin                                      |
-| 0.1.7   | 2025-03-07 | https://github.com/airbytehq/airbyte/pull/55183 | Upgrade teradata jdbc driver to 20.00.00.43              |
-| 0.1.6   | 2024-06-24 | https://github.com/airbytehq/airbyte/pull/39455 | Fix for Parameter 2 length size                          |
-| 0.1.5   | 2024-01-12 | https://github.com/airbytehq/airbyte/pull/33872 | Added Primary Index on \_airbyte_ab_id to fix NoPI issue |
-| 0.1.4   | 2023-12-04 | https://github.com/airbytehq/airbyte/pull/28667 | Make connector available on Airbyte Cloud                |
-| 0.1.3   | 2023-08-17 | https://github.com/airbytehq/airbyte/pull/30740 | Enable custom DBT transformation                         |
-| 0.1.2   | 2023-08-09 | https://github.com/airbytehq/airbyte/pull/29174 | Small internal refactor                                  |
-| 0.1.1   | 2023-03-03 | https://github.com/airbytehq/airbyte/pull/21760 | Added SSL support                                        |
-| 0.1.0   | 2022-12-13 | https://github.com/airbytehq/airbyte/pull/20428 | New Destination Teradata Vantage                         |
+| Version | Date       | Pull Request                                     | Subject                                                  |
+|:--------|:-----------|:-------------------------------------------------|:---------------------------------------------------------|
+| 0.2.1   | 2025-03-26 | https://github.com/airbytehq/airbyte/pull/56414  | Migrated unit and integration tests to Kotlin            |
+| 0.2.0   | 2025-03-24 | https://github.com/airbytehq/airbyte/pull/56362  | Added LDAP and SSO authentication mechanism              |
+| 0.1.9   | 2025-03-17 | https://github.com/airbytehq/airbyte/pull/55800  | Added Query Band Support                                 |
+| 0.1.8   | 2025-03-14 | https://github.com/airbytehq/airbyte/pull/55771  | Migration to Kotlin                                      |
+| 0.1.7   | 2025-03-07 | https://github.com/airbytehq/airbyte/pull/55183  | Upgrade teradata jdbc driver to 20.00.00.43              |
+| 0.1.6   | 2024-06-24 | https://github.com/airbytehq/airbyte/pull/39455  | Fix for Parameter 2 length size                          |
+| 0.1.5   | 2024-01-12 | https://github.com/airbytehq/airbyte/pull/33872  | Added Primary Index on \_airbyte_ab_id to fix NoPI issue |
+| 0.1.4   | 2023-12-04 | https://github.com/airbytehq/airbyte/pull/28667  | Make connector available on Airbyte Cloud                |
+| 0.1.3   | 2023-08-17 | https://github.com/airbytehq/airbyte/pull/30740  | Enable custom DBT transformation                         |
+| 0.1.2   | 2023-08-09 | https://github.com/airbytehq/airbyte/pull/29174  | Small internal refactor                                  |
+| 0.1.1   | 2023-03-03 | https://github.com/airbytehq/airbyte/pull/21760  | Added SSL support                                        |
+| 0.1.0   | 2022-12-13 | https://github.com/airbytehq/airbyte/pull/20428  | New Destination Teradata Vantage                         |
 
 </details>
