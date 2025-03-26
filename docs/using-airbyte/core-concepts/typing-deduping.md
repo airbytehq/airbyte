@@ -48,7 +48,7 @@ The types of changes which will be stored in `_airbyte_meta.changes` include:
 
 - **Typing changes**: the source declared that the type of the column `id` should be an integer, but
   a string value was returned.
-- **Size changes**: the source returned content which cannot be stored within this this
+- **Size changes**: the source returned content which cannot be stored within this
   row or column (e.g.
   [a Redshift Super column has a 16mb limit](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html)).
   Destinations V2 will allow us to trim records which cannot fit into destinations, but retain the

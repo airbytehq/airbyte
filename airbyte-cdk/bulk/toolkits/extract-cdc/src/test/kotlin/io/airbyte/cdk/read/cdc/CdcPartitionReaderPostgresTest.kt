@@ -115,7 +115,7 @@ class CdcPartitionReaderPostgresTest :
                 .withStreams(streams)
                 .buildMap()
 
-        override fun generateColdStartProperties(): Map<String, String> =
+        override fun generateColdStartProperties(streams: List<Stream>): Map<String, String> =
             generateWarmStartProperties(emptyList())
 
         override fun generateColdStartOffset(): DebeziumOffset {
