@@ -55,7 +55,11 @@ interface BaseAzureBlobStorageSpecification {
 data class BaseAzureBlobStorageConfiguration(
     val accountName: String,
     val containerName: String,
-    val sharedAccessSignature: String
+    val sharedAccessSignature: String,
+
+    // The following
+    var endpointDomainName: String? = null,
+    var spillSize: Int? = null,
 )
 
 interface BaseAzureBlobStorageConfigurationProvider {

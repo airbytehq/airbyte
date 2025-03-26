@@ -8,20 +8,22 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.command.azureBlobStorage.BaseAzureBlobStorageConfiguration
 import io.airbyte.cdk.load.command.azureBlobStorage.BaseAzureBlobStorageConfigurationProvider
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
+import io.airbyte.cdk.load.file.NoopProcessor
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.io.OutputStream
 
-class AzureBlobStorageConfiguration(
+class AzureBlobStorageConfiguration<T : OutputStream>(
     // Client-facing configuration
     override val baseAzureBlobStorageConfiguration: BaseAzureBlobStorageConfiguration,
     override val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration,
-    val azureBlobStorageEndpointDomainName: String,
-    val azureBlobStorageSpillSize: Int,
+    override val objectStorageCompressionConfiguration: ObjectStorageCompressionConfiguration<T>,
 
     // Internal configuration
     override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
@@ -40,19 +42,25 @@ class AzureBlobStorageConfiguration(
     DestinationConfiguration(),
     BaseAzureBlobStorageConfigurationProvider,
     ObjectStorageFormatConfigurationProvider,
-    ObjectStorageUploadConfigurationProvider
+    ObjectStorageUploadConfigurationProvider,
+    ObjectStorageCompressionConfigurationProvider<T>
 
 @Singleton
 class AzureBlobStorageConfigurationFactory :
-    DestinationConfigurationFactory<AzureBlobStorageSpecification, AzureBlobStorageConfiguration> {
+    DestinationConfigurationFactory<
+        AzureBlobStorageSpecification, AzureBlobStorageConfiguration<*>> {
     override fun makeWithoutExceptionHandling(
         pojo: AzureBlobStorageSpecification
-    ): AzureBlobStorageConfiguration {
+    ): AzureBlobStorageConfiguration<*> {
+        val baseAzureBlobStorageConfiguration = pojo.toBaseAzureBlobStorageConfiguration()
+        baseAzureBlobStorageConfiguration.endpointDomainName =
+            pojo.azureBlobStorageEndpointDomainName
+        baseAzureBlobStorageConfiguration.spillSize = pojo.azureBlobStorageSpillSize
         return AzureBlobStorageConfiguration(
-            baseAzureBlobStorageConfiguration = pojo.toBaseAzureBlobStorageConfiguration(),
+            baseAzureBlobStorageConfiguration = baseAzureBlobStorageConfiguration,
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
-            azureBlobStorageEndpointDomainName = pojo.azureBlobStorageEndpointDomainName,
-            azureBlobStorageSpillSize = pojo.azureBlobStorageSpillSize
+            objectStorageCompressionConfiguration =
+                ObjectStorageCompressionConfiguration(NoopProcessor),
         )
     }
 }
@@ -61,7 +69,7 @@ class AzureBlobStorageConfigurationFactory :
 @Factory
 class S3V2ConfigurationProvider<T : OutputStream>(private val config: DestinationConfiguration) {
     @Singleton
-    fun get(): AzureBlobStorageConfiguration {
-        return config as AzureBlobStorageConfiguration
+    fun get(): AzureBlobStorageConfiguration<T> {
+        return config as AzureBlobStorageConfiguration<T>
     }
 }
