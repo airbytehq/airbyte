@@ -291,7 +291,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_path: [ "article_attachments" ]
+          field_path: ["article_attachments"]
     file_uploader:
       type: FileUploader
       requester:
@@ -300,13 +300,13 @@ definitions:
         http_method: GET
         authenticator:
           type: SelectiveAuthenticator
-          authenticator_selection_path: [ "credentials", "credentials" ]
+          authenticator_selection_path: ["credentials", "credentials"]
           authenticators:
             oauth2.0: "#/definitions/bearer_authenticator"
             api_token: "#/definitions/basic_authenticator"
       download_target_extractor:
         type: DpathExtractor
-        field_path: [ "content_url" ]
+        field_path: ["content_url"]
 
   article_comments_stream:
     $ref: "#/definitions/base_incremental_stream"
