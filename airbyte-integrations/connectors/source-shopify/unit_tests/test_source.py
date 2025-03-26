@@ -432,3 +432,88 @@ def test_countries_next_page_token(config, response_data, expected_token):
 
     token = stream.next_page_token(response)
     assert token == expected_token
+
+
+def test_countries_process_country(config, countries_record_data, countries_expected_record_data):
+    config["credentials"] = {"auth_method": "api_password", "api_password": "shppa_123"}
+    config["authenticator"] = ShopifyAuthenticator(config)
+
+    # Instantiate the Countries stream with a dummy config.
+    stream = Countries(config=config, parent=None)
+    assert stream._process_country(countries_record_data) == countries_expected_record_data
+
+
+def test_countries_request_body_json(config):
+    config["shop"] = "test-store"
+    config["credentials"] = {"auth_method": "api_password", "api_password": "shppa_123"}
+    config["authenticator"] = ShopifyAuthenticator(config)
+
+    # Instantiate the Countries stream with a dummy config.
+    stream = Countries(config=config, parent=None)
+    stream_slice = {"parent": {"profile_location_groups": [{"locationGroup": {"id": "location/group/id"}}]}}
+    request_body = stream.request_body_json(stream_slice=stream_slice, stream_state={})
+
+    expected_request_body = {
+        "query": """query DeliveryZoneList {
+  deliveryProfiles(
+    first: 1
+  ) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    nodes {
+      profileLocationGroups(
+        locationGroupId: "location/group/id"
+      ) {
+        locationGroupZones(
+          first: 100
+        ) {
+          nodes {
+            zone {
+              id
+              name
+              countries {
+                id
+                name
+                translatedName
+                code {
+                  countryCode
+                  restOfWorld
+                }
+                provinces {
+                  id
+                  translatedName
+                  name
+                  code
+                }
+              }
+            }
+          }
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+        }
+      }
+    }
+  }
+}"""
+    }
+    assert request_body == expected_request_body
+
+
+def test_countries_parse_response(config, countries_response_data, countries_expected_record_data):
+    config["credentials"] = {"auth_method": "api_password", "api_password": "shppa_123"}
+    config["authenticator"] = ShopifyAuthenticator(config)
+
+    # Instantiate the Countries stream with a dummy config.
+    stream = Countries(config=config, parent=None)
+    response = MagicMock(status_code=requests.codes.OK)
+    response.json.return_value = countries_response_data
+
+    records = stream.parse_response(response)
+    expected_records = [
+        countries_expected_record_data,
+    ]
+    assert list(records) == expected_records

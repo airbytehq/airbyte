@@ -1537,3 +1537,45 @@ def transactions_response_expected_result():
         "parent_id": None,
         "shop_url": "test_shop",
     }
+
+
+@pytest.fixture
+def countries_record_data():
+    return {
+        "id": "link/to/entity/1111111",
+        "code": {"restOfWorld": False, "countryCode": "UA"},
+        "provinces": [
+            {
+                "id": "link/to/entity/1111111",
+            }
+        ],
+    }
+
+
+@pytest.fixture
+def countries_expected_record_data(config):
+    return {
+        "id": 1111111,
+        "restOfWorld": False,
+        "code": "UA",
+        "shop_url": config["shop"],
+        "provinces": [
+            {
+                "id": 1111111,
+                "country_id": 1111111,
+            }
+        ],
+    }
+
+
+@pytest.fixture
+def countries_response_data(countries_record_data):
+    return {
+        "data": {
+            "deliveryProfiles": {
+                "nodes": [
+                    {"profileLocationGroups": [{"locationGroupZones": {"nodes": [{"zone": {"countries": [countries_record_data]}}]}}]}
+                ]
+            }
+        }
+    }
