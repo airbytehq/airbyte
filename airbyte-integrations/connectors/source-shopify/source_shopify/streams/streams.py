@@ -349,6 +349,9 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         json_response = response.json().get("data", {})
+        if not json_response:
+            return None
+
         page_info = json_response.get("deliveryProfiles", {}).get("pageInfo", {})
 
         sub_page_info = {"hasNextPage": False}
