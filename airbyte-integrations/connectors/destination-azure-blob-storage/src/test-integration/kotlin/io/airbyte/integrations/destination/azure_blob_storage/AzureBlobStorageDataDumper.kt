@@ -7,6 +7,10 @@ package io.airbyte.integrations.destination.azure_blob_storage
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.ObjectStorageDataDumper
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfiguration
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfigurationProvider
+import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlobStorageClientFactory
+import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 
@@ -25,18 +29,20 @@ class AzureBlobStorageDataDumper : DestinationDataDumper {
         spec: ConfigurationSpecification,
         stream: DestinationStream
     ): ObjectStorageDataDumper {
-        //        val config =
-        //            S3V2ConfigurationFactory().makeWithoutExceptionHandling(spec as
-        // AzureBlobStorageSpecification)
-        //        val s3Client = S3ClientFactory.make(config, S3V2TestUtils.assumeRoleCredentials)
-        //        val pathFactory = ObjectStoragePathFactory.from(config)
-        //        return ObjectStorageDataDumper(
-        //            stream,
-        //            s3Client,
-        //            pathFactory,
-        //            config.objectStorageFormatConfiguration,
-        //            config.objectStorageCompressionConfiguration,
-        //        )
-        TODO()
+        val config: AzureBlobStorageConfiguration = TODO()
+        val configProvider =
+            object : AzureBlobStorageConfigurationProvider {
+                override val azureBlobStorageConfiguration: AzureBlobStorageConfiguration
+                    get() = config
+            }
+        val pathFactory = ObjectStoragePathFactory.from(TODO())
+        val client = AzureBlobStorageClientFactory(configProvider).make()
+        return ObjectStorageDataDumper(
+            stream,
+            client,
+            pathFactory,
+            TODO(),
+            TODO(),
+        )
     }
 }
