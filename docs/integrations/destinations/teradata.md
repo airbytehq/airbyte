@@ -92,6 +92,7 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version | Date       | Pull Request                                    | Subject                                                  |
 |:--------|:-----------|:------------------------------------------------|:---------------------------------------------------------|
+| 0.2.1   | 2025-03-26 |                                                 | Migrated unit and integration tests to Kotlin            |
 | 0.2.0   | 2025-03-24 | https://github.com/airbytehq/airbyte/pull/56362 | Added LDAP and SSO authentication mechanism              |
 | 0.1.9   | 2025-03-17 | https://github.com/airbytehq/airbyte/pull/55800 | Added Query Band Support                                 |
 | 0.1.8   | 2025-03-14 | https://github.com/airbytehq/airbyte/pull/55771 | Migration to Kotlin                                      |
