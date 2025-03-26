@@ -157,7 +157,8 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 7.1.4 | 2025-03-13 | [55217](https://github.com/airbytehq/airbyte/pull/55217) | Add `daily` versions of `reports` streams |
+| 7.1.5 | 2025-03-26 | [55217](https://github.com/airbytehq/airbyte/pull/55217) | Add `daily` versions of `reports` streams |
+| 7.1.4 | 2025-03-22 | [56155](https://github.com/airbytehq/airbyte/pull/56155) | Update dependencies |
 | 7.1.3 | 2025-03-08 | [55352](https://github.com/airbytehq/airbyte/pull/55352) | Update dependencies |
 | 7.1.2 | 2025-02-24 | [53692](https://github.com/airbytehq/airbyte/pull/53692) | Added handling 401 error for Polling Requester |
 | 7.1.1 | 2025-03-01 | [54895](https://github.com/airbytehq/airbyte/pull/54895) | Update dependencies |

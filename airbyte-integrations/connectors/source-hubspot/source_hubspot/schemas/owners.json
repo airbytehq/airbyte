@@ -22,6 +22,10 @@
       "description": "The unique identifier of the user associated with the owner.",
       "type": ["null", "integer"]
     },
+    "userIdIncludingInactive": {
+      "description": "The unique identifier of the user associated with the owner, including inactive users.",
+      "type": ["null", "integer"]
+    },
     "createdAt": {
       "description": "The date and time when the owner was created.",
       "type": ["null", "string"],

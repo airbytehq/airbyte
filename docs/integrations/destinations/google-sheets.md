@@ -155,6 +155,7 @@ EXAMPLE:
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 |---------| ---------- | -------------------------------------------------------- | ---------------------------------------------------------- |
+| 0.2.42 | 2025-03-22 | [56149](https://github.com/airbytehq/airbyte/pull/56149) | Update dependencies |
 | 0.2.41 | 2025-03-08 | [55374](https://github.com/airbytehq/airbyte/pull/55374) | Update dependencies |
 | 0.2.40 | 2025-03-01 | [54847](https://github.com/airbytehq/airbyte/pull/54847) | Update dependencies |
 | 0.2.39 | 2025-02-22 | [54248](https://github.com/airbytehq/airbyte/pull/54248) | Update dependencies |

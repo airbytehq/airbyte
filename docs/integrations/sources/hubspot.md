@@ -338,6 +338,11 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.5.5 | 2025-03-26 | [56416](https://github.com/airbytehq/airbyte/pull/56416) | Disabled `blog_comment` and `all` form-types for `Forms` and `FormSubmissions` stream |
+| 4.5.4 | 2025-03-25 | [55822](https://github.com/airbytehq/airbyte/pull/55822) | add userIdIncludingInactive to owners and owners_archived streams |
+| 4.5.3 | 2025-03-24 | [52729](https://github.com/airbytehq/airbyte/pull/55245) | Add conversionId to `form_submissions` schema |
+| 4.5.2 | 2024-12-14 | [48480](https://github.com/airbytehq/airbyte/pull/49141) | Improves Forms stream by adding the formTypes query parameter to support all form types. This enhancement also propagates to the FormSubmission stream. |
+| 4.5.1 | 2025-03-22 | [53818](https://github.com/airbytehq/airbyte/pull/53818) | Update dependencies |
 | 4.5.0 | 2025-03-10 | [54177](https://github.com/airbytehq/airbyte/pull/54177) | Add option to cast fields from stream json schema per list of fields |
 | 4.4.9 | 2025-02-01 | [52729](https://github.com/airbytehq/airbyte/pull/52729) | Update dependencies |
 | 4.4.8 | 2025-01-25 | [52295](https://github.com/airbytehq/airbyte/pull/52295) | Update dependencies |
