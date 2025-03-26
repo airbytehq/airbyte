@@ -1,6 +1,6 @@
 # S3 Data Lake
 
-This page guides you through setting up the S3 Data Lake destination connector. 
+This page guides you through setting up the S3 Data Lake destination connector.
 
 This connector writes the Iceberg table format to S3 or an S3-compatible storage backend using a supported Iceberg catalog. This is Airbyte's preferred Iceberg integration. It replaces the older [Iceberg](iceberg) and [S3-Glue](s3-glue) destinations, performs better, and implements Airbyte's newer core features. You should switch to this destination when you can.
 
@@ -205,7 +205,7 @@ To authenticate with Nessie, do two things.
 
 ### How Airbyte generates the Iceberg schema
 
-In each stream, Airbyte maps top-level fields to Iceberg fields. Airbyte maps nested fields (objects, arrays, and unions) to string columns and writes them as serialized JSON. 
+In each stream, Airbyte maps top-level fields to Iceberg fields. Airbyte maps nested fields (objects, arrays, and unions) to string columns and writes them as serialized JSON.
 
 This is the full mapping between Airbyte types and Iceberg types.
 
@@ -307,6 +307,10 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                        |
 |:--------|:-----------| :--------------------------------------------------------- |:-------------------------------------------------------------------------------|
+| 0.3.23  | 2025-03-25 | [56395](https://github.com/airbytehq/airbyte/pull/56395) | Bug fix: Correctly coerce values inside nested arrays. |
+| 0.3.22  | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
+| 0.3.21  | 2025-03-22 | [\#56347](https://github.com/airbytehq/airbyte/pull/56347) | Bugfix: stream start does not always await iceberg setup                       |
+| 0.3.20  | 2025-03-24 | [\#55849](https://github.com/airbytehq/airbyte/pull/55849) | Internal refactoring                                                           |
 | 0.3.19  | 2025-03-19 | [\#55798](https://github.com/airbytehq/airbyte/pull/55798) | CDK: Typing improvements                                                       |
 | 0.3.18  | 2025-03-18 | [\#55811](https://github.com/airbytehq/airbyte/pull/55811) | CDK: Pass DestinationStream around vs Descriptor                               |
 | 0.3.17  | 2025-03-13 | [\#55737](https://github.com/airbytehq/airbyte/pull/55737) | CDK: Pass DestinationRecordRaw around instead of DestinationRecordAirbyteValue |

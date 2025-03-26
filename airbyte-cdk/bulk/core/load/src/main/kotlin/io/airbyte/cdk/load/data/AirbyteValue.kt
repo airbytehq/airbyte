@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.data
 
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.JsonSerializer
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
@@ -154,21 +153,20 @@ private class ObjectValueSerializer : JsonSerializer<ObjectValue>() {
     }
 }
 
-@JvmInline value class UnknownValue(val value: JsonNode) : AirbyteValue
-
 /**
  * Represents an "enriched" (/augmented) Airbyte value with additional metadata.
  *
- * @property value The actual [AirbyteValue]
+ * @property abValue The actual [AirbyteValue]
  * @property type The type ([AirbyteType]) of the [AirbyteValue]
  * @property changes List of [Meta.Change]s that have been applied to this value
  * @property name Field name
  */
 class EnrichedAirbyteValue(
-    var value: AirbyteValue,
+    var abValue: AirbyteValue,
     val type: AirbyteType,
     val name: String,
-    val changes: MutableList<Meta.Change> = mutableListOf()
+    val changes: MutableList<Meta.Change> = mutableListOf(),
+    val airbyteMetaField: Meta.AirbyteMetaFields?,
 ) {
     init {
         require(name.isNotBlank()) { "Field name cannot be blank" }
@@ -182,7 +180,7 @@ class EnrichedAirbyteValue(
     fun nullify(reason: Reason = Reason.DESTINATION_SERIALIZATION_ERROR) {
         val nullChange = Meta.Change(field = name, change = Change.NULLED, reason = reason)
 
-        value = NullValue
+        abValue = NullValue
         changes.add(nullChange)
     }
 
@@ -199,7 +197,7 @@ class EnrichedAirbyteValue(
         val truncateChange = Meta.Change(field = name, change = Change.TRUNCATED, reason = reason)
 
         // Return a copy with null value and the new change added to the changes list
-        value = newValue
+        abValue = newValue
         changes.add(truncateChange)
     }
 }
