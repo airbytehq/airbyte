@@ -5,34 +5,35 @@
 package io.airbyte.cdk.load.file.azureBlobStorage
 
 import com.azure.storage.blob.BlobServiceClientBuilder
-import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfigurationProvider
+import io.airbyte.cdk.load.command.azureBlobStorage.BaseAzureBlobStorageConfigurationProvider
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
 @Factory
 class AzureBlobStorageClientFactory(
-    private val azureBlobStorageConfigurationProvider: AzureBlobStorageConfigurationProvider,
+    private val baseAzureBlobStorageConfigurationProvider:
+        BaseAzureBlobStorageConfigurationProvider,
 ) {
 
     @Singleton
     @Secondary
     fun make(): AzureBlobClient {
         val endpoint =
-            "https://${azureBlobStorageConfigurationProvider.azureBlobStorageConfiguration.accountName}.blob.core.windows.net"
+            "https://${baseAzureBlobStorageConfigurationProvider.baseAzureBlobStorageConfiguration.accountName}.blob.core.windows.net"
 
         val azureServiceClient =
             BlobServiceClientBuilder()
                 .endpoint(endpoint)
                 .sasToken(
-                    azureBlobStorageConfigurationProvider.azureBlobStorageConfiguration
+                    baseAzureBlobStorageConfigurationProvider.baseAzureBlobStorageConfiguration
                         .sharedAccessSignature
                 )
                 .buildClient()
 
         return AzureBlobClient(
             azureServiceClient,
-            azureBlobStorageConfigurationProvider.azureBlobStorageConfiguration
+            baseAzureBlobStorageConfigurationProvider.baseAzureBlobStorageConfiguration
         )
     }
 }

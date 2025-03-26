@@ -15,7 +15,7 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
  * See [io.airbyte.cdk.load.command.DestinationConfiguration] for more details on how to use this
  * interface.
  */
-interface AzureBlobStorageSpecification {
+interface BaseAzureBlobStorageSpecification {
     @get:JsonSchemaTitle("Azure Blob Storage Account Name")
     @get:JsonPropertyDescription(
         "The name of the Azure Blob Storage Account. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/blobs/storage-blobs-introduction#storage-accounts\">here</a>."
@@ -43,8 +43,8 @@ interface AzureBlobStorageSpecification {
     )
     val azureBlobStorageSharedAccessSignature: String
 
-    fun toAzureBlobStorageConfiguration(): AzureBlobStorageConfiguration {
-        return AzureBlobStorageConfiguration(
+    fun toBaseAzureBlobStorageConfiguration(): BaseAzureBlobStorageConfiguration {
+        return BaseAzureBlobStorageConfiguration(
             azureBlobStorageAccountName,
             azureBlobStorageContainerName,
             azureBlobStorageSharedAccessSignature
@@ -52,12 +52,12 @@ interface AzureBlobStorageSpecification {
     }
 }
 
-data class AzureBlobStorageConfiguration(
+data class BaseAzureBlobStorageConfiguration(
     val accountName: String,
     val containerName: String,
     val sharedAccessSignature: String
 )
 
-interface AzureBlobStorageConfigurationProvider {
-    val azureBlobStorageConfiguration: AzureBlobStorageConfiguration
+interface BaseAzureBlobStorageConfigurationProvider {
+    val baseAzureBlobStorageConfiguration: BaseAzureBlobStorageConfiguration
 }

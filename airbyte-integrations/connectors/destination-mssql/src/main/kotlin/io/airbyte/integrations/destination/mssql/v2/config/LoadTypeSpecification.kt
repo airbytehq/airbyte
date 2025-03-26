@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
-import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageSpecification
+import io.airbyte.cdk.load.command.azureBlobStorage.BaseAzureBlobStorageSpecification
 
 /**
  * Describes a specification for configuring how data should be loaded into MSSQL (e.g., via INSERT
@@ -35,7 +35,7 @@ interface LoadTypeSpecification {
     fun toLoadConfiguration(): MSSQLLoadTypeConfiguration {
         val loadTypeConfig: LoadTypeConfiguration =
             when (val lt = loadType) {
-                is BulkLoadSpecification -> {
+                is BulkLoadSpecificationBase -> {
                     BulkLoadConfiguration(
                         accountName = lt.azureBlobStorageAccountName,
                         containerName = lt.azureBlobStorageContainerName,
@@ -53,7 +53,7 @@ interface LoadTypeSpecification {
 /**
  * Represents the method by which MSSQL will load data. Currently, supports:
  * - [InsertLoadSpecification]: row-by-row inserts
- * - [BulkLoadSpecification]: bulk loading using Azure Blob Storage
+ * - [BulkLoadSpecificationBase]: bulk loading using Azure Blob Storage
  */
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
@@ -62,7 +62,7 @@ interface LoadTypeSpecification {
 )
 @JsonSubTypes(
     JsonSubTypes.Type(value = InsertLoadSpecification::class, name = "INSERT"),
-    JsonSubTypes.Type(value = BulkLoadSpecification::class, name = "BULK"),
+    JsonSubTypes.Type(value = BulkLoadSpecificationBase::class, name = "BULK"),
 )
 @JsonSchemaTitle("MSSQL Load Type")
 @JsonSchemaDescription(
@@ -90,7 +90,7 @@ class InsertLoadSpecification(
 /** Configuration for the BULK load mechanism, leveraging Azure Blob Storage. */
 @JsonSchemaTitle("Bulk Load")
 @JsonSchemaDescription("Configuration details for using the BULK loading mechanism.")
-class BulkLoadSpecification(
+class BulkLoadSpecificationBase(
     @JsonSchemaTitle("Load Type")
     @JsonProperty("load_type")
     @JsonSchemaInject(json = """{"order": 0}""")
@@ -171,7 +171,7 @@ class BulkLoadSpecification(
     }"""
     )
     val validateValuesPreLoad: Boolean?
-) : LoadType(loadType), AzureBlobStorageSpecification
+) : LoadType(loadType), BaseAzureBlobStorageSpecification
 
 /**
  * A marker interface for classes that hold the load configuration details. This helps unify both
@@ -196,7 +196,7 @@ data class MSSQLLoadTypeConfiguration(
 @JsonSchemaDescription("INSERT-specific configuration details for MSSQL.")
 data class InsertLoadTypeConfiguration(val ignored: String = "") : LoadTypeConfiguration
 
-/** Configuration for the BULK load approach, matching fields from [BulkLoadSpecification]. */
+/** Configuration for the BULK load approach, matching fields from [BulkLoadSpecificationBase]. */
 @JsonSchemaTitle("BULK Load Configuration")
 @JsonSchemaDescription("BULK-specific configuration details for MSSQL.")
 data class BulkLoadConfiguration(
