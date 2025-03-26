@@ -15,9 +15,14 @@ repository = "https://github.com/airbytehq/airbyte"
 [[tool.poetry.packages]]
 include = "source_zendesk_support"
 
+[[tool.poetry.source]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+priority = "supplemental"
+
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-airbyte-cdk = "^6"
+airbyte-cdk = "6.41.9.dev04101 "
 pendulum = "<3.0.0"
 
 [tool.poetry.scripts]
