@@ -27,6 +27,8 @@ Visit `https://developer.mixmax.com/reference/getting-started-with-the-api` for 
 | livefeed | uid | DefaultPaginator | ✅ |  ❌  |
 | meetingtypes | _id | DefaultPaginator | ✅ |  ✅  |
 | messages | _id | DefaultPaginator | ✅ |  ✅  |
+| polls | _id | DefaultPaginator | ✅ |  ✅  |
+| qa | _id | DefaultPaginator | ✅ |  ✅  |
 | rules | _id | DefaultPaginator | ✅ |  ✅  |
 | rules_actions | _id | DefaultPaginator | ✅ |  ✅  |
 | sequences | _id | DefaultPaginator | ✅ |  ✅  |
@@ -34,8 +36,10 @@ Visit `https://developer.mixmax.com/reference/getting-started-with-the-api` for 
 | sequencefolders | _id | DefaultPaginator | ✅ |  ✅  |
 | snippettags | _id | DefaultPaginator | ✅ |  ✅  |
 | snippettags_snippets | _id | DefaultPaginator | ✅ |  ✅  |
+| unsubscribes | _id | DefaultPaginator | ✅ |  ❌  |
 | userpreferences_me | _id | DefaultPaginator | ✅ |  ❌  |
 | users_me | _id | DefaultPaginator | ✅ |  ❌  |
+| yesno | _id | DefaultPaginator | ✅ |  ✅  |
 
 ## Changelog
 
@@ -44,6 +48,7 @@ Visit `https://developer.mixmax.com/reference/getting-started-with-the-api` for 
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.1.0 | 2025-03-26 | [XXXX](https://github.com/airbytehq/airbyte/pull/XXX) | Adding polls, qa, unsubscribes, and yesno endpoints |
 | 0.0.19 | 2025-03-22 | [56001](https://github.com/airbytehq/airbyte/pull/56001) | Update dependencies |
 | 0.0.18 | 2025-03-08 | [55489](https://github.com/airbytehq/airbyte/pull/55489) | Update dependencies |
 | 0.0.17 | 2025-03-01 | [54809](https://github.com/airbytehq/airbyte/pull/54809) | Update dependencies |

@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 63df2e59-d086-4980-af83-01948325eacd
-  dockerImageTag: 0.0.19
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-mixmax
   githubIssueLabel: source-mixmax
   icon: icon.svg
