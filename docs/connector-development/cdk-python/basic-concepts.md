@@ -4,27 +4,16 @@
 
 As a quick recap, the Airbyte Specification requires an Airbyte Source to support 4 distinct operations:
 
-1. `Spec` - The required configuration in order to interact with the underlying technical system e.g. database
-
-   information, authentication information etc.
-
-2. `Check` - Validate that the provided configuration is valid with sufficient permissions for one to perform all
-
-   required operations on the Source.
-
-3. `Discover` - Discover the Source's schema. This let users select what a subset of the data to sync. Useful
-
-   if users require only a subset of the data.
-
-4. `Read` - Perform the actual syncing process. Data is read from the Source, parsed into `AirbyteRecordMessage`s
-
-   and sent to the Airbyte Destination. Depending on how the Source is implemented, this sync can be incremental
-
-   or a full-refresh.
+| Operation | Description |
+| --- | --- |
+| `Spec` | The required configuration in order to interact with the underlying technical system e.g. database information, authentication information etc. |
+| `Check` | Validate that the provided configuration is valid with sufficient permissions for one to perform all required operations on the Source. |
+| `Discover` | Discover the Source's schema. This let users select what a subset of the data to sync. Useful if users require only a subset of the data. |
+| `Read` | Perform the actual syncing process. Data is read from the Source, parsed into `AirbyteRecordMessage`s and sent to the Airbyte Destination. Depending on how the Source is implemented, this sync can be incremental or a full-refresh. |
 
 A core concept discussed here is the **Source**.
 
-The Source contains one or more **Streams** \(or **Airbyte Streams**\). A **Stream** is the other concept key to understanding how Airbyte models the data syncing process. A **Stream** models the logical data groups that make up the larger **Source**. If the **Source** is a RDMS, each **Stream** is a table. In a REST API setting, each **Stream** corresponds to one resource within the API. e.g. a **Stripe Source** would have have one **Stream** for `Transactions`, one for `Charges` and so on.
+The Source contains one or more **Streams** \(or **Airbyte Streams**\). A **Stream** is the other concept key to understanding how Airbyte models the data syncing process. A **Stream** models the logical data groups that make up the larger **Source**. If the **Source** is a RDMS, each **Stream** is a table. In a REST API setting, each **Stream** corresponds to one resource within the API. e.g. a **Stripe Source** would have one **Stream** for `Transactions`, one for `Charges` and so on.
 
 ## The `Source` class
 
