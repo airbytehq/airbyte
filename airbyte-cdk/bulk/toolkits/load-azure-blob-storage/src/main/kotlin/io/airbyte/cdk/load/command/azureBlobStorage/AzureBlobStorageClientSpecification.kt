@@ -45,7 +45,7 @@ interface AzureBlobStorageClientSpecification {
 
     @get:JsonSchemaTitle("Azure Blob Storage account key")
     @get:JsonPropertyDescription(
-        "The Azure blob storage account key. Mutually exclusive with a Shared Access Signature"
+        "The Azure blob storage account key. If you set this value, you must not set the Shared Access Signature."
     )
     @get:JsonProperty("azure_blob_storage_account_key")
     @get:JsonSchemaInject(
