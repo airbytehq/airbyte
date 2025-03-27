@@ -19,6 +19,10 @@ The destination connector now includes the stream namespace in the blob path. Fo
 
 The "Azure Blob Storage file spill size" option has been renamed to "file split size". It also now takes effect on CSV files, which previously ignored the option entirely.
 
+### file extension
+
+This option has been removed. We will now always be adding a file extensions based on the chosen file format.
+
 ### Required permissions
 
 The connector no longer attempts to create Azure blob storage containers, and therefore you no longer need to provide the `Microsoft.Storage/storageAccounts/blobServices/containers/write` permission.
