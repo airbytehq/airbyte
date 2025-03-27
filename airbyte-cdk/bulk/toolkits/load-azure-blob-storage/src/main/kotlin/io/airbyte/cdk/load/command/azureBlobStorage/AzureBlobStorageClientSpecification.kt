@@ -15,7 +15,7 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
  * See [io.airbyte.cdk.load.command.DestinationConfiguration] for more details on how to use this
  * interface.
  */
-interface BaseAzureBlobStorageSpecification {
+interface AzureBlobStorageClientSpecification {
     @get:JsonSchemaTitle("Azure Blob Storage Account Name")
     @get:JsonPropertyDescription(
         "The name of the Azure Blob Storage Account. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/blobs/storage-blobs-introduction#storage-accounts\">here</a>."

@@ -67,7 +67,9 @@ class AzureBlobStorageConfigurationFactory :
 
 @Suppress("UNCHECKED_CAST")
 @Factory
-class S3V2ConfigurationProvider<T : OutputStream>(private val config: DestinationConfiguration) {
+class AzureBlobStorageConfigurationProvider<T : OutputStream>(
+    private val config: DestinationConfiguration
+) {
     @Singleton
     fun get(): AzureBlobStorageConfiguration<T> {
         return config as AzureBlobStorageConfiguration<T>

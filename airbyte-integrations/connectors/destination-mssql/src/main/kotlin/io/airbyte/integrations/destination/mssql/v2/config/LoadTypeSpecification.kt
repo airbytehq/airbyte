@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
-import io.airbyte.cdk.load.command.azureBlobStorage.BaseAzureBlobStorageSpecification
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientSpecification
 
 /**
  * Describes a specification for configuring how data should be loaded into MSSQL (e.g., via INSERT
@@ -171,7 +171,7 @@ class BulkLoadSpecification(
     }"""
     )
     val validateValuesPreLoad: Boolean?
-) : LoadType(loadType), BaseAzureBlobStorageSpecification
+) : LoadType(loadType), AzureBlobStorageClientSpecification
 
 /**
  * A marker interface for classes that hold the load configuration details. This helps unify both

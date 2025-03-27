@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
-import io.airbyte.cdk.load.command.azureBlobStorage.BaseAzureBlobStorageSpecification
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientSpecification
 import io.airbyte.cdk.load.command.object_storage.JsonFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatSpecificationProvider
@@ -22,7 +22,7 @@ import jakarta.inject.Singleton
 @JsonSchemaInject()
 class AzureBlobStorageSpecification :
     ConfigurationSpecification(),
-    BaseAzureBlobStorageSpecification,
+    AzureBlobStorageClientSpecification,
     ObjectStorageFormatSpecificationProvider {
 
     @get:JsonSchemaTitle("Azure Blob Storage Endpoint Domain Name")
