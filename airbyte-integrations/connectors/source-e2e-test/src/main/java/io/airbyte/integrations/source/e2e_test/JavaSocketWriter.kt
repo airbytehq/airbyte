@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.e2e_test
 
 import java.io.BufferedOutputStream
@@ -42,14 +46,11 @@ class JavaSocketWriter {
         val outputStream: OutputStream = Channels.newOutputStream(socketChannel)
         val bufferedOutputStream = BufferedOutputStream(outputStream)
 
-        val listOf = listOf(
-            runAsync {
-                writeFromOneThread(bufferedOutputStream)
-            },
-            runAsync {
-                writeFromOneThread2(bufferedOutputStream)
-            },
-        )
+        val listOf =
+            listOf(
+                runAsync { writeFromOneThread(bufferedOutputStream) },
+                runAsync { writeFromOneThread2(bufferedOutputStream) },
+            )
         listOf.forEach { it.join() }
 
         println("Source: Finished writing to socket")

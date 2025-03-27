@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.e2e_test
 
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter
@@ -14,7 +18,6 @@ import java.util.concurrent.CompletableFuture.runAsync
 import java.util.concurrent.Executors
 
 class JavaImprovedSocketWriter {
-
     private val executor = Executors.newFixedThreadPool(8)
 
     companion object {
@@ -24,59 +27,43 @@ class JavaImprovedSocketWriter {
         val array: ByteArray = (RECORD + "\n").toByteArray(Charsets.UTF_8)
     }
 
-
     fun startJavaUnixSocketWriter() {
         println("SOURCE SERIALISED 2")
-        val listOf = listOf(
-            runAsync(
-                {
-                    start("sock0")
-                },
-                executor,
-            ),
-            runAsync(
-                {
-                    start("sock1")
-                },
-                executor,
-            ),
-            runAsync(
-                {
-                    start("sock2")
-                },
-                executor,
-            ),
-            runAsync(
-                {
-                    start("sock3")
-                },
-                executor,
-            ),
-            runAsync(
-                {
-                    start("sock4")
-                },
-                executor,
-            ),
-            runAsync(
-                {
-                    start("sock5")
-                },
-                executor,
-            ),
-            runAsync(
-                {
-                    start("sock6")
-                },
-                executor,
-            ),
-            runAsync(
-                {
-                    start("sock7")
-                },
-                executor,
-            ),
-        )
+        val listOf =
+            listOf(
+                runAsync(
+                    { start("sock0") },
+                    executor,
+                ),
+                runAsync(
+                    { start("sock1") },
+                    executor,
+                ),
+                runAsync(
+                    { start("sock2") },
+                    executor,
+                ),
+                runAsync(
+                    { start("sock3") },
+                    executor,
+                ),
+                runAsync(
+                    { start("sock4") },
+                    executor,
+                ),
+                runAsync(
+                    { start("sock5") },
+                    executor,
+                ),
+                runAsync(
+                    { start("sock6") },
+                    executor,
+                ),
+                runAsync(
+                    { start("sock7") },
+                    executor,
+                ),
+            )
 
         listOf.forEach { it.join() }
     }
@@ -100,6 +87,7 @@ class JavaImprovedSocketWriter {
         val outputStream: OutputStream = Channels.newOutputStream(socketChannel)
         val bufferedOutputStream = BufferedOutputStream(outputStream)
         writeSerialised(bufferedOutputStream)
+//        writeProtobuf(bufferedOutputStream)
 
         println("Source $sock : Finished writing to socket $sock")
         bufferedOutputStream.close()
@@ -114,7 +102,8 @@ class JavaImprovedSocketWriter {
             DummyIterator.OBJECT_MAPPER
                 .writerFor(AirbyteMessage::class.java)
                 .with(MinimalPrettyPrinter(System.lineSeparator()))
-                .writeValues(outputStream).use { seq ->
+                .writeValues(outputStream)
+                .use { seq ->
                     dummyIterator.forEachRemaining { message ->
                         seq.write(message)
                         records++
@@ -124,6 +113,20 @@ class JavaImprovedSocketWriter {
                         }
                     }
                 }
+        }
+    }
+
+    private fun writeProtobuf(outputStream: OutputStream) {
+        var records: Long = 0
+        DummyProtobufIterator().use { dummyIterator ->
+            dummyIterator.forEachRemaining { message ->
+                message.writeTo(outputStream)
+                records++
+                if (records == 100_000L) {
+                    outputStream.flush()
+                    records = 0
+                }
+            }
         }
     }
 

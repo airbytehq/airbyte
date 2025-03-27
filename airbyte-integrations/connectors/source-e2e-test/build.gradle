@@ -1,5 +1,18 @@
 plugins {
     id 'airbyte-java-connector'
+    id ('com.google.protobuf') version '0.9.4'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir "${project.layout.buildDirectory}/generated/source/proto/main/grpc"
+            srcDir "${project.layout.buildDirectory}/generated/source/proto/main/java"
+        }
+        proto {
+            srcDir "${project.projectDir}/src/main/proto"
+        }
+    }
 }
 
 airbyteJavaConnector {
@@ -22,9 +35,31 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core:2.18.3'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.18.3'
 
+    implementation 'io.grpc:grpc-protobuf:1.71.0'
+    implementation 'com.google.protobuf:protobuf-kotlin:4.30.0'
+
     // Jackson Afterburner module for performance optimizations
     implementation 'com.fasterxml.jackson.module:jackson-module-afterburner:2.18.3'
     api 'org.apache.commons:commons-csv:1.11.0'
     implementation 'commons-cli:commons-cli:1.9.0'
+}
 
+protobuf {
+    protoc { artifact = 'com.google.protobuf:protoc:4.30.0' }
+    plugins {
+        create("grpc") {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.71.0'
+        }
+    }
+    generateProtoTasks {
+        all().configureEach { task ->
+            task.plugins {
+                create("grpc")
+            }
+        }
+    }
+}
+
+tasks.withType(Copy).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

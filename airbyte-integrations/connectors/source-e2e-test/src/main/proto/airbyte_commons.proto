@@ -1,0 +1,30 @@
+/*
+ * Copyright (c) 2020-2025 Airbyte, Inc., all rights reserved.
+ */
+    syntax = "proto3";
+package io.airbyte.protocol;
+enum DestinationSyncMode {
+  APPEND = 0;
+  OVERWRITE = 1;
+  APPEND_DEDUPE = 2;
+}
+enum SyncMode {
+  FULL_REFRESH = 0;
+  INCREMENTAL = 1;
+}
+message AirbytePrimaryKey {
+  repeated string name = 1;
+}
+message AirbyteStream {
+  string name = 1;
+  bytes json_schema = 2;
+  repeated SyncMode supported_sync_modes = 3;
+  optional bool source_defined_cursor = 4;
+  repeated AirbytePrimaryKey source_defined_primary_key = 5;
+  optional string namespace = 7;
+  optional bool is_resumable = 8;
+}
+message AirbyteStreamDescriptor {
+  string name = 1;
+  optional string namespace = 2;
+}
