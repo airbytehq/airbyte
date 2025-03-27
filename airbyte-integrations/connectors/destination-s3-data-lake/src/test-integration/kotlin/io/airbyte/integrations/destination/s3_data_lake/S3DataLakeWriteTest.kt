@@ -100,8 +100,8 @@ class GlueWriteTest :
     }
 
     @Test
-    override fun testUnknownTypes() {
-        super.testUnknownTypes()
+    override fun testTruncateRefreshNoData() {
+        super.testTruncateRefreshNoData()
     }
 
     /**
