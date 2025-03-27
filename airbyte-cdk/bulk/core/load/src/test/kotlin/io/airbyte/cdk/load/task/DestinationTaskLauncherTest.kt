@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.command.MockDestinationConfiguration
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationStreamEvent
@@ -339,7 +340,7 @@ class DestinationTaskLauncherTest {
         }
     }
 
-    class MockBatch(override val state: Batch.State, override val groupId: String? = null) : Batch
+    class MockBatch(override val state: BatchState, override val groupId: String? = null) : Batch
 
     @Test
     fun testRun() = runTest {
@@ -380,8 +381,7 @@ class DestinationTaskLauncherTest {
         streamManager.markEndOfStream(true)
 
         // Verify incomplete batch triggers process batch
-        val incompleteBatch =
-            BatchEnvelope(MockBatch(Batch.State.STAGED), range, stream1.descriptor)
+        val incompleteBatch = BatchEnvelope(MockBatch(BatchState.STAGED), range, stream1.descriptor)
         taskLauncher.handleNewBatch(
             MockDestinationCatalogFactory.stream1.descriptor,
             incompleteBatch
@@ -392,7 +392,7 @@ class DestinationTaskLauncherTest {
         Assertions.assertTrue(flushCheckpointsTaskFactory.hasRun.tryReceive().isFailure)
 
         val persistedBatch =
-            BatchEnvelope(MockBatch(Batch.State.PERSISTED), range, stream1.descriptor)
+            BatchEnvelope(MockBatch(BatchState.PERSISTED), range, stream1.descriptor)
         taskLauncher.handleNewBatch(
             MockDestinationCatalogFactory.stream1.descriptor,
             persistedBatch
@@ -403,7 +403,7 @@ class DestinationTaskLauncherTest {
         // Verify complete batch w/o batch processing complete does nothing
         val halfRange = TreeRangeSet.create(listOf(Range.closed(0L, 50L)))
         val completeBatchHalf =
-            BatchEnvelope(MockBatch(Batch.State.COMPLETE), halfRange, stream1.descriptor)
+            BatchEnvelope(MockBatch(BatchState.COMPLETE), halfRange, stream1.descriptor)
         taskLauncher.handleNewBatch(
             MockDestinationCatalogFactory.stream1.descriptor,
             completeBatchHalf
@@ -414,7 +414,7 @@ class DestinationTaskLauncherTest {
         // Verify complete batch w/ batch processing complete triggers close stream
         val secondHalf = TreeRangeSet.create(listOf(Range.closed(51L, 100L)))
         val completingBatch =
-            BatchEnvelope(MockBatch(Batch.State.COMPLETE), secondHalf, stream1.descriptor)
+            BatchEnvelope(MockBatch(BatchState.COMPLETE), secondHalf, stream1.descriptor)
         taskLauncher.handleNewBatch(
             MockDestinationCatalogFactory.stream1.descriptor,
             completingBatch
@@ -430,7 +430,7 @@ class DestinationTaskLauncherTest {
         val streamManager = syncManager.getStreamManager(stream1.descriptor)
         streamManager.markEndOfStream(true)
 
-        val emptyBatch = BatchEnvelope(MockBatch(Batch.State.COMPLETE), range, stream1.descriptor)
+        val emptyBatch = BatchEnvelope(MockBatch(BatchState.COMPLETE), range, stream1.descriptor)
         taskLauncher.handleNewBatch(MockDestinationCatalogFactory.stream1.descriptor, emptyBatch)
         closeStreamTaskFactory.hasRun.receive()
     }
