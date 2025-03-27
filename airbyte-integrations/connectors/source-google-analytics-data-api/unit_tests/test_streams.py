@@ -312,6 +312,19 @@ def test_stream_slices():
         {"startDate": "2022-12-30", "endDate": "2023-01-01"},
     ]
 
+    config = {
+        "date_ranges_start_date": datetime.date(2022, 12, 20),
+        "date_ranges_end_date": datetime.date(2022, 12, 26),
+        "window_in_days": 5,
+        "dimensions": ["date"],
+    }
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=None, config=config)
+    slices = list(stream.stream_slices(sync_mode=None))
+    assert slices == [
+        {"startDate": "2022-12-20", "endDate": "2022-12-24"},
+        {"startDate": "2022-12-25", "endDate": "2022-12-26"},
+    ]
+
 
 @freeze_time("2023-01-01 00:00:00")
 def test_full_refresh():

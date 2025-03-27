@@ -15,10 +15,10 @@ import requests
 from requests.exceptions import RequestException
 from source_shopify.http_request import ShopifyErrorHandler
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
-from source_shopify.shopify_graphql.bulk.query import ShopifyBulkQuery
+from source_shopify.shopify_graphql.bulk.query import DeliveryZoneList, ShopifyBulkQuery
 from source_shopify.transform import DataTypeEnforcer
+from source_shopify.utils import ApiTypeEnum, ShopifyNonRetryableErrors
 from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
-from source_shopify.utils import ShopifyNonRetryableErrors
 from source_shopify.utils import ShopifyRateLimiter as limiter
 
 from airbyte_cdk.models import SyncMode
@@ -33,7 +33,7 @@ class ShopifyStream(HttpStream, ABC):
     logger = logging.getLogger("airbyte")
 
     # Latest Stable Release
-    api_version = "2024-04"
+    api_version = "2025-01"
     # Page size
     limit = 250
 
@@ -89,7 +89,7 @@ class ShopifyStream(HttpStream, ABC):
                 records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
                 yield from self.produce_records(records)
             except RequestException as e:
-                self.logger.warning(f"Unexpected error in `parse_ersponse`: {e}, the actual response data: {response.text}")
+                self.logger.warning(f"Unexpected error in `parse_response`: {e}, the actual response data: {response.text}")
                 yield {}
 
     def produce_records(
@@ -855,3 +855,29 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         yield from self.filter_records_newer_than_state(stream_state, self.sort_output_asc(records))
         # add log message about the checkpoint value
         self.emit_checkpoint_message()
+
+
+class FullRefreshShopifyGraphQlBulkStream(ShopifyStream):
+    data_field = "graphql"
+    http_method = "POST"
+
+    query: DeliveryZoneList
+    response_field: str
+
+    def request_body_json(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[Mapping[str, Any]]:
+        return {"query": self.query().get()}
+
+    @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.status_code is requests.codes.OK:
+            try:
+                json_response = response.json().get("data", {}).get(self.response_field, {}).get("nodes", [])
+                yield from json_response
+            except RequestException as e:
+                self.logger.warning(f"Unexpected error in `parse_response`: {e}, the actual response data: {response.text}")
+                yield {}
