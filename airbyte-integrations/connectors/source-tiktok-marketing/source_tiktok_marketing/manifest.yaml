@@ -3841,11 +3841,6 @@ definitions:
               type:
                 - "null"
                 - string
-            profile_visits_rate:
-              description: Percentage of profile visits from an ad out of all impressions on the ad.
-              type:
-                - "null"
-                - string
             purchase:
               description: The number of unique app purchase actions.
               type:
