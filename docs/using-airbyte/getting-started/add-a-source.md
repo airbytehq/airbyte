@@ -17,9 +17,11 @@ The left half of the page contains a set of fields that you will have to fill ou
 Each connector in Airbyte will have its own set of authentication methods and configurable parameters. In the case of Sample Data (Faker), you can adjust the number of records you want returned in your `Users` data, and optionally adjust additional configuration settings. You can always refer to your source's provided setup guide for specific instructions on filling out each field.
 
 :::info
-Some sources will have an **Optional Fields** tab. You can open this tab to view and configure any additional optional parameters that exist for the souce, but you do not have to do so to successfully set up the connector.
+Some sources will have an **Optional Fields** tab. You can open this tab to view and configure any additional optional parameters that exist for the source, but you do not have to do so to successfully set up the connector.
 :::
 
-Once you've filled out all the required fields, click on the **Set up source** button and Airbyte will run a check to verify the connection. Happy replicating!
+Once you've filled out all the required fields, click on the **Set up source** button and Airbyte will run a check to verify the connection. If you're using [Terraform](../../terraform-documentation) to manage your infrastructure, use the **Copy JSON** button to copy your configuration as a JSON string that you can paste into your Terraform code.
+
+Happy replicating!
 
 Can't find the connectors that you want? Try your hand at easily building one yourself using our [Connector Builder](../../connector-development/connector-builder-ui/overview.md)!

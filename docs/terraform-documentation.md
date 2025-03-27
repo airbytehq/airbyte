@@ -5,11 +5,11 @@ products: all
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Terraform Provider
+# Terraform provider
 
 Follow this tutorial to learn how to use Airbyte's Terraform Provider. 
 
-[Terraform](https://www.terraform.io/), developed by HashiCorp, is an Infrastructure as Code (IaC) tool that empowers you to define and provision infrastructure using a declarative configuration language. If you use Terraform to manage your infrastructure, you can use Airbyte's Terraform provider to automate and version control your Airbyte configuration as code. Airbyte's Terraform provider is built off [our API](https://reference.airbyte.com).
+[Terraform](https://www.terraform.io/), developed by HashiCorp, is an Infrastructure as Code (IaC) tool that empowers you to define and provision infrastructure using a declarative configuration language. If you use Terraform to manage your infrastructure, you can use Airbyte's Terraform provider to automate and version control your Airbyte configuration as code. Airbyte's Terraform provider is built off [Airbyte's API](https://reference.airbyte.com).
 
 If you don't need a tutorial, go straight to the [Terraform docs](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs).
 
@@ -39,25 +39,27 @@ Before starting this tutorial, make sure you have the following:
 
 ## Strongly typed versus weakly typed {#typing}
 
-The Airbyte provider offers two types of resources. There are benefits and drawbacks to both methods. Review this information before creating your sources and destinations.
+The Airbyte provider offers two types of resources, and there are benefits and drawbacks to both. Review this information before creating your sources and destinations.
 
 ### Strongly typed configurations
 
-Resources with strongly typed configurations have strict rules about how configuration attributes are written. If they're written incorrectly, these resources prevent `terraform apply` from running.
+Resources with strongly typed configurations have strict rules about how you write configuration attributes. If they're written incorrectly, these resources prevent `terraform apply` from running.
 
 These resources depend on the underlying Airbyte connectors. Connectors are continually updated as third-party APIs change. This creates two primary points of failure for Terraform.
 
-- You upgrade the Terraform provider version, and fetch a new version of the config block. However, you do not upgrade your version of the connector in your Airbyte instance. The setup now crashes because there is a mismatch between the Terraform provider and the connector itself.
+- You upgrade the Terraform provider version, and fetch a new version of the `config` block. However, you don't upgrade your version of the connector in your Airbyte instance. The setup now crashes because there is a mismatch between the Terraform provider and the connector itself.
 
-- The Terraform SDK is built at a given time. Then, the connector has a breaking change (for example, a third-party removes an API endpoint). You upgrade your connector, but now the Terraform provider hasn't been upgraded yet and doesn't work as expected.
+- Airbyte builds the Terraform SDK at a given time. Then, the connector has a breaking change, like a third-party deprecating an API endpoint. You upgrade your connector, but Airbyte hasn't upgraded the Terraform provider yet and it doesn't work as expected.
 
 Essentially, using this option creates an ongoing risk that upgrading the Terraform provider or a connector causes a breaking change.
 
 ### Weakly typed (JSON) configurations
 
-Instead of using a connector-specific resource, you can use Airbyte's resources for custom connectors with an Airbyte or Marketplace connector, but write configurations as JSON strings. These configurations are more robust when connectors change. Mismatches between a Terraform provider and a connector do not prevent `terraform apply` from running. The absence of a newly added configuration option might have no impact at all on your data and your use of that connector.
+Instead of using a connector-specific resource, you can use [`airbyte_source_custom`](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs/resources/source_custom) and [`airbyte_destination_custom`](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs/resources/destination_custom). These are normally Airbyte's resources for custom connectors, but you can use them with any existing Airbyte or Marketplace connector and write your configurations as JSON strings. These configurations are more robust when connectors change. Mismatches between a Terraform provider and a connector do not prevent `terraform apply` from running. The absence of a newly added configuration option might have no impact at all on your data and your use of that connector.
 
-The main issue with this method is that JSON strings can technically contain anything, and you could make a mistake that Terraform doesn't warn you about. Currently, the best way to verify the correctness of your JSON string is to review the documentation for the strongly-typed resource for the source or destination you are creating. This method for getting the JSON string is undesirable, and Airbyte is exploring ways to surface the right JSON string in a more obvious way.
+The main issue with this method is that JSON strings can technically contain anything, and you could make a mistake that Terraform doesn't warn you about. 
+
+The best way to get a valid JSON string is to set up a new connector in Airbyte's UI, fill out all the fields, then click **Copy JSON**. You don't actually need to create the connector. Terraform can do that. You just need to get the right JSON string.
 
 ### How to choose
 
@@ -316,6 +318,6 @@ Terraform adds the connection to Airbyte. To see your new connection, open your 
 
 Congratulations! You created your first source, your first destination, and a connection between the two.
 
-- Continue building your sources, destinations, and connections for all your data using our [Terraform docs](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs).
+- Continue building your sources, destinations, and connections for all your data using Airbyte's [Terraform docs](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs).
 
 - Check out the [Quickstarts repository](https://github.com/airbytehq/quickstarts). It's full of templates and shortcuts to help you build common data stacks using Terraform and Python.
