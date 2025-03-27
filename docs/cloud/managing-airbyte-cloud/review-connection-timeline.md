@@ -2,53 +2,75 @@
 products: all
 ---
 
-# Review the connection timeline
+# Review the Connection Timeline
 
-The Connection Timeline displays information about several types of relevant connection events. The following events are included in the Connection Timeline: 
-- Sync
-- Refresh
-- Clear
-- Connection configuration changes
-- Schema changes (coming soon)
-- Connector Version changes (coming soon)
-- Connector configuration changes (coming soon)
+The Connection Timeline displays historical information about relevant connection events. You can also view and download logs, find any relevant errors, and find a link to a job to share with Support.
 
-To review the Connection Timeline, click a connection in the list and navigate to the "Timeline" tab to view its event history. The page displays recent events and their statuses. Where relevant, the event will also show the user who took the action.
+![A sample Connection Timeline showing multiple successful syncs](./assets/cloud-timeline-page.png)
 
-![Timeline](./assets/cloud-timeline-page.png)
+## How to review the Connection Timeline
 
-## Sync, Refresh, and Clear events
+Follow these steps to access the Connection Timeline.
 
-Completed Syncs, [Refreshes](/operator-guides/refreshes), and [Clears](/operator-guides/clear) will have a status associated to the event. 
+1. Click **Connections**.
 
-| Status              | Description                                                       |
-| ------------------- | ----------------------------------------------------------------- |
-| Succeeded           | 100% of the data has been extracted and loaded to the destination |
-| Incomplete          | The sync encountered an error, and should resolve itself. A subset or none of the data has been loaded to the destination.           |
-| Failed              | The sync encountered a fatal error, and needs user intervention to resolve. A subset or none of the data has been loaded to the destination.               |
-| Cancelled           | The sync was cancelled manually before finishing.                  |
-| Running             | The sync is currently running                                     |
+2. Click the connection in the list that you want to inspect.
 
+3. Click **Timeline**.
 
-Airbyte will also separately record when a sync has been manually started by a user. 
+Use the filters at the top of the timeline to filter the timeline for specific events types and period of time you are looking for.
+
+## What appears on the Connection Timeline
+
+The Connection Timeline includes the following event types:
+
+- Syncs
+
+- Refreshes
+
+- Clears
+
+- Schema changes
+
+- Schema updates
+
+- Schema configuration changes, including:
+
+    - Enabling or disabling streams and fields
+
+    - Changing primary keys or cursors
+
+    - Changing the sync mode
+
+    - Adding or removing streams/fields after clicking Refresh source schema
+
+It also shows who took an action, if that's relevant to the event.
+
+## Syncs, refreshes, and clears
+
+Completed syncs, [refreshes](/operator-guides/refreshes), and [clears](/operator-guides/clear) have a status associated to the event.
+
+| Status     | Description                                                                                                                            |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Succeeded  | Airbyte extracted 100% of the data and loaded to the destination.                                                                      |
+| Incomplete | The sync encountered an error, and should resolve itself. Airbyte loaded a subset or none of the data to the destination.              |
+| Failed     | The sync encountered a fatal error, and needs intervention to resolve. Airbyte loaded a subset or none of the data to the destination. |
+| Cancelled  | Someone cancelled the sync before it finished.                                                                                          |
+| Running    | The sync is currently running.                                                                                                         |
+
+### How the Connection Timeline reflects moved data
 
 For sync and refresh events, Airbyte also shows the volume of synced data, such as the amount of data moved, the number of records read and committed, and the total sync time. Reviewing this timeline can help you monitor the connection and identify any potential issues.
 
-| Data                           | Description                                                   |
-| ------------------------------ | ------------------------------------------------------------- |
-| x GB (also measured in KB, MB) | Amount of data moved during the sync                          |
-| x extracted records            | Number of records read from the source during the sync        |
-| x loaded records               | Number of records the destination confirmed it received.      |
-| xh xm xs                       | Total time (hours, minutes, seconds) for the sync to complete |
+| Data                             | Description                                                    |
+| -------------------------------- | -------------------------------------------------------------- |
+| `x` GB (also measured in KB, MB) | Amount of data moved during the sync.                          |
+| `x` extracted records            | Number of records read from the source during the sync.        |
+| `x` loaded records               | Number of records the destination confirmed it received.        |
+| `xh xm xs`                       | Total time (hours, minutes, seconds) for the sync to complete. |
 
-While most syncs only contain a single attempt, a sync can sometimes fail. In the event of a failure, Airbyte will make several attempts to sync your data before waiting for the next sync to retry. You can read more about our retry approach [here](../../understanding-airbyte/jobs.md#retry-rules). If multiple attempts are used in a sync, you can open the logs to see individual logs from each attempt.
+### How the Connection Timeline reflects failed syncs
+
+Most syncs only contain a single attempt, but syncs can fail. In the event of a failure, Airbyte attempts to sync your data before waiting for the next scheduled sync. [Learn more about Airbyte's retry approach](../../understanding-airbyte/jobs.md#retry-rules). If Airbyte needs multiple attempts to sync, you can open the logs to see the individual log from each attempt.
 
 Airbyte summarizes metrics in the sync summary across all the attempts in the sync. As a result, you may observe that the number of records extracted is higher than the number of records loaded if an attempt fails during the extraction process. A successful sync status means that all the records from the source have been successfully written to the destination.
-
-:::info
-
-For Airbyte Cloud syncs which [are priced based on the size of the records moved](https://airbyte.com/pricing), we use the information presented in the sync summary in the Airbyte user interface. As every database stores and compresses data differently, the measure of data volume which is used is that which is observed by the Airbyte Platform during the sync. When the data is in transit, it is serialized to [Airbyte Protocol format](/understanding-airbyte/airbyte-protocol/#airbyterecordmessage) records. This is likely to be a larger representation of your data than you would see if you were to query your database directly.
-
-:::
-
-On this page, you can also view the complete logs and find any relevant errors, find a link to the job to share with Support, or download a copy of the logs locally.
