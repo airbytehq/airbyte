@@ -369,13 +369,10 @@ class DefaultStreamManager(
         inputCount: Long
     ) {
         val taskKey = TaskKey(taskName, part)
-        if (taskCompletionCounts.containsKey(taskKey)) {
-            // TODO: Promote this to a hard failure as part of the subsequent bugfix.
-            log.warn {
-                """"$taskKey received input after seeing end-of-stream
-                        (checkpointCounts=$checkpointCounts, inputCount=$inputCount, sawEosAt=${taskCompletionCounts[taskKey]})
-                        This indicates data was processed out of order and future bookkeeping might be corrupt. Failing hard."""
-            }
+        check(!taskCompletionCounts.containsKey(taskKey)) {
+            """"$taskKey received input after seeing end-of-stream
+                    (checkpointCounts=$checkpointCounts, inputCount=$inputCount, sawEosAt=${taskCompletionCounts[taskKey]})
+                    This indicates data was processed out of order and future bookkeeping might be corrupt. Failing hard."""
         }
         val idToValue =
             namedCheckpointCounts.getOrPut(TaskKey(taskName, part) to state) { ConcurrentHashMap() }

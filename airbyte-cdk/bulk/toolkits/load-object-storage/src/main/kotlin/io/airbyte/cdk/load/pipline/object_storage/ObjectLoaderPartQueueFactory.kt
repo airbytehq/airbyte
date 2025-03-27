@@ -6,8 +6,9 @@ package io.airbyte.cdk.load.pipline.object_storage
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.ChannelMessageQueue
+import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
-import io.airbyte.cdk.load.message.SinglePartitionQueueWithMultiPartitionBroadcast
+import io.airbyte.cdk.load.message.StrictPartitionedQueue
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
@@ -63,8 +64,8 @@ class ObjectLoaderPartQueueFactory(
     fun objectLoaderClampedPartSizeBytes(
         @Named("objectLoaderMemoryReservation") reservation: Reserved<ObjectLoader>
     ): Long {
-        // 1 per worker, plus at least one in the queue.
-        val maxNumPartsInMemory = loader.numPartWorkers + loader.numUploadWorkers + 1
+        // 1 per worker, plus at least one per partition leading to the upload workers.
+        val maxNumPartsInMemory = loader.numPartWorkers + (loader.numUploadWorkers * 2)
         val maxPartSizeBytes = reservation.bytesReserved / maxNumPartsInMemory
 
         if (loader.partSizeBytes > maxPartSizeBytes) {
@@ -86,7 +87,7 @@ class ObjectLoaderPartQueueFactory(
     ): Int {
         val maxNumParts = reservation.bytesReserved / clampedPartSizeBytes
         val numWorkersHoldingParts = loader.numPartWorkers + loader.numUploadWorkers
-        val maxQueueCapacity = maxNumParts - numWorkersHoldingParts
+        val maxQueueCapacity = (maxNumParts - numWorkersHoldingParts) / loader.numUploadWorkers
         // Our earlier calculations should ensure this is always at least 1, but
         // we'll clamp it to be safe.
         val capacity = maxQueueCapacity.toInt().coerceAtLeast(1)
@@ -106,11 +107,17 @@ class ObjectLoaderPartQueueFactory(
     @Requires(bean = ObjectLoader::class)
     fun objectLoaderPartQueue(
         @Named("objectLoaderPartQueueCapacity") capacity: Int
-    ): SinglePartitionQueueWithMultiPartitionBroadcast<
-        PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>> {
-        return SinglePartitionQueueWithMultiPartitionBroadcast(
-            ChannelMessageQueue(Channel(capacity)),
-            loader.numUploadWorkers
+    ): PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>> {
+        return StrictPartitionedQueue(
+            (0 until loader.numUploadWorkers)
+                .map {
+                    ChannelMessageQueue(
+                        Channel<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>(
+                            capacity
+                        )
+                    )
+                }
+                .toTypedArray()
         )
     }
 
@@ -123,11 +130,17 @@ class ObjectLoaderPartQueueFactory(
     @Named("objectLoaderLoadedPartQueue")
     @Requires(bean = ObjectLoader::class)
     fun objectLoaderLoadedPartQueue():
-        SinglePartitionQueueWithMultiPartitionBroadcast<
-            PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult>> {
-        return SinglePartitionQueueWithMultiPartitionBroadcast(
-            ChannelMessageQueue(Channel(OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS)),
-            1
+        PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult>> {
+        return StrictPartitionedQueue(
+            (0 until loader.numUploadCompleters)
+                .map {
+                    ChannelMessageQueue(
+                        Channel<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult>>(
+                            OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS / loader.numUploadWorkers
+                        )
+                    )
+                }
+                .toTypedArray()
         )
     }
 }
