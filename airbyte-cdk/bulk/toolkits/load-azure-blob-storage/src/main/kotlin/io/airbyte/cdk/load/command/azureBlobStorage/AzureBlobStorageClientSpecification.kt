@@ -34,7 +34,7 @@ interface AzureBlobStorageClientSpecification {
 
     @get:JsonSchemaTitle("Shared Access Signature")
     @get:JsonPropertyDescription(
-        "A shared access signature (SAS) provides secure delegated access to resources in your storage account.. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/common/storage-sas-overview?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json\">here</a>. Mutually exclusive with an account key"
+        "A shared access signature (SAS) provides secure delegated access to resources in your storage account. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/common/storage-sas-overview?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json\">here</a>. If you set this value, you must not set the account key."
     )
     @get:JsonProperty("shared_access_signature")
     @get:JsonSchemaInject(
