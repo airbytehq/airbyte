@@ -43,6 +43,7 @@ from pipelines.consts import BUILD_PLATFORMS, LOCAL_BUILD_PLATFORM
 async def build(ctx: click.Context, use_host_gradle_dist_tar: bool, build_architectures: List[str], tag: str) -> bool:
     """Runs a build pipeline for the selected connectors."""
     build_platforms = [dagger.Platform(architecture) for architecture in build_architectures]
+    # build_platforms = [dagger.Platform("linux/amd64")]
     main_logger.info(f"Building connectors for {build_platforms}, use --architecture to change this.")
     connectors_contexts = [
         ConnectorContext(

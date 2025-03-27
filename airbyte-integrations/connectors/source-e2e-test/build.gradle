@@ -27,4 +27,7 @@ dependencies {
     api 'org.apache.commons:commons-csv:1.11.0'
     implementation 'commons-cli:commons-cli:1.9.0'
 
+    implementation 'io.netty:netty-all:4.1.119.Final'
+    implementation 'io.netty:netty-transport:4.1.119.Final'
+
 }
