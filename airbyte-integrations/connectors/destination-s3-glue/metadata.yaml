@@ -10,9 +10,9 @@ data:
   name: S3 Glue
   registryOverrides:
     cloud:
-      enabled: true
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3-glue
   tags:
@@ -20,7 +20,7 @@ data:
   ab_internal:
     sl: 100
     ql: 100
-  supportLevel: community
+  supportLevel: archived
   connectorTestSuitesOptions:
     - suite: integrationTests
       testSecrets:
