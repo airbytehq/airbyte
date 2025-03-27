@@ -85,7 +85,7 @@ data:
             impactedScopes: ["products_graph_ql", "customer_saved_search"]
       3.0.0:
         message: "After upgrading to Source Shopify v3.0.0 latest v2025-01 API version will be used by the source. Due to API upgrade streams `Countries` and `Product Variants` contain schema changes that require Refreshing Source Schema and Clearing affected streams. Streams `Articles`, `Blogs` and `Pages` change value for field `admin_graphql_api_id`, if you rely on this value please Clear and Resync affected streams. See more details on https://docs.airbyte.com/integrations/sources/shopify-migrations."
-        upgradeDeadline: "2025-04-07"
+        upgradeDeadline: "2025-04-01"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
