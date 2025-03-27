@@ -700,16 +700,28 @@ def test_python_issues_stream_updated_state(config):
 
 
 @pytest.mark.parametrize(
-    "dev_field, has_pull_request",
+    "dev_field, expected_platforms",
     (
-        ("PullRequestOverallDetails{openCount=1, mergedCount=1, declinedCount=1}", True),
-        ("PullRequestOverallDetails{openCount=0, mergedCount=0, declinedCount=0}", False),
-        ("pullrequest={dataType=pullrequest, state=thestate, stateCount=1}", True),
-        ("pullrequest={dataType=pullrequest, state=thestate, stateCount=0}", False),
-        ("{}", False),
+        ("PullRequestOverallDetails{openCount=1, mergedCount=1, declinedCount=1}", []),
+        ("PullRequestOverallDetails{openCount=0, mergedCount=0, declinedCount=0}", []),
+        ("pullrequest={dataType=pullrequest, state=thestate, stateCount=1}", []),
+        ("pullrequest={dataType=pullrequest, state=thestate, stateCount=0}", []),
+        ("{}", []),
+        (
+            'PullRequestOverallDetails{openCount=1, mergedCount=1, declinedCount=1} "byInstanceType": {"GitHub": {"name": "GitHub"}, "GitLab": {"name": "GitLab"}}',
+            ["GitHub", "GitLab"]
+        ),
+        (
+            'PullRequestOverallDetails{openCount=1, mergedCount=1, declinedCount=1} "byInstanceType": {"GitHub": {"name": "GitHub"}}',
+            ["GitHub"]
+        ),
+        (
+            'pullrequest={dataType=pullrequest, state=thestate, stateCount=1} "byInstanceType": {"GitLab": {"name": "GitLab"}}',
+            ["GitLab"]
+        ),
     ),
 )
-def test_python_pull_requests_stream_has_pull_request(config, dev_field, has_pull_request):
+def test_python_pull_requests_get_vcs_platforms(config, dev_field, expected_platforms):
     authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
     issues_stream = Issues(**args)
@@ -721,11 +733,11 @@ def test_python_pull_requests_stream_has_pull_request(config, dev_field, has_pul
     }
     pull_requests_stream = PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
 
-    assert has_pull_request == pull_requests_stream.has_pull_requests(dev_field)
+    assert expected_platforms == pull_requests_stream.get_vcs_platforms(dev_field)
 
 
 @responses.activate
-def test_python_pull_requests_stream_has_pull_request(
+def test_python_pull_requests_stream_with_vcs_platforms(
     config, mock_fields_response, mock_projects_responses_additional_project, mock_issues_responses_with_date_filter
 ):
     authenticator = SourceJira(config=config, catalog=None, state=None).get_authenticator(config=config)
