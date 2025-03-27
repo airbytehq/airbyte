@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.mssql.v2.config
 
-import io.airbyte.cdk.load.command.azureBlobStorage.BaseAzureBlobStorageConfiguration
-import io.airbyte.cdk.load.command.azureBlobStorage.BaseAzureBlobStorageConfigurationProvider
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfigurationProvider
 import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlobClient
 import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlobStorageClientFactory
 
@@ -17,12 +17,13 @@ object AzureBlobStorageClientCreator {
      */
     fun createAzureBlobClient(bulkLoadConfiguration: BulkLoadConfiguration): AzureBlobClient {
         val configProvider =
-            object : BaseAzureBlobStorageConfigurationProvider {
-                override val baseAzureBlobStorageConfiguration =
-                    BaseAzureBlobStorageConfiguration(
+            object : AzureBlobStorageClientConfigurationProvider {
+                override val azureBlobStorageClientConfiguration =
+                    AzureBlobStorageClientConfiguration(
                         accountName = bulkLoadConfiguration.accountName,
                         containerName = bulkLoadConfiguration.containerName,
                         sharedAccessSignature = bulkLoadConfiguration.sharedAccessSignature,
+                        accountKey = bulkLoadConfiguration.accountKey,
                     )
             }
         return AzureBlobStorageClientFactory(configProvider).make()

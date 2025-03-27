@@ -7,7 +7,7 @@ package io.airbyte.cdk.load.file.azureBlobStorage
 import com.azure.storage.blob.models.BlobStorageException
 import com.azure.storage.blob.models.BlockBlobItem
 import com.azure.storage.blob.specialized.BlockBlobClient
-import io.airbyte.cdk.load.command.azureBlobStorage.BaseAzureBlobStorageConfiguration
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test
 class AzureBlobStreamingUploadTest {
 
     private lateinit var blockBlobClient: BlockBlobClient
-    private lateinit var config: BaseAzureBlobStorageConfiguration
+    private lateinit var config: AzureBlobStorageClientConfiguration
     private lateinit var metadata: Map<String, String>
     private lateinit var streamingUpload: AzureBlobStreamingUpload
 
@@ -34,10 +34,11 @@ class AzureBlobStreamingUploadTest {
     fun setup() {
         blockBlobClient = mockk()
         config =
-            BaseAzureBlobStorageConfiguration(
+            AzureBlobStorageClientConfiguration(
                 accountName = "fakeAccount",
                 containerName = "fakeContainer",
-                sharedAccessSignature = "null"
+                sharedAccessSignature = "null",
+                accountKey = "null"
             )
         metadata = mapOf("env" to "dev", "author" to "testUser", "ab-generation-id" to "0")
 
@@ -194,7 +195,7 @@ class AzureBlobStreamingUploadTest {
     fun `generateBlockId - verifies fixed-size buffer structure`() {
         // Set up a real instance (mocks only for constructor args).
         val mockClient = mockk<BlockBlobClient>(relaxed = true)
-        val config = BaseAzureBlobStorageConfiguration("acc", "key", "container")
+        val config = AzureBlobStorageClientConfiguration("acc", "key", "container", "")
         val metadata = emptyMap<String, String>()
         val streamingUpload = AzureBlobStreamingUpload(mockClient, config, metadata)
 

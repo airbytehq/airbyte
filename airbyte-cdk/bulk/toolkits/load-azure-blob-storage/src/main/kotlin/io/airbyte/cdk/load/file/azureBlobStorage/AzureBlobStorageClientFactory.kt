@@ -5,35 +5,55 @@
 package io.airbyte.cdk.load.file.azureBlobStorage
 
 import com.azure.storage.blob.BlobServiceClientBuilder
-import io.airbyte.cdk.load.command.azureBlobStorage.BaseAzureBlobStorageConfigurationProvider
+import com.azure.storage.common.StorageSharedKeyCredential
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfigurationProvider
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
 @Factory
 class AzureBlobStorageClientFactory(
-    private val baseAzureBlobStorageConfigurationProvider:
-        BaseAzureBlobStorageConfigurationProvider,
+    private val azureBlobStorageClientConfigurationProvider:
+        AzureBlobStorageClientConfigurationProvider,
 ) {
 
     @Singleton
     @Secondary
     fun make(): AzureBlobClient {
         val endpoint =
-            "https://${baseAzureBlobStorageConfigurationProvider.baseAzureBlobStorageConfiguration.accountName}.blob.core.windows.net"
+            "https://${azureBlobStorageClientConfigurationProvider.azureBlobStorageClientConfiguration.accountName}.blob.core.windows.net"
 
         val azureServiceClient =
-            BlobServiceClientBuilder()
-                .endpoint(endpoint)
-                .sasToken(
-                    baseAzureBlobStorageConfigurationProvider.baseAzureBlobStorageConfiguration
-                        .sharedAccessSignature
-                )
-                .buildClient()
+            if (
+                azureBlobStorageClientConfigurationProvider.azureBlobStorageClientConfiguration
+                    .sharedAccessSignature
+                    .isNullOrBlank()
+            ) {
+                val credential =
+                    StorageSharedKeyCredential(
+                        azureBlobStorageClientConfigurationProvider
+                            .azureBlobStorageClientConfiguration
+                            .accountName,
+                        azureBlobStorageClientConfigurationProvider
+                            .azureBlobStorageClientConfiguration
+                            .accountKey,
+                    )
+
+                BlobServiceClientBuilder().endpoint(endpoint).credential(credential).buildClient()
+            } else {
+                BlobServiceClientBuilder()
+                    .endpoint(endpoint)
+                    .sasToken(
+                        azureBlobStorageClientConfigurationProvider
+                            .azureBlobStorageClientConfiguration
+                            .sharedAccessSignature,
+                    )
+                    .buildClient()
+            }
 
         return AzureBlobClient(
             azureServiceClient,
-            baseAzureBlobStorageConfigurationProvider.baseAzureBlobStorageConfiguration
+            azureBlobStorageClientConfigurationProvider.azureBlobStorageClientConfiguration,
         )
     }
 }
