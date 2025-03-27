@@ -17,10 +17,8 @@ import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.MultiProducerChannel
-import io.airbyte.cdk.load.message.object_storage.*
 import io.airbyte.cdk.load.state.DestinationStateManager
 import io.airbyte.cdk.load.state.StreamProcessingFailed
-import io.airbyte.cdk.load.state.object_storage.MetadataKeyMapper
 import io.airbyte.cdk.load.state.object_storage.ObjectStorageDestinationState
 import io.airbyte.cdk.load.write.BatchAccumulator
 import io.airbyte.cdk.load.write.FileBatchAccumulator
@@ -45,7 +43,6 @@ class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>, U : OutputStream>(
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState>,
     @Value("\${airbyte.destination.core.record-batch-size-override}")
     private val recordBatchSizeOverride: Long? = null,
-    private val metadataKeyMapper: MetadataKeyMapper,
 ) {
     fun create(stream: DestinationStream): StreamLoader {
         return ObjectStorageStreamLoader(
@@ -58,7 +55,6 @@ class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>, U : OutputStream>(
             uploadConfigurationProvider.objectStorageUploadConfiguration.uploadPartSizeBytes,
             recordBatchSizeOverride
                 ?: uploadConfigurationProvider.objectStorageUploadConfiguration.fileSizeBytes,
-            metadataKeyMapper,
         )
     }
 }
@@ -76,11 +72,10 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState>,
     private val partSizeBytes: Long,
     private val fileSizeBytes: Long,
-    metadataKeyMapper: MetadataKeyMapper,
 ) : StreamLoader {
     private val log = KotlinLogging.logger {}
 
-    private val objectAccumulator = PartToObjectAccumulator(stream, client, metadataKeyMapper)
+    private val objectAccumulator = PartToObjectAccumulator(stream, client)
 
     override suspend fun createBatchAccumulator(): BatchAccumulator {
         val state = destinationStateManager.getState(stream)
