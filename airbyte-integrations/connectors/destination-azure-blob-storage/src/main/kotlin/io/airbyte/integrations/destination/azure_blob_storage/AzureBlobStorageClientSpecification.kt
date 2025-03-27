@@ -36,9 +36,9 @@ class AzureBlobStorageSpecification :
 
     override val azureBlobStorageContainerName: String = ""
 
-    override val azureBlobStorageSharedAccessSignature: String? = ""
+    override val azureBlobStorageSharedAccessSignature: String? = null
 
-    override val azureBlobStorageAccountKey: String? = ""
+    override val azureBlobStorageAccountKey: String? = null
 
     @get:JsonSchemaTitle("Azure Blob Storage target blob size (Megabytes)")
     @get:JsonPropertyDescription(
