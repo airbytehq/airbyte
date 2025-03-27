@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ff48bf15-f917-4fff-ba28-cbab56ef892f
-  dockerImageTag: 0.0.16
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-cin7
   githubIssueLabel: source-cin7
   icon: icon.svg
