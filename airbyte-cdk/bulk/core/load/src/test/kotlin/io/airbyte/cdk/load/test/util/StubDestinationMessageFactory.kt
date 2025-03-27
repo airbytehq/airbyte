@@ -26,7 +26,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 object StubDestinationMessageFactory {
     fun makeRecord(stream: DestinationStream): DestinationRecord {
         return DestinationRecord(
-            stream = stream.descriptor,
+            stream = stream,
             message =
                 AirbyteMessage()
                     .withRecord(
@@ -39,7 +39,7 @@ object StubDestinationMessageFactory {
 
     fun makeFile(stream: DestinationStream, record: String): DestinationFile {
         return DestinationFile(
-            stream = stream.descriptor,
+            stream = stream,
             emittedAtMs = 0,
             serialized = record,
             fileMessage = nullFileMessage,
@@ -47,19 +47,19 @@ object StubDestinationMessageFactory {
     }
 
     fun makeStreamComplete(stream: DestinationStream): DestinationRecordStreamComplete {
-        return DestinationRecordStreamComplete(stream = stream.descriptor, emittedAtMs = 0)
+        return DestinationRecordStreamComplete(stream = stream, emittedAtMs = 0)
     }
 
     fun makeFileStreamComplete(stream: DestinationStream): DestinationFileStreamComplete {
-        return DestinationFileStreamComplete(stream = stream.descriptor, emittedAtMs = 0)
+        return DestinationFileStreamComplete(stream = stream, emittedAtMs = 0)
     }
 
     fun makeStreamIncomplete(stream: DestinationStream): DestinationRecordStreamIncomplete {
-        return DestinationRecordStreamIncomplete(stream = stream.descriptor, emittedAtMs = 0)
+        return DestinationRecordStreamIncomplete(stream = stream, emittedAtMs = 0)
     }
 
     fun makeFileStreamIncomplete(stream: DestinationStream): DestinationFileStreamIncomplete {
-        return DestinationFileStreamIncomplete(stream = stream.descriptor, emittedAtMs = 0)
+        return DestinationFileStreamIncomplete(stream = stream, emittedAtMs = 0)
     }
 
     fun makeStreamState(stream: DestinationStream, recordCount: Long): CheckpointMessage {
