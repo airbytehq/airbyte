@@ -57,7 +57,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 500
+            page_size: 1000
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
