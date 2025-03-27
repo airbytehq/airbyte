@@ -479,7 +479,10 @@ class PullRequests(IncrementalJiraStream):
         dev_field_ids = field_ids_by_name.get("Development", [])
         for issue in read_incremental(self.issues_stream, stream_state=stream_state):
             for dev_field_id in dev_field_ids:
-                vcs_platforms = self.get_vcs_platforms(issue["fields"].get(dev_field_id))
+                dev_field_content = issue["fields"].get(dev_field_id)
+                if not dev_field_content:
+                    continue
+                vcs_platforms = self.get_vcs_platforms(dev_field_content)
                 for vcs_platform in vcs_platforms:
                     yield from super().read_records(
                         stream_slice={
