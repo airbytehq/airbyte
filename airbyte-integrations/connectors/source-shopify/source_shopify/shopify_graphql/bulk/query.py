@@ -11,6 +11,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from attr import dataclass
 from graphql_query import Argument, Field, InlineFragment, Operation, Query
+from setuptools.command.alias import alias
 
 from .tools import BULK_PARENT_KEY, BulkTools
 
@@ -2659,7 +2660,7 @@ class ProductVariant(ShopifyBulkQuery):
         inventory_item_fields = [
             Field(name="id", alias="inventory_item_id"),
             Field(name="tracked", alias="tracked"),
-            Field(name="requiresShipping", alias="requiresShipping"),
+            Field(name="requiresShipping", alias="requires_shipping"),
             Field(name="measurement", alias="measurement", fields=measurement_fields),
         ]
         query_nodes: List[Field] = [
@@ -2749,7 +2750,7 @@ class ProductVariant(ShopifyBulkQuery):
         record["weight"] = measurement_weight.get("value") if measurement_weight.get("value") else 0.0
         record["weight_unit"] = measurement_weight.get("unit") if measurement_weight else None
         record["tracked"] = inventory_item.get("tracked") if inventory_item else None
-        record["requires_shipping"] = inventory_item.get("requiresShipping") if inventory_item else None
+        record["requires_shipping"] = inventory_item.get("requires_shipping") if inventory_item else None
         record["image_id"] = self._unnest_and_resolve_id(record, "image", "image_id")
         image = record.get("image", {})
         record["image_src"] = image.get("image_src") if image else None

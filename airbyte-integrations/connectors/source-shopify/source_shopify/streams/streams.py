@@ -396,6 +396,7 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
         }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        # TODO: to refactor this using functools + partial, see comment https://github.com/airbytehq/airbyte/pull/55823#discussion_r2016335672
         for node in super().parse_response(response, **kwargs):
             for location_group in node.get("profileLocationGroups", []):
                 for location_group_zone in location_group.get("locationGroupZones", {}).get("nodes", []):
@@ -412,8 +413,9 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
             province["id"] = int(province["id"].split("/")[-1])
             province["country_id"] = country["id"]
 
-        country["rest_of_world"] = country["code"]["rest_of_world"]
-        country["code"] = country["code"]["country_code"] if country["code"]["country_code"] is not None else "*"
+        if country.get("code"):
+            country["rest_of_world"] = country["code"]["rest_of_world"] if country["code"].get("rest_of_world") is not None else "*"
+            country["code"] = country["code"]["country_code"] if country["code"].get("country_code") is not None else "*"
 
         country["shop_url"] = self.config["shop"]
         return country

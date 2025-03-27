@@ -17,8 +17,8 @@ from source_shopify.http_request import ShopifyErrorHandler
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
 from source_shopify.shopify_graphql.bulk.query import DeliveryZoneList, ShopifyBulkQuery
 from source_shopify.transform import DataTypeEnforcer
+from source_shopify.utils import ApiTypeEnum, ShopifyNonRetryableErrors
 from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
-from source_shopify.utils import ShopifyNonRetryableErrors
 from source_shopify.utils import ShopifyRateLimiter as limiter
 
 from airbyte_cdk.models import SyncMode
@@ -872,7 +872,7 @@ class FullRefreshShopifyGraphQlBulkStream(ShopifyStream):
     ) -> Optional[Mapping[str, Any]]:
         return {"query": self.query().get()}
 
-    @limiter.balance_rate_limit()
+    @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.status_code is requests.codes.OK:
             try:
