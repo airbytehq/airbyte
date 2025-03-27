@@ -90,7 +90,7 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 | AdvertisersReportsDaily                   | Prod         | advertiser_id, stat_time_day               | Yes         |
 | AdvertisersReportsLifetime                | Prod         | advertiser_id                              | No          |
 | AdGroupsReportsHourly                     | Prod,Sandbox | adgroup_id, stat_time_hour                 | Yes         |
-| AæGroupsReportsDaily                      | Prod,Sandbox | adgroup_id, stat_time_day                  | Yes         |
+| AdGroupsReportsDaily                      | Prod,Sandbox | adgroup_id, stat_time_day                  | Yes         |
 | AdGroupsReportsLifetime                   | Prod,Sandbox | adgroup_id                                 | No          |
 | Audiences                                 | Prod,Sandbox | audience_id                                | No          |
 | CampaignsReportsHourly                    | Prod,Sandbox | campaign_id, stat_time_hour                | Yes         |
