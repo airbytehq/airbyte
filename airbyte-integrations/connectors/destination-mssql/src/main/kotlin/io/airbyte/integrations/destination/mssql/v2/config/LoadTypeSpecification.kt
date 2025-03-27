@@ -35,7 +35,7 @@ interface LoadTypeSpecification {
     fun toLoadConfiguration(): MSSQLLoadTypeConfiguration {
         val loadTypeConfig: LoadTypeConfiguration =
             when (val lt = loadType) {
-                is BulkLoadSpecificationBase -> {
+                is BulkLoadSpecification -> {
                     BulkLoadConfiguration(
                         accountName = lt.azureBlobStorageAccountName,
                         containerName = lt.azureBlobStorageContainerName,
@@ -53,7 +53,7 @@ interface LoadTypeSpecification {
 /**
  * Represents the method by which MSSQL will load data. Currently, supports:
  * - [InsertLoadSpecification]: row-by-row inserts
- * - [BulkLoadSpecificationBase]: bulk loading using Azure Blob Storage
+ * - [BulkLoadSpecification]: bulk loading using Azure Blob Storage
  */
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
@@ -62,7 +62,7 @@ interface LoadTypeSpecification {
 )
 @JsonSubTypes(
     JsonSubTypes.Type(value = InsertLoadSpecification::class, name = "INSERT"),
-    JsonSubTypes.Type(value = BulkLoadSpecificationBase::class, name = "BULK"),
+    JsonSubTypes.Type(value = BulkLoadSpecification::class, name = "BULK"),
 )
 @JsonSchemaTitle("MSSQL Load Type")
 @JsonSchemaDescription(
@@ -90,7 +90,7 @@ class InsertLoadSpecification(
 /** Configuration for the BULK load mechanism, leveraging Azure Blob Storage. */
 @JsonSchemaTitle("Bulk Load")
 @JsonSchemaDescription("Configuration details for using the BULK loading mechanism.")
-class BulkLoadSpecificationBase(
+class BulkLoadSpecification(
     @JsonSchemaTitle("Load Type")
     @JsonProperty("load_type")
     @JsonSchemaInject(json = """{"order": 0}""")
@@ -196,7 +196,7 @@ data class MSSQLLoadTypeConfiguration(
 @JsonSchemaDescription("INSERT-specific configuration details for MSSQL.")
 data class InsertLoadTypeConfiguration(val ignored: String = "") : LoadTypeConfiguration
 
-/** Configuration for the BULK load approach, matching fields from [BulkLoadSpecificationBase]. */
+/** Configuration for the BULK load approach, matching fields from [BulkLoadSpecification]. */
 @JsonSchemaTitle("BULK Load Configuration")
 @JsonSchemaDescription("BULK-specific configuration details for MSSQL.")
 data class BulkLoadConfiguration(
