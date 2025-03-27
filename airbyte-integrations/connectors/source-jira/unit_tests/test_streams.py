@@ -709,16 +709,13 @@ def test_python_issues_stream_updated_state(config):
         ("{}", []),
         (
             'PullRequestOverallDetails{openCount=1, mergedCount=1, declinedCount=1} "byInstanceType": {"GitHub": {"name": "GitHub"}, "GitLab": {"name": "GitLab"}}',
-            ["GitHub", "GitLab"]
+            ["GitHub", "GitLab"],
         ),
         (
             'PullRequestOverallDetails{openCount=1, mergedCount=1, declinedCount=1} "byInstanceType": {"GitHub": {"name": "GitHub"}}',
-            ["GitHub"]
+            ["GitHub"],
         ),
-        (
-            'pullrequest={dataType=pullrequest, state=thestate, stateCount=1} "byInstanceType": {"GitLab": {"name": "GitLab"}}',
-            ["GitLab"]
-        ),
+        ('pullrequest={dataType=pullrequest, state=thestate, stateCount=1} "byInstanceType": {"GitLab": {"name": "GitLab"}}', ["GitLab"]),
     ),
 )
 def test_python_pull_requests_get_vcs_platforms(config, dev_field, expected_platforms):

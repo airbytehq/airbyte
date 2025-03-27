@@ -2,10 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, MutableMapping
-import re
 import json
+import re
+from typing import Any, MutableMapping
+
 from airbyte_cdk.sources.streams import Stream
+
 
 _NO_STATE: MutableMapping[str, Any] = {}
 
