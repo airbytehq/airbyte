@@ -51,6 +51,7 @@ import io.airbyte.cdk.load.test.util.NameMapper
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
+import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -71,6 +72,7 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertThrows
 
 sealed interface AllTypesBehavior
 
@@ -141,6 +143,34 @@ enum class UnionBehavior {
     STRINGIFY,
 }
 
+enum class UnknownTypesBehavior {
+    NULL,
+
+    /**
+     * Values of unknown types are JSON-serialized. In particular, this means that a string `"foo"`
+     * would be written to the destination as `"\"foo\""`.
+     */
+    SERIALIZE,
+
+    /**
+     * Values of unknown types are naively converted to string. String values are written as-is, and
+     * other types are JSON-serialized.
+     *
+     * In most cases, we prefer [SERIALIZE] over [PASS_THROUGH], but there are some destinations
+     * (e.g. blob storage writing JSONL) where this makes sense. Additionally, destination-s3 in CSV
+     * mode does this for historical reasons.
+     */
+    PASS_THROUGH,
+
+    /**
+     * The sync is expected to fail on unrecognized types. We generally prefer to avoid this
+     * behavior, but destination-s3 in avro/parquet mode does this for historical reasons.
+     *
+     * New connectors should generally try to use [SERIALIZE].
+     */
+    FAIL,
+}
+
 abstract class BasicFunctionalityIntegrationTest(
     /** The config to pass into the connector, as a serialized JSON blob */
     configContents: String,
@@ -183,7 +213,7 @@ abstract class BasicFunctionalityIntegrationTest(
      */
     val commitDataIncrementally: Boolean,
     val allTypesBehavior: AllTypesBehavior,
-    val nullUnknownTypes: Boolean = false,
+    val unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     nullEqualsUnset: Boolean = false,
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
 ) :
@@ -331,7 +361,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 stream,
                 listOf(
                     InputFile(
-                        stream = stream.descriptor,
+                        stream = stream,
                         emittedAtMs = 1234,
                         fileMessage = fileMessage,
                     ),
@@ -1960,13 +1990,38 @@ abstract class BasicFunctionalityIntegrationTest(
                         }
                     """.trimIndent()
                 ),
+                // Another record that verifies numeric behavior.
+                // -99999999999999999999999999999999 is out of range for int64.
+                makeRecord(
+                    """
+                        {
+                          "id": 6,
+                          "integer": -99999999999999999999999999999999
+                        }
+                    """.trimIndent(),
+                ),
+                // A record with truncated timestamps (i.e. the seconds value is 0).
+                // Some destinations have specific formatting requirements, and it's easy
+                // to mess these values up.
+                makeRecord(
+                    """
+                        {
+                          "id": 7,
+                          "timestamp_with_timezone": "2023-01-23T11:34:00-01:00",
+                          "timestamp_without_timezone": "2023-01-23T12:34:00",
+                          "time_with_timezone": "11:34:00-01:00",
+                          "time_without_timezone": "12:34:00"
+                        }
+                    """.trimIndent()
+                ),
             ),
         )
 
         val nestedFloat: BigDecimal
         val topLevelFloat: BigDecimal
-        val bigInt: BigInteger?
+        val positiveBigInt: BigInteger?
         val bigIntChanges: List<Change>
+        val negativeBigInt: BigInteger?
         val badValuesData: Map<String, Any?>
         val badValuesChanges: MutableList<Change>
         when (allTypesBehavior) {
@@ -1983,12 +2038,13 @@ abstract class BasicFunctionalityIntegrationTest(
                     } else {
                         BigDecimal("50000.0000000000000001")
                     }
-                bigInt =
-                    if (allTypesBehavior.integerCanBeLarge) {
-                        BigInteger("99999999999999999999999999999999")
-                    } else {
-                        null
-                    }
+                if (allTypesBehavior.integerCanBeLarge) {
+                    positiveBigInt = BigInteger("99999999999999999999999999999999")
+                    negativeBigInt = BigInteger("-99999999999999999999999999999999")
+                } else {
+                    positiveBigInt = null
+                    negativeBigInt = null
+                }
                 bigIntChanges =
                     if (allTypesBehavior.integerCanBeLarge) {
                         emptyList()
@@ -2043,7 +2099,8 @@ abstract class BasicFunctionalityIntegrationTest(
             Untyped -> {
                 nestedFloat = BigDecimal("50000.0000000000000001")
                 topLevelFloat = BigDecimal("50000.0000000000000001")
-                bigInt = BigInteger("99999999999999999999999999999999")
+                positiveBigInt = BigInteger("99999999999999999999999999999999")
+                negativeBigInt = BigInteger("-99999999999999999999999999999999")
                 bigIntChanges = emptyList()
                 badValuesData =
                     // note that the values have different types than what's declared in the schema
@@ -2117,7 +2174,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             "id" to 4,
                             "struct" to schematizedObject(linkedMapOf("foo" to nestedFloat)),
                             "number" to topLevelFloat,
-                            "integer" to bigInt,
+                            "integer" to positiveBigInt,
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42, changes = bigIntChanges),
                 ),
@@ -2126,6 +2183,31 @@ abstract class BasicFunctionalityIntegrationTest(
                     generationId = 42,
                     data = badValuesData,
                     airbyteMeta = OutputRecord.Meta(syncId = 42, changes = badValuesChanges),
+                ),
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 6,
+                            "integer" to negativeBigInt,
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42, changes = bigIntChanges),
+                ),
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 7,
+                            "timestamp_with_timezone" to
+                                OffsetDateTime.parse("2023-01-23T11:34:00-01:00"),
+                            "timestamp_without_timezone" to
+                                LocalDateTime.parse("2023-01-23T12:34:00"),
+                            "time_with_timezone" to OffsetTime.parse("11:34:00-01:00"),
+                            "time_without_timezone" to LocalTime.parse("12:34:00"),
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
             ),
             stream,
@@ -2352,65 +2434,77 @@ abstract class BasicFunctionalityIntegrationTest(
                 minimumGenerationId = 0,
                 syncId = 42,
             )
-        runSync(
-            updatedConfig,
-            stream,
-            listOf(
-                InputRecord(
-                    randomizedNamespace,
-                    "problematic_types",
-                    """
+
+        fun runSync() =
+            runSync(
+                updatedConfig,
+                stream,
+                listOf(
+                    InputRecord(
+                        randomizedNamespace,
+                        "problematic_types",
+                        """
                         {
                           "id": 1,
                           "name": "ex falso quodlibet"
                         }""".trimIndent(),
-                    emittedAtMs = 1602637589100,
+                        emittedAtMs = 1602637589100,
+                    )
                 )
             )
-        )
+        if (unknownTypesBehavior == UnknownTypesBehavior.FAIL) {
+            assertThrows<DestinationUncleanExitException> { runSync() }
+        } else {
+            assertDoesNotThrow { runSync() }
+            val expectedRecords: List<OutputRecord> =
+                listOf(
+                    OutputRecord(
+                        extractedAt = 1602637589100,
+                        generationId = 42,
+                        data =
+                            mapOf(
+                                "id" to 1,
+                                "name" to
+                                    when (unknownTypesBehavior) {
+                                        UnknownTypesBehavior.NULL -> null
+                                        UnknownTypesBehavior.PASS_THROUGH -> "ex falso quodlibet"
+                                        UnknownTypesBehavior.SERIALIZE -> "\"ex falso quodlibet\""
+                                        // this is required to satisfy the compiler,
+                                        // but intellij correctly detects that it's unreachable.
+                                        UnknownTypesBehavior.FAIL ->
+                                            throw IllegalStateException(
+                                                "The sync was expected to fail, so we should not be asserting that its records were correct"
+                                            )
+                                    },
+                            ),
+                        airbyteMeta =
+                            OutputRecord.Meta(
+                                syncId = 42,
+                                changes =
+                                    when (unknownTypesBehavior) {
+                                        UnknownTypesBehavior.NULL ->
+                                            listOf(
+                                                Change(
+                                                    "name",
+                                                    AirbyteRecordMessageMetaChange.Change.NULLED,
+                                                    AirbyteRecordMessageMetaChange.Reason
+                                                        .DESTINATION_SERIALIZATION_ERROR
+                                                )
+                                            )
+                                        else -> emptyList()
+                                    }
+                            ),
+                    ),
+                )
 
-        val expectedRecords: List<OutputRecord> =
-            listOf(
-                OutputRecord(
-                    extractedAt = 1602637589100,
-                    generationId = 42,
-                    data =
-                        mapOf(
-                            "id" to 1,
-                            "name" to
-                                if (nullUnknownTypes) {
-                                    null
-                                } else {
-                                    "ex falso quodlibet"
-                                },
-                        ),
-                    airbyteMeta =
-                        OutputRecord.Meta(
-                            syncId = 42,
-                            changes =
-                                if (nullUnknownTypes) {
-                                    listOf(
-                                        Change(
-                                            "name",
-                                            AirbyteRecordMessageMetaChange.Change.NULLED,
-                                            AirbyteRecordMessageMetaChange.Reason
-                                                .DESTINATION_SERIALIZATION_ERROR
-                                        )
-                                    )
-                                } else {
-                                    emptyList()
-                                }
-                        ),
-                ),
+            dumpAndDiffRecords(
+                parsedConfig,
+                expectedRecords,
+                stream,
+                primaryKey = listOf(listOf("id")),
+                cursor = null,
             )
-
-        dumpAndDiffRecords(
-            parsedConfig,
-            expectedRecords,
-            stream,
-            primaryKey = listOf(listOf("id")),
-            cursor = null,
-        )
+        }
     }
 
     /**
@@ -2766,6 +2860,41 @@ abstract class BasicFunctionalityIntegrationTest(
             parsedConfig,
             canonicalExpectedRecords = emptyList(),
             stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    @Test
+    open fun testTruncateRefreshNoData() {
+        assumeTrue(verifyDataWriting)
+        fun makeStream(generationId: Long, minimumGenerationId: Long, syncId: Long) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
+                generationId,
+                minimumGenerationId,
+                syncId,
+            )
+        runSync(
+            updatedConfig,
+            makeStream(generationId = 12, minimumGenerationId = 0, syncId = 42),
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "name": "first_value"}""",
+                    emittedAtMs = 1234L,
+                )
+            )
+        )
+        val finalStream = makeStream(generationId = 13, minimumGenerationId = 13, syncId = 43)
+        runSync(updatedConfig, finalStream, emptyList())
+        dumpAndDiffRecords(
+            parsedConfig,
+            emptyList(),
+            finalStream,
             primaryKey = listOf(listOf("id")),
             cursor = null,
         )

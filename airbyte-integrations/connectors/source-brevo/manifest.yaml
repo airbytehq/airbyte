@@ -57,7 +57,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 100
+            page_size: 500
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
@@ -67,11 +67,11 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          field_name: createdSince
+          field_name: modifiedSince
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
@@ -694,6 +694,26 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/crm_deals"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - last_updated_at
+              value: "{{ record['attributes']['last_updated_date'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_updated_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modifiedSince
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
     crm_tasktypes:
       type: DeclarativeStream
       name: crm_tasktypes

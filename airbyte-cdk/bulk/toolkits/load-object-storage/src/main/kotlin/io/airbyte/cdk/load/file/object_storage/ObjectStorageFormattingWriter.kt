@@ -8,25 +8,21 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.AvroFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.CSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.JsonFormatConfiguration
-import io.airbyte.cdk.load.command.object_storage.MSSQLCSVFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
 import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.avro.AvroMapperPipelineFactory
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
-import io.airbyte.cdk.load.data.csv.MSSQLCsvRowValidator
 import io.airbyte.cdk.load.data.csv.toCsvRecord
 import io.airbyte.cdk.load.data.dataWithAirbyteMeta
-import io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineTest
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.file.StreamProcessor
 import io.airbyte.cdk.load.file.avro.toAvroWriter
 import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.parquet.ParquetWriter
 import io.airbyte.cdk.load.file.parquet.toParquetWriter
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.util.write
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -39,16 +35,20 @@ import java.util.concurrent.atomic.AtomicLong
 import org.apache.avro.Schema
 
 interface ObjectStorageFormattingWriter : Closeable {
-    fun accept(record: DestinationRecordAirbyteValue)
+    fun accept(record: DestinationRecordRaw)
     fun flush()
+}
+
+interface ObjectStorageFormattingWriterFactory {
+    fun create(stream: DestinationStream, outputStream: OutputStream): ObjectStorageFormattingWriter
 }
 
 @Singleton
 @Secondary
-class ObjectStorageFormattingWriterFactory(
+class DefaultObjectStorageFormattingWriterFactory(
     private val formatConfigProvider: ObjectStorageFormatConfigurationProvider,
-) {
-    fun create(
+) : ObjectStorageFormattingWriterFactory {
+    override fun create(
         stream: DestinationStream,
         outputStream: OutputStream
     ): ObjectStorageFormattingWriter {
@@ -74,14 +74,6 @@ class ObjectStorageFormattingWriterFactory(
                     flatten
                 )
             is CSVFormatConfiguration -> CSVFormattingWriter(stream, outputStream, flatten)
-            is MSSQLCSVFormatConfiguration ->
-                MSSQLCSVFormattingWriter(
-                    stream,
-                    outputStream,
-                    (formatConfigProvider.objectStorageFormatConfiguration
-                            as MSSQLCSVFormatConfiguration)
-                        .validateValuesPreLoad,
-                )
         }
     }
 }
@@ -92,9 +84,13 @@ class JsonFormattingWriter(
     private val rootLevelFlattening: Boolean,
 ) : ObjectStorageFormattingWriter {
 
-    override fun accept(record: DestinationRecordAirbyteValue) {
+    override fun accept(record: DestinationRecordRaw) {
         val data =
-            record.dataWithAirbyteMeta(stream, rootLevelFlattening).toJson().serializeToString()
+            record
+                .asDestinationRecordAirbyteValue()
+                .dataWithAirbyteMeta(stream, rootLevelFlattening)
+                .toJson()
+                .serializeToString()
         outputStream.write(data)
         outputStream.write("\n")
     }
@@ -108,32 +104,6 @@ class JsonFormattingWriter(
     }
 }
 
-class MSSQLCSVFormattingWriter(
-    private val stream: DestinationStream,
-    outputStream: OutputStream,
-    validateValuesPreLoad: Boolean,
-) : ObjectStorageFormattingWriter {
-    private val finalSchema = stream.schema.withAirbyteMeta(true)
-    private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
-    private val mssqlRowValidator = MSSQLCsvRowValidator(validateValuesPreLoad)
-    override fun accept(record: DestinationRecordAirbyteValue) {
-
-        printer.printRecord(
-            mssqlRowValidator
-                .validate(record, this.finalSchema)
-                .dataWithAirbyteMeta(stream, true)
-                .toCsvRecord(finalSchema),
-        )
-    }
-    override fun flush() {
-        printer.flush()
-    }
-
-    override fun close() {
-        printer.close()
-    }
-}
-
 class CSVFormattingWriter(
     private val stream: DestinationStream,
     outputStream: OutputStream,
@@ -142,9 +112,12 @@ class CSVFormattingWriter(
 
     private val finalSchema = stream.schema.withAirbyteMeta(rootLevelFlattening)
     private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
-    override fun accept(record: DestinationRecordAirbyteValue) {
+    override fun accept(record: DestinationRecordRaw) {
         printer.printRecord(
-            record.dataWithAirbyteMeta(stream, rootLevelFlattening).toCsvRecord(finalSchema)
+            record
+                .asDestinationRecordAirbyteValue()
+                .dataWithAirbyteMeta(stream, rootLevelFlattening)
+                .toCsvRecord(finalSchema)
         )
     }
 
@@ -165,7 +138,8 @@ class AvroFormattingWriter(
 ) : ObjectStorageFormattingWriter {
     val log = KotlinLogging.logger {}
 
-    private val pipeline = AvroMapperPipelineFactory().create(stream)
+    @Suppress("DEPRECATION")
+    private val pipeline = io.airbyte.cdk.load.data.avro.AvroMapperPipelineFactory().create(stream)
     private val mappedSchema = pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening)
     private val avroSchema = mappedSchema.toAvroSchema(stream.descriptor)
     private val writer =
@@ -175,9 +149,11 @@ class AvroFormattingWriter(
         log.info { "Generated avro schema: $avroSchema" }
     }
 
-    override fun accept(record: DestinationRecordAirbyteValue) {
-        val dataMapped = pipeline.map(record.data, record.meta?.changes)
-        val withMeta = dataMapped.withAirbyteMeta(stream, record.emittedAtMs, rootLevelFlattening)
+    override fun accept(record: DestinationRecordRaw) {
+        val marshalledRecord = record.asDestinationRecordAirbyteValue()
+        val dataMapped = pipeline.map(marshalledRecord.data, marshalledRecord.meta?.changes)
+        val withMeta =
+            dataMapped.withAirbyteMeta(stream, marshalledRecord.emittedAtMs, rootLevelFlattening)
         writer.write(withMeta.toAvroRecord(mappedSchema, avroSchema))
     }
 
@@ -198,7 +174,9 @@ class ParquetFormattingWriter(
 ) : ObjectStorageFormattingWriter {
     private val log = KotlinLogging.logger {}
 
-    private val pipeline = ParquetMapperPipelineTest().create(stream)
+    @Suppress("DEPRECATION")
+    private val pipeline =
+        io.airbyte.cdk.load.data.parquet.ParquetMapperPipelineTest().create(stream)
     private val mappedSchema: ObjectType = pipeline.finalSchema.withAirbyteMeta(rootLevelFlattening)
     private val avroSchema: Schema = mappedSchema.toAvroSchema(stream.descriptor)
     private val writer: ParquetWriter =
@@ -208,9 +186,11 @@ class ParquetFormattingWriter(
         log.info { "Generated avro schema: $avroSchema" }
     }
 
-    override fun accept(record: DestinationRecordAirbyteValue) {
-        val dataMapped = pipeline.map(record.data, record.meta?.changes)
-        val withMeta = dataMapped.withAirbyteMeta(stream, record.emittedAtMs, rootLevelFlattening)
+    override fun accept(record: DestinationRecordRaw) {
+        val marshalledRecord = record.asDestinationRecordAirbyteValue()
+        val dataMapped = pipeline.map(marshalledRecord.data, marshalledRecord.meta?.changes)
+        val withMeta =
+            dataMapped.withAirbyteMeta(stream, marshalledRecord.emittedAtMs, rootLevelFlattening)
         writer.write(withMeta.toAvroRecord(mappedSchema, avroSchema))
     }
 
@@ -256,7 +236,7 @@ class BufferedFormattingWriter<T : OutputStream>(
                 0
             } else buffer.size()
 
-    override fun accept(record: DestinationRecordAirbyteValue) {
+    override fun accept(record: DestinationRecordRaw) {
         writer.accept(record)
         rowsAdded.incrementAndGet()
     }
