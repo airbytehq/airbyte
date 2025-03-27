@@ -91,6 +91,8 @@ and [Instagram Insights API documentation](https://developers.facebook.com/docs/
     - [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)
 - [Media](https://developers.facebook.com/docs/instagram-api/reference/ig-user/media)
     - [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
+    - [Profile Activity](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
+    - [Navigation](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
 - [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)
     - [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
 
@@ -146,6 +148,7 @@ for more information.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| 3.3.0 | 2025-02-22 | [54364](https://github.com/airbytehq/airbyte/pull/54678) | Add streams profile_activity & navigation |
 | 3.2.3 | 2025-03-22 | [56020](https://github.com/airbytehq/airbyte/pull/56020) | Update dependencies |
 | 3.2.2 | 2025-03-10 | [55685](https://github.com/airbytehq/airbyte/pull/55685) | Disable cache for InstagramMediaChildrenTransformation |
 | 3.2.1 | 2025-03-08 | [55463](https://github.com/airbytehq/airbyte/pull/55463) | Update dependencies |

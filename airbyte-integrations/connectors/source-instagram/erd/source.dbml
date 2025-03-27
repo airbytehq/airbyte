@@ -126,6 +126,34 @@ Table "user_insights" {
     }
 }
 
+Table "profile_activity" {
+    "business_account_id" string
+    "page_id" string
+    "id" string
+    "breakdown" string
+    "metric" string
+    "value" object
+
+    indexes {
+        (id, breakdown) [pk]
+    }
+}
+
+
+Table "navigation" {
+    "business_account_id" string
+    "page_id" string
+    "id" string
+    "breakdown" string
+    "metric" string
+    "value" object
+
+    indexes {
+        (id, breakdown) [pk]
+    }
+}
+
+
 Ref {
     "media"."page_id" <> "users"."page_id"
 }
@@ -152,4 +180,12 @@ Ref {
 
 Ref {
     "user_insights"."page_id" <> "users"."page_id"
+}
+
+Ref {
+    "profile_activity"."id" <> "media"."id"
+}
+
+Ref {
+    "navigation"."id" <> "media"."id"
 }

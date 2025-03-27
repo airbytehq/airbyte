@@ -50,6 +50,22 @@
         "page_id": "users.page_id",
         "business_account_id": "users.business_account_id"
       }
+    },
+    {
+      "name": "profile_activity",
+      "relations": {
+        "business_account_id": "users.business_account_id",
+        "page_id": "users.page_id",
+        "id": "media.id"
+      }
+    },
+    {
+      "name": "navigation",
+      "relations": {
+        "business_account_id": "users.business_account_id",
+        "page_id": "users.page_id",
+        "id": "media.id"
+      }
     }
   ]
 }

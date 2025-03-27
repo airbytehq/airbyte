@@ -77,7 +77,7 @@ def test_check_connection_exception(api, config):
 def test_streams(api, config):
     streams = SourceInstagram(config=config, catalog=None, state=None).streams(config)
 
-    assert len(streams) == 8
+    assert len(streams) == 10
 
 
 def test_spec():
