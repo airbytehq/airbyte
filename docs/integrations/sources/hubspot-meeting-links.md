@@ -11,6 +11,6 @@ It is intended to be merged to the official [source Hubspot](./hubspot.md) conne
 
 | Version    | Date       | Pull Request                                           | Subject                                                             |
 |:-----------|:-----------|:-------------------------------------------------------|:--------------------------------------------------------------------|
-| 0.1.0      | 2025-03-27 | [XXXX](https://github.com/airbytehq/airbyte/pull/XXXX) | Initial version - To be merged to official Hubspot source connector |
+| 0.1.0      | 2025-03-27 | [56431](https://github.com/airbytehq/airbyte/pull/56431) | Initial version - To be merged to official Hubspot source connector |
 
 </details>
