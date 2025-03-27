@@ -27,6 +27,30 @@ class PrivateKeyCredentials(BaseModel):
     private_key: str = Field(title="Private key", description="The Private key", multiline=True, order=4, airbyte_secret=True)
 
 
+class GPGEncryptionConfig(BaseModel):
+    enabled: bool = Field(
+        title="Enable GPG Decryption", description="Whether to decrypt GPG encrypted files after download", default=False, order=1
+    )
+    private_key: Optional[str] = Field(
+        title="GPG Private Key",
+        description="The GPG private key used for decryption (armored format: BEGIN PGP PRIVATE KEY BLOCK)",
+        airbyte_secret=True,
+        multiline=True,
+        default=None,
+        order=2,
+    )
+    public_key: Optional[str] = Field(
+        title="GPG Public Key",
+        description="The GPG public key (armored format: BEGIN PGP PUBLIC KEY BLOCK). Required if you need to verify signatures.",
+        multiline=True,
+        default=None,
+        order=3,
+    )
+    passphrase: Optional[str] = Field(
+        title="GPG Key Passphrase", description="Passphrase for GPG private key (if required)", airbyte_secret=True, default=None, order=4
+    )
+
+
 class SourceSFTPBulkSpec(AbstractFileBasedSpec):
     class Config:
         title = "SFTP Bulk Source Spec"
@@ -58,6 +82,14 @@ class SourceSFTPBulkSpec(AbstractFileBasedSpec):
         display_type="radio",
         group="advanced",
         default="use_records_transfer",
+    )
+
+    gpg_config: GPGEncryptionConfig = Field(
+        title="GPG Decryption",
+        description="Configuration for GPG decryption of encrypted files",
+        default=GPGEncryptionConfig(enabled=False),
+        order=8,
+        group="advanced",
     )
 
     @classmethod
