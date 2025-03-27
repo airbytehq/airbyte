@@ -437,41 +437,28 @@ class PullRequests(IncrementalJiraStream):
             List of VCS platform names found
         """
         
-        # Find all matches
-        matches = list(re.finditer(self.combined_regex, dev_field, re.MULTILINE))
-        
-        # Check if there are pull requests
-        has_prs = False
-        for match in matches:
+        by_instance_type = None
+        # Find all matches in a single pass
+        for match in re.finditer(self.combined_regex, dev_field, re.MULTILINE):
+            # Check for pull requests while searching for byInstanceType
             if match.group("prDetails"):
                 total = int(match.group("open")) + int(match.group("merged")) + int(match.group("declined"))
-                if total > 0:
-                    has_prs = True
+                if total > 0 and by_instance_type:
                     break
             elif match.group("pr"):
-                if int(match.group("count")) > 0:
-                    has_prs = True
+                if int(match.group("count")) > 0 and by_instance_type:
                     break
-        
-        if not has_prs:
-            return []
-        
-        by_instance_type = None
-        for match in matches:
-            if match.group("byInstanceType"):
+            elif match.group("byInstanceType"):
                 by_instance_type = match.group("byInstanceType")
-                break
         
         if not by_instance_type:
             return []
-        
 
         # Try to parse this as a JSON object
         by_instance_type_data = json.loads(by_instance_type)
         
         # The keys in this object are the VCS platform names
-        vcs_platforms = list(by_instance_type_data.keys())
-        return vcs_platforms
+        return list(by_instance_type_data.keys())
 
     def read_records(
         self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
