@@ -8,7 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Teradata Destination Spec",
     "type": "object",
-    "required": ["host", "username"],
+    "required": ["host"],
     "additionalProperties": true,
     "properties": {
       "host": {
@@ -17,18 +17,69 @@
         "type": "string",
         "order": 0
       },
-      "username": {
-        "title": "User",
-        "description": "Username to use to access the database.",
-        "type": "string",
-        "order": 1
-      },
-      "password": {
-        "title": "Password",
-        "description": "Password associated with the username.",
-        "type": "string",
-        "airbyte_secret": true,
-        "order": 2
+      "logmech": {
+        "title": "Authorization Mechanism",
+        "description": "",
+        "type": "object",
+        "order": 1,
+        "oneOf": [
+          {
+            "title": "TD2",
+            "type": "object",
+            "order": 0,
+            "required": ["username", "password"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "TD2",
+                "enum": ["TD2"],
+                "default": "TD2",
+                "order": 0
+              },
+              "username": {
+                "title": "User",
+                "description": "Username to use to access the database.",
+                "type": "string",
+                "order": 1
+              },
+              "password": {
+                "description": "Enter the password associated with the username.",
+                "type": "string",
+                "airbyte_secret": true,
+                "title": "Password",
+                "order": 2
+              }
+            }
+          },
+          {
+            "title": "LDAP",
+            "type": "object",
+            "required": ["username", "password"],
+            "order": 1,
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "LDAP",
+                "enum": ["LDAP"],
+                "default": "LDAP",
+                "order": 0
+              },
+              "username": {
+                "title": "User",
+                "description": "Username to use to access the database.",
+                "type": "string",
+                "order": 1
+              },
+              "password": {
+                "description": "Enter the password associated with the username.",
+                "type": "string",
+                "airbyte_secret": true,
+                "title": "Password",
+                "order": 2
+              }
+            }
+          }
+        ]
       },
       "schema": {
         "title": "Default Schema",
