@@ -6,8 +6,8 @@ package io.airbyte.integrations.destination.azure_blob_storage
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
-import io.airbyte.cdk.load.command.azureBlobStorage.BaseAzureBlobStorageConfiguration
-import io.airbyte.cdk.load.command.azureBlobStorage.BaseAzureBlobStorageConfigurationProvider
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfiguration
@@ -21,7 +21,7 @@ import java.io.OutputStream
 
 class AzureBlobStorageConfiguration<T : OutputStream>(
     // Client-facing configuration
-    override val baseAzureBlobStorageConfiguration: BaseAzureBlobStorageConfiguration,
+    override val azureBlobStorageClientConfiguration: AzureBlobStorageClientConfiguration,
     override val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration,
     override val objectStorageCompressionConfiguration: ObjectStorageCompressionConfiguration<T>,
 
@@ -40,7 +40,7 @@ class AzureBlobStorageConfiguration<T : OutputStream>(
     val partSizeBytes: Long = 10L * 1024 * 1024,
 ) :
     DestinationConfiguration(),
-    BaseAzureBlobStorageConfigurationProvider,
+    AzureBlobStorageClientConfigurationProvider,
     ObjectStorageFormatConfigurationProvider,
     ObjectStorageUploadConfigurationProvider,
     ObjectStorageCompressionConfigurationProvider<T>
@@ -52,12 +52,12 @@ class AzureBlobStorageConfigurationFactory :
     override fun makeWithoutExceptionHandling(
         pojo: AzureBlobStorageSpecification
     ): AzureBlobStorageConfiguration<*> {
-        val baseAzureBlobStorageConfiguration = pojo.toBaseAzureBlobStorageConfiguration()
-        baseAzureBlobStorageConfiguration.endpointDomainName =
+        val azureBlobStorageClientConfiguration = pojo.toAzureBlobStorageClientConfiguration()
+        azureBlobStorageClientConfiguration.endpointDomainName =
             pojo.azureBlobStorageEndpointDomainName
-        baseAzureBlobStorageConfiguration.spillSize = pojo.azureBlobStorageSpillSize
+        azureBlobStorageClientConfiguration.spillSize = pojo.azureBlobStorageSpillSize
         return AzureBlobStorageConfiguration(
-            baseAzureBlobStorageConfiguration = baseAzureBlobStorageConfiguration,
+            azureBlobStorageClientConfiguration = azureBlobStorageClientConfiguration,
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration =
                 ObjectStorageCompressionConfiguration(NoopProcessor),

@@ -43,8 +43,8 @@ interface AzureBlobStorageClientSpecification {
     )
     val azureBlobStorageSharedAccessSignature: String
 
-    fun toBaseAzureBlobStorageConfiguration(): BaseAzureBlobStorageConfiguration {
-        return BaseAzureBlobStorageConfiguration(
+    fun toAzureBlobStorageClientConfiguration(): AzureBlobStorageClientConfiguration {
+        return AzureBlobStorageClientConfiguration(
             azureBlobStorageAccountName,
             azureBlobStorageContainerName,
             azureBlobStorageSharedAccessSignature
@@ -52,7 +52,7 @@ interface AzureBlobStorageClientSpecification {
     }
 }
 
-data class BaseAzureBlobStorageConfiguration(
+data class AzureBlobStorageClientConfiguration(
     val accountName: String,
     val containerName: String,
     val sharedAccessSignature: String,
@@ -62,6 +62,6 @@ data class BaseAzureBlobStorageConfiguration(
     var spillSize: Int? = null,
 )
 
-interface BaseAzureBlobStorageConfigurationProvider {
-    val baseAzureBlobStorageConfiguration: BaseAzureBlobStorageConfiguration
+interface AzureBlobStorageClientConfigurationProvider {
+    val azureBlobStorageClientConfiguration: AzureBlobStorageClientConfiguration
 }
