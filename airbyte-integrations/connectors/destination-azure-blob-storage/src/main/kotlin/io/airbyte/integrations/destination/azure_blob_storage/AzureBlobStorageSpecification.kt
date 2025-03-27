@@ -38,7 +38,7 @@ class AzureBlobStorageSpecification :
 
     override val azureBlobStorageSharedAccessSignature: String = ""
 
-    @get:JsonSchemaTitle("Azure Blob Storage file spill size (Megabytes)")
+    @get:JsonSchemaTitle("Azure Blob Storage target blob size (Megabytes)")
     @get:JsonPropertyDescription(
         "The amount of megabytes after which the connector should spill the records in a new blob object. Make sure to configure size greater than individual records. Enter 0 if not applicable."
     )
