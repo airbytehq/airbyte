@@ -140,4 +140,11 @@ class MSSQLBulkLoaderFactory(
             streamStateStore.get(key.stream)!!.formatFilePath
         )
     }
+
+    /**
+     * Azure requires blob metadata keys to be alphanumeric+underscores, so replace the dashes with
+     * underscores.
+     */
+    override val generationIdMetadataKeyOverride: String
+        get() = "ab_generation_id"
 }

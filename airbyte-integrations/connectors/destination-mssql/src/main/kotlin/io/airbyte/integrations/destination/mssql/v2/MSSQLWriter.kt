@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.mssql.v2
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.state.DestinationFailure
-import io.airbyte.cdk.load.state.object_storage.MetadataKeyMapper
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
