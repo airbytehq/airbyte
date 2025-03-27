@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.pipeline
 
-import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.WithBatchState
 import io.airbyte.cdk.load.message.WithStream
@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.write.DirectLoaderFactory
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
-data class DirectLoadAccResult(override val state: Batch.State) : WithBatchState
+data class DirectLoadAccResult(override val state: BatchState) : WithBatchState
 
 /**
  * Used internally by the CDK to wrap the client-provided DirectLoader in a generic
@@ -37,13 +37,13 @@ class DirectLoadRecordAccumulator<S : DirectLoader, K : WithStream>(
         state.accept(input).let {
             return when (it) {
                 is Incomplete -> NoOutput(state)
-                is Complete -> FinalOutput(DirectLoadAccResult(Batch.State.COMPLETE))
+                is Complete -> FinalOutput(DirectLoadAccResult(BatchState.COMPLETE))
             }
         }
     }
 
     override suspend fun finish(state: S): FinalOutput<S, DirectLoadAccResult> {
         state.finish()
-        return FinalOutput(DirectLoadAccResult(Batch.State.COMPLETE))
+        return FinalOutput(DirectLoadAccResult(BatchState.COMPLETE))
     }
 }

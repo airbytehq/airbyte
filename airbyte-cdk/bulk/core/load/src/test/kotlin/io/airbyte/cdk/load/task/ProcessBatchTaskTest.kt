@@ -5,8 +5,8 @@
 package io.airbyte.cdk.load.task
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.SyncManager
@@ -33,7 +33,7 @@ class ProcessBatchTaskTest {
         syncManager = mockk(relaxed = true)
         streamLoaders = streams.associateWith { mockk(relaxed = true) }
         streamLoaders.values.forEach {
-            coEvery { it.processBatch(any()) } returns SimpleBatch(Batch.State.COMPLETE)
+            coEvery { it.processBatch(any()) } returns SimpleBatch(BatchState.COMPLETE)
         }
         coEvery { syncManager.getOrAwaitStreamLoader(any()) } answers
             {
@@ -49,19 +49,19 @@ class ProcessBatchTaskTest {
         coEvery { batchQueue.consume() } returns
             streamLoaders.keys
                 .map {
-                    BatchEnvelope(streamDescriptor = it, batch = SimpleBatch(Batch.State.STAGED))
+                    BatchEnvelope(streamDescriptor = it, batch = SimpleBatch(BatchState.STAGED))
                 }
                 .asFlow()
 
         task.execute()
 
         streamLoaders.forEach { (descriptor, loader) ->
-            coVerify { loader.processBatch(match { it.state == Batch.State.STAGED }) }
+            coVerify { loader.processBatch(match { it.state == BatchState.STAGED }) }
             coVerify {
                 taskLauncher.handleNewBatch(
                     descriptor,
                     match {
-                        it.streamDescriptor == descriptor && it.batch.state == Batch.State.COMPLETE
+                        it.streamDescriptor == descriptor && it.batch.state == BatchState.COMPLETE
                     }
                 )
             }
