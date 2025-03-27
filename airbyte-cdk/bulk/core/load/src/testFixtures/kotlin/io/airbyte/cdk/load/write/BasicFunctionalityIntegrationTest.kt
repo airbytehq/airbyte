@@ -2014,6 +2014,28 @@ abstract class BasicFunctionalityIntegrationTest(
                         }
                     """.trimIndent()
                 ),
+                // lol, more numbers
+                // it's surprisingly easy to handle zero / negative numbers wrong
+                // in particular, if you compare `value < Double.MIN_VALUE`, you will be sad
+                // and should instead do `value < -Double.MAX_VALUE`
+                makeRecord(
+                    """
+                        {
+                          "id": 8,
+                          "integer": 0,
+                          "number": 0.0
+                        }
+                    """.trimIndent(),
+                ),
+                makeRecord(
+                    """
+                        {
+                          "id": 9,
+                          "integer": -1,
+                          "number": -1.0
+                        }
+                    """.trimIndent(),
+                ),
             ),
         )
 
@@ -2206,6 +2228,28 @@ abstract class BasicFunctionalityIntegrationTest(
                                 LocalDateTime.parse("2023-01-23T12:34:00"),
                             "time_with_timezone" to OffsetTime.parse("11:34:00-01:00"),
                             "time_without_timezone" to LocalTime.parse("12:34:00"),
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 8,
+                            "integer" to 0,
+                            "number" to 0.0,
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 100,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "id" to 9,
+                            "integer" to -1,
+                            "number" to -1.0,
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
