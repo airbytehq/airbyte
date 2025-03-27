@@ -1,0 +1,130 @@
+version: 6.5.2
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - Meeting links
+
+definitions:
+  streams:
+    Meeting links:
+      type: DeclarativeStream
+      name: Meeting links
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /scheduler/v3/meetings/meeting-links
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response["paging"]["next"]["after"] }}'
+            stop_condition: '{{ "next" not in response.get("paging", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/Meeting links'
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.hubapi.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_key"] }}'
+
+streams:
+  - $ref: '#/definitions/streams/Meeting links'
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Meeting links: true
+  testedStreams:
+    Meeting links:
+      streamHash: 77de64778d6beea31fe9c1c566c0930ff2e27ceb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+
+schemas:
+  Meeting links:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      defaultLink:
+        type:
+          - boolean
+          - "null"
+      id:
+        type:
+          - string
+      link:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      organizerUserId:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      userIdsOfLinkMembers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - id
