@@ -57,7 +57,7 @@ data class AzureBlobStorageClientConfiguration(
     val containerName: String,
     val sharedAccessSignature: String,
 
-    // The following
+    // The following is only used by the azure blob storage destination
     var endpointDomainName: String? = null,
     var spillSize: Int? = null,
 )
