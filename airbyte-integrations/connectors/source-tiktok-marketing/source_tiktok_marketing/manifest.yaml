@@ -583,7 +583,7 @@ definitions:
           "cost_per_sales_lead",
           "cost_per_total_sales_lead",
           "cost_per_total_app_event_add_to_cart",
-          "total_app_event_add_to_cart"
+          "total_app_event_add_to_cart",
         ]
       dimensions: ["ad_id", "stat_time_day"]
     primary_key:
@@ -1500,7 +1500,7 @@ definitions:
           "cost_per_sales_lead",
           "cost_per_total_sales_lead",
           "cost_per_total_app_event_add_to_cart",
-          "total_app_event_add_to_cart"
+          "total_app_event_add_to_cart",
         ]
       dimensions: ["ad_id"]
     primary_key:
