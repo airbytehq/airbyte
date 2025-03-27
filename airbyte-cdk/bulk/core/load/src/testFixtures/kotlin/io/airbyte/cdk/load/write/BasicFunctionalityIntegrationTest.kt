@@ -2910,6 +2910,41 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     @Test
+    open fun testTruncateRefreshNoData() {
+        assumeTrue(verifyDataWriting)
+        fun makeStream(generationId: Long, minimumGenerationId: Long, syncId: Long) =
+            DestinationStream(
+                DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
+                Append,
+                ObjectType(linkedMapOf("id" to intType, "name" to stringType)),
+                generationId,
+                minimumGenerationId,
+                syncId,
+            )
+        runSync(
+            updatedConfig,
+            makeStream(generationId = 12, minimumGenerationId = 0, syncId = 42),
+            listOf(
+                InputRecord(
+                    randomizedNamespace,
+                    "test_stream",
+                    """{"id": 42, "name": "first_value"}""",
+                    emittedAtMs = 1234L,
+                )
+            )
+        )
+        val finalStream = makeStream(generationId = 13, minimumGenerationId = 13, syncId = 43)
+        runSync(updatedConfig, finalStream, emptyList())
+        dumpAndDiffRecords(
+            parsedConfig,
+            emptyList(),
+            finalStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    @Test
     open fun testClear() {
         val stream =
             DestinationStream(

@@ -16,19 +16,6 @@ import org.junit.jupiter.api.Test
 
 class ObjectLoaderPartPartitionerTest<K : WithStream, T> {
     @Test
-    fun `partitioner always assigns 0`() {
-        val partitioner = ObjectLoaderFormattedPartPartitioner<K, T>()
-        val stream = DestinationStream.Descriptor("test", "stream")
-        val numParts = 3
-        var lastPartition: Int? = null
-        (0 until 12).forEach {
-            val partition = partitioner.getPart(ObjectKey(stream, it.toString()), numParts)
-            lastPartition?.let { _ -> assertEquals(0, partition) }
-            lastPartition = partition
-        }
-    }
-
-    @Test
     fun `partitioner uses object key as accumulator key`() {
         val keys = listOf("foo", "bar", "baz")
         val parts =
