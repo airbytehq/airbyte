@@ -21,9 +21,9 @@ Fields **removed** from schema:
 * `country.provinces[].tax_percentage`
 
 Fields **added** to schema:
-* `country.translatedName`
-* `country.restOfWorld`
-* `country.provinces[].translatedName`
+* `country.translated_name`
+* `country.rest_of_world`
+* `country.provinces[].translated_name`
 
 ### Product Variants
 
