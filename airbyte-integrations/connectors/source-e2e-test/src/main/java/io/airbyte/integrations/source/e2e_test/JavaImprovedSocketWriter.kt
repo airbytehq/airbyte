@@ -1,5 +1,7 @@
 package io.airbyte.integrations.source.e2e_test
 
+import com.fasterxml.jackson.core.util.MinimalPrettyPrinter
+import io.airbyte.protocol.models.v0.AirbyteMessage
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.OutputStream
@@ -13,7 +15,7 @@ import java.util.concurrent.Executors
 
 class JavaImprovedSocketWriter {
 
-    private val executor = Executors.newFixedThreadPool(2)
+    private val executor = Executors.newFixedThreadPool(8)
 
     companion object {
         const val RECORD =
@@ -24,16 +26,53 @@ class JavaImprovedSocketWriter {
 
 
     fun startJavaUnixSocketWriter() {
+        println("SOURCE SERIALISED 2")
         val listOf = listOf(
             runAsync(
                 {
-                    start("sock")
+                    start("sock0")
                 },
                 executor,
             ),
             runAsync(
                 {
                     start("sock1")
+                },
+                executor,
+            ),
+            runAsync(
+                {
+                    start("sock2")
+                },
+                executor,
+            ),
+            runAsync(
+                {
+                    start("sock3")
+                },
+                executor,
+            ),
+            runAsync(
+                {
+                    start("sock4")
+                },
+                executor,
+            ),
+            runAsync(
+                {
+                    start("sock5")
+                },
+                executor,
+            ),
+            runAsync(
+                {
+                    start("sock6")
+                },
+                executor,
+            ),
+            runAsync(
+                {
+                    start("sock7")
                 },
                 executor,
             ),
@@ -60,12 +99,32 @@ class JavaImprovedSocketWriter {
 
         val outputStream: OutputStream = Channels.newOutputStream(socketChannel)
         val bufferedOutputStream = BufferedOutputStream(outputStream)
-        writeFromOneThread(bufferedOutputStream)
+        writeSerialised(bufferedOutputStream)
 
         println("Source $sock : Finished writing to socket $sock")
+        bufferedOutputStream.close()
         outputStream.close()
         socketChannel.close()
         serverSocketChannel.close()
+    }
+
+    private fun writeSerialised(outputStream: OutputStream) {
+        var records: Long = 0
+        DummyIterator().use { dummyIterator ->
+            DummyIterator.OBJECT_MAPPER
+                .writerFor(AirbyteMessage::class.java)
+                .with(MinimalPrettyPrinter(System.lineSeparator()))
+                .writeValues(outputStream).use { seq ->
+                    dummyIterator.forEachRemaining { message ->
+                        seq.write(message)
+                        records++
+                        if (records == 100_000L) {
+                            outputStream.flush()
+                            records = 0
+                        }
+                    }
+                }
+        }
     }
 
     private fun writeFromOneThread(outputStream: OutputStream) {
