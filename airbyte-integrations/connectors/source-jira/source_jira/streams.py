@@ -404,6 +404,7 @@ class PullRequests(IncrementalJiraStream):
                         r'|' + \
                         r'"byInstanceType":\s*(?P<byInstanceType>\{(?:[^{}]|(?:\{[^{}]*\}))*\})'
 
+    supported_vcs_platforms = ["GitHub", "GitLab"]
 
     def __init__(self, issues_stream: Issues, issue_fields_stream: IssueFields, **kwargs):
         super().__init__(**kwargs)
@@ -483,7 +484,8 @@ class PullRequests(IncrementalJiraStream):
                 if not dev_field_content:
                     continue
                 vcs_platforms = self.get_vcs_platforms(dev_field_content)
-                for vcs_platform in vcs_platforms:
+                supported_vcs_platforms = [platform for platform in vcs_platforms if platform in self.supported_vcs_platforms]
+                for vcs_platform in supported_vcs_platforms:
                     yield from super().read_records(
                         stream_slice={
                             "id": issue["id"], 
