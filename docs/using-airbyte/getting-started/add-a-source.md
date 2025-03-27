@@ -20,7 +20,7 @@ Each connector in Airbyte will have its own set of authentication methods and co
 Some sources will have an **Optional Fields** tab. You can open this tab to view and configure any additional optional parameters that exist for the source, but you do not have to do so to successfully set up the connector.
 :::
 
-Once you've filled out all the required fields, click on the **Set up source** button and Airbyte will run a check to verify the connection. If you're using [Terraform](../../terraform-documentation) to manage your infrastructure, use the **Copy JSON** button to copy your configuration as a JSON string that you can paste into your Terraform code.
+Once you've filled out all the required fields, click the **Set up source** button and Airbyte will run a check to verify the connection. If you're using the [API](https://reference.airbyte.com/reference/createsource#/) or [Terraform](../../terraform-documentation) to manage your infrastructure, click the **Copy JSON** button to copy your configuration as a JSON string that you can paste into your code.
 
 Happy replicating!
 
