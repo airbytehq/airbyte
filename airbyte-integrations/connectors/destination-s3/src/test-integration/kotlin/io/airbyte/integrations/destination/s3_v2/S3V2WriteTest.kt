@@ -64,6 +64,7 @@ abstract class S3V2WriteTest(
         nullEqualsUnset = nullEqualsUnset,
         supportFileTransfer = true,
         unknownTypesBehavior = unknownTypesBehavior,
+        integralNumbersAreConvertedToInt = true,
     ) {
     @Disabled("Irrelevant for file destinations")
     @Test

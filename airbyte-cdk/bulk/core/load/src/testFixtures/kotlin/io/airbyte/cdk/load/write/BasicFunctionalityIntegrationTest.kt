@@ -214,6 +214,11 @@ abstract class BasicFunctionalityIntegrationTest(
     val commitDataIncrementally: Boolean,
     val allTypesBehavior: AllTypesBehavior,
     val unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+    /**
+     * Some destinations implicitly convert numbers to int when it's lossless (e.g. converting 42.0
+     * to 42). Those destinations should set [integralNumbersAreConvertedToInt] to `true`.
+     */
+    val integralNumbersAreConvertedToInt: Boolean = false,
     nullEqualsUnset: Boolean = false,
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
 ) :
@@ -2238,7 +2243,12 @@ abstract class BasicFunctionalityIntegrationTest(
                         mapOf(
                             "id" to 8,
                             "integer" to 0,
-                            "number" to 0.0,
+                            "number" to
+                                if (integralNumbersAreConvertedToInt) {
+                                    0
+                                } else {
+                                    0.0
+                                },
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
@@ -2249,7 +2259,12 @@ abstract class BasicFunctionalityIntegrationTest(
                         mapOf(
                             "id" to 9,
                             "integer" to -1,
-                            "number" to -1.0,
+                            "number" to
+                                if (integralNumbersAreConvertedToInt) {
+                                    -1
+                                } else {
+                                    -1.0
+                                },
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
