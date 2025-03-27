@@ -25,16 +25,25 @@
       },
       "shared_access_signature" : {
         "type" : "string",
-        "description" : "A shared access signature (SAS) provides secure delegated access to resources in your storage account.. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/common/storage-sas-overview?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json\">here</a>",
+        "description" : "A shared access signature (SAS) provides secure delegated access to resources in your storage account.. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/common/storage-sas-overview?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json\">here</a>. Mutually exclusive with an account key",
         "title" : "Shared Access Signature",
         "examples" : [ "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY" ],
+        "airbyte_secret" : true,
+        "always_show" : true
+      },
+      "azure_blob_storage_account_key" : {
+        "type" : "string",
+        "description" : "The Azure blob storage account key. Mutually exclusive with a Shared Access Signature",
+        "title" : "Azure Blob Storage account key",
+        "examples" : [ "Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd==" ],
         "airbyte_secret" : true,
         "always_show" : true
       },
       "azure_blob_storage_spill_size" : {
         "type" : "integer",
         "description" : "The amount of megabytes after which the connector should spill the records in a new blob object. Make sure to configure size greater than individual records. Enter 0 if not applicable.",
-        "title" : "Azure Blob Storage target blob size (Megabytes)"
+        "title" : "Azure Blob Storage target blob size (Megabytes)",
+        "default" : 500
       },
       "format" : {
         "oneOf" : [ {
@@ -79,7 +88,7 @@
         "type" : "object"
       }
     },
-    "required" : [ "azure_blob_storage_account_name", "azure_blob_storage_container_name", "shared_access_signature", "format" ]
+    "required" : [ "azure_blob_storage_account_name", "azure_blob_storage_container_name", "format" ]
   },
   "supportsIncremental" : true,
   "supportsNormalization" : false,
