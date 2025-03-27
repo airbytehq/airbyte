@@ -3340,11 +3340,22 @@ class DeliveryProfile(DeliveryZoneList):
                                                         fields=[
                                                             "id",
                                                             "name",
-                                                            "translatedName",
-                                                            Field(name="code", fields=["countryCode", "restOfWorld"]),
+                                                            Field(name="translatedName", alias="translated_name"),
+                                                            Field(
+                                                                name="code",
+                                                                fields=[
+                                                                    Field(name="countryCode", alias="country_code"),
+                                                                    Field(name="restOfWorld", alias="rest_of_world"),
+                                                                ],
+                                                            ),
                                                             Field(
                                                                 name="provinces",
-                                                                fields=["id", "translatedName", "name", "code"],
+                                                                fields=[
+                                                                    "id",
+                                                                    "name",
+                                                                    "code",
+                                                                    Field(name="translatedName", alias="translated_name"),
+                                                                ],
                                                             ),
                                                         ],
                                                     ),

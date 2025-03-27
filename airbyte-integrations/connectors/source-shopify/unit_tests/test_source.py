@@ -476,16 +476,16 @@ def test_countries_request_body_json(config):
               countries {
                 id
                 name
-                translatedName
+                translated_name: translatedName
                 code {
-                  countryCode
-                  restOfWorld
+                  country_code: countryCode
+                  rest_of_world: restOfWorld
                 }
                 provinces {
                   id
-                  translatedName
                   name
                   code
+                  translated_name: translatedName
                 }
               }
             }

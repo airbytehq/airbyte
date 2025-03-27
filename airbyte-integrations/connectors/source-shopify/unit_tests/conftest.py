@@ -1543,7 +1543,7 @@ def transactions_response_expected_result():
 def countries_record_data():
     return {
         "id": "link/to/entity/1111111",
-        "code": {"restOfWorld": False, "countryCode": "UA"},
+        "code": {"rest_of_world": False, "country_code": "UA"},
         "provinces": [
             {
                 "id": "link/to/entity/1111111",
@@ -1556,7 +1556,7 @@ def countries_record_data():
 def countries_expected_record_data(config):
     return {
         "id": 1111111,
-        "restOfWorld": False,
+        "rest_of_world": False,
         "code": "UA",
         "shop_url": config["shop"],
         "provinces": [

@@ -412,8 +412,8 @@ class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
             province["id"] = int(province["id"].split("/")[-1])
             province["country_id"] = country["id"]
 
-        country["restOfWorld"] = country["code"]["restOfWorld"]
-        country["code"] = country["code"]["countryCode"] if country["code"]["countryCode"] is not None else "*"
+        country["rest_of_world"] = country["code"]["rest_of_world"]
+        country["code"] = country["code"]["country_code"] if country["code"]["country_code"] is not None else "*"
 
         country["shop_url"] = self.config["shop"]
         return country

@@ -36,18 +36,18 @@
             "description": "Name of the province.",
             "type": ["null", "string"]
           },
-          "translatedName": {
+          "translated_name": {
             "description": "Translated name of the province.",
             "type": ["null", "string"]
           }
         }
       }
     },
-    "restOfWorld": {
+    "rest_of_world": {
       "description": "Whether the country in a catch-all group of countries that are not individually listed or assigned to any specific zone or market.",
       "type": ["null", "boolean"]
     },
-    "translatedName": {
+    "translated_name": {
       "description": "Translated name of the country",
       "type": ["null", "string"]
     },
