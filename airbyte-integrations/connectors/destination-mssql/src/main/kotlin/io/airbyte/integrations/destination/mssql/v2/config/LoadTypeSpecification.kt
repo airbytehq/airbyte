@@ -40,6 +40,7 @@ interface LoadTypeSpecification {
                         accountName = lt.azureBlobStorageAccountName,
                         containerName = lt.azureBlobStorageContainerName,
                         sharedAccessSignature = lt.azureBlobStorageSharedAccessSignature,
+                        accountKey = lt.azureBlobStorageAccountKey,
                         bulkLoadDataSource = lt.bulkLoadDataSource,
                         validateValuesPreLoad = lt.validateValuesPreLoad
                     )
@@ -126,7 +127,8 @@ class BulkLoadSpecification(
     @get:JsonSchemaTitle("Shared Access Signature")
     @get:JsonPropertyDescription(
         "A shared access signature (SAS) provides secure delegated access to resources " +
-            "in your storage account. See: https://learn.microsoft.com/azure/storage/common/storage-sas-overview"
+            "in your storage account. See: https://learn.microsoft.com/azure/storage/common/storage-sas-overview." +
+            "Mutually exclusive with an account key"
     )
     @get:JsonProperty("shared_access_signature")
     @JsonSchemaInject(
@@ -138,7 +140,22 @@ class BulkLoadSpecification(
             "always_show": true
         }"""
     )
-    override val azureBlobStorageSharedAccessSignature: String,
+    override val azureBlobStorageSharedAccessSignature: String?,
+    @get:JsonSchemaTitle("Azure Blob Storage account key")
+    @get:JsonPropertyDescription(
+        "The Azure blob storage account key. Mutually exclusive with a Shared Access Signature"
+    )
+    @get:JsonProperty("azure_blob_storage_account_key")
+    @JsonSchemaInject(
+        json =
+            """{
+            "examples": ["Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd=="],
+            "order": 4,
+            "airbyte_secret": true,
+            "always_show": true
+        }"""
+    )
+    override val azureBlobStorageAccountKey: String?,
     @get:JsonSchemaTitle("BULK Load Data Source")
     @get:JsonPropertyDescription(
         "Specifies the external data source name configured in MSSQL, which references " +
@@ -149,7 +166,7 @@ class BulkLoadSpecification(
         json =
             """{
             "examples": ["MyAzureBlobStorage"],
-            "order": 4,
+            "order": 5,
             "always_show": true
         }"""
     )
@@ -166,11 +183,11 @@ class BulkLoadSpecification(
         "examples": ["false"],
         "default": false,
         "type": "boolean",
-        "order": 5,
+        "order": 6,
         "always_show": false
     }"""
     )
-    val validateValuesPreLoad: Boolean?
+    val validateValuesPreLoad: Boolean?,
 ) : LoadType(loadType), AzureBlobStorageClientSpecification
 
 /**
@@ -202,7 +219,8 @@ data class InsertLoadTypeConfiguration(val ignored: String = "") : LoadTypeConfi
 data class BulkLoadConfiguration(
     val accountName: String,
     val containerName: String,
-    val sharedAccessSignature: String,
+    val sharedAccessSignature: String?,
+    val accountKey: String?,
     val bulkLoadDataSource: String,
     val validateValuesPreLoad: Boolean?
 ) : LoadTypeConfiguration
