@@ -34,6 +34,8 @@ data:
   supportLevel: community
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/box-data-extract
+  connectorTestSuitesOptions:
+    - suite: unitTests
   tags:
     - language:python
     - cdk:python
