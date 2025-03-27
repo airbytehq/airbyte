@@ -269,6 +269,7 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.3  | 2025-02-20 | [54171](https://github.com/airbytehq/airbyte/pull/54171) | Fix retry pattern |
 | 3.4.2 | 2025-03-22 | [55991](https://github.com/airbytehq/airbyte/pull/55991) | Update dependencies |
 | 3.4.1 | 2024-03-14 | [55760](https://github.com/airbytehq/airbyte/pull/55760) | Fixed KeyError during discovery due to outdated breakdown schema |
 | 3.4.0 | 2024-12-24 | [50418](https://github.com/airbytehq/airbyte/pull/50418) | Add `learning_stage_info` field to `ad_sets` stream |

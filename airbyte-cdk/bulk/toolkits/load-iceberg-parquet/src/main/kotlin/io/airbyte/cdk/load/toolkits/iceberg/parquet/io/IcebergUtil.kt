@@ -248,7 +248,7 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
     ): Operation =
         if (
             record.declaredFields[AIRBYTE_CDC_DELETE_COLUMN] != null &&
-                record.declaredFields[AIRBYTE_CDC_DELETE_COLUMN]!!.value !is NullValue
+                record.declaredFields[AIRBYTE_CDC_DELETE_COLUMN]!!.abValue !is NullValue
         ) {
             Operation.DELETE
         } else if (importType is Dedupe) {
@@ -297,7 +297,14 @@ fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
             )
         } else {
             // If we're at a leaf node, call the transformer.
-            val transformedValue = transformer(currentValue, currentType) ?: return currentValue
+            val coercedValue = AirbyteValueCoercer.coerce(currentValue, currentType)
+            if (coercedValue == null) {
+                changes.add(
+                    Meta.Change(path, Change.NULLED, Reason.DESTINATION_SERIALIZATION_ERROR),
+                )
+                return NullValue
+            }
+            val transformedValue = transformer(coercedValue, currentType) ?: return coercedValue
             val (newValue, changeDescription) = transformedValue
             changeDescription?.let { (change, reason) ->
                 changes.add(Meta.Change(path, change, reason))
@@ -306,7 +313,7 @@ fun EnrichedAirbyteValue.transformValueRecursingIntoArrays(
         }
     }
 
-    value = recurseArray(value, type, name)
+    abValue = recurseArray(abValue, type, name)
 }
 
 data class ChangeDescription(val change: Change, val reason: Reason)
