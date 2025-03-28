@@ -62,7 +62,12 @@ class AzureBlobStorageConfigurationFactory :
         azureBlobStorageClientConfiguration.spillSize = pojo.azureBlobStorageSpillSize
         return AzureBlobStorageConfiguration(
             azureBlobStorageClientConfiguration = azureBlobStorageClientConfiguration,
-            objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
+            objectStoragePathConfiguration =
+                ObjectStoragePathConfiguration(
+                    prefix = "",
+                    pathPattern = null,
+                    fileNamePattern = null,
+                ),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration =
                 ObjectStorageCompressionConfiguration(NoopProcessor),
