@@ -12,6 +12,7 @@ Cloud Enterprise
 abctl
 PyAirbyte
 [Nn]amespace
+Connection Timeline
 
 #
 # Common Terms we use
