@@ -7,8 +7,10 @@ package io.airbyte.integrations.destination.azure_blob_storage
 import io.airbyte.cdk.load.file.azureBlobStorage.GENERATION_ID_METADATA_KEY_OVERRIDE
 import io.airbyte.cdk.load.pipeline.RoundRobinInputPartitioner
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
+import io.micronaut.context.annotation.Requires
 import javax.inject.Singleton
 
+@Requires(property = "airbyte.destination.core.file-transfer.enabled", value = "false")
 @Singleton
 class AzureBlobStorageObjectLoader(config: AzureBlobStorageConfiguration<*>) : ObjectLoader {
     override val generationIdMetadataKeyOverride: String = GENERATION_ID_METADATA_KEY_OVERRIDE
@@ -20,4 +22,6 @@ class AzureBlobStorageObjectLoader(config: AzureBlobStorageConfiguration<*>) : O
     override val partSizeBytes: Long = config.partSizeBytes
 }
 
-@Singleton class AzureRoundRobinInputPartitioner : RoundRobinInputPartitioner()
+@Requires(property = "airbyte.destination.core.file-transfer.enabled", value = "false")
+@Singleton
+class AzureRoundRobinInputPartitioner : RoundRobinInputPartitioner()
