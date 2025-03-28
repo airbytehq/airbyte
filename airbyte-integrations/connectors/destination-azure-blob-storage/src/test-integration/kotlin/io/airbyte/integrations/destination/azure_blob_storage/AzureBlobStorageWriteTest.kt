@@ -44,6 +44,11 @@ class AzureBlobStorageCsvNoFlatteningWriteTest :
     override fun testBasicWriteFile() {
         super.testBasicWriteFile()
     }
+
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
 }
 
 class AzureBlobStorageCsvWithFlatteningWriteTest :

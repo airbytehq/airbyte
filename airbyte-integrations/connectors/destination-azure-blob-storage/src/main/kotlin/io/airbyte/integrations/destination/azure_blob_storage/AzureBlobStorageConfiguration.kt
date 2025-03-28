@@ -34,7 +34,8 @@ class AzureBlobStorageConfiguration<T : OutputStream>(
     override val estimatedRecordMemoryOverheadRatio: Double = 5.0,
     override val processEmptyFiles: Boolean = true,
 
-    /** Below has no effect until [AzureBlobStorageObjectLoader] is enabled. */
+    // TODO remove these from config and hardcode them in AzureBlobStorageObjectLoader
+    //   after we finish performance tuning
     val numPartWorkers: Int = 2,
     val numUploadWorkers: Int = 5,
     val maxMemoryRatioReservedForParts: Double = 0.4,
