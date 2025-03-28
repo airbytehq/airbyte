@@ -38,8 +38,12 @@
   --color-grey-400: hsl(240, 10%, 59%);
   --color-grey-500: hsl(240, 10%, 49%);
   --color-grey-900: hsl(240, 19%, 18%);
+  --color-green-40: hsl(185, 76%, 97%);
   --color-green-50: hsl(184, 67%, 92%);
+  --color-green-600: hsl(185, 100%, 35%);
+  --color-green-800: hsl(184, 100%, 26%);
   --color-blue-30: hsl(240, 100%, 98%);
+  --color-dark-blue-40: hsl(230, 23%, 95%);
   --color-dark-blue-700: hsl(236, 43%, 31%);
   --color-red-400: hsl(0, 73%, 50%);
 
