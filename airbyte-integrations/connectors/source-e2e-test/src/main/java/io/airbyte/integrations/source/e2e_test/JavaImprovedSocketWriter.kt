@@ -120,7 +120,7 @@ class JavaImprovedSocketWriter {
         var records: Long = 0
         DummyProtobufIterator().use { dummyIterator ->
             dummyIterator.forEachRemaining { message ->
-                message.writeTo(outputStream)
+                message.writeDelimitedTo(outputStream)
                 records++
                 if (records == 100_000L) {
                     outputStream.flush()
