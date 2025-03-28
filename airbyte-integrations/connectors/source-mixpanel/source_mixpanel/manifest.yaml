@@ -325,35 +325,35 @@ definitions:
           new: ""
         - type: AddFields
           fields:
-            - path: [ "cohort_id" ]
+            - path: ["cohort_id"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "distinct_id" ]
+            - path: ["distinct_id"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "browser" ]
+            - path: ["browser"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "browser_version" ]
+            - path: ["browser_version"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "city" ]
+            - path: ["city"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "country_code" ]
+            - path: ["country_code"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "region" ]
+            - path: ["region"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "timezone" ]
+            - path: ["timezone"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "last_seen" ]
+            - path: ["last_seen"]
               value: "{{ {'type': ['null', 'string'], 'format': 'date-time'} }}"
-            - path: [ "email" ]
+            - path: ["email"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "name" ]
+            - path: ["name"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "first_name" ]
+            - path: ["first_name"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "last_name" ]
+            - path: ["last_name"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "id" ]
+            - path: ["id"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "unblocked" ]
+            - path: ["unblocked"]
               value: "{{ {'type': ['null', 'string']} }}"
 
   # No API docs! build based on singer source
