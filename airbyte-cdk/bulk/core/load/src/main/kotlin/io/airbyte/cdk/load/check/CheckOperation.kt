@@ -11,8 +11,8 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.output.ExceptionHandler
 import io.airbyte.cdk.output.OutputConsumer
-import io.airbyte.protocol.models.AirbyteConnectionStatus
-import io.airbyte.protocol.models.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
+import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
