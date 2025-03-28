@@ -51,8 +51,8 @@ class AzureBlobClientTest {
             AzureBlobStorageClientConfiguration(
                 accountName = "testAccount",
                 containerName = "testContainer",
-                sharedAccessSignature = "null",
-                accountKey = "null",
+                sharedAccessSignature = "",
+                accountKey = "test",
             )
         every { serviceClient.getBlobContainerClient(blobConfig.containerName) } returns
             containerClient
