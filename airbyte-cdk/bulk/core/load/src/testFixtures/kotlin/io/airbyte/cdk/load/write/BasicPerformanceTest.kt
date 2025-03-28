@@ -27,6 +27,7 @@ import io.airbyte.cdk.load.test.util.destination_process.DestinationProcess
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.protocol.models.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.nio.file.Path
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -40,6 +41,7 @@ import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.ExtendWith
@@ -110,6 +112,9 @@ abstract class BasicPerformanceTest(
     val dataValidator: DataValidator? = null,
     val micronautProperties: Map<Property, String> = emptyMap(),
     namespaceOverride: String? = null,
+    val numFilesForFileTransfer: Int = 5,
+    val fileSizeMbForFileTransfer: Int = 1024,
+    val numStreamsForMultiStream: Int = 4
 ) {
 
     protected val destinationProcessFactory = DestinationProcessFactory.get(emptyList())
@@ -282,6 +287,40 @@ abstract class BasicPerformanceTest(
         testAppendRecordsWithDuplicates(null)
     }
 
+    @Test
+    @Disabled("Opt-in")
+    open fun testFileTransfer() {
+        val scenario =
+            SingleStreamFileTransfer(
+                randomizedNamespace = randomizedNamespace,
+                streamName = testInfo.testMethod.get().name,
+                numFiles = numFilesForFileTransfer,
+                fileSizeMb = fileSizeMbForFileTransfer,
+                stagingDirectory = Path.of("/tmp")
+            )
+        scenario.setup()
+        runSync(
+            testScenario = scenario,
+            useFileTransfer = true,
+            validation = null,
+        )
+    }
+
+    @Test
+    open fun testManyStreamsInsertRecords() {
+        runSync(
+            testScenario =
+                MultiStreamInsert(
+                    idColumn = idColumn,
+                    columns = twoStringColumns,
+                    randomizedNamespace = randomizedNamespace,
+                    recordsToInsertPerStream = defaultRecordsToInsert / numStreamsForMultiStream,
+                    numStreams = numStreamsForMultiStream,
+                    streamNamePrefix = testInfo.testMethod.get().name,
+                )
+        )
+    }
+
     protected fun testAppendRecordsWithDuplicates(validation: ValidationFunction?) {
         runSync(
             testScenario =
@@ -351,10 +390,7 @@ abstract class BasicPerformanceTest(
                     testScenario.send(destination)
                     testScenario.catalog.streams.forEach {
                         destination.sendMessage(
-                            DestinationRecordStreamComplete(
-                                    it.descriptor,
-                                    System.currentTimeMillis()
-                                )
+                            DestinationRecordStreamComplete(it, System.currentTimeMillis())
                                 .asProtocolMessage()
                         )
                     }
@@ -370,26 +406,35 @@ abstract class BasicPerformanceTest(
         log.info { "$testPrettyName: loaded ${"%.2f".format(recordPerSeconds)} rps" }
         log.info { "$testPrettyName: loaded ${"%.2f".format(megabytePerSeconds)} MBps" }
 
-        val recordCount =
+        val totalRecordCount =
             dataValidator?.let { validator ->
                 val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, testConfig)
-                val recordCount = validator.count(parsedConfig, testScenario.catalog.streams[0])
+                val numStreams = testScenario.catalog.streams.size
 
-                recordCount?.also {
-                    log.info {
-                        "$testPrettyName: table contains ${it} records" +
-                            " (expected ${summary.expectedRecordsCount} records, " +
-                            "emitted ${summary.records} records)"
+                testScenario.catalog.streams
+                    .map { stream ->
+                        val recordCount = validator.count(parsedConfig, stream)
+
+                        recordCount?.also {
+                            log.info {
+                                "$testPrettyName: table ${stream.descriptor.name} contains $it records" +
+                                    " (expected ${summary.expectedRecordsCount / numStreams} records, " +
+                                    "emitted ${summary.records / numStreams} records)"
+                            }
+                        }
+
+                        recordCount
                     }
-                }
+                    .sumOf { it ?: 0L }
             }
 
         val performanceTestSummary =
             listOf(
                 PerformanceTestSummary(
                     namespace = testScenario.catalog.streams[0].descriptor.namespace,
-                    streamName = testScenario.catalog.streams[0].descriptor.name,
-                    recordCount = recordCount,
+                    streamName =
+                        testScenario.catalog.streams.joinToString(",") { it.descriptor.name },
+                    recordCount = totalRecordCount,
                     expectedRecordCount = summary.expectedRecordsCount,
                     emittedRecordCount = summary.records,
                     recordPerSeconds = recordPerSeconds,

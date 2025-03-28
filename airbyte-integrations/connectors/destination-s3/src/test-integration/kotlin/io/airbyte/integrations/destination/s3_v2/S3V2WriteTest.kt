@@ -20,6 +20,7 @@ import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
+import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.cdk.load.write.Untyped
 import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assumptions
@@ -40,8 +41,9 @@ abstract class S3V2WriteTest(
     commitDataIncrementally: Boolean = true,
     allTypesBehavior: AllTypesBehavior,
     nullEqualsUnset: Boolean = false,
-    nullUnknownTypes: Boolean = false,
-    private val mergesUnions: Boolean = false
+    unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+    private val mergesUnions: Boolean = false,
+    integralNumbersAreConvertedToInt: Boolean,
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
@@ -62,7 +64,8 @@ abstract class S3V2WriteTest(
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
         supportFileTransfer = true,
-        nullUnknownTypes = nullUnknownTypes,
+        unknownTypesBehavior = unknownTypesBehavior,
+        integralNumbersAreConvertedToInt = integralNumbersAreConvertedToInt,
     ) {
     @Disabled("Irrelevant for file destinations")
     @Test
@@ -314,6 +317,7 @@ class S3V2WriteTestJsonUncompressed :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
+        integralNumbersAreConvertedToInt = true,
     )
 
 class S3V2WriteTestJsonRootLevelFlattening :
@@ -326,6 +330,7 @@ class S3V2WriteTestJsonRootLevelFlattening :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
+        integralNumbersAreConvertedToInt = true,
     )
 
 class S3V2WriteTestJsonGzip :
@@ -338,6 +343,7 @@ class S3V2WriteTestJsonGzip :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
+        integralNumbersAreConvertedToInt = true,
     )
 
 class S3V2WriteTestCsvUncompressed :
@@ -350,6 +356,7 @@ class S3V2WriteTestCsvUncompressed :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
+        integralNumbersAreConvertedToInt = true,
     ) {
     @Test
     override fun testBasicWriteFile() {
@@ -369,6 +376,7 @@ class S3V2WriteTestCsvRootLevelFlattening :
         allTypesBehavior = Untyped,
         nullEqualsUnset =
             true, // Technically true of unflattened as well, but no top-level fields are nullable
+        integralNumbersAreConvertedToInt = true,
     )
 
 class S3V2WriteTestCsvGzip :
@@ -381,6 +389,7 @@ class S3V2WriteTestCsvGzip :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
+        integralNumbersAreConvertedToInt = true,
     )
 
 class S3V2WriteTestAvroUncompressed :
@@ -394,8 +403,9 @@ class S3V2WriteTestAvroUncompressed :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        nullUnknownTypes = true,
-        mergesUnions = true
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
+        mergesUnions = true,
+        integralNumbersAreConvertedToInt = false,
     )
 
 class S3V2WriteTestAvroBzip2 :
@@ -409,8 +419,9 @@ class S3V2WriteTestAvroBzip2 :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        nullUnknownTypes = true,
-        mergesUnions = true
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
+        mergesUnions = true,
+        integralNumbersAreConvertedToInt = false,
     )
 
 class S3V2WriteTestParquetUncompressed :
@@ -424,8 +435,9 @@ class S3V2WriteTestParquetUncompressed :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        nullUnknownTypes = true,
-        mergesUnions = true
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
+        mergesUnions = true,
+        integralNumbersAreConvertedToInt = false,
     )
 
 class S3V2WriteTestParquetSnappy :
@@ -439,8 +451,9 @@ class S3V2WriteTestParquetSnappy :
         preserveUndeclaredFields = false,
         allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
         nullEqualsUnset = true,
-        nullUnknownTypes = true,
-        mergesUnions = true
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
+        mergesUnions = true,
+        integralNumbersAreConvertedToInt = false,
     )
 
 class S3V2WriteTestEndpointURL :
@@ -455,6 +468,7 @@ class S3V2WriteTestEndpointURL :
         preserveUndeclaredFields = false,
         allTypesBehavior = Untyped,
         nullEqualsUnset = true,
+        integralNumbersAreConvertedToInt = true,
     )
 
 class S3V2AmbiguousFilepath :
@@ -468,6 +482,7 @@ class S3V2AmbiguousFilepath :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
+        integralNumbersAreConvertedToInt = true,
     )
 
 class S3V2CsvAssumeRole :
@@ -480,4 +495,5 @@ class S3V2CsvAssumeRole :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
+        integralNumbersAreConvertedToInt = true,
     )

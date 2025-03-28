@@ -9,24 +9,27 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.ChannelMessageQueue
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.message.StrictPartitionedQueue
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.state.ReservationManager
-import io.airbyte.cdk.load.state.Reserved
 import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
 import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
 import io.airbyte.cdk.load.write.LoadStrategy
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.min
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.runBlocking
 
 /** Factory for instantiating beans necessary for the sync process. */
 @Factory
@@ -34,13 +37,24 @@ class SyncBeanFactory {
     private val log = KotlinLogging.logger {}
 
     @Singleton
-    @Named("memoryManager")
-    fun memoryManager(
-        config: DestinationConfiguration,
-    ): ReservationManager {
-        val memory = config.maxMessageQueueMemoryUsageRatio * Runtime.getRuntime().maxMemory()
+    @Secondary
+    @Named("globalMemoryManager")
+    fun globalMemoryManager(): ReservationManager {
+        return ReservationManager(Runtime.getRuntime().maxMemory())
+    }
 
-        return ReservationManager(memory.toLong())
+    @Singleton
+    @Named("queueMemoryManager")
+    fun queueMemoryMananger(
+        config: DestinationConfiguration,
+        @Named("globalMemoryManager") globalMemoryManager: ReservationManager
+    ): ReservationManager {
+        val recordQueueBytes =
+            config.maxMessageQueueMemoryUsageRatio * globalMemoryManager.totalCapacityBytes
+        val reservation = runBlocking {
+            globalMemoryManager.reserve(recordQueueBytes.toLong(), null)
+        }
+        return ReservationManager(reservation.bytesReserved)
     }
 
     @Singleton
@@ -120,8 +134,8 @@ class SyncBeanFactory {
     @Named("recordQueue")
     fun recordQueue(
         loadStrategy: LoadStrategy? = null,
-    ): PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>> {
-        return PartitionedQueue(
+    ): PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>> {
+        return StrictPartitionedQueue(
             Array(loadStrategy?.inputPartitions ?: 1) {
                 ChannelMessageQueue(Channel(Channel.UNLIMITED))
             }
@@ -134,4 +148,8 @@ class SyncBeanFactory {
     fun batchStateUpdateQueue(): ChannelMessageQueue<BatchUpdate> {
         return ChannelMessageQueue(Channel(100))
     }
+
+    @Singleton
+    @Named("defaultDestinationTaskLauncherHasThrown")
+    fun defaultDestinationTaskLauncherHasThrown(): AtomicBoolean = AtomicBoolean(false)
 }

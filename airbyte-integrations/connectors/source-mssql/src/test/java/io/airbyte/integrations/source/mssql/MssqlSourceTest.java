@@ -123,7 +123,7 @@ class MssqlSourceTest {
     testdb
         .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY NONCLUSTERED (id);")
         .with("CREATE INDEX i1 ON id_and_name (id);")
-        .with("CREATE CLUSTERED INDEX n1 ON id_and_name (name)");
+        .with("CREATE UNIQUE CLUSTERED INDEX n1 ON id_and_name (name)");
     final AirbyteCatalog actual = source().discover(getConfig());
     assertEquals(CATALOG, actual);
     final var db = source().createDatabase(getConfig());
@@ -138,7 +138,21 @@ class MssqlSourceTest {
   }
 
   @Test
-  void testDiscoverWithNoClusteredIndex() throws SQLException {
+  void testDiscoverWithNonUniqueClusteredIndex() throws SQLException {
+    testdb
+        .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY NONCLUSTERED (id);")
+        .with("CREATE CLUSTERED INDEX n1 ON id_and_name (name)");
+    final AirbyteCatalog actual = source().discover(getConfig());
+    assertEquals(CATALOG, actual);
+    final var db = source().createDatabase(getConfig());
+    final Map<String, List<String>> oc = MssqlInitialLoadHandler.discoverClusteredIndexForStream(db,
+        new AirbyteStream().withName(
+            actual.getStreams().get(0).getName()).withNamespace(actual.getStreams().get(0).getNamespace()));
+    assertNull(oc);
+  }
+
+  @Test
+  void testDiscoverWithNonClusteredIndex() throws SQLException {
     testdb
         .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY NONCLUSTERED (id);")
         .with("CREATE INDEX i1 ON id_and_name (id);")
@@ -158,7 +172,7 @@ class MssqlSourceTest {
     testdb
         .with("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY NONCLUSTERED (id);")
         .with("CREATE INDEX i1 ON id_and_name (id);")
-        .with("CREATE CLUSTERED INDEX n1 ON id_and_name (id, name)");
+        .with("CREATE UNIQUE CLUSTERED INDEX n1 ON id_and_name (id, name)");
     final AirbyteCatalog actual = source().discover(getConfig());
     assertEquals(CATALOG, actual);
     final var db = source().createDatabase(getConfig());
