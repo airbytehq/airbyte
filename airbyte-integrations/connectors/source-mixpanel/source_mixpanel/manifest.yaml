@@ -317,6 +317,44 @@ definitions:
           - path:
               - browser_version
             value: "{{ record.browser_version | string if record.browser_version else '' }}"
+    schema_loader:
+      $ref: "#/definitions/engage_stream/schema_loader"
+      schema_transformations:
+        - type: KeysReplace
+          old: "$"
+          new: ""
+        - type: AddFields
+          fields:
+            - path: [ "cohort_id" ]
+              value: "{{ {'type': ['null', 'integer']} }}"
+            - path: [ "distinct_id" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "browser" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "browser_version" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "city" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "country_code" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "region" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "timezone" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "last_seen" ]
+              value: "{{ {'type': ['null', 'string'], 'format': 'date-time'} }}"
+            - path: [ "email" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "name" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "first_name" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "last_name" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "id" ]
+              value: "{{ {'type': ['null', 'string']} }}"
+            - path: [ "unblocked" ]
+              value: "{{ {'type': ['null', 'string']} }}"
 
   # No API docs! build based on singer source
   revenue_stream:
