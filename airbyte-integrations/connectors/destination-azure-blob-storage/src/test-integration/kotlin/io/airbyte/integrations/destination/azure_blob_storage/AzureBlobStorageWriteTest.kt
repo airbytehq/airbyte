@@ -13,7 +13,6 @@ import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
 abstract class AzureBlobStorageWriteTest(configContents: String) :
@@ -33,15 +32,7 @@ abstract class AzureBlobStorageWriteTest(configContents: String) :
         supportFileTransfer = true,
         commitDataIncrementally = true,
         allTypesBehavior = Untyped,
-    ) {
-    companion object {
-        @BeforeAll
-        @JvmStatic
-        fun setup() {
-            AzureBlobStorageTestContainer.start()
-        }
-    }
-}
+    )
 
 class AzureBlobStorageCsvNoFlatteningWriteTest :
     AzureBlobStorageWriteTest(
