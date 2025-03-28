@@ -5,8 +5,8 @@
 package io.airbyte.cdk.load.data
 
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.Change
-import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.Reason
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 
 interface AirbyteValueMapper {
     fun map(

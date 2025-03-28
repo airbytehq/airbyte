@@ -8,10 +8,10 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.cdk.load.util.serializeToString
-import io.airbyte.protocol.models.AirbyteMessage
-import io.airbyte.protocol.models.AirbyteRecordMessage
-import io.airbyte.protocol.models.AirbyteRecordMessageMeta
-import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange
+import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.math.BigInteger
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test

@@ -12,7 +12,7 @@ import io.airbyte.cdk.load.message.DestinationRecordSerialized
 import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
 import io.airbyte.cdk.load.state.ReservationManager
 import io.airbyte.cdk.load.state.Reserved
-import io.airbyte.protocol.models.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.mockk.coEvery
 import io.mockk.impl.annotations.MockK
 import java.io.ByteArrayInputStream

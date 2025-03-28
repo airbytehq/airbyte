@@ -12,10 +12,10 @@ import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.load.message.CheckpointMessage.Stats
 import io.airbyte.cdk.load.util.deserializeToNode
-import io.airbyte.protocol.models.AirbyteGlobalState
-import io.airbyte.protocol.models.AirbyteMessage
-import io.airbyte.protocol.models.AirbyteRecordMessage
-import io.airbyte.protocol.models.AirbyteStateMessage
+import io.airbyte.protocol.models.v0.AirbyteGlobalState
+import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.airbyte.protocol.models.v0.AirbyteStateMessage
 
 sealed interface InputMessage {
     fun asProtocolMessage(): AirbyteMessage

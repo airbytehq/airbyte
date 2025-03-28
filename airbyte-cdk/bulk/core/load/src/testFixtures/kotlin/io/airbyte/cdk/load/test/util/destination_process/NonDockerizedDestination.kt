@@ -10,8 +10,8 @@ import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.util.serializeToString
-import io.airbyte.protocol.models.AirbyteMessage
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.PipedInputStream

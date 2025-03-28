@@ -5,10 +5,10 @@
 package io.airbyte.cdk.load.command
 
 import io.airbyte.cdk.load.util.deserializeToNode
-import io.airbyte.protocol.models.AirbyteStream
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog
-import io.airbyte.protocol.models.ConfiguredAirbyteStream
-import io.airbyte.protocol.models.DestinationSyncMode
+import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.airbyte.protocol.models.v0.DestinationSyncMode
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 

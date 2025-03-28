@@ -5,7 +5,7 @@ dependencies {
     api 'com.fasterxml.jackson.core:jackson-databind'
     api 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     api 'com.kjetland:mbknor-jackson-jsonschema_2.13:1.0.39'
-    api('io.airbyte.airbyte-protocol:protocol-models:0.14.1337') {
+    api('io.airbyte.airbyte-protocol:protocol-models:0.14.1338') {
         exclude group: 'com.google.guava', module: 'guava'
         exclude group: 'com.google.api-client'
         exclude group: 'org.apache.logging.log4j'
