@@ -24,7 +24,6 @@ import java.io.OutputStream
 class AzureBlobStorageConfiguration<T : OutputStream>(
     // Client-facing configuration
     override val azureBlobStorageClientConfiguration: AzureBlobStorageClientConfiguration,
-    override val objectStoragePathConfiguration: ObjectStoragePathConfiguration,
     override val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration,
     override val objectStorageCompressionConfiguration: ObjectStorageCompressionConfiguration<T>,
 
@@ -47,7 +46,16 @@ class AzureBlobStorageConfiguration<T : OutputStream>(
     ObjectStoragePathConfigurationProvider,
     ObjectStorageFormatConfigurationProvider,
     ObjectStorageUploadConfigurationProvider,
-    ObjectStorageCompressionConfigurationProvider<T>
+    ObjectStorageCompressionConfigurationProvider<T> {
+    // for now, we're not exposing this as a user-configurable option
+    // so just return a hardcoded default path config
+    override val objectStoragePathConfiguration =
+        ObjectStoragePathConfiguration(
+            prefix = "",
+            pathPattern = null,
+            fileNamePattern = null,
+        )
+}
 
 @Singleton
 class AzureBlobStorageConfigurationFactory :
@@ -62,12 +70,6 @@ class AzureBlobStorageConfigurationFactory :
         azureBlobStorageClientConfiguration.spillSize = pojo.azureBlobStorageSpillSize
         return AzureBlobStorageConfiguration(
             azureBlobStorageClientConfiguration = azureBlobStorageClientConfiguration,
-            objectStoragePathConfiguration =
-                ObjectStoragePathConfiguration(
-                    prefix = "",
-                    pathPattern = null,
-                    fileNamePattern = null,
-                ),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration =
                 ObjectStorageCompressionConfiguration(NoopProcessor),
