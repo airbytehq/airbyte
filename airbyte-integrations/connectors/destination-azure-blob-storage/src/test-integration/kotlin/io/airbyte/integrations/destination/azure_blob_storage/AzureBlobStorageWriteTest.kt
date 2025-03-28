@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.azure_blob_storage
 import io.airbyte.cdk.load.command.object_storage.CSVFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.FlatteningSpecificationProvider.Flattening
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
+import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.UnionBehavior
@@ -19,6 +20,7 @@ abstract class AzureBlobStorageWriteTest(configContents: String) :
         configContents = configContents,
         configSpecClass = AzureBlobStorageSpecification::class.java,
         dataDumper = AzureBlobStorageDataDumper(),
+        recordMangler = UncoercedExpectedRecordMapper,
         destinationCleaner = NoopDestinationCleaner,
         isStreamSchemaRetroactive = false,
         supportsDedup = false,
