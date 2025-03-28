@@ -4,12 +4,12 @@
 
 package io.airbyte.cdk.load.state.object_storage
 
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.file.object_storage.PathMatcher
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
-import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -26,10 +26,9 @@ class ObjectStorageDestinationStateUTest {
     data class MockObj(override val key: String, override val storageConfig: Unit = Unit) :
         RemoteObject<Unit>
 
-    private val objectLoader =
-        object : ObjectLoader {
-            override val generationIdMetadataKeyOverride: String
-                get() = "test-ab-generation-id"
+    private val destinationConfig =
+        object : DestinationConfiguration() {
+            override val generationIdMetadataKey = "test-ab-generation-id"
         }
 
     @MockK lateinit var stream: DestinationStream
@@ -66,8 +65,7 @@ class ObjectStorageDestinationStateUTest {
                 PathMatcher(Regex("(dog|cat|turtle-1)$suffix"), mapOf("suffix" to 2))
             }
 
-        val persister =
-            ObjectStorageFallbackPersister(client, pathFactory, objectLoader = objectLoader)
+        val persister = ObjectStorageFallbackPersister(client, pathFactory, destinationConfig)
         val state = persister.load(stream)
 
         assertEquals("dog-4", state.ensureUnique("dog"))
@@ -105,7 +103,7 @@ class ObjectStorageDestinationStateUTest {
                 )
             }
 
-        val persister = ObjectStorageFallbackPersister(client, pathFactory, objectLoader)
+        val persister = ObjectStorageFallbackPersister(client, pathFactory, destinationConfig)
         val state = persister.load(stream)
 
         assertEquals(2L, state.getPartIdCounter("dog/").get())
@@ -148,12 +146,12 @@ class ObjectStorageDestinationStateUTest {
         coEvery { client.getMetadata(any()) } answers
             {
                 val key = firstArg<String>()
-                // Note that because we overrode ObjectLoader.generationIdMetadataKeyOverride, the
+                // Note that because we the generation ID metadata key, so the
                 // "ab-generation-id" key is replaced with "test-ab-generation-id"
                 mapOf("test-ab-generation-id" to key.split("/").last())
             }
 
-        val persister = ObjectStorageFallbackPersister(client, pathFactory, objectLoader)
+        val persister = ObjectStorageFallbackPersister(client, pathFactory, destinationConfig)
 
         val dogStream = mockk<DestinationStream>(relaxed = true)
         every { dogStream.descriptor } returns DestinationStream.Descriptor("test", "dog")

@@ -5,14 +5,13 @@
 package io.airbyte.cdk.load.state.object_storage
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.PathFactory
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.state.DestinationState
 import io.airbyte.cdk.load.state.DestinationStatePersister
-import io.airbyte.cdk.load.write.object_storage.ObjectLoader
-import io.airbyte.cdk.load.write.object_storage.generationIdMetadataKey
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
@@ -27,7 +26,7 @@ class ObjectStorageDestinationState(
     private val stream: DestinationStream,
     private val client: ObjectStorageClient<*>,
     private val pathFactory: PathFactory,
-    private val objectLoader: ObjectLoader?,
+    private val destinationConfig: DestinationConfiguration,
 ) : DestinationState {
     private val log = KotlinLogging.logger {}
 
@@ -64,7 +63,7 @@ class ObjectStorageDestinationState(
             .mapNotNull { obj ->
                 val generationId =
                     client
-                        .getMetadata(obj.key)[objectLoader.generationIdMetadataKey]
+                        .getMetadata(obj.key)[destinationConfig.generationIdMetadataKey]
                         ?.toLongOrNull()
                         ?: 0L
                 if (generationId < stream.minimumGenerationId) {
@@ -121,10 +120,10 @@ class ObjectStorageDestinationState(
 class ObjectStorageFallbackPersister(
     private val client: ObjectStorageClient<*>,
     private val pathFactory: PathFactory,
-    private val objectLoader: ObjectLoader?,
+    private val destinationConfig: DestinationConfiguration,
 ) : DestinationStatePersister<ObjectStorageDestinationState> {
     override suspend fun load(stream: DestinationStream): ObjectStorageDestinationState {
-        return ObjectStorageDestinationState(stream, client, pathFactory, objectLoader)
+        return ObjectStorageDestinationState(stream, client, pathFactory, destinationConfig)
     }
 
     override suspend fun persist(stream: DestinationStream, state: ObjectStorageDestinationState) {
