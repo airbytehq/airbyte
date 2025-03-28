@@ -88,12 +88,14 @@ class JdbcSelectQuerier(
         /** Initializes a connection and readies the resultset. */
         fun initQueryExecution() {
             conn = jdbcConnectionFactory.get()
+            log.info { "TMP: suspect sql: ${q.sql}" }
             stmt = conn!!.prepareStatement(q.sql)
             parameters.statementFetchSize?.let { fetchSize: Int ->
                 log.info { "Setting Statement fetchSize to $fetchSize." }
                 stmt!!.fetchSize = fetchSize
             }
             var paramIdx = 1
+            log.info { "TMP: ${q.bindings}" }
             for (binding in q.bindings) {
                 log.info { "Setting parameter #$paramIdx to $binding." }
                 binding.type.set(stmt!!, paramIdx, binding.value)

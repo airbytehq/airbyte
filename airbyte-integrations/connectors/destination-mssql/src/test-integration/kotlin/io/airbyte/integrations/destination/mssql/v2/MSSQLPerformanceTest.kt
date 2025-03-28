@@ -53,11 +53,12 @@ abstract class MSSQLPerformanceTest(
         configSpecClass = MSSQLSpecification::class.java,
         configUpdater = configUpdater,
         dataValidator = MSSQLDataValidator(getConfiguration),
-        defaultRecordsToInsert = 10000,
+        defaultRecordsToInsert = 1_000_000_000_000,
+        numStreamsForMultiStream = 20
     ) {
     @Test
     override fun testInsertRecords() {
-        testInsertRecords(recordsToInsert = 100000) {}
+        testInsertRecords(recordsToInsert = 1_000_000_000_000) {}
     }
 
     @Test
@@ -82,7 +83,8 @@ abstract class MSSQLPerformanceTest(
 class MSSQLStandardInsertPerformanceTest :
     MSSQLPerformanceTest(
         configContents = Files.readString(MSSQLTestConfigUtil.getConfigPath("check/valid.json")),
-        configUpdater = MSSQLConfigUpdater(),
+        configUpdater = MSSQLC
+            onfigUpdater(),
         getConfiguration = { spec, stream ->
             val configOverrides =
                 mutableMapOf("host" to MSSQLContainerHelper.getHost()).apply {
