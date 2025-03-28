@@ -233,39 +233,39 @@ definitions:
           new: ""
         - type: AddFields
           fields:
-            - path: [ "distinct_id" ]
+            - path: ["distinct_id"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "browser" ]
+            - path: ["browser"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "browser_version" ]
+            - path: ["browser_version"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "city" ]
+            - path: ["city"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "country_code" ]
+            - path: ["country_code"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "region" ]
+            - path: ["region"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "timezone" ]
+            - path: ["timezone"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "last_seen" ]
+            - path: ["last_seen"]
               value: "{{ {'type': ['null', 'string'], 'format': 'date-time'} }}"
-            - path: [ "email" ]
+            - path: ["email"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "name" ]
+            - path: ["name"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "first_name" ]
+            - path: ["first_name"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "last_name" ]
+            - path: ["last_name"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "id" ]
+            - path: ["id"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "unblocked" ]
+            - path: ["unblocked"]
               value: "{{ {'type': ['null', 'string']} }}"
       schema_type_identifier:
         type: SchemaTypeIdentifier
-        key_pointer: [ "name" ]
-        type_pointer: [ "type" ]
-        schema_pointer: [ ]
+        key_pointer: ["name"]
+        type_pointer: ["type"]
+        schema_pointer: []
         types_mapping:
           - type: TypesMap
             target_type: timestamp_with_timezone
@@ -507,7 +507,7 @@ definitions:
           - "properties"
       - type: AddFields
         fields:
-          - path: [ "time" ]
+          - path: ["time"]
             value: "{{ format_datetime(record['time'], '%Y-%m-%dT%H:%M:%SZ') }}"
     schema_loader:
       type: DynamicSchemaLoader
@@ -532,170 +532,169 @@ definitions:
           class_name: "source_mixpanel.components.PropertiesTransformation"
         - type: AddFields
           fields:
-            - path: [ "event" ]
+            - path: ["event"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "distinct_id" ]
+            - path: ["distinct_id"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "insert_id" ]
+            - path: ["insert_id"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "time" ]
+            - path: ["time"]
               value: "{{ {'type': ['null', 'string'], 'format': 'date-time'} }}"
-            - path: [ "browser" ]
+            - path: ["browser"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "created" ]
+            - path: ["created"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "email" ]
+            - path: ["email"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "first_name" ]
+            - path: ["first_name"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "last_name" ]
+            - path: ["last_name"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "initial_referrer" ]
+            - path: ["initial_referrer"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "os" ]
+            - path: ["os"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Abandon Cart Count" ]
+            - path: ["Abandon Cart Count"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Account Created Count" ]
+            - path: ["Account Created Count"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Add To Cart Count" ]
+            - path: ["Add To Cart Count"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Affiliate" ]
+            - path: ["Affiliate"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Browse Count" ]
+            - path: ["Browse Count"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Browse Filter" ]
+            - path: ["Browse Filter"]
               value: "{{ {'type': ['null', 'array'], 'items': {'type': ['null', 'array']}} }}"
-            - path: [ "Campaign Name" ]
+            - path: ["Campaign Name"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Campaign Source" ]
+            - path: ["Campaign Source"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Card Type" ]
+            - path: ["Card Type"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Cart Items" ]
+            - path: ["Cart Items"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Cart Size" ]
+            - path: ["Cart Size"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Cart Size (# of Items)" ]
+            - path: ["Cart Size (# of Items)"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Cart Value" ]
+            - path: ["Cart Value"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Complete Purchase Count" ]
+            - path: ["Complete Purchase Count"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Coupon" ]
+            - path: ["Coupon"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Coupon Count Used" ]
+            - path: ["Coupon Count Used"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Date of Last Item Detail View" ]
+            - path: ["Date of Last Item Detail View"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Delivery Day" ]
+            - path: ["Delivery Day"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Delivery Fee" ]
+            - path: ["Delivery Fee"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Delivery Fees" ]
+            - path: ["Delivery Fees"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Delivery Method" ]
+            - path: ["Delivery Method"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Delivery Method Added Count" ]
+            - path: ["Delivery Method Added Count"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Gender" ]
+            - path: ["Gender"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Item Category" ]
+            - path: ["Item Category"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Item Cost" ]
+            - path: ["Item Cost"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Item Detail Page Count" ]
+            - path: ["Item Detail Page Count"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Item Name" ]
+            - path: ["Item Name"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Item Rating" ]
+            - path: ["Item Rating"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Items in Browse" ]
+            - path: ["Items in Browse"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Landing Page Loaded Count" ]
+            - path: ["Landing Page Loaded Count"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Last Cart Abandonment" ]
+            - path: ["Last Cart Abandonment"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Last Event" ]
+            - path: ["Last Event"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Last Purchase" ]
+            - path: ["Last Purchase"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Last Search" ]
+            - path: ["Last Search"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [  "Marketing A/B Test" ]
+            - path: ["Marketing A/B Test"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Misc Fee" ]
+            - path: ["Misc Fee"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Misc Fees" ]
+            - path: ["Misc Fees"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [  "Number of Cards Added" ]
+            - path: ["Number of Cards Added"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Number of Cart Abandons" ]
+            - path: ["Number of Cart Abandons"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Number of Item Details Viewed" ]
+            - path: ["Number of Item Details Viewed"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [  "Number of Purchases" ]
+            - path: ["Number of Purchases"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Number of Searches" ]
+            - path: ["Number of Searches"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Page Version" ]
+            - path: ["Page Version"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: ["Payment Method Added Count" ]
+            - path: ["Payment Method Added Count"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Platform" ]
+            - path: ["Platform"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Registration Date" ]
+            - path: ["Registration Date"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Registration Method" ]
+            - path: ["Registration Method"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Review Payment Count" ]
+            - path: ["Review Payment Count"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [  "Search Count" ]
+            - path: ["Search Count"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Search Page" ]
+            - path: ["Search Page"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Search Results Count" ]
+            - path: ["Search Results Count"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "Search Term" ]
+            - path: ["Search Term"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Suggested Item" ]
+            - path: ["Suggested Item"]
               value: "{{ {'type': ['null', 'boolean']} }}"
-            - path: [ "Total Charge" ]
+            - path: ["Total Charge"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "UTM_Medium" ]
+            - path: ["UTM_Medium"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "UTM_Term" ]
+            - path: ["UTM_Term"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: ["UTM_source" ]
+            - path: ["UTM_source"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Within Checkout Process" ]
+            - path: ["Within Checkout Process"]
               value: "{{ {'type': ['null', 'boolean']} }}"
-            - path: [ "mp_lib" ]
+            - path: ["mp_lib"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "labels" ]
+            - path: ["labels"]
               value: "{{ {'type': ['null', 'array'], 'items': {'type': ['null', 'string']}} }}"
-            - path: [ "sampling_factor" ]
+            - path: ["sampling_factor"]
               value: "{{ {'type': ['null', 'integer']} }}"
-            - path: [ "dataset" ]
+            - path: ["dataset"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "Referred by" ]
+            - path: ["Referred by"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "import" ]
+            - path: ["import"]
               value: "{{ {'type': ['null', 'boolean']} }}"
-            - path: [ "URL" ]
+            - path: ["URL"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "mp_api_timestamp_ms" ]
+            - path: ["mp_api_timestamp_ms"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "mp_api_endpoint" ]
+            - path: ["mp_api_endpoint"]
               value: "{{ {'type': ['null', 'string']} }}"
-            - path: [ "mp_processing_time_ms" ]
+            - path: ["mp_processing_time_ms"]
               value: "{{ {'type': ['null', 'string']} }}"
       schema_type_identifier:
         type: SchemaTypeIdentifier
         key_pointer: []
         type_pointer: []
         schema_pointer: []
-
 
 streams:
   - "#/definitions/cohorts_stream"
