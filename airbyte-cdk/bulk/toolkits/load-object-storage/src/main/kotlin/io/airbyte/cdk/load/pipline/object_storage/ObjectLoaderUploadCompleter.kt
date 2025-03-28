@@ -78,14 +78,13 @@ class ObjectLoaderUploadCompleter<T : RemoteObject<*>>(val objectLoader: ObjectL
     }
 
     override suspend fun finish(state: State): FinalOutput<State, UploadResult<T>> {
-        /**
-         * This method should never be called, because fact-of-uploaded-parts are partitioned and
-         * keyed by the object key, so each upload completer should see all messages for the
-         * object(s) it manages. So there should be no unfinished objects when the completer
-         * receives end-of-stream.
-         */
-        throw IllegalStateException(
-            "Upload completers had unfinished work at end-of-stream. This should not happen."
-        )
+        if (!state.partBookkeeper.isEmpty) {
+            throw IllegalStateException(
+                "Upload completers had unfinished work at end-of-stream. This should not happen."
+            )
+        }
+
+        // Everything we received before end-of-stream was a no-op. Return a dummy output.
+        return FinalOutput(UploadResult(objectLoader.stateAfterUpload, null))
     }
 }
