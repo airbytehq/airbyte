@@ -30,11 +30,17 @@ The Connection Timeline includes the following event types:
 
 - Clears
 
-- Schema changes
+- Connection settings changes
+
+    - Changing connection settings like name or sync schedule
+
+    - Manually enabling or disabling a connection
+
+    - Airbyte disabling a connection due to a billing issue or consecutive failures
 
 - Schema updates
 
-- Schema configuration changes, including:
+- Schema configuration changes
 
     - Enabling or disabling streams and fields
 
@@ -42,9 +48,9 @@ The Connection Timeline includes the following event types:
 
     - Changing the sync mode
 
-    - Adding or removing streams/fields after clicking Refresh source schema
+    - Adding or removing streams/fields after clicking "Refresh source schema"
 
-It also shows who took an action, if that's relevant to the event.
+The Connection Timeline also shows who took an action, if that's relevant to the event.
 
 ## Syncs, refreshes, and clears
 
@@ -71,6 +77,10 @@ For sync and refresh events, Airbyte also shows the volume of synced data, such 
 
 ### How the Connection Timeline reflects failed syncs
 
-Most syncs only contain a single attempt, but syncs can fail. In the event of a failure, Airbyte attempts to sync your data before waiting for the next scheduled sync. [Learn more about Airbyte's retry approach](../../understanding-airbyte/jobs.md#retry-rules). If Airbyte needs multiple attempts to sync, you can open the logs to see the individual log from each attempt.
+Most syncs succeed after a single attempt. If an attempt fails, Airbyte attempts to sync your data again. [Learn more about Airbyte's retry approach](../../understanding-airbyte/jobs.md#retry-rules). If Airbyte needs multiple attempts to sync, you can open the logs to see the individual log from each attempt. Repeated failed attempts can cause syncs can fail.
 
-Airbyte summarizes metrics in the sync summary across all the attempts in the sync. As a result, you may observe that the number of records extracted is higher than the number of records loaded if an attempt fails during the extraction process. A successful sync status means that all the records from the source have been successfully written to the destination.
+Airbyte summarizes metrics in the sync summary across all the attempts in the sync. As a result, you may observe that the number of records extracted is higher than the number of records loaded if an attempt fails during the extraction process. A successful sync status means that all the records from the source have been successfully written to the destination even if Airbyte had to make multiple attempts.
+
+### Data volume moved
+
+If you're using Airbyte Cloud with [volume-based pricing](https://airbyte.com/pricing), Airbyte calculates volume the way it calculates the information presented in the sync summary in the user interface. Every database stores and compresses data differently, so Airbyte measures data volume observed by the Airbyte Platform during the sync. When the data is in transit, Airbyte serializes it in the [Airbyte Protocol format](/understanding-airbyte/airbyte-protocol/#airbyterecordmessage). This is likely to be a larger representation of your data than you would see if you were to query your database directly.
