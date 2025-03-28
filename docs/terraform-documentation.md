@@ -55,11 +55,11 @@ Essentially, using this option creates an ongoing risk that upgrading the Terraf
 
 ### Weakly typed (JSON) configurations
 
-Instead of using a connector-specific resource, you can use [`airbyte_source_custom`](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs/resources/source_custom) and [`airbyte_destination_custom`](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs/resources/destination_custom). These are normally Airbyte's resources for custom connectors, but you can use them with any existing Airbyte or Marketplace connector and write your configurations as JSON strings. These configurations are more robust when connectors change. Mismatches between a Terraform provider and a connector do not prevent `terraform apply` from running. The absence of a newly added configuration option might have no impact at all on your data and your use of that connector.
+Instead of using a connector-specific resource, you can use [`airbyte_source_custom`](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs/resources/source_custom) and [`airbyte_destination_custom`](https://registry.terraform.io/providers/airbytehq/airbyte/latest/docs/resources/destination_custom). These are normally Airbyte's resources for custom connectors, but you can use them with any existing Airbyte or Marketplace connector and write your configurations as JSON objects. These configurations are more robust when connectors change. Mismatches between a Terraform provider and a connector do not prevent `terraform apply` from running. The absence of a newly added configuration option might have no impact at all on your data and your use of that connector.
 
-The main issue with this method is that JSON strings can technically contain anything, and you could make a mistake that Terraform doesn't warn you about. 
+The main issue with this method is that JSON can technically contain anything, and you could make a mistake that Terraform doesn't warn you about. 
 
-The best way to get a valid JSON string is to set up a new connector in Airbyte's UI, fill out all the fields, then click **Copy JSON**. You don't actually need to create the connector. Terraform can do that. You just need to get the right JSON string.
+The best way to get a JSON object is to set up a new connector in Airbyte's UI, fill out all the fields, then click **Copy JSON**. You don't actually need to create the connector in the UI since you want to do this with Terraform, but you do need to get the JSON. Currently, Airbyte optimizes this JSON object for the API, and you need to make some adjustments to use it in Terraform. The examples later in this article demonstrate the expected format.
 
 ### How to choose
 
@@ -153,7 +153,7 @@ Add a source from which you want to get data. In this example, you add Stripe as
     <Tabs>
     <TabItem value="JSON" label="JSON">
         
-        For this and any other Airbyte or Marketplace connector, you can define the source type in the JSON string.
+        For this and any other Airbyte or Marketplace connector, you can define the source type in the JSON object.
         
         ```hcl title="main.tf"
         resource "airbyte_source_custom" "my_source_stripe" {
