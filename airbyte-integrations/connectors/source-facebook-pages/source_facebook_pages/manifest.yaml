@@ -8,7 +8,7 @@ definitions:
     extractor:
       field_path: ["data"]
   requester:
-    url_base: "https://graph.facebook.com/v19.0"
+    url_base: "https://graph.facebook.com/v21.0"
     http_method: "GET"
     error_handler:
       type: CompositeErrorHandler

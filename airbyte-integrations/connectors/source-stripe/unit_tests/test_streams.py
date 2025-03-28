@@ -133,7 +133,6 @@ def test_lazy_substream_data_cursor_value_is_populated(
 def test_lazy_substream_data_is_expanded(
     requests_mock, stream_by_name, config, requests_mock_map, stream_cls, expected_records, sync_mode, state
 ):
-
     config["start_date"] = str(pendulum.today().subtract(days=3))
     stream = stream_by_name("bank_accounts", config)
     for url, body in requests_mock_map.items():
@@ -523,6 +522,7 @@ def test_updated_cursor_incremental_stream_read_w_state(requests_mock, stream_by
     ]
     assert records == [{"object": "credit_note", "invoice": "in_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716, "updated": 1691629292}]
 
+
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
 def test_setup_attempts(requests_mock, incremental_stream_args):
     requests_mock.get(
@@ -583,12 +583,12 @@ def test_setup_attempts(requests_mock, incremental_stream_args):
 def test_persons_wo_state(requests_mock, stream_args):
     requests_mock.get("/v1/accounts", json={"data": [{"id": 1, "object": "account", "created": 111}]})
     stream = UpdatedCursorIncrementalStripeSubStream(
-                name="persons",
-                path=lambda self, stream_slice, *args, **kwargs: f"accounts/{stream_slice['parent']['id']}/persons",
-                parent=StripeStream(name="accounts", path="accounts", use_cache=False, **stream_args),
-                event_types=["person.created", "person.updated", "person.deleted"],
-                **stream_args,
-            )
+        name="persons",
+        path=lambda self, stream_slice, *args, **kwargs: f"accounts/{stream_slice['parent']['id']}/persons",
+        parent=StripeStream(name="accounts", path="accounts", use_cache=False, **stream_args),
+        event_types=["person.created", "person.updated", "person.deleted"],
+        **stream_args,
+    )
     slices = list(stream.stream_slices("full_refresh"))
     assert slices == [{"parent": {"id": 1, "object": "account", "created": 111}}]
     requests_mock.get("/v1/accounts/1/persons", json={"data": [{"id": 11, "object": "person", "created": 222}]})
@@ -618,12 +618,12 @@ def test_persons_w_state(requests_mock, stream_args):
         },
     )
     stream = UpdatedCursorIncrementalStripeSubStream(
-                name="persons",
-                path=lambda self, stream_slice, *args, **kwargs: f"accounts/{stream_slice['parent']['id']}/persons",
-                parent=StripeStream(name="accounts", path="accounts", use_cache=False, **stream_args),
-                event_types=["person.created", "person.updated", "person.deleted"],
-                **stream_args,
-            )
+        name="persons",
+        path=lambda self, stream_slice, *args, **kwargs: f"accounts/{stream_slice['parent']['id']}/persons",
+        parent=StripeStream(name="accounts", path="accounts", use_cache=False, **stream_args),
+        event_types=["person.created", "person.updated", "person.deleted"],
+        **stream_args,
+    )
     slices = list(stream.stream_slices("incremental", stream_state={"updated": pendulum.parse("2023-08-20T00:00:00").int_timestamp}))
     assert slices == [{}]
     records = [
@@ -802,7 +802,7 @@ def test_subscription_items_extra_request_params(requests_mock, stream_by_name, 
             "created": 1699603175,
             "quantity": 1,
             "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE",
-            "subscription_updated": 1699603174, #1699603175
+            "subscription_updated": 1699603174,  # 1699603175
         },
         {
             "id": "si_OynPdzMZykmCWm",

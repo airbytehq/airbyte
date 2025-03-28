@@ -15,10 +15,10 @@ from types import TracebackType
 from typing import TYPE_CHECKING, Dict
 
 from asyncer import asyncify
-from dagger import Client, Directory, File, GitRepository
+from dagger import Client, Directory, File, GitRepository, Service
 from dagger import Secret as DaggerSecret
-from dagger import Service
 from github import PullRequest
+
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.consts import MANUAL_PIPELINE_STATUS_CHECK_OVERRIDE_PREFIXES, CIContext, ContextState
 from pipelines.helpers.execution.run_steps import RunStepOptions
@@ -213,7 +213,7 @@ class PipelineContext:
 
     @property
     def remote_storage_enabled(self) -> bool:
-        return self.is_ci and bool(self.ci_report_bucket) and bool(self.ci_gcp_credentials)
+        return bool(self.ci_report_bucket) and bool(self.ci_gcp_credentials)
 
     def _should_send_status_check(self) -> bool:
         should_send = self.is_pr or any(
@@ -343,7 +343,9 @@ class PipelineContext:
         if self.should_send_slack_message:
             # Using a type ignore here because the should_send_slack_message property is checking for non nullity of the slack_webhook
             await asyncify(send_message_to_webhook)(
-                self.create_slack_message(), self.get_slack_channels(), self.slack_webhook  # type: ignore
+                self.create_slack_message(),
+                self.get_slack_channels(),
+                self.slack_webhook,  # type: ignore
             )
         # supress the exception if it was handled
         return True

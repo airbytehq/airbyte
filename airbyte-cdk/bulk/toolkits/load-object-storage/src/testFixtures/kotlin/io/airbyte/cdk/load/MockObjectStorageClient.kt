@@ -5,14 +5,12 @@
 package io.airbyte.cdk.load
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.load.file.StreamProcessor
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
+import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
-import java.io.ByteArrayOutputStream
 import java.io.InputStream
-import java.io.OutputStream
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.flow.flow
 
@@ -65,20 +63,14 @@ class MockObjectStorageClient : ObjectStorageClient<MockRemoteObject> {
         objects.remove(key)
     }
 
-    override suspend fun <V : OutputStream> streamingUpload(
-        key: String,
-        metadata: Map<String, String>,
-        streamProcessor: StreamProcessor<V>?,
-        block: suspend (OutputStream) -> Unit
-    ): MockRemoteObject {
-        val outputStream = ByteArrayOutputStream()
-        block(outputStream)
-        val remoteObject = MockRemoteObject(key, 0, outputStream.toByteArray(), metadata)
-        objects[key] = remoteObject
-        return remoteObject
-    }
-
     override suspend fun delete(remoteObject: MockRemoteObject) {
         objects.remove(remoteObject.key)
+    }
+
+    override suspend fun startStreamingUpload(
+        key: String,
+        metadata: Map<String, String>
+    ): StreamingUpload<MockRemoteObject> {
+        TODO("Not yet implemented")
     }
 }

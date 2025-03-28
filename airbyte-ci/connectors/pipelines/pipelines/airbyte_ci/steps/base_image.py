@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import yaml
 from base_images import version_registry  # type: ignore
 from connector_ops.utils import METADATA_FILE_NAME  # type: ignore
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.helpers.connectors.dagger_fs import dagger_read_file, dagger_write_file
 from pipelines.models.steps import StepModifyingFiles, StepResult, StepStatus
@@ -22,7 +23,6 @@ class NoBaseImageAddressInMetadataError(Exception):
 
 
 class UpdateBaseImageMetadata(StepModifyingFiles):
-
     BASE_IMAGE_LIST_CACHE_TTL_SECONDS = 60 * 60 * 24  # 1 day
 
     context: ConnectorContext
@@ -75,6 +75,7 @@ class UpdateBaseImageMetadata(StepModifyingFiles):
 
     async def _run(self) -> StepResult:
         latest_base_image_address = await self.get_latest_base_image_address()
+        updated_base_image_address = None
         if latest_base_image_address is None:
             return StepResult(
                 step=self,
@@ -103,6 +104,7 @@ class UpdateBaseImageMetadata(StepModifyingFiles):
             updated_connector_directory = await self.update_base_image_in_metadata(
                 original_connector_directory, latest_base_image_address, self.set_if_not_exists
             )
+            updated_base_image_address = latest_base_image_address
         except NoBaseImageAddressInMetadataError:
             return StepResult(
                 step=self,
@@ -115,5 +117,8 @@ class UpdateBaseImageMetadata(StepModifyingFiles):
             step=self,
             status=StepStatus.SUCCESS,
             stdout=f"Updated base image to {latest_base_image_address} in {METADATA_FILE_NAME}",
-            output=updated_connector_directory,
+            output={
+                "updated_connector_directory": updated_connector_directory,
+                "updated_base_image_address": updated_base_image_address,
+            },
         )

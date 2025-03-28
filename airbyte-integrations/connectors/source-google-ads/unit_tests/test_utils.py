@@ -8,9 +8,10 @@ from unittest.mock import Mock
 
 import backoff
 import pytest
-from airbyte_cdk.utils import AirbyteTracedException
 from source_google_ads import SourceGoogleAds
 from source_google_ads.utils import GAQL, generator_backoff
+
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 def test_parse_GAQL_ok():

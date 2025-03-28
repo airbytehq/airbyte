@@ -9,7 +9,9 @@ from typing import Any, List, Mapping
 
 import pytest
 import requests
+
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+
 
 os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
@@ -39,7 +41,7 @@ def logger():
 @pytest.fixture
 def basic_config():
     return {
-        "shop": "test_shop", 
+        "shop": "test_shop",
         "credentials": {"auth_method": "api_password", "api_password": "api_password"},
         "shop_id": 0,
     }
@@ -52,7 +54,6 @@ def auth_config():
         "start_date": "2023-01-01",
         "credentials": {"auth_method": "api_password", "api_password": "api_password"},
         "authenticator": None,
-        
     }
 
 
@@ -149,6 +150,7 @@ def bulk_error_with_concurrent_job():
                         "message": "",
                     },
                     {
+                        "code": "OPERATION_IN_PROGRESS",
                         "field": None,
                         "message": "A bulk query operation for this app and shop is already in progress: gid://shopify/BulkOperation/4046676525245.",
                     },
@@ -358,7 +360,7 @@ def bulk_job_failed_response():
         },
     }
 
- 
+
 @pytest.fixture
 def bulk_job_failed_with_partial_url_response():
     return {
@@ -371,20 +373,16 @@ def bulk_job_failed_with_partial_url_response():
                 "fileSize": None,
                 "url": None,
                 "partialDataUrl": 'https://some_url?response-content-disposition=attachment;+filename="bulk-123456789.jsonl";+filename*=UTF-8'
-                "bulk-123456789.jsonl&response-content-type=application/jsonl"
+                "bulk-123456789.jsonl&response-content-type=application/jsonl",
             }
         },
         "extensions": {
             "cost": {
                 "requestedQueryCost": 1,
                 "actualQueryCost": 1,
-                "throttleStatus": {
-                    "maximumAvailable": 20000.0,
-                    "currentlyAvailable": 19999,
-                    "restoreRate": 1000.0
-                }
+                "throttleStatus": {"maximumAvailable": 20000.0, "currentlyAvailable": 19999, "restoreRate": 1000.0},
             }
-        }
+        },
     }
 
 
@@ -442,8 +440,8 @@ def bulk_job_running_response():
             }
         },
     }
-    
-    
+
+
 @pytest.fixture
 def bulk_job_running_with_object_count_and_url_response():
     return {
@@ -692,9 +690,9 @@ def product_images_jsonl_content_example():
 
 @pytest.fixture
 def product_variants_jsonl_content_example():
-    return """{"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/40091751448765","title":"Metal","price":"64.00","sku":"","position":1,"inventoryPolicy":"DENY","compareAtPrice":null,"inventoryManagement":"SHOPIFY","createdAt":"2021-06-23T06:04:41Z","updatedAt":"2023-10-27T16:56:50Z","taxable":true,"barcode":null,"weight":0.0,"weightUnit":"GRAMS","inventoryQuantity":6,"requiresShipping":false,"availableForSale":true,"displayName":"Waterproof iPhone Speaker - Metal","taxCode":"","grams":0.0,"image":null,"old_inventory_quantity":6,"product":{"product_id":"gid:\/\/shopify\/Product\/6796825198781"},"fulfillmentService":{"fulfillment_service":"manual"},"inventoryItem":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/42186366255293"}}
+    return """{"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/40091751448765","title":"Metal","price":"64.00","sku":"","position":1,"inventoryPolicy":"DENY","compareAtPrice":null,"createdAt":"2021-06-23T06:04:41Z","updatedAt":"2023-10-27T16:56:50Z","taxable":true,"barcode":null,"inventoryQuantity":6,"availableForSale":true,"displayName":"Waterproof iPhone Speaker - Metal","taxCode":"","grams":0.0,"image":null,"old_inventory_quantity":6,"product":{"product_id":"gid:\/\/shopify\/Product\/6796825198781"},"inventoryItem":{"requires_shipping":false,"tracked":false,"measurement":{"weight":{"unit":"GRAMS"}},"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/42186366255293"}}
 {"__typename":"ProductVariantPricePair","price":{"amount":"64.0","currencyCode":"USD"},"compareAtPrice":null,"__parentId":"gid:\/\/shopify\/ProductVariant\/40091751448765"}
-{"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/41561955827901","title":"Test Variant 1","price":"19.00","sku":"","position":2,"inventoryPolicy":"DENY","compareAtPrice":null,"inventoryManagement":"SHOPIFY","createdAt":"2022-03-06T22:09:20Z","updatedAt":"2023-10-27T16:56:00Z","taxable":true,"barcode":"","weight":112.0,"weightUnit":"GRAMS","inventoryQuantity":2,"requiresShipping":true,"availableForSale":true,"displayName":"4 Ounce Soy Candle - Test Variant 1","taxCode":"","grams":112.0,"image":null,"old_inventory_quantity":2,"product":{"product_id":"gid:\/\/shopify\/Product\/6796220989629"},"fulfillmentService":{"fulfillment_service":"manual"},"inventoryItem":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/43653682495677"}}
+{"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/41561955827901","title":"Test Variant 1","price":"19.00","sku":"","position":2,"inventoryPolicy":"DENY","compareAtPrice":null,"createdAt":"2022-03-06T22:09:20Z","updatedAt":"2023-10-27T16:56:00Z","taxable":true,"barcode":"","inventoryQuantity":2,"availableForSale":true,"displayName":"4 Ounce Soy Candle - Test Variant 1","taxCode":"","grams":112.0,"image":null,"old_inventory_quantity":2,"product":{"product_id":"gid:\/\/shopify\/Product\/6796220989629"},"inventoryItem":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/43653682495677","requires_shipping":true,"tracked": true,"measurement":{"weight":{"unit":"GRAMS","value":112.0}}}}
 {"__typename":"ProductVariantPricePair","price":{"amount":"19.0","currencyCode":"USD"},"compareAtPrice":null,"__parentId":"gid:\/\/shopify\/ProductVariant\/41561955827901"}\n"""
 
 
@@ -708,6 +706,11 @@ def inventory_items_jsonl_content_example():
 def customer_address_jsonl_content_example():
     return """{"__typename":"Customer","id":"gid:\/\/shopify\/Customer\/123","defaultAddress":{"id":"gid:\/\/shopify\/MailingAddress\/123?model_name=CustomerAddress"},"addresses":[{"address1":"My Best Accent","address2":"","city":"Fair Lawn","country":"United States","countryCode":"US","company":"Test Company","firstName":"New Test","id":"gid:\/\/shopify\/MailingAddress\/123?model_name=CustomerAddress","lastName":"Customer","name":"New Test Customer","phone":"","province":"New Jersey","provinceCode":"NJ","zip":"07410"}],"updatedAt":"2023-04-24T13:53:48Z"}
 {"__typename":"Customer","id":"gid:\/\/shopify\/Customer\/456","defaultAddress":{"id":"gid:\/\/shopify\/MailingAddress\/456?model_name=CustomerAddress"},"addresses":[{"address1":null,"address2":null,"city":null,"country":null,"countryCode":null,"company":null,"firstName":"MArcos","id":"gid:\/\/shopify\/MailingAddress\/456?model_name=CustomerAddress","lastName":"Millnitz","name":"MArcos Millnitz","phone":null,"province":null,"provinceCode":null,"zip":null}],"updatedAt":"2023-07-11T20:07:45Z"}\n"""
+
+
+@pytest.fixture
+def customer_journey_jsonl_content_example():
+    return """{"__typename":"Order","order_id":"gid:\/\/shopify\/Order\/4563761987773","createdAt":"2022-06-22T10:50:12Z","updatedAt":"2024-01-10T13:05:29Z","customerJourneySummary":{"ready":true,"momentsCount":{"count":3,"precision":"EXACT"},"customerOrderIndex":0,"daysToConversion":1,"firstVisit":{"id":"gid:\/\/shopify\/CustomerVisit\/11282589450429","landingPage":"https:\/\/airbyte-integration-test.myshopify.com\/collections\/all","landingPageHtml":"Test","occurredAt":"2022-06-22T10:07:37Z","referralCode":null,"referrerUrl":"https:\/\/airbyte-integration-test.myshopify.com\/","source":"direct","sourceType":null,"sourceDescription":"1st session was direct to your store","utmParameters":null},"lastVisit":{"id":"gid:\/\/shopify\/CustomerVisit\/11282589515965","landingPage":"https:\/\/airbyte-integration-test.myshopify.com\/58033176765\/checkouts\/dc0479c4519ac34439bcf51d792329b3","landingPageHtml":"Test","occurredAt":"2022-06-22T10:49:33Z","referralCode":null,"referrerUrl":"https:\/\/airbyte-integration-test.myshopify.com\/products\/all-black-sneaker-right-foot","source":"direct","sourceType":null,"sourceDescription":"Converted after a direct visit","utmParameters":null}},"customerJourney":{"moments":[{"id":"gid:\/\/shopify\/CustomerVisit\/11282589450429","landingPage":"https:\/\/airbyte-integration-test.myshopify.com\/collections\/all","landingPageHtml":"Test","occurredAt":"2022-06-22T10:07:37Z","referralCode":null,"referrerUrl":"https:\/\/airbyte-integration-test.myshopify.com\/","source":"direct","sourceType":null,"sourceDescription":"1st session was direct to your store","utmParameters":null},{"id":"gid:\/\/shopify\/CustomerVisit\/11282589483197","landingPage":"https:\/\/airbyte-integration-test.myshopify.com\/","landingPageHtml":"Test","occurredAt":"2022-06-22T10:15:42Z","referralCode":null,"referrerUrl":"https:\/\/analytics.google.com\/","source":"https:\/\/analytics.google.com\/","sourceType":null,"sourceDescription":null,"utmParameters":{"campaign":null,"content":null,"medium":"referral","source":"analytics_test","term":null}},{"id":"gid:\/\/shopify\/CustomerVisit\/11282589515965","landingPage":"https:\/\/airbyte-integration-test.myshopify.com\/58033176765\/checkouts\/dc0479c4519ac34439bcf51d792329b3","landingPageHtml":"Test","occurredAt":"2022-06-22T10:49:33Z","referralCode":null,"referrerUrl":"https:\/\/airbyte-integration-test.myshopify.com\/products\/all-black-sneaker-right-foot","source":"direct","sourceType":null,"sourceDescription":"Converted after a direct visit","utmParameters":null}]}}\n"""
 
 
 @pytest.fixture
@@ -975,7 +978,6 @@ def product_variants_response_expected_result():
             "position": 2,
             "inventory_policy": "DENY",
             "compare_at_price": None,
-            "inventory_management": "SHOPIFY",
             "created_at": "2022-03-06T22:09:20+00:00",
             "updated_at": "2023-10-27T16:56:00+00:00",
             "taxable": True,
@@ -989,7 +991,6 @@ def product_variants_response_expected_result():
             "tax_code": "",
             "grams": 112,
             "old_inventory_quantity": 2,
-            "fulfillment_service": "manual",
             "admin_graphql_api_id": "gid://shopify/ProductVariant/41561955827901",
             "presentment_prices": [{"price": {"amount": 19.0, "currency_code": "USD"}, "compare_at_price": {"amount": None}}],
             "product_id": 6796220989629,
@@ -998,6 +999,7 @@ def product_variants_response_expected_result():
             "image_src": None,
             "image_url": None,
             "shop_url": "test_shop",
+            "tracked": True,
         },
         {
             "id": 40091751448765,
@@ -1007,7 +1009,6 @@ def product_variants_response_expected_result():
             "position": 1,
             "inventory_policy": "DENY",
             "compare_at_price": None,
-            "inventory_management": "SHOPIFY",
             "created_at": "2021-06-23T06:04:41+00:00",
             "updated_at": "2023-10-27T16:56:50+00:00",
             "taxable": True,
@@ -1021,7 +1022,6 @@ def product_variants_response_expected_result():
             "tax_code": "",
             "grams": 0,
             "old_inventory_quantity": 6,
-            "fulfillment_service": "manual",
             "admin_graphql_api_id": "gid://shopify/ProductVariant/40091751448765",
             "presentment_prices": [{"price": {"amount": 64.0, "currency_code": "USD"}, "compare_at_price": {"amount": None}}],
             "product_id": 6796825198781,
@@ -1030,6 +1030,7 @@ def product_variants_response_expected_result():
             "image_src": None,
             "image_url": None,
             "shop_url": "test_shop",
+            "tracked": False,
         },
     ]
 
@@ -1119,6 +1120,147 @@ def customer_address_parse_response_expected_result():
             "updated_at": "2023-07-11T20:07:45+00:00",
             "shop_url": "test_shop",
         },
+    ]
+
+
+@pytest.fixture
+def customer_journey_parse_response_expected_result():
+    return [
+        {
+            "order_id": 4563761987773,
+            "created_at": "2022-06-22T10:50:12+00:00",
+            "updated_at": "2024-01-10T13:05:29+00:00",
+            "customer_journey_summary": {
+                "ready": True,
+                "moments_count": {"count": 3, "precision": "EXACT"},
+                "customer_order_index": 0,
+                "days_to_conversion": 1,
+                "first_visit": {
+                    "id": 11282589450429,
+                    "landing_page": "https://airbyte-integration-test.myshopify.com/collections/all",
+                    "landing_page_html": "Test",
+                    "occurred_at": "2022-06-22T10:07:37+00:00",
+                    "referral_code": None,
+                    "referrer_url": "https://airbyte-integration-test.myshopify.com/",
+                    "source": "direct",
+                    "source_type": None,
+                    "source_description": "1st session was direct to your store",
+                    "utm_parameters": None,
+                    "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589450429",
+                },
+                "last_visit": {
+                    "id": 11282589515965,
+                    "landing_page": "https://airbyte-integration-test.myshopify.com/58033176765/checkouts/dc0479c4519ac34439bcf51d792329b3",
+                    "landing_page_html": "Test",
+                    "occurred_at": "2022-06-22T10:49:33+00:00",
+                    "referral_code": None,
+                    "referrer_url": "https://airbyte-integration-test.myshopify.com/products/all-black-sneaker-right-foot",
+                    "source": "direct",
+                    "source_type": None,
+                    "source_description": "Converted after a direct visit",
+                    "utm_parameters": None,
+                    "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589515965",
+                },
+                "moments": [
+                    {
+                        "id": 11282589450429,
+                        "landing_page": "https://airbyte-integration-test.myshopify.com/collections/all",
+                        "landing_page_html": "Test",
+                        "occurred_at": "2022-06-22T10:07:37+00:00",
+                        "referral_code": None,
+                        "referrer_url": "https://airbyte-integration-test.myshopify.com/",
+                        "source": "direct",
+                        "source_type": None,
+                        "source_description": "1st session was direct to your store",
+                        "utm_parameters": None,
+                        "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589450429",
+                    },
+                    {
+                        "id": 11282589483197,
+                        "landing_page": "https://airbyte-integration-test.myshopify.com/",
+                        "landing_page_html": "Test",
+                        "occurred_at": "2022-06-22T10:15:42+00:00",
+                        "referral_code": None,
+                        "referrer_url": "https://analytics.google.com/",
+                        "source": "https://analytics.google.com/",
+                        "source_type": None,
+                        "source_description": None,
+                        "utm_parameters": {
+                            "campaign": None,
+                            "content": None,
+                            "medium": "referral",
+                            "source": "analytics_test",
+                            "term": None,
+                        },
+                        "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589483197",
+                    },
+                    {
+                        "id": 11282589515965,
+                        "landing_page": "https://airbyte-integration-test.myshopify.com/58033176765/checkouts/dc0479c4519ac34439bcf51d792329b3",
+                        "landing_page_html": "Test",
+                        "occurred_at": "2022-06-22T10:49:33+00:00",
+                        "referral_code": None,
+                        "referrer_url": "https://airbyte-integration-test.myshopify.com/products/all-black-sneaker-right-foot",
+                        "source": "direct",
+                        "source_type": None,
+                        "source_description": "Converted after a direct visit",
+                        "utm_parameters": None,
+                        "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589515965",
+                    },
+                ],
+            },
+            "customer_journey": {
+                "moments": [
+                    {
+                        "id": 11282589450429,
+                        "landingPage": "https://airbyte-integration-test.myshopify.com/collections/all",
+                        "landingPageHtml": "Test",
+                        "occurredAt": "2022-06-22T10:07:37+00:00",
+                        "referralCode": None,
+                        "referrerUrl": "https://airbyte-integration-test.myshopify.com/",
+                        "source": "direct",
+                        "sourceType": None,
+                        "sourceDescription": "1st session was direct to your store",
+                        "utmParameters": None,
+                        "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589450429",
+                    },
+                    {
+                        "id": 11282589483197,
+                        "landingPage": "https://airbyte-integration-test.myshopify.com/",
+                        "landingPageHtml": "Test",
+                        "occurredAt": "2022-06-22T10:15:42+00:00",
+                        "referralCode": None,
+                        "referrerUrl": "https://analytics.google.com/",
+                        "source": "https://analytics.google.com/",
+                        "sourceType": None,
+                        "sourceDescription": None,
+                        "utmParameters": {
+                            "campaign": None,
+                            "content": None,
+                            "medium": "referral",
+                            "source": "analytics_test",
+                            "term": None,
+                        },
+                        "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589483197",
+                    },
+                    {
+                        "id": 11282589515965,
+                        "landingPage": "https://airbyte-integration-test.myshopify.com/58033176765/checkouts/dc0479c4519ac34439bcf51d792329b3",
+                        "landingPageHtml": "Test",
+                        "occurredAt": "2022-06-22T10:49:33+00:00",
+                        "referralCode": None,
+                        "referrerUrl": "https://airbyte-integration-test.myshopify.com/products/all-black-sneaker-right-foot",
+                        "source": "direct",
+                        "sourceType": None,
+                        "sourceDescription": "Converted after a direct visit",
+                        "utmParameters": None,
+                        "admin_graphql_api_id": "gid://shopify/CustomerVisit/11282589515965",
+                    },
+                ]
+            },
+            "admin_graphql_api_id": "gid://shopify/Order/4563761987773",
+            "shop_url": "test_shop",
+        }
     ]
 
 
@@ -1394,4 +1536,46 @@ def transactions_response_expected_result():
         "admin_graphql_api_id": "gid://shopify/OrderTransaction/5721110872253",
         "parent_id": None,
         "shop_url": "test_shop",
+    }
+
+
+@pytest.fixture
+def countries_record_data():
+    return {
+        "id": "link/to/entity/1111111",
+        "code": {"rest_of_world": False, "country_code": "UA"},
+        "provinces": [
+            {
+                "id": "link/to/entity/1111111",
+            }
+        ],
+    }
+
+
+@pytest.fixture
+def countries_expected_record_data(config):
+    return {
+        "id": 1111111,
+        "rest_of_world": False,
+        "code": "UA",
+        "shop_url": config["shop"],
+        "provinces": [
+            {
+                "id": 1111111,
+                "country_id": 1111111,
+            }
+        ],
+    }
+
+
+@pytest.fixture
+def countries_response_data(countries_record_data):
+    return {
+        "data": {
+            "deliveryProfiles": {
+                "nodes": [
+                    {"profileLocationGroups": [{"locationGroupZones": {"nodes": [{"zone": {"countries": [countries_record_data]}}]}}]}
+                ]
+            }
+        }
     }

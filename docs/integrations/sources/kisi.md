@@ -39,6 +39,21 @@ You can learn more about the API key here https://api.kisi.io/docs#/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.20 | 2025-03-22 | [56007](https://github.com/airbytehq/airbyte/pull/56007) | Update dependencies |
+| 0.0.19 | 2025-03-08 | [55494](https://github.com/airbytehq/airbyte/pull/55494) | Update dependencies |
+| 0.0.18 | 2025-03-01 | [54811](https://github.com/airbytehq/airbyte/pull/54811) | Update dependencies |
+| 0.0.17 | 2025-02-22 | [54352](https://github.com/airbytehq/airbyte/pull/54352) | Update dependencies |
+| 0.0.16 | 2025-02-15 | [53865](https://github.com/airbytehq/airbyte/pull/53865) | Update dependencies |
+| 0.0.15 | 2025-02-08 | [53266](https://github.com/airbytehq/airbyte/pull/53266) | Update dependencies |
+| 0.0.14 | 2025-02-01 | [52771](https://github.com/airbytehq/airbyte/pull/52771) | Update dependencies |
+| 0.0.13 | 2025-01-25 | [52222](https://github.com/airbytehq/airbyte/pull/52222) | Update dependencies |
+| 0.0.12 | 2025-01-18 | [51786](https://github.com/airbytehq/airbyte/pull/51786) | Update dependencies |
+| 0.0.11 | 2025-01-11 | [51153](https://github.com/airbytehq/airbyte/pull/51153) | Update dependencies |
+| 0.0.10 | 2024-12-28 | [50636](https://github.com/airbytehq/airbyte/pull/50636) | Update dependencies |
+| 0.0.9 | 2024-12-21 | [50078](https://github.com/airbytehq/airbyte/pull/50078) | Update dependencies |
+| 0.0.8 | 2024-12-14 | [49627](https://github.com/airbytehq/airbyte/pull/49627) | Update dependencies |
+| 0.0.7 | 2024-12-12 | [49273](https://github.com/airbytehq/airbyte/pull/49273) | Update dependencies |
+| 0.0.6 | 2024-12-11 | [48983](https://github.com/airbytehq/airbyte/pull/48983) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.5 | 2024-11-05 | [48356](https://github.com/airbytehq/airbyte/pull/48356) | Revert to source-declarative-manifest v5.17.0 |
 | 0.0.4 | 2024-11-05 | [48332](https://github.com/airbytehq/airbyte/pull/48332) | Update dependencies |
 | 0.0.3 | 2024-10-29 | [47914](https://github.com/airbytehq/airbyte/pull/47914) | Update dependencies |

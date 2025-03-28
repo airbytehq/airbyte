@@ -8,10 +8,6 @@ check:
     - Tags
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_zendesk_support/schemas/{{ parameters.get('schema_name') or parameters['name'] }}.json"
-
   bearer_authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['access_token'] }}"
@@ -66,7 +62,7 @@ definitions:
   base_stream:
     type: DeclarativeStream
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      type: JsonFileSchemaLoader
     retriever:
       $ref: "#/definitions/retriever"
 
@@ -210,7 +206,168 @@ definitions:
       path: "automations"
       primary_key: "id"
 
+  categories_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    $parameters:
+      name: "categories"
+      path: "help_center/categories"
+      primary_key: "id"
+
+  sections_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    $parameters:
+      name: "sections"
+      path: "help_center/sections"
+      primary_key: "id"
+
   # Incremental cursor-based streams
+  articles_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    name: "articles"
+    primary_key: "id"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_zendesk_support/schemas/articles.json"
+    incremental_sync:
+      $ref: "#/definitions/cursor_incremental_sync"
+      start_time_option:
+        $ref: "#/definitions/cursor_incremental_sync/start_time_option"
+        field_name: "start_time"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "help_center/incremental/articles"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_page", {}) }}'
+          stop_condition: "{{ last_page_size == 0 }}"
+        page_token_option:
+          type: RequestPath
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path: ["articles"]
+
+  article_comments_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    name: "article_comments"
+    primary_key: "id"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_zendesk_support/schemas/article_comments.json"
+    incremental_sync:
+      $ref: "#/definitions/cursor_incremental_sync"
+      start_time_option:
+        $ref: "#/definitions/cursor_incremental_sync/start_time_option"
+        field_name: "start_time"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "help_center/articles/{{ stream_partition.article_id }}/comments"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            partition_field: "article_id"
+            stream:
+              $ref: "#/definitions/articles_stream"
+            incremental_dependency: true
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path: ["comments"]
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - _airbyte_parent_id # used for article_comment_votes stream
+            value: "{{ { 'article_id': record['source_id'], 'comment_id': record['id'] } }}"
+
+  article_votes_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    name: "article_votes"
+    primary_key: "id"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_zendesk_support/schemas/votes.json"
+    incremental_sync:
+      $ref: "#/definitions/cursor_incremental_sync"
+      start_time_option:
+        $ref: "#/definitions/cursor_incremental_sync/start_time_option"
+        field_name: "start_time"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "help_center/articles/{{ stream_partition.article_id }}/votes"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            partition_field: "article_id"
+            stream:
+              $ref: "#/definitions/articles_stream"
+            incremental_dependency: true
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path: ["votes"]
+
+  article_comment_votes_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    name: "article_comment_votes"
+    primary_key: "id"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_zendesk_support/schemas/votes.json"
+    incremental_sync:
+      $ref: "#/definitions/cursor_incremental_sync"
+      start_time_option:
+        $ref: "#/definitions/cursor_incremental_sync/start_time_option"
+        field_name: "start_time"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "help_center/articles/{{ stream_partition.id.article_id }}/comments/{{ stream_partition.id.comment_id }}/votes"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "_airbyte_parent_id"
+            partition_field: "id"
+            stream:
+              $ref: "#/definitions/article_comments_stream"
+            incremental_dependency: true
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path: ["votes"]
+
   audit_logs_stream:
     $ref: "#/definitions/base_incremental_stream"
     retriever:
@@ -219,12 +376,12 @@ definitions:
       requester:
         $ref: "#/definitions/retriever/requester"
         request_parameters:
+          filter[created_at][]: "{{ [ stream_interval['start_time'], stream_interval['end_time'] ] if next_page_token is none else '' }}"
           sort: "created_at"
       paginator:
         $ref: "#/definitions/links_next_paginator"
     incremental_sync:
-      class_name: source_zendesk_support.components.ZendeskSupportAuditLogsIncrementalSync
-      type: CustomIncrementalSync
+      type: DatetimeBasedCursor
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S%z"
@@ -232,14 +389,6 @@ definitions:
       cursor_field: "{{ parameters.get('cursor_field',  'updated_at') }}"
       start_datetime:
         datetime: "{{ config.get('start_date') or day_delta(-3650, '%Y-%m-%dT%H:%M:%SZ') }}"
-      start_time_option:
-        inject_into: request_parameter
-        field_name: "filter[created_at][]"
-        type: RequestOption
-      end_time_option:
-        inject_into: request_parameter
-        field_name: "filter[created_at][]"
-        type: RequestOption
     $parameters:
       name: "audit_logs"
       path: "audit_logs"
@@ -338,6 +487,140 @@ definitions:
       cursor_field: "updated_at"
       cursor_filter: "start_time"
       primary_key: "id"
+
+  posts_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    name: "posts"
+    primary_key: "id"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_zendesk_support/schemas/posts.json"
+    incremental_sync:
+      $ref: "#/definitions/cursor_incremental_sync"
+      start_time_option:
+        $ref: "#/definitions/cursor_incremental_sync/start_time_option"
+        field_name: "start_time"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "community/posts"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path: ["posts"]
+        schema_normalization: None
+
+  post_comments_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    name: "post_comments"
+    primary_key: "id"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_zendesk_support/schemas/post_comments.json"
+    incremental_sync:
+      $ref: "#/definitions/cursor_incremental_sync"
+      start_time_option:
+        $ref: "#/definitions/cursor_incremental_sync/start_time_option"
+        field_name: "start_time"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "community/posts/{{ stream_partition.post_id }}/comments"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: post_id
+            stream:
+              $ref: "#/definitions/posts_stream"
+            incremental_dependency: true
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path: ["comments"]
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - _airbyte_parent_id # used for post_comment_votes stream
+            value: "{{ { 'post_id': record['post_id'], 'comment_id': record['id'] } }}"
+
+  post_votes_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    name: "post_votes"
+    primary_key: "id"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_zendesk_support/schemas/votes.json"
+    incremental_sync:
+      $ref: "#/definitions/cursor_incremental_sync"
+      start_time_option:
+        $ref: "#/definitions/cursor_incremental_sync/start_time_option"
+        field_name: "start_time"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "community/posts/{{ stream_partition.post_id }}/votes"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: post_id
+            stream:
+              $ref: "#/definitions/posts_stream"
+            incremental_dependency: true
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path: ["votes"]
+
+  post_comment_votes_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    name: "post_comment_votes"
+    primary_key: "id"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_zendesk_support/schemas/votes.json"
+    incremental_sync:
+      $ref: "#/definitions/cursor_incremental_sync"
+      start_time_option:
+        $ref: "#/definitions/cursor_incremental_sync/start_time_option"
+        field_name: "start_time"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "community/posts/{{ stream_partition.id.post_id }}/comments/{{ stream_partition.id.comment_id }}/votes"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "_airbyte_parent_id"
+            partition_field: id
+            stream:
+              $ref: "#/definitions/post_comments_stream"
+            incremental_dependency: true
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path: ["votes"]
 
   satisfaction_ratings_stream:
     $ref: "#/definitions/base_incremental_stream"
@@ -553,6 +836,121 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
+  tickets_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      paginator:
+        $ref: "#/definitions/after_url_paginator"
+    $parameters:
+      name: "tickets"
+      path: "incremental/tickets/cursor.json"
+      cursor_field: "generated_timestamp"
+      cursor_filter: "start_time"
+      primary_key: "id"
+
+  ticket_metrics_stream:
+    type: StateDelegatingStream
+    name: "ticket_metrics"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_zendesk_support/schemas/ticket_metrics.json"
+    full_refresh_stream:
+      $ref: "#/definitions/base_incremental_stream"
+      schema_loader:
+        type: JsonFileSchemaLoader
+        file_path: "./source_zendesk_support/schemas/ticket_metrics.json"
+      name: "ticket_metrics"
+      primary_key: "id"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        cursor_field: "_ab_updated_at"
+        start_datetime:
+          datetime: "0" # not used as the API does not take filters in and we don't define a step so there is only one request
+      retriever:
+        $ref: "#/definitions/retriever"
+        ignore_stream_slicer_parameters_on_paginated_requests: true
+        requester:
+          $ref: "#/definitions/retriever/requester"
+          path: "ticket_metrics"
+        paginator:
+          $ref: "#/definitions/links_next_paginator"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["ticket_metrics"]
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - "_ab_updated_at"
+              value: "{{ format_datetime(record['updated_at'], '%s') }}"
+    incremental_stream:
+      $ref: "#/definitions/base_incremental_stream"
+      schema_loader:
+        type: JsonFileSchemaLoader
+        file_path: "./source_zendesk_support/schemas/ticket_metrics.json"
+      name: "ticket_metrics"
+      primary_key: "id"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        cursor_field: "_ab_updated_at"
+        start_datetime:
+          datetime: "0" # not used as we should start from the state value
+      retriever:
+        $ref: "#/definitions/retriever"
+        ignore_stream_slicer_parameters_on_paginated_requests: true
+        requester:
+          $ref: "#/definitions/retriever/requester"
+          path: "tickets/{{ stream_partition.ticket_id }}/metrics"
+          error_handler:
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - http_codes: [403]
+                action: IGNORE
+                failure_type: config_error
+                error_message: "Please ensure the authenticated user has access to stream: {self.name}. If the issue persists, contact Zendesk support."
+              - http_codes: [404]
+                action: IGNORE
+                failure_type: config_error
+                error_message: "Not found. Ticket was deleted. If the issue persists, contact Zendesk support."
+        paginator:
+          type: NoPagination
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["ticket_metric"]
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: "id"
+              partition_field: "ticket_id"
+              extra_fields:
+                - ["generated_timestamp"]
+              stream:
+                $ref: "#/definitions/tickets_stream"
+              incremental_dependency: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - "_ab_updated_at"
+              value: "{{ record['generated_timestamp'] if 'generated_timestamp' in record else stream_slice.extra_fields['generated_timestamp'] }}"
+              value_type: "integer"
+
   topics_stream:
     $ref: "#/definitions/semi_incremental_stream"
     retriever:
@@ -587,6 +985,25 @@ definitions:
       cursor_filter: "start_time"
       primary_key: "id"
 
+  users_identities_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      paginator:
+        $ref: "#/definitions/after_url_paginator"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          include: "identities"
+    $parameters:
+      name: "user_identities"
+      data_path: "identities"
+      path: "incremental/users/cursor.json"
+      cursor_field: "updated_at"
+      cursor_filter: "start_time"
+      primary_key: "id"
+
 streams:
   # Full refresh streams
   - $ref: "#/definitions/account_attributes_stream"
@@ -601,7 +1018,13 @@ streams:
   - $ref: "#/definitions/topics_stream"
   - $ref: "#/definitions/user_fields_stream"
   - $ref: "#/definitions/automations_stream"
+  - $ref: "#/definitions/categories_stream"
+  - $ref: "#/definitions/sections_stream"
   # Incremental streams
+  - $ref: "#/definitions/articles_stream"
+  - $ref: "#/definitions/article_comments_stream"
+  - $ref: "#/definitions/article_votes_stream"
+  - $ref: "#/definitions/article_comment_votes_stream"
   - $ref: "#/definitions/audit_logs_stream"
   - $ref: "#/definitions/groups_stream"
   - $ref: "#/definitions/group_memberships_stream"
@@ -609,14 +1032,21 @@ streams:
   - $ref: "#/definitions/organization_fields_stream"
   - $ref: "#/definitions/organization_memberships_stream"
   - $ref: "#/definitions/organizations_stream"
+  - $ref: "#/definitions/posts_stream"
+  - $ref: "#/definitions/post_comment_votes_stream"
+  - $ref: "#/definitions/post_comments_stream"
+  - $ref: "#/definitions/post_votes_stream"
   - $ref: "#/definitions/satisfaction_ratings_stream"
   - $ref: "#/definitions/ticket_activities_stream"
   - $ref: "#/definitions/ticket_audits_stream"
   - $ref: "#/definitions/ticket_comments_stream"
   - $ref: "#/definitions/ticket_metric_events_stream"
   - $ref: "#/definitions/ticket_skips_stream"
+  - $ref: "#/definitions/tickets_stream"
+  - $ref: "#/definitions/ticket_metrics_stream"
   - $ref: "#/definitions/triggers_stream"
   - $ref: "#/definitions/users_stream"
+  - $ref: "#/definitions/users_identities_stream"
 
 # Zendesk Support offers four tiers of rate limits:
 # - Team: 200 req/min (3.3 req/sec)

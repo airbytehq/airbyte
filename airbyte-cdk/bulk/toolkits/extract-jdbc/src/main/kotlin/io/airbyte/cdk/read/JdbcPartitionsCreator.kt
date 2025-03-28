@@ -67,13 +67,14 @@ sealed class JdbcPartitionsCreator<
         log.info { "Querying maximum cursor column value." }
         val record: ObjectNode? =
             selectQuerier.executeQuery(cursorUpperBoundQuery).use {
-                if (it.hasNext()) it.next() else null
+                if (it.hasNext()) it.next().data else null
             }
         if (record == null) {
             streamState.cursorUpperBound = Jsons.nullNode()
             return
         }
-        val cursorUpperBound: JsonNode? = record.fields().asSequence().firstOrNull()?.value
+        val cursorUpperBound: JsonNode? =
+            Jsons.valueToTree(record.fields().asSequence().firstOrNull()?.value)
         if (cursorUpperBound == null) {
             log.warn { "No cursor column value found in '${stream.label}'." }
             return
@@ -102,8 +103,8 @@ sealed class JdbcPartitionsCreator<
             values.clear()
             val samplingQuery: SelectQuery = partition.samplingQuery(sampleRateInvPow2)
             selectQuerier.executeQuery(samplingQuery).use {
-                for (record in it) {
-                    values.add(recordMapper(record))
+                for (row in it) {
+                    values.add(recordMapper(row.data))
                 }
             }
             if (values.size < sharedState.maxSampleSize) {
@@ -140,7 +141,9 @@ class JdbcSequentialPartitionsCreator<
         // Ensure that the cursor upper bound is known, if required.
         if (partition is JdbcCursorPartition<*>) {
             ensureCursorUpperBound()
-            if (streamState.cursorUpperBound?.isNull == true) {
+            if (
+                streamState.cursorUpperBound == null || streamState.cursorUpperBound?.isNull == true
+            ) {
                 log.info { "Maximum cursor column value query found that the table was empty." }
                 return listOf(CheckpointOnlyPartitionReader())
             }
@@ -192,7 +195,9 @@ class JdbcConcurrentPartitionsCreator<
         // Ensure that the cursor upper bound is known, if required.
         if (partition is JdbcCursorPartition<*>) {
             ensureCursorUpperBound()
-            if (streamState.cursorUpperBound?.isNull == true) {
+            if (
+                streamState.cursorUpperBound == null || streamState.cursorUpperBound?.isNull == true
+            ) {
                 log.info { "Maximum cursor column value query found that the table was empty." }
                 return listOf(CheckpointOnlyPartitionReader())
             }

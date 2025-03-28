@@ -14,7 +14,7 @@
     {
       "name": "test_stream",
       "file_type": "csv",
-      "globs": ["**/test_1.csv"],
+      "globs": ["**/file_transfer_1.csv"],
       "legacy_prefix": "",
       "validation_policy": "Emit Record",
       "format": {

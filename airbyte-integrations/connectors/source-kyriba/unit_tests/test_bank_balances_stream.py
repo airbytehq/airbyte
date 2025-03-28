@@ -20,10 +20,7 @@ def patch_base_class(mocker):
 
 def test_stream_slices(patch_base_class):
     stream = BankBalancesStream(**config())
-    account_uuids = [
-        {"account_uuid": "first"},
-        {"account_uuid": "second"}
-    ]
+    account_uuids = [{"account_uuid": "first"}, {"account_uuid": "second"}]
     stream.get_account_uuids = MagicMock(return_value=account_uuids)
     stream.start_date = date(2022, 1, 1)
     stream.end_date = date(2022, 1, 2)
@@ -43,7 +40,7 @@ def test_stream_slices(patch_base_class):
         {
             "account_uuid": "second",
             "date": "2022-01-02",
-        }
+        },
     ]
     slices = stream.stream_slices()
     assert slices == expected

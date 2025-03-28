@@ -40,6 +40,21 @@ The Lemlist connector should not run into Lemlist API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                  |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------- |
+| 0.3.17 | 2025-03-22 | [56051](https://github.com/airbytehq/airbyte/pull/56051) | Update dependencies |
+| 0.3.16 | 2025-03-08 | [55430](https://github.com/airbytehq/airbyte/pull/55430) | Update dependencies |
+| 0.3.15 | 2025-03-01 | [54782](https://github.com/airbytehq/airbyte/pull/54782) | Update dependencies |
+| 0.3.14 | 2025-02-22 | [54305](https://github.com/airbytehq/airbyte/pull/54305) | Update dependencies |
+| 0.3.13 | 2025-02-15 | [53841](https://github.com/airbytehq/airbyte/pull/53841) | Update dependencies |
+| 0.3.12 | 2025-02-08 | [53276](https://github.com/airbytehq/airbyte/pull/53276) | Update dependencies |
+| 0.3.11 | 2025-02-01 | [52744](https://github.com/airbytehq/airbyte/pull/52744) | Update dependencies |
+| 0.3.10 | 2025-01-25 | [52228](https://github.com/airbytehq/airbyte/pull/52228) | Update dependencies |
+| 0.3.9 | 2025-01-18 | [51844](https://github.com/airbytehq/airbyte/pull/51844) | Update dependencies |
+| 0.3.8 | 2025-01-11 | [51194](https://github.com/airbytehq/airbyte/pull/51194) | Update dependencies |
+| 0.3.7 | 2024-12-28 | [50649](https://github.com/airbytehq/airbyte/pull/50649) | Update dependencies |
+| 0.3.6 | 2024-12-21 | [50116](https://github.com/airbytehq/airbyte/pull/50116) | Update dependencies |
+| 0.3.5 | 2024-12-14 | [49645](https://github.com/airbytehq/airbyte/pull/49645) | Update dependencies |
+| 0.3.4 | 2024-12-12 | [49236](https://github.com/airbytehq/airbyte/pull/49236) | Update dependencies |
+| 0.3.3 | 2024-12-11 | [48144](https://github.com/airbytehq/airbyte/pull/48144) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.3.2 | 2024-10-29 | [47818](https://github.com/airbytehq/airbyte/pull/47818) | Update dependencies |
 | 0.3.1 | 2024-10-28 | [47652](https://github.com/airbytehq/airbyte/pull/47652) | Update dependencies |
 | 0.3.0 | 2024-08-19 | [44413](https://github.com/airbytehq/airbyte/pull/44413) | Refactor connector to manifest-only format |

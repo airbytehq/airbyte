@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.test.util
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationFileStreamComplete
@@ -16,25 +16,30 @@ import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.StreamCheckpoint
+import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 
 /*
  * Shared factory methods for making stub destination messages for testing.
  */
 object StubDestinationMessageFactory {
-    fun makeRecord(stream: DestinationStream, record: String): DestinationRecord {
+    fun makeRecord(stream: DestinationStream): DestinationRecord {
         return DestinationRecord(
-            stream = stream.descriptor,
-            data = NullValue,
-            emittedAtMs = 0,
-            meta = null,
-            serialized = record
+            stream = stream,
+            message =
+                AirbyteMessage()
+                    .withRecord(
+                        AirbyteRecordMessage().withData(JsonNodeFactory.instance.nullNode())
+                    ),
+            serialized = "",
+            schema = ObjectTypeWithoutSchema
         )
     }
 
     fun makeFile(stream: DestinationStream, record: String): DestinationFile {
         return DestinationFile(
-            stream = stream.descriptor,
+            stream = stream,
             emittedAtMs = 0,
             serialized = record,
             fileMessage = nullFileMessage,
@@ -42,19 +47,19 @@ object StubDestinationMessageFactory {
     }
 
     fun makeStreamComplete(stream: DestinationStream): DestinationRecordStreamComplete {
-        return DestinationRecordStreamComplete(stream = stream.descriptor, emittedAtMs = 0)
+        return DestinationRecordStreamComplete(stream = stream, emittedAtMs = 0)
     }
 
     fun makeFileStreamComplete(stream: DestinationStream): DestinationFileStreamComplete {
-        return DestinationFileStreamComplete(stream = stream.descriptor, emittedAtMs = 0)
+        return DestinationFileStreamComplete(stream = stream, emittedAtMs = 0)
     }
 
     fun makeStreamIncomplete(stream: DestinationStream): DestinationRecordStreamIncomplete {
-        return DestinationRecordStreamIncomplete(stream = stream.descriptor, emittedAtMs = 0)
+        return DestinationRecordStreamIncomplete(stream = stream, emittedAtMs = 0)
     }
 
     fun makeFileStreamIncomplete(stream: DestinationStream): DestinationFileStreamIncomplete {
-        return DestinationFileStreamIncomplete(stream = stream.descriptor, emittedAtMs = 0)
+        return DestinationFileStreamIncomplete(stream = stream, emittedAtMs = 0)
     }
 
     fun makeStreamState(stream: DestinationStream, recordCount: Long): CheckpointMessage {

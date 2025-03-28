@@ -4,30 +4,16 @@
 
 import base64
 import logging
-from datetime import datetime
 from typing import Any, List, Mapping, Optional, Tuple
 
-import pendulum
+from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from source_zendesk_support.streams import DATETIME_FORMAT, ZendeskConfigException
 
-from .streams import (
-    ArticleComments,
-    ArticleCommentVotes,
-    Articles,
-    ArticleVotes,
-    PostComments,
-    PostCommentVotes,
-    Posts,
-    PostVotes,
-    TicketMetrics,
-    Tickets,
-    UserSettingsStream,
-)
 
 logger = logging.getLogger("airbyte")
 
@@ -47,21 +33,6 @@ class SourceZendeskSupport(YamlDeclarativeSource):
         super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
     @classmethod
-    def get_default_start_date(cls) -> str:
-        """
-        Gets the default start date for data retrieval.
-
-        The default date is set to the current date and time in UTC minus 2 years.
-
-        Returns:
-            str: The default start date in 'YYYY-MM-DDTHH:mm:ss[Z]' format.
-
-        Note:
-            Start Date is a required request parameter for Zendesk Support API streams.
-        """
-        return pendulum.now(tz="UTC").subtract(years=2).format("YYYY-MM-DDTHH:mm:ss[Z]")
-
-    @classmethod
     def get_authenticator(cls, config: Mapping[str, Any]) -> [TokenAuthenticator, BasicApiTokenAuthenticator]:
         # new authentication flow
         auth = config.get("credentials")
@@ -71,7 +42,10 @@ class SourceZendeskSupport(YamlDeclarativeSource):
             elif auth.get("credentials") == "api_token":
                 return BasicApiTokenAuthenticator(config["credentials"]["email"], config["credentials"]["api_token"])
             else:
-                raise ZendeskConfigException(message=f"Not implemented authorization method: {config['credentials']}")
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    message=f"Not implemented authorization method: {config['credentials']}",
+                )
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -81,54 +55,28 @@ class SourceZendeskSupport(YamlDeclarativeSource):
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully,
         (False, error) otherwise.
         """
-        auth = self.get_authenticator(config)
+        http_client = HttpClient(
+            name="user_settings",
+            logger=self.logger,
+            authenticator=self.get_authenticator(config),
+        )
         try:
-            datetime.strptime(config["start_date"], DATETIME_FORMAT)
-            settings = UserSettingsStream(config["subdomain"], authenticator=auth, start_date=None).get_settings()
+            _, response = http_client.send_request(
+                http_method="GET",
+                url=f"https://{config['subdomain']}.zendesk.com/api/v2/account/settings.json",
+                request_kwargs={},
+            )
         except Exception as e:
             return False, e
-        active_features = [k for k, v in settings.get("active_features", {}).items() if v]
+
+        active_features = [k for k, v in response.json().get("settings", {}).get("active_features", {}).items() if v]
         if "organization_access_enabled" not in active_features:
             return (
                 False,
-                "Please verify that the account linked to the API key has admin permissions and try again."
-                "For more information visit https://support.zendesk.com/hc/en-us/articles/4408832171034-About-team-member-product-roles-and-access.",
+                "Please verify that the account linked to the API key has organization_access_enabled and try again."
+                "For more information visit https://support.zendesk.com/hc/en-us/articles/4408821417114-About-the-Organizations-page#topic_n2f_23d_nqb.",
             )
         return True, None
-
-    @classmethod
-    def convert_config2stream_args(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Convert input configs to parameters of the future streams
-        This function is used by unit tests too
-        """
-        return {
-            "subdomain": config["subdomain"],
-            "start_date": config.get("start_date", cls.get_default_start_date()),
-            "authenticator": cls.get_authenticator(config),
-            "ignore_pagination": config.get("ignore_pagination", False),
-        }
-
-    def get_nested_streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """Returns relevant a list of available streams
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
-        args = self.convert_config2stream_args(config)
-
-        tickets = Tickets(**args)
-
-        streams = [
-            Articles(**args),
-            ArticleComments(**args),
-            ArticleCommentVotes(**args),
-            ArticleVotes(**args),
-            Posts(**args),
-            PostComments(**args),
-            PostCommentVotes(**args),
-            PostVotes(**args),
-            tickets,
-            TicketMetrics(**args),
-        ]
-        return streams
 
     def check_enterprise_streams(self, declarative_streams: List[Stream]) -> List[Stream]:
         """Returns relevant a list of available streams
@@ -155,9 +103,4 @@ class SourceZendeskSupport(YamlDeclarativeSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         declarative_streams = super().streams(config)
-
-        nested_streams = self.get_nested_streams(config)
-        declarative_streams.extend(nested_streams)
-
-        declarative_streams = self.check_enterprise_streams(declarative_streams)
-        return declarative_streams
+        return self.check_enterprise_streams(declarative_streams)

@@ -1,0 +1,10 @@
+{
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "ID of the location group.",
+      "type": ["null", "string"]
+    }
+  }
+}

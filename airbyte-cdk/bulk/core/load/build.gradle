@@ -40,11 +40,25 @@ def integrationTestTask = tasks.register('integrationTest', Test) {
     systemProperties = project.test.systemProperties
     maxParallelForks = project.test.maxParallelForks
     maxHeapSize = project.test.maxHeapSize
+
+    testLogging() {
+        events 'skipped', 'started', 'passed', 'failed'
+        exceptionFormat 'full'
+    }
 }
 
 // These tests are lightweight enough to run on every PR.
 tasks.named('check').configure {
     dependsOn integrationTest
+}
+
+project.tasks.matching {
+    it.name == 'spotbugsIntegrationTestLegacy' ||
+            it.name == 'spotbugsIntegrationTest' ||
+            it.name == 'spotbugsTest' ||
+            it.name == 'spotbugsMain'
+}.configureEach {
+    enabled = false
 }
 
 test {

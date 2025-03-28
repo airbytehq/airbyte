@@ -60,6 +60,20 @@ The following fields are required fields for the connector to work:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.17 | 2025-03-22 | [56239](https://github.com/airbytehq/airbyte/pull/56239) | Update dependencies |
+| 0.2.16 | 2025-03-08 | [55567](https://github.com/airbytehq/airbyte/pull/55567) | Update dependencies |
+| 0.2.15 | 2025-03-01 | [55022](https://github.com/airbytehq/airbyte/pull/55022) | Update dependencies |
+| 0.2.14 | 2025-02-23 | [54605](https://github.com/airbytehq/airbyte/pull/54605) | Update dependencies |
+| 0.2.13 | 2025-02-15 | [54016](https://github.com/airbytehq/airbyte/pull/54016) | Update dependencies |
+| 0.2.12 | 2025-02-08 | [53445](https://github.com/airbytehq/airbyte/pull/53445) | Update dependencies |
+| 0.2.11 | 2025-02-01 | [52976](https://github.com/airbytehq/airbyte/pull/52976) | Update dependencies |
+| 0.2.10 | 2025-01-25 | [52472](https://github.com/airbytehq/airbyte/pull/52472) | Update dependencies |
+| 0.2.9 | 2025-01-18 | [51903](https://github.com/airbytehq/airbyte/pull/51903) | Update dependencies |
+| 0.2.8 | 2025-01-11 | [51359](https://github.com/airbytehq/airbyte/pull/51359) | Update dependencies |
+| 0.2.7 | 2024-12-28 | [50742](https://github.com/airbytehq/airbyte/pull/50742) | Update dependencies |
+| 0.2.6 | 2024-12-21 | [50269](https://github.com/airbytehq/airbyte/pull/50269) | Update dependencies |
+| 0.2.5 | 2024-12-14 | [49657](https://github.com/airbytehq/airbyte/pull/49657) | Update dependencies |
+| 0.2.4 | 2024-12-12 | [48286](https://github.com/airbytehq/airbyte/pull/48286) | Update dependencies |
 | 0.2.3 | 2024-10-29 | [47881](https://github.com/airbytehq/airbyte/pull/47881) | Update dependencies |
 | 0.2.2 | 2024-10-28 | [47524](https://github.com/airbytehq/airbyte/pull/47524) | Update dependencies |
 | 0.2.1 | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |

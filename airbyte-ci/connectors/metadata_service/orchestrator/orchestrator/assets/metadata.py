@@ -16,6 +16,7 @@ from orchestrator.logging import sentry
 from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition, PartialMetadataDefinition
 from orchestrator.utils.object_helpers import are_values_equal, merge_values
 
+
 GROUP_NAME = "metadata"
 
 

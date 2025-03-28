@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.state.Reserved
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
+import kotlinx.coroutines.channels.Channel
 
 interface Sized {
     val sizeBytes: Long
@@ -26,25 +27,34 @@ interface Sized {
  */
 sealed class DestinationStreamEvent : Sized
 
+/** Contains a record to be aggregated and processed. */
 data class StreamRecordEvent(
     val index: Long,
     override val sizeBytes: Long,
-    val record: DestinationRecord
+    val payload: DestinationRecordSerialized
 ) : DestinationStreamEvent()
 
-data class StreamCompleteEvent(
+/**
+ * Indicates the stream is in a terminal (complete or incomplete) state as signalled by upstream.
+ */
+data class StreamEndEvent(
     val index: Long,
 ) : DestinationStreamEvent() {
     override val sizeBytes: Long = 0L
 }
 
+/**
+ * Emitted to trigger evaluation of the conditional flush logic of a stream. The consumer may or may
+ * not decide to flush.
+ */
 data class StreamFlushEvent(
     val tickedAtMs: Long,
 ) : DestinationStreamEvent() {
     override val sizeBytes: Long = 0L
 }
 
-class DestinationStreamEventQueue : ChannelMessageQueue<Reserved<DestinationStreamEvent>>()
+class DestinationStreamEventQueue :
+    ChannelMessageQueue<Reserved<DestinationStreamEvent>>(Channel(Channel.UNLIMITED))
 
 /**
  * A supplier of message queues to which ([ReservationManager.reserve]'d) @ [DestinationStreamEvent]
@@ -89,4 +99,5 @@ data class GlobalCheckpointWrapped(
  */
 @Singleton
 @Secondary
-class CheckpointMessageQueue : ChannelMessageQueue<Reserved<CheckpointMessageWrapped>>()
+class CheckpointMessageQueue :
+    ChannelMessageQueue<Reserved<CheckpointMessageWrapped>>(Channel(Channel.UNLIMITED))

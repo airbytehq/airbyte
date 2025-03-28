@@ -6,8 +6,6 @@
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v17.errors.types.errors import ErrorCode, GoogleAdsError, GoogleAdsFailure
 from google.ads.googleads.v17.errors.types.request_error import RequestErrorEnum
@@ -15,6 +13,10 @@ from google.api_core.exceptions import DataLoss, InternalServerError, ResourceEx
 from grpc import RpcError
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.streams import AdGroup, ClickView, Customer, CustomerLabel
+
+from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.utils import AirbyteTracedException
+
 
 # EXPIRED_PAGE_TOKEN exception will be raised when page token has expired.
 exception = GoogleAdsException(
@@ -251,8 +253,10 @@ def test_retry_500_raises_transient_error(mocker, config, customers):
     with pytest.raises(AirbyteTracedException) as exception:
         records = list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
 
-    assert exception.value.internal_message == ("Internal Error encountered Unable to fetch data from Google Ads API due to "
-                                                "temporal error on the Google Ads server. Please retry again later. ")
+    assert exception.value.internal_message == (
+        "Internal Error encountered Unable to fetch data from Google Ads API due to "
+        "temporal error on the Google Ads server. Please retry again later. "
+    )
     assert exception.value.failure_type == FailureType.transient_error
     assert mocked_search.call_count == 5
     assert records == []

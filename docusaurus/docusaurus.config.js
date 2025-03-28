@@ -49,6 +49,13 @@ const config = {
       id: "unifytag",
       "data-api-key": "wk_BEtrdAz2_2qgdexg5KRa6YWLWVwDdieFC7CAHkDKz",
     },
+    {
+      src: "https://cdn.jsdelivr.net/npm/hockeystack@latest/hockeystack.min.js",
+      async: true,
+      "data-apikey": "2094e2379643f69f7aec647a15f786",
+      "data-cookieless": "1",
+      "data-auto-identify": "1",
+    },
   ],
   headTags: [
     {
@@ -108,7 +115,9 @@ const config = {
           sidebarPath: require.resolve("./sidebars.js"),
           editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
           path: "../docs",
-          exclude: ["**/*.inapp.md"],
+          exclude: [
+            "**/*.inapp.md"
+          ],
           beforeDefaultRemarkPlugins: [specDecoration, connectorList], // use before-default plugins so TOC rendering picks up inserted headings
           remarkPlugins: [
             docsHeaderDecoration,
@@ -189,6 +198,7 @@ const config = {
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
+        additionalLanguages: ["bash", "diff", "json", "hcl"],
       },
     }),
 };

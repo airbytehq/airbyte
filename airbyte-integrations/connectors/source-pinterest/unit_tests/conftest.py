@@ -5,10 +5,11 @@
 from typing import Any, Mapping
 from unittest.mock import MagicMock
 
-from airbyte_cdk.sources.streams import Stream
 from pytest import fixture
 from source_pinterest.reports import CampaignAnalyticsReport
 from source_pinterest.source import SourcePinterest
+
+from airbyte_cdk.sources.streams import Stream
 
 
 @fixture
@@ -28,6 +29,17 @@ def wrong_date_config() -> Mapping[str, str]:
         "client_secret": "test_client_secret",
         "refresh_token": "test_refresh_token",
         "start_date": "wrong_date_format",
+    }
+
+
+@fixture
+def wrong_account_id_config() -> Mapping[str, str]:
+    return {
+        "client_id": "test_client_id",
+        "client_secret": "test_client_secret",
+        "refresh_token": "test_refresh_token",
+        "start_date": "2024-01-01",
+        "account_id": "invalid_account",
     }
 
 
@@ -58,6 +70,13 @@ def test_record_filter() -> Mapping[str, Any]:
 def test_response(test_record) -> MagicMock:
     response = MagicMock()
     response.json.return_value = test_record
+    return response
+
+
+@fixture
+def test_response_single_account() -> MagicMock:
+    response = MagicMock()
+    response.json.return_value = {"id": "1234"}
     return response
 
 

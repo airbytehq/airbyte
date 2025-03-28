@@ -24,8 +24,12 @@ class ConfigurationSpecificationSupplierTest {
             FakeSourceConfigurationSpecification::class.java,
             supplier.javaClass
         )
-        val expected: String = ResourceUtils.readResource("fakesource/expected-schema.json")
-        Assertions.assertEquals(Jsons.readTree(expected), supplier.jsonSchema)
+        val expected: String =
+            ResourceUtils.readResource("fakesource/expected-schema.json")
+                .let(Jsons::readTree)
+                .let(Jsons::writeValueAsString)
+        val actual: String = Jsons.writeValueAsString(supplier.jsonSchema)
+        Assertions.assertEquals(expected, actual)
     }
 
     @Test

@@ -56,13 +56,17 @@ object MockDestinationBackend {
             // Assume that in dedup mode, we don't have duplicates - so we can just find the first
             // record with the same PK as the incoming record
             val existingRecord =
-                file.firstOrNull { RecordDiffer.comparePks(incomingPk, getPk(it)) == 0 }
+                file.firstOrNull {
+                    RecordDiffer.comparePks(incomingPk, getPk(it), nullEqualsUnset = false) == 0
+                }
             if (existingRecord == null) {
                 file.add(incomingRecord)
             } else {
                 val incomingCursor = getCursor(incomingRecord)
                 val existingCursor = getCursor(existingRecord)
-                val compare = RecordDiffer.valueComparator.compare(incomingCursor, existingCursor)
+                val compare =
+                    RecordDiffer.getValueComparator(nullEqualsUnset = false)
+                        .compare(incomingCursor, existingCursor)
                 // If the incoming record has a later cursor,
                 // or the same cursor but a later extractedAt,
                 // then upsert. (otherwise discard the incoming record.)

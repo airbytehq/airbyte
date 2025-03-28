@@ -12,8 +12,9 @@ import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueueSupplier
 import io.airbyte.cdk.load.message.StreamFlushEvent
 import io.airbyte.cdk.load.state.Reserved
-import io.airbyte.cdk.load.task.KillableScope
-import io.airbyte.cdk.load.task.SyncLevel
+import io.airbyte.cdk.load.task.OnEndOfSync
+import io.airbyte.cdk.load.task.Task
+import io.airbyte.cdk.load.task.TerminalCondition
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.annotation.Value
@@ -24,14 +25,16 @@ import kotlinx.coroutines.channels.ClosedSendChannelException
 @Singleton
 @Secondary
 class FlushTickTask(
-    @Value("\${airbyte.flush.rate-ms}") private val tickIntervalMs: Long,
+    @Value("\${airbyte.destination.core.flush.rate-ms}") private val tickIntervalMs: Long,
     private val clock: Clock,
     private val coroutineTimeUtils: TimeProvider,
     private val catalog: DestinationCatalog,
     private val recordQueueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationStreamEvent>>,
-) : SyncLevel, KillableScope {
+) : Task {
     private val log = KotlinLogging.logger {}
+
+    override val terminalCondition: TerminalCondition = OnEndOfSync
 
     override suspend fun execute() {
         while (true) {

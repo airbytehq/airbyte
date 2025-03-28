@@ -28,6 +28,20 @@ MailerSend has a default [rate limit](https://developers.mailersend.com/general.
 
 | Version | Date       | Pull Request                                             | Subject                                  |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------- |
+| 0.2.17 | 2025-03-22 | [56008](https://github.com/airbytehq/airbyte/pull/56008) | Update dependencies |
+| 0.2.16 | 2025-03-08 | [55446](https://github.com/airbytehq/airbyte/pull/55446) | Update dependencies |
+| 0.2.15 | 2025-03-01 | [54805](https://github.com/airbytehq/airbyte/pull/54805) | Update dependencies |
+| 0.2.14 | 2025-02-22 | [53821](https://github.com/airbytehq/airbyte/pull/53821) | Update dependencies |
+| 0.2.13 | 2025-02-08 | [53300](https://github.com/airbytehq/airbyte/pull/53300) | Update dependencies |
+| 0.2.12 | 2025-02-01 | [52745](https://github.com/airbytehq/airbyte/pull/52745) | Update dependencies |
+| 0.2.11 | 2025-01-25 | [52271](https://github.com/airbytehq/airbyte/pull/52271) | Update dependencies |
+| 0.2.10 | 2025-01-18 | [51816](https://github.com/airbytehq/airbyte/pull/51816) | Update dependencies |
+| 0.2.9 | 2025-01-11 | [51156](https://github.com/airbytehq/airbyte/pull/51156) | Update dependencies |
+| 0.2.8 | 2024-12-28 | [50650](https://github.com/airbytehq/airbyte/pull/50650) | Update dependencies |
+| 0.2.7 | 2024-12-21 | [50080](https://github.com/airbytehq/airbyte/pull/50080) | Update dependencies |
+| 0.2.6 | 2024-12-14 | [49614](https://github.com/airbytehq/airbyte/pull/49614) | Update dependencies |
+| 0.2.5 | 2024-12-12 | [49262](https://github.com/airbytehq/airbyte/pull/49262) | Update dependencies |
+| 0.2.4 | 2024-12-11 | [48947](https://github.com/airbytehq/airbyte/pull/48947) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.2.3 | 2024-11-04 | [48203](https://github.com/airbytehq/airbyte/pull/48203) | Update dependencies |
 | 0.2.2 | 2024-10-29 | [47785](https://github.com/airbytehq/airbyte/pull/47785) | Update dependencies |
 | 0.2.1 | 2024-10-28 | [47592](https://github.com/airbytehq/airbyte/pull/47592) | Update dependencies |

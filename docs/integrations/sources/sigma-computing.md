@@ -38,6 +38,19 @@ Next, head over to Developer Access and click on create. This will generate your
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.16 | 2025-03-08 | [55590](https://github.com/airbytehq/airbyte/pull/55590) | Update dependencies |
+| 0.0.15 | 2025-03-01 | [55152](https://github.com/airbytehq/airbyte/pull/55152) | Update dependencies |
+| 0.0.14 | 2025-02-22 | [54464](https://github.com/airbytehq/airbyte/pull/54464) | Update dependencies |
+| 0.0.13 | 2025-02-15 | [54036](https://github.com/airbytehq/airbyte/pull/54036) | Update dependencies |
+| 0.0.12 | 2025-02-08 | [53530](https://github.com/airbytehq/airbyte/pull/53530) | Update dependencies |
+| 0.0.11 | 2025-02-01 | [53073](https://github.com/airbytehq/airbyte/pull/53073) | Update dependencies |
+| 0.0.10 | 2025-01-25 | [52411](https://github.com/airbytehq/airbyte/pull/52411) | Update dependencies |
+| 0.0.9 | 2025-01-18 | [51994](https://github.com/airbytehq/airbyte/pull/51994) | Update dependencies |
+| 0.0.8 | 2025-01-11 | [51387](https://github.com/airbytehq/airbyte/pull/51387) | Update dependencies |
+| 0.0.7 | 2024-12-28 | [50780](https://github.com/airbytehq/airbyte/pull/50780) | Update dependencies |
+| 0.0.6 | 2024-12-21 | [50325](https://github.com/airbytehq/airbyte/pull/50325) | Update dependencies |
+| 0.0.5 | 2024-12-14 | [49775](https://github.com/airbytehq/airbyte/pull/49775) | Update dependencies |
+| 0.0.4 | 2024-12-12 | [49396](https://github.com/airbytehq/airbyte/pull/49396) | Update dependencies |
 | 0.0.3 | 2024-11-04 | [48150](https://github.com/airbytehq/airbyte/pull/48150) | Update dependencies |
 | 0.0.2 | 2024-10-28 | [47514](https://github.com/airbytehq/airbyte/pull/47514) | Update dependencies |
 | 0.0.1 | 2024-10-13 | | Initial release by [@aazam-gh](https://github.com/aazam-gh) via Connector Builder |

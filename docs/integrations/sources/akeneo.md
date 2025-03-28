@@ -33,6 +33,21 @@ The Akeneo Airbyte connector enables seamless data synchronization between Akene
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.16 | 2025-03-22 | [56142](https://github.com/airbytehq/airbyte/pull/56142) | Update dependencies |
+| 0.0.15 | 2025-03-08 | [55422](https://github.com/airbytehq/airbyte/pull/55422) | Update dependencies |
+| 0.0.14 | 2025-03-01 | [54901](https://github.com/airbytehq/airbyte/pull/54901) | Update dependencies |
+| 0.0.13 | 2025-02-22 | [54253](https://github.com/airbytehq/airbyte/pull/54253) | Update dependencies |
+| 0.0.12 | 2025-02-15 | [53899](https://github.com/airbytehq/airbyte/pull/53899) | Update dependencies |
+| 0.0.11 | 2025-02-08 | [53402](https://github.com/airbytehq/airbyte/pull/53402) | Update dependencies |
+| 0.0.10 | 2025-02-04 | [53151](https://github.com/airbytehq/airbyte/pull/53151) | fix typoe in manifest description |
+| 0.0.9 | 2025-02-01 | [52924](https://github.com/airbytehq/airbyte/pull/52924) | Update dependencies |
+| 0.0.8 | 2025-01-25 | [52200](https://github.com/airbytehq/airbyte/pull/52200) | Update dependencies |
+| 0.0.7 | 2025-01-18 | [51763](https://github.com/airbytehq/airbyte/pull/51763) | Update dependencies |
+| 0.0.6 | 2025-01-11 | [51285](https://github.com/airbytehq/airbyte/pull/51285) | Update dependencies |
+| 0.0.5 | 2024-12-28 | [50454](https://github.com/airbytehq/airbyte/pull/50454) | Update dependencies |
+| 0.0.4 | 2024-12-21 | [50160](https://github.com/airbytehq/airbyte/pull/50160) | Update dependencies |
+| 0.0.3 | 2024-12-14 | [49558](https://github.com/airbytehq/airbyte/pull/49558) | Update dependencies |
+| 0.0.2 | 2024-12-12 | [49011](https://github.com/airbytehq/airbyte/pull/49011) | Update dependencies |
 | 0.0.1 | 2024-10-28 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>

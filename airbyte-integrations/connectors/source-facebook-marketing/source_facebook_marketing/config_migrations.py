@@ -12,6 +12,7 @@ from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from source_facebook_marketing.spec import ValidAdSetStatuses, ValidAdStatuses, ValidCampaignStatuses
 
+
 logger = logging.getLogger("airbyte_logger")
 
 

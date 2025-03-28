@@ -50,7 +50,7 @@ object SSLCertificateUtils {
         directory: String?
     ): URI {
         val fs = Objects.requireNonNullElse(filesystem, FileSystems.getDefault())
-        val pathToStore = fs!!.getPath(Objects.toString(directory, ""))
+        val pathToStore = fs!!.getPath(Objects.toString(directory, "/tmp"))
         val pathToFile =
             pathToStore.resolve(KEYSTORE_FILE_NAME + RANDOM.nextInt() + KEYSTORE_FILE_TYPE)
         val os = Files.newOutputStream(pathToFile)

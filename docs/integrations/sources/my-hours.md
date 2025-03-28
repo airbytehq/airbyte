@@ -36,6 +36,21 @@ Depending on the amount of team members and time logs the source provides a prop
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.3.17 | 2025-03-22 | [56046](https://github.com/airbytehq/airbyte/pull/56046) | Update dependencies |
+| 0.3.16 | 2025-03-08 | [55432](https://github.com/airbytehq/airbyte/pull/55432) | Update dependencies |
+| 0.3.15 | 2025-03-01 | [54752](https://github.com/airbytehq/airbyte/pull/54752) | Update dependencies |
+| 0.3.14 | 2025-02-22 | [54323](https://github.com/airbytehq/airbyte/pull/54323) | Update dependencies |
+| 0.3.13 | 2025-02-15 | [53807](https://github.com/airbytehq/airbyte/pull/53807) | Update dependencies |
+| 0.3.12 | 2025-02-08 | [53278](https://github.com/airbytehq/airbyte/pull/53278) | Update dependencies |
+| 0.3.11 | 2025-02-01 | [52734](https://github.com/airbytehq/airbyte/pull/52734) | Update dependencies |
+| 0.3.10 | 2025-01-25 | [52242](https://github.com/airbytehq/airbyte/pull/52242) | Update dependencies |
+| 0.3.9 | 2025-01-18 | [51791](https://github.com/airbytehq/airbyte/pull/51791) | Update dependencies |
+| 0.3.8 | 2025-01-11 | [51220](https://github.com/airbytehq/airbyte/pull/51220) | Update dependencies |
+| 0.3.7 | 2024-12-28 | [50599](https://github.com/airbytehq/airbyte/pull/50599) | Update dependencies |
+| 0.3.6 | 2024-12-21 | [50120](https://github.com/airbytehq/airbyte/pull/50120) | Update dependencies |
+| 0.3.5 | 2024-12-14 | [49611](https://github.com/airbytehq/airbyte/pull/49611) | Update dependencies |
+| 0.3.4 | 2024-12-12 | [49253](https://github.com/airbytehq/airbyte/pull/49253) | Update dependencies |
+| 0.3.3 | 2024-12-11 | [48285](https://github.com/airbytehq/airbyte/pull/48285) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.3.2 | 2024-10-29 | [47787](https://github.com/airbytehq/airbyte/pull/47787) | Update dependencies |
 | 0.3.1 | 2024-10-28 | [47095](https://github.com/airbytehq/airbyte/pull/47095) | Update dependencies |
 | 0.3.0 | 2024-10-19 | [47012](https://github.com/airbytehq/airbyte/pull/47012) | Migrate to manifest only format |
