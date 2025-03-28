@@ -15,7 +15,7 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
  * See [io.airbyte.cdk.load.command.DestinationConfiguration] for more details on how to use this
  * interface.
  */
-interface AzureBlobStorageSpecification {
+interface AzureBlobStorageClientSpecification {
     @get:JsonSchemaTitle("Azure Blob Storage Account Name")
     @get:JsonPropertyDescription(
         "The name of the Azure Blob Storage Account. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/blobs/storage-blobs-introduction#storage-accounts\">here</a>."
@@ -34,30 +34,53 @@ interface AzureBlobStorageSpecification {
 
     @get:JsonSchemaTitle("Shared Access Signature")
     @get:JsonPropertyDescription(
-        "A shared access signature (SAS) provides secure delegated access to resources in your storage account.. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/common/storage-sas-overview?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json\">here</a>"
+        "A shared access signature (SAS) provides secure delegated access to resources in your storage account. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/common/storage-sas-overview?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json\">here</a>. If you set this value, you must not set the account key."
     )
     @get:JsonProperty("shared_access_signature")
     @get:JsonSchemaInject(
         json =
             """{"examples":["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],"airbyte_secret": true,"always_show": true}"""
     )
-    val azureBlobStorageSharedAccessSignature: String
+    val azureBlobStorageSharedAccessSignature: String?
 
-    fun toAzureBlobStorageConfiguration(): AzureBlobStorageConfiguration {
-        return AzureBlobStorageConfiguration(
+    @get:JsonSchemaTitle("Azure Blob Storage account key")
+    @get:JsonPropertyDescription(
+        "The Azure blob storage account key. If you set this value, you must not set the Shared Access Signature."
+    )
+    @get:JsonProperty("azure_blob_storage_account_key")
+    @get:JsonSchemaInject(
+        json =
+            """{"examples":["Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd=="],"airbyte_secret": true,"always_show": true}"""
+    )
+    val azureBlobStorageAccountKey: String?
+
+    fun toAzureBlobStorageClientConfiguration(): AzureBlobStorageClientConfiguration {
+        return AzureBlobStorageClientConfiguration(
             azureBlobStorageAccountName,
             azureBlobStorageContainerName,
-            azureBlobStorageSharedAccessSignature
+            azureBlobStorageSharedAccessSignature,
+            azureBlobStorageAccountKey
         )
     }
 }
 
-data class AzureBlobStorageConfiguration(
+data class AzureBlobStorageClientConfiguration(
     val accountName: String,
     val containerName: String,
-    val sharedAccessSignature: String
-)
+    val sharedAccessSignature: String?,
+    val accountKey: String?,
 
-interface AzureBlobStorageConfigurationProvider {
-    val azureBlobStorageConfiguration: AzureBlobStorageConfiguration
+    // The following is only used by the azure blob storage destination
+    var endpointDomainName: String? = null,
+    var spillSize: Int? = null,
+) {
+    init {
+        check(!accountKey.isNullOrBlank() xor !sharedAccessSignature.isNullOrBlank()) {
+            "AzureBlobStorageClientConfiguration must have exactly one of a SAS or an account key"
+        }
+    }
+}
+
+interface AzureBlobStorageClientConfigurationProvider {
+    val azureBlobStorageClientConfiguration: AzureBlobStorageClientConfiguration
 }
