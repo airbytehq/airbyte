@@ -172,6 +172,19 @@ html[data-theme="dark"] {
   display: none;
 }
 
+nav.theme-doc-breadcrumbs {
+  margin-top: 8px !important;
+}
+
+ul.breadcrumbs > li.breadcrumbs__item > a.breadcrumbs__link {
+  color: var(--ifm-color-primary);
+}
+
+ul.breadcrumbs > li.breadcrumbs__item > span.breadcrumbs__link {
+  color: var(--ifm-font-color-base);
+  background: none;
+}
+
 .cloudStatusLink {
   display: flex;
   gap: 4px;
