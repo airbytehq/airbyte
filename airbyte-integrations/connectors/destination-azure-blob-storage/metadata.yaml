@@ -9,16 +9,6 @@ data:
     - suite: unitTests
     - suite: integrationTests
       testSecrets:
-        - fileName: config_gcs_staging.json
-          name: SECRET_DESTINATION-AZURE-BLOB-STORAGE-GCS-STAGING__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-        - fileName: config_s3_staging.json
-          name: SECRET_DESTINATION-AZURE-BLOB-STORAGE-S3-STAGING__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
         - fileName: config.json
           name: SECRET_DESTINATION-AZURE-BLOB-STORAGE__CREDS
           secretStore:
@@ -26,7 +16,7 @@ data:
             type: GSM
   connectorType: destination
   definitionId: b4c5d105-31fd-4817-96b6-cb923bfc04cb
-  dockerImageTag: 0.2.5
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/destination-azure-blob-storage
   documentationUrl: https://docs.airbyte.com/integrations/destinations/azure-blob-storage
   githubIssueLabel: destination-azure-blob-storage
