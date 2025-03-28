@@ -253,9 +253,9 @@ def test_unauthorized_service_account(service_account_config, requests_mock):
 def test_streams(config_gen):
     source = SourceGoogleSearchConsole()
     streams = source.streams(config_gen())
-    assert len(streams) == 15
+    assert len(streams) == 18
     streams = source.streams(config_gen(custom_reports_array=...))
-    assert len(streams) == 14
+    assert len(streams) == 17
 
 
 def test_get_start_date():

@@ -146,6 +146,9 @@ The granularity for the cursor is 1 day, so Incremental Sync in Append mode may 
 - [Analytics page report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics site report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics site report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [Analytics keyword report (Minimal Dimensions)](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [Analytics keyword report by page (Minimal Dimensions)](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [Analytics keyword report by site (Minimal Dimensions)](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - Analytics report by custom dimensions
 
 ### Entity-Relationship Diagram (ERD)
@@ -208,7 +211,7 @@ Expand to see details about Google Search Console connector limitations and trou
 </summary>
 
 ### Connector limitations
-
+Minimal Dimension Keyword streams contain only 'Date' as the dimension to sync records. These streams will contain more records due to having the least possible amount of filters applied. Use the regular Keyword streams if you care more about filtering results into consolidated records. 
 #### Rate limiting
 
 This connector attempts to back off gracefully when it hits Reports API's rate limits. To find more information about limits, see [Usage Limits](https://developers.google.com/webmaster-tools/limits) documentation.
@@ -230,7 +233,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|
-| 1.5.16 | 2025-03-26 | [56404](https://github.com/airbytehq/airbyte/pull/56404) | Fix missing data for `keyword` streams by including slices without keywords from `SearchAppearance` |
+| 1.6.0 | 2025-03-26 | [56404](https://github.com/airbytehq/airbyte/pull/56404) | Added minimal dimension streams for `keywords`|
 | 1.5.15 | 2025-02-22 | [54426](https://github.com/airbytehq/airbyte/pull/54426) | Update dependencies |
 | 1.5.14 | 2025-02-15 | [53781](https://github.com/airbytehq/airbyte/pull/53781) | Update dependencies |
 | 1.5.13 | 2025-02-01 | [52854](https://github.com/airbytehq/airbyte/pull/52854) | Update dependencies |

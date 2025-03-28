@@ -390,19 +390,11 @@ class SearchByKeyword(SearchAnalytics):
             keywords_records = search_appearance_stream.read_records(
                 sync_mode=SyncMode.full_refresh, stream_state=stream_state, stream_slice=stream_slice
             )
-            # Safely extract keywords, handling cases where "searchAppearance" might be missing
-            keywords = {record["searchAppearance"] for record in keywords_records if "searchAppearance" in record}
+            keywords = {record["searchAppearance"] for record in keywords_records}
 
-            if keywords:
-                # If keywords exist, yield a slice for each keyword with filters
-                for keyword in keywords:
-                    filters = {"dimension": "searchAppearance", "operator": "equals", "expression": keyword}
-                    # Create a copy to avoid modifying the original stream_slice
-                    stream_slice_with_filter = stream_slice.copy()
-                    stream_slice_with_filter["dimensionFilterGroups"] = [{"groupType": "and", "filters": [filters]}]
-                    yield stream_slice_with_filter
-            else:
-                # If no keywords are found, yield the base slice without filters
+            for keyword in keywords:
+                filters = {"dimension": "searchAppearance", "operator": "equals", "expression": keyword}
+                stream_slice["dimensionFilterGroups"] = [{"groupType": "and", "filters": filters}]
                 yield stream_slice
 
     def request_body_json(
@@ -412,8 +404,7 @@ class SearchByKeyword(SearchAnalytics):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Dict[str, Any], str]]:
         data = super().request_body_json(stream_state, stream_slice, next_page_token)
-        if "dimensionFilterGroups" in stream_slice:
-            data["dimensionFilterGroups"] = stream_slice["dimensionFilterGroups"]
+        data["dimensionFilterGroups"] = stream_slice["dimensionFilterGroups"]
         return data
 
 
@@ -423,7 +414,7 @@ class SearchAnalyticsKeywordPageReport(SearchByKeyword):
 
 class SearchAnalyticsKeywordPageReportMinimalDimensions(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "page", "search_type"]
-    dimensions = ["date", "query"]
+    dimensions = ["date"]
 
 class SearchAnalyticsKeywordSiteReportByPage(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
@@ -432,7 +423,7 @@ class SearchAnalyticsKeywordSiteReportByPage(SearchByKeyword):
 
 class SearchAnalyticsKeywordSiteReportByPageMinimalDimensions(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
-    dimensions = ["date", "country", "device", "query"]
+    dimensions = ["date"]
     aggregation_type = QueryAggregationType.by_page
 
 class SearchAnalyticsKeywordSiteReportBySite(SearchByKeyword):
@@ -442,7 +433,7 @@ class SearchAnalyticsKeywordSiteReportBySite(SearchByKeyword):
 
 class SearchAnalyticsKeywordSiteReportBySiteMinimalDimensions(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
-    dimensions = ["date", "query"]
+    dimensions = ["date"]
     aggregation_type = QueryAggregationType.by_property
 
 class SearchAnalyticsSiteReportBySite(SearchAnalytics):
