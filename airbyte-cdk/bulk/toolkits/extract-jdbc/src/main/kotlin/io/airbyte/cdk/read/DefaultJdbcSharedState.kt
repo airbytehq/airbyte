@@ -64,24 +64,8 @@ class DefaultJdbcSharedState(
     private val log = KotlinLogging.logger {}
     override fun tryAcquireResourcesForReader(): JdbcPartitionReader.AcquiredResources? {
 
-        ////
-        /// disk space in file staging area
-        try {
-            val folder: Path = Paths.get("/staging/files")
-            val size = Files.walk(folder)
-                .filter { Files.isRegularFile(it) }
-                .mapToLong { it.toFile().length() }
-                .sum()
-//            log.info { "Total size of files in /staging/files: $size bytes" }
-            if (size > 3L shl 30) { // 3GB
-                log.info { "staging dir too full $size" }
-                return null
-            }
-        } catch (_: Exception) {
-            log.info { "Error calculating total size of files in /staging/files" }
-        }
-        /// if disk too full return null
-        ////
+        log.info { "Skipping staging area inspection" }
+
         val acquiredThread: ConcurrencyResource.AcquiredThread =
             concurrencyResource.tryAcquire() ?: return null
         return JdbcPartitionReader.AcquiredResources { acquiredThread.close() }

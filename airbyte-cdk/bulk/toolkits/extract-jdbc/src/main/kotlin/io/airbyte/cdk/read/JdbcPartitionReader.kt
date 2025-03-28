@@ -29,6 +29,7 @@ import kotlinx.coroutines.future.await
 sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     val partition: P,
 ) : PartitionReader {
+    private val log = KotlinLogging.logger {}
 
     val streamState: JdbcStreamState<*> = partition.streamState
     val stream: Stream = streamState.stream
@@ -38,6 +39,8 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
         streamState.streamFeedBootstrap.streamRecordConsumer()
 
     private val acquiredResources = AtomicReference<AcquiredResources>()
+
+    private var devNulledRows: Long = 0
 
     /** Calling [close] releases the resources acquired for the [JdbcPartitionReader]. */
     fun interface AcquiredResources : AutoCloseable
@@ -51,6 +54,12 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     }
 
     fun out(row: SelectQuerier.ResultRow) {
+        if (partition.skipWritingAndSerialization || partition.skipWriting) {
+            if(++devNulledRows % 100_000L == 0L) {
+                log.info { "Discarded $devNulledRows rows" }
+            }
+            return
+        }
         streamRecordConsumer.accept(row.data, row.changes)
     }
 
@@ -74,20 +83,6 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
 ) : JdbcPartitionReader<P>(partition) {
     private val log = KotlinLogging.logger {}
 
-    fun commands(query: String): List<String> = listOf(
-        "mysql",
-        "--quick",
-        "--raw",
-        "-ss",
-        "-P",
-        sharedState.configuration.realPort.toString(),
-        "-h",
-        sharedState.configuration.realHost,
-        "-u",
-        sharedState.configuration.jdbcProperties.get("user")!!,
-        "-p${sharedState.configuration.jdbcProperties.get("password")}",
-        "-e$query"
-    )
 
     val runComplete = AtomicBoolean(false)
     val numRecords = AtomicLong()
@@ -99,57 +94,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
         did before time has elapsed will be wasted. */
         checkMaxReadTimeElapsed()
 
-        fun collectOutput(inputStream: InputStream): String {
-            val out = StringBuilder()
-            val buf: BufferedReader = inputStream.bufferedReader(UTF_8)
-            var line: String? = buf.readLine()
-            do {
-                if (line != null) {
-                    out.append(line).append("\n")
-                }
-                line = buf.readLine()
-            } while (line != null)
-            return out.toString()
-        }
-        /////////////////////////////////
-        // form query
-        var q = partition.nonResumableQuery.sql
-        val bindings = partition.nonResumableQuery.bindings
-        for (binding in bindings) {
-            q = q.replaceFirst("?", binding.value.toString())
-        }
-
-        // Run mysql
-        val cmds = commands(q)
-
-        val pb = ProcessBuilder(cmds)
-        val file = createTempFile(Path("/staging/files"/*"/tmp"*/), "ab", ".txt",
-            PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-rw-rw-")))
-        pb.redirectOutput(file.toFile()/*ProcessBuilder.Redirect.DISCARD*/)
-
-        log.info { "Running $cmds to ${file}" }
-        val timeTaken = measureTime {
-            val process = pb.start()
-            val finishedP = process.onExit().await()
-            if (finishedP.exitValue() != 0) {
-                log.error { "Failed to execute command: ${pb.command()}" }
-                log.error { collectOutput(process.errorStream) }
-                throw RuntimeException()
-            }
-        }
-
-        log.info { "${file} Time taken: $timeTaken" }
-        // emit record + file_url
-        val recordTemplate =
-            "{\"type\":\"RECORD\",\"record\":{\"namespace\":\"${stream.namespace}\",\"stream\":\"${stream.name}\",\"file\":{\"file_url\":\"${file.pathString}\",\"bytes\":${file.fileSize()},\"file_relative_path\":\"${file.fileName}\",\"modified\":${file.getLastModifiedTime().toMillis()},\"source_file_url\":\"${file.fileName}\"},\"emitted_at\":${Clock.systemUTC().millis()},\"data\":{}}}"
-        log.info { "Emitting: $recordTemplate" }
-        println(recordTemplate)
-        /*val deleted = file.deleteIfExists()
-        log.info { "Deleted $file $deleted" }*/
-        numRecords.incrementAndGet()
-        /////////////////////////////////
-
-        /*selectQuerier
+        selectQuerier
             .executeQuery(
                 q = partition.nonResumableQuery,
                 parameters =
@@ -159,11 +104,20 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
                     ),
             )
             .use { result: SelectQuerier.Result ->
+                var count = 0L
                 for (row in result) {
                     out(row)
-                    numRecords.incrementAndGet()
+                    if (!partition.skipSynchronizedCounts) {
+                        numRecords.incrementAndGet()
+                    } else {
+                        count++
+                    }
                 }
-            }*/
+                if (partition.skipSynchronizedCounts) {
+                    numRecords.addAndGet(count)
+                }
+            }
+
         runComplete.set(true)
     }
 

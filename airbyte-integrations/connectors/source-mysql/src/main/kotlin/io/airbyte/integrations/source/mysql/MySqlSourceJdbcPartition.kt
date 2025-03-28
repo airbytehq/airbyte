@@ -78,6 +78,9 @@ class MySqlSourceJdbcNonResumableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
     val cursor: Field,
+    override val skipWritingAndSerialization: Boolean = false,
+    override val skipWriting: Boolean = false,
+    override val skipSynchronizedCounts: Boolean = false,
 ) :
     MySqlSourceJdbcPartition(selectQueryGenerator, streamState),
     JdbcCursorPartition<DefaultJdbcStreamState> {
@@ -321,6 +324,9 @@ class MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
     override val upperBound: List<JsonNode>?,
     cursor: Field,
     cursorUpperBound: JsonNode?,
+    override val skipWriting: Boolean = false,
+    override val skipSynchronizedCounts: Boolean = false,
+    override val skipWritingAndSerialization: Boolean = false,
 ) :
     MySqlSourceJdbcCursorPartition(
         selectQueryGenerator,
