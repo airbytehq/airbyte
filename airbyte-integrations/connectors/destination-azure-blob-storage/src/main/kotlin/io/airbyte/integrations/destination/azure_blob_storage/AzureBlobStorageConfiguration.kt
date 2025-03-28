@@ -12,6 +12,8 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfig
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
+import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
+import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
 import io.airbyte.cdk.load.file.NoopProcessor
@@ -22,6 +24,7 @@ import java.io.OutputStream
 class AzureBlobStorageConfiguration<T : OutputStream>(
     // Client-facing configuration
     override val azureBlobStorageClientConfiguration: AzureBlobStorageClientConfiguration,
+    override val objectStoragePathConfiguration: ObjectStoragePathConfiguration,
     override val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration,
     override val objectStorageCompressionConfiguration: ObjectStorageCompressionConfiguration<T>,
 
@@ -41,6 +44,7 @@ class AzureBlobStorageConfiguration<T : OutputStream>(
 ) :
     DestinationConfiguration(),
     AzureBlobStorageClientConfigurationProvider,
+    ObjectStoragePathConfigurationProvider,
     ObjectStorageFormatConfigurationProvider,
     ObjectStorageUploadConfigurationProvider,
     ObjectStorageCompressionConfigurationProvider<T>
@@ -58,6 +62,7 @@ class AzureBlobStorageConfigurationFactory :
         azureBlobStorageClientConfiguration.spillSize = pojo.azureBlobStorageSpillSize
         return AzureBlobStorageConfiguration(
             azureBlobStorageClientConfiguration = azureBlobStorageClientConfiguration,
+            objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration =
                 ObjectStorageCompressionConfiguration(NoopProcessor),

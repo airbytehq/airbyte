@@ -7,8 +7,6 @@ package io.airbyte.integrations.destination.azure_blob_storage
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.ObjectStorageDataDumper
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
-import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfigurationProvider
 import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlobStorageClientFactory
 import io.airbyte.cdk.load.file.object_storage.ObjectStoragePathFactory
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
@@ -29,21 +27,17 @@ class AzureBlobStorageDataDumper : DestinationDataDumper {
         spec: ConfigurationSpecification,
         stream: DestinationStream
     ): ObjectStorageDataDumper {
-        val config: AzureBlobStorageClientConfiguration = TODO()
-        val configProvider =
-            object : AzureBlobStorageClientConfigurationProvider {
-                override val azureBlobStorageClientConfiguration:
-                    AzureBlobStorageClientConfiguration
-                    get() = config
-            }
-        val pathFactory = ObjectStoragePathFactory.from(TODO())
-        val client = AzureBlobStorageClientFactory(configProvider).make()
+        val config: AzureBlobStorageConfiguration<*> =
+            AzureBlobStorageConfigurationFactory()
+                .makeWithoutExceptionHandling(spec as AzureBlobStorageSpecification)
+        val pathFactory = ObjectStoragePathFactory.from(config)
+        val client = AzureBlobStorageClientFactory(config).make()
         return ObjectStorageDataDumper(
             stream,
             client,
             pathFactory,
-            TODO(),
-            TODO(),
+            config.objectStorageFormatConfiguration,
+            config.objectStorageCompressionConfiguration,
         )
     }
 }
