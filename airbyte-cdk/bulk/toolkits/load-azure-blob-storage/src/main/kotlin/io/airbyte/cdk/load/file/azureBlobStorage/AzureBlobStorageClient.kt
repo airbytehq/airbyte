@@ -17,6 +17,12 @@ import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
+/**
+ * Azure requires blob metadata keys to be alphanumeric+underscores, so replace the dashes with
+ * underscores.
+ */
+const val GENERATION_ID_METADATA_KEY_OVERRIDE = "ab_generation_id"
+
 /** Represents a single blob in Azure. */
 data class AzureBlob(
     override val key: String,
