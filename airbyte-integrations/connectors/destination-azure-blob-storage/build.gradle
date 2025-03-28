@@ -5,12 +5,12 @@ plugins {
 
 airbyteBulkConnector {
     core = 'load'
-    toolkits = ['load-azure-blob-storage']
+    toolkits = ['load-object-storage', 'load-azure-blob-storage']
     cdk = 'local'
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestination'
+    mainClass = 'io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestinationKt'
 
     applicationDefaultJvmArgs = [
             '-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
@@ -47,3 +47,7 @@ configurations.all {
 //     testImplementation 'org.apache.commons:commons-lang3:3.11'
 //     testImplementation "org.testcontainers:junit-jupiter:1.17.5"
 // }
+
+dependencies {
+    integrationTestImplementation 'org.testcontainers:azure:1.20.6'
+}
