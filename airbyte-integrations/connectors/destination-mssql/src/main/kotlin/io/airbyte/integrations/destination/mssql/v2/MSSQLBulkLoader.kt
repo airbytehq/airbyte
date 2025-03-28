@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.data.csv.toCsvHeader
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlob
 import io.airbyte.cdk.load.file.azureBlobStorage.AzureBlobClient
-import io.airbyte.cdk.load.file.azureBlobStorage.GENERATION_ID_METADATA_KEY_OVERRIDE
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipeline.RoundRobinInputPartitioner
 import io.airbyte.cdk.load.write.StreamStateStore

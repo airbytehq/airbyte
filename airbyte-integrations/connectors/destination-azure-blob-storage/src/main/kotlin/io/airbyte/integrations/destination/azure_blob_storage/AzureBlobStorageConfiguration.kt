@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
 import io.airbyte.cdk.load.file.NoopProcessor
+import io.airbyte.cdk.load.file.azureBlobStorage.GENERATION_ID_METADATA_KEY_OVERRIDE
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.io.OutputStream
@@ -56,6 +57,8 @@ class AzureBlobStorageConfiguration<T : OutputStream>(
             pathPattern = null,
             fileNamePattern = null,
         )
+
+    override val generationIdMetadataKey = GENERATION_ID_METADATA_KEY_OVERRIDE
 }
 
 @Singleton
