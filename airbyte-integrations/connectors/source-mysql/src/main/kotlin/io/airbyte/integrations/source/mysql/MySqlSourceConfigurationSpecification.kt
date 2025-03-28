@@ -181,6 +181,15 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
     ) {
         additionalPropertiesMap[name] = value
     }
+
+    @JsonProperty("tmp_skip_serialization_and_writing")
+    val tmpSkipSerializationAndWriting: Boolean? = null
+
+    @JsonProperty("tmp_skip_writing")
+    val tmpSkipWriting: Boolean? = null
+
+    @JsonProperty("tmp_skip_synchronized_counts")
+    val tmpSkipSynchronizedCounts: Boolean? = null
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")

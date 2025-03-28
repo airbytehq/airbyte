@@ -29,6 +29,7 @@ import kotlinx.coroutines.future.await
 sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     val partition: P,
 ) : PartitionReader {
+    private val log = KotlinLogging.logger {}
 
     val streamState: JdbcStreamState<*> = partition.streamState
     val stream: Stream = streamState.stream
@@ -38,6 +39,8 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
         streamState.streamFeedBootstrap.streamRecordConsumer()
 
     private val acquiredResources = AtomicReference<AcquiredResources>()
+
+    private var devNulledRows: Long = 0
 
     /** Calling [close] releases the resources acquired for the [JdbcPartitionReader]. */
     fun interface AcquiredResources : AutoCloseable
@@ -51,6 +54,12 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     }
 
     fun out(row: SelectQuerier.ResultRow) {
+        if (partition.skipWritingAndSerialization || partition.skipWriting) {
+            if(++devNulledRows % 100_000L == 0L) {
+                log.info { "Discarded $devNulledRows rows" }
+            }
+            return
+        }
         streamRecordConsumer.accept(row.data, row.changes)
     }
 
@@ -95,11 +104,20 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
                     ),
             )
             .use { result: SelectQuerier.Result ->
+                var count = 0L
                 for (row in result) {
                     out(row)
-                    numRecords.incrementAndGet()
+                    if (!partition.skipSynchronizedCounts) {
+                        numRecords.incrementAndGet()
+                    } else {
+                        count++
+                    }
+                }
+                if (partition.skipSynchronizedCounts) {
+                    numRecords.addAndGet(count)
                 }
             }
+
         runComplete.set(true)
     }
 
