@@ -3,19 +3,17 @@
 #
 
 import base64
-import copy
+from datetime import datetime
 from typing import Any, List, Mapping, MutableMapping, Optional
 
 import pendulum
 
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator, TokenAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
-
-from .streams import Export
-from .testing import adapt_validate_if_testing
 
 
 def raise_config_error(message: str, original_error: Optional[Exception] = None):
@@ -25,6 +23,9 @@ def raise_config_error(message: str, original_error: Optional[Exception] = None)
     raise config_error
 
 
+CONFIG_DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+
+
 class TokenAuthenticatorBase64(TokenAuthenticator):
     def __init__(self, token: str):
         token = base64.b64encode(token.encode("utf8")).decode("utf8")
@@ -32,10 +33,12 @@ class TokenAuthenticatorBase64(TokenAuthenticator):
 
 
 class SourceMixpanel(YamlDeclarativeSource):
-    def __init__(self):
-        super().__init__(**{"path_to_yaml": "manifest.yaml"})
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        self._validate_config(config)
+
         credentials = config.get("credentials")
         if not credentials.get("option_title"):
             if credentials.get("api_secret"):
@@ -44,12 +47,6 @@ class SourceMixpanel(YamlDeclarativeSource):
                 credentials["option_title"] = "Service Account"
 
         streams = super().streams(config=config)
-
-        config_transformed = copy.deepcopy(config)
-        config_transformed = self._validate_and_transform(config_transformed)
-        auth = self.get_authenticator(config)
-
-        streams.append(Export(authenticator=auth, **config_transformed))
 
         return streams
 
@@ -65,14 +62,13 @@ class SourceMixpanel(YamlDeclarativeSource):
     @staticmethod
     def validate_date(name: str, date_str: str, default: pendulum.date) -> pendulum.date:
         if not date_str:
-            return default
+            return
         try:
-            return pendulum.parse(date_str).date()
+            pendulum.parse(date_str)
         except pendulum.parsing.exceptions.ParserError as e:
             raise_config_error(f"Could not parse {name}: {date_str}. Please enter a valid {name}.", e)
 
-    @adapt_validate_if_testing
-    def _validate_and_transform(self, config: MutableMapping[str, Any]):
+    def _validate_config(self, config: MutableMapping[str, Any]):
         (
             project_timezone,
             start_date,
@@ -121,15 +117,6 @@ class SourceMixpanel(YamlDeclarativeSource):
             raise_config_error("Required parameter 'project_id' missing or malformed. Please provide a valid project ID.")
 
         today = pendulum.today(tz=project_timezone).date()
-        config["project_timezone"] = project_timezone
-        config["start_date"] = self.validate_date("start date", start_date, today.subtract(days=365))
-        config["end_date"] = self.validate_date("end date", end_date, today.subtract(days=1))
-        config["attribution_window"] = attribution_window
-        config["select_properties_by_default"] = select_properties_by_default
-        config["region"] = region
-        config["date_window_size"] = date_window_size
-        config["project_id"] = project_id
-        config["page_size"] = page_size
-        config["export_lookback_window"] = export_lookback_window
-
+        self.validate_date("start date", start_date, today.subtract(days=365))
+        self.validate_date("end date", end_date, today.subtract(days=1))
         return config
