@@ -41,12 +41,17 @@ Airbyte does not allow for the renaming of individual streams at this time.
 
 ### Stream uniqueness
 
-Stream identifiers must be unique across Airbyte connections that share the same destination. You should not configure more than one Airbyte connection to sync to the same destination stream. Doing so can cause job failures and will be disallowed in future versions of Airbyte.
-To prevent Airbyte from syncing to the same destination stream when setting up multiple connections to a single destination, each connection must have either a unique stream names or namespaces. To resolve this, you can:
+Stream identifiers must be unique across Airbyte connections that share the same destination. Don't configure more than one Airbyte connection to sync to the same destination stream. Doing  can cause job failures and is not permitted in Airbyte. To prevent Airbyte from syncing to the same destination stream when setting up multiple connections to a single destination, each connection must have either a unique stream name or namespace.
+
+A common scenario looks like this: you have multiple source accounts and want to sync all this data to a single table in your destination. Although convenient, doing this carried a risk of data loss as multiple connections clashed with each other while writing to the same table.
+
+To resolve this, you can:
 
 - Provide streams in each connection with a unique stream prefix
 - Provide namespaces in each connection with a unique namespace format
 - Disable conflicting streams
+
+If you want to sync your data into a single table, combine it downstream, in your destination, after Airbyte has synced it.
 
 ## Select Sync Mode
 
