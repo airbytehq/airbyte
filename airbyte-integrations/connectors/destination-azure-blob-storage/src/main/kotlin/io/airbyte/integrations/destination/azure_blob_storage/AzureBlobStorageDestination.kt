@@ -4,4 +4,8 @@
 
 package io.airbyte.integrations.destination.azure_blob_storage
 
-class AzureBlobStorageDestination {}
+import io.airbyte.cdk.AirbyteDestinationRunner
+
+fun main(args: Array<String>) {
+    AirbyteDestinationRunner.run(*args)
+}
