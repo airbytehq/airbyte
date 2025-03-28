@@ -43,7 +43,6 @@ abstract class S3V2WriteTest(
     nullEqualsUnset: Boolean = false,
     unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     private val mergesUnions: Boolean = false,
-    integralNumbersAreConvertedToInt: Boolean,
 ) :
     BasicFunctionalityIntegrationTest(
         S3V2TestUtils.getConfig(path),
@@ -65,7 +64,6 @@ abstract class S3V2WriteTest(
         nullEqualsUnset = nullEqualsUnset,
         supportFileTransfer = true,
         unknownTypesBehavior = unknownTypesBehavior,
-        integralNumbersAreConvertedToInt = integralNumbersAreConvertedToInt,
     ) {
     @Disabled("Irrelevant for file destinations")
     @Test
