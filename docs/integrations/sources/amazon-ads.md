@@ -131,6 +131,10 @@ Campaign reports may sometimes have no data or may not be presenting in records.
 
 Report data synchronization only covers the last 60 days - [details](https://advertising.amazon.com/API/docs/en-us/reference/1/reports#parameters).
 
+:::note
+The 'Reports' stream(s) by default will have `timeUnit` set to `SUMMARY`. If you would like more granularity, use the `_daily` versions of the report streams, which have
+ `timeUnit` set to `DAILY`. More info about this can be found [here](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#timeunit-and-supported-columns).
+:::
 ## Performance considerations
 
 Information about expected report generation waiting time can be found [here](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
@@ -153,6 +157,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.1.5 | 2025-03-26 | [55217](https://github.com/airbytehq/airbyte/pull/55217) | Add `daily` versions of `reports` streams |
 | 7.1.4 | 2025-03-22 | [56155](https://github.com/airbytehq/airbyte/pull/56155) | Update dependencies |
 | 7.1.3 | 2025-03-08 | [55352](https://github.com/airbytehq/airbyte/pull/55352) | Update dependencies |
 | 7.1.2 | 2025-02-24 | [53692](https://github.com/airbytehq/airbyte/pull/53692) | Added handling 401 error for Polling Requester |
