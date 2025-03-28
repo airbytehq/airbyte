@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.azure_blob_storage
 
+import io.airbyte.cdk.load.command.object_storage.CSVFormatSpecification
+import io.airbyte.cdk.load.command.object_storage.FlatteningSpecificationProvider.Flattening
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
@@ -38,6 +40,11 @@ abstract class AzureBlobStorageWriteTest(configContents: String) :
     }
 }
 
-@Disabled class AzureBlobStorageCsvWriteTest : AzureBlobStorageWriteTest(TODO())
+class AzureBlobStorageCsvNoFlatteningWriteTest :
+    AzureBlobStorageWriteTest(
+        AzureBlobStorageTestUtil.getConfig(
+            CSVFormatSpecification(flattening = Flattening.NO_FLATTENING)
+        )
+    )
 
 @Disabled class AzureBlobStorageJsonlWriteTest : AzureBlobStorageWriteTest(TODO())
