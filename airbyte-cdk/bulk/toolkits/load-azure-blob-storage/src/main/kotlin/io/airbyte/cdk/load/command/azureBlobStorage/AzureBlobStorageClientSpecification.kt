@@ -76,7 +76,7 @@ data class AzureBlobStorageClientConfiguration(
 ) {
     init {
         check(!accountKey.isNullOrBlank() xor !sharedAccessSignature.isNullOrBlank()) {
-            "AzureBlobStorageClientConfiguration must have a SAS or an account key"
+            "AzureBlobStorageClientConfiguration must have exactly one of a SAS or an account key"
         }
     }
 }
