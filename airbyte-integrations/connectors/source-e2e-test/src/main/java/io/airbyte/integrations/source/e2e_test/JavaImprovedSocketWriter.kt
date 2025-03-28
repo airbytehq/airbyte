@@ -6,7 +6,6 @@ package io.airbyte.integrations.source.e2e_test
 
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter
 import io.airbyte.protocol.models.v0.AirbyteMessage
-import java.io.BufferedOutputStream
 import java.io.File
 import java.io.OutputStream
 import java.net.StandardProtocolFamily
@@ -82,18 +81,17 @@ class JavaImprovedSocketWriter {
 
         // Accept a client connection (blocking call)
         val socketChannel: SocketChannel = serverSocketChannel.accept()
-        println("Source $sock : Client connected $sock")
+        socketChannel.use { socket ->
+            println("Source $sock : Client connected $sock")
 
-        val outputStream: OutputStream = Channels.newOutputStream(socketChannel)
-        val bufferedOutputStream = BufferedOutputStream(outputStream)
-        writeSerialised(bufferedOutputStream)
-//        writeProtobuf(bufferedOutputStream)
+            val bufferedOutputStream = Channels.newOutputStream(socket).buffered()
+            bufferedOutputStream.use { outputStream ->
+                writeSerialised(outputStream)
+//                writeProtobuf(outputStream)
+            }
 
-        println("Source $sock : Finished writing to socket $sock")
-        bufferedOutputStream.close()
-        outputStream.close()
-        socketChannel.close()
-        serverSocketChannel.close()
+            println("Source $sock : Finished writing to socket $sock")
+        }
     }
 
     private fun writeSerialised(outputStream: OutputStream) {
