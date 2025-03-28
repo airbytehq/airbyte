@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import org.testcontainers.azure.AzuriteContainer
 import org.testcontainers.utility.DockerImageName
 
+// Not actually used currently, but it's pretty cool?
 object AzureBlobStorageTestContainer {
     private const val ACCOUNT_NAME = "devstoreaccount1"
     private const val CONTAINER_NAME = "container-name"
