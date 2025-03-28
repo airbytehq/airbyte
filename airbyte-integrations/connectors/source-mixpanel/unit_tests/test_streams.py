@@ -5,6 +5,7 @@
 import json
 import logging
 from datetime import timedelta
+from unittest import mock
 from unittest.mock import MagicMock
 
 import pendulum
@@ -685,6 +686,9 @@ def test_export_iter_dicts():
 
 def test_export_stream_lookback_window(requests_mock, export_response, config_raw, mocker):
     """Test that export_lookback_window correctly adjusts the start date during incremental sync and verifies slice parameters"""
+    # max between attribution_window and export_lookback_window will be used, changing  attribution_window value to use export_lookback_window
+
+    config_raw["attribution_window"] = 0
     config_raw["export_lookback_window"] = 7200  # 1 hour lookback
     config_raw["start_date"] = "2021-06-01T00:00:00Z"
     config_raw["end_date"] = "2021-07-10T00:00:00Z"
@@ -703,10 +707,14 @@ def test_export_stream_lookback_window(requests_mock, export_response, config_ra
         content=export_response_multiple,  # Use content directly for bytes
         status_code=200,
     )
-
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", {})
     # State with a timestamp 1 hour ago from the latest record
     stream_state = {"time": "2021-06-16T16:28:00Z"}
-    stream_slices = list(stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=stream_state))
+    with mock.patch("airbyte_cdk.sources.declarative.incremental.datetime_based_cursor.DatetimeBasedCursor.get_stream_state") as state_mock:
+        state_mock.return_value = stream_state
+
+        stream_slices = list(stream.stream_slices(sync_mode=SyncMode.incremental))
+
     assert len(stream_slices) > 0  # Ensure we have at least one slice
     stream_slice = stream_slices[0]
 
@@ -715,9 +723,8 @@ def test_export_stream_lookback_window(requests_mock, export_response, config_ra
     expected_end = pendulum.parse("2021-07-10T00:00:00Z")  # From config end_date
 
     # Note: start_date might differ due to date_window_size slicing, adjust if needed
-    assert pendulum.parse(stream_slice["start_time"]) == pendulum.parse("2021-06-11T00:00:00Z")  # Adjusted by attribution_window
+    assert pendulum.parse(stream_slice["start_time"]) == expected_start  # Adjusted by attribution_window
     assert pendulum.parse(stream_slice["end_time"]) == expected_end
-    assert pendulum.parse(stream_slice["time"]) == expected_start
 
     # Read records and verify both are included due to lookback
     records = list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))

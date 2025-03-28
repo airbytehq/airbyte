@@ -50,7 +50,7 @@ def export_config(export_start_date):
         "project_timezone": pendulum.timezone("UTC").name,
         "select_properties_by_default": True,
         "start_date": "2024-01-25T00:00:00Z",
-        "end_date": str(export_start_date.add(days=31)),
+        "end_date": export_start_date.add(days=31).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "region": "US",
         "page_size": 1000,
     }
