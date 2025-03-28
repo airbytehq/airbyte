@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.pipline.object_storage
 
 import io.airbyte.cdk.load.file.object_storage.Part
 import io.airbyte.cdk.load.file.object_storage.PartBookkeeper
+import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.WithBatchState
 import io.airbyte.cdk.load.pipeline.BatchAccumulator
@@ -19,12 +20,12 @@ import jakarta.inject.Singleton
 
 @Singleton
 @Requires(bean = ObjectLoader::class)
-class ObjectLoaderUploadCompleter :
+class ObjectLoaderUploadCompleter<T : RemoteObject<*>>(val objectLoader: ObjectLoader) :
     BatchAccumulator<
         ObjectLoaderUploadCompleter.State,
         ObjectKey,
-        ObjectLoaderPartLoader.PartResult,
-        ObjectLoaderUploadCompleter.UploadResult
+        ObjectLoaderPartLoader.PartResult<T>,
+        ObjectLoaderUploadCompleter.UploadResult<T>
     > {
     private val log = KotlinLogging.logger {}
 
@@ -34,7 +35,8 @@ class ObjectLoaderUploadCompleter :
         }
     }
 
-    data class UploadResult(override val state: BatchState) : WithBatchState
+    data class UploadResult<T>(override val state: BatchState, val remoteObject: T?) :
+        WithBatchState
 
     override suspend fun start(key: ObjectKey, part: Int): State {
         val bookkeeper = PartBookkeeper()
@@ -42,9 +44,9 @@ class ObjectLoaderUploadCompleter :
     }
 
     override suspend fun accept(
-        input: ObjectLoaderPartLoader.PartResult,
+        input: ObjectLoaderPartLoader.PartResult<T>,
         state: State
-    ): BatchAccumulatorResult<State, UploadResult> {
+    ): BatchAccumulatorResult<State, UploadResult<T>> {
         return when (input) {
             is ObjectLoaderPartLoader.LoadedPart -> {
                 val part =
@@ -60,8 +62,8 @@ class ObjectLoaderUploadCompleter :
                     log.info {
                         "Loaded part ${input.partIndex} (isFinal=${input.isFinal}) completes ${state.objectKey}, finishing (state $state)"
                     }
-                    input.upload.await().complete()
-                    FinalOutput(UploadResult(BatchState.COMPLETE))
+                    val obj = input.upload.await().complete()
+                    FinalOutput(UploadResult(objectLoader.stateAfterUpload, obj))
                 } else {
                     log.info {
                         "After loaded part ${input.partIndex} (isFinal=${input.isFinal}), ${state.objectKey} still incomplete, not finishing (state $state)"
@@ -75,11 +77,14 @@ class ObjectLoaderUploadCompleter :
         }
     }
 
-    override suspend fun finish(state: State): FinalOutput<State, UploadResult> {
-        /**
-         * Should never be called until end-of-stream. There should ever be one completer worker,
-         * and the enclosing step should be configured not to flush.
-         */
-        return FinalOutput(UploadResult(BatchState.COMPLETE))
+    override suspend fun finish(state: State): FinalOutput<State, UploadResult<T>> {
+        if (!state.partBookkeeper.isEmpty) {
+            throw IllegalStateException(
+                "Upload completers had unfinished work at end-of-stream. This should not happen."
+            )
+        }
+
+        // Everything we received before end-of-stream was a no-op. Return a dummy output.
+        return FinalOutput(UploadResult(objectLoader.stateAfterUpload, null))
     }
 }
