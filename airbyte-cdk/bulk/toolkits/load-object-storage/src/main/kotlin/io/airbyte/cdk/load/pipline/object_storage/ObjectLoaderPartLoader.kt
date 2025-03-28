@@ -41,7 +41,7 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
     private val client: ObjectStorageClient<T>,
     private val catalog: DestinationCatalog,
     private val uploads: UploadsInProgress<T>,
-    private val objectLoader: ObjectLoader?,
+    private val objectLoader: ObjectLoader,
 ) :
     BatchAccumulator<
         ObjectLoaderPartLoader.State<T>,
