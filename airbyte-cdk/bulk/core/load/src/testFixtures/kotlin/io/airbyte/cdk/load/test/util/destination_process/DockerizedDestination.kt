@@ -11,9 +11,9 @@ import io.airbyte.cdk.load.util.deserializeToClass
 import io.airbyte.cdk.load.util.serializeToJsonBytes
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.output.BufferingOutputConsumer
-import io.airbyte.protocol.models.v0.AirbyteLogMessage
-import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.AirbyteLogMessage
+import io.airbyte.protocol.models.AirbyteMessage
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedWriter
 import java.io.File

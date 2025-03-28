@@ -8,7 +8,7 @@ import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper.Companion.DATE_TI
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.Jsons
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime

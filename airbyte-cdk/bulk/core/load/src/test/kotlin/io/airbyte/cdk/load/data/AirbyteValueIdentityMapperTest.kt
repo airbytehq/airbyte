@@ -8,8 +8,8 @@ import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.Root
 import io.airbyte.cdk.load.test.util.SchemaRecordBuilder
 import io.airbyte.cdk.load.test.util.ValueTestBuilder
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.Change
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.Reason
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

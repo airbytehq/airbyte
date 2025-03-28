@@ -17,10 +17,10 @@ import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcessFactory
 import io.airbyte.cdk.load.test.util.destination_process.DestinationUncleanExitException
 import io.airbyte.cdk.load.test.util.destination_process.NonDockerizedDestination
-import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
-import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.AirbyteStateMessage
-import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+import io.airbyte.protocol.models.AirbyteErrorTraceMessage
+import io.airbyte.protocol.models.AirbyteMessage
+import io.airbyte.protocol.models.AirbyteStateMessage
+import io.airbyte.protocol.models.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime

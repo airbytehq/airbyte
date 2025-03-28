@@ -8,8 +8,8 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.Change
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.Reason
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 

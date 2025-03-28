@@ -7,10 +7,10 @@ package io.airbyte.cdk.load.command
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
 import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
-import io.airbyte.protocol.models.v0.AirbyteStream
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
-import io.airbyte.protocol.models.v0.DestinationSyncMode
-import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.airbyte.protocol.models.AirbyteStream
+import io.airbyte.protocol.models.ConfiguredAirbyteStream
+import io.airbyte.protocol.models.DestinationSyncMode
+import io.airbyte.protocol.models.StreamDescriptor
 import jakarta.inject.Singleton
 
 /**

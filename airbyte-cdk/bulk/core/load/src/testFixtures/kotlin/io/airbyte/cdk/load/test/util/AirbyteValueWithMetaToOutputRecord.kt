@@ -11,7 +11,7 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange
 import java.time.Instant
 import java.util.UUID
 

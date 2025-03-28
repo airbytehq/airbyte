@@ -29,6 +29,11 @@ import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.io.OutputStream
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
+import io.airbyte.cdk.load.message.object_storage.LoadablePart
+import io.airbyte.cdk.load.write.object_storage.PartToObjectAccumulator
+import java.io.File
+import java.nio.file.Path
 
 @Singleton
 @Requires(bean = ObjectLoader::class)
@@ -53,6 +58,7 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
 
     private val objectSizeBytes = loader.objectSizeBytes
     private val partSizeBytes = loader.partSizeBytes
+    private var fileCounter = 0L
 
     data class State<T : OutputStream>(
         val stream: DestinationStream,
@@ -105,11 +111,19 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
         return newState(stream)
     }
 
+    /*
+    * Takes records and chunks it into bytes.
+    */
     override suspend fun accept(
         input: DestinationRecordRaw,
         state: State<T>
     ): BatchAccumulatorResult<State<T>, FormattedPart> {
+        if (input.fileReference != null) {
+            uploadFile(input.stream, input.fileReference!!.fileUrl, input.fileReference!!.fileRelativePath, fileCounter++)
+        }
+
         state.writer.accept(input)
+
         val dataSufficient = state.writer.bufferSize >= partSizeBytes || batchSizeOverride != null
         return if (dataSufficient) {
             val part = makePart(state)
@@ -125,5 +139,49 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
 
     override suspend fun finish(state: State<T>): FinalOutput<State<T>, FormattedPart> {
         return FinalOutput(makePart(state, true))
+    }
+
+    suspend fun uploadFile(stream: DestinationStream, fileUrl: String, fileRelativePath: String, fileNumber: Long) {
+        val objectAccumulator = PartToObjectAccumulator(stream, client)
+
+        val key =
+            Path.of(pathFactory.getFinalDirectory(stream), fileRelativePath)
+                .toString()
+
+        val part =
+            PartFactory(
+                key = key,
+                fileNumber = fileNumber,
+            )
+
+        val localFile = File(fileUrl)
+        val fileInputStream = localFile.inputStream()
+
+        while (true) {
+            val bytePart =
+                ByteArray(ObjectStorageUploadConfiguration.DEFAULT_PART_SIZE_BYTES.toInt())
+            val read = fileInputStream.read(bytePart)
+            log.info { "Read $read bytes from file" }
+
+            if (read == -1) {
+                val filePart: ByteArray? = null
+                val batch = LoadablePart(part.nextPart(filePart, isFinal = true))
+//                handleFilePart(batch, stream.descriptor, index)
+                objectAccumulator.processBatch(batch)
+                break
+            } else if (read < bytePart.size) {
+                val filePart: ByteArray = bytePart.copyOfRange(0, read)
+                val batch = LoadablePart(part.nextPart(filePart, isFinal = true))
+//                handleFilePart(batch, stream.descriptor, index)
+                objectAccumulator.processBatch(batch)
+                break
+            } else {
+                val batch = LoadablePart(part.nextPart(bytePart, isFinal = false))
+//                handleFilePart(batch, stream.descriptor, index)
+                objectAccumulator.processBatch(batch)
+            }
+        }
+        fileInputStream.close()
+        localFile.delete()
     }
 }

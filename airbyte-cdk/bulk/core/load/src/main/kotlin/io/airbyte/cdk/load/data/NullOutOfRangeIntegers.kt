@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange
 import java.math.BigInteger
 
 /**

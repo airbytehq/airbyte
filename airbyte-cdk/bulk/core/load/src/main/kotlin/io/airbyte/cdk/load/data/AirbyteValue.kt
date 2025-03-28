@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.node.NullNode
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.*
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.*
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate

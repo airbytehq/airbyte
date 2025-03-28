@@ -4,9 +4,9 @@
 
 package io.airbyte.cdk.load.test.util.destination_process
 
-import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
-import io.airbyte.protocol.models.v0.AirbyteStateMessage
-import io.airbyte.protocol.models.v0.AirbyteTraceMessage
+import io.airbyte.protocol.models.AirbyteErrorTraceMessage
+import io.airbyte.protocol.models.AirbyteStateMessage
+import io.airbyte.protocol.models.AirbyteTraceMessage
 
 class DestinationUncleanExitException(
     exitCode: Int,

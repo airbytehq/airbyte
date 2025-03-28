@@ -30,18 +30,19 @@ import io.airbyte.cdk.load.data.toAirbyteValues
 import io.airbyte.cdk.load.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.load.message.CheckpointMessage.Stats
 import io.airbyte.cdk.load.util.deserializeToNode
-import io.airbyte.protocol.models.v0.AirbyteGlobalState
-import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.*
-import io.airbyte.protocol.models.v0.AirbyteStateMessage
-import io.airbyte.protocol.models.v0.AirbyteStateStats
-import io.airbyte.protocol.models.v0.AirbyteStreamState
-import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
-import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-import io.airbyte.protocol.models.v0.AirbyteTraceMessage
+import io.airbyte.protocol.models.AirbyteGlobalState
+import io.airbyte.protocol.models.AirbyteMessage
+import io.airbyte.protocol.models.AirbyteRecordMessage
+import io.airbyte.protocol.models.AirbyteRecordMessageFileReference
+import io.airbyte.protocol.models.AirbyteRecordMessageMeta
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.*
+import io.airbyte.protocol.models.AirbyteStateMessage
+import io.airbyte.protocol.models.AirbyteStateStats
+import io.airbyte.protocol.models.AirbyteStreamState
+import io.airbyte.protocol.models.AirbyteStreamStatusTraceMessage
+import io.airbyte.protocol.models.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+import io.airbyte.protocol.models.AirbyteTraceMessage
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.math.BigInteger
@@ -288,12 +289,30 @@ data class EnrichedDestinationRecordAirbyteValue(
         get() = declaredFields + airbyteMetaFields
 }
 
+data class FileReference(
+      val fileUrl: String,
+      val fileRelativePath: String,
+      val fileSizeBytes: Long,
+) {
+    companion object {
+            fun fromProtocol(proto: AirbyteRecordMessageFileReference): FileReference = FileReference(
+            proto.fileUrl,
+            proto.fileRelativePath,
+            proto.fileSizeBytes,
+        )
+    }
+}
+
 data class DestinationRecordRaw(
     val stream: DestinationStream,
     private val rawData: AirbyteMessage,
     private val serialized: String,
-    private val schema: AirbyteType
+    private val schema: AirbyteType,
 ) {
+    val fileReference: FileReference? = rawData.record?.fileReference?.let {
+        FileReference.fromProtocol(it)
+    }
+
     fun asRawJson(): JsonNode {
         return rawData.record.data
     }

@@ -8,8 +8,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.test.util.IntegrationTest
-import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.AirbyteMessage
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog
 import io.micronaut.context.env.yaml.YamlPropertySourceLoader
 import java.nio.file.Files
 import java.nio.file.Path

@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.Change
+import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange.Reason
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
