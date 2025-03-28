@@ -11,8 +11,7 @@ import javax.inject.Singleton
 
 @Singleton
 class AzureBlobStorageObjectLoader(config: AzureBlobStorageConfiguration<*>) : ObjectLoader {
-    override val generationIdMetadataKeyOverride: String
-        get() = GENERATION_ID_METADATA_KEY_OVERRIDE
+    override val generationIdMetadataKeyOverride: String = GENERATION_ID_METADATA_KEY_OVERRIDE
 
     override val numPartWorkers: Int = config.numPartWorkers
     override val numUploadWorkers: Int = config.numUploadWorkers
