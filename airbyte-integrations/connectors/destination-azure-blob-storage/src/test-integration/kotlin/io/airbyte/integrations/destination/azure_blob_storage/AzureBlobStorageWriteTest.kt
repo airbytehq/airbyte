@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.azure_blob_storage
 
 import io.airbyte.cdk.load.command.object_storage.CSVFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.FlatteningSpecificationProvider.Flattening
+import io.airbyte.cdk.load.command.object_storage.JsonFormatSpecification
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.UncoercedExpectedRecordMapper
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
@@ -13,7 +14,7 @@ import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 
 abstract class AzureBlobStorageWriteTest(configContents: String) :
     BasicFunctionalityIntegrationTest(
@@ -47,6 +48,30 @@ class AzureBlobStorageCsvNoFlatteningWriteTest :
         AzureBlobStorageTestUtil.getConfig(
             CSVFormatSpecification(flattening = Flattening.NO_FLATTENING)
         )
+    ) {
+    @Test
+    override fun testBasicWriteFile() {
+        super.testBasicWriteFile()
+    }
+}
+
+class AzureBlobStorageCsvWithFlatteningWriteTest :
+    AzureBlobStorageWriteTest(
+        AzureBlobStorageTestUtil.getConfig(
+            CSVFormatSpecification(flattening = Flattening.ROOT_LEVEL_FLATTENING)
+        )
     )
 
-@Disabled class AzureBlobStorageJsonlWriteTest : AzureBlobStorageWriteTest(TODO())
+class AzureBlobStorageJsonlNoFlatteningWriteTest :
+    AzureBlobStorageWriteTest(
+        AzureBlobStorageTestUtil.getConfig(
+            JsonFormatSpecification(flattening = Flattening.NO_FLATTENING)
+        )
+    )
+
+class AzureBlobStorageJsonlWithFlatteningWriteTest :
+    AzureBlobStorageWriteTest(
+        AzureBlobStorageTestUtil.getConfig(
+            JsonFormatSpecification(flattening = Flattening.ROOT_LEVEL_FLATTENING)
+        )
+    )
