@@ -16,8 +16,10 @@ import java.nio.channels.SocketChannel
 import java.util.concurrent.CompletableFuture.runAsync
 import java.util.concurrent.Executors
 
+private const val N_THREADS = 8
+
 class JavaImprovedSocketWriter {
-    private val executor = Executors.newFixedThreadPool(8)
+    private val executor = Executors.newFixedThreadPool(N_THREADS)
 
     companion object {
         const val RECORD =
@@ -28,43 +30,12 @@ class JavaImprovedSocketWriter {
 
     fun startJavaUnixSocketWriter() {
         println("SOURCE SERIALISED 2")
-        val listOf =
-            listOf(
-                runAsync(
-                    { start("sock0") },
-                    executor,
-                ),
-                runAsync(
-                    { start("sock1") },
-                    executor,
-                ),
-                runAsync(
-                    { start("sock2") },
-                    executor,
-                ),
-                runAsync(
-                    { start("sock3") },
-                    executor,
-                ),
-                runAsync(
-                    { start("sock4") },
-                    executor,
-                ),
-                runAsync(
-                    { start("sock5") },
-                    executor,
-                ),
-                runAsync(
-                    { start("sock6") },
-                    executor,
-                ),
-                runAsync(
-                    { start("sock7") },
-                    executor,
-                ),
-            )
-
-        listOf.forEach { it.join() }
+        (0 until N_THREADS)
+            .map { socketId ->
+                runAsync({
+                    start("sock$socketId")
+                }, executor)
+            }.forEach { it.join() }
     }
 
     private fun start(sock: String) {
