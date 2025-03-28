@@ -67,7 +67,11 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 9. **Financial Events Step Size**: Select the time window size for fetching financial events data. Options include:
    - `P1D` (1 day)
    - `P7D` (7 days)
-   - `P14D` (14 days, default)
+   - `P14D` (14 days)
+   - `P30D` (30 days)
+   - `P60D` (60 days)
+   - `P90D` (90 days)
+   - `P180D` (180 days, default)
 10. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 11. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use wating time between requests to avoid fatal statuses in report based streams.
 12. Click `Set up source`.
@@ -87,7 +91,11 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 7. **Financial Events Step Size**: Select the time window size for fetching financial events data. Options include:
    - `P1D` (1 day)
    - `P7D` (7 days)
-   - `P14D` (14 days, default)
+   - `P14D` (14 days)
+   - `P30D` (30 days)
+   - `P60D` (60 days)
+   - `P90D` (90 days)
+   - `P180D` (180 days, default)
 8. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 9. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use wating time between requests to avoid fatal statuses in report based streams.
 10. Click `Set up source`.
@@ -240,7 +248,7 @@ Create a separate connection for streams which usually fail with error above "Fa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.6.1 | 2025-03-26 | [55238](https://github.com/airbytehq/airbyte/pull/55238)     |Fix daterange in `DatetimeBasedCursor` and Added configurable step size for financial events streams (`list_financial_event_groups`, `list_financial_events`)|
+| 4.6.1 | 2025-03-28 | [55238](https://github.com/airbytehq/airbyte/pull/55238)     |Fix daterange in `DatetimeBasedCursor` and Added configurable step size for financial events streams (`list_financial_event_groups`, `list_financial_events`)|
 | 4.6.0 | 2025-02-24 | [53225](https://github.com/airbytehq/airbyte/pull/53225) | Add API Budget |
 | 4.5.3 | 2025-02-22 | [53928](https://github.com/airbytehq/airbyte/pull/53928) | Update dependencies |
 | 4.5.2 | 2025-02-17 | [53693](https://github.com/airbytehq/airbyte/pull/53693) | Add app_id to server configuration (OAuth) |
