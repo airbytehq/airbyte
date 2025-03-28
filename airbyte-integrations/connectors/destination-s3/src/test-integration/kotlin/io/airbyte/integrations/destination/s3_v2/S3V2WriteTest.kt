@@ -318,7 +318,12 @@ class S3V2WriteTestJsonUncompressed :
         preserveUndeclaredFields = true,
         allTypesBehavior = Untyped,
         integralNumbersAreConvertedToInt = true,
-    )
+    ) {
+    @Test
+    override fun testBasicWriteFile() {
+        super.testBasicWriteFile()
+    }
+}
 
 class S3V2WriteTestJsonRootLevelFlattening :
     S3V2WriteTest(
