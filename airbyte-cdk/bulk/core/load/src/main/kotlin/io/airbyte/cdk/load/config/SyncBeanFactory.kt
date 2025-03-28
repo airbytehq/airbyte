@@ -26,6 +26,7 @@ import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.min
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
@@ -147,4 +148,8 @@ class SyncBeanFactory {
     fun batchStateUpdateQueue(): ChannelMessageQueue<BatchUpdate> {
         return ChannelMessageQueue(Channel(100))
     }
+
+    @Singleton
+    @Named("defaultDestinationTaskLauncherHasThrown")
+    fun defaultDestinationTaskLauncherHasThrown(): AtomicBoolean = AtomicBoolean(false)
 }

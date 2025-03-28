@@ -50,6 +50,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
@@ -136,7 +137,8 @@ class DestinationTaskLauncherUTest {
             batchUpdateQueue,
             loadPipeline,
             partitioner,
-            updateBatchTaskFactory
+            updateBatchTaskFactory,
+            hasThrown = AtomicBoolean(false),
         )
     }
 
