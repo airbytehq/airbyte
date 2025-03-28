@@ -37,8 +37,8 @@ class AzureBlobStreamingUploadTest {
             AzureBlobStorageClientConfiguration(
                 accountName = "fakeAccount",
                 containerName = "fakeContainer",
-                sharedAccessSignature = "null",
-                accountKey = "null",
+                sharedAccessSignature = "",
+                accountKey = "test",
             )
         metadata = mapOf("env" to "dev", "author" to "testUser", "ab-generation-id" to "0")
 
