@@ -92,8 +92,11 @@ abstract class DestinationConfiguration : Configuration {
     open val numProcessBatchWorkersForFileTransfer: Int = 3
     open val batchQueueDepth: Int = 10
 
+    open val generationIdMetadataKey: String = DEFAULT_GENERATION_ID_METADATA_KEY
+
     companion object {
         const val DEFAULT_RECORD_BATCH_SIZE_BYTES = 200L * 1024L * 1024L
+        const val DEFAULT_GENERATION_ID_METADATA_KEY = "ab-generation-id"
     }
 
     /**
