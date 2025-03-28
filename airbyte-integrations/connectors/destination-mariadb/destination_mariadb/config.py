@@ -30,11 +30,11 @@ class MariaDBIndexingModel(BaseModel):
         examples=["AIRBYTE_ACCOUNT"],
     )
     port: int = Field(
-        default=5432,
+        default=3306,
         title="Port",
         order=2,
         description="Enter the port you want to use to access the database",
-        examples=["5432"],
+        examples=["3306"],
     )
     database: str = Field(
         ...,
@@ -42,13 +42,6 @@ class MariaDBIndexingModel(BaseModel):
         order=4,
         description="Enter the name of the database that you want to sync data into",
         examples=["AIRBYTE_DATABASE"],
-    )
-    default_schema: str = Field(
-        default="public",
-        title="Default Schema",
-        order=5,
-        description="Enter the name of the default schema",
-        examples=["AIRBYTE_SCHEMA"],
     )
     username: str = Field(
         ...,

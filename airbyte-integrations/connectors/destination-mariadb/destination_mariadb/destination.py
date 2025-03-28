@@ -24,7 +24,7 @@ from airbyte_cdk.models import (
 from destination_mariadb import mariadb_processor
 from destination_mariadb.common.catalog.catalog_providers import CatalogProvider
 from destination_mariadb.config import ConfigModel
-
+# import pydevd_pycharm
 BATCH_SIZE = 150
 
 
@@ -39,7 +39,7 @@ class DestinationMariaDB(Destination):
                 host=config.indexing.host,
                 port=config.indexing.port,
                 database=config.indexing.database,
-                schema_name=config.indexing.default_schema,
+                # schema_name=config.indexing.default_schema,
                 username=config.indexing.username,
                 password=SecretString(config.indexing.credentials.password),
             ),
@@ -65,6 +65,9 @@ class DestinationMariaDB(Destination):
 
     def check(self, logger: Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         _ = logger  # Unused
+
+        # pydevd_pycharm.settrace('192.168.178.27', port=55507, stdoutToServer=True, stderrToServer=True)
+
         try:
             parsed_config = ConfigModel.parse_obj(config)
             self._init_sql_processor(config=parsed_config)

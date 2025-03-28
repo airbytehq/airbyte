@@ -4,6 +4,8 @@ from sqlalchemy.dialects.postgresql.base import ischema_names
 from sqlalchemy.types import UserDefinedType, Float, String
 # from ..utils import Vector
 
+class VARCHAR(UserDefinedType):
+    pass
 
 # this is for airbyte's column definition
 # this doesn't event need to be PGVector or MariaDB specific...

@@ -3227,6 +3227,16 @@ dotenv = ["python-dotenv (>=0.10.4)"]
 email = ["email-validator (>=1.0.3)"]
 
 [[package]]
+name = "pydevd-pycharm"
+version = "243.25659.43"
+description = "PyCharm Debugger (used in PyCharm and PyDev)"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pydevd_pycharm-243.25659.43.tar.gz", hash = "sha256:4ba1a5a5417fe283fe33d37ebb173a1a29c9928c01331a16a9894d05780cc92d"},
+]
+
+[[package]]
 name = "pygments"
 version = "2.19.1"
 description = "Pygments is a syntax highlighting package written in Python."
@@ -4530,4 +4540,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "ab81615ff0310a3db34c60b9bac4f63c187d359b7088ef0a02ee38cf4219844b"
+content-hash = "f06e39860531d93ca49d97ade83700c284e5b332bdc507dbe6814b53884a14eb"

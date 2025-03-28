@@ -15,6 +15,7 @@ import sqlalchemy
 from airbyte._processors.file.jsonl import JsonlWriter
 
 from airbyte.secrets import SecretString
+from airbyte.types import SQLTypeConverter
 from airbyte_cdk.destinations.vector_db_based import embedder
 from airbyte_cdk.destinations.vector_db_based.document_processor import (
     DocumentProcessor as DocumentSplitter,
@@ -53,10 +54,14 @@ class DatabaseConfig(SqlConfig):
     @overrides
     def get_sql_alchemy_url(self) -> SecretString:
         """Return the SQLAlchemy URL to use."""
+
+        # using "mariadb+mariadbconnector" opens a pit to dependency hell, so, not doing that.
+        # conn_str = f"mariadb+mariadbconnector://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+        conn_str = f"mysql+pymysql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+
         return SecretString(
             # this is one of the few places here which is actually DB-specific...
-            # TODO make it configurable
-            f"mysql+pymysql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+            conn_str
         )
 
     @overrides
@@ -78,7 +83,7 @@ class EmbeddingConfig(Protocol):
 class MariaDBProcessor(SqlProcessorBase):
     """A MariaDB implementation of the SQL Processor."""
 
-    supports_merge_insert = False
+    supports_merge_insert = True
     """We use the emulated merge code path because each primary key has multiple rows (chunks)."""
 
     sql_config: DatabaseConfig
@@ -123,12 +128,36 @@ class MariaDBProcessor(SqlProcessorBase):
         _ = stream_name  # unused
         # so we need a "sqlalchemy.types.TypeEngine", whatever that is
         return {
-            DOCUMENT_ID_COLUMN: self.type_converter_class.get_string_type(),
-            CHUNK_ID_COLUMN: self.type_converter_class.get_string_type(),
+            DOCUMENT_ID_COLUMN: sqlalchemy.types.VARCHAR(length=255),# self.type_converter_class.get_string_type(), #
+            CHUNK_ID_COLUMN: sqlalchemy.types.VARCHAR(length=255),
             METADATA_COLUMN: self.type_converter_class.get_json_type(),
-            DOCUMENT_CONTENT_COLUMN: self.type_converter_class.get_string_type(),
+            DOCUMENT_CONTENT_COLUMN: sqlalchemy.types.TEXT(),
             EMBEDDING_COLUMN: VECTOR(self.embedding_dimensions) #Vector(self.embedding_dimensions),
         }
+
+    def _merge_temp_table_to_final_table(
+        self,
+        stream_name: str,
+        temp_table_name: str,
+        final_table_name: str,
+    ) -> None:
+        columns_list: list[str] = list(
+            self._get_sql_column_definitions(stream_name=stream_name).keys()
+        )
+
+        # for MariaDB, this can probably be replaced by INSERT ... ON DUPLICATE KEY UPDATE
+        statement = dedent(
+            f"""
+            INSERT INTO {final_table_name}
+                ({", ".join(columns_list)})
+            SELECT {", ".join(columns_list)}
+            FROM {temp_table_name}
+            ON DUPLICATE KEY UPDATE;
+            """
+        )
+
+        with self.get_sql_connection() as conn:
+            conn.execute(statement)
 
     def _emulated_merge_temp_table_to_final_table(
         self,

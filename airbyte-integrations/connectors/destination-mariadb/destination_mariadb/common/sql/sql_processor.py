@@ -28,6 +28,7 @@ from sqlalchemy.sql.elements import TextClause
 
 from destination_mariadb.common.destinations.record_processor import RecordProcessorBase
 from destination_mariadb.common.state.state_writers import StdOutStateWriter
+from destination_mariadb.globals import DOCUMENT_ID_COLUMN
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -58,8 +59,8 @@ class SQLRuntimeError(Exception):
 class SqlConfig(BaseModel, abc.ABC):
     """Common configuration for SQL connections."""
 
-    schema_name: str
-    """The name of the schema to write to."""
+    # schema_name: str
+    # """The name of the schema to write to."""
 
     table_prefix: Optional[str] = ""
     """A prefix to add to created table names."""
@@ -91,9 +92,10 @@ class SqlConfig(BaseModel, abc.ABC):
         return create_engine(
             url=self.get_sql_alchemy_url(),
             echo=DEBUG_MODE,
-            execution_options={
-                "schema_translate_map": {None: self.schema_name},
-            },
+            # execution_options={
+            #     "schema_translate_map": {None: self.schema_name},
+            # },
+
         )
 
     def get_vendor_client(self) -> object:
@@ -107,7 +109,7 @@ class SqlConfig(BaseModel, abc.ABC):
             f"The type '{type(self).__name__}' does not define a custom client."
         )
 
-
+# TODO: this class should probably be merged into the proper processor
 class SqlProcessorBase(RecordProcessorBase):
     """A base class to be used for SQL Caches."""
 
@@ -154,7 +156,7 @@ class SqlProcessorBase(RecordProcessorBase):
         )
         self.type_converter = self.type_converter_class()
         self._cached_table_definitions: dict[str, sqlalchemy.Table] = {}
-        self._ensure_schema_exists()
+        # self._ensure_schema_exists()
 
     # Public interface:
 
@@ -198,6 +200,7 @@ class SqlProcessorBase(RecordProcessorBase):
         table_prefix = self.sql_config.table_prefix
 
         # TODO: Add default prefix based on the source name.
+        # ^ what did airbyte even mean by this?
 
         return self.normalizer.normalize(
             f"{table_prefix}{stream_name}",
@@ -282,43 +285,21 @@ class SqlProcessorBase(RecordProcessorBase):
                 # the table definition in this case.
                 return sqlalchemy.Table(
                     table_name,
-                    sqlalchemy.MetaData(schema=self.sql_config.schema_name),
+                    sqlalchemy.MetaData(),
                 )
 
             self._cached_table_definitions[table_name] = sqlalchemy.Table(
                 table_name,
-                sqlalchemy.MetaData(schema=self.sql_config.schema_name),
+                sqlalchemy.MetaData(),
                 autoload_with=self.get_sql_engine(),
             )
 
         return self._cached_table_definitions[table_name]
 
-    def _ensure_schema_exists(
-        self,
-    ) -> None:
-        """Return a new (unique) temporary table name."""
-        schema_name = self.sql_config.schema_name
-        if schema_name in self._get_schemas_list():
-            return
-
-        sql = f"CREATE SCHEMA IF NOT EXISTS {schema_name}"
-
-        try:
-            self._execute_sql(sql)
-        except Exception as ex:
-            # Ignore schema exists errors.
-            if "already exists" not in str(ex):
-                raise
-
-        if DEBUG_MODE:
-            found_schemas = self._get_schemas_list()
-            assert schema_name in found_schemas, (
-                f"Schema {schema_name} was not created. Found: {found_schemas}"
-            )
-
     def _quote_identifier(self, identifier: str) -> str:
         """Return the given identifier, quoted."""
-        return f'"{identifier}"'
+        # TODO FIX: which quotes do we acteually need?
+        return f'`{identifier}`'
 
     @final
     def _get_temp_table_name(
@@ -335,7 +316,7 @@ class SqlProcessorBase(RecordProcessorBase):
         table_name: str,
     ) -> str:
         """Return the fully qualified name of the given table."""
-        return f"{self.sql_config.schema_name}.{self._quote_identifier(table_name)}"
+        return f"{self._quote_identifier(table_name)}"
 
     @final
     def _create_table_for_loading(
@@ -360,22 +341,7 @@ class SqlProcessorBase(RecordProcessorBase):
         """Return a list of all tables in the database."""
         with self.get_sql_connection() as conn:
             inspector: Inspector = sqlalchemy.inspect(conn)
-            return inspector.get_table_names(schema=self.sql_config.schema_name)
-
-    def _get_schemas_list(
-        self,
-        database_name: str | None = None,
-    ) -> list[str]:
-        """Return a list of all tables in the database."""
-        inspector: Inspector = sqlalchemy.inspect(self.get_sql_engine())
-        database_name = database_name or self.database_name
-        found_schemas = inspector.get_schema_names()
-        return [
-            found_schema.split(".")[-1].strip('"')
-            for found_schema in found_schemas
-            if "." not in found_schema
-            or (found_schema.split(".")[0].lower().strip('"') == database_name.lower())
-        ]
+            return inspector.get_table_names()
 
     def _ensure_final_table_exists(
         self,
@@ -396,7 +362,7 @@ class SqlProcessorBase(RecordProcessorBase):
                     stream_name,
                 ).items()
             )
-            self._create_table(table_name, column_definition_str)
+            self._create_table(table_name, column_definition_str, [DOCUMENT_ID_COLUMN])
 
         return table_name
 
@@ -405,6 +371,7 @@ class SqlProcessorBase(RecordProcessorBase):
         stream_name: str,
         table_name: str,
     ) -> None:
+        # TODO what exactly is?
         """Return true if the given table is compatible with the stream's schema.
 
         Raises an exception if the table schema is not compatible with the schema of the
@@ -475,8 +442,8 @@ class SqlProcessorBase(RecordProcessorBase):
         self.file_writer.flush_active_batches()
 
         with self.finalizing_batches(stream_name) as batches_to_finalize:
-            # Make sure the target schema and target table exist.
-            self._ensure_schema_exists()
+            # # Make sure the target schema and target table exist.
+            # self._ensure_schema_exists()
             final_table_name = self._ensure_final_table_exists(
                 stream_name,
                 create_if_missing=True,
@@ -617,10 +584,10 @@ class SqlProcessorBase(RecordProcessorBase):
             dataframe.to_sql(
                 temp_table_name,
                 self.get_sql_alchemy_url(),
-                schema=self.sql_config.schema_name,
+                None, # schema=self.sql_config.schema_name,
                 if_exists="append",
                 index=False,
-                dtype=sql_column_definitions,
+                dtype=sql_column_definitions, # the IDE warning is probably okay
             )
         return temp_table_name
 
