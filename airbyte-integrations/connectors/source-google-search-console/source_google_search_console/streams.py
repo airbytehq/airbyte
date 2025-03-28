@@ -421,18 +421,29 @@ class SearchAnalyticsKeywordPageReport(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "page", "search_type"]
     dimensions = ["date", "country", "device", "query", "page"]
 
+class SearchAnalyticsKeywordPageReportMinimalDimensions(SearchByKeyword):
+    primary_key = ["site_url", "date", "country", "device", "query", "page", "search_type"]
+    dimensions = ["date", "query"]
 
 class SearchAnalyticsKeywordSiteReportByPage(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
     dimensions = ["date", "country", "device", "query"]
     aggregation_type = QueryAggregationType.by_page
 
+class SearchAnalyticsKeywordSiteReportByPageMinimalDimensions(SearchByKeyword):
+    primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
+    dimensions = ["date", "country", "device", "query"]
+    aggregation_type = QueryAggregationType.by_page
 
 class SearchAnalyticsKeywordSiteReportBySite(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
     dimensions = ["date", "country", "device", "query"]
     aggregation_type = QueryAggregationType.by_property
 
+class SearchAnalyticsKeywordSiteReportBySiteMinimalDimensions(SearchByKeyword):
+    primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
+    dimensions = ["date", "query"]
+    aggregation_type = QueryAggregationType.by_property
 
 class SearchAnalyticsSiteReportBySite(SearchAnalytics):
     primary_key = ["site_url", "date", "country", "device", "search_type"]

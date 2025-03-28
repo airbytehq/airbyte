@@ -32,8 +32,11 @@ from source_google_search_console.streams import (
     SearchAnalyticsByPage,
     SearchAnalyticsByQuery,
     SearchAnalyticsKeywordPageReport,
+    SearchAnalyticsKeywordPageReportMinimalDimensions,
     SearchAnalyticsKeywordSiteReportByPage,
+    SearchAnalyticsKeywordSiteReportByPageMinimalDimensions,
     SearchAnalyticsKeywordSiteReportBySite,
+    SearchAnalyticsKeywordSiteReportBySiteMinimalDimensions,
     SearchAnalyticsPageReport,
     SearchAnalyticsSiteReportByPage,
     SearchAnalyticsSiteReportBySite,
@@ -182,11 +185,14 @@ class SourceGoogleSearchConsole(AbstractSource):
             SearchAnalyticsByPage(**stream_config),
             SearchAnalyticsAllFields(**stream_config),
             SearchAnalyticsKeywordPageReport(**stream_config),
+            SearchAnalyticsKeywordPageReportMinimalDimensions(**stream_config), 
             SearchAnalyticsPageReport(**stream_config),
             SearchAnalyticsSiteReportBySite(**stream_config),
             SearchAnalyticsSiteReportByPage(**stream_config),
             SearchAnalyticsKeywordSiteReportByPage(**stream_config),
+            SearchAnalyticsKeywordSiteReportByPageMinimalDimensions(**stream_config),
             SearchAnalyticsKeywordSiteReportBySite(**stream_config),
+            SearchAnalyticsKeywordSiteReportBySiteMinimalDimensions(**stream_config),  
         ]
 
         streams = streams + self.get_custom_reports(config=config, stream_config=stream_config)
