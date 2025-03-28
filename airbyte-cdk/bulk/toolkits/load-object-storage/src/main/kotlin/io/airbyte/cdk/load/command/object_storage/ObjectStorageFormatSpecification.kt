@@ -23,14 +23,6 @@ interface ObjectStorageFormatSpecificationProvider {
     @get:JsonProperty("format")
     val format: ObjectStorageFormatSpecification
 
-    fun toObjectStoragePathConfiguration(): ObjectStoragePathConfiguration {
-        return ObjectStoragePathConfiguration(
-            prefix = "",
-            pathPattern = null,
-            fileNamePattern = null,
-        )
-    }
-
     fun toObjectStorageFormatConfiguration(): ObjectStorageFormatConfiguration {
         return when (format) {
             is JsonFormatSpecification ->
