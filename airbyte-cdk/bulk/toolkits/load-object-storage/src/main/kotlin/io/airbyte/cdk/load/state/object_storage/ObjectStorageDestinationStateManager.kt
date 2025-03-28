@@ -27,7 +27,7 @@ class ObjectStorageDestinationState(
     private val stream: DestinationStream,
     private val client: ObjectStorageClient<*>,
     private val pathFactory: PathFactory,
-    private val objectLoader: ObjectLoader? = null,
+    private val objectLoader: ObjectLoader?,
 ) : DestinationState {
     private val log = KotlinLogging.logger {}
 
