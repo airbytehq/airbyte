@@ -12,24 +12,33 @@ import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLConfiguration
 import io.airbyte.integrations.destination.mssql.v2.config.MSSQLIsNotConfiguredForBulkLoad
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Configuration
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import java.sql.Connection
 import java.sql.PreparedStatement
 
 class MSSQLDirectLoader(
-    private val connection: Connection,
-    private val sqlBuilder: MSSQLQueryBuilder,
-    private val preparedStatement: PreparedStatement,
+    config: MSSQLConfiguration,
+    stateStore: StreamStateStore<MSSQLStreamState>,
     private val streamDescriptor: DestinationStream.Descriptor,
     private val batch: Int,
 ) : DirectLoader {
     private val log = KotlinLogging.logger {}
-    private val recordCommitBatchSize = 5_000
-    private val maxBatchDataSize = 200 * 1024 * 1024L
+    private val recordCommitBatchSize = config.batchEveryNRecords
+    private val maxBatchDataSize = config.maxBatchSizeBytes
 
-    var rows: Long = 0
-    var dataSize: Long = 0
+    private var rows: Long = 0
+    private var dataSize: Long = 0
+
+    private val state = (stateStore.get(streamDescriptor) as MSSQLDirectLoaderStreamState?)
+        ?: throw IllegalStateException("No state found for stream $streamDescriptor.")
+    private val sqlBuilder = state.sqlBuilder
+    private val connection = state.dataSource.connection.also { it.autoCommit = false }
+    private val preparedStatement =
+        connection.prepareStatement(
+            state.sqlBuilder.getFinalTableInsertColumnHeader().trimIndent()
+        )
 
     override fun accept(
         record: DestinationRecordRaw,
@@ -45,6 +54,7 @@ class MSSQLDirectLoader(
 
         // Periodically complete the batch and ack underlying records.
         dataSize += record.serializedSizeBytes
+
         if (dataSize >= maxBatchDataSize) {
             finish()
             return DirectLoader.Complete
@@ -69,6 +79,7 @@ class MSSQLDirectLoader(
     }
 
     override fun close() {
+        log.info { "Closing connection for batch $batch" }
         connection.close()
     }
 }
@@ -81,8 +92,8 @@ class MSSQLDirectLoaderFactory(
 ) : DirectLoaderFactory<MSSQLDirectLoader> {
     private val log = KotlinLogging.logger {}
 
-    override val inputPartitions: Int = 2 // Distribute work by stream, if interleaved
-    override val maxNumOpenLoaders: Int = 8
+    override val inputPartitions: Int = config.numInputPartitions // Distribute work by stream, if interleaved
+    override val maxNumOpenLoaders: Int = config.maxNumOpenLoaders
 
     private var batch: Int = 0
     override fun create(
@@ -91,14 +102,6 @@ class MSSQLDirectLoaderFactory(
     ): MSSQLDirectLoader {
         log.info { "Creating query builder for batch $batch of stream $streamDescriptor" }
 
-        val state = stateStore.get(streamDescriptor)!! as MSSQLDirectLoaderStreamState
-        val connection = state.dataSource.connection
-        connection.autoCommit = false
-        val statement =
-            connection.prepareStatement(
-                state.sqlBuilder.getFinalTableInsertColumnHeader().trimIndent()
-            )
-
-        return MSSQLDirectLoader(connection, state.sqlBuilder, statement, streamDescriptor, batch++)
+        return MSSQLDirectLoader(config, stateStore, streamDescriptor, batch++)
     }
 }
