@@ -165,6 +165,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.5.4 | 2025-03-27 | [56433](https://github.com/airbytehq/airbyte/pull/56433) | Add support for multiple VCS platforms to the Pull Requests stream |
 | 3.5.3 | 2025-01-25 | [52291](https://github.com/airbytehq/airbyte/pull/52291) | Update dependencies |
 | 3.5.2 | 2025-01-25 | [52291](https://github.com/airbytehq/airbyte/pull/52291) | Update dependencies |
 | 3.5.1 | 2025-01-24 | [52134](https://github.com/airbytehq/airbyte/pull/52134) | Fix low-code state migration |
