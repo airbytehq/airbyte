@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.pipline.object_storage
 
 import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
@@ -41,7 +42,7 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
     private val client: ObjectStorageClient<T>,
     private val catalog: DestinationCatalog,
     private val uploads: UploadsInProgress<T>,
-    private val objectLoader: ObjectLoader,
+    private val destinationConfig: DestinationConfiguration,
 ) :
     BatchAccumulator<
         ObjectLoaderPartLoader.State<T>,
@@ -83,7 +84,7 @@ class ObjectLoaderPartLoader<T : RemoteObject<*>>(
                 CoroutineScope(Dispatchers.IO).async {
                     client.startStreamingUpload(
                         key.objectKey,
-                        metadata = objectLoader.metadataFor(stream)
+                        metadata = destinationConfig.metadataFor(stream)
                     )
                 },
             )

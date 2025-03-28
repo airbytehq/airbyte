@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.write.object_storage
 
 import com.google.common.annotations.VisibleForTesting
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
@@ -43,6 +44,7 @@ class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>, U : OutputStream>(
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState>,
     @Value("\${airbyte.destination.core.record-batch-size-override}")
     private val recordBatchSizeOverride: Long? = null,
+    private val destinationConfig: DestinationConfiguration,
 ) {
     fun create(stream: DestinationStream): StreamLoader {
         return ObjectStorageStreamLoader(
@@ -55,6 +57,7 @@ class ObjectStorageStreamLoaderFactory<T : RemoteObject<*>, U : OutputStream>(
             uploadConfigurationProvider.objectStorageUploadConfiguration.uploadPartSizeBytes,
             recordBatchSizeOverride
                 ?: uploadConfigurationProvider.objectStorageUploadConfiguration.fileSizeBytes,
+            destinationConfig,
         )
     }
 }
@@ -72,10 +75,11 @@ class ObjectStorageStreamLoader<T : RemoteObject<*>, U : OutputStream>(
     private val destinationStateManager: DestinationStateManager<ObjectStorageDestinationState>,
     private val partSizeBytes: Long,
     private val fileSizeBytes: Long,
+    destinationConfig: DestinationConfiguration,
 ) : StreamLoader {
     private val log = KotlinLogging.logger {}
 
-    private val objectAccumulator = PartToObjectAccumulator(stream, client)
+    private val objectAccumulator = PartToObjectAccumulator(stream, client, destinationConfig)
 
     override suspend fun createBatchAccumulator(): BatchAccumulator {
         val state = destinationStateManager.getState(stream)

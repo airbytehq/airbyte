@@ -27,6 +27,13 @@ data class MSSQLConfiguration(
     override val numProcessBatchWorkers: Int = 1
     override val processEmptyFiles: Boolean = true
     override val recordBatchSizeBytes = ObjectStorageUploadConfiguration.DEFAULT_PART_SIZE_BYTES
+
+    /**
+     * Azure requires blob metadata keys to be alphanumeric+underscores, so replace the dashes with
+     * underscores.
+     */
+    override val generationIdMetadataKey: String
+        get() = "ab_generation_id"
 }
 
 @Singleton

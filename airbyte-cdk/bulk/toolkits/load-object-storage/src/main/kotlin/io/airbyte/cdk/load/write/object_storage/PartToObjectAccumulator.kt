@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.write.object_storage
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.PartBookkeeper
@@ -24,6 +25,7 @@ import kotlinx.coroutines.CompletableDeferred
 class PartToObjectAccumulator<T : RemoteObject<*>>(
     private val stream: DestinationStream,
     private val client: ObjectStorageClient<T>,
+    private val destinationConfig: DestinationConfiguration,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -40,7 +42,7 @@ class PartToObjectAccumulator<T : RemoteObject<*>>(
         if (upload.hasStarted.setOnce()) {
             // Start the upload if we haven't already. Note that the `complete`
             // here refers to the completable deferred, not the streaming upload.
-            val metadata = (null as ObjectLoader?).metadataFor(stream)
+            val metadata = destinationConfig.metadataFor(stream)
             val streamingUpload = client.startStreamingUpload(batch.part.key, metadata)
             upload.streamingUpload.complete(streamingUpload)
         }
