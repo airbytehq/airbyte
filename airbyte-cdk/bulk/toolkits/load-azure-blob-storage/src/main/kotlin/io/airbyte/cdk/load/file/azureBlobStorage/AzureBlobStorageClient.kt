@@ -8,7 +8,7 @@ import com.azure.core.util.BinaryData
 import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.models.BlobStorageException
 import com.azure.storage.blob.models.ListBlobsOptions
-import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfiguration
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
@@ -20,12 +20,12 @@ import kotlinx.coroutines.flow.flow
 /** Represents a single blob in Azure. */
 data class AzureBlob(
     override val key: String,
-    override val storageConfig: AzureBlobStorageConfiguration
-) : RemoteObject<AzureBlobStorageConfiguration>
+    override val storageConfig: AzureBlobStorageClientConfiguration
+) : RemoteObject<AzureBlobStorageClientConfiguration>
 
 class AzureBlobClient(
     private val serviceClient: BlobServiceClient,
-    private val blobConfig: AzureBlobStorageConfiguration
+    private val blobConfig: AzureBlobStorageClientConfiguration
 ) : ObjectStorageClient<AzureBlob> {
 
     /** List all blobs that start with [prefix]. We emit them as a Flow. */
