@@ -32,6 +32,7 @@ This source can sync data from the [K6 Cloud API](https://developers.k6.io). At 
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.19 | 2025-03-29 | [56698](https://github.com/airbytehq/airbyte/pull/56698) | Update dependencies |
 | 0.2.18 | 2025-03-22 | [56019](https://github.com/airbytehq/airbyte/pull/56019) | Update dependencies |
 | 0.2.17 | 2025-03-08 | [55486](https://github.com/airbytehq/airbyte/pull/55486) | Update dependencies |
 | 0.2.16 | 2025-03-01 | [54748](https://github.com/airbytehq/airbyte/pull/54748) | Update dependencies |
