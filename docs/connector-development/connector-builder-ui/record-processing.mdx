@@ -246,6 +246,63 @@ For the above example, the Iterable response format setting would result in the 
 ]
 ```
 
+### CSV
+
+Example CSV response body:
+```csv
+id,name,email,created_at
+1,John Doe,john.doe@example.com,2023-01-15T09:30:00Z
+2,Jane Smith,jane.smith@example.com,2023-01-16T14:20:00Z
+3,Bob Johnson,bob.johnson@example.com,2023-01-17T11:45:00Z
+```
+
+This response format is used for API responses that return data in CSV (Comma-Separated Values) format. APIs typically include a `"Content-Type": "text/csv"` response header when returning CSV data.
+
+The CSV decoder converts each row of the CSV into a JSON object, using the header row to determine field names. The decoder supports various configuration options to handle different CSV formats and requirements:
+
+#### Basic Configuration
+
+By default, the CSV decoder uses the first row as the header and comma as the delimiter. For the example above, the CSV response format would result in the following normalized JSON output:
+
+```json
+[
+  {
+    "id": "1",
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "created_at": "2023-01-15T09:30:00Z"
+  },
+  {
+    "id": "2",
+    "name": "Jane Smith",
+    "email": "jane.smith@example.com",
+    "created_at": "2023-01-16T14:20:00Z"
+  },
+  {
+    "id": "3",
+    "name": "Bob Johnson",
+    "email": "bob.johnson@example.com",
+    "created_at": "2023-01-17T11:45:00Z"
+  }
+]
+```
+
+#### Advanced Configuration Options
+
+The CSV decoder supports several configuration options to handle various CSV formats:
+
+- **Delimiter**: Specify a custom delimiter character (default is comma `,`).
+- **Double Quote**: Enable/disable double quote handling for field values (default is enabled).
+- **Escape Character**: Specify a character used for escaping special characters.
+- **Skip Rows Before Header**: Skip a specified number of rows before the header row.
+- **Skip Rows After Header**: Skip a specified number of rows after the header row.
+- **Autogenerate Column Names**: When enabled, generates column names (f0, f1, f2, etc.) if no header row is present.
+- **True Values**: List of strings to interpret as boolean `true` values.
+- **False Values**: List of strings to interpret as boolean `false` values.
+- **Null Values**: List of strings to interpret as `null` values.
+
+These options allow for flexible handling of various CSV formats and structures, making it possible to properly decode CSV data from different sources.
+
 ## Record Selection
 
 <iframe
