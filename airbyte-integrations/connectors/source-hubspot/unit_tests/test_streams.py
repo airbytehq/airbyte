@@ -9,6 +9,7 @@ import pendulum
 import pytest
 from source_hubspot.streams import (
     Campaigns,
+    CommercePayments,
     Companies,
     ContactLists,
     Contacts,
@@ -120,6 +121,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (TicketPipelines, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Tickets, "ticket", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Workflows, "", {"updatedAt": 1675121674226}),
+        (CommercePayments, "commerce_payments", {"updatedAt": "2022-02-25T16:43:11Z"}),
     ],
 )
 def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_params, fake_properties_list):
