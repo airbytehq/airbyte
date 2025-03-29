@@ -20,6 +20,7 @@ Each of the supported formats are explained below.
 ### JSON
 
 Example JSON response body:
+
 ```json
 {
   "cod": "200",
@@ -66,6 +67,7 @@ In this case, no extra decoding needs to happen to convert these responses into 
 ### XML
 
 Example XML response body:
+
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <weatherdata>
@@ -177,7 +179,8 @@ For the above example, the XML response format setting would result in the follo
 ### JSON Lines
 
 Example JSON Lines response body:
-```jsonlines
+
+```json
 {"name": "John", "age": 30, "city": "New York"}
 {"name": "Alice", "age": 25, "city": "Los Angeles"}
 {"name": "Bob", "age": 50, "city": "Las Vegas"}
@@ -188,7 +191,8 @@ Example JSON Lines response body:
 There is no standardized `Content-Type` header for API responses containing JSON Lines, so it is common for APIs to just include a `"Content-Type": "text/html"` or `"Content-Type": "text/plain"` response header in this case.
 
 For the above example, the JSON Lines response format setting would result in the following normalized JSON output:
-```
+
+```json
 [
   {
     "name": "John",
@@ -211,7 +215,8 @@ For the above example, the JSON Lines response format setting would result in th
 ### Iterable
 
 Example iterable response body:
-```
+
+```text
 2021-04-14 16:52:18 +00:00
 2021-04-14 16:52:23 +00:00
 2021-04-14 16:52:21 +00:00
@@ -226,7 +231,8 @@ APIs are likely to include a `"Content-Type": "text/html"` or `"Content-Type": "
 By convention, the connector will wrap each of these strings in a JSON object under a `record` key.
 
 For the above example, the Iterable response format setting would result in the following normalized JSON output:
-```
+
+```json
 [
   {
     "record": "2021-04-14 16:52:18 +00:00"
@@ -245,6 +251,52 @@ For the above example, the Iterable response format setting would result in the 
   }
 ]
 ```
+
+### CSV
+
+Example CSV response body:
+
+```csv
+id,name,email,created_at
+1,John Doe,john.doe@example.com,2023-01-15T09:30:00Z
+2,Jane Smith,jane.smith@example.com,2023-01-16T14:20:00Z
+3,Bob Johnson,bob.johnson@example.com,2023-01-17T11:45:00Z
+```
+
+This response format is used for API responses that return data in CSV (Comma-Separated Values) format. APIs typically include a `"Content-Type": "text/csv"` response header when returning CSV data.
+
+The CSV decoder converts each row of the CSV into a JSON object, using the header row to determine field names. CSV files can be delimited with characters other than commas. Set a different delimiter if your file isn't comma-delimited.
+
+For the example above, the CSV response format would result in the following normalized JSON output:
+
+```json
+[
+  {
+    "id": "1",
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "created_at": "2023-01-15T09:30:00Z"
+  },
+  {
+    "id": "2",
+    "name": "Jane Smith",
+    "email": "jane.smith@example.com",
+    "created_at": "2023-01-16T14:20:00Z"
+  },
+  {
+    "id": "3",
+    "name": "Bob Johnson",
+    "email": "bob.johnson@example.com",
+    "created_at": "2023-01-17T11:45:00Z"
+  }
+]
+```
+
+### ZIP and gzip
+
+Some APIs respond with a compressed ZIP or gzip file. This is more common when you're dealing with large, reporting-based datasets. Amplitude's [Export API](https://amplitude.com/docs/apis/analytics/export) is an excellent example. Ocasionally, compressed zip files are nested within each other, like a zip file that contains gzip files, which themselves contain more files.
+
+When you set your HTTP response format to ZIP or gzip, you can nest another decoder inside it. You can do this recursively if you need Airbyte to work through a number of layers of compressed files to access the data within.
 
 ## Record Selection
 
