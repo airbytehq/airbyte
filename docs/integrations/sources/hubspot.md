@@ -338,6 +338,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.5.6 | 2025-03-29 | [56647](https://github.com/airbytehq/airbyte/pull/56647) | Update dependencies |
 | 4.5.5 | 2025-03-26 | [56416](https://github.com/airbytehq/airbyte/pull/56416) | Disabled `blog_comment` and `all` form-types for `Forms` and `FormSubmissions` stream |
 | 4.5.4 | 2025-03-25 | [55822](https://github.com/airbytehq/airbyte/pull/55822) | add userIdIncludingInactive to owners and owners_archived streams |
 | 4.5.3 | 2025-03-24 | [52729](https://github.com/airbytehq/airbyte/pull/55245) | Add conversionId to `form_submissions` schema |
