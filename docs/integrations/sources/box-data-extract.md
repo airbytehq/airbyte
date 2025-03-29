@@ -99,6 +99,7 @@ The Box Data Extract source connector supports the following [sync modes](https:
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.8 | 2025-03-29 | [56593](https://github.com/airbytehq/airbyte/pull/56593) | Update dependencies |
 | 0.1.7 | 2025-02-13 | | Adding Box Extract Structured AI stream |
 | 0.1.6 | 2025-02-13 | | Adding Box Extract AI stream |
 | 0.1.5 | 2025-02-13 | | Adding Box Ask AI stream |
