@@ -98,6 +98,7 @@ Firebolt. Each table will contain 3 columns:
 
 | Version | Date       | Pull Request                                             | Subject                                |
 |:--------| :--------- | :------------------------------------------------------- | :------------------------------------- |
+| 0.2.35 | 2025-03-29 | [56607](https://github.com/airbytehq/airbyte/pull/56607) | Update dependencies |
 | 0.2.34 | 2025-03-22 | [56156](https://github.com/airbytehq/airbyte/pull/56156) | Update dependencies |
 | 0.2.33 | 2025-03-08 | [55391](https://github.com/airbytehq/airbyte/pull/55391) | Update dependencies |
 | 0.2.32 | 2025-03-01 | [54853](https://github.com/airbytehq/airbyte/pull/54853) | Update dependencies |
