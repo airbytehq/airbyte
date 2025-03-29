@@ -71,6 +71,7 @@ However, at this moment and as indicated in the stream names, the connector only
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| 0.7.3 | 2025-03-29 | [56573](https://github.com/airbytehq/airbyte/pull/56573) | Update dependencies |
 | 0.7.2 | 2025-03-25 | [56383](https://github.com/airbytehq/airbyte/pull/56383) | add countryorregion to report schemas |
 | 0.7.1 | 2025-03-22 | [56109](https://github.com/airbytehq/airbyte/pull/56109) | Update dependencies |
 | 0.7.0 | 2025-03-20 | [55839](https://github.com/airbytehq/airbyte/pull/55839) | countryOrRegion metadata info included |
