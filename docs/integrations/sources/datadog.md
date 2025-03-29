@@ -76,6 +76,7 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 
 | Version | Date       | Pull Request                                             | Subject                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------|
+| 2.0.18 | 2025-03-29 | [56528](https://github.com/airbytehq/airbyte/pull/56528) | Update dependencies |
 | 2.0.17 | 2025-03-25 | [54206](https://github.com/airbytehq/airbyte/pull/54206) | remove default end date value |
 | 2.0.16 | 2025-03-22 | [55994](https://github.com/airbytehq/airbyte/pull/55994) | Update dependencies |
 | 2.0.15 | 2025-03-08 | [55280](https://github.com/airbytehq/airbyte/pull/55280) | Update dependencies |
