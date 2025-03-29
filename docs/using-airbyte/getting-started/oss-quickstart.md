@@ -15,32 +15,31 @@ This quickstart guides you through deploying a local instance of Airbyte Self-Ma
 
 This quickstart shows you how to:
 
-- [Install abctl](#part-1-install-abctl)
-- [Run Airbyte](#part-2-run-airbyte)
-- [Set up authentication](#part-3-set-up-authentication)
+- [Install Docker Desktop](#part-1-install-docker-desktop)
+- [Install abctl](#part-2-install-abctl)
+- [Run Airbyte](#part-3-run-airbyte)
+- [Set up authentication](#part-4-set-up-authentication)
 - [Decide on your next steps](#whats-next)
 
-This is intended for most people who want to manage their own Airbyte instance, but it assumes you have basic knowledge of:
-
-- Docker
-- Command-line tools
+This is intended for most people who want to manage their own Airbyte instance, but it assumes you have basic knowledge of command-line tools. It's also helpful, but not necessary, to understand the basics of Docker.
 
 If you do not want to self-manage Airbyte, skip this guide. Sign up for an [Airbyte Cloud](https://cloud.airbyte.com/signup) trial and [start syncing data](add-a-source.md) now.
 
-If you want to use Python to move data, our Python library, [PyAirbyte](../pyairbyte/getting-started.mdx), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run a server.
+If you want to use Python to move data, our Python library, [PyAirbyte](../pyairbyte/getting-started.mdx), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run your own server.
 
-## Before you start
-
-Before running this quickstart, complete the following prerequisites:
-
-1. Install Docker Desktop on your machine: [Mac](https://docs.docker.com/desktop/install/mac-install/), [Windows](https://docs.docker.com/desktop/install/windows-install/), [Linux](https://docs.docker.com/desktop/install/linux-install/).
-2. Make sure you have enough computing power (see Suggested resources, below).
-
-### Suggested resources {#suggested-resources}
+## Suggested resources {#suggested-resources}
 
 For best performance, run Airbyte on a machine with 4 or more CPUs and at least 8GB of memory. We also support running Airbyte with 2 CPUs and 8GM of memory in low-resource mode. This guide explains how to do both. Follow this [Github discussion](https://github.com/airbytehq/airbyte/discussions/44391) to upvote and track progress toward supporting lower resource environments.
 
-## Part 1: Install abctl
+## Part 1: Install Docker Desktop
+
+Install Docker Desktop on your machine, if you haven't already. Follow the steps for your operating system in Docker's online help, linked below. You don't need to do anything with Docker Desktop, but it does need to be installed.
+
+    - [Mac](https://docs.docker.com/desktop/install/mac-install/)
+    - [Windows](https://docs.docker.com/desktop/install/windows-install/)
+    - [Linux](https://docs.docker.com/desktop/install/linux-install/)
+
+## Part 2: Install abctl
 
 abctl is Airbyte's command-line tool for deploying and managing Airbyte. 
 
@@ -54,7 +53,7 @@ abctl is Airbyte's command-line tool for deploying and managing Airbyte.
 
 2. If your terminal asks you to enter your password, do so.
 
-When installation completes, you'll see `abctl install succeeded.`
+When installation completes, you see `abctl install succeeded.`
 
 ### Install abctl manually (Mac, Linux, Windows)
 
@@ -115,9 +114,9 @@ Use [Homebrew](https://brew.sh/) to install abctl.
 
 6. Verify the installation. If this command prints the installed version of abctl, you can now use it to manage a local Airbyte instance.
 
-```bash
-abctl version
-```
+    ```bash
+    abctl version
+    ```
 
 </TabItem>
 <TabItem value="abctl-windows" label="Windows" default>
@@ -161,13 +160,11 @@ abctl version
 </TabItem>
 </Tabs>
 
-## Part 2: Run Airbyte
+## Part 3: Run Airbyte
 
-1. Run Docker Desktop.
+1. Open Docker Desktop, [which you installed previously](#part-1-install-docker-desktop).
 
-2. Install Airbyte.
-
-    To run Airbyte with on a machine with the recommended resources (4 or more CPUs), use this command:
+2. Install Airbyte. Open a terminal and run the following command.
 
     ```bash
     abctl local install
@@ -191,11 +188,11 @@ abctl version
     If you see the warning `Encountered an issue deploying Airbyte` with the message `Readiness probe failed: HTTP probe failed with statuscode: 503`, allow installation to continue. You may need to allocate more resources for Airbyte, but installation will complete anyway. See [Suggested resources](#suggested-resources).
     :::
 
-    Installation may take up to 15 minutes depending on your internet connection. When it completes, your Airbyte instance opens in your web browser at [http://localhost:8000](http://localhost:8000). As long as your Docker Desktop daemon is running in the background, use Airbyte by returning to [http://localhost:8000](http://localhost:8000). If you quit Docker Desktop and want to return to Airbyte, start Docker Desktop again. Once your containers are running, you can access Airbyte normally.
+    Installation may take up to 15 minutes depending on your internet connection. When it completes, your Airbyte instance opens in your web browser at [http://localhost:8000](http://localhost:8000). As long as Docker Desktop is running in the background, use Airbyte by returning to [http://localhost:8000](http://localhost:8000). If you quit Docker Desktop and want to return to Airbyte, start Docker Desktop again. Once your containers are running, you can access Airbyte normally.
 
 3. Enter your **Email** and **Organization name**, then click **Get Started**. Airbyte asks you to log in with a password.
 
-## Part 3: Set up authentication
+## Part 4: Set up authentication
 
 To access your Airbyte instance, you need a password.
 
