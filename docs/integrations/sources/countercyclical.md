@@ -21,6 +21,7 @@ Countercyclical is the fully end-to-end financial intelligence platform designed
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.18 | 2025-03-29 | [56483](https://github.com/airbytehq/airbyte/pull/56483) | Update dependencies |
 | 0.0.17 | 2025-03-22 | [55915](https://github.com/airbytehq/airbyte/pull/55915) | Update dependencies |
 | 0.0.16 | 2025-03-08 | [55303](https://github.com/airbytehq/airbyte/pull/55303) | Update dependencies |
 | 0.0.15 | 2025-03-01 | [54975](https://github.com/airbytehq/airbyte/pull/54975) | Update dependencies |
