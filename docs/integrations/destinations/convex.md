@@ -57,6 +57,7 @@ On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the projec
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 |:--------| :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 0.2.12 | 2025-03-29 | [56563](https://github.com/airbytehq/airbyte/pull/56563) | Update dependencies |
 | 0.2.11 | 2025-03-22 | [56128](https://github.com/airbytehq/airbyte/pull/56128) | Update dependencies |
 | 0.2.10 | 2025-03-08 | [43824](https://github.com/airbytehq/airbyte/pull/43824) | Update dependencies |
 | 0.2.9 | 2025-03-03 | [55175](https://github.com/airbytehq/airbyte/pull/55175) | Update to CDK 6.0+ and baseImage 4.0.0 |
