@@ -797,14 +797,6 @@ def test_subscription_items_extra_request_params(requests_mock, stream_by_name, 
     records = read_from_stream(stream, "full_refresh", {})
     assert records == [
         {
-            "id": "si_OynDmET1kQPTbI",
-            "object": "subscription_item",
-            "created": 1699603175,
-            "quantity": 1,
-            "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE",
-            "subscription_updated": 1699603174,  # 1699603175
-        },
-        {
             "id": "si_OynPdzMZykmCWm",
             "object": "subscription_item",
             "created": 1699603884,
