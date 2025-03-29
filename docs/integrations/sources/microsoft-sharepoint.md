@@ -271,6 +271,7 @@ If enabled, sends subdirectory folder structure along with source file names to 
 
 By providing a url to the site URL field, the connector will be able to access the files in the specific sharepoint site. 
 The site url should be in the format `https://<tenan_name>.sharepoint.com/sites/<site>`. If no field is provided, the connector will access the files in the main site.
+To have the connector iterate all sub-sites provide the site url as `https://<tenan_name>.sharepoint.com/sites/`.
 
 ### Supported sync modes
 
@@ -305,6 +306,7 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.9.0 | 2025-03-24 | [55912](https://github.com/airbytehq/airbyte/pull/55912) | Provide ability to ietrate all sharepoint sites |
 | 0.8.1 | 2025-03-22 | [56014](https://github.com/airbytehq/airbyte/pull/56014) | Update dependencies |
 | 0.8.0 | 2025-03-12 | [54658](https://github.com/airbytehq/airbyte/pull/54658) | Provide ability to sync other sites than Main sharepoint site |
 | 0.7.2 | 2025-03-08 | [55427](https://github.com/airbytehq/airbyte/pull/55427) | Update dependencies |
