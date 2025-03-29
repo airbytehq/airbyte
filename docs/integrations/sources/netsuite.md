@@ -144,6 +144,7 @@ The connector is restricted by Netsuite [Concurrency Limit per Integration](http
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------| :------------------------------------------------------- |:----------------------------------------------------------|
+| 0.1.12 | 2025-03-29 | [56692](https://github.com/airbytehq/airbyte/pull/56692) | Update dependencies |
 | 0.1.11 | 2025-03-22 | [56060](https://github.com/airbytehq/airbyte/pull/56060) | Update dependencies |
 | 0.1.10 | 2025-03-08 | [55455](https://github.com/airbytehq/airbyte/pull/55455) | Update dependencies |
 | 0.1.9 | 2025-03-05 | [55207](https://github.com/airbytehq/airbyte/pull/55207) | Add support for additional date format in Netsuite input |
