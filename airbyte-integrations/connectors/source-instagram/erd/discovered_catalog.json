@@ -61,6 +61,16 @@
               }
             }
           },
+          "boost_eligibility_info": {
+            "description": "The field provides information about boosting eligibility of a Instagram instagram media as an ad and additional details if not eligible.",
+            "type": ["null", "object"],
+            "properties": {
+              "eligible_to_boost": {
+                "description": "The field indicates eligibility to boost.",
+                "type": ["null", "boolean"]
+              }
+            }
+          },
           "permalink": {
             "description": "The permanent link to the media item on Instagram.",
             "type": ["null", "string"]
@@ -225,6 +235,10 @@
           },
           "profile_visits": {
             "description": "The number of times the profile has been visited.",
+            "type": ["null", "integer"]
+          },
+          "views": {
+            "description": "Total number of times the video IG Media has been seen.",
             "type": ["null", "integer"]
           }
         },

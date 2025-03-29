@@ -41,6 +41,7 @@ _FIELDS = [
     "timestamp",
     "username",
     "children",
+    "boost_eligibility_info",
 ]
 
 _CHILDREN_FIELDS = ["id", "ig_id", "media_type", "media_url", "owner", "permalink", "shortcode", "thumbnail_url", "timestamp", "username"]
