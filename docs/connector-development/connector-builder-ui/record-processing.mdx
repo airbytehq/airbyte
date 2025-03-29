@@ -254,7 +254,7 @@ For the above example, the Iterable response format setting would result in the 
 
 ### CSV
 
-Example CSV response body:
+Example CSV (Comma-Separated Values) response body:
 
 ```csv
 id,name,email,created_at
@@ -263,11 +263,11 @@ id,name,email,created_at
 3,Bob Johnson,bob.johnson@example.com,2023-01-17T11:45:00Z
 ```
 
-This response format is used for API responses that return data in CSV (Comma-Separated Values) format. APIs typically include a `"Content-Type": "text/csv"` response header when returning CSV data.
+This response format is used for API responses that return data in CSV format. APIs typically include a `"Content-Type": "text/csv"` response header when returning CSV data.
 
 The CSV decoder converts each row of the CSV into a JSON object, using the header row to determine field names. CSV files can be delimited with characters other than commas. Set a different delimiter if your file isn't comma-delimited.
 
-For the example above, the CSV response format would result in the following normalized JSON output:
+For the preceding example, the CSV response format would result in the following normalized JSON output:
 
 ```json
 [
@@ -294,7 +294,7 @@ For the example above, the CSV response format would result in the following nor
 
 ### ZIP and gzip
 
-Some APIs respond with a compressed ZIP or gzip file. This is more common when you're dealing with large, reporting-based datasets. Amplitude's [Export API](https://amplitude.com/docs/apis/analytics/export) is an excellent example. Ocasionally, compressed zip files are nested within each other, like a zip file that contains gzip files, which themselves contain more files.
+Some APIs respond with a compressed ZIP or gzip file. This is more common when you're dealing with large, reporting-based datasets. Amplitude's [Export API](https://amplitude.com/docs/apis/analytics/export) is an example. Occasionally, APIs nest compressed zip files within each other, like a zip file that contains gzip files, which themselves contain more files.
 
 When you set your HTTP response format to ZIP or gzip, you can nest another decoder inside it. You can do this recursively if you need Airbyte to work through a number of layers of compressed files to access the data within.
 
