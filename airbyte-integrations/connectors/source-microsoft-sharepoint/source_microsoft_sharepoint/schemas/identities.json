@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "properties": {
+    "remote_id": { "type": "string" },
+    "display_name": { "type": ["null", "string"] },
+    "user_principal_name": { "type": ["null", "string"] },
+    "title": { "type": ["null", "string"] },
+    "description": { "type": ["null", "string"] },
+    "email_address": { "type": ["null", "string"] },
+    "members": { "type": ["null", "array"] },
+    "login_name": { "type": ["null", "string"] },
+    "type": { "type": "string" },
+    "modified_at": { "type": "string" }
+  }
+}

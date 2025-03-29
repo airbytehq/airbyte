@@ -10,21 +10,33 @@ from functools import lru_cache
 from io import IOBase
 from os import makedirs, path
 from os.path import getsize
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Tuple
 
+import pytz
 import requests
 import smart_open
 from msal import ConfidentialClientApplication
+from office365.directory.groups.collection import GroupCollection
+from office365.directory.users.collection import UserCollection
 from office365.graph_client import GraphClient
+from office365.onedrive.driveitems.driveItem import DriveItem
+from office365.runtime.auth.token_response import TokenResponse
+from office365.sharepoint.client_context import ClientContext
 
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from source_microsoft_sharepoint.spec import RemoteIdentity, RemoteIdentityType, RemotePermissions, SourceMicrosoftSharePointSpec
 
 from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
 from .utils import FolderNotFoundException, MicrosoftSharePointRemoteFile, execute_query_with_retry, filter_http_urls
+
+
+def datetime_now() -> datetime:
+    return datetime.now(pytz.UTC)
 
 
 class SourceMicrosoftSharePointClient:
@@ -50,9 +62,20 @@ class SourceMicrosoftSharePointClient:
             self._client = GraphClient(self._get_access_token)
         return self._client
 
-    def _get_access_token(self):
+    @staticmethod
+    def _get_scope(tenant_prefix: str = None):
+        """
+        Returns the scope for the access token.
+        We use admin site to retrieve objects like Site groups and users.
+        """
+        if tenant_prefix:
+            admin_site_url = f"https://{tenant_prefix}-admin.sharepoint.com"
+            return [f"{admin_site_url}/.default"]
+        return ["https://graph.microsoft.com/.default"]
+
+    def _get_access_token(self, tenant_prefix: str = None):
         """Retrieves an access token for SharePoint access."""
-        scope = ["https://graph.microsoft.com/.default"]
+        scope = self._get_scope(tenant_prefix)
         refresh_token = self.config.credentials.refresh_token if hasattr(self.config.credentials, "refresh_token") else None
 
         if refresh_token:
@@ -66,6 +89,13 @@ class SourceMicrosoftSharePointClient:
             raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
 
         return result
+
+    def get_token_response_object_wrapper(self, tenant_prefix: str):
+        def get_token_response_object():
+            token = self._get_access_token(tenant_prefix=tenant_prefix)
+            return TokenResponse.from_json(token)
+
+        return get_token_response_object
 
 
 class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
@@ -114,7 +144,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         assert isinstance(value, SourceMicrosoftSharePointSpec)
         self._config = value
 
-    def _get_shared_drive_object(self, drive_id: str, object_id: str, path: str) -> List[Tuple[str, str, datetime]]:
+    def _get_shared_drive_object(self, drive_id: str, object_id: str, path: str) -> Iterable[Tuple[str, str, datetime, str, str, bool]]:
         """
         Retrieves a list of all nested files under the specified object.
 
@@ -133,7 +163,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         headers = {"Authorization": f"Bearer {access_token}"}
         base_url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}"
 
-        def get_files(url: str, path: str) -> List[Tuple[str, str, datetime]]:
+        def get_files(url: str, path: str) -> Iterable[Tuple[str, str, datetime, str, str, bool]]:
             response = requests.get(url, headers=headers)
             if response.status_code != 200:
                 error_info = response.json().get("error", {}).get("message", "No additional error information provided.")
@@ -144,7 +174,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                 new_path = path + "/" + child["name"]
                 if child.get("file"):  # Object is a file
                     last_modified = datetime.strptime(child["lastModifiedDateTime"], "%Y-%m-%dT%H:%M:%SZ")
-                    yield (new_path, child["@microsoft.graph.downloadUrl"], last_modified)
+                    yield (new_path, child["@microsoft.graph.downloadUrl"], last_modified, child.get("id"), drive_id, True)
                 else:  # Object is a folder, retrieve children
                     child_url = f"{base_url}/items/{child['id']}/children"  # Use item endpoint for nested objects
                     yield from get_files(child_url, new_path)
@@ -165,20 +195,38 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         if item_data.get("file"):  # Initial object is a file
             new_path = path + "/" + item_data["name"]
             last_modified = datetime.strptime(item_data["lastModifiedDateTime"], "%Y-%m-%dT%H:%M:%SZ")
-            yield (new_path, item_data["@microsoft.graph.downloadUrl"], last_modified)
+            yield (new_path, item_data["@microsoft.graph.downloadUrl"], last_modified, item_data.get("id"), drive_id, True)
         else:
             # Initial object is a folder, start file retrieval
             yield from get_files(f"{item_url}/children", path)
 
-    def _list_directories_and_files(self, root_folder, path):
-        """Enumerates folders and files starting from a root folder."""
+    def _list_directories_and_files(
+        self, root_folder: DriveItem, path: str, drive_id: str
+    ) -> Iterable[Tuple[str, str, str, str, str, bool]]:
+        """Enumerates folders and files starting from a root folder.""" """
+        Enumerates folders and files starting from a root folder.
+    
+        Args:
+            root_folder (DriveItem): The root folder to start the enumeration from.
+            path (str): The current path in the directory structure.
+    
+        Yields:
+            Tuple[str, str, str, str]: A tuple containing the file path, download URL, last modified date, and file ID.
+        """
         drive_items = execute_query_with_retry(root_folder.children.get())
         for item in drive_items:
             item_path = path + "/" + item.name if path else item.name
             if item.is_file:
-                yield (item_path, item.properties["@microsoft.graph.downloadUrl"], item.properties["lastModifiedDateTime"])
+                yield (
+                    item_path,
+                    item.properties["@microsoft.graph.downloadUrl"],
+                    item.properties["lastModifiedDateTime"],
+                    item.id,
+                    drive_id,
+                    False,
+                )
             else:
-                yield from self._list_directories_and_files(item, item_path)
+                yield from self._list_directories_and_files(item, item_path, drive_id)
         yield from []
 
     def _get_files_by_drive_name(self, drives, folder_path):
@@ -200,7 +248,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                         continue
                     folder_path_url = drive.web_url + "/" + folder_path
 
-                yield from self._list_directories_and_files(folder, folder_path_url)
+                yield from self._list_directories_and_files(folder, folder_path_url, drive_id=drive.id)
 
     def get_site_drive(self):
         try:
@@ -280,8 +328,11 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                         uri=path,
                         download_url=download_url,
                         last_modified=last_modified,
+                        id=file_id,
+                        drive_id=drive_id,
+                        from_shared_drive=from_shared_drive,
                     )
-                    for path, download_url, last_modified in files
+                    for path, download_url, last_modified, file_id, drive_id, from_shared_drive in files
                 ],
                 globs,
             ),
@@ -398,17 +449,3 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             raise AirbyteTracedException(
                 f"There was an error while trying to download the file {file.uri}: {str(e)}", failure_type=FailureType.config_error
             )
-
-    def get_file_acl_permissions(self):
-        return None
-
-    def load_identity_groups(self):
-        return None
-
-    @property
-    def identities_schema(self):
-        return None
-
-    @property
-    def file_permissions_schema(self):
-        return None
