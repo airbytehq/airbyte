@@ -104,6 +104,7 @@ None!
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
+| 6.2.23 | 2025-03-29 | [56502](https://github.com/airbytehq/airbyte/pull/56502) | Update dependencies |
 | 6.2.22 | 2025-03-22 | [46821](https://github.com/airbytehq/airbyte/pull/46821) | Update dependencies |
 | 6.2.21 | 2025-03-11 | [55705](https://github.com/airbytehq/airbyte/pull/55705) | Promoting release candidate 6.2.21-rc.1 to a main version. |
 | 6.2.21-rc.1 | 2024-11-13 | [48013](https://github.com/airbytehq/airbyte/pull/48013) | Update for testing.                                                                                             |
