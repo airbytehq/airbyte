@@ -57,6 +57,7 @@ curl --insecure -X POST -H 'Content-Type: application/json' -H 'X-Accept: applic
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.15 | 2025-03-29 | [56219](https://github.com/airbytehq/airbyte/pull/56219) | Update dependencies |
 | 0.2.14 | 2025-03-08 | [55551](https://github.com/airbytehq/airbyte/pull/55551) | Update dependencies |
 | 0.2.13 | 2025-03-01 | [55016](https://github.com/airbytehq/airbyte/pull/55016) | Update dependencies |
 | 0.2.12 | 2025-02-23 | [54594](https://github.com/airbytehq/airbyte/pull/54594) | Update dependencies |
