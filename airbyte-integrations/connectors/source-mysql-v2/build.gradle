@@ -1,0 +1,40 @@
+plugins {
+    id 'application'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.mysql.MySqlSource'
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+
+processResources {
+    from("$projectDir") {
+        include 'metadata.yaml'
+        duplicatesStrategy DuplicatesStrategy.EXCLUDE
+    }
+}
+
+tasks.named('spotbugsTest').configure {
+    enabled = false
+}
+
+tasks.named('check').configure {
+    dependsOn tasks.matching { it.name ==~ /(compile|spotbugs)[a-zA-Z]*Java/ }
+}
+
+dependencies {
+    def vBulkCDK = '0.6'
+    def vMicronaut = '4.3.13'
+
+    ksp "io.micronaut:micronaut-inject-kotlin:${vMicronaut}"
+
+    implementation "io.airbyte.bulk-cdk:bulk-cdk-core-base:${vBulkCDK}"
+    implementation "io.airbyte.bulk-cdk:bulk-cdk-core-extract:${vBulkCDK}"
+    implementation "io.airbyte.bulk-cdk:bulk-cdk-toolkit-extract-jdbc:${vBulkCDK}"
+
+    kspTest "io.micronaut:micronaut-inject-kotlin:${vMicronaut}"
+
+    testImplementation platform('org.testcontainers:testcontainers-bom:1.19.8')
+    testImplementation testFixtures("io.airbyte.bulk-cdk:bulk-cdk-core-extract:${vBulkCDK}")
+}
