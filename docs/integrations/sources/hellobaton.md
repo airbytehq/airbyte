@@ -56,6 +56,7 @@ The connector is rate limited at 1000 requests per minute per api key. If you fi
 
 | Version | Date       | Pull Request                                             | Subject                             |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------- |
+| 0.3.20 | 2025-03-29 | [56661](https://github.com/airbytehq/airbyte/pull/56661) | Update dependencies |
 | 0.3.19 | 2025-03-22 | [56050](https://github.com/airbytehq/airbyte/pull/56050) | Update dependencies |
 | 0.3.18 | 2025-03-08 | [55434](https://github.com/airbytehq/airbyte/pull/55434) | Update dependencies |
 | 0.3.17 | 2025-03-01 | [54771](https://github.com/airbytehq/airbyte/pull/54771) | Update dependencies |
