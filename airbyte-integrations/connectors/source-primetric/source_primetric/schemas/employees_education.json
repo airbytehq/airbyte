@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "properties": {
+    "employee_uuid": {
+      "type": "string"
+    },
+    "education_uuid": {
+      "type": "string"
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "degree": {
+      "type": ["null", "string"]
+    },
+    "starts_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "ends_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "description": {
+      "type": ["null", "string"]
+    }
+  }
+}

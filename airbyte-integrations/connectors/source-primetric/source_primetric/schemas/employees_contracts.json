@@ -1,0 +1,61 @@
+{
+  "type": "object",
+  "properties": {
+    "employee_uuid": {
+      "type": "string"
+    },
+    "contract_uuid": {
+      "type": "string"
+    },
+    "starts_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "ends_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "custom_attributes": {
+      "$ref": "custom_attributes.json"
+    },
+    "employment_type": {
+      "type": ["null", "integer"]
+    },
+    "capacity_monday": {
+      "type": ["null", "integer"]
+    },
+    "capacity_tuesday": {
+      "type": ["null", "integer"]
+    },
+    "capacity_wednesday": {
+      "type": ["null", "integer"]
+    },
+    "capacity_thursday": {
+      "type": ["null", "integer"]
+    },
+    "capacity_friday": {
+      "type": ["null", "integer"]
+    },
+    "capacity_saturday": {
+      "type": ["null", "integer"]
+    },
+    "capacity_sunday": {
+      "type": ["null", "integer"]
+    },
+    "contract_title": {
+      "type": "string"
+    },
+    "total_month_cost": {
+      "type": "string"
+    },
+    "default_hour_cost": {
+      "type": "string"
+    },
+    "default_hour_rate": {
+      "type": "string"
+    },
+    "schedule_contractor_cost": {
+      "type": ["null", "boolean"]
+    }
+  }
+}

@@ -276,6 +276,64 @@
         "json_schema": {
           "type": "object",
           "properties": {
+            "uuid": {
+              "type": ["null", "string"],
+              "format": "uuid"
+            },
+            "starts_at": {
+              "type": ["null", "string"],
+              "format": "date"
+            },
+            "ends_at": {
+              "type": ["null", "string"],
+              "format": "date"
+            },
+            "employment_type": {
+              "type": ["null", "integer"]
+            },
+            "capacity_monday": {
+              "type": ["null", "integer"]
+            },
+            "capacity_tuesday": {
+              "type": ["null", "integer"]
+            },
+            "capacity_wednesday": {
+              "type": ["null", "integer"]
+            },
+            "capacity_thursday": {
+              "type": ["null", "integer"]
+            },
+            "capacity_friday": {
+              "type": ["null", "integer"]
+            },
+            "capacity_saturday": {
+              "type": ["null", "integer"]
+            },
+            "capacity_sunday": {
+              "type": ["null", "integer"]
+            },
+            "contract_title": {
+              "type": ["null", "string"]
+            },
+            "total_month_cost": {
+              "type": ["null", "string"]
+            },
+            "default_hour_cost": {
+              "type": ["null", "string"]
+            },
+            "default_hour_rate": {
+              "type": ["null", "string"]
+            },
+            "schedule_contractor_cost": {
+              "type": ["null", "boolean"]
+            },
+            "employee_id": {
+              "type": ["null", "string"],
+              "format": "uuid"
+            },
+            "custom_attributes": {
+              "$ref": "custom_attributes.json"
+            }
           }
         },
         "supported_sync_modes": ["full_refresh"],
@@ -357,27 +415,30 @@
         "json_schema": {
           "type": "object",
           "properties": {
-            "uuid": {
-              "type": "string",
-              "format": "uuid"
+            "employee_uuid": {
+              "type": "string"
+            },
+            "certificate_uuid": {
+              "type": ["null", "string"]
             },
             "issuer": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "name": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "url": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "issue_date": {
-              "type": ["string"],
+              "type": ["null", "string"],
               "format": "date-time"
             }
           }
         },
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["certificate_uuid"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -388,9 +449,11 @@
         "json_schema": {
           "type": "object",
           "properties": {
-            "uuid": {
-              "type": "string",
-              "format": "uuid"
+            "employee_uuid": {
+              "type": "string"
+            },
+            "contract_uuid": {
+              "type": "string"
             },
             "starts_at": {
               "type": ["null", "string"],
@@ -445,7 +508,8 @@
           }
         },
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["contract_uuid"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -456,9 +520,11 @@
         "json_schema": {
           "type": "object",
           "properties": {
-            "uuid": {
-              "type": "string",
-              "format": "uuid"
+            "employee_uuid": {
+              "type": "string"
+            },
+            "education_uuid": {
+              "type": "string"
             },
             "name": {
               "type": ["null", "string"]
@@ -480,7 +546,8 @@
           }
         },
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["education_uuid"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -491,41 +558,32 @@
         "json_schema": {
           "type": "object",
           "properties": {
-            "uuid": {
-              "type": "string",
-              "format": "uuid"
+            "employee_uuid": {
+              "type": "string"
+            },
+            "entry_uuid": {
+              "type": "string"
             },
             "level": {
               "type": ["null", "string"]
             },
-            "skill": {
-              "type": ["null", "object"],
-              "properties": {
-                "name": {
-                  "type": ["null", "string"]
-                },
-                "uuid": {
-                  "type": ["null", "string"],
-                  "format": "uuid"
-                },
-                "ancestors_list": {
-                  "type": ["null", "object"],
-                  "properties": {
-                    "uuid": {
-                      "type": ["null", "string"],
-                      "format": "uuid"
-                    },
-                    "name": {
-                      "type": ["null", "string"]
-                    }
-                  }
-                }
+            "skill_name": {
+              "type": ["null", "string"]
+            },
+            "skill_uuid": {
+              "type": ["null", "string"]
+            },
+            "skill_ancestors_list": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
               }
             }
           }
         },
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["entry_uuid"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -540,56 +598,64 @@
               "type": "string",
               "format": "uuid"
             },
-            "position": {
-              "type": ["null", "string"]
-            },
-            "project_name": {
-              "type": ["null", "string"]
-            },
-            "industry": {
-              "type": ["null", "string"]
-            },
-            "region": {
-              "type": ["null", "string"]
-            },
-            "duration": {
-              "type": ["null", "string"]
-            },
-            "work_start": {
-              "type": ["null", "string"]
-            },
-            "work_end": {
-              "type": ["null", "string"]
-            },
-            "desc": {
-              "type": ["null", "string"]
-            },
-            "skills": {
-              "type": ["null", "array"],
-              "items": {
-                "type": ["null", "string"],
-                "format": "uuid"
-              }
-            },
-            "skills_options": {
-              "type": ["null", "array"],
-              "items": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": ["null", "string"]
-                  },
-                  "uuid":  {
-                    "type": ["null", "string"]
-                  },
-                  "path": {
-                    "type": ["null", "string"]
-                  },
-                  "ancestors": {
-                    "type": ["null", "array"],
-                    "items": {
-                      "type": ["null", "string"],
-                      "format": "uuid"
+            "properties": {
+              "employee_uuid": {
+                "type": "string"
+              },
+              "experience_uuid": {
+                "type": "string"
+              },
+              "position": {
+                "type": ["null", "string"]
+              },
+              "project_name": {
+                "type": ["null", "string"]
+              },
+              "industry": {
+                "type": ["null", "string"]
+              },
+              "region": {
+                "type": ["null", "string"]
+              },
+              "duration": {
+                "type": ["null", "string"]
+              },
+              "work_start": {
+                "type": ["null", "string"]
+              },
+              "work_end": {
+                "type": ["null", "string"]
+              },
+              "desc": {
+                "type": ["null", "string"]
+              },
+              "skills": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"],
+                  "format": "uuid"
+                }
+              },
+              "skills_options": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": ["null", "string"]
+                    },
+                    "uuid":  {
+                      "type": ["null", "string"]
+                    },
+                    "path": {
+                      "type": ["null", "string"]
+                    },
+                    "ancestors": {
+                      "type": ["null", "array"],
+                      "items": {
+                        "type": ["null", "string"],
+                        "format": "uuid"
+                      }
                     }
                   }
                 }
@@ -598,7 +664,8 @@
           }
         },
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["experience_uuid"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"

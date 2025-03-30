@@ -1,0 +1,80 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Primetric Spec
+  type: object
+  required:
+    - client_id
+    - client_secret
+    - migration_type
+  properties:
+    client_id:
+      type: string
+      title: Client ID
+      description: The Client ID of your Primetric developer application. The Client ID is visible <a href=\"https://app.primetric.com/administrator/integrations">here</a>.
+      pattern: ^[a-zA-Z0-9]+$
+      airbyte_secret: true
+      examples:
+        - "1234aBcD5678EFGh9045Neq79sdDlA15082VMYcj"
+      order: 0
+    client_secret:
+      type: string
+      title: Client Secret
+      description: The Client Secret of your Primetric developer application. You can manage your client's credentials <a href=\"https://app.primetric.com/administrator/integrations">here</a>.
+      pattern: ^[a-zA-Z0-9]+$
+      airbyte_secret: true
+      order: 1
+    migration_type:
+      type: object
+      title: Migration type
+      display_type: dropdown
+      description: Choose migration type
+      oneOf:
+        - type: object
+          title: full_migration
+          description: If data migration should contain full date scope select true, if only partial data migration is needed select false.
+          required:
+            - method
+          properties:
+            method:
+              type: string
+              const: Full migration
+              description: Select this option for full migration.
+              order: 0
+          additionalProperties: false
+        - type: object
+          title: migration_from_static_date
+          description: Should only data starting from specified date be migrated?
+          required:
+            - method
+            - starting_migration_date
+          properties:
+            method:
+              type: string
+              const: Migration from date
+              description: Select this option for migration starting from a specified date.
+              order: 0
+            starting_migration_date:
+              type: string
+              format: date
+              title: Start date for data to migrate
+              description: What date to use as migration start?
+              order: 1
+          additionalProperties: false
+        - type: object
+          title: migration_from_last_x_days
+          required:
+            - method
+            - last_days_to_migrate
+          properties:
+            method:
+              type: string
+              const: Migration from X last days
+              description: Select this option for migration starting from a specified date.
+              order: 0
+            last_days_to_migrate:
+              type: integer
+              title: Data from how many last days should we migrate?
+              order: 1
+          additionalProperties: false
+      order: 2

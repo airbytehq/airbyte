@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "properties": {
+    "employee_uuid": {
+      "type": "string"
+    },
+    "entry_uuid": {
+      "type": "string"
+    },
+    "level": {
+      "type": ["null", "string"]
+    },
+    "skill_name": {
+      "type": ["null", "string"]
+    },
+    "skill_uuid": {
+      "type": ["null", "string"]
+    },
+    "skill_ancestors_list": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    }
+  }
+}

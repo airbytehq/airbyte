@@ -1,0 +1,66 @@
+{
+  "type": "object",
+  "properties": {
+    "employee_uuid": {
+      "type": "string"
+    },
+    "experience_uuid": {
+      "type": "string"
+    },
+    "position": {
+      "type": ["null", "string"]
+    },
+    "project_name": {
+      "type": ["null", "string"]
+    },
+    "industry": {
+      "type": ["null", "string"]
+    },
+    "region": {
+      "type": ["null", "string"]
+    },
+    "duration": {
+      "type": ["null", "string"]
+    },
+    "work_start": {
+      "type": ["null", "string"]
+    },
+    "work_end": {
+      "type": ["null", "string"]
+    },
+    "desc": {
+      "type": ["null", "string"]
+    },
+    "skills": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"],
+        "format": "uuid"
+      }
+    },
+    "skills_options": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "uuid":  {
+            "type": ["null", "string"]
+          },
+          "path": {
+            "type": ["null", "string"]
+          },
+          "ancestors": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"],
+              "format": "uuid"
+            }
+          }
+        }
+      }
+    }
+  }
+}

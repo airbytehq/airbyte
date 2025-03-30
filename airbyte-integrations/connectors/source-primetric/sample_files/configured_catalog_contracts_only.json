@@ -1,0 +1,76 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "contracts",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "uuid": {
+              "type": ["null", "string"],
+              "format": "uuid"
+            },
+            "starts_at": {
+              "type": ["null", "string"],
+              "format": "date"
+            },
+            "ends_at": {
+              "type": ["null", "string"],
+              "format": "date"
+            },
+            "employment_type": {
+              "type": ["null", "integer"]
+            },
+            "capacity_monday": {
+              "type": ["null", "integer"]
+            },
+            "capacity_tuesday": {
+              "type": ["null", "integer"]
+            },
+            "capacity_wednesday": {
+              "type": ["null", "integer"]
+            },
+            "capacity_thursday": {
+              "type": ["null", "integer"]
+            },
+            "capacity_friday": {
+              "type": ["null", "integer"]
+            },
+            "capacity_saturday": {
+              "type": ["null", "integer"]
+            },
+            "capacity_sunday": {
+              "type": ["null", "integer"]
+            },
+            "contract_title": {
+              "type": ["null", "string"]
+            },
+            "total_month_cost": {
+              "type": ["null", "string"]
+            },
+            "default_hour_cost": {
+              "type": ["null", "string"]
+            },
+            "default_hour_rate": {
+              "type": ["null", "string"]
+            },
+            "schedule_contractor_cost": {
+              "type": ["null", "boolean"]
+            },
+            "employee_id": {
+              "type": ["null", "string"],
+              "format": "uuid"
+            },
+            "custom_attributes": {
+              "$ref": "custom_attributes.json"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

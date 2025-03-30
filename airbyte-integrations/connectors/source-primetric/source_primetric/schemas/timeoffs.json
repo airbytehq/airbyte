@@ -1,0 +1,43 @@
+{
+  "type": "object",
+  "properties": {
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "employee_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "start_date": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "end_date": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "approved": {
+      "type": "boolean"
+    },
+    "approved_by": {
+      "type": ["null", "object"],
+      "properties": {
+        "uuid": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "approved_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "custom_attributes": {
+      "$ref": "custom_attributes.json"
+    }
+  }
+}

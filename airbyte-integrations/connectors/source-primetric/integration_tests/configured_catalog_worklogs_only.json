@@ -1,0 +1,56 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "worklogs",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "uuid": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "assignment_id": {
+              "type": ["null", "string"]
+            },
+            "project_id": {
+              "type": ["null", "string"]
+            },
+            "starts_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "created_at": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "work": {
+              "type": ["null", "integer"]
+            },
+            "desc": {
+              "type": ["null", "string"]
+            },
+            "in_progress": {
+              "type": ["null", "boolean"]
+            },
+            "billable": {
+              "type": ["null", "boolean"]
+            },
+            "developer_id": {
+              "type": ["null", "string"]
+            },
+            "custom_attributes": {
+              "$ref": "custom_attributes.json"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created_at"],
+        "source_defined_primary_key": [["uuid"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
