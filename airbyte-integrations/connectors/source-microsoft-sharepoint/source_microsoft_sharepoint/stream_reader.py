@@ -137,7 +137,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         # Directly fetch a new access token from the auth_client each time it's called
         return self.auth_client._get_access_token()["access_token"]
 
-    def get_token_response_object(self, tenant_prefix: str = None) -> Callable:
+    def get_token_response_object(self, tenant_prefix: str) -> Callable:
         """
         When building a ClientContext using with_access_token() method,
         the token_func param is expected to be a method/callable that returns a TokenResponse object.
