@@ -1,0 +1,270 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://app.heypoplar.com/
+  Documentation: https://developers.heypoplar.com/
+
+check:
+  type: CheckStream
+  stream_names:
+    - campaigns
+
+definitions:
+  streams:
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/campaigns
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: Forbidden
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    creatives:
+      type: DeclarativeStream
+      name: creatives
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/campaign/{{ stream_partition['cmp_id'] }}/creatives
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: cmp_id
+              stream:
+                $ref: "#/definitions/streams/campaigns"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/creatives"
+    audiences:
+      type: DeclarativeStream
+      name: audiences
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/audiences
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: Forbidden
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/audiences"
+    me:
+      type: DeclarativeStream
+      name: me
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/me
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 1
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: Forbidden
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/me"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.heypoplar.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"access_token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/creatives"
+  - $ref: "#/definitions/streams/audiences"
+  - $ref: "#/definitions/streams/me"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - access_token
+    properties:
+      access_token:
+        type: string
+        description: >-
+          Your Poplar API Access Token. Generate it from the [API Credentials
+          page](https://app.heypoplar.com/credentials) in your account. Use a
+          production token for live data or a test token for testing purposes.
+        name: access_token
+        order: 0
+        title: Access Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    campaigns: true
+    creatives: false
+    audiences: true
+    me: true
+  testedStreams:
+    campaigns:
+      hasRecords: true
+      streamHash: e66060806ba249c6745e1286210a5e7bff0bc046
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    creatives:
+      hasRecords: true
+      streamHash: b0503a59c95d138f8b5c82373efb408819ef1379
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    audiences:
+      hasRecords: true
+      streamHash: 94a6508c68bc53732665364ab70a034c8c4a6f14
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    me:
+      hasRecords: true
+      streamHash: b96e1dfa70b834a6848ae7e58a187ce798e9aafc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://developers.heypoplar.com/endpoints/other-endpoints
+
+schemas:
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  creatives:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  audiences:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      member_count:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  me:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      mode:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
