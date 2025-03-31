@@ -6,8 +6,8 @@ from datetime import datetime
 from unittest.mock import ANY, MagicMock, Mock, PropertyMock, call, patch
 
 import pytest
-from office365.onedrive.drives.drive import Drive
 from office365.entity_collection import EntityCollection
+from office365.onedrive.drives.drive import Drive
 from requests.exceptions import HTTPError
 from source_microsoft_sharepoint.exceptions import ErrorFetchingMetadata
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
