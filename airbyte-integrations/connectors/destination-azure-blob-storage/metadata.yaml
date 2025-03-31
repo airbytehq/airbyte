@@ -28,7 +28,7 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: certified
+  releaseStage: generally_available
   releases:
     breakingChanges:
       1.0.0:
