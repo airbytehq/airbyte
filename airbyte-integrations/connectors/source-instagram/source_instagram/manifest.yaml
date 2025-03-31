@@ -448,7 +448,7 @@ definitions:
           path: "{{ stream_partition.story_insights_info.story_id }}/insights"
           http_method: GET
           request_parameters:
-            metric: impressions,reach,replies,follows,profile_visits,shares,total_interactions
+            metric: reach,replies,follows,profile_visits,shares,total_interactions
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1062,11 +1062,6 @@ schemas:
         type:
           - "null"
           - string
-      impressions:
-        description: The number of times the story was viewed.
-        type:
-          - "null"
-          - integer
       reach:
         description: The number of unique accounts that viewed the story.
         type:

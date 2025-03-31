@@ -84,7 +84,6 @@ Table "story_insights" {
     "business_account_id" string
     "page_id" string
     "id" string
-    "impressions" integer
     "reach" integer
     "replies" integer
     "follows" integer

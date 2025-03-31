@@ -13,6 +13,9 @@ This release removes certain deprecated metrics. Hence, the following metrics in
  - `UserInsights` Stream:
    - `impressions`
 
+ - `StoryInsights` Stream:
+   - `impressions`
+
 To ensure uninterrupted syncs, users should follow the instructions below to migrate to version 4.0.0:
 
 1. Select **Connections** in the main navbar.
