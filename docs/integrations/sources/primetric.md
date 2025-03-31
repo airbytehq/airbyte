@@ -60,6 +60,7 @@ your employees to the right projects.
 
 | Version | Date       | Pull Request                                             | Subject                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------- |
+| 1.1.14 | 2025-03-29 | [56744](https://github.com/airbytehq/airbyte/pull/56744) | Update dependencies |
 | 1.1.13 | 2025-03-22 | [56194](https://github.com/airbytehq/airbyte/pull/56194) | Update dependencies |
 | 1.1.12 | 2025-03-08 | [55553](https://github.com/airbytehq/airbyte/pull/55553) | Update dependencies |
 | 1.1.11 | 2025-03-01 | [55045](https://github.com/airbytehq/airbyte/pull/55045) | Update dependencies |

@@ -100,8 +100,8 @@ class GlueWriteTest :
     }
 
     @Test
-    override fun testTruncateRefreshNoData() {
-        super.testTruncateRefreshNoData()
+    override fun testBasicTypes() {
+        super.testBasicTypes()
     }
 
     /**
