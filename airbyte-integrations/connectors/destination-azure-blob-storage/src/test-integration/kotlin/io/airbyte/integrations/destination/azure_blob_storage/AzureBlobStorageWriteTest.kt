@@ -15,7 +15,11 @@ import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
 import org.junit.jupiter.api.Test
 
-abstract class AzureBlobStorageWriteTest(configContents: String) :
+abstract class AzureBlobStorageWriteTest(
+    configContents: String,
+    preserveUndeclaredFields: Boolean = true,
+    nullEqualsUnset: Boolean,
+) :
     BasicFunctionalityIntegrationTest(
         configContents = configContents,
         configSpecClass = AzureBlobStorageSpecification::class.java,
@@ -28,17 +32,19 @@ abstract class AzureBlobStorageWriteTest(configContents: String) :
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PASS_THROUGH,
-        preserveUndeclaredFields = true,
+        preserveUndeclaredFields = preserveUndeclaredFields,
         supportFileTransfer = true,
         commitDataIncrementally = true,
         allTypesBehavior = Untyped,
+        nullEqualsUnset = nullEqualsUnset,
     )
 
 class AzureBlobStorageCsvNoFlatteningWriteTest :
     AzureBlobStorageWriteTest(
         AzureBlobStorageTestUtil.getConfig(
             CSVFormatSpecification(flattening = Flattening.NO_FLATTENING)
-        )
+        ),
+        nullEqualsUnset = true,
     ) {
     @Test
     override fun testBasicWriteFile() {
@@ -55,19 +61,23 @@ class AzureBlobStorageCsvWithFlatteningWriteTest :
     AzureBlobStorageWriteTest(
         AzureBlobStorageTestUtil.getConfig(
             CSVFormatSpecification(flattening = Flattening.ROOT_LEVEL_FLATTENING)
-        )
+        ),
+        preserveUndeclaredFields = false,
+        nullEqualsUnset = true,
     )
 
 class AzureBlobStorageJsonlNoFlatteningWriteTest :
     AzureBlobStorageWriteTest(
         AzureBlobStorageTestUtil.getConfig(
             JsonFormatSpecification(flattening = Flattening.NO_FLATTENING)
-        )
+        ),
+        nullEqualsUnset = false,
     )
 
 class AzureBlobStorageJsonlWithFlatteningWriteTest :
     AzureBlobStorageWriteTest(
         AzureBlobStorageTestUtil.getConfig(
             JsonFormatSpecification(flattening = Flattening.ROOT_LEVEL_FLATTENING)
-        )
+        ),
+        nullEqualsUnset = false,
     )
