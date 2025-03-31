@@ -3,7 +3,7 @@
 #
 
 import json
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pendulum
 import pytest
@@ -62,7 +62,8 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
             "json": {
                 stream.data_field: [
                     {
-                        "id": "test_id",
+                        "listId": "test_id",
+                        "objectTypeId": "0-1",
                         "createdAt": "2022-03-25T16:43:11Z",
                     },
                 ],
@@ -79,12 +80,12 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         }
     ]
 
-    requests_mock.register_uri("GET", stream.url, responses)
+    requests_mock.register_uri("POST", stream.url, responses)
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", properties_response)
 
     _, stream_state = read_incremental(stream, {})
 
-    expected = int(pendulum.parse(common_params["start_date"]).timestamp() * 1000)
+    expected = pendulum.parse(responses[0].get("json").get(stream.data_field)[-1].get("createdAt")).format(stream.cursor_field_datetime_format)
 
     assert stream_state[stream.updated_at_field] == expected
 
@@ -131,6 +132,20 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
                     {
                         "id": "test_id",
                         "created": "2022-02-25T16:43:11Z",
+                    }
+                    | cursor_value
+                ],
+            }
+        }
+    ]
+    contact_lists_v3_response = [
+        {
+            "json": {
+                stream.data_field: [
+                    {
+                        "listId": "test_id",
+                        "objectTypeId": "0-1",
+                        "createdAt": "2022-03-25T16:43:11Z",
                     }
                     | cursor_value
                 ],
@@ -188,6 +203,7 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
     requests_mock.register_uri("GET", "/email/public/v1/campaigns/test_id", responses)
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
     requests_mock.register_uri("GET", "/contacts/v1/contact/vids/batch/", read_batch_contact_v1_response)
+    requests_mock.register_uri("POST", "/crm/v3/lists/search", contact_lists_v3_response)
 
     records = read_full_refresh(stream)
     assert records
@@ -381,31 +397,48 @@ def test_contact_lists_transform(requests_mock, common_params):
                 stream.data_field: [
                     {
                         "listId": 1,
-                        "createdAt": 1654117200000,
-                        "filters": [[{"value": "@hubspot"}]],
+                        "createdAt": "2022-02-25T16:43:10Z",
+                        "objectTypeId": "0-1",
                     },
                     {
                         "listId": 2,
-                        "createdAt": 1654117200001,
-                        "filters": [[{"value": True}, {"value": "FORM_ABUSE"}]],
+                        "createdAt": "2022-02-25T16:43:11Z",
+                        "objectTypeId": "0-1",
                     },
                     {
                         "listId": 3,
-                        "createdAt": 1654117200002,
-                        "filters": [[{"value": 1000}]],
+                        "createdAt": "2022-02-25T16:43:12Z",
+                        "objectTypeId": "0-1",
                     },
                 ]
             }
         }
     ]
 
-    requests_mock.register_uri("GET", stream.url, responses)
+    requests_mock.register_uri("POST", stream.url, responses)
     records = read_full_refresh(stream)
 
-    assert records[0]["filters"][0][0]["value"] == "@hubspot"
-    assert records[1]["filters"][0][0]["value"] == "True"
-    assert records[1]["filters"][0][1]["value"] == "FORM_ABUSE"
-    assert records[2]["filters"][0][0]["value"] == "1000"
+    expected_record = [
+                    {
+                        "listId": "1",
+                        "createdAt": "2022-02-25T16:43:10Z",
+                        "objectTypeId": "0-1",
+                        "updatedAt": "2022-02-25T16:43:10Z",
+                    },
+                    {
+                        "listId": "2",
+                        "createdAt": "2022-02-25T16:43:11Z",
+                        "objectTypeId": "0-1",
+                        "updatedAt": "2022-02-25T16:43:11Z",
+                    },
+                    {
+                        "listId": "3",
+                        "createdAt": "2022-02-25T16:43:12Z",
+                        "objectTypeId": "0-1",
+                        "updatedAt": "2022-02-25T16:43:12Z",
+                    },
+                ]
+    assert records == expected_record
 
 
 def test_client_side_incremental_stream(requests_mock, common_params, fake_properties_list):
@@ -738,6 +771,9 @@ def test_contacts_membership_transform(common_params):
             "list-memberships": memberships,
         }
     ]
+    mock_api = MagicMock()
+    mock_api.get.return_value = ({"results": memberships}, None)
+    stream._api = mock_api
     assert [{"membership": 1, "canonical-vid": 1} for _ in versions] == list(stream._transform(records=records))
 
 
