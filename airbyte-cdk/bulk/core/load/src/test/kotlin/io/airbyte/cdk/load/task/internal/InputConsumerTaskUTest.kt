@@ -10,7 +10,7 @@ import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationStreamEvent
 import io.airbyte.cdk.load.message.MessageQueue
 import io.airbyte.cdk.load.message.MessageQueueSupplier
@@ -47,11 +47,12 @@ class InputConsumerTaskUTest {
     @MockK lateinit var fileTransferQueue: MessageQueue<FileTransferQueueMessage>
     @MockK
     lateinit var recordQueueForPipeline:
-        PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordAirbyteValue>>>
+        PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>
     @MockK lateinit var partitioner: InputPartitioner
     @MockK lateinit var openStreamQueue: QueueWriter<DestinationStream>
 
-    private val stream = DestinationStream.Descriptor("namespace", "name")
+    private val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
+    private lateinit var dstream: DestinationStream
 
     private fun createTask(loadPipeline: LoadPipeline?) =
         DefaultInputConsumerTask(
@@ -70,10 +71,10 @@ class InputConsumerTaskUTest {
 
     @BeforeEach
     fun setup() {
-        val dstream = mockk<DestinationStream>(relaxed = true)
-        every { dstream.descriptor } returns stream
+        dstream = mockk<DestinationStream>(relaxed = true)
+        every { dstream.descriptor } returns streamDescriptor
         coEvery { catalog.streams } returns listOf(dstream)
-        coEvery { recordQueueSupplier.get(stream) } returns mockk(relaxed = true)
+        coEvery { recordQueueSupplier.get(streamDescriptor) } returns mockk(relaxed = true)
         coEvery { fileTransferQueue.close() } returns Unit
         coEvery { recordQueueForPipeline.close() } returns Unit
         coEvery { openStreamQueue.close() } returns Unit
@@ -94,7 +95,7 @@ class InputConsumerTaskUTest {
                             null,
                             0,
                             DestinationRecord(
-                                stream = stream,
+                                stream = dstream,
                                 message = mockk(relaxed = true),
                                 serialized = "",
                                 schema = ObjectTypeWithoutSchema
@@ -104,7 +105,7 @@ class InputConsumerTaskUTest {
                 )
                 val job = launch { inputConsumerTask.execute() }
                 job.join()
-                coVerify { recordQueueSupplier.get(stream) }
+                coVerify { recordQueueSupplier.get(streamDescriptor) }
                 coVerify(exactly = 0) { recordQueueForPipeline.publish(any(), any()) }
             }
     }
@@ -112,7 +113,6 @@ class InputConsumerTaskUTest {
     @Test
     fun `input consumer uses the new path when there is a load pipeline`(): Unit = runTest {
         val inputConsumerTask = createTask(mockk(relaxed = true))
-
         coEvery { inputFlow.collect(any()) } coAnswers
             {
                 val collector: FlowCollector<Pair<Long, Reserved<DestinationMessage>>> = firstArg()
@@ -123,7 +123,7 @@ class InputConsumerTaskUTest {
                             null,
                             0,
                             DestinationRecord(
-                                stream = stream,
+                                stream = dstream,
                                 message = mockk(relaxed = true),
                                 serialized = "",
                                 schema = ObjectTypeWithoutSchema
@@ -133,7 +133,7 @@ class InputConsumerTaskUTest {
                 )
                 val job = launch { inputConsumerTask.execute() }
                 job.join()
-                coVerify(exactly = 0) { recordQueueSupplier.get(stream) }
+                coVerify(exactly = 0) { recordQueueSupplier.get(streamDescriptor) }
                 coVerify { recordQueueForPipeline.publish(any(), any()) }
             }
     }

@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-web-scrapper
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.36.4@sha256:a612db8bc977a46d7d2e0442f5c6be26da6039ee83a8aceb7be545e4cbdd7040
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.42.1@sha256:e27eda55fe99a0f36d2f108e8b00178f9ace4be23ea68a09547c3dbcb7184ed1
   connectorSubtype: api
   connectorType: source
   definitionId: 2f87b960-0220-4b76-9ab3-fba67ca4c959
-  dockerImageTag: 0.0.14
+  dockerImageTag: 0.0.17
   dockerRepository: airbyte/source-web-scrapper
   githubIssueLabel: source-web-scrapper
   icon: icon.svg

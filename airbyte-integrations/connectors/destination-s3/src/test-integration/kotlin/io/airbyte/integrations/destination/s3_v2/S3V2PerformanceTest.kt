@@ -14,16 +14,13 @@ class S3V2JsonNoFrillsPerformanceTest :
         configContents = S3V2TestUtils.getConfig(S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH),
         configSpecClass = S3V2Specification::class.java,
         defaultRecordsToInsert = 1_000_000,
-        micronautProperties = S3V2TestUtils.PERFORMANCE_TEST_MICRONAUT_PROPERTIES
+        micronautProperties = S3V2TestUtils.PERFORMANCE_TEST_MICRONAUT_PROPERTIES,
+        numFilesForFileTransfer = 5,
+        fileSizeMbForFileTransfer = 1024,
     ) {
     @Test
-    override fun testInsertRecords() {
-        super.testInsertRecords()
-    }
-
-    @Test
-    override fun testRefreshingRecords() {
-        super.testRefreshingRecords()
+    override fun testFileTransfer() {
+        super.testFileTransfer()
     }
 }
 
@@ -34,14 +31,4 @@ class S3V2ParquetSnappyPerformanceTest :
         configSpecClass = S3V2Specification::class.java,
         defaultRecordsToInsert = 1_000_000,
         micronautProperties = S3V2TestUtils.PERFORMANCE_TEST_MICRONAUT_PROPERTIES,
-    ) {
-    @Test
-    override fun testInsertRecords() {
-        super.testInsertRecords()
-    }
-
-    @Test
-    override fun testRefreshingRecords() {
-        super.testRefreshingRecords()
-    }
-}
+    )
