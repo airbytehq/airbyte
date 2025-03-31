@@ -85,7 +85,7 @@ definitions:
           $ref: "#/schemas/payouts"
   base_requester:
     type: HttpRequester
-    url_base: https://apiz.sandbox.ebay.com
+    url_base: "{{ config['api_host'] }}"
     authenticator:
       type: SessionTokenAuthenticator
       login_requester:
@@ -171,14 +171,14 @@ metadata:
     payouts: true
   testedStreams:
     transactions:
-      streamHash: 524b173a5a03dc48dfa73200b931d6947ec36d70
+      streamHash: 18edaf7051beb33c5dcd8a3ba831a4566f5e715f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     payouts:
-      streamHash: 6e09be6dbdc75065152ed09bd0b9a2e188a5cef2
+      streamHash: 1369ad37bd3ce6948cd7aaa3f810a8251c530c72
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
