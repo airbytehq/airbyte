@@ -2,7 +2,7 @@
 
 ### General Limitations
 
-- Use MySQL Server versions `8.0`, `5.7`, or `5.6`.
+- Use MySQL Server versions `8.4`, `8.0`, `5.7`, or `5.6`.
 - For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.58.0` or newer
 - For Airbyte Cloud (and optionally for Airbyte Open Source), ensure SSL is enabled in your environment
 
@@ -41,6 +41,22 @@ MariaDB is a fork of MySQL that adds many new features. The MySQL source connect
 - Mapping MySQL's DateTime field: There may be problems with mapping values in MySQL's datetime field to other relational data stores. MySQL permits zero values for date/time instead of NULL which may not be accepted by other data stores. To work around this problem, you can pass the following key value pair in the JDBC connector of the source setting `zerodatetimebehavior=Converttonull`.
 - Amazon RDS MySQL or MariaDB connection issues: If you see the following `Cannot create a PoolableConnectionFactory` error, please add `enabledTLSProtocols=TLSv1.2` in the JDBC parameters.
 - Amazon RDS MySQL connection issues: If you see `Error: HikariPool-1 - Connection is not available, request timed out after 30001ms.`, many times this due to your VPC not allowing public traffic. We recommend going through [this AWS troubleshooting checklist](https://aws.amazon.com/premiumsupport/knowledge-center/rds-cannot-connect/) to ensure the correct permissions/settings have been granted to allow Airbyte to connect to your database.
+
+### Query Timeout:
+
+**Error**: `java.sql.SQLException: Query execution was interrupted, maximum statement execution time exceeded`
+
+**Resolution**:
+While this error is _transient_ and will not result in sync failure, there are some steps that we recommend performing to
+avoid the error:
+- **For Full Refresh / Incremental:**
+  - Ensure that any execution time limits configured on your MSSQL server (e.g. `max_execution_time`) are set to at least 5 minutes.
+  If you are syncing a large table (with many rows or columns), you may need to increase this timeout further based on log analysis. 
+- **For CDC:**  
+  - Check the `Checkpoint Target Time Interval` source configuration. This setting controls how often Airbyte runs checkpoints in seconds.
+Make sure your MSSQL execution timeout is set higher than this interval. For example, if `Checkpoint Target Time Interval` is set to 300/s (5 minutes),
+then `max_execution_time` should be at least 5 minutes.
+
 
 ### Under CDC incremental mode, there are still full refresh syncs
 
