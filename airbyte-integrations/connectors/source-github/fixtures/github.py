@@ -9,6 +9,7 @@ from typing import Iterator, Optional
 
 import requests
 
+
 logging.basicConfig(level=logging.INFO)
 
 

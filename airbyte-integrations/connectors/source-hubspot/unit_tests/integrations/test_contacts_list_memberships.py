@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from unittest import TestCase
 
 import freezegun
+
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import SyncMode
@@ -11,6 +12,7 @@ from airbyte_protocol.models import SyncMode
 from . import HubspotTestCase
 from .request_builders.streams import ContactsStreamRequestBuilder
 from .response_builder.contact_response_builder import AllContactsResponseBuilder, ContactBuilder, ContactsListMembershipBuilder
+
 
 _START_TIME_BEFORE_ANY_RECORD = "1970-01-01T00:00:00Z"
 
@@ -37,25 +39,40 @@ class ContactsListMembershipsStreamTest(TestCase, HubspotTestCase):
         self.mock_response(
             self._http_mocker,
             ContactsStreamRequestBuilder().with_filter("showListMemberships", True).build(),
-            AllContactsResponseBuilder().with_pagination(vid_offset=_VID_OFFSET).with_contacts([
-                ContactBuilder().with_list_memberships([
-                    ContactsListMembershipBuilder(),
-                    ContactsListMembershipBuilder(),
-                ]),
-            ]).build(),
+            AllContactsResponseBuilder()
+            .with_pagination(vid_offset=_VID_OFFSET)
+            .with_contacts(
+                [
+                    ContactBuilder().with_list_memberships(
+                        [
+                            ContactsListMembershipBuilder(),
+                            ContactsListMembershipBuilder(),
+                        ]
+                    ),
+                ]
+            )
+            .build(),
         )
         self.mock_response(
             self._http_mocker,
             ContactsStreamRequestBuilder().with_filter("showListMemberships", True).with_vid_offset(str(_VID_OFFSET)).build(),
-            AllContactsResponseBuilder().with_contacts([
-                ContactBuilder().with_list_memberships([
-                    ContactsListMembershipBuilder(),
-                ]),
-                ContactBuilder().with_list_memberships([
-                    ContactsListMembershipBuilder(),
-                    ContactsListMembershipBuilder(),
-                ]),
-            ]).build(),
+            AllContactsResponseBuilder()
+            .with_contacts(
+                [
+                    ContactBuilder().with_list_memberships(
+                        [
+                            ContactsListMembershipBuilder(),
+                        ]
+                    ),
+                    ContactBuilder().with_list_memberships(
+                        [
+                            ContactsListMembershipBuilder(),
+                            ContactsListMembershipBuilder(),
+                        ]
+                    ),
+                ]
+            )
+            .build(),
         )
 
         output = self.read_from_stream(self.oauth_config(start_date=_START_TIME_BEFORE_ANY_RECORD), self.STREAM_NAME, SyncMode.full_refresh)
@@ -67,14 +84,22 @@ class ContactsListMembershipsStreamTest(TestCase, HubspotTestCase):
         self.mock_response(
             self._http_mocker,
             ContactsStreamRequestBuilder().with_filter("showListMemberships", True).build(),
-            AllContactsResponseBuilder().with_contacts([
-                ContactBuilder().with_list_memberships([
-                    ContactsListMembershipBuilder().with_timestamp(start_date + timedelta(days=10)),
-                    ContactsListMembershipBuilder().with_timestamp(start_date - timedelta(days=10)),
-                ]),
-            ]).build(),
+            AllContactsResponseBuilder()
+            .with_contacts(
+                [
+                    ContactBuilder().with_list_memberships(
+                        [
+                            ContactsListMembershipBuilder().with_timestamp(start_date + timedelta(days=10)),
+                            ContactsListMembershipBuilder().with_timestamp(start_date - timedelta(days=10)),
+                        ]
+                    ),
+                ]
+            )
+            .build(),
         )
-        output = self.read_from_stream(self.oauth_config(start_date=start_date.isoformat().replace("+00:00", "Z")), self.STREAM_NAME, SyncMode.full_refresh)
+        output = self.read_from_stream(
+            self.oauth_config(start_date=start_date.isoformat().replace("+00:00", "Z")), self.STREAM_NAME, SyncMode.full_refresh
+        )
 
         assert len(output.records) == 1
 
@@ -83,12 +108,18 @@ class ContactsListMembershipsStreamTest(TestCase, HubspotTestCase):
         self.mock_response(
             self._http_mocker,
             ContactsStreamRequestBuilder().with_filter("showListMemberships", True).build(),
-            AllContactsResponseBuilder().with_contacts([
-                ContactBuilder().with_list_memberships([
-                    ContactsListMembershipBuilder().with_timestamp(state_value + timedelta(days=10)),
-                    ContactsListMembershipBuilder().with_timestamp(state_value - timedelta(days=10)),
-                ]),
-            ]).build(),
+            AllContactsResponseBuilder()
+            .with_contacts(
+                [
+                    ContactBuilder().with_list_memberships(
+                        [
+                            ContactsListMembershipBuilder().with_timestamp(state_value + timedelta(days=10)),
+                            ContactsListMembershipBuilder().with_timestamp(state_value - timedelta(days=10)),
+                        ]
+                    ),
+                ]
+            )
+            .build(),
         )
         output = self.read_from_stream(
             self.oauth_config(start_date=_START_TIME_BEFORE_ANY_RECORD),

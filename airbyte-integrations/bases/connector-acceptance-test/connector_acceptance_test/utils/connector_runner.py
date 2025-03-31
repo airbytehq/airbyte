@@ -3,6 +3,7 @@
 #
 
 
+import io
 import json
 import logging
 import os
@@ -13,11 +14,18 @@ from typing import Any, List, Mapping, Optional, Union
 import dagger
 import docker
 import pytest
+from anyio import Path as AnyioPath
+from pydantic import ValidationError
+
 from airbyte_protocol.models import AirbyteMessage, ConfiguredAirbyteCatalog, OrchestratorType
 from airbyte_protocol.models import Type as AirbyteMessageType
-from anyio import Path as AnyioPath
 from connector_acceptance_test.utils import SecretDict
-from pydantic import ValidationError
+
+
+def splitlines_generator(input_string: str):
+    with io.StringIO(input_string) as stream:
+        for line in stream:
+            yield line.rstrip("\n")
 
 
 async def get_container_from_id(dagger_client: dagger.Client, container_id: str) -> dagger.Container:
@@ -28,7 +36,7 @@ async def get_container_from_id(dagger_client: dagger.Client, container_id: str)
         dagger_client (dagger.Client): The dagger client to use to import the connector image
     """
     try:
-        return await dagger_client.container(id=dagger.ContainerID(container_id))
+        return await dagger_client.load_container_from_id(dagger.ContainerID(container_id))
     except dagger.DaggerError as e:
         pytest.exit(f"Failed to load connector container: {e}")
 
@@ -37,7 +45,7 @@ async def get_container_from_tarball_path(dagger_client: dagger.Client, tarball_
     if not tarball_path.exists():
         pytest.exit(f"Connector image tarball {tarball_path} does not exist")
     container_under_test_tar_file = (
-        dagger_client.host().directory(str(tarball_path.parent), include=tarball_path.name).file(tarball_path.name)
+        dagger_client.host().directory(str(tarball_path.parent), include=[tarball_path.name]).file(tarball_path.name)
     )
     try:
         return await dagger_client.container().import_(container_under_test_tar_file)
@@ -121,10 +129,11 @@ async def get_connector_container(dagger_client: dagger.Client, image_name_with_
 
 
 class ConnectorRunner:
-    IN_CONTAINER_CONFIG_PATH = "/data/config.json"
-    IN_CONTAINER_CATALOG_PATH = "/data/catalog.json"
-    IN_CONTAINER_STATE_PATH = "/data/state.json"
-    IN_CONTAINER_OUTPUT_PATH = "/output.txt"
+    DATA_DIR = "/airbyte/data"
+    IN_CONTAINER_CONFIG_PATH = f"{DATA_DIR}/config.json"
+    IN_CONTAINER_CATALOG_PATH = f"{DATA_DIR}/catalog.json"
+    IN_CONTAINER_STATE_PATH = f"{DATA_DIR}/state.json"
+    IN_CONTAINER_OUTPUT_PATH = f"{DATA_DIR}/output.txt"
 
     def __init__(
         self,
@@ -241,16 +250,19 @@ class ConnectorRunner:
             List[AirbyteMessage]: The list of AirbyteMessages emitted by the connector.
         """
         container = self._connector_under_test_container
+        current_user = (await container.with_exec(["whoami"]).stdout()).strip()
+        container = container.with_user(current_user)
+        container = container.with_exec(["mkdir", "-p", self.DATA_DIR])
         if not enable_caching:
             container = container.with_env_variable("CAT_CACHEBUSTER", str(uuid.uuid4()))
         if config:
-            container = container.with_new_file(self.IN_CONTAINER_CONFIG_PATH, contents=json.dumps(dict(config)))
+            container = container.with_new_file(self.IN_CONTAINER_CONFIG_PATH, contents=json.dumps(dict(config)), owner=current_user)
         if state:
-            container = container.with_new_file(self.IN_CONTAINER_STATE_PATH, contents=json.dumps(state))
+            container = container.with_new_file(self.IN_CONTAINER_STATE_PATH, contents=json.dumps(state), owner=current_user)
         if catalog:
-            container = container.with_new_file(self.IN_CONTAINER_CATALOG_PATH, contents=catalog.json())
+            container = container.with_new_file(self.IN_CONTAINER_CATALOG_PATH, contents=catalog.json(), owner=current_user)
         try:
-            output = await self._read_output_from_stdout(airbyte_command, container)
+            output = await self._read_output_from_file(airbyte_command, container)
         except dagger.QueryError as e:
             output_too_big = bool([error for error in e.errors if error.message.startswith("file size")])
             if output_too_big:
@@ -265,15 +277,15 @@ class ConnectorRunner:
         return self.parse_airbyte_messages_from_command_output(output)
 
     async def _read_output_from_stdout(self, airbyte_command: list, container: dagger.Container) -> str:
-        return await container.with_exec(airbyte_command).stdout()
+        return await container.with_exec(airbyte_command, use_entrypoint=True).stdout()
 
     async def _read_output_from_file(self, airbyte_command: list, container: dagger.Container) -> str:
         local_output_file_path = f"/tmp/{str(uuid.uuid4())}"
         entrypoint = await container.entrypoint()
         airbyte_command = entrypoint + airbyte_command
+
         container = container.with_exec(
-            ["sh", "-c", " ".join(airbyte_command) + f" > {self.IN_CONTAINER_OUTPUT_PATH} 2>&1 | tee -a {self.IN_CONTAINER_OUTPUT_PATH}"],
-            skip_entrypoint=True,
+            ["sh", "-c", " ".join(airbyte_command) + f" > {self.IN_CONTAINER_OUTPUT_PATH} 2>&1 | tee -a {self.IN_CONTAINER_OUTPUT_PATH}"]
         )
         await container.file(self.IN_CONTAINER_OUTPUT_PATH).export(local_output_file_path)
         output = await AnyioPath(local_output_file_path).read_text()
@@ -282,7 +294,7 @@ class ConnectorRunner:
 
     def parse_airbyte_messages_from_command_output(self, command_output: str) -> List[AirbyteMessage]:
         airbyte_messages = []
-        for line in command_output.splitlines():
+        for line in splitlines_generator(command_output):
             try:
                 airbyte_message = AirbyteMessage.parse_raw(line)
                 if airbyte_message.type is AirbyteMessageType.CONTROL and airbyte_message.control.type is OrchestratorType.CONNECTOR_CONFIG:

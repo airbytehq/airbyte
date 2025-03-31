@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "*"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-huntr
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.17.0@sha256:9c6bfd080a247b7781ce5b25687e7c44e29d31315d0bf656584b38810521bbaa
+  connectorSubtype: api
+  connectorType: source
+  definitionId: e1b1016c-04d5-41e6-b4ed-46f0893bb02a
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-huntr
+  githubIssueLabel: source-huntr
+  icon: icon.svg
+  license: MIT
+  name: Huntr
+  releaseDate: 2025-01-24
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/huntr
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

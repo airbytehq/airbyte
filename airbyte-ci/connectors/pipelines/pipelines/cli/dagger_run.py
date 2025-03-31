@@ -14,6 +14,7 @@ from typing import Optional
 
 import pkg_resources  # type: ignore
 import requests  # type: ignore
+
 from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME
 
 LOGGER = logging.getLogger(__name__)
@@ -26,7 +27,7 @@ DAGGER_TELEMETRY_TOKEN_ENV_VAR_NAME_VALUE = (
     "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k",
 )
 
-ARGS_DISABLING_TUI = ["--no-tui", "--version", "publish", "upgrade-base-image", "--help", "format", "bump-version", "migrate-to-base-image"]
+ARGS_DISABLING_TUI = ["--no-tui", "--version", "publish", "upgrade-base-image", "--help", "format", "bump-version"]
 
 
 def get_dagger_path() -> Optional[str]:
@@ -113,7 +114,7 @@ def call_current_command_with_dagger_run() -> None:
 
     exit_code = 0
     dagger_path = check_dagger_cli_install()
-    command = [dagger_path, "run"] + sys.argv
+    command = [dagger_path, "--silent", "run"] + sys.argv
     try:
         try:
             LOGGER.info(f"Running command: {command}")

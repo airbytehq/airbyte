@@ -3,9 +3,11 @@
 from typing import Optional, Union
 
 import requests
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, ResponseAction
-from airbyte_protocol.models import FailureType
 from requests import exceptions
+
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, ResponseAction
+
 
 RESPONSE_CONSUMPTION_EXCEPTIONS = (
     exceptions.ChunkedEncodingError,

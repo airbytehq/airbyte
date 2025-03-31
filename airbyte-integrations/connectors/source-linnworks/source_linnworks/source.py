@@ -7,6 +7,7 @@ from typing import Any, List, Mapping, MutableMapping, Tuple
 
 import pendulum
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
@@ -48,7 +49,6 @@ class LinnworksAuthenticator(Oauth2Authenticator):
         return {"Authorization": self.get_access_token()}
 
     def get_access_token(self):
-
         if self.token_has_expired():
             t0 = pendulum.now()
             token, expires_in, server = self.refresh_access_token()

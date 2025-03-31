@@ -6,11 +6,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import source_bing_ads
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.utils import AirbyteTracedException
 from bingads.service_info import SERVICE_INFO_DICT_V13
 from source_bing_ads.base_streams import Accounts, AdGroups, Ads, Campaigns
 from source_bing_ads.source import SourceBingAds
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 @patch.object(source_bing_ads.source, "Client")
@@ -97,7 +98,6 @@ def test_clear_reporting_object_name():
 
 @patch.object(source_bing_ads.source, "Client")
 def test_campaigns_request_params(mocked_client, config):
-
     campaigns = Campaigns(mocked_client, config)
 
     request_params = campaigns.request_params(stream_slice={"account_id": "account_id"})
@@ -110,7 +110,6 @@ def test_campaigns_request_params(mocked_client, config):
 
 @patch.object(source_bing_ads.source, "Client")
 def test_campaigns_stream_slices(mocked_client, config):
-
     campaigns = Campaigns(mocked_client, config)
     accounts_read_records = iter([{"Id": 180519267, "ParentCustomerId": 100}, {"Id": 180278106, "ParentCustomerId": 200}])
     with patch.object(Accounts, "read_records", return_value=accounts_read_records):
@@ -123,7 +122,6 @@ def test_campaigns_stream_slices(mocked_client, config):
 
 @patch.object(source_bing_ads.source, "Client")
 def test_adgroups_stream_slices(mocked_client, config):
-
     adgroups = AdGroups(mocked_client, config)
     accounts_read_records = iter([{"Id": 180519267, "ParentCustomerId": 100}, {"Id": 180278106, "ParentCustomerId": 200}])
     campaigns_read_records = [iter([{"Id": 11}, {"Id": 22}]), iter([{"Id": 55}, {"Id": 66}])]
@@ -140,7 +138,6 @@ def test_adgroups_stream_slices(mocked_client, config):
 
 @patch.object(source_bing_ads.source, "Client")
 def test_ads_request_params(mocked_client, config):
-
     ads = Ads(mocked_client, config)
 
     request_params = ads.request_params(stream_slice={"ad_group_id": "ad_group_id"})
@@ -155,7 +152,6 @@ def test_ads_request_params(mocked_client, config):
 
 @patch.object(source_bing_ads.source, "Client")
 def test_ads_stream_slices(mocked_client, config):
-
     ads = Ads(mocked_client, config)
 
     with patch.object(

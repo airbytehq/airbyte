@@ -23,7 +23,7 @@ In addition to our improved schema discovery, we also released:
 
 - Reduced friction for large records. Airbyte's platform no longer limits how large a record from the source can be. Instead, each destination has their own unique limit constraints. When a destination receives a large record, the primary key and cursor will be retained, but all other data in the record will be nulled. Any modifications to the record will be stored within `airbyte_meta.changes` for your review within the destination.
 
-- A new OSS [Quickstart](/deploying-airbyte/quickstart) that automatically manages all install steps for you. Mac users can also use Brew to install the `abctl` command.
+- A new OSS [Quickstart](/using-airbyte/getting-started/oss-quickstart) that automatically manages all install steps for you. Mac users can also use Brew to install the `abctl` command.
 
 - (Self-Managed Enterprise only) Improvements to connection migrations. Any changes to authentication or ingress URL configurations can be saved without deleting state. The improvement also includes a backwards-compatible alternative to setting the webapp-url property through the airbyte.yml file.
 

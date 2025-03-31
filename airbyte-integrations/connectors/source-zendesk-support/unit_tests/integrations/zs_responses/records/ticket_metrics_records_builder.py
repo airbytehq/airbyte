@@ -7,6 +7,11 @@ from .records_builder import ZendeskSupportRecordBuilder
 
 class TicketMetricsRecordBuilder(ZendeskSupportRecordBuilder):
     @classmethod
-    def ticket_metrics_record(cls) -> "TicketMetricsRecordBuilder":
-        record_template = cls.extract_record("ticket_metrics", __file__, FieldPath("ticket_metric"))
+    def stateful_ticket_metrics_record(cls) -> "TicketMetricsRecordBuilder":
+        record_template = cls.extract_record("stateful_ticket_metrics", __file__, FieldPath("ticket_metric"))
         return cls(record_template, FieldPath("id"), FieldPath("generated_timestamp"))
+
+    @classmethod
+    def stateless_ticket_metrics_record(cls) -> "TicketMetricsRecordBuilder":
+        record_template = cls.extract_record("stateless_ticket_metrics", __file__, NestedPath(["ticket_metrics", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))

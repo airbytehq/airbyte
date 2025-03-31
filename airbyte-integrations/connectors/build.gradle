@@ -18,7 +18,7 @@ def pythonBin = layout.buildDirectory.file('.venv/bin/python').get().asFile.abso
 // python is required by the connectors project to run airbyte-ci from source to build connector images.
 python {
     envPath = layout.buildDirectory.file('.venv').get().asFile
-    minPythonVersion = '3.10' // should be 3.10 for local development
+    minPythonVersion = '3.11' // should be 3.11 for local development
 
     // Pyenv support.
     try {

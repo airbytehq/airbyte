@@ -1,0 +1,658 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  Web Scrapper connector enables data synchronization from Web Scrapper source
+  to various data destination. It gives information about sitemaps, users,
+  scraping jobs etc.
+
+check:
+  type: CheckStream
+  stream_names:
+    - sitemap_list
+
+definitions:
+  streams:
+    sitemap_list:
+      type: DeclarativeStream
+      name: sitemap_list
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/sitemaps
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sitemap_list"
+    users:
+      type: DeclarativeStream
+      name: users
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/account
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    scraping_jobs:
+      type: DeclarativeStream
+      name: scraping_jobs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/scraping-jobs
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/scraping_jobs"
+    scraping_job_data_quality:
+      type: DeclarativeStream
+      name: scraping_job_data_quality
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /api/v1/scraping-job/{{ stream_partition.scraping_job
+            }}/data-quality
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: scraping_job
+              stream:
+                $ref: "#/definitions/streams/scraping_jobs"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - scraping_job
+              value: "{{ stream_slice.scraping_job }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/scraping_job_data_quality"
+    sitemap_detail:
+      type: DeclarativeStream
+      name: sitemap_detail
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/sitemap/{{stream_partition.sitemap_id}}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: sitemap_id
+              stream:
+                $ref: "#/definitions/streams/sitemap_list"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sitemap_detail"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.webscraper.io
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_token\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: api_token
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/sitemap_list"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/scraping_jobs"
+  - $ref: "#/definitions/streams/scraping_job_data_quality"
+  - $ref: "#/definitions/streams/sitemap_detail"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+    properties:
+      api_token:
+        type: string
+        description: API token to use. Find it at https://cloud.webscraper.io/api
+        name: api_token
+        order: 0
+        title: API Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    sitemap_list: true
+    users: true
+    scraping_jobs: true
+    scraping_job_data_quality: true
+    sitemap_detail: true
+  testedStreams:
+    sitemap_list:
+      streamHash: 3f486ff4a4f9b6d42e2c357a47b4e129841f618c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: bbdcf3fa16b1f9418d8de88104cf767f80a6605f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    scraping_jobs:
+      streamHash: 3bf27ee2242c4556a1261ece0ea757b1dd9859e5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    scraping_job_data_quality:
+      streamHash: c2e39750e0e2fa0b30ccf392c7b1a613a0878a50
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    sitemap_detail:
+      streamHash: 69d02ba9a400cbda2f01accffc1248cdb41eee20
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://webscraper.io/documentation/web-scraper-cloud/api
+
+schemas:
+  sitemap_list:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      email:
+        type:
+          - string
+          - "null"
+      firstname:
+        type:
+          - string
+          - "null"
+      lastname:
+        type:
+          - string
+          - "null"
+      page_credits:
+        type:
+          - number
+          - "null"
+  scraping_jobs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      driver:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      jobs_empty:
+        type:
+          - number
+          - "null"
+      jobs_executed:
+        type:
+          - number
+          - "null"
+      jobs_failed:
+        type:
+          - number
+          - "null"
+      jobs_no_value:
+        type:
+          - number
+          - "null"
+      jobs_scheduled:
+        type:
+          - number
+          - "null"
+      page_load_delay:
+        type:
+          - number
+          - "null"
+      request_interval:
+        type:
+          - number
+          - "null"
+      scheduled:
+        type:
+          - number
+          - "null"
+      scraping_duration:
+        type:
+          - number
+          - "null"
+      sitemap_id:
+        type:
+          - number
+          - "null"
+      sitemap_name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      stored_record_count:
+        type:
+          - number
+          - "null"
+      test_run:
+        type:
+          - number
+          - "null"
+      time_created:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  scraping_job_data_quality:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      max_empty_pages_percent:
+        type:
+          - object
+          - "null"
+        properties:
+          expected:
+            type:
+              - number
+              - "null"
+          got:
+            type:
+              - number
+              - "null"
+          success:
+            type:
+              - boolean
+              - "null"
+      max_failed_pages_percent:
+        type:
+          - object
+          - "null"
+        properties:
+          expected:
+            type:
+              - number
+              - "null"
+          got:
+            type:
+              - number
+              - "null"
+          success:
+            type:
+              - boolean
+              - "null"
+      max_no_value_pages_percent:
+        type:
+          - object
+          - "null"
+        properties:
+          expected:
+            type:
+              - number
+              - "null"
+          got:
+            type:
+              - number
+              - "null"
+          success:
+            type:
+              - boolean
+              - "null"
+      min_column_records:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - object
+              - "null"
+            properties:
+              expected:
+                type:
+                  - number
+                  - "null"
+              got:
+                type:
+                  - number
+                  - "null"
+              success:
+                type:
+                  - boolean
+                  - "null"
+          category-link:
+            type:
+              - object
+              - "null"
+            properties:
+              expected:
+                type:
+                  - number
+                  - "null"
+              got:
+                type:
+                  - number
+                  - "null"
+              success:
+                type:
+                  - boolean
+                  - "null"
+          category-link-href:
+            type:
+              - object
+              - "null"
+            properties:
+              expected:
+                type:
+                  - number
+                  - "null"
+              got:
+                type:
+                  - number
+                  - "null"
+              success:
+                type:
+                  - boolean
+                  - "null"
+          name:
+            type:
+              - object
+              - "null"
+            properties:
+              expected:
+                type:
+                  - number
+                  - "null"
+              got:
+                type:
+                  - number
+                  - "null"
+              success:
+                type:
+                  - boolean
+                  - "null"
+          pagination:
+            type:
+              - object
+              - "null"
+            properties:
+              expected:
+                type:
+                  - number
+                  - "null"
+              got:
+                type:
+                  - number
+                  - "null"
+              success:
+                type:
+                  - boolean
+                  - "null"
+          pagination-href:
+            type:
+              - object
+              - "null"
+            properties:
+              expected:
+                type:
+                  - number
+                  - "null"
+              got:
+                type:
+                  - number
+                  - "null"
+              success:
+                type:
+                  - boolean
+                  - "null"
+          price:
+            type:
+              - object
+              - "null"
+            properties:
+              expected:
+                type:
+                  - number
+                  - "null"
+              got:
+                type:
+                  - number
+                  - "null"
+              success:
+                type:
+                  - boolean
+                  - "null"
+          product-link:
+            type:
+              - object
+              - "null"
+            properties:
+              expected:
+                type:
+                  - number
+                  - "null"
+              got:
+                type:
+                  - number
+                  - "null"
+              success:
+                type:
+                  - boolean
+                  - "null"
+          product-link-href:
+            type:
+              - object
+              - "null"
+            properties:
+              expected:
+                type:
+                  - number
+                  - "null"
+              got:
+                type:
+                  - number
+                  - "null"
+              success:
+                type:
+                  - boolean
+                  - "null"
+          reviews:
+            type:
+              - object
+              - "null"
+            properties:
+              expected:
+                type:
+                  - number
+                  - "null"
+              got:
+                type:
+                  - number
+                  - "null"
+              success:
+                type:
+                  - boolean
+                  - "null"
+          subcategory-link:
+            type:
+              - object
+              - "null"
+            properties:
+              expected:
+                type:
+                  - number
+                  - "null"
+              got:
+                type:
+                  - number
+                  - "null"
+              success:
+                type:
+                  - boolean
+                  - "null"
+          subcategory-link-href:
+            type:
+              - object
+              - "null"
+            properties:
+              expected:
+                type:
+                  - number
+                  - "null"
+              got:
+                type:
+                  - number
+                  - "null"
+              success:
+                type:
+                  - boolean
+                  - "null"
+      min_record_count:
+        type:
+          - object
+          - "null"
+        properties:
+          expected:
+            type:
+              - number
+              - "null"
+          got:
+            type:
+              - number
+              - "null"
+          success:
+            type:
+              - boolean
+              - "null"
+      overall_data_quality_success:
+        type:
+          - boolean
+          - "null"
+      scraping_job:
+        type:
+          - number
+          - "null"
+  sitemap_detail:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      sitemap:
+        type:
+          - string
+          - "null"
+    required:
+      - id

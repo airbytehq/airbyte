@@ -9,6 +9,7 @@ from destination_google_sheets.spreadsheet import GoogleSheets
 from integration_tests.test_helpers import TEST_CONFIG
 from pygsheets.client import Client as pygsheets_client
 
+
 # ----- PREPARE ENV -----
 
 

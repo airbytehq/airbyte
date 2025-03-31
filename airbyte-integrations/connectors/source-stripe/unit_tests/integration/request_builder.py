@@ -8,7 +8,6 @@ from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 
 
 class StripeRequestBuilder:
-
     @classmethod
     def accounts_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
         return cls("accounts", account_id, client_secret)
@@ -20,6 +19,10 @@ class StripeRequestBuilder:
     @classmethod
     def application_fees_refunds_endpoint(cls, application_fee_id: str, account_id: str, client_secret: str) -> "StripeRequestBuilder":
         return cls(f"application_fees/{application_fee_id}/refunds", account_id, client_secret)
+
+    @classmethod
+    def balance_transactions_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls("balance_transactions", account_id, client_secret)
 
     @classmethod
     def customers_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
@@ -50,11 +53,28 @@ class StripeRequestBuilder:
         return cls("issuing/transactions", account_id, client_secret)
 
     @classmethod
-    def payment_methods_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
-        return cls("payment_methods", account_id, client_secret)
+    def payment_methods_endpoint(cls, customer_id: str, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls(f"customers/{customer_id}/payment_methods", account_id, client_secret)
 
     @classmethod
-    def persons_endpoint(cls, parent_account_id: str, account_id: str, client_secret: str, ) -> "StripeRequestBuilder":
+    def payouts_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls("payouts", account_id, client_secret)
+
+    @classmethod
+    def setup_attempts_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls("setup_attempts", account_id, client_secret)
+
+    @classmethod
+    def setup_intents_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls("setup_intents", account_id, client_secret)
+
+    @classmethod
+    def persons_endpoint(
+        cls,
+        parent_account_id: str,
+        account_id: str,
+        client_secret: str,
+    ) -> "StripeRequestBuilder":
         return cls(f"accounts/{parent_account_id}/persons", account_id, client_secret)
 
     @classmethod
@@ -78,6 +98,8 @@ class StripeRequestBuilder:
         self._created_lte: Optional[datetime] = None
         self._limit: Optional[int] = None
         self._object: Optional[str] = None
+        self._payout: Optional[str] = None
+        self._setup_intent: Optional[str] = None
         self._starting_after_id: Optional[str] = None
         self._types: List[str] = []
         self._expands: List[str] = []
@@ -114,6 +136,14 @@ class StripeRequestBuilder:
         self._expands = expands
         return self
 
+    def with_payout(self, payout: str) -> "StripeRequestBuilder":
+        self._payout = payout
+        return self
+
+    def with_setup_intent(self, setup_intent: str) -> "StripeRequestBuilder":
+        self._setup_intent = setup_intent
+        return self
+
     def build(self) -> HttpRequest:
         query_params = {}
         if self._created_gte:
@@ -125,15 +155,24 @@ class StripeRequestBuilder:
         if self._starting_after_id:
             query_params["starting_after"] = self._starting_after_id
         if self._types:
-            query_params["types[]"] = self._types
+            if len(self._types) > 1:
+                query_params["types[]"] = self._types
+            else:
+                query_params["type"] = self._types
         if self._object:
             query_params["object"] = self._object
+        if self._payout:
+            query_params["payout"] = self._payout
         if self._expands:
             query_params["expand[]"] = self._expands
+        if self._setup_intent:
+            query_params["setup_intent"] = self._setup_intent
 
         if self._any_query_params:
             if query_params:
-                raise ValueError(f"Both `any_query_params` and {list(query_params.keys())} were configured. Provide only one of none but not both.")
+                raise ValueError(
+                    f"Both `any_query_params` and {list(query_params.keys())} were configured. Provide only one of none but not both."
+                )
             query_params = ANY_QUERY_PARAMS
 
         return HttpRequest(

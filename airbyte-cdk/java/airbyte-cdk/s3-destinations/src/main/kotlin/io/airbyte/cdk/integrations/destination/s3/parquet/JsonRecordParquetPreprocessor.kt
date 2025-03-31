@@ -12,7 +12,7 @@ import io.airbyte.cdk.integrations.destination.s3.jsonschema.JsonRecordIdentityM
 import io.airbyte.commons.jackson.MoreMappers
 
 class JsonRecordParquetPreprocessor : JsonRecordIdentityMapper() {
-    private fun mapCommon(record: JsonNode?, matchingOption: ObjectNode): JsonNode? {
+    private fun mapCommon(record: JsonNode?, matchingOption: ObjectNode): ObjectNode {
         val newObj = MoreMappers.initMapper().createObjectNode()
 
         val propertyName = JsonSchemaParquetPreprocessor.typeFieldName(matchingOption)
@@ -24,7 +24,7 @@ class JsonRecordParquetPreprocessor : JsonRecordIdentityMapper() {
         return newObj
     }
 
-    override fun mapUnion(record: JsonNode?, schema: ObjectNode): JsonNode? {
+    override fun mapUnion(record: JsonNode?, schema: ObjectNode): ObjectNode? {
         if (record == null || record.isNull) {
             return null
         }
@@ -35,7 +35,7 @@ class JsonRecordParquetPreprocessor : JsonRecordIdentityMapper() {
         return mapCommon(record, matchingOption)
     }
 
-    override fun mapCombined(record: JsonNode?, schema: ObjectNode): JsonNode? {
+    override fun mapCombined(record: JsonNode?, schema: ObjectNode): ObjectNode? {
         if (record == null || record.isNull) {
             return null
         }

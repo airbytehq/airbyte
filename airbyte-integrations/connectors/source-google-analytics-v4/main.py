@@ -10,6 +10,7 @@ from airbyte_cdk.logger import init_logger
 from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, FailureType, Type
 from airbyte_cdk.utils import AirbyteTracedException
 
+
 if __name__ == "__main__":
     logger = init_logger("airbyte")
     init_uncaught_exception_handler(logger)

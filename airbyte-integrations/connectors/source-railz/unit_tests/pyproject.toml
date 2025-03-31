@@ -1,0 +1,32 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.2.1"
+name = "source-railz"
+description = "Source implementation for Railz."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/railz"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.13"
+airbyte-cdk = "6.31.1"
+pytest = "^8"
+pytest-mock = "^3.6.1"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:This class is experimental*"
+]
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]

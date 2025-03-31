@@ -6,11 +6,12 @@ import json
 import logging
 from typing import Any, List, Mapping
 
-from airbyte_cdk.config_observation import create_connector_config_control_message
+from airbyte_cdk import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 
 from .source import SourceAmazonSellerPartner
+
 
 logger = logging.getLogger("airbyte_logger")
 
@@ -38,14 +39,6 @@ class Migration:
         return migrated_config
 
     @classmethod
-    def _emit_control_message(cls, migrated_config: Mapping[str, Any]) -> None:
-        # add the Airbyte Control Message to message repo
-        cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
-        # emit the Airbyte Control Message from message queue to stdout
-        for message in cls.message_repository.consume_queue():
-            print(message.json(exclude_unset=True))
-
-    @classmethod
     def migrate(cls, args: List[str], source: SourceAmazonSellerPartner) -> None:
         """
         This method checks the input args, should the config be migrated,
@@ -59,7 +52,7 @@ class Migration:
             config = source.read_config(config_path)
             # migration check
             if cls._should_migrate(config):
-                cls._emit_control_message(cls._modify_and_save(config_path, source, config))
+                emit_configuration_as_airbyte_control_message(cls._modify_and_save(config_path, source, config))
 
 
 class MigrateAccountType(Migration):

@@ -8,6 +8,7 @@ from typing import Any, Dict
 
 from airbyte_cdk.sources.utils.transform import TypeTransformer
 
+
 logger = logging.getLogger("airbyte")
 
 

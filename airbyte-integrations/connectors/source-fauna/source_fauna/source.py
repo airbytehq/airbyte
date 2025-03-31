@@ -8,6 +8,12 @@ import time
 from datetime import datetime
 from typing import Dict, Generator, Optional
 
+from faunadb import _json
+from faunadb import query as q
+from faunadb.client import FaunaClient
+from faunadb.errors import FaunaError, Unauthorized
+from faunadb.objects import Ref
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -23,11 +29,6 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources import Source
-from faunadb import _json
-from faunadb import query as q
-from faunadb.client import FaunaClient
-from faunadb.errors import FaunaError, Unauthorized
-from faunadb.objects import Ref
 from source_fauna.serialize import fauna_doc_to_airbyte
 
 

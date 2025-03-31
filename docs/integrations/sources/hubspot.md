@@ -59,10 +59,11 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | :-------------------------- | :----------------------------------------------------------------------------------------------------------- |
 | `campaigns`                 | `content`                                                                                                    |
 | `companies`                 | `crm.objects.companies.read`, `crm.schemas.companies.read`                                                   |
-| `contact_lists`             | `crm.lists.read`                                                                                     |
+| `contact_lists`             | `crm.lists.read`                                                                                             |
 | `contacts`                  | `crm.objects.contacts.read`                                                                                  |
 | `contacts_list_memberships` | `crm.objects.contacts.read`                                                                                  |
 | `contacts_form_submissions` | `crm.objects.contacts.read`                                                                                  |
+| `contacts_web_analytics`    | `crm.objects.contacts.read`, `business-intelligence`                                                         |
 | Custom CRM Objects          | `crm.objects.custom.read`                                                                                    |
 | `deal_pipelines`            | `crm.objects.contacts.read`                                                                                  |
 | `deals`                     | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
@@ -74,6 +75,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `forms`                     | `forms`                                                                                                      |
 | `form_submissions`          | `forms`                                                                                                      |
 | `goals`                     | `crm.objects.goals.read`                                                                                     |
+| `leads`                     | `crm.objects.leads.read`, `crm.schemas.leads.read`                                                   |
 | `line_items`                | `e-commerce`                                                                                                 |
 | `owners`                    | `crm.objects.owners.read`                                                                                    |
 | `products`                  | `e-commerce`                                                                                                 |
@@ -175,6 +177,7 @@ The HubSpot source connector supports the following streams:
 - [Forms](https://developers.hubspot.com/docs/api/marketing/forms) \(Client-Side Incremental\)
 - [Form Submissions](https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form) \(Client-Side Incremental\)
 - [Goals](https://developers.hubspot.com/docs/api/crm/goals) \(Incremental\)
+- [Leads](https://developers.hubspot.com/docs/api/crm/leads) \(Incremental\)
 - [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
 - [Marketing Emails](https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-email-statistics)
 - [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental\)
@@ -200,6 +203,9 @@ The HubSpot source connector supports the following streams:
 - [LineItemsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [ProductsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
+
 ### Notes on the `property_history` streams
 
 `Property_history` streams can be synced using an `Incremental` sync mode, which uses a cursor timestamp to determine which records have been updated since the previous sync. Within these streams, some fields types (ex. `CALCULATED` type) will always have a cursor timstamp that mirrors the time of the latest sync. This results in each sync including many more records than were necessarily changed since the previous sync.
@@ -221,7 +227,7 @@ The HubSpot source connector supports the following streams:
   - Fewer than 10,000 records are being synced
 - **EngagementsAll** if either of these criteria are not met.
 
-Because of this, the `engagements` stream can be slow to sync if it hasn't synced within the last 30 days and/or is generating large volumes of new data. To accomodate for this limitation, we recommend scheduling more frequent syncs.
+Because of this, the `engagements` stream can be slow to sync if it hasn't synced within the last 30 days and/or is generating large volumes of new data. To accommodate for this limitation, we recommend scheduling more frequent syncs.
 
 ### Notes on the `Forms` and `Form Submissions` stream
 
@@ -332,6 +338,33 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.5.6 | 2025-03-29 | [56647](https://github.com/airbytehq/airbyte/pull/56647) | Update dependencies |
+| 4.5.5 | 2025-03-26 | [56416](https://github.com/airbytehq/airbyte/pull/56416) | Disabled `blog_comment` and `all` form-types for `Forms` and `FormSubmissions` stream |
+| 4.5.4 | 2025-03-25 | [55822](https://github.com/airbytehq/airbyte/pull/55822) | add userIdIncludingInactive to owners and owners_archived streams |
+| 4.5.3 | 2025-03-24 | [52729](https://github.com/airbytehq/airbyte/pull/55245) | Add conversionId to `form_submissions` schema |
+| 4.5.2 | 2024-12-14 | [48480](https://github.com/airbytehq/airbyte/pull/49141) | Improves Forms stream by adding the formTypes query parameter to support all form types. This enhancement also propagates to the FormSubmission stream. |
+| 4.5.1 | 2025-03-22 | [53818](https://github.com/airbytehq/airbyte/pull/53818) | Update dependencies |
+| 4.5.0 | 2025-03-10 | [54177](https://github.com/airbytehq/airbyte/pull/54177) | Add option to cast fields from stream json schema per list of fields |
+| 4.4.9 | 2025-02-01 | [52729](https://github.com/airbytehq/airbyte/pull/52729) | Update dependencies |
+| 4.4.8 | 2025-01-25 | [52295](https://github.com/airbytehq/airbyte/pull/52295) | Update dependencies |
+| 4.4.7 | 2025-01-11 | [51146](https://github.com/airbytehq/airbyte/pull/51146) | Update dependencies |
+| 4.4.6 | 2025-01-04 | [50898](https://github.com/airbytehq/airbyte/pull/50898) | Update dependencies |
+| 4.4.5 | 2024-12-28 | [50669](https://github.com/airbytehq/airbyte/pull/50669) | Update dependencies |
+| 4.4.4 | 2024-12-21 | [50138](https://github.com/airbytehq/airbyte/pull/50138) | Update dependencies |
+| 4.4.3 | 2024-12-14 | [48984](https://github.com/airbytehq/airbyte/pull/48984) | Update dependencies |
+| 4.4.2 | 2024-12-10 | [48480](https://github.com/airbytehq/airbyte/pull/48480) | Adds individual read scopes to LineItems Stream |
+| 4.4.1 | 2024-11-25 | [48662](https://github.com/airbytehq/airbyte/pull/48662) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 4.4.0 | 2024-11-18 | [48548](https://github.com/airbytehq/airbyte/pull/48548) | Promoting release candidate 4.4.0-rc.1 to a main version. |
+| 4.4.0-rc.1 | 2024-11-18 | [48472](https://github.com/airbytehq/airbyte/pull/48472) | Adds support to maintain use of legacy fields for `Contacts`, `Deals`, and `DealsArchived` streams: `hs_lifecyclestage_{stage_id}_date`, `hs_date_entered_{stage_id}`, `hs_date_exited_{stage_id}`, `hs_time_in_{stage_id}`. |
+| 4.3.0  | 2024-11-15 | [44481](https://github.com/airbytehq/airbyte/pull/44481) | Add `Leads` stream |
+| 4.2.26 | 2024-11-04 | [48199](https://github.com/airbytehq/airbyte/pull/48199) | Update dependencies |
+| 4.2.25 | 2024-10-29 | [47028](https://github.com/airbytehq/airbyte/pull/47028) | Update dependencies |
+| 4.2.24 | 2024-10-12 | [46827](https://github.com/airbytehq/airbyte/pull/46827) | Update dependencies |
+| 4.2.23 | 2024-10-05 | [46494](https://github.com/airbytehq/airbyte/pull/46494) | Update dependencies |
+| 4.2.22 | 2024-09-28 | [46160](https://github.com/airbytehq/airbyte/pull/46160) | Update dependencies |
+| 4.2.21 | 2024-09-23 | [42688](https://github.com/airbytehq/airbyte/pull/44899) | Fix incremental search to use primary key as placeholder instead of lastModifiedDate |
+| 4.2.20 | 2024-09-21 | [45753](https://github.com/airbytehq/airbyte/pull/45753) | Update dependencies |
+| 4.2.19 | 2024-09-14 | [45018](https://github.com/airbytehq/airbyte/pull/45018) | Update dependencies |
 | 4.2.18 | 2024-08-24 | [43762](https://github.com/airbytehq/airbyte/pull/43762) | Update dependencies |
 | 4.2.17 | 2024-08-21 | [44538](https://github.com/airbytehq/airbyte/pull/44538) | Fix issue with CRM search streams when they have no `associations` |
 | 4.2.16 | 2024-08-20 | [42919](https://github.com/airbytehq/airbyte/pull/42919) | Add support for Deal Splits |

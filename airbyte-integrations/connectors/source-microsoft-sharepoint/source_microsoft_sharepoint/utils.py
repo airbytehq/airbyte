@@ -1,6 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-
-
+import logging
 import time
 from datetime import datetime
 from enum import Enum
@@ -10,10 +9,17 @@ from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 
+LOGGER = logging.getLogger("airbyte")
+
+
 class SearchScope(Enum):
     OWN_DRIVES = "OWN_DRIVES"
     SHARED_ITEMS = "SHARED_ITEMS"
     BOTH = "BOTH"
+
+
+class FolderNotFoundException(Exception):
+    pass
 
 
 class MicrosoftSharePointRemoteFile(RemoteFile):
@@ -77,9 +83,70 @@ def execute_query_with_retry(obj, max_retries=5, initial_retry_after=5, max_retr
                 time.sleep(retry_after)
                 retries += 1
                 retry_after = min(retry_after * 2, max_retry_after)  # Double the wait time for next retry, up to a max limit
+            elif hasattr(ex, "response") and ex.response.status_code == HTTPStatus.NOT_FOUND:
+                error_message = f"Requested item/folder could not be found: url: {ex.response.url}"
+                LOGGER.warning(error_message)
+                raise FolderNotFoundException(error_message)
             else:
                 # Re-raise exceptions that are not related to rate limits or service availability
                 raise AirbyteTracedException.from_exception(ex, message="Caught unexpected exception")
 
     message = f"Maximum number of retries of {max_retries} exceeded for execute_query."
     raise AirbyteTracedException(message, message, failure_type=FailureType.system_error)
+
+
+class PlaceholderUrlBuilder:
+    """
+    A basic builder that constructs a URL with placeholder parameters like:
+      {{client_id_param}}
+      {{redirect_uri_param}}
+    etc.
+    These placeholders will be replaced later during Oauth flow.
+    """
+
+    def __init__(self):
+        self._scheme = "https"
+        self._host = ""
+        self._path = ""
+        self._segments = []  # Each segment will become part of the query string
+
+    def set_scheme(self, scheme: str):
+        self._scheme = scheme
+        return self
+
+    def set_host(self, host: str):
+        self._host = host
+        return self
+
+    def set_path(self, path: str):
+        # If you want a leading slash, you can incorporate it here or let caller handle it
+        self._path = path
+        return self
+
+    def add_key_value_placeholder_param(self, param_name: str):
+        """
+        Example:
+           add_key_value_placeholder_param("client_id")
+         => produces "{{client_id_param}}" in the final query string.
+        """
+        placeholder = f"{{{{{param_name}_param}}}}"  # e.g. "{{client_id_param}}"
+        self._segments.append(placeholder)
+        return self
+
+    def add_literal_param(self, literal: str):
+        """
+        If you want to add a static string like "response_type=code"
+        or "access_type=offline", you can do so here.
+        """
+        self._segments.append(literal)
+        return self
+
+    def build(self) -> str:
+        """
+        Joins the query segments with '&' and forms the complete URL.
+        Example final output might look like:
+           https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code
+        """
+        query_string = "&".join(self._segments)
+        query_string = "?" + query_string if query_string else ""
+        return f"{self._scheme}://{self._host}{self._path}{query_string}"

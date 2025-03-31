@@ -1,4 +1,4 @@
-version: 4.5.4
+version: 6.36.3
 
 type: DeclarativeSource
 
@@ -236,7 +236,7 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: >-
             /subscriptions?external_customer_id={{
-            stream_slice.customer_external_id }}
+            stream_partition.customer_external_id }}
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -280,7 +280,9 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /wallets
+          path: >-
+            /wallets?external_customer_id={{
+            stream_partition['customer_external_id'] }}
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -303,6 +305,14 @@ definitions:
             page_size: 100
             cursor_value: "{{ response.meta.next_page }}"
             stop_condition: "{{ response.meta.next_page is none}}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: external_id
+              partition_field: customer_external_id
+              stream:
+                $ref: "#/definitions/streams/customers"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -310,14 +320,24 @@ definitions:
     customer_usage:
       type: DeclarativeStream
       name: customer_usage
-      primary_key:
-        - lago_invoice_id
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /customers/{{stream_slice.customer_external_id}}/current_usage
+          path: >-
+            /customers/{{stream_partition.customer_id}}/current_usage?external_subscription_id={{stream_partition.extra_fields.external_id}}
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    predicate: >-
+                      {{response.status == 405 and response.code ==
+                      'no_active_subscription' }}
+                    http_codes: []
         record_selector:
           type: RecordSelector
           extractor:
@@ -328,10 +348,23 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              parent_key: external_id
-              partition_field: customer_external_id
+              parent_key: external_customer_id
+              partition_field: customer_id
+              extra_fields:
+                - - external_id
               stream:
-                $ref: "#/definitions/streams/customers"
+                $ref: "#/definitions/streams/subscriptions"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - customer_id
+              value: "{{stream_partition.customer_external_id}}"
+        - type: AddFields
+          fields:
+            - path:
+                - subscription_id
+              value: "{{stream_partition.external_subscription_id}}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -372,12 +405,81 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/fees"
+    customer_usage_past:
+      type: DeclarativeStream
+      name: customer_usage_past
+      primary_key:
+        - lago_invoice_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /customers/{{stream_partition.customer_id}}/past_usage?external_subscription_id={{stream_partition.extra_fields.external_id}}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    predicate: >-
+                      {{response.status == 405 and response.code ==
+                      'no_active_subscription' }}
+                    http_codes: []
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - usage_periods
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.meta.next_page }}"
+            stop_condition: "{{ response.meta.next_page is none}}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: external_customer_id
+              partition_field: customer_id
+              extra_fields:
+                - - external_id
+              stream:
+                $ref: "#/definitions/streams/subscriptions"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - customer_id
+              value: "{{stream_partition.customer_external_id}}"
+        - type: AddFields
+          fields:
+            - path:
+                - subscription_id
+              value: "{{stream_partition.external_subscription_id}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customer_usage_past"
   base_requester:
     type: HttpRequester
     url_base: "{{ config.get('api_url', 'https://api.getlago.com/api/v1') }}"
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config["api_key"] }}'
+      api_token: "{{ config[\"api_key\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/billable_metrics"
@@ -390,6 +492,7 @@ streams:
   - $ref: "#/definitions/streams/wallets"
   - $ref: "#/definitions/streams/customer_usage"
   - $ref: "#/definitions/streams/fees"
+  - $ref: "#/definitions/streams/customer_usage_past"
 
 spec:
   type: Spec
@@ -415,1376 +518,1214 @@ spec:
         order: 1
     additionalProperties: true
 
+metadata:
+  autoImportSchema:
+    billable_metrics: true
+    plans: true
+    coupons: true
+    add_ons: true
+    invoices: true
+    customers: true
+    subscriptions: true
+    wallets: true
+    customer_usage: true
+    fees: true
+    customer_usage_past: true
+  yamlComponents:
+    streams:
+      customer_usage:
+        - parentStreams
+      customer_usage_past:
+        - parentStreams
+  testedStreams:
+    billable_metrics:
+      streamHash: 4a9e4ba5de4b74430b58cb8f42b2b2f0e7f15bc1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    plans:
+      streamHash: 6068ae3857fecc429a89817bc3870c5378cc2beb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    coupons:
+      streamHash: b8d015c6694793ff6091a8b8c9c3faaa224b7f35
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    add_ons:
+      streamHash: e054db252af1069bf296bc996fbd351efc5257c0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    invoices:
+      streamHash: 7cac66d181a201d0a340b1057e47359dc40e903f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    customers:
+      streamHash: 5afdc7ea527c3db3ae253b393a3897e74addf1e5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    subscriptions:
+      streamHash: bf3d60b23bbe354534bd3b6e40b567fe0d12bd9f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    wallets:
+      streamHash: 7b464804beb0bd18422617d3ab438fc34a0f03d2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    customer_usage:
+      streamHash: 5aeef0ed56322a30f444a43f745c83df74682dca
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    fees:
+      streamHash: 1be932dfd2707d5271b81dc862e71cc65565a715
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    customer_usage_past:
+      streamHash: 11d195017a09634bc0e58a6b3d101797bd88cf5e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
 schemas:
   billable_metrics:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       description:
         type:
-          - "null"
           - string
+          - "null"
       active_subscriptions_count:
         type:
+          - number
           - "null"
-          - integer
       aggregation_type:
         type:
-          - "null"
           - string
+          - "null"
       code:
         type:
-          - "null"
           - string
+          - "null"
       created_at:
         type:
-          - "null"
           - string
+          - "null"
       draft_invoices_count:
         type:
+          - number
           - "null"
-          - integer
       field_name:
         type:
-          - "null"
           - string
-      group:
-        type:
           - "null"
-          - object
+      filters:
+        type:
+          - array
+          - "null"
       lago_id:
-        type:
-          - "null"
-          - string
+        type: string
       name:
         type:
-          - "null"
           - string
+          - "null"
       plans_count:
         type:
+          - number
           - "null"
-          - integer
       recurring:
         type:
-          - "null"
           - boolean
-      weighted_interval:
-        type:
           - "null"
-          - integer
+    required:
+      - lago_id
   plans:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       description:
         type:
-          - "null"
           - string
+          - "null"
       active_subscriptions_count:
         type:
+          - number
           - "null"
-          - integer
       amount_cents:
         type:
+          - number
           - "null"
-          - integer
       amount_currency:
         type:
-          - "null"
           - string
-      bill_charges_monthly:
-        type:
           - "null"
-          - boolean
       charges:
         type:
-          - "null"
           - array
+          - "null"
         items:
           type:
-            - "null"
             - object
-          additionalProperties: true
+            - "null"
           properties:
             billable_metric_code:
               type:
-                - "null"
                 - string
+                - "null"
             charge_model:
               type:
-                - "null"
                 - string
+                - "null"
             created_at:
               type:
-                - "null"
                 - string
-            group_properties:
-              type:
                 - "null"
+            filters:
+              type:
                 - array
+                - "null"
             invoiceable:
               type:
-                - "null"
                 - boolean
+                - "null"
             lago_billable_metric_id:
               type:
-                - "null"
                 - string
+                - "null"
             lago_id:
               type:
-                - "null"
                 - string
+                - "null"
             min_amount_cents:
               type:
+                - number
                 - "null"
-                - integer
             pay_in_advance:
               type:
-                - "null"
                 - boolean
+                - "null"
             properties:
               type:
-                - "null"
                 - object
-              additionalProperties: true
+                - "null"
               properties:
                 amount:
                   type:
-                    - "null"
                     - string
+                    - "null"
             prorated:
               type:
-                - "null"
                 - boolean
+                - "null"
             taxes:
               type:
-                - "null"
                 - array
+                - "null"
       code:
         type:
-          - "null"
           - string
+          - "null"
       created_at:
         type:
-          - "null"
           - string
+          - "null"
       customers_count:
         type:
+          - number
           - "null"
-          - integer
       draft_invoices_count:
         type:
+          - number
           - "null"
-          - integer
       interval:
         type:
-          - "null"
           - string
-      invoice_display_name:
-        type:
           - "null"
-          - string
       lago_id:
-        type:
-          - "null"
-          - string
+        type: string
       name:
         type:
-          - "null"
           - string
-      parent_id:
-        type:
           - "null"
-          - integer
       pay_in_advance:
         type:
-          - "null"
           - boolean
+          - "null"
       taxes:
         type:
-          - "null"
           - array
+          - "null"
       trial_period:
         type:
-          - "null"
           - number
+          - "null"
+      usage_thresholds:
+        type:
+          - array
+          - "null"
+    required:
+      - lago_id
   coupons:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      description:
-        type:
-          - "null"
-          - string
       amount_cents:
         type:
+          - number
           - "null"
-          - integer
       amount_currency:
         type:
-          - "null"
           - string
+          - "null"
       billable_metric_codes:
         type:
-          - "null"
           - array
+          - "null"
       code:
         type:
-          - "null"
           - string
+          - "null"
       coupon_type:
         type:
-          - "null"
           - string
+          - "null"
       created_at:
         type:
-          - "null"
           - string
+          - "null"
       expiration:
         type:
-          - "null"
           - string
+          - "null"
       expiration_at:
         type:
-          - "null"
           - string
-      expiration_date:
-        type:
           - "null"
-          - string
       frequency:
         type:
-          - "null"
           - string
-      frequency_duration:
-        type:
           - "null"
-          - integer
       lago_id:
-        type:
-          - "null"
-          - string
+        type: string
       limited_billable_metrics:
         type:
-          - "null"
           - boolean
+          - "null"
       limited_plans:
         type:
-          - "null"
           - boolean
+          - "null"
       name:
         type:
-          - "null"
           - string
+          - "null"
       percentage_rate:
         type:
-          - "null"
           - string
+          - "null"
       plan_codes:
         type:
-          - "null"
           - array
+          - "null"
       reusable:
         type:
-          - "null"
           - boolean
+          - "null"
       terminated_at:
         type:
-          - "null"
           - string
+          - "null"
+    required:
+      - lago_id
   add_ons:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       description:
         type:
-          - "null"
           - string
+          - "null"
       amount_cents:
         type:
+          - number
           - "null"
-          - integer
       amount_currency:
         type:
-          - "null"
           - string
+          - "null"
       code:
         type:
-          - "null"
           - string
+          - "null"
       created_at:
         type:
-          - "null"
           - string
-      invoice_display_name:
-        type:
           - "null"
-          - string
       lago_id:
-        type:
-          - "null"
-          - string
+        type: string
       name:
         type:
-          - "null"
           - string
+          - "null"
       taxes:
         type:
           - array
           - "null"
+    required:
+      - lago_id
   invoices:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       metadata:
         type:
-          - "null"
           - array
-      amount_cents:
-        type:
           - "null"
-          - integer
-      amount_currency:
-        type:
-          - "null"
-          - string
       applied_taxes:
         type:
-          - "null"
           - array
+          - "null"
       coupons_amount_cents:
         type:
+          - number
           - "null"
-          - integer
-      credit_amount_cents:
+      created_at:
         type:
-          - "null"
-          - integer
-      credit_amount_currency:
-        type:
-          - "null"
           - string
+          - "null"
       credit_notes_amount_cents:
         type:
+          - number
           - "null"
-          - integer
       currency:
         type:
-          - "null"
           - string
+          - "null"
       customer:
-        type: object
-        additionalProperties: true
+        type:
+          - object
+          - "null"
         properties:
           metadata:
             type:
-              - "null"
               - array
+              - "null"
+          account_type:
+            type:
+              - string
+              - "null"
           address_line1:
             type:
-              - "null"
               - string
-          address_line2:
-            type:
               - "null"
-              - string
           applicable_timezone:
             type:
-              - "null"
               - string
+              - "null"
           billing_configuration:
-            type: object
-            additionalProperties: true
+            type:
+              - object
+              - "null"
             properties:
-              document_locale:
-                type:
-                  - "null"
-                  - string
-              invoice_grace_period:
-                type:
-                  - "null"
-                  - integer
               payment_provider:
                 type:
-                  - "null"
                   - string
-              provider_customer_id:
-                type:
                   - "null"
-                  - integer
+              payment_provider_code:
+                type:
+                  - string
+                  - "null"
               provider_payment_methods:
                 type:
-                  - "null"
                   - array
+                  - "null"
                 items:
                   type:
-                    - "null"
                     - string
-              vat_rate:
-                type:
-                  - "null"
-                  - integer
+                    - "null"
           city:
             type:
-              - "null"
               - string
+              - "null"
           country:
             type:
-              - "null"
               - string
+              - "null"
           created_at:
             type:
-              - "null"
               - string
+              - "null"
           currency:
             type:
-              - "null"
               - string
+              - "null"
           email:
             type:
-              - "null"
               - string
+              - "null"
           external_id:
             type:
-              - "null"
               - string
-          external_salesforce_id:
-            type:
               - "null"
-              - integer
+          finalize_zero_amount_invoice:
+            type:
+              - string
+              - "null"
+          integration_customers:
+            type:
+              - array
+              - "null"
           lago_id:
             type:
-              - "null"
               - string
+              - "null"
           legal_name:
             type:
-              - "null"
               - string
+              - "null"
           legal_number:
             type:
-              - "null"
               - string
-          logo_url:
-            type:
               - "null"
-              - string
           name:
             type:
-              - "null"
               - string
-          net_payment_term:
-            type:
               - "null"
-              - integer
           phone:
             type:
-              - "null"
               - string
+              - "null"
           sequential_id:
             type:
+              - number
               - "null"
-              - integer
+          shipping_address:
+            type:
+              - object
+              - "null"
+            properties: {}
+          skip_invoice_custom_sections:
+            type:
+              - boolean
+              - "null"
           slug:
             type:
-              - "null"
               - string
+              - "null"
           state:
             type:
-              - "null"
               - string
-          tax_identification_number:
-            type:
               - "null"
-              - integer
-          timezone:
-            type:
-              - "null"
-              - string
           updated_at:
             type:
-              - "null"
               - string
-          url:
-            type: "null"
+              - "null"
           zipcode:
             type:
-              - "null"
               - string
+              - "null"
       fees_amount_cents:
         type:
+          - number
           - "null"
-          - integer
       file_url:
         type:
-          - "null"
           - string
+          - "null"
       invoice_type:
         type:
-          - "null"
           - string
+          - "null"
       issuing_date:
         type:
-          - "null"
           - string
+          - "null"
       lago_id:
-        type:
-          - "null"
-          - string
-      legacy:
-        type:
-          - "null"
-          - boolean
+        type: string
       net_payment_term:
         type:
+          - number
           - "null"
-          - integer
       number:
         type:
-          - "null"
           - string
+          - "null"
       payment_due_date:
         type:
-          - "null"
           - string
+          - "null"
+      payment_overdue:
+        type:
+          - boolean
+          - "null"
       payment_status:
         type:
-          - "null"
           - string
+          - "null"
       prepaid_credit_amount_cents:
         type:
+          - number
           - "null"
-          - integer
+      progressive_billing_credit_amount_cents:
+        type:
+          - number
+          - "null"
+      self_billed:
+        type:
+          - boolean
+          - "null"
       sequential_id:
         type:
+          - number
           - "null"
-          - integer
       status:
         type:
-          - "null"
           - string
+          - "null"
       sub_total_excluding_taxes_amount_cents:
         type:
+          - number
           - "null"
-          - integer
       sub_total_including_taxes_amount_cents:
         type:
+          - number
           - "null"
-          - integer
-      sub_total_vat_excluded_amount_cents:
-        type:
-          - "null"
-          - integer
-      sub_total_vat_included_amount_cents:
-        type:
-          - "null"
-          - integer
       taxes_amount_cents:
         type:
+          - number
           - "null"
-          - integer
       total_amount_cents:
         type:
+          - number
           - "null"
-          - integer
-      total_amount_currency:
+      total_due_amount_cents:
         type:
+          - number
           - "null"
+      updated_at:
+        type:
           - string
-      vat_amount_cents:
-        type:
           - "null"
-          - integer
-      vat_amount_currency:
-        type:
-          - "null"
-          - string
       version_number:
         type:
+          - number
           - "null"
-          - integer
+    required:
+      - lago_id
   customers:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       metadata:
         type:
-          - "null"
           - array
+          - "null"
+      account_type:
+        type:
+          - string
+          - "null"
       address_line1:
         type:
-          - "null"
           - string
-      address_line2:
-        type:
           - "null"
-          - string
       applicable_timezone:
         type:
-          - "null"
           - string
+          - "null"
       billing_configuration:
-        type: object
-        additionalProperties: true
+        type:
+          - object
+          - "null"
         properties:
-          document_locale:
-            type:
-              - "null"
-              - string
-          invoice_grace_period:
-            type:
-              - "null"
-              - integer
           payment_provider:
             type:
-              - "null"
               - string
-          provider_customer_id:
+              - "null"
+          payment_provider_code:
             type:
-              - "null"
               - string
+              - "null"
           provider_payment_methods:
             type:
-              - "null"
               - array
+              - "null"
             items:
               type:
-                - "null"
                 - string
-          vat_rate:
-            type:
-              - "null"
-              - integer
+                - "null"
       city:
         type:
-          - "null"
           - string
+          - "null"
       country:
         type:
-          - "null"
           - string
+          - "null"
       created_at:
         type:
-          - "null"
           - string
+          - "null"
       currency:
         type:
-          - "null"
           - string
+          - "null"
       email:
         type:
-          - "null"
           - string
+          - "null"
       external_id:
         type:
-          - "null"
           - string
-      external_salesforce_id:
-        type:
           - "null"
-          - integer
+      finalize_zero_amount_invoice:
+        type:
+          - string
+          - "null"
+      integration_customers:
+        type:
+          - array
+          - "null"
       lago_id:
-        type:
-          - "null"
-          - string
+        type: string
       legal_name:
         type:
-          - "null"
           - string
+          - "null"
       legal_number:
         type:
-          - "null"
           - string
-      logo_url:
-        type:
           - "null"
-          - string
       name:
         type:
-          - "null"
           - string
-      net_payment_term:
-        type:
           - "null"
-          - integer
       phone:
         type:
-          - "null"
           - string
+          - "null"
       sequential_id:
         type:
+          - number
           - "null"
-          - integer
+      shipping_address:
+        type:
+          - object
+          - "null"
+        properties: {}
+      skip_invoice_custom_sections:
+        type:
+          - boolean
+          - "null"
       slug:
         type:
-          - "null"
           - string
+          - "null"
       state:
         type:
-          - "null"
           - string
-      tax_identification_number:
-        type:
           - "null"
-          - integer
       taxes:
         type:
-          - "null"
           - array
-      timezone:
-        type:
           - "null"
-          - string
       updated_at:
         type:
-          - "null"
           - string
-      url:
-        type:
           - "null"
-          - string
-      vat_rate:
-        type:
-          - "null"
-          - number
       zipcode:
         type:
-          - "null"
           - string
+          - "null"
+    required:
+      - lago_id
   subscriptions:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       billing_time:
         type:
-          - "null"
           - string
-      canceled_at:
-        type:
           - "null"
-          - string
       created_at:
         type:
-          - "null"
           - string
-      downgrade_plan_date:
+          - "null"
+      current_billing_period_ending_at:
         type:
-          - "null"
           - string
-      ending_at:
+          - "null"
+      current_billing_period_started_at:
         type:
-          - "null"
           - string
+          - "null"
       external_customer_id:
         type:
-          - "null"
           - string
+          - "null"
       external_id:
         type:
-          - "null"
           - string
+          - "null"
       lago_customer_id:
         type:
-          - "null"
           - string
+          - "null"
       lago_id:
-        type:
-          - "null"
-          - string
+        type: string
       name:
         type:
-          - "null"
           - string
-      next_plan_code:
-        type:
           - "null"
-          - string
       plan_code:
         type:
-          - "null"
           - string
-      previous_plan_code:
-        type:
           - "null"
-          - string
       started_at:
         type:
-          - "null"
           - string
+          - "null"
       status:
         type:
-          - "null"
           - string
+          - "null"
       subscription_at:
         type:
-          - "null"
           - string
-      subscription_date:
+          - "null"
+      trial_ended_at:
         type:
-          - "null"
           - string
-      terminated_at:
-        type:
           - "null"
-          - string
+    required:
+      - lago_id
   wallets:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       balance_cents:
         type:
+          - number
           - "null"
-          - integer
       consumed_credits:
         type:
-          - "null"
           - string
+          - "null"
       created_at:
         type:
-          - "null"
           - string
+          - "null"
       credits_balance:
         type:
-          - "null"
           - string
+          - "null"
+      credits_ongoing_balance:
+        type:
+          - string
+          - "null"
+      credits_ongoing_usage_balance:
+        type:
+          - string
+          - "null"
       currency:
         type:
-          - "null"
           - string
-      expiration_at:
-        type:
           - "null"
-          - string
       external_customer_id:
         type:
-          - "null"
           - string
+          - "null"
+      invoice_requires_successful_payment:
+        type:
+          - boolean
+          - "null"
       lago_customer_id:
         type:
-          - "null"
           - string
+          - "null"
       lago_id:
-        type:
-          - "null"
-          - string
+        type: string
       last_balance_sync_at:
         type:
-          - "null"
           - string
+          - "null"
       last_consumed_credit_at:
         type:
-          - "null"
           - string
+          - "null"
       name:
         type:
-          - "null"
           - string
+          - "null"
+      ongoing_balance_cents:
+        type:
+          - number
+          - "null"
+      ongoing_usage_balance_cents:
+        type:
+          - number
+          - "null"
       rate_amount:
         type:
-          - "null"
           - string
+          - "null"
+      recurring_transaction_rules:
+        type:
+          - array
+          - "null"
       status:
         type:
-          - "null"
           - string
-      terminated_at:
-        type:
           - "null"
-          - string
+    required:
+      - lago_id
   customer_usage:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       amount_cents:
         type:
+          - number
           - "null"
-          - integer
       charges_usage:
         type:
-          - "null"
           - array
+          - "null"
         items:
           type:
-            - "null"
             - object
+            - "null"
           properties:
             amount_cents:
               type:
+                - number
                 - "null"
-                - integer
             amount_currency:
               type:
-                - "null"
                 - string
+                - "null"
             billable_metric:
               type:
-                - "null"
                 - object
+                - "null"
               properties:
                 aggregation_type:
                   type:
-                    - "null"
                     - string
+                    - "null"
                 code:
                   type:
-                    - "null"
                     - string
+                    - "null"
                 lago_id:
                   type:
-                    - "null"
                     - string
+                    - "null"
                 name:
                   type:
-                    - "null"
                     - string
+                    - "null"
             charge:
               type:
-                - "null"
                 - object
+                - "null"
               properties:
                 charge_model:
                   type:
-                    - "null"
                     - string
+                    - "null"
                 lago_id:
                   type:
-                    - "null"
                     - string
+                    - "null"
             events_count:
               type:
+                - number
                 - "null"
-                - integer
-            groups:
+            filters:
               type:
-                - "null"
                 - array
-              items:
-                type:
-                  - "null"
-                  - object
-                properties:
-                  amount_cents:
-                    type:
-                      - "null"
-                      - integer
-                  events_count:
-                    type:
-                      - "null"
-                      - integer
-                  key:
-                    type:
-                      - "null"
-                      - string
-                  lago_id:
-                    type:
-                      - "null"
-                      - string
-                  units:
-                    type:
-                      - "null"
-                      - string
-                  value:
-                    type:
-                      - "null"
-                      - string
+                - "null"
+            grouped_usage:
+              type:
+                - array
+                - "null"
             units:
               type:
-                - "null"
                 - string
+                - "null"
       currency:
         type:
-          - "null"
           - string
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
       from_datetime:
         type:
-          - "null"
           - string
+          - "null"
       issuing_date:
         type:
-          - "null"
           - string
-      lago_invoice_id:
+          - "null"
+      subscription_id:
         type:
-          - "null"
           - string
+          - "null"
       taxes_amount_cents:
         type:
+          - number
           - "null"
-          - integer
       to_datetime:
         type:
-          - "null"
           - string
+          - "null"
       total_amount_cents:
         type:
+          - number
           - "null"
-          - integer
   fees:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      amount_cents:
+        type:
+          - number
+          - "null"
       amount_currency:
         type:
-          - "null"
           - string
-      amount_details:
-        type: object
-        additionalProperties: true
-        properties:
-          fixed_fee_total_amount:
-            type:
-              - "null"
-              - string
-          fixed_fee_unit_amount:
-            type:
-              - "null"
-              - string
-          free_events:
-            type:
-              - "null"
-              - integer
-          free_units:
-            type:
-              - "null"
-              - string
-          graduated_percentage_ranges:
-            type:
-              - "null"
-              - array
-            items:
-              type:
-                - "null"
-                - object
-              additionalProperties: true
-              properties:
-                flat_unit_amount:
-                  type:
-                    - "null"
-                    - string
-                from_value:
-                  type:
-                    - "null"
-                    - integer
-                per_unit_total_amount:
-                  type:
-                    - "null"
-                    - string
-                rate:
-                  type:
-                    - "null"
-                    - string
-                to_value:
-                  type:
-                    - "null"
-                    - integer
-                total_with_flat_amount:
-                  type:
-                    - "null"
-                    - string
-                unit:
-                  type:
-                    - "null"
-                    - string
-          graduated_ranges:
-            type:
-              - "null"
-              - array
-            items:
-              type:
-                - "null"
-                - object
-              additionalProperties: true
-              properties:
-                flat_unit_amount:
-                  type:
-                    - "null"
-                    - string
-                from_value:
-                  type:
-                    - "null"
-                    - integer
-                per_unit_amount:
-                  type:
-                    - "null"
-                    - string
-                per_unit_total_amount:
-                  type:
-                    - "null"
-                    - string
-                to_value:
-                  type:
-                    - "null"
-                    - integer
-                total_with_flat_amount:
-                  type:
-                    - "null"
-                    - string
-                units:
-                  type:
-                    - "null"
-                    - string
-          min_max_adjustment_total_amount:
-            type:
-              - "null"
-              - string
-          paid_events:
-            type:
-              - "null"
-              - integer
-          paid_units:
-            type:
-              - "null"
-              - string
-          per_package_size:
-            type:
-              - "null"
-              - integer
-          per_package_unit_amount:
-            type:
-              - "null"
-              - string
-          per_unit_total_amount:
-            type:
-              - "null"
-              - string
-          rate:
-            type:
-              - "null"
-              - string
-          units:
-            type:
-              - "null"
-              - string
-          volume_ranges:
-            type:
-              - "null"
-              - array
-            items:
-              type:
-                - "null"
-                - object
-              additionalProperties: true
-              properties:
-                flat_unit_amount:
-                  type:
-                    - "null"
-                    - string
-                per_unit_amount:
-                  type:
-                    - "null"
-                    - string
-                per_unit_total_amount:
-                  type:
-                    - "null"
-                    - string
-      amout_cents:
-        type:
           - "null"
-          - integer
+      amount_details:
+        type:
+          - object
+          - "null"
+        properties:
+          plan_amount_cents:
+            type:
+              - number
+              - "null"
       applied_taxes:
         type:
-          - "null"
           - array
-        items:
-          type:
-            - "null"
-            - object
-          additionalProperties: true
-          properties:
-            amount_cents:
-              type:
-                - "null"
-                - integer
-            amount_currency:
-              type:
-                - "null"
-                - string
-            created_at:
-              type:
-                - "null"
-                - string
-            lago_fee_id:
-              type:
-                - "null"
-                - string
-            lago_id:
-              type:
-                - "null"
-                - string
-            lago_tax_id:
-              type:
-                - "null"
-                - string
-            tax_code:
-              type:
-                - "null"
-                - string
-            tax_description:
-              type:
-                - "null"
-                - string
-            tax_name:
-              type:
-                - "null"
-                - string
-            tax_rate:
-              type:
-                - "null"
-                - number
+          - "null"
       created_at:
         type:
-          - "null"
           - string
-      event_transaction_id:
-        type:
           - "null"
-          - string
-      events_count:
-        type:
-          - "null"
-          - integer
       external_customer_id:
         type:
-          - "null"
           - string
+          - "null"
       external_subscription_id:
         type:
-          - "null"
           - string
-      failed_at:
-        type:
           - "null"
-          - string
       from_date:
         type:
-          - "null"
           - string
-      invoice_display_name:
-        type:
           - "null"
-          - string
       invoiceable:
         type:
-          - "null"
           - boolean
+          - "null"
       item:
         type:
-          - "null"
           - object
-        additionalProperties: true
+          - "null"
         properties:
           type:
             type:
-              - "null"
               - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
           code:
             type:
-              - "null"
               - string
-          group_invoice_display_name:
-            type:
               - "null"
-              - string
           grouped_by:
             type:
-              - "null"
               - object
-            additionalProperties: true
-            properties: {}
+              - "null"
           invoice_display_name:
             type:
-              - "null"
               - string
+              - "null"
           item_type:
             type:
-              - "null"
               - string
+              - "null"
           lago_item_id:
             type:
-              - "null"
               - string
+              - "null"
           name:
             type:
-              - "null"
               - string
+              - "null"
       lago_customer_id:
         type:
-          - "null"
           - string
-      lago_group_id:
-        type:
           - "null"
-          - string
       lago_id:
-        type:
-          - "null"
-          - string
+        type: string
       lago_invoice_id:
         type:
-          - "null"
           - string
+          - "null"
       lago_subscription_id:
         type:
-          - "null"
           - string
-      lago_true_up_fee_id:
-        type:
           - "null"
-          - string
-      lago_true_up_parent_fee_id:
-        type:
-          - "null"
-          - string
       pay_in_advance:
         type:
-          - "null"
           - boolean
+          - "null"
       payment_status:
         type:
-          - "null"
           - string
+          - "null"
+      precise_amount:
+        type:
+          - string
+          - "null"
+      precise_coupons_amount_cents:
+        type:
+          - string
+          - "null"
+      precise_total_amount:
+        type:
+          - string
+          - "null"
       precise_unit_amount:
         type:
-          - "null"
           - string
-      refunded_at:
+          - "null"
+      self_billed:
         type:
+          - boolean
           - "null"
-          - string
-      succeeded_at:
-        type:
-          - "null"
-          - string
       taxes_amount_cents:
         type:
+          - number
           - "null"
-          - integer
+      taxes_precise_amount:
+        type:
+          - string
+          - "null"
       taxes_rate:
         type:
-          - "null"
           - number
+          - "null"
       to_date:
         type:
-          - "null"
           - string
+          - "null"
       total_amount_cents:
         type:
+          - number
           - "null"
-          - integer
       total_amount_currency:
         type:
-          - "null"
           - string
+          - "null"
       units:
         type:
-          - "null"
           - string
+          - "null"
+    required:
+      - lago_id
+  customer_usage_past:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      amount_cents:
+        type:
+          - number
+          - "null"
+      charges_usage:
+        type:
+          - array
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
+      from_datetime:
+        type:
+          - string
+          - "null"
+      issuing_date:
+        type:
+          - string
+          - "null"
+      lago_invoice_id:
+        type: string
+      subscription_id:
+        type:
+          - string
+          - "null"
+      taxes_amount_cents:
+        type:
+          - number
+          - "null"
+      to_datetime:
+        type:
+          - string
+          - "null"
+      total_amount_cents:
+        type:
+          - number
+          - "null"
+    required:
+      - lago_invoice_id

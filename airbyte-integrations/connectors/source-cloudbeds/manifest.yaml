@@ -1,0 +1,703 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  This is Cloudbeds source that ingests data from the Cloudbeds API.
+
+
+  Cloudbeds is an unified hospitality platform https://cloudbeds.com
+
+
+  In order to use this source, you must first create a cloudbeds account. Once
+  logged in, navigate to the API credentials page for your property by clicking
+  Account > Apps & Marketplace in the upper right corner.  Use the menu on the
+  top to navigate to the API Credentials Page. Click the New Credentials button,
+  fill in the details and click on Create. This will create an application, then
+  click on the API Key and provide all the required scopes as needed. 
+
+
+  You can learn more about the API here
+  https://hotels.cloudbeds.com/api/v1.2/docs/
+
+check:
+  type: CheckStream
+  stream_names:
+    - guests
+
+definitions:
+  streams:
+    guests:
+      type: DeclarativeStream
+      name: guests
+      primary_key:
+        - guestID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: getGuestList
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageNumber
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/guests"
+    hotels:
+      type: DeclarativeStream
+      name: hotels
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: getHotels
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageNumber
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/hotels"
+    rooms:
+      type: DeclarativeStream
+      name: rooms
+      primary_key:
+        - propertyID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: getRoomBlocks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageNumber
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/rooms"
+    reservations:
+      type: DeclarativeStream
+      name: reservations
+      primary_key:
+        - reservationID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: getReservations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageNumber
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reservations"
+    transactions:
+      type: DeclarativeStream
+      name: transactions
+      primary_key:
+        - transactionID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: getTransactions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageNumber
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transactions"
+    packages:
+      type: DeclarativeStream
+      name: packages
+      primary_key:
+        - itemID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: getItems
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageNumber
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/packages"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.cloudbeds.com/api/v1.2/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/guests"
+  - $ref: "#/definitions/streams/hotels"
+  - $ref: "#/definitions/streams/rooms"
+  - $ref: "#/definitions/streams/reservations"
+  - $ref: "#/definitions/streams/transactions"
+  - $ref: "#/definitions/streams/packages"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 0
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    guests: true
+    hotels: true
+    rooms: true
+    reservations: true
+    transactions: true
+    packages: true
+  testedStreams:
+    guests:
+      streamHash: 8c3f802465858a6249b0a34501d4cc04c681e1b5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    hotels:
+      streamHash: 6e6352cd896d02b30f29b21c2a21ef6d14c27dab
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    rooms:
+      streamHash: d1b2ac08b13a5b601839be16f3f343e4c84239c1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    reservations:
+      streamHash: c318b9390d7f2ac48fc3bf923e6d350ff572000d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    transactions:
+      streamHash: c8f35dae787999ae71131884c4fffa6dc51759fe
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    packages:
+      streamHash: 743c759bcb3abca3ad9c48675da1e955673d5642
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://hotels.cloudbeds.com/api/v1.2/docs/
+    openapiSpecUrl: https://hotels.cloudbeds.com/api/v1.2/docs/cb-v1.2-openapi-3.0.1.yaml
+
+schemas:
+  guests:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      dateCreated:
+        type:
+          - string
+          - "null"
+      dateModified:
+        type:
+          - string
+          - "null"
+      guestEmail:
+        type:
+          - string
+          - "null"
+      guestID:
+        type: string
+      guestName:
+        type:
+          - string
+          - "null"
+      isAnonymized:
+        type:
+          - boolean
+          - "null"
+      isMainGuest:
+        type:
+          - boolean
+          - "null"
+      isMerged:
+        type:
+          - boolean
+          - "null"
+      newGuestID:
+        type:
+          - string
+          - "null"
+      propertyID:
+        type:
+          - string
+          - "null"
+      reservationID:
+        type:
+          - string
+          - "null"
+    required:
+      - guestID
+  hotels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      organizationID:
+        type:
+          - string
+          - "null"
+      propertyCurrency:
+        type:
+          - object
+          - "null"
+        properties:
+          currencyCode:
+            type:
+              - string
+              - "null"
+          currencyPosition:
+            type:
+              - string
+              - "null"
+          currencySymbol:
+            type:
+              - string
+              - "null"
+      propertyDescription:
+        type:
+          - string
+          - "null"
+      propertyID:
+        type:
+          - string
+          - "null"
+      propertyImage:
+        type:
+          - string
+          - "null"
+      propertyName:
+        type:
+          - string
+          - "null"
+      propertyTimezone:
+        type:
+          - string
+          - "null"
+  rooms:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      propertyID:
+        type: string
+      roomBlocks:
+        type:
+          - array
+          - "null"
+    required:
+      - propertyID
+  reservations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      adults:
+        type:
+          - string
+          - "null"
+      balance:
+        type:
+          - number
+          - "null"
+      children:
+        type:
+          - string
+          - "null"
+      dateCreated:
+        type:
+          - string
+          - "null"
+      dateModified:
+        type:
+          - string
+          - "null"
+      endDate:
+        type:
+          - string
+          - "null"
+      guestID:
+        type:
+          - string
+          - "null"
+      guestName:
+        type:
+          - string
+          - "null"
+      origin:
+        type:
+          - string
+          - "null"
+      profileID:
+        type:
+          - string
+          - "null"
+      propertyID:
+        type:
+          - string
+          - "null"
+      reservationID:
+        type: string
+      sourceID:
+        type:
+          - string
+          - "null"
+      sourceName:
+        type:
+          - string
+          - "null"
+      startDate:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - reservationID
+  transactions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - number
+          - "null"
+      cardType:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      guestCheckIn:
+        type:
+          - string
+          - "null"
+      guestCheckOut:
+        type:
+          - string
+          - "null"
+      guestID:
+        type:
+          - string
+          - "null"
+      guestName:
+        type:
+          - string
+          - "null"
+      isDeleted:
+        type:
+          - boolean
+          - "null"
+      itemCategoryName:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
+      parentTransactionID:
+        type:
+          - string
+          - "null"
+      propertyID:
+        type:
+          - string
+          - "null"
+      propertyName:
+        type:
+          - string
+          - "null"
+      quantity:
+        type:
+          - string
+          - "null"
+      reservationID:
+        type:
+          - string
+          - "null"
+      roomName:
+        type:
+          - string
+          - "null"
+      roomTypeID:
+        type:
+          - string
+          - "null"
+      roomTypeName:
+        type:
+          - string
+          - "null"
+      subReservationID:
+        type:
+          - string
+          - "null"
+      transactionCategory:
+        type:
+          - string
+          - "null"
+      transactionCode:
+        type:
+          - string
+          - "null"
+      transactionDateTime:
+        type:
+          - string
+          - "null"
+      transactionDateTimeUTC:
+        type:
+          - string
+          - "null"
+      transactionID:
+        type: string
+      transactionModifiedDateTime:
+        type:
+          - string
+          - "null"
+      transactionModifiedDateTimeUTC:
+        type:
+          - string
+          - "null"
+      transactionType:
+        type:
+          - string
+          - "null"
+      userName:
+        type:
+          - string
+          - "null"
+    required:
+      - transactionID
+  packages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      categoryName:
+        type:
+          - string
+          - "null"
+      fees:
+        type:
+          - array
+          - "null"
+      grandTotal:
+        type:
+          - number
+          - "null"
+      itemCode:
+        type:
+          - string
+          - "null"
+      itemID:
+        type: string
+      itemType:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - number
+          - "null"
+      priceWithoutFeesAndTaxes:
+        type:
+          - number
+          - "null"
+      sku:
+        type:
+          - string
+          - "null"
+      stockInventory:
+        type:
+          - boolean
+          - "null"
+      taxes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            taxName:
+              type:
+                - string
+                - "null"
+            taxValue:
+              type:
+                - number
+                - "null"
+      totalFees:
+        type:
+          - number
+          - "null"
+      totalTaxes:
+        type:
+          - number
+          - "null"
+    required:
+      - itemID

@@ -258,5 +258,5 @@ class TestFBMarketingIncrementalStreamSliceAndState:
         # Set the instance's filter_statuses
         incremental_class_instance._filter_statuses = instance_filter_statuses
 
-        new_state = incremental_class_instance.get_updated_state(current_stream_state, latest_record)
+        new_state = incremental_class_instance._get_updated_state(current_stream_state, latest_record)
         assert new_state == expected_state

@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 import datetime
 import json
 import logging
@@ -17,6 +18,8 @@ import dpath
 import jsonschema
 import pendulum
 import requests
+from requests import HTTPError
+
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -27,7 +30,6 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
 from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
 from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from airbyte_cdk.utils import AirbyteTracedException
-from requests import HTTPError
 from source_google_analytics_data_api import utils
 from source_google_analytics_data_api.google_analytics_data_api_base_error_mapping import get_google_analytics_data_api_base_error_mapping
 from source_google_analytics_data_api.google_analytics_data_api_metadata_error_mapping import (
@@ -47,6 +49,7 @@ from .utils import (
     serialize_to_date_string,
     transform_json,
 )
+
 
 # set the quota handler globally since limitations are the same for all streams
 # the initial values should be saved once and tracked for each stream, inclusively.
@@ -354,10 +357,14 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
+        if stream_slice and "startDate" in stream_slice and "endDate" in stream_slice:
+            date_range = {"startDate": stream_slice["startDate"], "endDate": stream_slice["endDate"]}
+        else:
+            date_range = stream_slice
         payload = {
             "metrics": [{"name": m} for m in self.config["metrics"]],
             "dimensions": [{"name": d} for d in self.config["dimensions"]],
-            "dateRanges": [stream_slice],
+            "dateRanges": [date_range],
             "returnPropertyQuota": True,
             "offset": str(0),
             "limit": str(self.page_size),
@@ -393,7 +400,9 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         else:
             start_date = self.config["date_ranges_start_date"]
 
-        while start_date <= today:
+        end_date = min(self.config.get("date_ranges_end_date", today), today)
+
+        while start_date <= end_date:
             # stop producing slices if 429 + specific scenario is hit
             # see GoogleAnalyticsQuotaHandler for more info.
             if GoogleAnalyticsQuotaHandler.stop_iter:
@@ -401,7 +410,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             else:
                 yield {
                     "startDate": utils.date_to_string(start_date),
-                    "endDate": utils.date_to_string(min(start_date + datetime.timedelta(days=self.config["window_in_days"] - 1), today)),
+                    "endDate": utils.date_to_string(min(start_date + datetime.timedelta(days=self.config["window_in_days"] - 1), end_date)),
                 }
                 start_date += datetime.timedelta(days=self.config["window_in_days"])
 
@@ -414,7 +423,6 @@ class PivotReport(GoogleAnalyticsDataApiBaseStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         payload = super().request_body_json(stream_state, stream_slice, next_page_token)
-
         # remove offset and limit fields according to their absence in
         # https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runPivotReport
         payload.pop("offset", None)
@@ -481,21 +489,26 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         return pendulum.now(tz="UTC").subtract(years=2).format("YYYY-MM-DD")
 
     @property
+    def default_date_ranges_end_date(self) -> str:
+        # set default date ranges end date to today
+        return pendulum.now(tz="UTC").format("YYYY-MM-DD")
+
+    @property
     def raise_exception_on_missing_stream(self) -> bool:
         # reference issue: https://github.com/airbytehq/airbyte-internal-issues/issues/8315
         # This has been added, because there is a risk of removing the `Custom Stream` from the `input configuration`,
         # which brings the error about `missing stream` present in the CATALOG but not in the `input configuration`.
         return False
 
-    def _validate_and_transform_start_date(self, start_date: str) -> datetime.date:
-        start_date = self.default_date_ranges_start_date if not start_date else start_date
+    def _validate_and_transform_date(self, date: str, default_date: str) -> datetime.date:
+        date = default_date if not date else date
 
         try:
-            start_date = utils.string_to_date(start_date)
+            date = utils.string_to_date(date)
         except ValueError as e:
             raise ConfigurationError(str(e))
 
-        return start_date
+        return date
 
     def _validate_custom_reports(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         if "custom_reports_array" in config:
@@ -535,7 +548,21 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             except ValueError:
                 raise ConfigurationError("credentials.credentials_json is not valid JSON")
 
-        config["date_ranges_start_date"] = self._validate_and_transform_start_date(config.get("date_ranges_start_date"))
+        config["date_ranges_start_date"] = self._validate_and_transform_date(
+            config.get("date_ranges_start_date"), self.default_date_ranges_start_date
+        )
+        config["date_ranges_end_date"] = self._validate_and_transform_date(
+            config.get("date_ranges_end_date"), self.default_date_ranges_end_date
+        )
+
+        if config["date_ranges_start_date"] > config["date_ranges_end_date"]:
+            raise ConfigurationError(
+                "End date '"
+                + config["date_ranges_end_date"].strftime("%Y-%m-%d")
+                + "' can not be before start date '"
+                + config["date_ranges_start_date"].strftime("%Y-%m-%d")
+                + "'"
+            )
 
         if not config.get("window_in_days"):
             source_spec = self.spec(logging.getLogger("airbyte"))

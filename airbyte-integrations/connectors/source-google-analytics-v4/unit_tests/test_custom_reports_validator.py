@@ -3,8 +3,9 @@
 #
 
 import pytest
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_google_analytics_v4.custom_reports_validator import CustomReportsValidator
+
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 @pytest.mark.parametrize(

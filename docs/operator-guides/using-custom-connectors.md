@@ -3,6 +3,8 @@ products: oss-*
 sidebar_label: Uploading custom connectors
 ---
 
+import ContainerProviders from '@site/static/_docker_image_registries.md';
+
 # Uploading Docker-based custom connectors
 
 :::info
@@ -25,13 +27,7 @@ Airbyte needs to pull its Docker images from a remote Docker registry to consume
 You should host your custom connectors image on a private Docker registry.
 Here are some resources to create a private Docker registry, in case your organization does not already have one:
 
-| Cloud provider | Service name                | Documentation                                                                                                                                                                                                                                                                                 |
-| -------------- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Google Cloud   | Artifact Registry           | [Quickstart](https://cloud.google.com/artifact-registry/docs/docker/quickstart)                                                                                                                                                                                                               |
-| AWS            | Amazon ECR                  | [Getting started with Amazon ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/getting-started-console.html)                                                                                                                                                                        |
-| Azure          | Container Registry          | [Quickstart](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-get-started-portal#:~:text=Azure%20Container%20Registry%20is%20a,container%20images%20and%20related%20artifacts.&text=Then%2C%20use%20Docker%20commands%20to,the%20image%20from%20your%20registry.) |
-| DockerHub      | Repositories                | [DockerHub Quickstart](https://docs.docker.com/docker-hub/)                                                                                                                                                                                                                                   |
-| Self hosted    | Open-source Docker Registry | [Deploy a registry server](https://docs.docker.com/registry/deploying/)                                                                                                                                                                                                                       |
+<ContainerProviders/>
 
 ## 2. Authenticate to your private Docker registry
 
@@ -110,3 +106,22 @@ You can pull your connector image from your private registry to validate the pre
    This documentation will be linked in your connector setting's page.
 
 5. `Add` the connector to save the configuration. You can now select your new connector when setting up a new connection!
+
+
+# Troubleshooting
+
+## Loading connector docker containers into kind
+If you are running Airbyte in kind (kubernetes in docker -- this is the default method for abctl), you must load the docker image of that connector into the cluster. If you are seeing the following error, it likely means that the docker image has not been properly loaded into the cluster.
+
+![Screenshot of UI error when custom connector container is not loaded in the cluster](./assets/custom-connector-error1.png)
+
+![Screenshot of K8s error when custom connector container is not loaded in the cluster](./assets/custom-connector-error2.png)
+
+A connector container can be loaded using the following command:
+```
+kind load docker-image <image-name>:<image-tag> -n airbyte-abctl
+```
+For the example above, the command would be:
+```
+kind load docker-image airbyte/source-custom:1 -n airbyte-abctl
+```

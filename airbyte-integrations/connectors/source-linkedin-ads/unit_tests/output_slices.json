@@ -2,152 +2,140 @@
   {
     "field_date_chunks": [
       {
-        "campaign_id": 123,
-        "dateRange": {
-          "end.day": 31,
-          "end.month": 1,
-          "end.year": 2021,
-          "start.day": 1,
-          "start.month": 1,
-          "start.year": 2021
-        },
-        "fields": "actionClicks,adUnitClicks,approximateUniqueImpressions,cardClicks,cardImpressions,clicks,commentLikes,comments,companyPageClicks,conversionValueInLocalCurrency,costInLocalCurrency,costInUsd,dateRange,documentCompletions,documentFirstQuartileCompletions,documentMidpointCompletions,documentThirdQuartileCompletions,downloadClicks,pivotValues"
+        "start_time": "2021-01-01",
+        "end_time": "2021-01-31",
+        "fields": "actionClicks,adUnitClicks,approximateUniqueImpressions,cardClicks,cardImpressions,clicks,commentLikes,comments,companyPageClicks,conversionValueInLocalCurrency,costInLocalCurrency,costInUsd,dateRange,documentCompletions,documentFirstQuartileCompletions,documentMidpointCompletions,documentThirdQuartileCompletions,downloadClicks,pivotValues",
+        "start.day": 1,
+        "start.month": 1,
+        "start.year": 2021,
+        "end.day": 31,
+        "end.month": 1,
+        "end.year": 2021
       },
       {
-        "campaign_id": 123,
+        "start_time": "2021-01-01",
+        "end_time": "2021-01-31",
         "fields": "externalWebsiteConversions,externalWebsitePostClickConversions,externalWebsitePostViewConversions,follows,fullScreenPlays,impressions,jobApplications,jobApplyClicks,landingPageClicks,leadGenerationMailContactInfoShares,leadGenerationMailInterestedClicks,likes,oneClickLeadFormOpens,oneClickLeads,opens,otherEngagements,pivotValues,postClickJobApplications,dateRange",
-        "dateRange": {
-          "start.day": 1,
-          "start.month": 1,
-          "start.year": 2021,
-          "end.day": 31,
-          "end.month": 1,
-          "end.year": 2021
-        }
+        "start.day": 1,
+        "start.month": 1,
+        "start.year": 2021,
+        "end.day": 31,
+        "end.month": 1,
+        "end.year": 2021
       },
       {
-        "campaign_id": 123,
+        "start_time": "2021-01-01",
+        "end_time": "2021-01-31",
         "fields": "postClickJobApplyClicks,postClickRegistrations,postViewJobApplications,postViewJobApplyClicks,postViewRegistrations,reactions,registrations,sends,shares,talentLeads,textUrlClicks,totalEngagements,validWorkEmailLeads,videoCompletions,videoFirstQuartileCompletions,videoMidpointCompletions,videoStarts,videoThirdQuartileCompletions,dateRange,pivotValues",
-        "dateRange": {
-          "start.day": 1,
-          "start.month": 1,
-          "start.year": 2021,
-          "end.day": 31,
-          "end.month": 1,
-          "end.year": 2021
-        }
+        "start.day": 1,
+        "start.month": 1,
+        "start.year": 2021,
+        "end.day": 31,
+        "end.month": 1,
+        "end.year": 2021
       },
       {
-        "campaign_id": 123,
+        "start_time": "2021-01-01",
+        "end_time": "2021-01-31",
         "fields": "videoViews,viralCardClicks,viralCardImpressions,viralClicks,viralCommentLikes,viralComments,viralCompanyPageClicks,viralDocumentCompletions,viralDocumentFirstQuartileCompletions,viralDocumentMidpointCompletions,viralDocumentThirdQuartileCompletions,viralDownloadClicks,viralExternalWebsiteConversions,viralExternalWebsitePostClickConversions,viralExternalWebsitePostViewConversions,viralFollows,viralFullScreenPlays,viralImpressions,dateRange,pivotValues",
-        "dateRange": {
-          "start.day": 1,
-          "start.month": 1,
-          "start.year": 2021,
-          "end.day": 31,
-          "end.month": 1,
-          "end.year": 2021
-        }
+        "start.day": 1,
+        "start.month": 1,
+        "start.year": 2021,
+        "end.day": 31,
+        "end.month": 1,
+        "end.year": 2021
       },
       {
-        "campaign_id": 123,
+        "start_time": "2021-01-01",
+        "end_time": "2021-01-31",
         "fields": "viralJobApplications,viralJobApplyClicks,viralLandingPageClicks,viralLikes,viralOneClickLeadFormOpens,viralOneClickLeads,viralOtherEngagements,viralPostClickJobApplications,viralPostClickJobApplyClicks,viralPostClickRegistrations,viralPostViewJobApplications,viralPostViewJobApplyClicks,viralPostViewRegistrations,viralReactions,viralRegistrations,viralShares,viralTotalEngagements,viralVideoCompletions,dateRange,pivotValues",
-        "dateRange": {
-          "start.day": 1,
-          "start.month": 1,
-          "start.year": 2021,
-          "end.day": 31,
-          "end.month": 1,
-          "end.year": 2021
-        }
+        "start.day": 1,
+        "start.month": 1,
+        "start.year": 2021,
+        "end.day": 31,
+        "end.month": 1,
+        "end.year": 2021
       },
       {
-        "campaign_id": 123,
+        "start_time": "2021-01-01",
+        "end_time": "2021-01-31",
         "fields": "viralVideoFirstQuartileCompletions,viralVideoMidpointCompletions,viralVideoStarts,viralVideoThirdQuartileCompletions,viralVideoViews,dateRange,pivotValues",
-        "dateRange": {
-          "start.day": 1,
-          "start.month": 1,
-          "start.year": 2021,
-          "end.day": 31,
-          "end.month": 1,
-          "end.year": 2021
-        }
+        "start.day": 1,
+        "start.month": 1,
+        "start.year": 2021,
+        "end.day": 31,
+        "end.month": 1,
+        "end.year": 2021
       }
     ]
   },
   {
     "field_date_chunks": [
       {
-        "campaign_id": 123,
+        "start_time": "2021-01-31",
+        "end_time": "2021-03-01",
         "fields": "actionClicks,adUnitClicks,approximateUniqueImpressions,cardClicks,cardImpressions,clicks,commentLikes,comments,companyPageClicks,conversionValueInLocalCurrency,costInLocalCurrency,costInUsd,dateRange,documentCompletions,documentFirstQuartileCompletions,documentMidpointCompletions,documentThirdQuartileCompletions,downloadClicks,pivotValues",
-        "dateRange": {
-          "start.day": 31,
-          "start.month": 1,
-          "start.year": 2021,
-          "end.day": 2,
-          "end.month": 3,
-          "end.year": 2021
-        }
+        "start.day": 31,
+        "start.month": 1,
+        "start.year": 2021,
+        "end.day": 1,
+        "end.month": 3,
+        "end.year": 2021
       },
       {
-        "campaign_id": 123,
+        "start_time": "2021-01-31",
+        "end_time": "2021-03-01",
         "fields": "externalWebsiteConversions,externalWebsitePostClickConversions,externalWebsitePostViewConversions,follows,fullScreenPlays,impressions,jobApplications,jobApplyClicks,landingPageClicks,leadGenerationMailContactInfoShares,leadGenerationMailInterestedClicks,likes,oneClickLeadFormOpens,oneClickLeads,opens,otherEngagements,pivotValues,postClickJobApplications,dateRange",
-        "dateRange": {
-          "start.day": 31,
-          "start.month": 1,
-          "start.year": 2021,
-          "end.day": 2,
-          "end.month": 3,
-          "end.year": 2021
-        }
+        "start.day": 31,
+        "start.month": 1,
+        "start.year": 2021,
+        "end.day": 1,
+        "end.month": 3,
+        "end.year": 2021
       },
       {
-        "campaign_id": 123,
+        "start_time": "2021-01-31",
+        "end_time": "2021-03-01",
         "fields": "postClickJobApplyClicks,postClickRegistrations,postViewJobApplications,postViewJobApplyClicks,postViewRegistrations,reactions,registrations,sends,shares,talentLeads,textUrlClicks,totalEngagements,validWorkEmailLeads,videoCompletions,videoFirstQuartileCompletions,videoMidpointCompletions,videoStarts,videoThirdQuartileCompletions,dateRange,pivotValues",
-        "dateRange": {
-          "start.day": 31,
-          "start.month": 1,
-          "start.year": 2021,
-          "end.day": 2,
-          "end.month": 3,
-          "end.year": 2021
-        }
+        "start.day": 31,
+        "start.month": 1,
+        "start.year": 2021,
+        "end.day": 1,
+        "end.month": 3,
+        "end.year": 2021
       },
       {
-        "campaign_id": 123,
+        "start_time": "2021-01-31",
+        "end_time": "2021-03-01",
         "fields": "videoViews,viralCardClicks,viralCardImpressions,viralClicks,viralCommentLikes,viralComments,viralCompanyPageClicks,viralDocumentCompletions,viralDocumentFirstQuartileCompletions,viralDocumentMidpointCompletions,viralDocumentThirdQuartileCompletions,viralDownloadClicks,viralExternalWebsiteConversions,viralExternalWebsitePostClickConversions,viralExternalWebsitePostViewConversions,viralFollows,viralFullScreenPlays,viralImpressions,dateRange,pivotValues",
-        "dateRange": {
-          "start.day": 31,
-          "start.month": 1,
-          "start.year": 2021,
-          "end.day": 2,
-          "end.month": 3,
-          "end.year": 2021
-        }
+        "start.day": 31,
+        "start.month": 1,
+        "start.year": 2021,
+        "end.day": 1,
+        "end.month": 3,
+        "end.year": 2021
       },
       {
-        "campaign_id": 123,
+        "start_time": "2021-01-31",
+        "end_time": "2021-03-01",
         "fields": "viralJobApplications,viralJobApplyClicks,viralLandingPageClicks,viralLikes,viralOneClickLeadFormOpens,viralOneClickLeads,viralOtherEngagements,viralPostClickJobApplications,viralPostClickJobApplyClicks,viralPostClickRegistrations,viralPostViewJobApplications,viralPostViewJobApplyClicks,viralPostViewRegistrations,viralReactions,viralRegistrations,viralShares,viralTotalEngagements,viralVideoCompletions,dateRange,pivotValues",
-        "dateRange": {
-          "start.day": 31,
-          "start.month": 1,
-          "start.year": 2021,
-          "end.day": 2,
-          "end.month": 3,
-          "end.year": 2021
-        }
+        "start.day": 31,
+        "start.month": 1,
+        "start.year": 2021,
+        "end.day": 1,
+        "end.month": 3,
+        "end.year": 2021
       },
       {
-        "campaign_id": 123,
+        "start_time": "2021-01-31",
+        "end_time": "2021-03-01",
         "fields": "viralVideoFirstQuartileCompletions,viralVideoMidpointCompletions,viralVideoStarts,viralVideoThirdQuartileCompletions,viralVideoViews,dateRange,pivotValues",
-        "dateRange": {
-          "start.day": 31,
-          "start.month": 1,
-          "start.year": 2021,
-          "end.day": 2,
-          "end.month": 3,
-          "end.year": 2021
-        }
+        "start.day": 31,
+        "start.month": 1,
+        "start.year": 2021,
+        "end.day": 1,
+        "end.month": 3,
+        "end.year": 2021
       }
     ]
   }

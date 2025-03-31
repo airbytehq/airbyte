@@ -317,13 +317,6 @@
                         "mode": "local"
                       },
                       "type": "object",
-                      "discriminator": {
-                        "propertyName": "mode",
-                        "mapping": {
-                          "local": "#/definitions/LocalProcessingConfigModel",
-                          "api": "#/definitions/APIProcessingConfigModel"
-                        }
-                      },
                       "oneOf": [
                         {
                           "title": "Local",
@@ -437,12 +430,76 @@
           "required": ["name", "format"]
         }
       },
-      "service_account": {
-        "title": "Service Account Information",
-        "description": "Enter your Google Cloud <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys\">service account key</a> in JSON format",
-        "airbyte_secret": true,
+      "credentials": {
+        "title": "Authentication",
+        "description": "Credentials for connecting to the Google Cloud Storage API",
+        "type": "object",
         "order": 0,
-        "type": "string"
+        "oneOf": [
+          {
+            "title": "Authenticate via Google (OAuth)",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "default": "Client",
+                "const": "Client",
+                "enum": ["Client"],
+                "type": "string"
+              },
+              "client_id": {
+                "title": "Client ID",
+                "description": "Client ID",
+                "airbyte_secret": true,
+                "type": "string"
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "description": "Client Secret",
+                "airbyte_secret": true,
+                "type": "string"
+              },
+              "access_token": {
+                "title": "Access Token",
+                "description": "Access Token",
+                "airbyte_secret": true,
+                "type": "string"
+              },
+              "refresh_token": {
+                "title": "Access Token",
+                "description": "Access Token",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "client_id",
+              "client_secret",
+              "access_token",
+              "refresh_token"
+            ]
+          },
+          {
+            "title": "Service Account Authentication.",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "default": "Service",
+                "const": "Service",
+                "enum": ["Service"],
+                "type": "string"
+              },
+              "service_account": {
+                "title": "Service Account Information.",
+                "description": "Enter your Google Cloud <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys\">service account key</a> in JSON format",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": ["service_account"]
+          }
+        ]
       },
       "bucket": {
         "title": "Bucket",
@@ -451,6 +508,50 @@
         "type": "string"
       }
     },
-    "required": ["streams", "service_account", "bucket"]
+    "required": ["streams", "credentials", "bucket"]
+  },
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "auth_type"],
+    "predicate_value": "Client",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "access_token"]
+          },
+          "refresh_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "refresh_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_secret"]
+          }
+        }
+      }
+    }
   }
 }

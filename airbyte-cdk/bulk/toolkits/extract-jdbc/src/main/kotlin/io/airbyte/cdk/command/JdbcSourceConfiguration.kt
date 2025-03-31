@@ -23,14 +23,14 @@ interface JdbcSourceConfiguration : SourceConfiguration {
         get() = true
 
     /**
-     * Micronaut factory which glues [ConfigurationJsonObjectSupplier] and
+     * Micronaut factory which glues [ConfigurationSpecificationSupplier] and
      * [SourceConfigurationFactory] together to produce a [JdbcSourceConfiguration] singleton.
      */
     @Factory
     private class MicronautFactory {
         @Singleton
-        fun <I : ConfigurationJsonObjectBase> jdbcSourceConfig(
-            pojoSupplier: ConfigurationJsonObjectSupplier<I>,
+        fun <I : ConfigurationSpecification> jdbcSourceConfig(
+            pojoSupplier: ConfigurationSpecificationSupplier<I>,
             factory: SourceConfigurationFactory<I, out JdbcSourceConfiguration>,
         ): JdbcSourceConfiguration = factory.make(pojoSupplier.get())
     }

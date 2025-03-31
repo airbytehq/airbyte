@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
 import functools
@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 import requests
 from source_zoho_crm.streams import IncrementalZohoCrmStream, ZohoStreamFactory
+
 
 HERE = Path(__file__).parent
 

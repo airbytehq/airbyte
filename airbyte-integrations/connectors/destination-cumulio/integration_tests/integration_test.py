@@ -8,6 +8,9 @@ from logging import Logger, getLogger
 from typing import Any, Dict, Mapping
 
 import pytest
+from destination_cumulio import DestinationCumulio
+from destination_cumulio.client import CumulioClient
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -20,8 +23,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_cumulio import DestinationCumulio
-from destination_cumulio.client import CumulioClient
 
 
 @pytest.fixture(name="logger")

@@ -7,14 +7,16 @@ import uuid
 from typing import Optional
 
 import urllib3
+from pinecone import PineconeException
+from pinecone.grpc import PineconeGRPC
+
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import create_chunks, create_stream_identifier, format_exception
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalog, DestinationSyncMode
 from destination_pinecone.config import PineconeIndexingModel
-from pinecone import PineconeException
-from pinecone.grpc import PineconeGRPC
+
 
 # large enough to speed up processing, small enough to not hit pinecone request limits
 PINECONE_BATCH_SIZE = 40

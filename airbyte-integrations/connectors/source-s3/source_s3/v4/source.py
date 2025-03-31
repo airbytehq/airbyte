@@ -1,13 +1,40 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
+import sys
+import traceback
+from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
-from airbyte_cdk import ConnectorSpecification, emit_configuration_as_airbyte_control_message, is_cloud_environment
+import orjson
+
+from airbyte_cdk import (
+    AirbyteEntrypoint,
+    ConnectorSpecification,
+    emit_configuration_as_airbyte_control_message,
+    is_cloud_environment,
+    launch,
+)
+from airbyte_cdk.models import (
+    AirbyteErrorTraceMessage,
+    AirbyteMessage,
+    AirbyteTraceMessage,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteCatalogSerializer,
+    TraceType,
+    Type,
+)
 from airbyte_cdk.sources.file_based.file_based_source import DEFAULT_CONCURRENCY, FileBasedSource
 from source_s3.source import SourceS3Spec
+from source_s3.utils import airbyte_message_to_json
+from source_s3.v4.config import Config
+from source_s3.v4.cursor import Cursor
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
+from source_s3.v4.stream_reader import SourceS3StreamReader
+
 
 _V3_DEPRECATION_FIELD_MAPPING = {
     "dataset": "streams.name",
@@ -41,7 +68,7 @@ class SourceS3(FileBasedSource):
         s4_spec = self.spec_class.schema()
 
         if s3_spec["properties"].keys() & s4_spec["properties"].keys():
-            raise ValueError("Overlapping properties between V3 and V4")
+            raise ValueError("Overlapping properties between V3 and V4")  # pragma: no cover
 
         for v3_property_key, v3_property_value in s3_spec["properties"].items():
             s4_spec["properties"][v3_property_key] = v3_property_value
@@ -109,7 +136,91 @@ class SourceS3(FileBasedSource):
             SourceS3._clean_required_fields(neste_field)
 
     @staticmethod
-    def _create_description_with_deprecation_prefix(new_fields: Optional[str]) -> str:
+    def _create_description_with_deprecation_prefix(new_fields: Optional[str]) -> str:  # pragma: no cover
         if new_fields:
             return f"Deprecated and will be removed soon. Please do not use this field anymore and use {new_fields} instead. "
+
         return "Deprecated and will be removed soon. Please do not use this field anymore. "
+
+    @classmethod
+    def launch(cls, args: list[str] | None = None) -> None:
+        """Launch the source using the provided CLI args.
+
+        If no args are provided, the launch args will be inferred automatically.
+
+        In the future, we should consider moving this method to the Connector base class,
+        so that all sources and destinations can launch themselves and so none of this
+        code needs to live in the connector itself.
+        """
+        args = args or sys.argv[1:]
+        catalog_path = AirbyteEntrypoint.extract_catalog(args)
+        # TODO: Delete if not needed:
+        # config_path = AirbyteEntrypoint.extract_config(args)
+        # state_path = AirbyteEntrypoint.extract_state(args)
+
+        source = cls.create(
+            configured_catalog_path=Path(catalog_path) if catalog_path else None,
+        )
+        # The following function will wrap the execution in proper error handling.
+        # Failures prior to here may not emit proper Airbyte TRACE or CONNECTION_STATUS messages.
+        launch(
+            source=source,
+            args=args,
+        )
+
+    @classmethod
+    def create(
+        cls,
+        *,
+        configured_catalog_path: Path | str | None = None,
+    ) -> SourceS3:
+        """Create a new instance of the source.
+
+        This is a bit of a hack because (1) the source needs the catalog early, and (2), the
+        constructor asks for things that the caller won't know about, specifically: the stream
+        reader class, the spec class, and the cursor class.
+
+        We should consider refactoring the constructor so that these inputs don't need to be
+        provided by the caller. This probably requires changes to the base class in the CDK.
+
+        We prefer to fail in the `launch` method, where proper error handling is in place.
+        """
+        try:
+            configured_catalog: ConfiguredAirbyteCatalog | None = (
+                ConfiguredAirbyteCatalogSerializer.load(orjson.loads(Path(configured_catalog_path).read_text()))
+                if configured_catalog_path
+                else None
+            )
+        except Exception as ex:
+            print(
+                airbyte_message_to_json(
+                    AirbyteMessage(
+                        type=Type.TRACE,
+                        trace=AirbyteTraceMessage(
+                            type=TraceType.ERROR,
+                            emitted_at=int(datetime.now().timestamp() * 1000),
+                            error=AirbyteErrorTraceMessage(
+                                message="Error starting the sync. This could be due to an invalid configuration or catalog. Please contact Support for assistance.",
+                                stack_trace=traceback.format_exc(),
+                                internal_message=str(ex),
+                            ),
+                        ),
+                    ),
+                    newline=True,
+                )
+            )
+            # Ideally we'd call `raise` here, but sometimes the stack trace bleeds into
+            # the Airbyte logs, which is not ideal. So we'll just exit with an error code instead.
+            sys.exit(1)
+
+        return cls(
+            # These are the defaults for the source. No need for a caller to change them:
+            stream_reader=SourceS3StreamReader(),
+            spec_class=Config,
+            cursor_cls=Cursor,
+            # This is needed early. (We also will provide it again later.)
+            catalog=configured_catalog,
+            # These will be provided later, after we have wrapped proper error handling.
+            config=None,
+            state=None,
+        )

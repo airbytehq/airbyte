@@ -3,8 +3,8 @@
 #
 
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 
 
 class ShopifyBulkExceptions:
@@ -49,6 +49,11 @@ class ShopifyBulkExceptions:
 
     class BulkJobCreationFailedConcurrentError(BaseBulkException):
         """Raised when an attempt to create a job as failed because of concurrency limits."""
+
+        failure_type: FailureType = FailureType.transient_error
+
+    class BulkJobCheckpointCollisionError(BaseBulkException):
+        """Raised when an attempt to create a job using the `checkpointed cursor` value goes into inf.loop."""
 
         failure_type: FailureType = FailureType.transient_error
 

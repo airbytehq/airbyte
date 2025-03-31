@@ -4,12 +4,15 @@
 
 
 import sys
+import time
 import traceback
-from datetime import datetime
 
-from airbyte_cdk import AirbyteEntrypoint, AirbyteMessage, Type, launch
-from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteTraceMessage, TraceType
+from orjson import orjson
+
+from airbyte_cdk import AirbyteEntrypoint, launch
+from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType, Type
 from source_gcs import Config, Cursor, SourceGCS, SourceGCSStreamReader
+from source_gcs.config_migrations import MigrateServiceAccount
 
 
 def run():
@@ -26,19 +29,24 @@ def run():
             SourceGCS.read_state(state_path) if state_path else None,
             cursor_cls=Cursor,
         )
+        MigrateServiceAccount.migrate(_args, source)
     except Exception:
         print(
-            AirbyteMessage(
-                type=Type.TRACE,
-                trace=AirbyteTraceMessage(
-                    type=TraceType.ERROR,
-                    emitted_at=int(datetime.now().timestamp() * 1000),
-                    error=AirbyteErrorTraceMessage(
-                        message="Error starting the sync. This could be due to an invalid configuration or catalog. Please contact Support for assistance.",
-                        stack_trace=traceback.format_exc(),
-                    ),
-                ),
-            ).json()
+            orjson.dumps(
+                AirbyteMessageSerializer.dump(
+                    AirbyteMessage(
+                        type=Type.TRACE,
+                        trace=AirbyteTraceMessage(
+                            type=TraceType.ERROR,
+                            emitted_at=time.time_ns() // 1_000_000,
+                            error=AirbyteErrorTraceMessage(
+                                message="Error starting the sync. This could be due to an invalid configuration or catalog. Please contact Support for assistance.",
+                                stack_trace=traceback.format_exc(),
+                            ),
+                        ),
+                    )
+                )
+            ).decode()
         )
     else:
         launch(source, sys.argv[1:])

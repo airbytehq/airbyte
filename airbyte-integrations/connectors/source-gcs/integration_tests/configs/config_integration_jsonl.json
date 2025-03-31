@@ -1,0 +1,18 @@
+{
+  "bucket": "sample-bucket-jsonl",
+  "service_account": "{}",
+  "streams": [
+    {
+      "name": "test_jsonl",
+      "globs": ["**/*.jsonl"],
+      "validation_policy": "Emit Record",
+      "format": {
+        "filetype": "jsonl"
+      }
+    }
+  ],
+  "credentials": {
+    "service_account": "{}",
+    "auth_type": "Service"
+  }
+}

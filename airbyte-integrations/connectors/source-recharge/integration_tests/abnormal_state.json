@@ -47,5 +47,19 @@
       "stream_state": { "updated_at": "2050-05-18T00:00:00Z" },
       "stream_descriptor": { "name": "subscriptions" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created_at": "2050-05-18T00:00:00Z" },
+      "stream_descriptor": { "name": "events" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-05-18T00:00:00Z" },
+      "stream_descriptor": { "name": "bundle_selections" }
+    }
   }
 ]
