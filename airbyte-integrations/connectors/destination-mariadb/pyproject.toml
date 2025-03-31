@@ -27,7 +27,7 @@ airbyte = "^0.12.0"
 sqlalchemy = "<2.0"
 pymysql = "^1.1.1"
 pydevd-pycharm = "~243.25659.43"
-# mariadb = "^1.1.12"
+pydantic = "^1.10.8"
 
 [tool.poetry.group.dev.dependencies]
 # pytest = "^8.0.0"
