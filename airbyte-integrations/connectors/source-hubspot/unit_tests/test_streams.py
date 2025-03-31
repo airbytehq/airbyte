@@ -85,7 +85,9 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
 
     _, stream_state = read_incremental(stream, {})
 
-    expected = pendulum.parse(responses[0].get("json").get(stream.data_field)[-1].get("createdAt")).format(stream.cursor_field_datetime_format)
+    expected = pendulum.parse(responses[0].get("json").get(stream.data_field)[-1].get("createdAt")).format(
+        stream.cursor_field_datetime_format
+    )
 
     assert stream_state[stream.updated_at_field] == expected
 
@@ -419,25 +421,25 @@ def test_contact_lists_transform(requests_mock, common_params):
     records = read_full_refresh(stream)
 
     expected_record = [
-                    {
-                        "listId": "1",
-                        "createdAt": "2022-02-25T16:43:10Z",
-                        "objectTypeId": "0-1",
-                        "updatedAt": "2022-02-25T16:43:10Z",
-                    },
-                    {
-                        "listId": "2",
-                        "createdAt": "2022-02-25T16:43:11Z",
-                        "objectTypeId": "0-1",
-                        "updatedAt": "2022-02-25T16:43:11Z",
-                    },
-                    {
-                        "listId": "3",
-                        "createdAt": "2022-02-25T16:43:12Z",
-                        "objectTypeId": "0-1",
-                        "updatedAt": "2022-02-25T16:43:12Z",
-                    },
-                ]
+        {
+            "listId": "1",
+            "createdAt": "2022-02-25T16:43:10Z",
+            "objectTypeId": "0-1",
+            "updatedAt": "2022-02-25T16:43:10Z",
+        },
+        {
+            "listId": "2",
+            "createdAt": "2022-02-25T16:43:11Z",
+            "objectTypeId": "0-1",
+            "updatedAt": "2022-02-25T16:43:11Z",
+        },
+        {
+            "listId": "3",
+            "createdAt": "2022-02-25T16:43:12Z",
+            "objectTypeId": "0-1",
+            "updatedAt": "2022-02-25T16:43:12Z",
+        },
+    ]
     assert records == expected_record
 
 
