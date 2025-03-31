@@ -2890,7 +2890,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -3397,7 +3397,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -3904,7 +3904,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -4411,7 +4411,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -4918,7 +4918,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -5425,7 +5425,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -5932,7 +5932,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -6439,7 +6439,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -6946,7 +6946,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -7453,7 +7453,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"
@@ -7960,7 +7960,7 @@ schemas:
         type:
           - "null"
           - number
-      approximateUniqueImpressions:
+      approximateMemberReach:
         description: "An approximation of unique ad impressions."
         type:
           - "null"

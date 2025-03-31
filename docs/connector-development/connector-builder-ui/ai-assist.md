@@ -1,5 +1,5 @@
 ---
-title: AI Assistant (beta)
+title: AI Assistant
 ---
 # AI Assistant for the Connector Builder (Beta)
 

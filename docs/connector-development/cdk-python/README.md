@@ -1,24 +1,6 @@
 # Connector Development Kit
 
 :::info
-Over the next few months, the project will only accept connector contributions that are made using the
-[Low-Code CDK](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview) or the
-[Connector Builder](https://docs.airbyte.com/connector-development/connector-builder-ui/overview).
-
-New pull requests made with the Python CDK will be closed, but we will inquire to understand why it wasn't done with
-Low-Code/Connector Builder so we can address missing features. This decision is aimed at improving maintenance and
-providing a larger catalog with high-quality connectors.
-
-You can continue to use the Python CDK to build connectors to help your company or projects.
-:::
-
-:::info
-Developer updates will be announced via
-[#help-connector-development](https://airbytehq.slack.com/archives/C027KKE4BCZ) Slack channel. If you are using the
-CDK, please join to stay up to date on changes and issues.
-:::
-
-:::info
 This section is for the Python CDK. See our
 [community-maintained CDKs section](../README.md#community-maintained-cdks) if you want to write connectors in other
 languages.
@@ -39,18 +21,9 @@ inquire further!
 
 ## Getting Started
 
-Generate an empty connector using the code generator. First clone the Airbyte repository, then from the repository
-root run
+In most cases, you won't need to use the CDK directly, and should start building connectors in Connector Builder, an IDE that is powerd by Airbyte Python CDK. If you do need customization beyond what it offers, you can do so by using `airbyte_cdk` as aa dependency in your Python project.
 
-```bash
-cd airbyte-integrations/connector-templates/generator
-./generate.sh
-```
-
-Next, find all `TODO`s in the generated project directory. They're accompanied by comments explaining what you'll
-need to do in order to implement your connector. Upon completing all TODOs properly, you should have a functioning connector.
-
-Additionally, you can follow [this tutorial](../tutorials/custom-python-connector/0-getting-started.md) for a complete walkthrough of creating an HTTP connector using the Airbyte CDK.
+[Airbyte CDK reference documentation](https://airbytehq.github.io/airbyte-python-cdk/airbyte_cdk.html) is published automatically with each new CDK release. The rest of this document explains the most basic concepts applicable to any Airbyte API connector.
 
 ### Concepts & Documentation
 
@@ -68,64 +41,8 @@ Having trouble figuring out how to write a `stream_slices` function or aren't su
 
 #### Practical Tips
 
-Airbyte recommends using the CDK template generator to develop with the CDK. The template generates created all the required scaffolding, with convenient TODOs, allowing developers to truly focus on implementing the API.
-
-For tips on useful Python knowledge, see the [Python Concepts](python-concepts.md) page.
-
 You can find a complete tutorial for implementing an HTTP source connector in [this tutorial](../tutorials/custom-python-connector/0-getting-started.md)
-
-### Example Connectors
-
-**HTTP Connectors**:
-
-- [Stripe](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py)
-- [Slack](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-slack/source_slack/source.py)
-
-**Simple Python connectors using the barebones `Source` abstraction**:
-
-- [Google Sheets](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-google-sheets/source_google_sheets/source.py)
-- [Mailchimp](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mailchimp/source_mailchimp/source.py)
 
 ## Contributing
 
-### First time setup
-
-We assume `python` points to Python 3.9 or higher.
-
-Setup a virtual env:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e ".[tests]" # [tests] installs test-only dependencies
-```
-
-#### Iteration
-
-- Iterate on the code locally
-- Run tests via `pytest -s unit_tests`
-- Perform static type checks using `mypy airbyte_cdk`. `MyPy` configuration is in `.mypy.ini`.
-- The `type_check_and_test.sh` script bundles both type checking and testing in one convenient command. Feel free to use it!
-
-#### Debugging
-
-While developing your connector, you can print detailed debug information during a sync by specifying the `--debug` flag. This allows you to get a better picture of what is happening during each step of your sync.
-
-```bash
-python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json --debug
-```
-
-In addition to preset CDK debug statements, you can also add your own statements to emit debug information specific to your connector:
-
-```python
-self.logger.debug("your debug message here", extra={"debug_field": self.value})
-```
-
-#### Testing
-
-All tests are located in the `unit_tests` directory. Run `pytest --cov=airbyte_cdk unit_tests/` to run them. This also presents a test coverage report.
-
-#### Publishing a new version to PyPi
-
-1. Open a PR
-2. Once it is approved and merge, an Airbyte member must run the `Publish CDK Manually` workflow using `release-type=major|manor|patch` and setting the changelog message.
+We're welcoming all contributions to Airbyte Python CDK! [`airbytehq/airbyte-python-cdk` Github repository](https://github.com/airbytehq/airbyte-python-cdk) CONTRIBUTING.md is the best spot to see up to date guide on how to get started.

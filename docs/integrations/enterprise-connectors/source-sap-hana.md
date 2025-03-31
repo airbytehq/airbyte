@@ -15,7 +15,6 @@ Airbyte’s incubating SAP HANA enterprise source connector currently offers Ful
 | :---------------- | :------------------- | :---- |
 | Full Refresh Sync | Yes                  |       |
 | Incremental Sync - Append | Yes          |       |
-| Incremental Sync - Append | Yes          |       |              
 | Changa Data Capture (CDC) | No           |       |
 
 

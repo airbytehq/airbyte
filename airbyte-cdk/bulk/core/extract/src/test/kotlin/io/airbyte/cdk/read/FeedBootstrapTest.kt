@@ -184,6 +184,52 @@ class FeedBootstrapTest {
         )
     }
 
+    @Test
+    fun testTriggerBasedCdcMetadataDecoration() {
+        // Create a stream without the global cursor in its schema to simulate trigger-based CDC
+        val triggerBasedStream =
+            Stream(
+                id = StreamIdentifier.from(StreamDescriptor().withName("tbl").withNamespace("ns")),
+                schema =
+                    setOf(
+                        k,
+                        v,
+                    ),
+                configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+                configuredPrimaryKey = listOf(k),
+                configuredCursor =
+                    GlobalCursor, // For trigger based CDC the cursor is uniquely defined, we just
+                // use this object for test case
+                )
+
+        // Create state manager and bootstrap without a global feed
+        val stateManager =
+            StateManager(initialStreamStates = mapOf(triggerBasedStream to Jsons.arrayNode()))
+        val bootstrap = triggerBasedStream.bootstrap(stateManager)
+        val consumer = bootstrap.streamRecordConsumers().toList().first().second
+
+        // Test that a record gets CDC metadata decoration even without a global feed
+        consumer.accept(Jsons.readTree("""{"k":3,"v":"trigger"}""") as ObjectNode, changes = null)
+
+        val recordOutput = outputConsumer.records().map(Jsons::writeValueAsString).first()
+        val recordJson = Jsons.readTree(recordOutput)
+        val data = recordJson.get("data")
+
+        // Verify CDC metadata fields are present and properly decorated
+        Assertions.assertNotNull(data.get("_ab_cdc_lsn"))
+        Assertions.assertNotNull(data.get("_ab_cdc_updated_at"))
+        Assertions.assertNotNull(data.get("_ab_cdc_deleted_at"))
+
+        // The _ab_cdc_lsn should be decorated with the transaction timestamp
+        Assertions.assertTrue(data.get("_ab_cdc_lsn").isTextual)
+
+        // _ab_cdc_updated_at should be a timestamp string
+        Assertions.assertTrue(data.get("_ab_cdc_updated_at").isTextual)
+
+        // _ab_cdc_deleted_at should be null for non-deleted records
+        Assertions.assertTrue(data.get("_ab_cdc_deleted_at").isNull)
+    }
+
     companion object {
         const val GLOBAL_RECORD_DATA =
             """{"k":1,"v":"foo","_ab_cdc_lsn":123,"_ab_cdc_updated_at":"2024-03-01T01:02:03.456789","_ab_cdc_deleted_at":null}"""
