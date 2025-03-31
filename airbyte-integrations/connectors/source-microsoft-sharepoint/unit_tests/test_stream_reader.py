@@ -7,7 +7,10 @@ from unittest.mock import ANY, MagicMock, Mock, PropertyMock, call, patch
 
 import pytest
 from office365.entity_collection import EntityCollection
+from office365.graph_client import GraphClient
 from office365.onedrive.drives.drive import Drive
+from office365.sharepoint.client_context import ClientContext
+from office365.sharepoint.search.service import SearchService
 from requests.exceptions import HTTPError
 from source_microsoft_sharepoint.exceptions import ErrorFetchingMetadata
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
@@ -749,7 +752,6 @@ def test_get_site_drive_error_handling():
     reader._one_drive_client = mock_one_drive_client
 
     with patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query:
-        # Set up the mock to raise an exception
         mock_execute_query.side_effect = Exception("Test exception")
 
         with pytest.raises(AirbyteTracedException) as exc_info:
@@ -787,57 +789,33 @@ def test_retrieve_files_from_accessible_drives(mocker, refresh_token, auth_type,
         assert reader._get_shared_files_from_all_drives.called == ("_get_shared_files_from_all_drives" in expected_methods_called)
 
 
-@pytest.mark.parametrize(
-    "search_result, expected_sites, raises_exception",
-    [
-        # Case 1: Search returns results with sites
-        (
-            {
-                "PrimaryQueryResult": {
-                    "RelevantResults": {
-                        "Table": {
-                            "Rows": [
-                                {"Cells": {"Title": "Site1", "Path": "https://test-tenant.sharepoint.com/sites/site1"}},
-                                {"Cells": {"Title": "Site2", "Path": "https://test-tenant.sharepoint.com/sites/site2"}},
-                            ]
-                        }
-                    }
-                }
-            },
-            [
-                {"Title": "Site1", "Path": "https://test-tenant.sharepoint.com/sites/site1"},
-                {"Title": "Site2", "Path": "https://test-tenant.sharepoint.com/sites/site2"},
-            ],
-            False,
-        ),
-        # Case 2: Search returns empty results
-        (None, [], True),
-        # Case 3: Search returns no relevant results
-        ({"PrimaryQueryResult": None}, [], True),
-    ],
-)
-def test_get_all_sites(search_result, expected_sites, raises_exception):
+def test_get_all_sites_returns_sites_successfully():
     """
-    Test the get_all_sites method to verify it correctly retrieves and processes SharePoint site information.
+    Test that get_all_sites correctly returns site information when sites are found
     """
+
     reader = SourceMicrosoftSharePointStreamReader()
+    reader._config = MagicMock(spec=SourceMicrosoftSharePointSpec)
+    reader._one_drive_client = MagicMock(spec=GraphClient)
 
-    reader._config = MagicMock()
-    reader._one_drive_client = MagicMock()
+    tenant_url = "https://test-tenant.sharepoint.com"
+    site_first_title = "Site1"
+    site_first_path = f"{tenant_url}/sites/site1"
+    site_second_title = "Site2"
+    site_second_path = f"{tenant_url}/sites/site2"
+    query_filter = "contentclass:STS_Site NOT Path:https://test-tenant-my.sharepoint.com"
 
-    # Mock methods out of scope of this test
     with (
         patch("source_microsoft_sharepoint.stream_reader.get_site_prefix") as mock_get_site_prefix,
         patch.object(reader, "_get_client_context") as mock_get_client_context,
         patch("source_microsoft_sharepoint.stream_reader.SearchService") as mock_search_service,
         patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query,
     ):
-        mock_get_site_prefix.return_value = ("https://test-tenant.sharepoint.com", "test-tenant")
-
-        mock_client_context = MagicMock()
+        mock_get_site_prefix.return_value = (tenant_url, "test-tenant")
+        mock_client_context = MagicMock(spec=ClientContext)
         mock_get_client_context.return_value = mock_client_context
 
-        mock_search_service_instance = MagicMock()
+        mock_search_service_instance = MagicMock(spec=SearchService)
         mock_search_service.return_value = mock_search_service_instance
 
         mock_search_job = MagicMock()
@@ -845,64 +823,87 @@ def test_get_all_sites(search_result, expected_sites, raises_exception):
 
         search_job_result = MagicMock()
         mock_execute_query.return_value = search_job_result
-
         mock_search_job.value = True
-        search_job_result.value = MagicMock()
 
-        if search_result is None:
-            # Case 2: Empty results
-            search_job_result.value.PrimaryQueryResult = None
-        elif search_result.get("PrimaryQueryResult") is None:
-            # Case 3: No relevant results
-            search_job_result.value.PrimaryQueryResult = None
-        else:
-            # Case 1: Success case with sites
-            # Create the full mock object structure with attributes instead of dict items
-            pq_data = search_result["PrimaryQueryResult"]
+        primary_query_result = MagicMock()
+        search_job_result.value.PrimaryQueryResult = primary_query_result
+        relevant_results = MagicMock()
+        primary_query_result.RelevantResults = relevant_results
+        table = MagicMock()
+        relevant_results.Table = table
 
-            primary_query_result = MagicMock()
+        mock_row_first = MagicMock()
+        mock_row_first.Cells.get.side_effect = lambda key, default=None: {
+            "Title": site_first_title,
+            "Path": site_first_path,
+        }.get(key, default)
+
+        mock_row_second = MagicMock()
+        mock_row_second.Cells.get.side_effect = lambda key, default=None: {
+            "Title": site_second_title,
+            "Path": site_second_path,
+        }.get(key, default)
+
+        table.Rows = [mock_row_first, mock_row_second]
+
+        result = reader.get_all_sites()
+
+        expected_sites = [
+            {"Title": site_first_title, "Path": site_first_path},
+            {"Title": site_second_title, "Path": site_second_path},
+        ]
+        assert result == expected_sites
+
+        mock_get_site_prefix.assert_called_once_with(reader.one_drive_client)
+        mock_get_client_context.assert_called_once()
+        mock_search_service.assert_called_once_with(mock_client_context)
+        mock_search_service_instance.post_query.assert_called_once_with(query_filter)
+        mock_execute_query.assert_called_once_with(mock_search_job)
+
+
+@pytest.mark.parametrize(
+    "test_case, search_job_value, primary_query_result",
+    [
+        ("empty_search_results", None, None),  # Case: search_job.value is None
+        ("no_relevant_results", True, None),  # Case: search_job.value exists but PrimaryQueryResult is None
+    ],
+)
+def test_get_all_sites_with_no_results(test_case, search_job_value, primary_query_result):
+    """
+    Test that get_all_sites raises an exception when search returns no results
+    """
+    reader = SourceMicrosoftSharePointStreamReader()
+    reader._config = MagicMock()
+    reader._one_drive_client = MagicMock()
+
+    with (
+        patch("source_microsoft_sharepoint.stream_reader.get_site_prefix") as mock_get_site_prefix,
+        patch.object(reader, "_get_client_context") as mock_get_client_context,
+        patch("source_microsoft_sharepoint.stream_reader.SearchService") as mock_search_service,
+        patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query,
+    ):
+        mock_get_site_prefix.return_value = ("https://test-tenant.sharepoint.com", "test-tenant")
+        mock_client_context = MagicMock()
+        mock_get_client_context.return_value = mock_client_context
+        mock_search_service_instance = MagicMock()
+        mock_search_service.return_value = mock_search_service_instance
+        mock_search_job = MagicMock()
+        mock_search_service_instance.post_query.return_value = mock_search_job
+
+        search_job_result = MagicMock()
+        mock_execute_query.return_value = search_job_result
+        mock_search_job.value = search_job_value
+
+        if search_job_value:
             search_job_result.value.PrimaryQueryResult = primary_query_result
 
-            relevant_results = MagicMock()
-            primary_query_result.RelevantResults = relevant_results
+        with pytest.raises(Exception, match="No site collections found"):
+            reader.get_all_sites()
 
-            table = MagicMock()
-            relevant_results.Table = table
-
-            if "Rows" in pq_data["RelevantResults"]["Table"]:
-                rows_data = pq_data["RelevantResults"]["Table"]["Rows"]
-                mock_rows = []
-
-                def create_cell_getter(cell_data):
-                    def cell_getter(key, default=None):
-                        return cell_data.get(key, default)
-
-                    return cell_getter
-
-                for row_data in rows_data:
-                    mock_row = MagicMock()
-
-                    cell_getter = create_cell_getter(row_data["Cells"])
-
-                    mock_row.Cells = MagicMock()
-                    mock_row.Cells.get = cell_getter
-
-                    mock_rows.append(mock_row)
-
-                table.Rows = mock_rows
-
-        if raises_exception:
-            with pytest.raises(Exception, match="No site collections found"):
-                reader.get_all_sites()
-        else:
-            result = reader.get_all_sites()
-
-            assert result == expected_sites
-
-            mock_get_site_prefix.assert_called_once_with(reader.one_drive_client)
-            mock_get_client_context.assert_called_once()
-            mock_search_service.assert_called_once_with(mock_client_context)
-            mock_search_service_instance.post_query.assert_called_once_with(
-                "contentclass:STS_Site NOT Path:https://test-tenant-my.sharepoint.com"
-            )
-            mock_execute_query.assert_called_once_with(mock_search_job)
+        mock_get_site_prefix.assert_called_once_with(reader.one_drive_client)
+        mock_get_client_context.assert_called_once()
+        mock_search_service.assert_called_once_with(mock_client_context)
+        mock_search_service_instance.post_query.assert_called_once_with(
+            "contentclass:STS_Site NOT Path:https://test-tenant-my.sharepoint.com"
+        )
+        mock_execute_query.assert_called_once_with(mock_search_job)
