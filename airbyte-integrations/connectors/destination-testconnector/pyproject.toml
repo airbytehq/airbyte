@@ -1,0 +1,29 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.0"
+name = "destination-testconnector"
+description = "Destination implementation for testconnector."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destinations/testconnector"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+packages = [ { include = "destination_testconnector" }, {include = "main.py" } ]
+
+[tool.poetry.dependencies]
+python = "<3.13,>=3.10"
+airbyte-cdk = "^6.33.0"
+pydevd-pycharm = "~243.25659.43"
+
+[tool.poetry.scripts]
+destination-testconnector = "destination_testconnector.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "*"
+pytest-mock = "*"
+pytest = "*"
+

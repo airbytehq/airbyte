@@ -1,0 +1,32 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    #https://hub.docker.com/layers/airbyte/python-connector-base/4.0.0/images/sha256-8e24dc6f5958feb5eb72859c70dd82b772dbf719edb8c51b0f5fac1c70d0f74f
+    #docker pull airbyte/python-connector-base:4.0.0
+    baseImage: docker.io/library/python:3.11.11-slim-bookworm@sha256:6ed5bff4d7d377e2a27d9285553b8c21cfccc4f00881de1b24c9bc8d90016e82
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 0c3ed9a1-f7df-4243-9b18-fdf0f4393cbe
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-testconnector
+  githubIssueLabel: destination-testconnector
+  icon: testconnector.svg
+  license: MIT
+  name: Testconnector
+  releaseDate: TODO
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/testconnector
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

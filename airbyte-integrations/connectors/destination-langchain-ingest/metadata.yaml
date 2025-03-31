@@ -1,0 +1,24 @@
+data:
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  connectorBuildOptions:
+    baseImage: docker.io/library/python:3.11.11-slim-bookworm@sha256:6ed5bff4d7d377e2a27d9285553b8c21cfccc4f00881de1b24c9bc8d90016e82
+  connectorSubtype: api
+  connectorType: destination
+  definitionId: da13fb65-484a-4b34-a524-2eb21e61b716
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-langchain-ingest
+  githubIssueLabel: destination-langchain-ingest
+  icon: langchain-ingest.svg
+  license: MIT
+  name: Langchain Ingest
+  releaseDate: TODO
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/langchain-ingest
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"
