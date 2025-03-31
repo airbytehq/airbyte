@@ -294,7 +294,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                 all_sites_drives.add_child(site_drive)
         return all_sites_drives
 
-    def get_site_drive(self):
+    def get_site_drive(self) -> EntityCollection:
         """
         Retrieves SharePoint drives based on the provided site URL.
         It iterates over the sites if something like sharepoint.com/sites/ is in the site_url.
@@ -324,7 +324,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
     @property
     @lru_cache(maxsize=None)
-    def drives(self):
+    def drives(self) -> EntityCollection:
         """
         Retrieves and caches SharePoint drives, including the user's drive based on authentication type.
         """
