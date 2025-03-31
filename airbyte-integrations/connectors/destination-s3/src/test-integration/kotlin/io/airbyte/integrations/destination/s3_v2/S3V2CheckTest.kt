@@ -8,7 +8,6 @@ import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.check.CheckIntegrationTest
 import io.airbyte.cdk.load.check.CheckTestConfig
 import io.airbyte.cdk.load.command.aws.asMicronautProperties
-import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
@@ -18,7 +17,7 @@ class S3V2CheckTest :
         successConfigFilenames =
             listOf(
                 CheckTestConfig(
-                    Path.of(S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH),
+                    S3V2TestUtils.getConfig(S3V2TestUtils.JSON_UNCOMPRESSED_CONFIG_PATH),
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
                 ),
                 //                Uncomment when staging is re-enabled.
@@ -27,19 +26,19 @@ class S3V2CheckTest :
                 //                    setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
                 //                ),
                 CheckTestConfig(
-                    Path.of(S3V2TestUtils.JSON_GZIP_CONFIG_PATH),
+                    S3V2TestUtils.getConfig(S3V2TestUtils.JSON_GZIP_CONFIG_PATH),
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
                 ),
                 CheckTestConfig(
-                    Path.of(S3V2TestUtils.CSV_UNCOMPRESSED_CONFIG_PATH),
+                    S3V2TestUtils.getConfig(S3V2TestUtils.CSV_UNCOMPRESSED_CONFIG_PATH),
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
                 ),
                 CheckTestConfig(
-                    Path.of(S3V2TestUtils.CSV_GZIP_CONFIG_PATH),
+                    S3V2TestUtils.getConfig(S3V2TestUtils.CSV_GZIP_CONFIG_PATH),
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
                 ),
                 CheckTestConfig(
-                    Path.of(S3V2TestUtils.ENDPOINT_EMPTY_URL_CONFIG_PATH),
+                    S3V2TestUtils.getConfig(S3V2TestUtils.ENDPOINT_EMPTY_URL_CONFIG_PATH),
                     setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
                 )
             ),

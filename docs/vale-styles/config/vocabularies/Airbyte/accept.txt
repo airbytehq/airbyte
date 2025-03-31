@@ -27,6 +27,8 @@ Vale
 OpenTelemetry
 Datadog
 [Dd]eduplication
+MarkDownLint
+markdownlint-cli2
 
 # Common acronyms and initialisms that don't need definitions
 

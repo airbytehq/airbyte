@@ -32,6 +32,7 @@ class MockBasicFunctionalityIntegrationTest :
         supportFileTransfer = false,
         commitDataIncrementally = false,
         allTypesBehavior = Untyped,
+        integralNumbersAreConvertedToInt = true,
     ) {
     @Test
     override fun testBasicWrite() {
