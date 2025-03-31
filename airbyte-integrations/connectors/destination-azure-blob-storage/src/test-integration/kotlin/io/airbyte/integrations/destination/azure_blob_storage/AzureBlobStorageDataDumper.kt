@@ -21,7 +21,7 @@ class AzureBlobStorageDataDumper : DestinationDataDumper {
     override fun dumpFile(
         spec: ConfigurationSpecification,
         stream: DestinationStream
-    ): List<String> = getObjectStorageDataDumper(spec, stream).dumpFile()
+    ): Map<String, String> = getObjectStorageDataDumper(spec, stream).dumpFile()
 
     private fun getObjectStorageDataDumper(
         spec: ConfigurationSpecification,

@@ -54,8 +54,13 @@ class AzureBlobStorageConfiguration<T : OutputStream>(
     override val objectStoragePathConfiguration =
         ObjectStoragePathConfiguration(
             prefix = "",
-            pathPattern = null,
-            fileNamePattern = null,
+            // This is equivalent to the default,
+            // but is nicer for tests,
+            // and also matches user intuition more closely.
+            // The default puts the `<date>_<epoch>_` into the path format,
+            // which is (a) confusing, and (b) makes the file transfer tests more annoying.
+            pathPattern = "\${NAMESPACE}/\${STREAM_NAME}/",
+            fileNamePattern = "{date}_{timestamp}_{part_number}{format_extension}",
         )
 
     override val generationIdMetadataKey = GENERATION_ID_METADATA_KEY_OVERRIDE
