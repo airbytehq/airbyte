@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: aa0373c1-a7a6-48ff-8277-e5fe6cecff75
-  dockerImageTag: 3.0.0
+  dockerImageTag: 4.0.0
   dockerRepository: airbyte/source-track-pms
   githubIssueLabel: source-track-pms
   icon: icon.svg
@@ -36,6 +36,9 @@ data:
       3.0.0:
         message: "Removed redundant stream owners_statements_transactions_pii_redacted & folios_master_rules and the redundant _embedded from accounting_* streams. Updating schema and resycing data for these streams is needed."
         upgradeDeadline: "2025-03-28"
+      4.0.0:
+        message: "Add reservation rates field to reservations field, fix connector API stream links in the docs, lower retries."
+        upgradeDeadline: "2025-04-10"
   supportLevel: community
   connectorTestSuitesOptions:
     - suite: acceptanceTests
