@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.mssql.v2.config
 
-import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfiguration
-import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageConfigurationProvider
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
@@ -31,7 +31,7 @@ class MSSQLBulkLoadConfiguration(
 ) :
     ObjectStoragePathConfigurationProvider,
     ObjectStorageCompressionConfigurationProvider<ByteArrayOutputStream>,
-    AzureBlobStorageConfigurationProvider {
+    AzureBlobStorageClientConfigurationProvider {
 
     // Cast is guaranteed to succeed by the `Requires` guard.
     private val bulkLoadConfig =
@@ -47,11 +47,12 @@ class MSSQLBulkLoadConfiguration(
     override val objectStorageCompressionConfiguration:
         ObjectStorageCompressionConfiguration<ByteArrayOutputStream> =
         ObjectStorageCompressionConfiguration(NoopProcessor)
-    override val azureBlobStorageConfiguration: AzureBlobStorageConfiguration
+    override val azureBlobStorageClientConfiguration: AzureBlobStorageClientConfiguration
         get() =
-            AzureBlobStorageConfiguration(
+            AzureBlobStorageClientConfiguration(
                 accountName = bulkLoadConfig.accountName,
                 containerName = bulkLoadConfig.containerName,
                 sharedAccessSignature = bulkLoadConfig.sharedAccessSignature,
+                accountKey = bulkLoadConfig.accountKey,
             )
 }
