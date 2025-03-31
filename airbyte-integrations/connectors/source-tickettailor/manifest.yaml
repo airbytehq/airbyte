@@ -1,0 +1,1788 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: >-
+  The Airbyte connector for [TicketTailor](https://tickettailor.com) enables
+  seamless extraction of key event data, including details on events, products,
+  vouchers, discounts, check-ins, issued tickets, orders, and waitlists. This
+  integration allows businesses to analyze ticket sales, attendance, and
+  customer interactions, streamlining event management insights.
+
+check:
+  type: CheckStream
+  stream_names:
+    - products
+
+definitions:
+  streams:
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /products
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("links", {}).get("next",
+              "").split("starting_after=")[1].split("&")[0] }}
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: inc_timestamp
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at.gte
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at.lt
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - inc_timestamp
+              value: "{{ record['updated_at']['unix'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    boxoffice_overview:
+      type: DeclarativeStream
+      name: boxoffice_overview
+      primary_key:
+        - box_office_name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /overview
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/boxoffice_overview"
+    event_series:
+      type: DeclarativeStream
+      name: event_series
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /event_series
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("links", {}).get("next",
+              "").split("starting_after=")[1].split("&")[0] }}
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: inc_timestamp
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at.gte
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at.lt
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - inc_timestamp
+              value: "{{ record['next_occurrence_date']['unix'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/event_series"
+    event_series_events:
+      type: DeclarativeStream
+      name: event_series_events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /event_series/{{ stream_partition['event_series_id'] }}/events
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("links", {}).get("next",
+              "").split("starting_after=")[1].split("&")[0] }}
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: event_series_id
+              stream:
+                $ref: "#/definitions/streams/event_series"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: inc_timestamp
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at.gte
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at.lt
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - inc_timestamp
+              value: "{{ record['start']['unix'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/event_series_events"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /events
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("links", {}).get("next",
+              "").split("starting_after=")[1].split("&")[0] }}
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: inc_timestamp
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at.gte
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at.lt
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - inc_timestamp
+              value: "{{ record['start']['unix'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    discounts:
+      type: DeclarativeStream
+      name: discounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /discounts
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("links", {}).get("next",
+              "").split("starting_after=")[1].split("&")[0] }}
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: inc_timestamp
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at.gte
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at.lt
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - inc_timestamp
+              value: "{{ record['expires']['unix'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/discounts"
+    vouchers:
+      type: DeclarativeStream
+      name: vouchers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /vouchers
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("links", {}).get("next",
+              "").split("starting_after=")[1].split("&")[0] }}
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: inc_timestamp
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at.gte
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at.lt
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - inc_timestamp
+              value: "{{ record['expiry']['unix'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/vouchers"
+    voucher_codes:
+      type: DeclarativeStream
+      name: voucher_codes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: vouchers/{{ stream_partition['voucher_id'] }}/codes
+          http_method: GET
+          request_parameters:
+            limit: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: starting_after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("links", {}).get("next",
+              "").split("starting_after=")[1].split("&")[0] }}
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: voucher_id
+              stream:
+                $ref: "#/definitions/streams/vouchers"
+              incremental_dependency: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: inc_timestamp
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at.gte
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: updated_at.lt
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - inc_timestamp
+              value: "{{ record['expiry']['unix'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/voucher_codes"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.tickettailor.com/v1
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/boxoffice_overview"
+  - $ref: "#/definitions/streams/event_series"
+  - $ref: "#/definitions/streams/event_series_events"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/discounts"
+  - $ref: "#/definitions/streams/vouchers"
+  - $ref: "#/definitions/streams/voucher_codes"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your Ticket Tailor API key. You can find or generate this key in your
+          Ticket Tailor box office settings under the API section:
+          https://app.tickettailor.com/box-office/api.
+        name: api_key
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+      limit:
+        type: string
+        description: The pagination limit
+        title: Pagination Limit
+        default: "5"
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    products: true
+    boxoffice_overview: true
+    event_series: true
+    event_series_events: true
+    events: true
+    discounts: true
+    vouchers: true
+    voucher_codes: true
+  testedStreams:
+    products:
+      streamHash: 391a4e739c71847086fb7a63220d45f9424340fe
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    boxoffice_overview:
+      streamHash: 945fae1fc0887f8cd1bff5c446dd39f7f6de4bdf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    event_series:
+      streamHash: 36edc70dbf01b8870e03b7f4d2fc11bcf7bc9926
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    event_series_events:
+      streamHash: 39b88a60599ec4f6e3eabf54ce046108ee2537cd
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    events:
+      streamHash: b1ff8bfba5ccbf9612cb744943be123d62febd79
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    discounts:
+      streamHash: a9770e5fb1174808753052f9e8d44da16f1ed1b0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    vouchers:
+      streamHash: d2150902edf6d1241a56fb34616770a793a492b0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    voucher_codes:
+      streamHash: d39accdb66d9cd71ce3d37b33dfb3a8b382e551a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.tickettailor.com/docs/api/ticket-tailor-api/
+
+schemas:
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      booking_fee:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+          iso:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      fulfilment_type:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      inc_timestamp:
+        type: number
+      instructions:
+        type:
+          - string
+          - "null"
+      issued_count:
+        type:
+          - number
+          - "null"
+      linked_to_all_event_series:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      price:
+        type:
+          - number
+          - "null"
+      quantity:
+        type:
+          - number
+          - "null"
+      sell_in_store:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+          iso:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+    required:
+      - id
+      - inc_timestamp
+  boxoffice_overview:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      box_office_name:
+        type: string
+      currency:
+        type:
+          - object
+          - "null"
+        properties:
+          base_multiplier:
+            type:
+              - number
+              - "null"
+          code:
+            type:
+              - string
+              - "null"
+          symbol:
+            type:
+              - string
+              - "null"
+      event_occurrences_draft:
+        type:
+          - number
+          - "null"
+      event_occurrences_published:
+        type:
+          - number
+          - "null"
+      event_series_draft:
+        type:
+          - number
+          - "null"
+      event_series_published:
+        type:
+          - number
+          - "null"
+      period:
+        type:
+          - string
+          - "null"
+      revenue:
+        type:
+          - number
+          - "null"
+      total_issued_tickets:
+        type:
+          - number
+          - "null"
+      transaction_revenue:
+        type:
+          - number
+          - "null"
+    required:
+      - box_office_name
+  event_series:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bundles:
+        type:
+          - array
+          - "null"
+      call_to_action:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      default_ticket_groups:
+        type:
+          - array
+          - "null"
+      default_ticket_types:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            booking_fee:
+              type:
+                - number
+                - "null"
+            discounts:
+              type:
+                - array
+                - "null"
+            has_overrides:
+              type:
+                - string
+                - "null"
+            hide_when_sold_out:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            max_per_order:
+              type:
+                - number
+                - "null"
+            min_per_order:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            object:
+              type:
+                - string
+                - "null"
+            price:
+              type:
+                - number
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            quantity_held:
+              type:
+                - number
+                - "null"
+            quantity_in_baskets:
+              type:
+                - number
+                - "null"
+            quantity_issued:
+              type:
+                - number
+                - "null"
+            quantity_total:
+              type:
+                - number
+                - "null"
+            show_quantity_remaining:
+              type:
+                - string
+                - "null"
+            sort_order:
+              type:
+                - number
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+      id:
+        type: string
+      images:
+        type:
+          - object
+          - "null"
+        properties:
+          header:
+            type:
+              - string
+              - "null"
+          thumbnail:
+            type:
+              - string
+              - "null"
+      inc_timestamp:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      next_occurrence_date:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+          iso:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+      object:
+        type:
+          - string
+          - "null"
+      online_event:
+        type:
+          - string
+          - "null"
+      payment_methods:
+        type:
+          - array
+          - "null"
+      private:
+        type:
+          - string
+          - "null"
+      revenue:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      tickets_available_at_message:
+        type:
+          - string
+          - "null"
+      tickets_unavailable_at_message:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      total_issued_tickets:
+        type:
+          - number
+          - "null"
+      total_occurrences:
+        type:
+          - number
+          - "null"
+      upcoming_occurrences:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      venue:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+      voucher_ids:
+        type:
+          - array
+          - "null"
+      waitlist_active:
+        type:
+          - string
+          - "null"
+      waitlist_call_to_action:
+        type:
+          - string
+          - "null"
+      waitlist_confirmation_message:
+        type:
+          - string
+          - "null"
+      waitlist_event_page_text:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - inc_timestamp
+  event_series_events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bundles:
+        type:
+          - array
+          - "null"
+      chk:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      end:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+          iso:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+      event_series_id:
+        type:
+          - string
+          - "null"
+      hidden:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      inc_timestamp:
+        type: number
+      object:
+        type:
+          - string
+          - "null"
+      revenue:
+        type:
+          - number
+          - "null"
+      start:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+          iso:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+      ticket_groups:
+        type:
+          - array
+          - "null"
+      ticket_types:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            booking_fee:
+              type:
+                - number
+                - "null"
+            discounts:
+              type:
+                - array
+                - "null"
+            has_overrides:
+              type:
+                - string
+                - "null"
+            hide_when_sold_out:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            max_per_order:
+              type:
+                - number
+                - "null"
+            min_per_order:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            object:
+              type:
+                - string
+                - "null"
+            price:
+              type:
+                - number
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            quantity_held:
+              type:
+                - number
+                - "null"
+            quantity_in_baskets:
+              type:
+                - number
+                - "null"
+            quantity_issued:
+              type:
+                - number
+                - "null"
+            quantity_total:
+              type:
+                - number
+                - "null"
+            show_quantity_remaining:
+              type:
+                - string
+                - "null"
+            sort_order:
+              type:
+                - number
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+      tickets_available:
+        type:
+          - string
+          - "null"
+      total_issued_tickets:
+        type:
+          - number
+          - "null"
+      unavailable:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - inc_timestamp
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bundles:
+        type:
+          - array
+          - "null"
+      call_to_action:
+        type:
+          - string
+          - "null"
+      checkout_url:
+        type:
+          - string
+          - "null"
+      chk:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      end:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+          iso:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+      event_series_id:
+        type:
+          - string
+          - "null"
+      hidden:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      images:
+        type:
+          - object
+          - "null"
+        properties:
+          header:
+            type:
+              - string
+              - "null"
+          thumbnail:
+            type:
+              - string
+              - "null"
+      inc_timestamp:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      online_event:
+        type:
+          - string
+          - "null"
+      payment_methods:
+        type:
+          - array
+          - "null"
+      private:
+        type:
+          - string
+          - "null"
+      revenue:
+        type:
+          - number
+          - "null"
+      start:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+          iso:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      ticket_groups:
+        type:
+          - array
+          - "null"
+      ticket_types:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            booking_fee:
+              type:
+                - number
+                - "null"
+            discounts:
+              type:
+                - array
+                - "null"
+            has_overrides:
+              type:
+                - string
+                - "null"
+            hide_when_sold_out:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            max_per_order:
+              type:
+                - number
+                - "null"
+            min_per_order:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            object:
+              type:
+                - string
+                - "null"
+            price:
+              type:
+                - number
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            quantity_held:
+              type:
+                - number
+                - "null"
+            quantity_in_baskets:
+              type:
+                - number
+                - "null"
+            quantity_issued:
+              type:
+                - number
+                - "null"
+            quantity_total:
+              type:
+                - number
+                - "null"
+            show_quantity_remaining:
+              type:
+                - string
+                - "null"
+            sort_order:
+              type:
+                - number
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+      tickets_available:
+        type:
+          - string
+          - "null"
+      tickets_available_at_message:
+        type:
+          - string
+          - "null"
+      tickets_unavailable_at_message:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      total_holds:
+        type:
+          - number
+          - "null"
+      total_issued_tickets:
+        type:
+          - number
+          - "null"
+      total_orders:
+        type:
+          - number
+          - "null"
+      unavailable:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      venue:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+      voucher_ids:
+        type:
+          - array
+          - "null"
+      waitlist_active:
+        type:
+          - string
+          - "null"
+      waitlist_call_to_action:
+        type:
+          - string
+          - "null"
+      waitlist_confirmation_message:
+        type:
+          - string
+          - "null"
+      waitlist_event_page_text:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - inc_timestamp
+  discounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      booking_fee_percentage:
+        type:
+          - number
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      expires:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+          iso:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+      face_value_percentage:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      inc_timestamp:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      products:
+        type:
+          - array
+          - "null"
+      ticket_types:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - id
+      - inc_timestamp
+  vouchers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      available_codes:
+        type:
+          - number
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      event_series_ids:
+        type:
+          - array
+          - "null"
+      expiry:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+          iso:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+      id:
+        type: string
+      inc_timestamp:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - string
+          - "null"
+      partial_redemption:
+        type:
+          - string
+          - "null"
+      total_codes:
+        type:
+          - number
+          - "null"
+      usable_on_any_event:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - inc_timestamp
+  voucher_codes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      code:
+        type:
+          - string
+          - "null"
+      expiry:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - string
+              - "null"
+          formatted:
+            type:
+              - string
+              - "null"
+          iso:
+            type:
+              - string
+              - "null"
+          time:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+          unix:
+            type:
+              - number
+              - "null"
+      id:
+        type: string
+      inc_timestamp:
+        type: number
+      object:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+      voucher_id:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - inc_timestamp
