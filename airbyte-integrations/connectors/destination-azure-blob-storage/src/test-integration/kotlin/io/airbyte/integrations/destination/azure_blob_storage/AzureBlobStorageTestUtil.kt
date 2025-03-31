@@ -13,11 +13,20 @@ import java.nio.file.Path
 
 object AzureBlobStorageTestUtil {
     val configPath = Path.of("secrets/config.json")
+    val sasConfigPath = Path.of("secrets/config_sas.json")
 
-    fun getConfig(format: ObjectStorageFormatSpecification): String {
+    fun getAccountKeyConfig(format: ObjectStorageFormatSpecification): String {
+        return getConfig(configPath, format)
+    }
+
+    fun getSasConfig(format: ObjectStorageFormatSpecification): String {
+        return getConfig(sasConfigPath, format)
+    }
+
+    fun getConfig(path: Path, format: ObjectStorageFormatSpecification): String {
         // slightly annoying - we can't easily _edit_ AzureBlobStorageSpecification objects
         // so we just work on raw jsonnode here
-        val config = Jsons.readTree(Files.readString(configPath)) as ObjectNode
+        val config = Jsons.readTree(Files.readString(path)) as ObjectNode
         config.set<JsonNode>("format", Jsons.valueToTree(format))
         return Jsons.writeValueAsString(config)
     }
