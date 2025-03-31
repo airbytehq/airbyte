@@ -77,7 +77,7 @@ class ObjectStorageDataDumper(
     }
 
     fun dumpFile(): List<String> {
-        val prefix = pathFactory.getFinalDirectory(stream).toString()
+        val prefix = pathFactory.getLongestStreamConstantPrefix(stream).toString()
         return runBlocking {
             withContext(Dispatchers.IO) {
                 client
