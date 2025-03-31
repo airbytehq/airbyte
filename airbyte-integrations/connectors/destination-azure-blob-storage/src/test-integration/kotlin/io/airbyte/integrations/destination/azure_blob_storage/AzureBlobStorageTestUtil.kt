@@ -13,6 +13,7 @@ import java.nio.file.Path
 
 object AzureBlobStorageTestUtil {
     val configPath = Path.of("secrets/config.json")
+    val invalidConfig = Path.of("src/test-integration/resources/check/invalid-config.json")
     val sasConfigPath = Path.of("secrets/config_sas.json")
 
     fun getAccountKeyConfig(format: ObjectStorageFormatSpecification): String {
@@ -21,6 +22,10 @@ object AzureBlobStorageTestUtil {
 
     fun getSasConfig(format: ObjectStorageFormatSpecification): String {
         return getConfig(sasConfigPath, format)
+    }
+
+    fun getInvalidConfig(format: ObjectStorageFormatSpecification): String {
+        return getConfig(invalidConfig, format)
     }
 
     fun getConfig(path: Path, format: ObjectStorageFormatSpecification): String {
