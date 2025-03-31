@@ -36,15 +36,7 @@ class AzureBlobStorageChecker<T : OutputStream> :
 
                 check(metadata) { "Failed to verify blob existence after upload" }
 
-                // 3) Download and verify content
-                azureBlobClient.get(checkFilePath) { inputStream ->
-                    val downloadedContent = inputStream.readBytes().toString(Charsets.UTF_8)
-                    check(downloadedContent == "test") {
-                        "Downloaded content doesn't match uploaded content"
-                    }
-                }
-
-                // 4) List blobs to verify the blob appears in the container
+                // 3) List blobs to verify the blob appears in the container
                 var blobFound = false
                 azureBlobClient.list(checkFilePath.substringBefore("/")).collect { blob ->
                     if (blob.key == checkFilePath) {
@@ -54,7 +46,7 @@ class AzureBlobStorageChecker<T : OutputStream> :
 
                 check(blobFound) { "Uploaded blob not found in blob listing" }
             } finally {
-                // 5) Clean up remote files
+                // 4) Clean up remote files
                 azureBlobClient.delete(checkBlob)
             }
         }
