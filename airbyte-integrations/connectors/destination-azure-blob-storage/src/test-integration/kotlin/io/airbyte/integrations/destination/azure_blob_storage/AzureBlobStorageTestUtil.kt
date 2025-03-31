@@ -24,6 +24,10 @@ object AzureBlobStorageTestUtil {
         return getConfig(sasConfigPath, format)
     }
 
+    fun getInvalidConfig(format: ObjectStorageFormatSpecification): String {
+        return getConfig(invalidConfig, format)
+    }
+
     fun getConfig(path: Path, format: ObjectStorageFormatSpecification): String {
         // slightly annoying - we can't easily _edit_ AzureBlobStorageSpecification objects
         // so we just work on raw jsonnode here
