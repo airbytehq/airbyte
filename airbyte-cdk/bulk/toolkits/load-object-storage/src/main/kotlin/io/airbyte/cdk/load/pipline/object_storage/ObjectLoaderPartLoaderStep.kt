@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.pipline.object_storage
 
+import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.pipeline.LoadPipelineStep
@@ -16,14 +17,15 @@ import jakarta.inject.Singleton
 
 @Singleton
 @Requires(bean = ObjectLoader::class)
-class ObjectLoaderPartLoaderStep(
+class ObjectLoaderPartLoaderStep<T : RemoteObject<*>>(
     val loader: ObjectLoader,
-    val partLoader: ObjectLoaderPartLoader,
+    val partLoader: ObjectLoaderPartLoader<T>,
     @Named("objectLoaderPartQueue")
     val inputQueue:
         PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>,
     @Named("objectLoaderLoadedPartQueue")
-    val outputQueue: PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult>>,
+    val outputQueue:
+        PartitionedQueue<PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<T>>>,
     val taskFactory: LoadPipelineStepTaskFactory,
 ) : LoadPipelineStep {
     override val numWorkers: Int = loader.numUploadWorkers
@@ -32,7 +34,7 @@ class ObjectLoaderPartLoaderStep(
         return taskFactory.createIntermediateStep(
             partLoader,
             inputQueue,
-            ObjectLoaderLoadedPartPartitioner(),
+            outputPartitioner = ObjectLoaderLoadedPartPartitioner(),
             outputQueue,
             partition,
             numWorkers,

@@ -6,14 +6,15 @@ package io.airbyte.cdk.load.pipline.object_storage
 
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.OutputPartitioner
+import kotlin.random.Random
 
 /**
- * The technically correct partitioning is round-robin, but since we use
- * [io.airbyte.cdk.load.message.SinglePartitionQueueWithMultiPartitionBroadcast], the partition is
- * immaterial, so it's simpler just to return 0 here.
+ * Distribute the parts randomly across loaders. (Testing shows this is the most efficient pattern.)
  */
 class ObjectLoaderFormattedPartPartitioner<K : WithStream, T> :
     OutputPartitioner<K, T, ObjectKey, ObjectLoaderPartFormatter.FormattedPart> {
+    private val prng = Random(System.currentTimeMillis())
+
     override fun getOutputKey(
         inputKey: K,
         output: ObjectLoaderPartFormatter.FormattedPart
@@ -22,6 +23,6 @@ class ObjectLoaderFormattedPartPartitioner<K : WithStream, T> :
     }
 
     override fun getPart(outputKey: ObjectKey, numParts: Int): Int {
-        return 0
+        return prng.nextInt(numParts)
     }
 }

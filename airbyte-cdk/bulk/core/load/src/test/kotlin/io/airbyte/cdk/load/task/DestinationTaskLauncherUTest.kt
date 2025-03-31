@@ -7,8 +7,8 @@ package io.airbyte.cdk.load.task
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -50,6 +50,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
@@ -136,7 +137,8 @@ class DestinationTaskLauncherUTest {
             batchUpdateQueue,
             loadPipeline,
             partitioner,
-            updateBatchTaskFactory
+            updateBatchTaskFactory,
+            hasThrown = AtomicBoolean(false),
         )
     }
 
@@ -194,11 +196,11 @@ class DestinationTaskLauncherUTest {
         val descriptor = DestinationStream.Descriptor("namespace", "name")
         destinationTaskLauncher.handleNewBatch(
             descriptor,
-            BatchEnvelope(SimpleBatch(Batch.State.COMPLETE), null, descriptor)
+            BatchEnvelope(SimpleBatch(BatchState.COMPLETE), null, descriptor)
         )
         destinationTaskLauncher.handleNewBatch(
             descriptor,
-            BatchEnvelope(SimpleBatch(Batch.State.COMPLETE), null, descriptor)
+            BatchEnvelope(SimpleBatch(BatchState.COMPLETE), null, descriptor)
         )
         coVerify(exactly = 1) { closeStreamTaskFactory.make(any(), any()) }
     }
