@@ -9,6 +9,6 @@ import io.airbyte.cdk.load.check.CheckTestConfig
 
 class AzureBlobStorageCheckTest :
     CheckIntegrationTest<AzureBlobStorageSpecification>(
-        successConfigFilenames = listOf(CheckTestConfig(AzureBlobStorageTestUtil.getConfig())),
+        successConfigFilenames = listOf(CheckTestConfig(AzureBlobStorageTestUtil.configPath)),
         failConfigFilenamesAndFailureReasons = emptyMap(),
     )
