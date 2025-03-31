@@ -774,7 +774,7 @@ def test_get_all_sites(search_result, expected_sites, raises_exception):
     # Mock methods out of scope of this test
     with (
         patch("source_microsoft_sharepoint.stream_reader.get_site_prefix") as mock_get_site_prefix,
-        patch.object(reader, "get_client_context") as mock_get_client_context,
+        patch.object(reader, "_get_client_context") as mock_get_client_context,
         patch("source_microsoft_sharepoint.stream_reader.SearchService") as mock_search_service,
         patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query,
     ):

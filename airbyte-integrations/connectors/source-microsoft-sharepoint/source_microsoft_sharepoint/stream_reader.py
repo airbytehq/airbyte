@@ -145,9 +145,13 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         """
         return self.auth_client.get_token_response_object_wrapper(tenant_prefix=tenant_prefix)
 
-    def get_client_context(self):
-        site_url, root_site_prefix = get_site_prefix(self.one_drive_client)
-        client_context = ClientContext(site_url).with_access_token(self.get_token_response_object(tenant_prefix=root_site_prefix))
+    def _get_client_context(self, site_url: str, root_site_prefix: str) -> ClientContext:
+        """ "
+        Creates a ClientContext for the specified SharePoint site URL.
+        """
+        client_context = ClientContext(site_url).with_access_token(
+            token_func=self.get_token_response_object(tenant_prefix=root_site_prefix)
+        )
         return client_context
 
     @config.setter
@@ -256,8 +260,8 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         Returns:
             List[MutableMapping[str, Any]]: A list of site information.
         """
-        _, root_site_prefix = get_site_prefix(self.one_drive_client)
-        ctx = self.get_client_context()
+        site_url, root_site_prefix = get_site_prefix(self.one_drive_client)
+        ctx = self._get_client_context(site_url, root_site_prefix)
         search_service = SearchService(ctx)
         # ignore default OneDrive site with NOT Path:https://prefix-my.sharepoint.com
         search_job = search_service.post_query(f"contentclass:STS_Site NOT Path:https://{root_site_prefix}-my.sharepoint.com")
