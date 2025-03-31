@@ -1465,7 +1465,7 @@ class Campaigns(ClientSideIncrementalStream):
                 yield from self.record_unnester.unnest([{**row, **record}])
 
 
-class ContactLists(IncrementalStream):
+class ContactLists(ClientSideIncrementalStream):
     """Contact lists, API v3
     Docs: https://developers.hubspot.com/docs/reference/api/crm/lists#post-%2Fcrm%2Fv3%2Flists%2Fsearch
     """
@@ -1482,6 +1482,7 @@ class ContactLists(IncrementalStream):
     primary_key = "listId"
     need_chunk = False
     scopes = {"crm.lists.read"}
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
 
     def read_records(
         self,
@@ -1495,6 +1496,25 @@ class ContactLists(IncrementalStream):
             if record["objectTypeId"] == "0-1":
                 yield record
 
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        default_params = {self.limit_field: self.limit}
+        params = {**default_params}
+        if next_page_token:
+            params.update(next_page_token)
+        return params
+    
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        return
 
 # class ContactsAllBase(ClientSideIncrementalStream):
 class ContactsAllBase(Stream):
@@ -1572,6 +1592,7 @@ class ContactsListMemberships(ContactsAllBase, ClientSideIncrementalStream):
     record id is used to retrieve the list memberships using v3.
 
     Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts
+
           https://developers.hubspot.com/docs/reference/api/crm/lists#get-%2Fcrm%2Fv3%2Flists%2Frecords%2F%7Bobjecttypeid%7D%2F%7Brecordid%7D%2Fmemberships
     """
 
@@ -1582,27 +1603,20 @@ class ContactsListMemberships(ContactsAllBase, ClientSideIncrementalStream):
     @property
     def updated_at_field(self) -> str:
         """Name of the field associated with the state"""
-        return "timestamp"
+        return "lastAddedTimestamp"
 
     @property
     def cursor_field_datetime_format(self) -> str:
         """Cursor value expected to be a timestamp in milliseconds"""
-        return "x"
+        return "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
 
     def _transform(self, records: Iterable) -> Iterable:
         for record in records:
             record_id = record.get(self.primary_key)
-            request, response = self._http_client.send_request(
-                http_method="GET",
-                url=f"https://api.hubapi.com/crm/v3/lists/records/0-1/{record_id}/memberships",
-                request_kwargs=None,
-                dedupe_query_params=True,
-                log_formatter=self.get_log_formatter(),
-                exit_on_rate_limit=self.exit_on_rate_limit,
-            )
-            list_memberships = response.json().get("results", [])
+            data, response = self._api.get(f"/crm/v3/lists/records/0-1/{record_id}/memberships")
+            list_memberships = data.get("results", [])
             record["list-memberships"] = list_memberships
-        yield from super()._transform(records)
+            yield from super()._transform([record])
 
 
 class ContactsFormSubmissions(ContactsAllBase, ResumableFullRefreshMixin, ABC):
