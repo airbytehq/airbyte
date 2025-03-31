@@ -27,7 +27,7 @@ source-github = "source_github.run:run"
 requests-mock = "^1.9.3"
 freezegun = "^1.2"
 pytest-mock = "^3.6.1"
-pytest = "^6.2"
+pytest = "^8.0.0"
 responses = "^0.23.1"
 
 

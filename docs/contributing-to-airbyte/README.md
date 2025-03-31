@@ -5,27 +5,29 @@ description: "We love contributions to Airbyte, big or small."
 # Contributing to Airbyte
 
 Thank you for your interest in contributing! Contributions are very welcome.
-We appreciate first time contributors and we are happy help you get started. Join our [community Slack](https://slack.airbyte.io) and feel free to reach out with questions!
+We appreciate first time contributors and we are happy help you get started. Join our [community Slack](https://slack.airbyte.io) and feel free to reach out with questions in [`#dev-and-contribuions` channel](https://airbytehq.slack.com/archives/C054V9JFTC6).
 
 Everyone interacting in Slack, codebases, mailing lists, events, or any other Airbyte activities is expected to follow the [Code of Conduct](../community/code-of-conduct.md). Please review it before getting started.
 
 ## Code Contributions
 
-Most of the issues that are open for contributions are tagged with [`good first issue`]( https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3A%22good%20first%20issue%22 ) or [`help-welcome`](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Ahelp-welcome).
-If you see an issue that isn't tagged that you're interested in, post a comment with your approach, and we'd be happy to assign it to you.
-
+Most of the issues that are open for contributions are tagged with [`good first issue`](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3A%22good%20first%20issue%22) or [`help-welcome`](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Ahelp-welcome).
+If you see an issue that isn't tagged that you're interested in, post a comment with your approach, and we'd be happy to assign it to you. If you submit a fix isn't linked to an issue you're assigned there is chance it won't be accepted. You can ping `@marcosmarxm` who is responsible for Community Code Contributions.
 
 #### Here are the areas that we love seeing contributions to:
 
 - Bug fixes, features, and enhancements to existing API source connectors.
-- New API sources built with the low-code CDK or Connector Builder.
-- Migrating existing sources from Python to the low-code CDK.
+- New API sources built with the Connector Builder.
+- New streams and features for existing connectors in Connector Builder: error backoff, pagination, incremental syncs, etc.
+- Migrating existing sources from Python to the Connector Builder.
 - Bug fixes, features, and enhancements to the following database sources: Postgres, MySQL, MSSQL.
 - Bug fixes to the following destinations: BigQuery, Snowflake, Redshift, S3, and Postgres.
 - Helm Charts features, bug fixes, and other platform bug fixes.
 
+Please be aware that contributions to Airbyte Connectors may take some time to review, as they can affect many users. We appreciate your patience and encourage you to include as much information as possible to assist reviewers. Please add examples, use cases, documentation links, and more.
+
 :::warning
-Airbyte is undergoing a major revamp of the shared core Java destinations codebase, with plans to release a new CDK in 2024.
+Airbyte is undergoing a major revamp of the shared core Java destinations codebase, with plans to release a new CDK in April 2025.
 We are actively working on improving usability, speed (through asynchronous loading), and implementing [Typing and Deduplication](/using-airbyte/core-concepts/typing-deduping) (Destinations V2).
 We're not actively reviewing/accepting new Java connectors for now.
 :::
@@ -44,6 +46,13 @@ We're not actively reviewing/accepting new Java connectors for now.
 10. Review and respond to feedback and questions by Airbyte maintainers.
 11. Merge the contribution.
 
+You can check the status of your contribution in this [Github Project](https://github.com/orgs/airbytehq/projects/108/views/4). It will provide you what Sprint your contribution was assigned and when you can expect a review.
+
+:::warning
+Do not submit a pull request using the master branch from your forked repository.
+The team will not be able to run integration tests and your pull request will be closed.
+:::
+
 Guidelines to common code contributions:
 
 - [Contribute a code change to an existing connector](change-cdk-connector.md)
@@ -52,7 +61,6 @@ Guidelines to common code contributions:
 ## Documentation
 
 We welcome pull requests that fix typos or enhance the grammar and structure of our documentation! Check the [Updating Documentation](writing-docs.md) guide for details on submitting documentation changes.
-
 
 The following highlights from the [Google developer documentation style guide](https://developers.google.com/style) are helpful for new writers:
 

@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import java.io.InputStream
+import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -79,6 +80,16 @@ class AzureBlobClient(
         // The Azure SDK has "metadata" as a Map<String,String>.
         // If the blob doesn't exist, this can throw.
         return props?.metadata ?: emptyMap()
+    }
+
+    suspend fun getProperties(key: String): OffsetDateTime? {
+        val blobClient =
+            serviceClient.getBlobContainerClient(blobConfig.containerName).getBlobClient(key)
+
+        val props = blobClient.properties
+        // The Azure SDK has "metadata" as a Map<String,String>.
+        // If the blob doesn't exist, this can throw.
+        return props?.creationTime
     }
 
     /** Upload a small byte array in a single shot. */

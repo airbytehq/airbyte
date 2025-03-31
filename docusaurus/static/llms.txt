@@ -1,0 +1,100 @@
+# docs.airbyte.com llms.txt
+
+> Airbyte is an open source platform designed for building and managing data pipelines, offering extensive connector options to facilitate data movement from various sources to destinations efficiently and effectively.
+
+- [Airbyte CDK Development Concepts](https://docs.airbyte.com/connector-development/cdk-python/basic-concepts): To explain the fundamental concepts of developing connectors using the Airbyte CDK in Python.
+- [External Database Configuration](https://docs.airbyte.com/deploying-airbyte/integrations/database): Guide for configuring external databases with Airbyte for better reliability and backups.
+- [Using OAuth in Airbyte](https://docs.airbyte.com/using-airbyte/oauth): Guide on using OAuth for Airbyte connectors.
+- [Testing Airbyte Connectors](https://docs.airbyte.com/connector-development/testing-connectors/): Guide for testing Airbyte connectors through various testing suites and CI pipeline procedures.
+- [Airbyte Enterprise Setup](https://docs.airbyte.com/enterprise-setup/): Provide information on deploying and managing Airbyte Self-Managed Enterprise for organizations.
+- [Airbyte API Documentation](https://docs.airbyte.com/api-documentation): Documenting the Airbyte API for developers to programmatically interact with Airbyte products.
+- [Airbyte GCP Installation Guide](https://docs.airbyte.com/deploying-airbyte/infrastructure/gcp): Guide for installing Airbyte on Google Cloud Platform with necessary service account permissions.
+- [Airbyte Sync Modes Overview](https://docs.airbyte.com/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped): Describes Airbyte's full refresh sync modes, specifically Overwrite and Deduped, for data synchronization.
+- [Airbyte Connector Tutorial](https://docs.airbyte.com/connector-development/connector-builder-ui/tutorial): Guide to creating an Airbyte connector for the Exchange Rates API using the connector builder UI.
+- [Airbyte Deployment Guide](https://docs.airbyte.com/deploying-airbyte/): Guide for deploying Airbyte on various platforms, including Kubernetes and local machines, using Helm charts.
+- [Airbyte Terraform Documentation](https://docs.airbyte.com/terraform-documentation): To provide documentation for using Airbyte's Terraform provider for automation and version control of configurations.
+- [Configuring API Access](https://docs.airbyte.com/using-airbyte/configuring-api-access): Guide for configuring API access for Airbyte applications.
+- [Okta SSO Setup Guide](https://docs.airbyte.com/access-management/sso-providers/okta): Instructions for setting up Single Sign-On (SSO) with Okta for Airbyte.
+- [Browsing Output Logs](https://docs.airbyte.com/operator-guides/browsing-output-logs): This page guides users on how to browse and manage Airbyte output logs for troubleshooting and analysis.
+- [Airbyte Enterprise Deployment Guide](https://docs.airbyte.com/enterprise-setup/implementation-guide): Guide for deploying Airbyte Self-Managed Enterprise using Kubernetes.
+- [Connector Development Guidelines](https://docs.airbyte.com/connector-development/config-based/advanced-topics): Explains advanced topics for developing connectors using Airbyte's configuration-based framework.
+- [Contribute New Connector](https://docs.airbyte.com/contributing-to-airbyte/submit-new-connector): Guide for contributing new API connectors to Airbyte's Connector Builder.
+- [Kubernetes Secrets Setup](https://docs.airbyte.com/deploying-airbyte/creating-secrets): Guidance on setting up Kubernetes Secrets for deploying Airbyte securely.
+- [Airbyte Security Practices](https://docs.airbyte.com/operating-airbyte/security): This page outlines Airbyte's security practices and guidelines for ensuring data safety during transfer and storage.
+- [Email Protection Information](https://docs.airbyte.com/cdn-cgi/l/email-protection): Inform users about email protection measures and encourage Cloudflare signup for similar services.
+- [Airbyte Data Sources](https://docs.airbyte.com/integrations/sources/): Information on data sources for integration with Airbyte.
+- [Configuring Airbyte Connections](https://docs.airbyte.com/cloud/managing-airbyte-cloud/configuring-connections): Guide for configuring data connection settings in Airbyte Cloud.
+- [Secret Management Guide](https://docs.airbyte.com/deploying-airbyte/integrations/secrets): Guide for managing sensitive secrets in Airbyte integrations using external secret managers.
+- [Airbyte Release Notes](https://docs.airbyte.com/category/release-notes): To provide the release notes and updates for different versions of the Airbyte platform.
+- [Connector Builder Compatibility](https://docs.airbyte.com/connector-development/connector-builder-ui/connector-builder-compatibility): Guides users to determine if the Connector Builder is suitable for their API integration needs.
+- [Airbyte Deployment Troubleshooting](https://docs.airbyte.com/deploying-airbyte/troubleshoot-deploy): This guide assists users in troubleshooting deployment issues with Airbyte using the abctl tool.
+- [Airbyte Schema Reference](https://docs.airbyte.com/connector-development/schema-reference): Guide for creating static schemas in Airbyte connectors using Python or Java.
+- [Airbyte Upgrade Instructions](https://docs.airbyte.com/operator-guides/upgrading-airbyte): Guide for upgrading the self-managed version of Airbyte, including instructions for Kubernetes and abctl.
+- [Contributing to Airbyte](https://docs.airbyte.com/contributing-to-airbyte/): Encouraging community contributions to the Airbyte project through code, documentation, and community engagement.
+- [Schema Change Management](https://docs.airbyte.com/using-airbyte/schema-change-management): Guide on managing schema changes in Airbyte for accurate and efficient data synchronization.
+- [Configuring Airbyte Schemas](https://docs.airbyte.com/using-airbyte/configuring-schema): This page explains how to configure schemas in Airbyte, including stream selection and field management.
+- [Airbyte Connector Support Levels](https://docs.airbyte.com/integrations/connector-support-levels): This page outlines the support levels and maintenance responsibilities for different types of Airbyte connectors.
+- [Connector Development UX Handbook](https://docs.airbyte.com/connector-development/ux-handbook): Guide developers in making UX decisions for building connectors effectively.
+- [Airbyte Documentation](https://docs.airbyte.com): To provide documentation and resources for using Airbyte's data movement infrastructure.
+- [Airbyte Workday Connector](https://docs.airbyte.com/integrations/enterprise-connectors/source-workday): Details features and setup instructions for the Airbyte Workday enterprise connector.
+- [Airbyte Monitoring Guide](https://docs.airbyte.com/operator-guides/collecting-metrics): Guide on monitoring metrics and logging for Airbyte instances.
+- [Airbyte Overview](https://docs.airbyte.com/using-airbyte/getting-started/): Introduction to Airbyte and its various data integration product offerings.
+- [Airbyte Architecture Overview](https://docs.airbyte.com/understanding-airbyte/high-level-view): Describes the architecture and components of the Airbyte data movement platform.
+- [Migrating Airbyte Instructions](https://docs.airbyte.com/deploying-airbyte/migrating-from-docker-compose): Guide for migrating Airbyte from Docker Compose.
+- [dbt Cloud Integration Guide](https://docs.airbyte.com/cloud/managing-airbyte-cloud/dbt-cloud-integration): Guide on integrating dbt Cloud with Airbyte Cloud for data transformation.
+- [API Access Configuration](https://docs.airbyte.com/enterprise-setup/api-access-config): Guide for configuring API access in Airbyte Self-Managed Enterprise deployments.
+- [Custom Connectors Guide](https://docs.airbyte.com/integrations/custom-connectors): Guide for creating and managing custom connectors in Airbyte.
+- [Custom Python Connector Tutorial](https://docs.airbyte.com/connector-development/tutorials/custom-python-connector/getting-started): Guide for creating a custom Python connector for Airbyte using the Survey Monkey API.
+- [Manage Connection State](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-connection-state): Guide on managing and editing the connection state in Airbyte for incremental syncs.
+- [Deploying Airbyte on AWS](https://docs.airbyte.com/deploying-airbyte/infrastructure/aws): This page outlines methods to deploy Airbyte using Amazon Web Services, including necessary permissions and policies.
+- [Java Destination Development](https://docs.airbyte.com/connector-development/tutorials/building-a-java-destination): Guide for developing a Java destination connector for Airbyte.
+- [Airbyte Refresh Sync Guide](https://docs.airbyte.com/operator-guides/refreshes): Explains Airbyte's Refresh Sync features and options for data synchronization.
+- [Code of Conduct](https://docs.airbyte.com/community/code-of-conduct): Establishes guidelines for maintaining a respectful and inclusive community within the Airbyte project.
+- [Connector Development Guide](https://docs.airbyte.com/connector-development/): Guide for developing custom connectors using Airbyte tools and best practices.
+- [Deploying Airbyte on Azure](https://docs.airbyte.com/deploying-airbyte/infrastructure/azure): Guidance on deploying Airbyte on Microsoft Azure infrastructure.
+- [Connector Specification Reference](https://docs.airbyte.com/connector-development/connector-specification-reference): Details specifications and guidelines for developing and configuring Airbyte connectors using JSON schema.
+- [Connector Development Best Practices](https://docs.airbyte.com/connector-development/best-practices): To outline best practices for developing high-quality Airbyte connectors.
+- [Sync Scheduling Options](https://docs.airbyte.com/using-airbyte/core-concepts/sync-schedules): Explains syncing schedules for data connections in Airbyte, including scheduled, cron, and manual options.
+- [Managing Connector Updates](https://docs.airbyte.com/managing-airbyte/connector-updates): Guide for managing connector updates in Airbyte to ensure functionality and compatibility.
+- [Upgrade to Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2): Guide for upgrading to Airbyte's Destinations V2 data processing format.
+- [Configuring Connector Resources](https://docs.airbyte.com/operator-guides/configuring-connector-resources): Guide on configuring resource requirements for Airbyte connector jobs, particularly Sync jobs.
+- [Airbyte Support Guide](https://docs.airbyte.com/operator-guides/contact-support/): Guide for obtaining support for Airbyte Cloud and Open Source services.
+- [Add a Source Guide](https://docs.airbyte.com/using-airbyte/getting-started/add-a-source): Guide for setting up a data source in Airbyte.
+- [Single Sign-On Setup](https://docs.airbyte.com/access-management/sso): Guide for setting up Single Sign-On (SSO) with Airbyte using various Identity Providers.
+- [Airbyte Protocol Overview](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol): This page details the Airbyte Protocol, including its components and interactions for ELT pipelines using JSON messages.
+- [Connection Timeline Review](https://docs.airbyte.com/cloud/managing-airbyte-cloud/review-connection-timeline): To guide users in reviewing connection event histories and statuses in Airbyte Cloud.
+- [Managing Data Residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-data-residency): Guide on managing data residency settings in Airbyte Cloud for compliance with data localization requirements.
+- [Set Up a Connection](https://docs.airbyte.com/using-airbyte/getting-started/set-up-a-connection): Guide for setting up a data connection using Airbyte.
+- [Data Mappings in Airbyte](https://docs.airbyte.com/using-airbyte/mappings): Explains how to set up and manage data mappings in Airbyte for improved data handling and security.
+- [Airbyte Python CDK Guide](https://docs.airbyte.com/connector-development/cdk-python/): Guide for developing Airbyte connectors using the Python Connector Development Kit.
+- [Scaling Airbyte Deployments](https://docs.airbyte.com/enterprise-setup/scaling-airbyte): Guide for scaling and optimizing Airbyte deployments in enterprise environments.
+- [Configuring Airbyte](https://docs.airbyte.com/operator-guides/configuring-airbyte): Guide to configuring various options for Airbyte deployments on Kubernetes.
+- [Low-Code Connector Development](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview): Details Airbyte's low-code framework for building REST API source connectors quickly and efficiently.
+- [Azure Entra ID SSO Setup](https://docs.airbyte.com/access-management/sso-providers/azure-entra-id): Instructions for setting up Single Sign-On with Airbyte using Microsoft Entra ID.
+- [Connector Metadata Overview](https://docs.airbyte.com/connector-development/connector-metadata-file): Explains the structure and functionality of the connector metadata.yaml file for Airbyte.
+- [Connection Status Monitoring](https://docs.airbyte.com/cloud/managing-airbyte-cloud/review-connection-status): Guide users on how to review and monitor the connection status in Airbyte Cloud.
+- [Airbyte Upgrade Instructions](https://docs.airbyte.com/enterprise-setup/upgrading-from-community): Guidelines for upgrading from Airbyte Self-Managed Community to Self-Managed Enterprise.
+- [Airbyte Sync Modes](https://docs.airbyte.com/using-airbyte/core-concepts/sync-modes/): Explains various sync modes in Airbyte for managing data transfer between sources and destinations.
+- [Data Destinations Overview](https://docs.airbyte.com/integrations/destinations/): This webpage details various destinations for loading ingested data in the Airbyte platform.
+- [Typing and Deduping](https://docs.airbyte.com/using-airbyte/core-concepts/typing-deduping): Explains Typing and Deduping features in Airbyte's Destinations V2 for managing data in data warehouses.
+- [Airbyte Authentication Configuration](https://docs.airbyte.com/deploying-airbyte/integrations/authentication): To guide users in configuring authentication for Airbyte deployments, including managing passwords and cookie security settings.
+- [Getting Airbyte Support](https://docs.airbyte.com/community/getting-support): Guide users on how to get support for Airbyte products through various channels.
+- [Airbyte Core Concepts](https://docs.airbyte.com/using-airbyte/core-concepts/): Explains core concepts of data pipelines in Airbyte for data replication and management.
+- [Clearing Data in Airbyte](https://docs.airbyte.com/operator-guides/clear): Guide on clearing data in Airbyte and the associated functionality.
+- [Airbyte Ingress Configuration](https://docs.airbyte.com/deploying-airbyte/integrations/ingress): Guidance on configuring ingress for Airbyte deployments using NGINX or AWS Application Load Balancer.
+- [Connector Builder Overview](https://docs.airbyte.com/connector-development/connector-builder-ui/overview): Guides users in developing and contributing data connectors using the no-code Connector Builder tool in Airbyte.
+- [Airbyte Connector Catalog](https://docs.airbyte.com/integrations/): Showcases Airbyte's connector catalog, detailing sources and destinations for data integration.
+- [Installing Airbyte on EC2](https://docs.airbyte.com/deploying-airbyte/abctl-ec2): Guide for installing Airbyte on EC2 using abctl.
+- [Connector Documentation Guide](https://docs.airbyte.com/connector-development/writing-connector-docs): Guide for writing documentation for Airbyte connectors with custom features and QA checks.
+- [Faker Source Connector](https://docs.airbyte.com/integrations/sources/faker): Describes the Faker source connector used for generating sample data in Airbyte.
+- [Telemetry Information](https://docs.airbyte.com/operator-guides/telemetry): Inform users about telemetry data collection in Airbyte and provide options for consent and opt-out.
+- [Add a Destination](https://docs.airbyte.com/using-airbyte/getting-started/add-a-destination): Guide for setting up data destinations in Airbyte.
+- [Airbyte Resumability Feature](https://docs.airbyte.com/understanding-airbyte/resumability): Explains the resumability feature in Airbyte for handling sync issues during data refresh operations.
+- [Enterprise Connectors Overview](https://docs.airbyte.com/integrations/enterprise-connectors/): Describe premium enterprise connectors for Airbyte customers with enhanced features and support.
+- [Airbyte Storage Configuration](https://docs.airbyte.com/deploying-airbyte/integrations/storage): Guides users on configuring external storage solutions for Airbyte data management.
+- [Airbyte Data Types](https://docs.airbyte.com/understanding-airbyte/supported-data-types/): Explains Airbyte's supported data types and how they conform to the Airbyte type system using JSON schemas.
+- [Getting Started with PyAirbyte](https://docs.airbyte.com/using-airbyte/pyairbyte/getting-started): Guide for setting up and using PyAirbyte for Python developers.
+- [Airbyte Namespaces Overview](https://docs.airbyte.com/using-airbyte/core-concepts/namespaces): Explains the concept and usage of namespaces in Airbyte for organizing and managing data replication.
+- [Airbyte Licensing Information](https://docs.airbyte.com/developer-guides/licenses/): Clarifies licensing rules for Airbyte software and provides guidance on compliance.
+- [Role Based Access Control](https://docs.airbyte.com/access-management/rbac): Explains Role Based Access Control (RBAC) in Airbyte for managing user permissions across Organizations and Workspaces.
+- [Airbyte Quickstart Guide](https://docs.airbyte.com/using-airbyte/getting-started/oss-quickstart): Guide for deploying Airbyte Self-Managed Community locally.

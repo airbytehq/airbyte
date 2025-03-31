@@ -48,6 +48,14 @@ definitions:
         action: FAIL
         error_message: "{{ response.details }}"
 
+  report_polling_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    response_filters:
+      - http_codes: [401]
+        action: RETRY
+        error_message: "Unauthorized error while report status checking. Known error. Please, retry the request or restart sync."
+
   oauth_authenticator:
     type: OAuthAuthenticator
     refresh_request_body: {}
@@ -135,11 +143,13 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/portfolios/extended
-          http_method: GET
+          path: portfolios/list
+          http_method: POST
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_partition['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+          request_body_json:
+            includeExtendedDataFields: "true"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -151,9 +161,43 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - portfolios
+          schema_normalization: Default
         paginator:
-          type: NoPagination
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: nextToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("nextToken", {}) }}'
+            stop_condition: '{{ not response.get("nextToken", {}) }}'
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - creationDate
+              value: "{{ (format_datetime(record['extendedData']['creationDateTime'], '%s') | int * 1000) + (format_datetime(record['extendedData']['creationDateTime'], '%f')[:3] | int) }}"
+        - type: AddFields
+          fields:
+            - path:
+                - lastUpdatedDate
+              value: "{{ (format_datetime(record['extendedData']['lastUpdateDateTime'], '%s') | int * 1000) + (format_datetime(record['extendedData']['lastUpdateDateTime'], '%f')[:3] | int) }}"
+        - type: AddFields
+          fields:
+            - path:
+                - servingStatus
+              value: "{{ record['extendedData']['servingStatus'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - statusReasons
+              value: "{{ record['extendedData']['statusReasons'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - extendedData
 
     sponsored_display_campaigns:
       type: DeclarativeStream
@@ -2161,6 +2205,8 @@ definitions:
       request_headers:
         Amazon-Advertising-API-Scope: "{{ stream_slice['create_job_response'].request.headers['Amazon-Advertising-API-Scope'] }}"
         Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+      error_handler:
+        $ref: "#/definitions/report_polling_error_handler"
 
     download_requester:
       type: HttpRequester

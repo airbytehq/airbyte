@@ -22,7 +22,7 @@ from .utils import get_url_to_mock, read_incremental, setup_response
 
 logger = logging.getLogger("airbyte")
 
-MIXPANEL_BASE_URL = "https://mixpanel.com/api/2.0/"
+MIXPANEL_BASE_URL = "https://mixpanel.com/api/query/"
 
 
 @pytest.fixture
@@ -51,7 +51,7 @@ def time_sleep_mock(mocker):
 def test_url_base(patch_base_class, config):
     stream = MixpanelStream(authenticator=MagicMock(), **config)
 
-    assert stream.url_base == "https://mixpanel.com/api/2.0/"
+    assert stream.url_base == "https://mixpanel.com/api/query/"
 
 
 def test_request_headers(patch_base_class, config):
@@ -580,7 +580,7 @@ def annotations_response():
 
 def test_annotations_stream(requests_mock, annotations_response, config_raw):
     stream = init_stream("annotations", config=config_raw)
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/annotations", annotations_response)
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/annotations", annotations_response)
 
     stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-25", "end_time": "2021-07-25"})
     # read records for single slice
@@ -609,7 +609,7 @@ def revenue_response():
 
 def test_revenue_stream(requests_mock, revenue_response, config_raw):
     stream = init_stream("revenue", config=config_raw)
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/revenue", revenue_response)
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/revenue", revenue_response)
     stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-25", "end_time": "2021-07-25"})
     # read records for single slice
     records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
@@ -640,7 +640,7 @@ def test_export_schema(requests_mock, export_schema_response, config):
 
 
 def test_export_get_json_schema(requests_mock, export_schema_response, config):
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", export_schema_response)
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", export_schema_response)
 
     stream = Export(authenticator=MagicMock(), **config)
     schema = stream.get_json_schema()
@@ -737,3 +737,63 @@ def test_export_iter_dicts(config):
     assert list(stream.iter_dicts([record_string, record_string[:2], record_string[2:], record_string])) == [record, record, record]
     # drop record parts because they are not standing nearby
     assert list(stream.iter_dicts([record_string, record_string[:2], record_string, record_string[2:]])) == [record, record]
+
+
+def test_export_stream_lookback_window(requests_mock, export_response, config_raw, mocker):
+    """Test that export_lookback_window correctly adjusts the start date during incremental sync and verifies slice parameters"""
+    config_raw["export_lookback_window"] = 7200  # 1 hour lookback
+    config_raw["start_date"] = "2021-06-01T00:00:00Z"
+    config_raw["end_date"] = "2021-07-10T00:00:00Z"
+
+    stream = init_stream("export", config=config_raw)
+
+    # Mock get_json_schema to avoid actual schema fetching
+    mocker.patch.object(
+        Export,
+        "get_json_schema",
+        return_value={
+            "type": "object",
+            "properties": {
+                "event": {"type": "string"},
+                "time": {"type": "string"},
+                "distinct_id": {"type": "string"},
+                "insert_id": {"type": "string"},
+            },
+        },
+    )
+
+    # Mock response with two records at different times in JSONL format
+    export_response_multiple = (
+        b'{"event": "Viewed Page", "properties": {"time": 1623860880, "distinct_id": "user1", "$insert_id": "insert1"}}\n'
+        b'{"event": "Clicked Button", "properties": {"time": 1623864480, "distinct_id": "user2", "$insert_id": "insert2"}}'
+    )
+
+    requests_mock.register_uri(
+        "GET",
+        get_url_to_mock(stream),
+        content=export_response_multiple,  # Use content directly for bytes
+        status_code=200,
+    )
+
+    # State with a timestamp 1 hour ago from the latest record
+    stream_state = {"time": "2021-06-16T16:28:00Z"}
+    stream_slices = list(stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=stream_state))
+    assert len(stream_slices) > 0  # Ensure we have at least one slice
+    stream_slice = stream_slices[0]
+
+    # Verify slice parameters
+    expected_start = pendulum.parse("2021-06-16T14:28:00Z")  # 16:28:00 - 2 hours due to lookback
+    expected_end = pendulum.parse("2021-07-10T00:00:00Z")  # From config end_date
+
+    # Note: start_date might differ due to date_window_size slicing, adjust if needed
+    assert pendulum.parse(stream_slice["start_date"]) == pendulum.parse("2021-06-11T00:00:00Z")  # Adjusted by attribution_window
+    assert pendulum.parse(stream_slice["end_date"]) == expected_end
+    assert pendulum.parse(stream_slice["time"]) == expected_start
+
+    # Read records and verify both are included due to lookback
+    records = list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+    assert len(records) == 2
+
+    # Verify updated state is set to the latest record time
+    new_state = stream.get_updated_state(stream_state, records[-1])
+    assert new_state["time"] == "2021-06-16T17:28:00Z"

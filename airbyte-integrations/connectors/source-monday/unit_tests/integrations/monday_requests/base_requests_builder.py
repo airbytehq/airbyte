@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import abc
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from airbyte_cdk.test.mock_http import HttpRequest
 
@@ -34,13 +34,12 @@ class MondayRequestBuilder(abc.ABC):
 
 
 class MondayBaseRequestBuilder(MondayRequestBuilder):
-    def __init__(self, resource: str = "") -> None:
-        self._resource: str = resource
+    def __init__(self) -> None:
         self._authenticator: str = None
 
     @property
     def url(self) -> str:
-        return f"https://api.monday.com/v2/{self._resource}"
+        return f"https://api.monday.com/v2"
 
     @property
     def headers(self) -> Dict[str, Any]:
@@ -54,4 +53,8 @@ class MondayBaseRequestBuilder(MondayRequestBuilder):
 
     def with_authenticator(self, authenticator: Authenticator) -> "MondayBaseRequestBuilder":
         self._authenticator: Authenticator = authenticator
+        return self
+
+    def with_board_ids(self, board_ids: List[int]) -> "MondayBaseRequestBuilder":
+        self._board_ids = board_ids
         return self

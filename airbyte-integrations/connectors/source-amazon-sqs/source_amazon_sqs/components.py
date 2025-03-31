@@ -129,7 +129,7 @@ class CustomAuthenticator(NoAuth):
 
         # Authorization header
         authorization_header = (
-            f"{algorithm} " f"Credential={aws_access_key}/{credential_scope}, " f"SignedHeaders={signed_headers}, " f"Signature={signature}"
+            f"{algorithm} Credential={aws_access_key}/{credential_scope}, SignedHeaders={signed_headers}, Signature={signature}"
         )
 
         return authorization_header, amz_date

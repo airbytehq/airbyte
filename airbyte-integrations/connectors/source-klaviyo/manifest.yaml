@@ -207,6 +207,7 @@ definitions:
           path: events
           http_method: GET
           request_parameters:
+            fields[event]: event_properties,timestamp,uuid,datetime
             fields[metric]: name,created,updated,integration
             include: metric,attributions
             filter: >-
@@ -258,6 +259,8 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%d %H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        step: P7D
+        cursor_granularity: PT1S
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
@@ -508,6 +511,8 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%d %H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        step: P60D
+        cursor_granularity: PT1S
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
@@ -696,6 +701,8 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%d %H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        step: P30D
+        cursor_granularity: PT1S
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"

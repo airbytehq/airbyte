@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.write
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 
 /**
  * [DirectLoader] is for the use case where records are loaded directly into the destination or
@@ -56,7 +56,7 @@ interface DirectLoader : AutoCloseable {
      * Called once per record until it returns [Complete], after which [close] is called, the loader
      * is discarded, and the records are considered processed by the platform.
      */
-    fun accept(record: DestinationRecordAirbyteValue): DirectLoadResult
+    fun accept(record: DestinationRecordRaw): DirectLoadResult
 
     /**
      * Called by the CDK to force work to finish. It will only be called if the last call to
