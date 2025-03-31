@@ -14,6 +14,11 @@ data:
           secretStore:
             alias: airbyte-connector-testing-secret-store
             type: GSM
+        - fileName: config_sas.json
+          name: SECRET_DESTINATION-AZURE-BLOB-STORAGE-SAS__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: destination
   definitionId: b4c5d105-31fd-4817-96b6-cb923bfc04cb
   dockerImageTag: 1.0.0
