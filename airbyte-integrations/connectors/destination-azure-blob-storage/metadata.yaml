@@ -16,7 +16,7 @@ data:
             type: GSM
   connectorType: destination
   definitionId: b4c5d105-31fd-4817-96b6-cb923bfc04cb
-  dockerImageTag: 0.2.5
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/destination-azure-blob-storage
   documentationUrl: https://docs.airbyte.com/integrations/destinations/azure-blob-storage
   githubIssueLabel: destination-azure-blob-storage
@@ -28,7 +28,22 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: alpha
+  releaseStage: certified
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: >
+          'This version updates the connector's behavior to match other certified destinations' behavior.
+          In particular, the `_airbyte_*` columns have been renamed, and files are now placed in
+          `<container>/<stream namespace>/<stream name>/**` (previously, stream namespace was not used
+          in the path).
+
+          Some options have been renamed for clarity. Notably, the "spill size" option is now named
+          "file split size"; additionally, this option is now correctly applied to CSV files (previously
+          it only applied to JSONL files).
+
+          '
+        upgradeDeadline: "2026-03-31"
   resourceRequirements:
     jobSpecific:
       - jobType: sync
@@ -38,4 +53,6 @@ data:
   supportLevel: community
   tags:
     - language:java
+  supportsFileTransfer: true
+  supportsRefreshes: true
 metadataSpecVersion: "1.0"
