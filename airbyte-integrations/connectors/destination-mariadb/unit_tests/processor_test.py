@@ -186,23 +186,15 @@ class TestDestinationMariaDB(unittest.TestCase):
 
         return "\n".join(result_lines).strip()
 
-    def assertMultilineTrimmed(self, expected, actual):
-        self.assertMultiLineEqual(self._multiline_trim(expected), self._multiline_trim(actual))
+    def assertMultilineTrimmed(self, expected, actual, msg=None):
+        self.assertMultiLineEqual(self._multiline_trim(expected), self._multiline_trim(actual), msg)
         pass
 
 
     def test_create_database(self):
-
-
-
-        # probably also need to overwrite this:
-        # get_sql_connection
-
-        # mock this away
         self.testProcessor._table_exists = MagicMock(return_value=False)
 
-
-        expected = """
+        expected_qry = """
             CREATE TABLE `muhkuh` (
                 `document_id` VARCHAR(255),
                 `chunk_id` VARCHAR(255),
@@ -213,40 +205,25 @@ class TestDestinationMariaDB(unittest.TestCase):
             )
         """
 
-        self.num_sql_exec_runs = 0
-
-        def testfunc(sql):
-            self.assertMultilineTrimmed(sql, expected)
-            # print(dedent(sql))
-
-            self.num_sql_exec_runs += 1
-
-            return sql
-
-        # somehow test in this one?
-        self.testProcessor._execute_sql = testfunc
-
+        self.testProcessor._execute_sql = MagicMock()
         self.testProcessor._ensure_final_table_exists('muhkuh')
 
-        self.assertEqual(self.num_sql_exec_runs, 1)
+        self.assertEqual(self.testProcessor._execute_sql.call_count, 1)
 
-    #import pandas as pd
-    #destination_mariadb.common.sql.sql_processor.SQLRuntimeError
+        actual_qry = self.testProcessor._execute_sql.call_args_list[0].args[0]
+        self.assertMultilineTrimmed(actual_qry, expected_qry)
+
+
+
     @patch("destination_mariadb.common.sql.sql_processor.pd")
     def test_write(self, sqlproc_pd):
-        self.testProcessor._table_exists = MagicMock(return_value=True)
-        # mock this:
-        # dataframe = pd.read_json(file_path, lines=True)
-        # then, parts of dataframe can be mocked?
-
+        self.testProcessor._table_exists = Mock(return_value=True)
 
         # see sql_processor._write_temp_table_to_final_table, we should definitely test all 3 WriteStrategys
+        mock_dataframe = MagicMock() # dataframe
+        sqlproc_pd.read_json = Mock(return_value=mock_dataframe)
 
-
-
-        # MUST MOCK: batches_to_finalize: list[BatchHandle] = self.file_writer.get_pending_batches(stream_name)
-        # for destination_mariadb/common/sql/sql_processor.py:506
-
+        # Mock away the batch handles. The batch_id is also used later down the line for the name of the temp table
         batches_to_finalize = [BatchHandle(
             stream_name="users",
             batch_id="123",
@@ -256,63 +233,26 @@ class TestDestinationMariaDB(unittest.TestCase):
             file_opener=Mock(),
         )]
 
-        #self.fileWriterMock.batches_to_finalize = batches_to_finalize
-        self.fileWriterMock.get_pending_batches = MagicMock(return_value=batches_to_finalize)
+        self.fileWriterMock.get_pending_batches = Mock(return_value=batches_to_finalize)
 
-        self.num_sql_exec_runs = 0
-
-        def testfunc(sql):
-            # self.assertMultilineTrimmed(sql, expected)
-            print(dedent(sql))
-
-            self.num_sql_exec_runs += 1
-
-            return sql
-
-        """
-        # query 1:
-        '
-        CREATE TABLE `users_01jqc3g3f2eq6jpdrej4tx10bm` (
-            `document_id` VARCHAR(255),
-  `chunk_id` VARCHAR(255),
-  `metadata` JSON,
-  `document_content` TEXT,
-  `embedding` VECTOR(1536)
-        )
-        '
-        
-        # query 2:
-        'ALTER TABLE `users` RENAME TO users_deleteme;
-        ALTER TABLE `users_01jqeb6pq9p5fqw5xrsnftnmwr` RENAME TO users;
-        # query 3:
-        DROP TABLE `users_deleteme`;'
-        
-        # query 4:
-        'DROP TABLE IF EXISTS `users_01jqeb6pq9p5fqw5xrsnftnmwr`'
-
-
-        """
-
-        # somehow test in this one?
-        #self.testProcessor._execute_sql = testfunc
+        # Mock away the _execute_sql
         sql_mock = Mock()
         self.testProcessor._execute_sql = sql_mock
 
 
-        for something in self.testProcessor.process_airbyte_messages_as_generator(
+        # Process the message
+        for _ in self.testProcessor.process_airbyte_messages_as_generator(
             messages=self.input_messages,
             write_strategy=WriteStrategy.AUTO,
         ):
-            print(something)
+            pass
 
-        #self.assertGreater(self.num_sql_exec_runs, 0)
-        #self.file_writer.process_record_message( <- try assert that this was called
-        #dataframe.to_sql( <- this too
+        # Test that the SQL statements are correct
 
         self.assertEqual(sql_mock.call_count, 3)
         # now, check the sql statements which have been used, they are in .call_args_list
 
-        sqlCreate = """
+        sql_create = """
         CREATE TABLE `users_123` (
             `document_id` VARCHAR(255),
             `chunk_id` VARCHAR(255),
@@ -322,20 +262,65 @@ class TestDestinationMariaDB(unittest.TestCase):
         )
         """
 
-        sqlAlter = """
+        sql_alter = """
             ALTER TABLE `users` RENAME TO users_deleteme;
             ALTER TABLE `users_123` RENAME TO users;
             DROP TABLE `users_deleteme`;
         """
 
-        sqlDrop = """ 
+        sql_drop = """ 
             DROP TABLE IF EXISTS `users_123` 
         """
 
-        self.assertMultilineTrimmed(sql_mock.call_args_list[0].args[0], sqlCreate)
-        self.assertMultilineTrimmed(sql_mock.call_args_list[1].args[0], sqlAlter)
-        self.assertMultilineTrimmed(sql_mock.call_args_list[2].args[0], sqlDrop)
+        self.assertMultilineTrimmed(sql_mock.call_args_list[0].args[0], sql_create)
+        self.assertMultilineTrimmed(sql_mock.call_args_list[1].args[0], sql_alter)
+        self.assertMultilineTrimmed(sql_mock.call_args_list[2].args[0], sql_drop)
 
+        # Test what the mock_dataframe's to_sql was called
+        self.assertEqual(1, mock_dataframe.to_sql.call_count, "to_sql should be called exactly once")
+
+        # Testing that the attempt to write the temporary file is correct
+        self.assertEqual(1, self.fileWriterMock.process_record_message.call_count)
+        file_writer_kwargs = self.fileWriterMock.process_record_message.call_args_list[0].kwargs
+
+        record_msg = file_writer_kwargs['record_msg']
+        stream_schema = file_writer_kwargs['stream_schema']
+
+        stream_schema_expected = {'properties': {'chunk_id': {'type': 'string'}, 'document_content': {'type': 'string'},
+                                                 'document_id': {'type': 'string'},
+                                                 'embedding': {'items': {'type': 'float'}, 'type': 'array'},
+                                                 'metadata': {'type': 'object'}}, 'type': 'object'}
+
+        self.assertEqual(stream_schema, stream_schema_expected)
+
+        # is is what it would write into the temp file
+        document_content = """academic_degree: Master
+            address: 
+            city: Austin
+            country_code: UG
+            postal_code: 49893
+            province: North Carolina
+            state: Kentucky
+            street_name: Princeton
+            street_number: 789
+            
+            age: 53
+            blood_type: B−
+            created_at: 2012-07-02T08:32:31+00:00
+            email: reason1932+1@protonmail.com
+            gender: Male
+            height: 1.55
+            id: 1
+            language: Tamil
+            name: Patria
+            nationality: Italian
+            occupation: Word Processing Operator
+            telephone: +1-(110)-795-7610
+            title: M.A.
+            updated_at: 2025-03-27T14:37:27+00:00
+            weight: 58"""
+
+        self.assertMultilineTrimmed(record_msg.data['document_content'], document_content)
 
 
 

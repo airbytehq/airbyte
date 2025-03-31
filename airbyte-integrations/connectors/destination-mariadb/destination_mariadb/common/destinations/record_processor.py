@@ -40,6 +40,7 @@ class AirbyteMessageParsingError(Exception):
     """Raised when an Airbyte message is invalid or cannot be parsed."""
 
 
+# TODO: see if this can be replaced by something within the CDK
 class RecordProcessorBase(abc.ABC):
     """Abstract base class for classes which can process Airbyte messages from a source.
 

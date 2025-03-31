@@ -16,6 +16,7 @@ from destination_mariadb.destination import DestinationMariaDB
 
 class MariaDBIntegrationTest(BaseIntegrationTest):
     def setUp(self):
+        # ... do they actually expect to be provided with a proper, valid config file for a proper, valid database?!
         with open("secrets/config.json", "r") as f:
             self.config = json.loads(f.read())
 
@@ -41,7 +42,7 @@ class MariaDBIntegrationTest(BaseIntegrationTest):
                     "role": "MYUSERNAME",
                     "warehouse": "MYWAREHOUSE",
                     "database": "MYDATABASE",
-                    "default_schema": "MYSCHEMA",
+                    # "default_schema": "MYSCHEMA",
                     "username": "MYUSERNAME",
                     "credentials": {"password": "xxxxxxx"},
                 },

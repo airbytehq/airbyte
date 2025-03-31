@@ -12,7 +12,6 @@
     "host": "MYACCOUNT",
     "port": 5432,
     "database": "MYDATABASE",
-    "default_schema": "MYSCHEMA",
     "username": "MYUSERNAME",
     "credentials": {
       "password": "xxxxxxx"

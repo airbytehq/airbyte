@@ -55,7 +55,8 @@ class RecordDedupeMode(enum.Enum):
 class SQLRuntimeError(Exception):
     """Raised when an SQL operation fails."""
 
-
+# TODO: try using this instead: ./destination-testconnector/.venv/lib/python3.12/site-packages/airbyte_cdk/sql/shared/sql_processor.py
+# if this doesn't work, merge into mariadb_processor
 class SqlConfig(BaseModel, abc.ABC):
     """Common configuration for SQL connections."""
 
