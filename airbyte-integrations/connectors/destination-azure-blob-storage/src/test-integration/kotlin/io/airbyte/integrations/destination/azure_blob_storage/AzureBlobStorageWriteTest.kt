@@ -41,7 +41,7 @@ abstract class AzureBlobStorageWriteTest(
 
 class AzureBlobStorageCsvNoFlatteningWriteTest :
     AzureBlobStorageWriteTest(
-        AzureBlobStorageTestUtil.getConfig(
+        AzureBlobStorageTestUtil.getAccountKeyConfig(
             CSVFormatSpecification(flattening = Flattening.NO_FLATTENING)
         ),
         nullEqualsUnset = true,
@@ -59,7 +59,7 @@ class AzureBlobStorageCsvNoFlatteningWriteTest :
 
 class AzureBlobStorageCsvWithFlatteningWriteTest :
     AzureBlobStorageWriteTest(
-        AzureBlobStorageTestUtil.getConfig(
+        AzureBlobStorageTestUtil.getAccountKeyConfig(
             CSVFormatSpecification(flattening = Flattening.ROOT_LEVEL_FLATTENING)
         ),
         preserveUndeclaredFields = false,
@@ -68,7 +68,7 @@ class AzureBlobStorageCsvWithFlatteningWriteTest :
 
 class AzureBlobStorageJsonlNoFlatteningWriteTest :
     AzureBlobStorageWriteTest(
-        AzureBlobStorageTestUtil.getConfig(
+        AzureBlobStorageTestUtil.getAccountKeyConfig(
             JsonFormatSpecification(flattening = Flattening.NO_FLATTENING)
         ),
         nullEqualsUnset = false,
@@ -76,8 +76,17 @@ class AzureBlobStorageJsonlNoFlatteningWriteTest :
 
 class AzureBlobStorageJsonlWithFlatteningWriteTest :
     AzureBlobStorageWriteTest(
-        AzureBlobStorageTestUtil.getConfig(
+        AzureBlobStorageTestUtil.getAccountKeyConfig(
             JsonFormatSpecification(flattening = Flattening.ROOT_LEVEL_FLATTENING)
         ),
         nullEqualsUnset = false,
+    )
+
+class AzureBlobStorageSasCsvWithFlatteningWriteTest :
+    AzureBlobStorageWriteTest(
+        AzureBlobStorageTestUtil.getSasConfig(
+            CSVFormatSpecification(flattening = Flattening.ROOT_LEVEL_FLATTENING)
+        ),
+        preserveUndeclaredFields = false,
+        nullEqualsUnset = true,
     )

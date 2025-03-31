@@ -13,8 +13,13 @@ class AzureBlobStorageCheckTest :
     CheckIntegrationTest<AzureBlobStorageSpecification>(
         successConfigFilenames =
             listOf(
-                CheckTestConfig(AzureBlobStorageTestUtil.getConfig(JsonFormatSpecification())),
-                CheckTestConfig(AzureBlobStorageTestUtil.getConfig(CSVFormatSpecification()))
+                CheckTestConfig(
+                    AzureBlobStorageTestUtil.getAccountKeyConfig(JsonFormatSpecification())
+                ),
+                CheckTestConfig(
+                    AzureBlobStorageTestUtil.getAccountKeyConfig(CSVFormatSpecification())
+                ),
+                CheckTestConfig(AzureBlobStorageTestUtil.getSasConfig(CSVFormatSpecification())),
             ),
         failConfigFilenamesAndFailureReasons = emptyMap(),
     )
