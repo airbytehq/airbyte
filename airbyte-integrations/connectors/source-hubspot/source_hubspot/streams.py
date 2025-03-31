@@ -1507,7 +1507,7 @@ class ContactLists(ClientSideIncrementalStream):
         if next_page_token:
             params.update(next_page_token)
         return params
-    
+
     def request_params(
         self,
         stream_state: Mapping[str, Any],
@@ -1515,6 +1515,7 @@ class ContactLists(ClientSideIncrementalStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return
+
 
 # class ContactsAllBase(ClientSideIncrementalStream):
 class ContactsAllBase(Stream):
