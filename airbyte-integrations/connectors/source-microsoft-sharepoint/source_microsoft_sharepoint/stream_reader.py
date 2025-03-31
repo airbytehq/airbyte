@@ -277,7 +277,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
         return found_sites
 
-    def get_drives_from_sites(self, sites: List[MutableMapping[str, Any]]) -> EntityCollection:
+    def _get_drives_from_sites(self, sites: List[MutableMapping[str, Any]]) -> EntityCollection:
         """
         Retrieves SharePoint drives from the provided sites.
         Args:
@@ -293,7 +293,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                 all_sites_drives.add_child(site_drive)
         return all_sites_drives
 
-    def get_site_drive(self) -> EntityCollection:
+    def _get_site_drive(self) -> EntityCollection:
         """
         Retrieves SharePoint drives based on the provided site URL.
         It iterates over the sites if something like sharepoint.com/sites/ is in the site_url.
@@ -309,7 +309,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                 drives = execute_query_with_retry(self.one_drive_client.drives.get())
             elif re.search(r"sharepoint\.com/sites/?$", self.config.site_url):
                 # get all sites and then get drives from each site
-                return self.get_drives_from_sites(self.get_all_sites())
+                return self._get_drives_from_sites(self.get_all_sites())
             else:
                 # get drives for site drives provided in the config
                 drives = execute_query_with_retry(self.one_drive_client.sites.get_by_url(self.config.site_url).drives.get())
@@ -327,7 +327,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         """
         Retrieves and caches SharePoint drives, including the user's drive based on authentication type.
         """
-        drives = self.get_site_drive()
+        drives = self._get_site_drive()
 
         # skip this step for application authentication flow
         if self.config.credentials.auth_type != "Client" or (

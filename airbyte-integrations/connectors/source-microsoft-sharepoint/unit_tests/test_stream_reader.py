@@ -676,14 +676,14 @@ def test_get_site_drive(site_url, expected_call, expected_result, exception):
 
         with (
             patch.object(reader, "get_all_sites", return_value=mock_sites) as mock_get_all_sites,
-            patch.object(reader, "get_drives_from_sites", return_value=mock_drives) as mock_get_drives_from_sites,
+            patch.object(reader, "_get_drives_from_sites", return_value=mock_drives) as mock_get_drives_from_sites,
         ):
             if exception:
                 with pytest.raises(AirbyteTracedException) as exc_info:
-                    reader.get_site_drive()
+                    reader._get_site_drive()
                 assert "Failed to retrieve drives from sharepoint" in str(exc_info.value)
             else:
-                result = reader.get_site_drive()
+                result = reader._get_site_drive()
 
                 if expected_call == "drives":
                     # Default site URL
