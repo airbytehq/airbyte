@@ -1,0 +1,31 @@
+# ebay
+Ebay Finances API Connector
+
+## Configuration
+
+| Input | Type | Description | Default Value |
+|-------|------|-------------|---------------|
+| `token_refresh_endpoint` | `string` | Refresh Token Endpoint.  |  |
+| `client_access_token` | `string` | Access token.  |  |
+| `username` | `string` | Username. Ebay Developer Client ID |  |
+| `password` | `string` | Password. Ebay Client Secret |  |
+| `redirect_uri` | `string` | Redirect URI.  |  |
+| `refresh_token` | `string` | Refresh Token.  |  |
+| `api_host` | `string` | API Host. https://apiz.sandbox.ebay.com for sandbox &amp; https://apiz.ebay.com for production | https://apiz.sandbox.ebay.com |
+
+## Streams
+| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
+|-------------|-------------|------------|---------------------|----------------------|
+| transactions |  | DefaultPaginator | ✅ |  ❌  |
+| payouts |  | DefaultPaginator | ✅ |  ❌  |
+
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
+
+| Version          | Date              | Pull Request | Subject        |
+|------------------|-------------------|--------------|----------------|
+| 0.0.1 | 2025-03-31 | | Initial release by [@adityamohta](https://github.com/adityamohta) via Connector Builder |
+
+</details>

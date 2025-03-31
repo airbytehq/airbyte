@@ -1,0 +1,426 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: Ebay Finances API Connector
+
+check:
+  type: CheckStream
+  stream_names:
+    - transactions
+
+definitions:
+  streams:
+    transactions:
+      type: DeclarativeStream
+      name: transactions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sell/finances/v1/transaction
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - transactions
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 160
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transactions"
+    payouts:
+      type: DeclarativeStream
+      name: payouts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sell/finances/v1/payout
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - payouts
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/payouts"
+  base_requester:
+    type: HttpRequester
+    url_base: https://apiz.sandbox.ebay.com
+    authenticator:
+      type: SessionTokenAuthenticator
+      login_requester:
+        type: HttpRequester
+        url_base: "{{ config['token_refresh_endpoint'] }}"
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config[\"username\"] }}"
+          password: "{{ config[\"password\"] }}"
+        http_method: POST
+        request_parameters: {}
+        request_headers: {}
+        request_body_data:
+          grant_type: refresh_token
+          redirect_uri: "{{ config['redirect_uri'] }}"
+          refresh_token: "{{  config['refresh_token']}}"
+      session_token_path:
+        - access_token
+      expiration_duration: PT2H
+      request_authentication:
+        type: Bearer
+
+streams:
+  - $ref: "#/definitions/streams/transactions"
+  - $ref: "#/definitions/streams/payouts"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - token_refresh_endpoint
+      - username
+      - redirect_uri
+      - refresh_token
+      - api_host
+    properties:
+      token_refresh_endpoint:
+        type: string
+        title: Refresh Token Endpoint
+        order: 0
+      client_access_token:
+        type: string
+        title: Access token
+        airbyte_secret: true
+        airbyte_hidden: true
+        order: 1
+      username:
+        type: string
+        description: Ebay Developer Client ID
+        title: Username
+        order: 2
+      password:
+        type: string
+        description: Ebay Client Secret
+        title: Password
+        always_show: true
+        airbyte_secret: true
+        order: 3
+      redirect_uri:
+        type: string
+        title: Redirect URI
+        order: 4
+      refresh_token:
+        type: string
+        title: Refresh Token
+        airbyte_secret: true
+        order: 5
+      api_host:
+        type: string
+        description: >-
+          https://apiz.sandbox.ebay.com for sandbox & https://apiz.ebay.com for
+          production
+        title: API Host
+        default: https://apiz.sandbox.ebay.com
+        order: 6
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    transactions: true
+    payouts: true
+  testedStreams:
+    transactions:
+      streamHash: 524b173a5a03dc48dfa73200b931d6947ec36d70
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    payouts:
+      streamHash: 6e09be6dbdc75065152ed09bd0b9a2e188a5cef2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  transactions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      amount:
+        type:
+          - object
+          - "null"
+        properties:
+          convertedFromCurrency:
+            type:
+              - string
+              - "null"
+          convertedFromValue:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          exchangeRate:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      bookingEntry:
+        type:
+          - string
+          - "null"
+      buyer:
+        type:
+          - object
+          - "null"
+        properties:
+          username:
+            type:
+              - string
+              - "null"
+      feeType:
+        type:
+          - string
+          - "null"
+      orderId:
+        type:
+          - string
+          - "null"
+      orderLineItems:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            feeBasisAmount:
+              type:
+                - object
+                - "null"
+              properties:
+                currency:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            lineItemId:
+              type:
+                - string
+                - "null"
+            marketplaceFees:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  amount:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      currency:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                  feeType:
+                    type:
+                      - string
+                      - "null"
+      paymentsEntity:
+        type:
+          - string
+          - "null"
+      payoutId:
+        type:
+          - string
+          - "null"
+      references:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            referenceId:
+              type:
+                - string
+                - "null"
+            referenceType:
+              type:
+                - string
+                - "null"
+      salesRecordReference:
+        type:
+          - string
+          - "null"
+      totalFeeAmount:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      totalFeeBasisAmount:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      transactionDate:
+        type:
+          - string
+          - "null"
+      transactionId:
+        type:
+          - string
+          - "null"
+      transactionMemo:
+        type:
+          - string
+          - "null"
+      transactionStatus:
+        type:
+          - string
+          - "null"
+      transactionType:
+        type:
+          - string
+          - "null"
+  payouts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      amount:
+        type:
+          - object
+          - "null"
+        properties:
+          currency:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      lastAttemptedPayoutDate:
+        type:
+          - string
+          - "null"
+      payoutDate:
+        type:
+          - string
+          - "null"
+      payoutId:
+        type:
+          - string
+          - "null"
+      payoutInstrument:
+        type:
+          - object
+          - "null"
+        properties:
+          accountLastFourDigits:
+            type:
+              - string
+              - "null"
+          instrumentType:
+            type:
+              - string
+              - "null"
+          nickname:
+            type:
+              - string
+              - "null"
+      payoutStatus:
+        type:
+          - string
+          - "null"
+      payoutStatusDescription:
+        type:
+          - string
+          - "null"
+      transactionCount:
+        type:
+          - number
+          - "null"
