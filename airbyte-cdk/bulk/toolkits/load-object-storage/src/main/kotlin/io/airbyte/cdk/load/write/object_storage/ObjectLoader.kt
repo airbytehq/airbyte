@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.load.write.object_storage
 
+import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.write.LoadStrategy
 
@@ -88,3 +90,6 @@ interface ObjectLoader : LoadStrategy {
     val stateAfterUpload: BatchState
         get() = BatchState.COMPLETE
 }
+
+fun DestinationConfiguration.metadataFor(stream: DestinationStream): Map<String, String> =
+    mapOf(this.generationIdMetadataKey to stream.generationId.toString())
