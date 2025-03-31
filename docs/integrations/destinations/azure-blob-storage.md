@@ -31,31 +31,9 @@ as `<stream_namespace>/<stream_name>/yyyy_mm_dd_<unix_epoch>_<part_number>.<file
 
 ### CSV
 
-Like most of the other Airbyte destination connectors, usually the output has three columns: a UUID, an emission timestamp, and the data blob. With the CSV output, it is possible to normalize \(flatten\) the data blob to multiple columns.
-
-| Column                   | Condition                                                                                          | Description                                                                 |
-| :----------------------- | :------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------- |
-| `_airbyte_raw_id`        | Always exists.                                                                                     | A uuid assigned by Airbyte to each processed record.                        |
-| `_airbyte_extracted_at`  | Always exists.                                                                                     | A timestamp representing when the event was extracted from the data source. |
-| `_airbyte_generation_id` | Always exists.                                                                                     | An integer id that increases with each new refresh.                         |
-| `_airbyte_meta`          | Always exists.                                                                                     | A structured object containing metadata about the record.                   |
-| `_airbyte_data`          | When no normalization \(flattening\) is needed, all data resides under this column as a JSON blob. |                                                                             |
-| root level fields        | When root level normalization \(flattening\) is selected, the root level fields are expanded.      |                                                                             |
-
-The schema for `_airbyte_meta` is:
-
-| Field Name | Type    | Description                             |
-| :--------- | :------ | :-------------------------------------- |
-| `changes`  | list    | A list of structured change objects.    |
-| `sync_id`  | integer | An integer identifier for the sync job. |
-
-The schema for a change object is:
-
-| Field Name | Type   | Description                                                                                                              |
-| :--------- | :----- | :----------------------------------------------------------------------------------------------------------------------- |
-| `field`    | string | The name of the field that changed.                                                                                      |
-| `change`   | string | The type of change (eg, `NULLED`, `TRUNCATED`).                                                                          |
-| `reason`   | string | The reason for the change, including its system of origin (ie, whether it was a source, destination, or platform error). |
+Like most other Airbyte destination connectors, the output contains your data, along with some [metadata fields](/understanding-airbyte/airbyte-metadata-fields).
+If you select the "root level flattening" option, your data will be promoted to additional columns; if you select "no flattening", your data
+will be left as a JSON blob inside the `_airbyte_data` column.
 
 For example, given the following JSON object from a source:
 
@@ -69,13 +47,13 @@ For example, given the following JSON object from a source:
 }
 ```
 
-With no normalization, the output CSV is:
+With no flattening, the output CSV is:
 
 | `_airbyte_raw_id`                      | `_airbyte_extracted_at` | `_airbyte_generation_id` | `_airbyte_meta`                     | `_airbyte_data`                                                |
 | :------------------------------------- | :---------------------- | :----------------------- | ----------------------------------- | :------------------------------------------------------------- |
 | `26d73cde-7eb1-4e1e-b7db-a4c03b4cf206` | 1622135805000           | 11                       | `{"changes":[], "sync_id": 10111 }` | `{ "user_id": 123, name: { "first": "John", "last": "Doe" } }` |
 
-With root level normalization, the output CSV is:
+With root level flattening, the output CSV is:
 
 | `_airbyte_raw_id`                      | `_airbyte_extracted_at` | `_airbyte_generation_id` | `_airbyte_meta`                     | `user_id` | `name.first` | `name.last` |
 | :------------------------------------- | :---------------------- | :----------------------- | ----------------------------------- | :-------: | :----------: | :---------: |
@@ -83,45 +61,41 @@ With root level normalization, the output CSV is:
 
 ### JSON Lines \(JSONL\)
 
-[JSON Lines](https://jsonlines.org/) is a text format with one JSON per line. Each line has a
-structure as follows:
+[JSON Lines](https://jsonlines.org/) is a text format with one JSON per line. As with the [CSV](#csv) format, this connector will write your data along
+with some [metadata fields](/understanding-airbyte/airbyte-metadata-fields). You can enable "root level flattening" to promote your data to the root
+of the JSON object, or use "no flattening" to leave your data inside the `_airbyte_data` object.
+
+For example, given the following two JSON object from a source:
 
 ```json
 {
-  "_airbyte_raw_id": "<uuid>",
-  "_airbyte_extracted_at": "<timestamp>",
-  "_airbyte_generation_id": "<generation-id>",
-  "_airbyte_meta": "<json-meta>",
-  "_airbyte_data": "<json-data-from-source>"
+  "user_id": 123,
+  "name": {
+    "first": "John",
+    "last": "Doe"
+  }
+}
+{
+  "user_id": 456,
+  "name": {
+    "first": "Jane",
+    "last": "Roe"
+  }
 }
 ```
 
-For example, given the following two JSON objects from a source:
-
-```json
-[
-  {
-    "user_id": 123,
-    "name": {
-      "first": "John",
-      "last": "Doe"
-    }
-  },
-  {
-    "user_id": 456,
-    "name": {
-      "first": "Jane",
-      "last": "Roe"
-    }
-  }
-]
-```
-
-They will be like this in the output file:
+With no flattening, the output JSONL is:
 
 ```text
 { "_airbyte_raw_id": "26d73cde-7eb1-4e1e-b7db-a4c03b4cf206", "_airbyte_extracted_at": "1622135805000", "_airbyte_generation_id": "11", "_airbyte_meta": { "changes": [], "sync_id": 10111 }, "_airbyte_data": { "user_id": 123, "name": { "first": "John", "last": "Doe" } } }
 { "_airbyte_ab_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_extracted_at": "1631948170000", "_airbyte_generation_id": "12", "_airbyte_meta": { "changes": [], "sync_id": 10112 }, "_airbyte_data": { "user_id": 456, "name": { "first": "Jane", "last": "Roe" } } }
+```
+
+With root level flattening, the output JSONL is:
+
+```text
+{ "_airbyte_raw_id": "26d73cde-7eb1-4e1e-b7db-a4c03b4cf206", "_airbyte_extracted_at": "1622135805000", "_airbyte_generation_id": "11", "_airbyte_meta": { "changes": [], "sync_id": 10111 }, "user_id": 123, "name": { "first": "John", "last": "Doe" } }
+{ "_airbyte_ab_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_extracted_at": "1631948170000", "_airbyte_generation_id": "12", "_airbyte_meta": { "changes": [], "sync_id": 10112 }, "user_id": 456, "name": { "first": "Jane", "last": "Roe" } }
 ```
 
 ## Getting started
