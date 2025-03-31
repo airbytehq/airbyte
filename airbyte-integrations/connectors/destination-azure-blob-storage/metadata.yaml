@@ -38,11 +38,6 @@ data:
           `<container>/<stream namespace>/<stream name>/**` (previously, stream namespace was not used
           in the path).
 
-          Version 1.0.0 adds support for the "refreshes with no data downtime" feature. To support this feature,
-          the connector now writes/reads an `ab_generation_id` metadata on blobs. In particular, the connector now requires the
-          [`Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write`](https://learn.microsoft.com/en-us/rest/api/storageservices/get-blob-metadata?tabs=microsoft-entra-id#authorization)
-          RBAC action.
-
           Some options have been renamed for clarity. Notably, the "spill size" option is now named
           "file split size"; additionally, this option is now correctly applied to CSV files (previously
           it only applied to JSONL files).
