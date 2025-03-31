@@ -80,6 +80,15 @@
         "items": {
           "type": "integer"
         }
+      },
+      "num_workers": {
+        "type": "integer",
+        "title": "Number of concurrent workers",
+        "minimum": 2,
+        "maximum": 50,
+        "default": 4,
+        "examples": [1, 2, 3],
+        "description": "The number of worker threads to use for the sync."
       }
     }
   },
