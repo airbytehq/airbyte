@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
@@ -126,7 +127,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
         if (!runComplete.get()) throw RuntimeException("cannot checkpoint non-resumable read")
         // The run method executed to completion without a LIMIT clause.
         // This implies that the partition boundary has been reached.
-        return PartitionReadCheckpoint(partition.completeState, numRecords.get())
+        return PartitionReadCheckpoint(JsonNodeFactory.instance.objectNode(), numRecords.get())
     }
 }
 
