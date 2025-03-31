@@ -64,22 +64,20 @@ sealed class ObjectStorageFormatSpecification(
 class CSVFormatSpecification(
     @JsonSchemaTitle("Format Type")
     @JsonProperty("format_type")
-    override val formatType: Type = Type.CSV
-) : ObjectStorageFormatSpecification(formatType), FlatteningSpecificationProvider {
+    override val formatType: Type = Type.CSV,
     override val flattening: FlatteningSpecificationProvider.Flattening =
         FlatteningSpecificationProvider.Flattening.NO_FLATTENING
-}
+) : ObjectStorageFormatSpecification(formatType), FlatteningSpecificationProvider
 
 /** JSONL */
 @JsonSchemaTitle("JSON Lines: Newline-delimited JSON")
 class JsonFormatSpecification(
     @JsonSchemaTitle("Format Type")
     @JsonProperty("format_type")
-    override val formatType: Type = Type.JSONL
-) : ObjectStorageFormatSpecification(formatType), FlatteningSpecificationProvider {
+    override val formatType: Type = Type.JSONL,
     override val flattening: FlatteningSpecificationProvider.Flattening? =
         FlatteningSpecificationProvider.Flattening.NO_FLATTENING
-}
+) : ObjectStorageFormatSpecification(formatType), FlatteningSpecificationProvider
 
 interface FlatteningSpecificationProvider {
     @get:JsonSchemaTitle("Flattening")
