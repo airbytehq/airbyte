@@ -111,7 +111,7 @@ definitions:
       type: DeclarativeStream
       name: mailings
       primary_key:
-        - uuid
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -348,48 +348,85 @@ schemas:
     required:
       - id
   mailings:
-    $schema: http://json-schema.org/draft-07/schema#
-    title: Generated schema for Root
     type: object
+    $schema: http://json-schema.org/draft-07/schema#
     properties:
-      id:
-        type: [string, "null"]
-      campaign_id:
-        type: [string, "null"]
-      creative_id:
-        type: [string, "null"]
-      merge_tags:
-        type: [object, "null"]
-        properties: {}
-      state:
-        type: [string, "null"]
-      front_url:
-        type: [string, "null"]
-      back_url:
-        type: [string, "null"]
-      pdf_url:
-        type: [string, "null"]
-      total_cost:
-        type: [string, "null"]
-      created_at:
-        type: [string, "null"]
       address:
-        type: [object, "null"]
+        type:
+          - object
+          - "null"
         properties:
-          name:
-            type: [string, "null"]
-          company:
-            type: [string, "null"]
           address_1:
-            type: [string, "null"]
+            type:
+              - string
+              - "null"
           address_2:
-            type: [string, "null"]
+            type:
+              - string
+              - "null"
           city:
-            type: [string, "null"]
-          state_name:
-            type: [string, "null"]
+            type:
+              - string
+              - "null"
+          company:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
           postal_code:
-            type: [string, "null"]
+            type:
+              - string
+              - "null"
+          state_name:
+            type:
+              - string
+              - "null"
+      back_url:
+        type:
+          - string
+          - "null"
+      campaign_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      creative_id:
+        type:
+          - string
+          - "null"
+      front_url:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      merge_tags:
+        type:
+          - object
+          - "null"
+        properties: {}
+      pdf_url:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      total_cost:
+        type:
+          - string
+          - "null"
+    title: Generated schema for Root
+    additionalProperties: true
   me:
     type: object
     $schema: http://json-schema.org/schema#

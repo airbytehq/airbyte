@@ -15,6 +15,7 @@ Documentation: https://developers.heypoplar.com/
 | creatives |  | No pagination | ✅ |  ❌  |
 | audiences | id | No pagination | ✅ |  ❌  |
 | me | id | No pagination | ✅ |  ❌  |
+| mailings | id | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
