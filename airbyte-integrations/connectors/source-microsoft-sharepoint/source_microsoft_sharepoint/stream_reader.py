@@ -34,7 +34,6 @@ from .utils import (
     MicrosoftSharePointRemoteFile,
     execute_query_with_retry,
     filter_http_urls,
-    get_site,
     get_site_prefix,
 )
 
@@ -147,7 +146,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         return self.auth_client.get_token_response_object_wrapper(tenant_prefix=tenant_prefix)
 
     def get_client_context(self):
-        site_url, root_site_prefix = get_site_prefix(get_site(self.one_drive_client))
+        site_url, root_site_prefix = get_site_prefix(self.one_drive_client)
         client_context = ClientContext(site_url).with_access_token(self.get_token_response_object(tenant_prefix=root_site_prefix))
         return client_context
 
@@ -257,7 +256,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         Returns:
             List[MutableMapping[str, Any]]: A list of site information.
         """
-        _, root_site_prefix = get_site_prefix(get_site(self.one_drive_client))
+        _, root_site_prefix = get_site_prefix(self.one_drive_client)
         ctx = self.get_client_context()
         search_service = SearchService(ctx)
         # ignore default OneDrive site with NOT Path:https://prefix-my.sharepoint.com

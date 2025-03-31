@@ -773,13 +773,11 @@ def test_get_all_sites(search_result, expected_sites, raises_exception):
 
     # Mock methods out of scope of this test
     with (
-        patch("source_microsoft_sharepoint.stream_reader.get_site") as mock_get_site,
         patch("source_microsoft_sharepoint.stream_reader.get_site_prefix") as mock_get_site_prefix,
         patch.object(reader, "get_client_context") as mock_get_client_context,
         patch("source_microsoft_sharepoint.stream_reader.SearchService") as mock_search_service,
         patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query,
     ):
-        mock_get_site.return_value = "test-site"
         mock_get_site_prefix.return_value = ("https://test-tenant.sharepoint.com", "test-tenant")
 
         mock_client_context = MagicMock()
@@ -847,8 +845,7 @@ def test_get_all_sites(search_result, expected_sites, raises_exception):
 
             assert result == expected_sites
 
-            mock_get_site.assert_called_once_with(reader.one_drive_client)
-            mock_get_site_prefix.assert_called_once_with("test-site")
+            mock_get_site_prefix.assert_called_once_with(reader.one_drive_client)
             mock_get_client_context.assert_called_once()
             mock_search_service.assert_called_once_with(mock_client_context)
             mock_search_service_instance.post_query.assert_called_once_with(

@@ -4,11 +4,10 @@
 from datetime import datetime, timedelta
 from http import HTTPStatus
 from unittest.mock import Mock, patch
-from urllib.parse import parse_qs, urlparse
 
 import pytest
 from office365.onedrive.sites.site import Site
-from source_microsoft_sharepoint.utils import PlaceholderUrlBuilder, execute_query_with_retry, filter_http_urls, get_site, get_site_prefix
+from source_microsoft_sharepoint.utils import PlaceholderUrlBuilder, execute_query_with_retry, filter_http_urls, get_site_prefix
 
 from airbyte_cdk import AirbyteTracedException
 
@@ -188,44 +187,6 @@ def test_url_builder_for_key_pair_value_pair(steps, expected_url):
 
 
 @pytest.mark.parametrize(
-    "site_url, expected_method_call",
-    [
-        ("https://example.sharepoint.com/sites/test", "get_by_url"),
-        (None, "root.get"),
-    ],
-)
-@patch("source_microsoft_sharepoint.utils.execute_query_with_retry")
-def test_get_site(mock_execute_query_with_retry, site_url, expected_method_call):
-    mock_graph_client = Mock()
-
-    mock_site = Mock(spec=Site)
-    mock_site.web_url = "https://example.sharepoint.com/sites/test" if site_url else "https://example.sharepoint.com"
-
-    mock_site.site_collection = Mock()
-    mock_site.site_collection.hostname = "example.sharepoint.com"
-
-    mock_site.name = "Test Site"
-    mock_site.id = "test-site-id"
-    mock_site.root = Mock()
-
-    mock_execute_query_with_retry.return_value = mock_site
-
-    result = get_site(mock_graph_client, site_url)
-
-    if expected_method_call == "get_by_url":
-        mock_graph_client.sites.get_by_url.assert_called_once_with(site_url)
-    else:
-        mock_graph_client.sites.root.get.assert_called_once()
-
-    mock_execute_query_with_retry.assert_called_once()
-    assert result
-
-    assert result.web_url == "https://example.sharepoint.com/sites/test" if site_url else "https://example.sharepoint.com"
-    assert result.site_collection.hostname == "example.sharepoint.com"
-    assert result.name == "Test Site"
-
-
-@pytest.mark.parametrize(
     "web_url, hostname, expected_site_url, expected_prefix",
     [
         (
@@ -243,23 +204,38 @@ def test_get_site(mock_execute_query_with_retry, site_url, expected_method_call)
         ),
     ],
 )
-def test_get_site_prefix(web_url, hostname, expected_site_url, expected_prefix):
+@patch("source_microsoft_sharepoint.utils.execute_query_with_retry")
+def test_get_site_prefix(mock_execute_query, web_url, hostname, expected_site_url, expected_prefix):
     mock_site = Mock(spec=Site)
     mock_site.web_url = web_url
     mock_site.site_collection = Mock()
     mock_site.site_collection.hostname = hostname
 
-    site_url, prefix = get_site_prefix(mock_site)
+    mock_execute_query.return_value = mock_site
+    mock_graph_client = Mock()
+
+    site_url, prefix = get_site_prefix(mock_graph_client)
+
+    mock_graph_client.sites.root.get.assert_called_once()
+    mock_execute_query.assert_called_once()
 
     assert site_url == expected_site_url
     assert prefix == expected_prefix
 
 
-def test_get_site_prefix_invalid_hostname():
+@patch("source_microsoft_sharepoint.utils.execute_query_with_retry")
+def test_get_site_prefix_invalid_hostname(mock_execute_query):
     mock_site = Mock(spec=Site)
     mock_site.web_url = "https://invalid"
     mock_site.site_collection = Mock()
     mock_site.site_collection.hostname = "invalid"
 
+    mock_execute_query.return_value = mock_site
+
+    mock_graph_client = Mock()
+
     with pytest.raises(ValueError, match="Invalid host name: invalid"):
-        get_site_prefix(mock_site)
+        get_site_prefix(mock_graph_client)
+
+    mock_graph_client.sites.root.get.assert_called_once()
+    mock_execute_query.assert_called_once()

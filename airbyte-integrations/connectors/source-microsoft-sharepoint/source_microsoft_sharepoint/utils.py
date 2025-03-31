@@ -157,34 +157,23 @@ class PlaceholderUrlBuilder:
         return f"{self._scheme}://{self._host}{self._path}{query_string}"
 
 
-@lru_cache(maxsize=None)
-def get_site(graph_client: GraphClient, site_url: str = None) -> Site:
+def get_site_prefix(graph_client: GraphClient) -> Tuple[str, str]:
     """
-    Retrieve a SharePoint site using the Microsoft Graph API.
-
-    Args:
-        graph_client (GraphClient): An instance of the Microsoft Graph client
-            used to interact with the Microsoft Graph API.
-        site_url (str, optional): The URL of the SharePoint site to retrieve.
-            If not provided, the root site will be retrieved.
-
-    Returns:
-        Site: An object representing the retrieved SharePoint site.
-    """
-    if site_url:
-        return execute_query_with_retry(graph_client.sites.get_by_url(site_url))
-    return execute_query_with_retry(graph_client.sites.root.get())
-
-
-def get_site_prefix(site: Site) -> Tuple[str, str]:
-    """
-    Extracts and returns the site URL and the prefix of the host name from a given SharePoint site.
+    Retrieves the SharePoint site and extracts its URL and host prefix.
 
     Example:
         For a site with `web_url` = "https://contoso.sharepoint.com/sites/example" and
         `site_collection.hostname` = "contoso.sharepoint.com", this function will return:
         ("https://contoso.sharepoint.com/sites/example", "contoso")
+
+    Args:
+        graph_client (GraphClient): An instance of the Microsoft Graph client.
+
+    Returns:
+        Tuple[str, str]: A tuple containing (site_url, hostname_prefix).
     """
+    site = execute_query_with_retry(graph_client.sites.root.get())
+
     site_url = site.web_url
     host_name = site.site_collection.hostname
     host_name_parts: List = host_name.split(".")
