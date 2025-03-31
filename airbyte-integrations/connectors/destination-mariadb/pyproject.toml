@@ -22,7 +22,7 @@ version = ">=1.0"
 extras = ["vector-db-based"]
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = ">=3.10,<3.12"
 airbyte = "^0.12.0"
 sqlalchemy = "<2.0"
 pymysql = "^1.1.1"
@@ -30,10 +30,14 @@ pydevd-pycharm = "~243.25659.43"
 # mariadb = "^1.1.12"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0.0"
+# pytest = "^8.0.0"
 ruff = "^0.3.2"
 mypy = "^1.9.0"
 coverage = "^7.5.3"
+requests-mock = "*"
+pytest-mock = "*"
+pytest = "*"
+
 
 [tool.poetry.scripts]
 destination-mariadb = "destination_mariadb.run:run"
