@@ -302,7 +302,7 @@ abstract class IntegrationTest(
     fun updateConfig(config: String): String = configUpdater.update(config)
 
     companion object {
-        val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}")
+        val randomizedNamespaceRegex = Regex("test(\\d{8})[A-Za-z]{4}.*")
         val randomizedNamespaceDateFormatter: DateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyyMMdd")
 

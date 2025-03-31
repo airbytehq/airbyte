@@ -56,6 +56,8 @@ The following fields are required fields for the connector to work:
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------|
+| 0.2.19 | 2025-03-29 | [56741](https://github.com/airbytehq/airbyte/pull/56741) | Update dependencies |
+| 0.2.18 | 2025-03-22 | [56168](https://github.com/airbytehq/airbyte/pull/56168) | Update dependencies |
 | 0.2.17 | 2025-03-08 | [55523](https://github.com/airbytehq/airbyte/pull/55523) | Update dependencies |
 | 0.2.16 | 2025-03-01 | [55018](https://github.com/airbytehq/airbyte/pull/55018) | Update dependencies |
 | 0.2.15 | 2025-02-23 | [54570](https://github.com/airbytehq/airbyte/pull/54570) | Update dependencies |

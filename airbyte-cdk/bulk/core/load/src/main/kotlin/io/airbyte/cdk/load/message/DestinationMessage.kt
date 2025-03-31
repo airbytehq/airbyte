@@ -23,6 +23,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.data.toAirbyteValues
@@ -225,9 +226,37 @@ data class EnrichedDestinationRecordAirbyteValue(
     val declaredFields: Map<String, EnrichedAirbyteValue>,
     val undeclaredFields: Map<String, JsonNode>,
     val emittedAtMs: Long,
+    /**
+     * The airbyte_meta field as received by the destination connector. Note that this field is NOT
+     * updated by [EnrichedAirbyteValue.nullify] / [EnrichedAirbyteValue.truncate].
+     *
+     * If you want an up-to-date view of airbyte_meta, including any changes that were done to the
+     * values within the destination connector, you should use [airbyteMeta].
+     */
     val meta: Meta?,
     val serializedSizeBytes: Long = 0L,
 ) {
+    val airbyteMeta: EnrichedAirbyteValue
+        get() =
+            EnrichedAirbyteValue(
+                ObjectValue(
+                    linkedMapOf(
+                        "sync_id" to IntegerValue(stream.syncId),
+                        "changes" to
+                            ArrayValue(
+                                (meta?.changes?.toAirbyteValues()
+                                    ?: emptyList()) +
+                                    declaredFields
+                                        .map { it.value.changes.toAirbyteValues() }
+                                        .flatten(),
+                            ),
+                    ),
+                ),
+                Meta.AirbyteMetaFields.META.type,
+                name = Meta.COLUMN_NAME_AB_META,
+                airbyteMetaField = Meta.AirbyteMetaFields.META,
+            )
+
     val airbyteMetaFields: Map<String, EnrichedAirbyteValue>
         get() =
             mapOf(
@@ -236,36 +265,22 @@ data class EnrichedDestinationRecordAirbyteValue(
                         StringValue(UUID.randomUUID().toString()),
                         Meta.AirbyteMetaFields.RAW_ID.type,
                         name = Meta.COLUMN_NAME_AB_RAW_ID,
+                        airbyteMetaField = Meta.AirbyteMetaFields.RAW_ID,
                     ),
                 Meta.COLUMN_NAME_AB_EXTRACTED_AT to
                     EnrichedAirbyteValue(
                         IntegerValue(emittedAtMs),
                         Meta.AirbyteMetaFields.EXTRACTED_AT.type,
                         name = Meta.COLUMN_NAME_AB_EXTRACTED_AT,
+                        airbyteMetaField = Meta.AirbyteMetaFields.EXTRACTED_AT,
                     ),
-                Meta.COLUMN_NAME_AB_META to
-                    EnrichedAirbyteValue(
-                        ObjectValue(
-                            linkedMapOf(
-                                "sync_id" to IntegerValue(stream.syncId),
-                                "changes" to
-                                    ArrayValue(
-                                        (meta?.changes?.toAirbyteValues()
-                                            ?: emptyList()) +
-                                            declaredFields
-                                                .map { it.value.changes.toAirbyteValues() }
-                                                .flatten()
-                                    )
-                            )
-                        ),
-                        Meta.AirbyteMetaFields.META.type,
-                        name = Meta.COLUMN_NAME_AB_META,
-                    ),
+                Meta.COLUMN_NAME_AB_META to airbyteMeta,
                 Meta.COLUMN_NAME_AB_GENERATION_ID to
                     EnrichedAirbyteValue(
                         IntegerValue(stream.generationId),
                         Meta.AirbyteMetaFields.GENERATION_ID.type,
                         name = Meta.COLUMN_NAME_AB_GENERATION_ID,
+                        airbyteMetaField = Meta.AirbyteMetaFields.GENERATION_ID,
                     ),
             )
 
@@ -296,6 +311,13 @@ data class DestinationRecordRaw(
         )
     }
 
+    /**
+     * Convert this record to an EnrichedRecord. Crucially, after this conversion, all entries in
+     * [EnrichedDestinationRecordAirbyteValue.allTypedFields] are guaranteed to have
+     * [EnrichedAirbyteValue.abValue] either be [NullValue], or match [EnrichedAirbyteValue.type]
+     * (e.g. if `type` is [TimestampTypeWithTimezone], then `value` is either `NullValue`, or
+     * [TimestampWithTimezoneValue]).
+     */
     fun asEnrichedDestinationRecordAirbyteValue(): EnrichedDestinationRecordAirbyteValue {
         val rawJson = asRawJson()
 
@@ -322,12 +344,13 @@ data class DestinationRecordRaw(
 
                     val enrichedValue =
                         EnrichedAirbyteValue(
-                            value = NullValue,
+                            abValue = NullValue,
                             type = fieldType,
                             name = fieldName,
+                            airbyteMetaField = null,
                         )
                     AirbyteValueCoercer.coerce(fieldValue.toAirbyteValue(), fieldType)?.let {
-                        enrichedValue.value = it
+                        enrichedValue.abValue = it
                     }
                         ?: enrichedValue.nullify(Reason.DESTINATION_SERIALIZATION_ERROR)
 

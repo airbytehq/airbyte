@@ -355,7 +355,7 @@ to the Airbyte connector configuration screen, so it may log in to the bastion.
 
 MSSQL data types are mapped to the following data types when synchronizing data. You can check the
 test values examples
-[here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mssql/src/test-integration/java/io/airbyte/integrations/source/mssql/MssqlSourceComprehensiveTest.java).
+[here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mssql/src/test-integration/java/io/airbyte/integrations/source/mssql/MssqlSourceDatatypeTest.java).
 If you can't find the data type you are looking for or have any problems feel free to add a new
 test!
 
@@ -445,7 +445,8 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.1.25  | 2025-03-20 | [55878](https://github.com/airbytehq/airbyte/pull/55878) | Integrate with the latest mssql jdbc driver to solve a pre-gregorian date offset bug                                                              |
+| 4.1.26  | 2025-03-27 | [56401](https://github.com/airbytehq/airbyte/pull/56401) | Fix non-unique value clustered index issue                                                                                                      |
+| 4.1.25  | 2025-03-20 | [55878](https://github.com/airbytehq/airbyte/pull/55878) | Integrate with the latest mssql jdbc driver to solve a pre-gregorian date offset bug                                                            |
 | 4.1.24  | 2025-03-11 | [55709](https://github.com/airbytehq/airbyte/pull/55709) | Filter unwanted tables in discover to prevent null table issues                                                                                 |
 | 4.1.23  | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234) | Update base image version for certified DB source connectors                                                                                    |
 | 4.1.22  | 2025-02-10 | [53217](https://github.com/airbytehq/airbyte/pull/53217) | Default to PK when the clustered index is composite.                                                                                            |
