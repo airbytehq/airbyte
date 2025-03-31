@@ -173,10 +173,6 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         stateStore
                     }
                     is PipelineEndOfStream -> {
-                        val numWorkersSeenEos =
-                            streamCompletions
-                                .getOrPut(Pair(taskIndex, input.stream)) { AtomicInteger(0) }
-                                .incrementAndGet()
                         val inputCountEos = stateStore.streamCounts[input.stream] ?: 0
 
                         val keysToRemove =
@@ -198,6 +194,10 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         }
 
                         // Only forward end-of-stream if ALL workers have seen end-of-stream.
+                        val numWorkersSeenEos =
+                            streamCompletions
+                                .getOrPut(Pair(taskIndex, input.stream)) { AtomicInteger(0) }
+                                .incrementAndGet()
                         if (numWorkersSeenEos == numWorkers) {
                             log.info {
                                 "$this saw end-of-stream for ${input.stream} after $inputCountEos inputs, all workers complete"

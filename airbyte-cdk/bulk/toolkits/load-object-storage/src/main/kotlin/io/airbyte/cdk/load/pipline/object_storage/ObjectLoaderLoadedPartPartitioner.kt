@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.pipline.object_storage
 
+import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.OutputPartitioner
 
@@ -13,10 +14,13 @@ import io.airbyte.cdk.load.pipeline.OutputPartitioner
  * instead we focus on operational simplicity: all fact-of-loaded part signals for the same key go
  * to the same upload completer.)
  */
-class ObjectLoaderLoadedPartPartitioner<K : WithStream, T> :
-    OutputPartitioner<K, T, ObjectKey, ObjectLoaderPartLoader.PartResult> {
+class ObjectLoaderLoadedPartPartitioner<K : WithStream, T, U : RemoteObject<*>> :
+    OutputPartitioner<K, T, ObjectKey, ObjectLoaderPartLoader.PartResult<U>> {
 
-    override fun getOutputKey(inputKey: K, output: ObjectLoaderPartLoader.PartResult): ObjectKey {
+    override fun getOutputKey(
+        inputKey: K,
+        output: ObjectLoaderPartLoader.PartResult<U>
+    ): ObjectKey {
         return ObjectKey(inputKey.stream, output.objectKey)
     }
 
