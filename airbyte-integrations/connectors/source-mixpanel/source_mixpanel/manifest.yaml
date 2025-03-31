@@ -273,6 +273,9 @@ definitions:
           - type: TypesMap
             target_type: array
             current_type: list
+          - type: TypesMap
+            target_type: string
+            current_type: unknown
 
   cohort_members_stream:
     $ref: "#/definitions/engage_stream"
@@ -733,6 +736,16 @@ definitions:
         key_pointer: []
         type_pointer: []
         schema_pointer: []
+        types_mapping:
+          - type: TypesMap
+            target_type: timestamp_with_timezone
+            current_type: datetime
+          - type: TypesMap
+            target_type: array
+            current_type: list
+          - type: TypesMap
+            target_type: string
+            current_type: unknown
 
 streams:
   - "#/definitions/cohorts_stream"
