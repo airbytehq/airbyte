@@ -40,7 +40,7 @@ import jakarta.inject.Singleton
             "port",
             "connection_data",
             "username",
-            "password",
+            "authentication_method",
             "schemas",
             "jdbc_url_params",
             "tunnel_method",
@@ -72,11 +72,27 @@ class NetsuiteSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaInject(json = """{"order":4}""")
     lateinit var username: String
 
-    @JsonProperty("password")
-    @JsonSchemaTitle("Password")
-    @JsonPropertyDescription("The password associated with the username.")
-    @JsonSchemaInject(json = """{"order":5,"always_show":true,"airbyte_secret":true}""")
-    var password: String? = null
+    @JsonIgnore
+    @ConfigurationBuilder(configurationPrefix = "authentication_method")
+    var authenticationMethod =
+        MicronautPropertiesFriendlyAuthenticationMethodConfigurationSpecification()
+
+    @JsonIgnore var authenticationMethodJson: AuthenticationMethodConfiguration? = null
+
+    @JsonSetter("authentication_method")
+    fun setAuthenticationMethodValue(value: AuthenticationMethodConfiguration) {
+        authenticationMethodJson = value
+    }
+
+    @JsonGetter("authentication_method")
+    @JsonSchemaTitle("Authentication Method")
+    @JsonPropertyDescription(
+        "Configure how to authenticate to Netsuite. " +
+            "Options include username/password or token-based authentication."
+    )
+    @JsonSchemaInject(json = """{"order":5}""")
+    fun getAuthenticationMethodValue(): AuthenticationMethodConfiguration =
+        authenticationMethodJson ?: authenticationMethod.asAuthenticationMethodConfiguration()
 
     @JsonProperty("account_id")
     @JsonSchemaTitle("Account ID")

@@ -23,7 +23,6 @@ class NetsuiteSourceConfigurationSpecificationTest {
     @Property(name = "airbyte.connector.config.host", value = "localhost")
     @Property(name = "airbyte.connector.config.port", value = "12345")
     @Property(name = "airbyte.connector.config.username", value = "FOO")
-    @Property(name = "airbyte.connector.config.password", value = "BAR")
     @Property(name = "airbyte.connector.config.schemas", value = "FOO,SYSTEM")
     @Property(
         name = "airbyte.connector.config.connection_data.connection_type",
@@ -40,12 +39,19 @@ class NetsuiteSourceConfigurationSpecificationTest {
     @Property(name = "airbyte.connector.config.tunnel_method.tunnel_port", value = "2222")
     @Property(name = "airbyte.connector.config.tunnel_method.tunnel_user", value = "sshuser")
     @Property(name = "airbyte.connector.config.tunnel_method.tunnel_user_password", value = "***")
+    @Property(
+        name = "airbyte.connector.config.authentication_method",
+        value = "password_authentication"
+    )
+    @Property(name = "airbyte.connector.config.authentication_method.password", value = "BAR")
+    @Property(name = "airbyte.connector.config.account_id", value = "1234_SB9")
+    @Property(name = "airbyte.connector.config.role_id", value = "99")
     fun testPropertyInjection() {
         val pojo: NetsuiteSourceConfigurationSpecification = supplier.get()
         Assertions.assertEquals("localhost", pojo.host)
         Assertions.assertEquals(12345, pojo.port)
         Assertions.assertEquals("FOO", pojo.username)
-        Assertions.assertEquals("BAR", pojo.password)
+        Assertions.assertEquals("password_authentication", pojo.authenticationMethod.method)
     }
 
     @Test

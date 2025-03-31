@@ -5,7 +5,7 @@ plugins {
 airbyteBulkConnector {
     core = 'extract'
     toolkits = ['extract-jdbc']
-    cdk = '0.346'
+    cdk = '0.367'
 }
 
 application {
@@ -16,4 +16,5 @@ dependencies {
     // Add jdbc driver for netsuite. This could be tricky because it's a jar file and we need to somehow put that into
     // a local repo.
     implementation files('libs/NQjc.jar')
+    implementation 'org.apache.commons:commons-lang3:3.17.0'
 }

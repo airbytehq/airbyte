@@ -60,7 +60,9 @@ data object UserDefinedCursorIncrementalConfiguration : IncrementalConfiguration
 @Singleton
 class NetsuiteSourceConfigurationFactory :
     SourceConfigurationFactory<
-        NetsuiteSourceConfigurationSpecification, NetsuiteSourceConfiguration> {
+        NetsuiteSourceConfigurationSpecification,
+        NetsuiteSourceConfiguration,
+    > {
     override fun makeWithoutExceptionHandling(
         pojo: NetsuiteSourceConfigurationSpecification,
     ): NetsuiteSourceConfiguration {
@@ -68,8 +70,27 @@ class NetsuiteSourceConfigurationFactory :
         val realPort: Int = pojo.port
         val sshTunnel: SshTunnelMethodConfiguration = pojo.getTunnelMethodValue()
         val jdbcProperties = mutableMapOf<String, String>()
+        var props: Map<String, String> = jdbcProperties
         jdbcProperties["user"] = pojo.username
-        pojo.password?.let { jdbcProperties["password"] = it }
+        val authenticationMethod: AuthenticationMethodConfiguration =
+            pojo.getAuthenticationMethodValue()
+        when (authenticationMethod) {
+            is PasswordAuthentication -> {
+                // Password authentication
+                authenticationMethod.password?.let { jdbcProperties["password"] = it }
+            }
+            is TokenBasedAuthentication -> {
+                // Token-based authentication properties
+                jdbcProperties[CLIENT_ID] = authenticationMethod.clientId
+                jdbcProperties[CLIENT_SECRET] = authenticationMethod.clientSecret
+                jdbcProperties[TOKEN_ID] = authenticationMethod.tokenId
+                jdbcProperties[TOKEN_SECRET] = authenticationMethod.tokenSecret
+                // Token password needs is no reusable to be recalculated for each connection.
+                // replace the plain JDBC properties map with a token dispensing map
+                props = OAuth1TokenDispensingJdbcProperties(jdbcProperties, pojo.accountId)
+            }
+        }
+
         // Parse URL parameters.
         val pattern = "^([^=]+)=(.*)$".toRegex()
         for (pair in (pojo.jdbcUrlParams ?: "").trim().split("&".toRegex())) {
@@ -112,7 +133,7 @@ class NetsuiteSourceConfigurationFactory :
             sshTunnel = sshTunnel,
             sshConnectionOptions = sshOpts,
             jdbcUrlFmt = jdbcUrlFmt,
-            jdbcProperties = jdbcProperties,
+            jdbcProperties = props,
             incremental = incrementalConfiguration,
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
