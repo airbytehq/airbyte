@@ -25,6 +25,8 @@ The "Azure Blob Storage file spill size" option has been renamed to "file split 
 
 ### Required permissions
 
+The connector now needs to read/write blob metadata, in order to support refreshes with no data downtime. If you are using a [Shared Access Signature](https://learn.microsoft.com/en-gb/azure/storage/common/storage-sas-overview), you should grant the [`Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write`](https://learn.microsoft.com/en-us/rest/api/storageservices/get-blob-metadata?tabs=microsoft-entra-id#authorization) permission to the SAS.
+
 The connector no longer attempts to create Azure blob storage containers, and therefore you no longer need to provide the `Microsoft.Storage/storageAccounts/blobServices/containers/write` permission.
 
 ### Block blobs
