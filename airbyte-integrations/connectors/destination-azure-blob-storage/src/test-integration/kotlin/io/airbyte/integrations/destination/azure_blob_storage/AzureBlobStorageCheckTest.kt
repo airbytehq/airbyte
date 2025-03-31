@@ -8,6 +8,8 @@ import io.airbyte.cdk.load.check.CheckIntegrationTest
 import io.airbyte.cdk.load.check.CheckTestConfig
 import io.airbyte.cdk.load.command.object_storage.CSVFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.JsonFormatSpecification
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
 
 class AzureBlobStorageCheckTest :
     CheckIntegrationTest<AzureBlobStorageSpecification>(
@@ -21,5 +23,14 @@ class AzureBlobStorageCheckTest :
                 ),
                 CheckTestConfig(AzureBlobStorageTestUtil.getSasConfig(CSVFormatSpecification())),
             ),
-        failConfigFilenamesAndFailureReasons = emptyMap(),
+        failConfigFilenamesAndFailureReasons =
+            mapOf(
+                CheckTestConfig(
+                    Files.readString(
+                        AzureBlobStorageTestUtil.invalidConfig,
+                        StandardCharsets.UTF_8
+                    ),
+                    name = "Bad hostname"
+                ) to "Server failed to authenticate the request".toPattern(),
+            ),
     )
