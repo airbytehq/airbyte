@@ -43,6 +43,12 @@ data:
   tags:
     - language:python
     - cdk:python-file-based
+  resourceRequirements:
+    jobSpecific:
+     - jobType: discover_schema
+       resourceRequirements:
+          memory_limit: 1024mi
+          memory_request: 1024mi
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: liveTests
@@ -348,10 +354,4 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-    resourceRequirements:
-      jobSpecific:
-        - jobType: discover_schema
-          resourceRequirments:
-            memory_limit: 1024mi
-            memory_request: 1024mi
 metadataSpecVersion: "1.0"
