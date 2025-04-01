@@ -12,9 +12,24 @@ API Reference: https://developers.belvo.com/reference/using-the-api-reference
 | `limit` | `string` | Limit. Limit for each response objects | 10 |
 
 ## Streams
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| institutions | id | DefaultPaginator | ✅ |  ❌  |
+| Stream Name            | Primary Key | Pagination       | Supports Full Sync | Supports Incremental |
+|------------------------|-------------|----------------|---------------------|----------------------|
+| institutions          | id          | DefaultPaginator | ✅                  | ❌                  |
+| links                 | id          | DefaultPaginator | ✅                  | ❌                  |
+| accounts              | id          | DefaultPaginator | ✅                  | ❌                  |
+| transactions          | id          | DefaultPaginator | ❌                  | ❌                  |
+| owners                | id          | DefaultPaginator | ✅                  | ❌                  |
+| bills                 | id          | DefaultPaginator | ❌                  | ❌                  |
+| tax_compliance_status | id          | DefaultPaginator | ✅                  | ❌                  |
+| invoices              | id          | DefaultPaginator | ✅                  | ❌                  |
+| financial_statements  | id          | DefaultPaginator | ✅                  | ❌                  |
+| tax_retentions        | id          | DefaultPaginator | ✅                  | ❌                  |
+| tax_returns           | id          | DefaultPaginator | ✅                  | ❌                  |
+| tax_status            | id          | DefaultPaginator | ✅                  | ❌                  |
+| incomes               | id          | DefaultPaginator | ✅                  | ❌                  |
+| recurring_expenses    | id          | DefaultPaginator | ✅                  | ❌                  |
+| risk_insights         | id          | DefaultPaginator | ✅                  | ❌                  |
+| employment_metrics    | id          | DefaultPaginator | ✅                  | ❌                  |
 
 ## Changelog
 
@@ -23,6 +38,6 @@ API Reference: https://developers.belvo.com/reference/using-the-api-reference
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2025-04-01 | | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
+| 0.0.1 | 2025-04-01 | [56949](https://github.com/airbytehq/airbyte/pull/56949) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>

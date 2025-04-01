@@ -9,7 +9,7 @@ description: |-
 check:
   type: CheckStream
   stream_names:
-    - institutions
+    - links
 
 definitions:
   streams:
@@ -46,6 +46,519 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/institutions"
+    links:
+      type: DeclarativeStream
+      name: links
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/links
+          http_method: GET
+          request_parameters:
+            page_size: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/links"
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/accounts
+          http_method: GET
+          request_parameters:
+            page_size: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    transactions:
+      type: DeclarativeStream
+      name: transactions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/transactions/
+          http_method: GET
+          request_parameters:
+            link: "{{ stream_partition['link_id'] }}"
+            page_size: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: link_id
+              stream:
+                $ref: "#/definitions/streams/links"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/transactions"
+    owners:
+      type: DeclarativeStream
+      name: owners
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/owners/
+          http_method: GET
+          request_parameters:
+            page_size: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/owners"
+    bills:
+      type: DeclarativeStream
+      name: bills
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/bills/
+          http_method: GET
+          request_parameters:
+            link: "{{ stream_partition['link_id'] }}"
+            page_size: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: link_id
+              stream:
+                $ref: "#/definitions/streams/links"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/bills"
+    tax_compliance_status:
+      type: DeclarativeStream
+      name: tax_compliance_status
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/tax-compliance-status/
+          http_method: GET
+          request_parameters:
+            page_size: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tax_compliance_status"
+    invoices:
+      type: DeclarativeStream
+      name: invoices
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/invoices/
+          http_method: GET
+          request_parameters:
+            page_size: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoices"
+    financial_statements:
+      type: DeclarativeStream
+      name: financial_statements
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/financial-statements/
+          http_method: GET
+          request_parameters:
+            page_size: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/financial_statements"
+    tax_retentions:
+      type: DeclarativeStream
+      name: tax_retentions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/tax-retentions/
+          http_method: GET
+          request_parameters:
+            page_size: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tax_retentions"
+    tax_returns:
+      type: DeclarativeStream
+      name: tax_returns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/tax-returns/
+          http_method: GET
+          request_parameters:
+            page_size: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tax_returns"
+    tax_status:
+      type: DeclarativeStream
+      name: tax_status
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/tax-status/
+          http_method: GET
+          request_parameters:
+            page_size: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tax_status"
+    incomes:
+      type: DeclarativeStream
+      name: incomes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/incomes/
+          http_method: GET
+          request_parameters:
+            page_size: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/incomes"
+    recurring_expenses:
+      type: DeclarativeStream
+      name: recurring_expenses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/recurring-expenses/
+          http_method: GET
+          request_parameters:
+            page_size: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/recurring_expenses"
+    risk_insights:
+      type: DeclarativeStream
+      name: risk_insights
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/risk-insights/
+          http_method: GET
+          request_parameters:
+            page_size: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/risk_insights"
+    employment_metrics:
+      type: DeclarativeStream
+      name: employment_metrics
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/employment-metrics/
+          http_method: GET
+          request_parameters:
+            page_size: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/employment_metrics"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['subdomain'] }}.belvo.com
@@ -56,6 +569,21 @@ definitions:
 
 streams:
   - $ref: "#/definitions/streams/institutions"
+  - $ref: "#/definitions/streams/links"
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/transactions"
+  - $ref: "#/definitions/streams/owners"
+  - $ref: "#/definitions/streams/bills"
+  - $ref: "#/definitions/streams/tax_compliance_status"
+  - $ref: "#/definitions/streams/invoices"
+  - $ref: "#/definitions/streams/financial_statements"
+  - $ref: "#/definitions/streams/tax_retentions"
+  - $ref: "#/definitions/streams/tax_returns"
+  - $ref: "#/definitions/streams/tax_status"
+  - $ref: "#/definitions/streams/incomes"
+  - $ref: "#/definitions/streams/recurring_expenses"
+  - $ref: "#/definitions/streams/risk_insights"
+  - $ref: "#/definitions/streams/employment_metrics"
 
 spec:
   type: Spec
@@ -111,10 +639,130 @@ spec:
 metadata:
   autoImportSchema:
     institutions: true
+    links: false
+    accounts: false
+    transactions: false
+    owners: false
+    bills: false
+    tax_compliance_status: false
+    invoices: false
+    financial_statements: false
+    tax_retentions: false
+    tax_returns: false
+    tax_status: false
+    incomes: false
+    recurring_expenses: false
+    risk_insights: false
+    employment_metrics: false
   testedStreams:
     institutions:
       hasRecords: true
       streamHash: d9dcd476ac42ee3a36c4d8d8cc6450830095a2bd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    links:
+      hasRecords: false
+      streamHash: db1b1791660038bc2a0dcd9bc6035decb4830984
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    accounts:
+      hasRecords: false
+      streamHash: a33446c0fca5b7881b88a5bc20c342bcc773120d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    transactions:
+      hasRecords: false
+      streamHash: b281232f67a88841a343a1b8939f54f1c35f0e3d
+      hasResponse: false
+      primaryKeysAreUnique: false
+      primaryKeysArePresent: false
+      responsesAreSuccessful: false
+    owners:
+      hasRecords: false
+      streamHash: e00ac2d7cfdc766012015a18aa6080a708a6c9fa
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    bills:
+      hasRecords: false
+      streamHash: e33660e7c0d40d04c8bfe6815343128142abfeb6
+      hasResponse: false
+      primaryKeysAreUnique: false
+      primaryKeysArePresent: false
+      responsesAreSuccessful: false
+    tax_compliance_status:
+      hasRecords: false
+      streamHash: b9b93e1f00409a9742fd402e3dfc399ddcb312b8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    invoices:
+      hasRecords: false
+      streamHash: 29c8d6463fbc3c09e36de2644eec1b6a8f327ebb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    financial_statements:
+      hasRecords: false
+      streamHash: 7a9ef36f88d124cfcf6353fe5c4e532a54c149fb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tax_retentions:
+      hasRecords: false
+      streamHash: 76b6d5d7168c61221c02d0c4423f857525c133ab
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tax_returns:
+      hasRecords: false
+      streamHash: 9a197d1acb9a482e91c719da1b10d22cba5fb531
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tax_status:
+      hasRecords: false
+      streamHash: aee508c45c3e1bdf210ce5f11074e2a5f7e13793
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: false
+    incomes:
+      hasRecords: false
+      streamHash: 5f48b1c884ed8a741f53d180b35b15876b56eb76
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    recurring_expenses:
+      hasRecords: false
+      streamHash: fc31b8b80b0a826f5626307ee9f6cff5b25ec803
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    risk_insights:
+      hasRecords: false
+      streamHash: 9a93720286d440eb13efccb00b31dba40a9b36bf
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    employment_metrics:
+      hasRecords: false
+      streamHash: 7350f88a4c38bf746675c63af41ef087c41f6baa
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -304,3 +952,4523 @@ schemas:
           - "null"
     required:
       - id
+  links:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      access_mode:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      credentials_storage:
+        type:
+          - string
+          - "null"
+      external_id:
+        type:
+          - string
+          - "null"
+      fetch_resources:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      id:
+        type:
+          - string
+          - "null"
+      institution:
+        type:
+          - string
+          - "null"
+      institution_user_id:
+        type:
+          - string
+          - "null"
+      last_accessed_at:
+        type:
+          - string
+          - "null"
+      refresh_rate:
+        type:
+          - string
+          - "null"
+      stale_in:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    title: Generated schema for Root
+  accounts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      agency:
+        type:
+          - string
+          - "null"
+      balance:
+        type:
+          - object
+          - "null"
+        properties:
+          automatically_invested:
+            type:
+              - number
+              - "null"
+          available:
+            type:
+              - number
+              - "null"
+          blocked:
+            type:
+              - number
+              - "null"
+          current:
+            type:
+              - number
+              - "null"
+      balance_type:
+        type:
+          - string
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      check_digit:
+        type:
+          - string
+          - "null"
+      collected_at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      credit_data:
+        type:
+          - object
+          - "null"
+        properties:
+          cards:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              properties:
+                identification_number:
+                  type:
+                    - string
+                    - "null"
+                is_multiple:
+                  type:
+                    - boolean
+                    - "null"
+          collected_at:
+            type:
+              - string
+              - "null"
+          credit_limit:
+            type:
+              - number
+              - "null"
+          cutting_date:
+            type:
+              - string
+              - "null"
+          interest_rate:
+            type:
+              - "null"
+          limits:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                available_amount:
+                  type:
+                    - number
+                    - "null"
+                consolidation_type:
+                  type:
+                    - string
+                    - "null"
+                credit_limit:
+                  type:
+                    - number
+                    - "null"
+                identification_number:
+                  type:
+                    - string
+                    - "null"
+                is_limit_flexible:
+                  type:
+                    - boolean
+                    - "null"
+                line_name:
+                  type:
+                    - string
+                    - "null"
+                line_name_additional_info:
+                  type:
+                    - string
+                    - "null"
+                used_amount:
+                  type:
+                    - number
+                    - "null"
+          minimum_payment:
+            type:
+              - number
+              - "null"
+          network:
+            type:
+              - string
+              - "null"
+          network_additional_info:
+            type:
+              - string
+              - "null"
+          next_payment_date:
+            type:
+              - "null"
+          no_interest_payment:
+            type:
+              - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      funds_data:
+        type:
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      institution:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      internal_identification:
+        type:
+          - string
+          - "null"
+      last_accessed_at:
+        type:
+          - string
+          - "null"
+      link:
+        type:
+          - string
+          - "null"
+      loan_data:
+        type:
+          - object
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      number:
+        type:
+          - string
+          - "null"
+      overdraft:
+        type:
+          - object
+          - "null"
+        properties:
+          arranged:
+            type:
+              - number
+              - "null"
+          unarranged:
+            type:
+              - number
+              - "null"
+          used:
+            type:
+              - number
+              - "null"
+      public_identification_name:
+        type:
+          - string
+          - "null"
+      public_identification_value:
+        type:
+          - string
+          - "null"
+      subtype:
+        type:
+          - string
+          - "null"
+    title: Generated schema for Root
+  transactions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      account:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          agency:
+            type:
+              - string
+              - "null"
+          balance:
+            type:
+              - object
+              - "null"
+            properties:
+              automatically_invested:
+                type:
+                  - number
+                  - "null"
+              available:
+                type:
+                  - number
+                  - "null"
+              blocked:
+                type:
+                  - number
+                  - "null"
+              current:
+                type:
+                  - number
+                  - "null"
+          balance_type:
+            type:
+              - string
+              - "null"
+          category:
+            type:
+              - string
+              - "null"
+          check_digit:
+            type:
+              - string
+              - "null"
+          collected_at:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          institution:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          last_accessed_at:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          number:
+            type:
+              - string
+              - "null"
+          overdraft:
+            type:
+              - object
+              - "null"
+            properties:
+              arranged:
+                type:
+                  - number
+                  - "null"
+              unarranged:
+                type:
+                  - number
+                  - "null"
+              used:
+                type:
+                  - number
+                  - "null"
+          subtype:
+            type:
+              - string
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      internal_identification:
+        type:
+          - string
+          - "null"
+    title: Generated schema for Root
+  owners:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      additional_documents:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            additional_info:
+              type:
+                - string
+                - "null"
+            check_digit:
+              type:
+                - string
+                - "null"
+            country_of_issuance:
+              type:
+                - string
+                - "null"
+            expiration_date:
+              type:
+                - string
+                - "null"
+            issue_date:
+              type:
+                - string
+                - "null"
+            number:
+              type:
+                - string
+                - "null"
+            type_additional_info:
+              type:
+                - string
+                - "null"
+      address:
+        type:
+          - string
+          - "null"
+      addresses:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            additional_info:
+              type:
+                - string
+                - "null"
+            address:
+              type:
+                - string
+                - "null"
+            country_code:
+              type:
+                - string
+                - "null"
+            country_name:
+              type:
+                - string
+                - "null"
+            district_name:
+              type:
+                - string
+                - "null"
+            is_main:
+              type:
+                - boolean
+                - "null"
+            latitude:
+              type:
+                - string
+                - "null"
+            longitude:
+              type:
+                - string
+                - "null"
+            postcode:
+              type:
+                - string
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+            town:
+              type:
+                - string
+                - "null"
+            town_code:
+              type:
+                - string
+                - "null"
+      birth_date:
+        type:
+          - string
+          - "null"
+      collected_at:
+        type:
+          - string
+          - "null"
+      companies_id:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      display_name:
+        type:
+          - string
+          - "null"
+      document_id:
+        type:
+          - object
+          - "null"
+        properties:
+          document_number:
+            type:
+              - string
+              - "null"
+          document_type:
+            type:
+              - string
+              - "null"
+      email:
+        type:
+          - string
+          - "null"
+      emails:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            email:
+              type:
+                - string
+                - "null"
+            is_main:
+              type:
+                - boolean
+                - "null"
+      filiations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            civil_name:
+              type:
+                - string
+                - "null"
+            social_name:
+              type:
+                - string
+                - "null"
+      financial_profile:
+        type:
+          - object
+          - "null"
+        properties:
+          company_id:
+            type:
+              - string
+              - "null"
+          informed_income:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+              date:
+                type:
+                  - string
+                  - "null"
+              frequency:
+                type:
+                  - string
+                  - "null"
+          occupation_description:
+            type:
+              - string
+              - "null"
+          occuptation_code:
+            type:
+              - string
+              - "null"
+          patrimony:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+              year:
+                type:
+                  - number
+                  - "null"
+      financial_relation:
+        type:
+          - object
+          - "null"
+        properties:
+          procurators:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                civil_name:
+                  type:
+                    - string
+                    - "null"
+                document_number:
+                  type:
+                    - string
+                    - "null"
+                social_name:
+                  type:
+                    - string
+                    - "null"
+          product_services:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          product_services_additional_info:
+            type:
+              - string
+              - "null"
+          products:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                agency:
+                  type:
+                    - string
+                    - "null"
+                check_digit:
+                  type:
+                    - string
+                    - "null"
+                clearing_code:
+                  type:
+                    - string
+                    - "null"
+                number:
+                  type:
+                    - string
+                    - "null"
+                subtype:
+                  type:
+                    - string
+                    - "null"
+          start_date:
+            type:
+              - string
+              - "null"
+      gender:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      internal_identification:
+        type:
+          - string
+          - "null"
+      is_local_resident:
+        type:
+          - boolean
+          - "null"
+      link:
+        type:
+          - string
+          - "null"
+      marital_status:
+        type:
+          - string
+          - "null"
+      marital_status_additional_info:
+        type:
+          - string
+          - "null"
+      nationalities:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            documents:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  additional_info:
+                    type:
+                      - string
+                      - "null"
+                  country_of_issuance:
+                    type:
+                      - string
+                      - "null"
+                  expiration_date:
+                    type:
+                      - string
+                      - "null"
+                  issue_date:
+                    type:
+                      - string
+                      - "null"
+                  number:
+                    type:
+                      - string
+                      - "null"
+            info:
+              type:
+                - string
+                - "null"
+      phone_number:
+        type:
+          - string
+          - "null"
+      phone_numbers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            additional_info:
+              type:
+                - string
+                - "null"
+            area_code:
+              type:
+                - string
+                - "null"
+            country_code:
+              type:
+                - string
+                - "null"
+            extension:
+              type:
+                - string
+                - "null"
+            is_main:
+              type:
+                - boolean
+                - "null"
+            number:
+              type:
+                - string
+                - "null"
+      social_name:
+        type:
+          - string
+          - "null"
+    title: Generated schema for Root
+  bills:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      account:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          agency:
+            type:
+              - string
+              - "null"
+          balance:
+            type:
+              - object
+              - "null"
+            properties:
+              automatically_invested:
+                type:
+                  - number
+                  - "null"
+              available:
+                type:
+                  - number
+                  - "null"
+              blocked:
+                type:
+                  - number
+                  - "null"
+              current:
+                type:
+                  - number
+                  - "null"
+          balance_type:
+            type:
+              - string
+              - "null"
+          category:
+            type:
+              - string
+              - "null"
+          check_digit:
+            type:
+              - string
+              - "null"
+          collected_at:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          credit_data:
+            type:
+              - object
+              - "null"
+            properties:
+              cards:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    identification_number:
+                      type:
+                        - string
+                        - "null"
+                    is_multiple:
+                      type:
+                        - boolean
+                        - "null"
+              collected_at:
+                type:
+                  - string
+                  - "null"
+              credit_limit:
+                type:
+                  - number
+                  - "null"
+              cutting_date:
+                type:
+                  - string
+                  - "null"
+              interest_rate:
+                type:
+                  - "null"
+                  - string
+              limits:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    available_amount:
+                      type:
+                        - number
+                        - "null"
+                    consolidation_type:
+                      type:
+                        - string
+                        - "null"
+                    credit_limit:
+                      type:
+                        - number
+                        - "null"
+                    identification_number:
+                      type:
+                        - string
+                        - "null"
+                    is_limit_flexible:
+                      type:
+                        - boolean
+                        - "null"
+                    line_name:
+                      type:
+                        - string
+                        - "null"
+                    line_name_additional_info:
+                      type:
+                        - string
+                        - "null"
+                    used_amount:
+                      type:
+                        - number
+                        - "null"
+              minimum_payment:
+                type:
+                  - number
+                  - "null"
+              network:
+                type:
+                  - string
+                  - "null"
+              network_additional_info:
+                type:
+                  - string
+                  - "null"
+              next_payment_date:
+                type:
+                  - "null"
+                  - string
+              no_interest_payment:
+                type:
+                  - "null"
+                  - string
+          currency:
+            type:
+              - string
+              - "null"
+          funds_data:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - string
+              - "null"
+          institution:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          internal_identification:
+            type:
+              - string
+              - "null"
+          last_accessed_at:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+          loan_data:
+            type:
+              - object
+              - "null"
+            properties:
+              amortization_schedule:
+                type:
+                  - string
+                  - "null"
+              amortization_schedule_info:
+                type:
+                  - string
+                  - "null"
+              balloon_payments:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    amount:
+                      type:
+                        - number
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                    due_date:
+                      type:
+                        - string
+                        - "null"
+              collaterals:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    amount:
+                      type:
+                        - number
+                        - "null"
+                    currency:
+                      type:
+                        - string
+                        - "null"
+                    subtype:
+                      type:
+                        - string
+                        - "null"
+              collected_at:
+                type:
+                  - string
+                  - "null"
+              consignee_id:
+                type:
+                  - string
+                  - "null"
+              contract_amount:
+                type:
+                  - number
+                  - "null"
+              contract_end_date:
+                type:
+                  - string
+                  - "null"
+              contract_number:
+                type:
+                  - string
+                  - "null"
+              contract_remaining_frequency:
+                type:
+                  - string
+                  - "null"
+              contract_remaining_total:
+                type:
+                  - number
+                  - "null"
+              contract_start_date:
+                type:
+                  - string
+                  - "null"
+              contracted_charges:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    info:
+                      type:
+                        - string
+                        - "null"
+                    rate:
+                      type:
+                        - number
+                        - "null"
+              disbursement_dates:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              fees:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                    code:
+                      type:
+                        - string
+                        - "null"
+                    fee_charge:
+                      type:
+                        - string
+                        - "null"
+                    fee_charge_type:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    rate:
+                      type:
+                        - number
+                        - "null"
+                    value:
+                      type:
+                        - number
+                        - "null"
+              first_installment_due_date:
+                type:
+                  - string
+                  - "null"
+              installment_frequency:
+                type:
+                  - string
+                  - "null"
+              installment_frequency_info:
+                type:
+                  - string
+                  - "null"
+              installments_contract_term_frequency:
+                type:
+                  - string
+                  - "null"
+              interest_rates:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    interest_rate_data:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        additional_info:
+                          type:
+                            - string
+                            - "null"
+                        calculation_base:
+                          type:
+                            - string
+                            - "null"
+                        post_fixed_rate:
+                          type:
+                            - number
+                            - "null"
+                        pre_fixed_rate:
+                          type:
+                            - number
+                            - "null"
+                        rate_type:
+                          type:
+                            - string
+                            - "null"
+                        reference_index_info:
+                          type:
+                            - string
+                            - "null"
+                        reference_index_subtype:
+                          type:
+                            - string
+                            - "null"
+                        reference_index_type:
+                          type:
+                            - string
+                            - "null"
+                        tax_type:
+                          type:
+                            - string
+                            - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    value:
+                      type:
+                        - number
+                        - "null"
+              loan_code:
+                type:
+                  - string
+                  - "null"
+              loan_type:
+                type:
+                  - string
+                  - "null"
+              monthly_payment:
+                type:
+                  - "null"
+                  - string
+              number_of_installments_outstanding:
+                type:
+                  - number
+                  - "null"
+              number_of_installments_paid:
+                type:
+                  - number
+                  - "null"
+              number_of_installments_past_due:
+                type:
+                  - number
+                  - "null"
+              number_of_installments_total:
+                type:
+                  - number
+                  - "null"
+              outstanding_balance:
+                type:
+                  - number
+                  - "null"
+              outstanding_principal:
+                type:
+                  - "null"
+                  - string
+              payment_day:
+                type:
+                  - "null"
+                  - string
+              principal:
+                type:
+                  - "null"
+                  - string
+              settlement_date:
+                type:
+                  - string
+                  - "null"
+              total_effective_cost:
+                type:
+                  - number
+                  - "null"
+          name:
+            type:
+              - string
+              - "null"
+          number:
+            type:
+              - string
+              - "null"
+          overdraft:
+            type:
+              - object
+              - "null"
+            properties:
+              arranged:
+                type:
+                  - number
+                  - "null"
+              unarranged:
+                type:
+                  - number
+                  - "null"
+              used:
+                type:
+                  - number
+                  - "null"
+          public_identification_name:
+            type:
+              - string
+              - "null"
+          public_identification_value:
+            type:
+              - string
+              - "null"
+          subtype:
+            type:
+              - string
+              - "null"
+      bill_name:
+        type:
+          - string
+          - "null"
+      collected_at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      due_date:
+        type:
+          - string
+          - "null"
+      finance_charges:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            additional_info:
+              type:
+                - string
+                - "null"
+            amount:
+              type:
+                - number
+                - "null"
+            currency:
+              type:
+                - string
+                - "null"
+      id:
+        type:
+          - string
+          - "null"
+      internal_identification:
+        type:
+          - string
+          - "null"
+      is_installment:
+        type:
+          - boolean
+          - "null"
+      minimum_amount:
+        type:
+          - number
+          - "null"
+      payments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            amount:
+              type:
+                - number
+                - "null"
+            currency:
+              type:
+                - string
+                - "null"
+            payment_date:
+              type:
+                - string
+                - "null"
+            payment_mode:
+              type:
+                - string
+                - "null"
+      total_amount:
+        type:
+          - number
+          - "null"
+    title: Generated schema for Root
+  tax_compliance_status:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      collected_at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      internal_identification:
+        type:
+          - string
+          - "null"
+      outcome:
+        type:
+          - string
+          - "null"
+      pdf:
+        type:
+          - string
+          - "null"
+      rfc:
+        type:
+          - string
+          - "null"
+    title: Generated schema for Root
+  invoices:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - string
+          - "null"
+      type:
+        type:
+          - string
+          - "null"
+      cancelation_status:
+        type:
+          - "null"
+      cancelation_update_date:
+        type:
+          - "null"
+      certification_authority:
+        type:
+          - string
+          - "null"
+      certification_date:
+        type:
+          - string
+          - "null"
+      collected_at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      discount_amount:
+        type:
+          - number
+          - "null"
+      exchange_rate:
+        type:
+          - number
+          - "null"
+      folio:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      invoice_date:
+        type:
+          - string
+          - "null"
+      invoice_details:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            collected_at:
+              type:
+                - string
+                - "null"
+            pre_tax_amount:
+              type:
+                - number
+                - "null"
+            product_identification:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            retained_taxes:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - "null"
+            tax_amount:
+              type:
+                - number
+                - "null"
+            tax_percentage:
+              type:
+                - number
+                - "null"
+            total_amount:
+              type:
+                - number
+                - "null"
+            unit_amount:
+              type:
+                - number
+                - "null"
+            unit_code:
+              type:
+                - string
+                - "null"
+            unit_description:
+              type:
+                - string
+                - "null"
+      invoice_identification:
+        type:
+          - string
+          - "null"
+      invoice_type:
+        type:
+          - string
+          - "null"
+      link:
+        type:
+          - string
+          - "null"
+      payment_method:
+        type:
+          - string
+          - "null"
+      payment_type:
+        type:
+          - string
+          - "null"
+      payment_type_description:
+        type:
+          - "null"
+      payments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - "null"
+      payroll:
+        type:
+          - "null"
+      place_of_issue:
+        type:
+          - string
+          - "null"
+      receiver_id:
+        type:
+          - string
+          - "null"
+      receiver_name:
+        type:
+          - string
+          - "null"
+      receiver_tax_fraud_status:
+        type:
+          - string
+          - "null"
+      sender_id:
+        type:
+          - string
+          - "null"
+      sender_name:
+        type:
+          - string
+          - "null"
+      sender_tax_fraud_status:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subtotal_amount:
+        type:
+          - number
+          - "null"
+      tax_amount:
+        type:
+          - number
+          - "null"
+      total_amount:
+        type:
+          - number
+          - "null"
+      usage:
+        type:
+          - string
+          - "null"
+      warnings:
+        type:
+          - object
+          - "null"
+        properties:
+          code:
+            type:
+              - string
+              - "null"
+          message:
+            type:
+              - string
+              - "null"
+      xml:
+        type:
+          - string
+          - "null"
+    title: Generated schema for Root
+  financial_statements:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      balance_sheet:
+        type:
+          - object
+          - "null"
+        properties:
+          current_assets:
+            type:
+              - object
+              - "null"
+            properties:
+              accounts_receivable:
+                type:
+                  - number
+                  - "null"
+              assets_available_for_sale:
+                type:
+                  - number
+                  - "null"
+              bad_debt_provision:
+                type:
+                  - number
+                  - "null"
+              cash_and_equivalents:
+                type:
+                  - number
+                  - "null"
+              inventory:
+                type:
+                  - number
+                  - "null"
+              notes_receivable:
+                type:
+                  - number
+                  - "null"
+              other_debtors:
+                type:
+                  - number
+                  - "null"
+              prepaid_expenses:
+                type:
+                  - number
+                  - "null"
+              short_term_investments:
+                type:
+                  - number
+                  - "null"
+              tax_recoverable:
+                type:
+                  - number
+                  - "null"
+              total:
+                type:
+                  - number
+                  - "null"
+          current_liabilities:
+            type:
+              - object
+              - "null"
+            properties:
+              accounts_payable:
+                type:
+                  - number
+                  - "null"
+              bank_loans:
+                type:
+                  - number
+                  - "null"
+              customer_advances:
+                type:
+                  - number
+                  - "null"
+              financial_instruments:
+                type:
+                  - number
+                  - "null"
+              income_tax_payable:
+                type:
+                  - number
+                  - "null"
+              notes_payable:
+                type:
+                  - number
+                  - "null"
+              other_creditors:
+                type:
+                  - number
+                  - "null"
+              provisions:
+                type:
+                  - number
+                  - "null"
+              taxes_payable:
+                type:
+                  - number
+                  - "null"
+              total:
+                type:
+                  - number
+                  - "null"
+          equity:
+            type:
+              - object
+              - "null"
+            properties:
+              controlling_interest:
+                type:
+                  - number
+                  - "null"
+              non_controlling_interest:
+                type:
+                  - number
+                  - "null"
+              other_comprehensive_income:
+                type:
+                  - number
+                  - "null"
+              retained_earnings:
+                type:
+                  - number
+                  - "null"
+              stockholders_equity:
+                type:
+                  - number
+                  - "null"
+              total:
+                type:
+                  - number
+                  - "null"
+          non_current_assets:
+            type:
+              - object
+              - "null"
+            properties:
+              goodwill:
+                type:
+                  - number
+                  - "null"
+              intangible_assets:
+                type:
+                  - number
+                  - "null"
+              investments_in_associates:
+                type:
+                  - number
+                  - "null"
+              long_term_accounts_receivable:
+                type:
+                  - number
+                  - "null"
+              long_term_financial_instruments:
+                type:
+                  - number
+                  - "null"
+              prepayment_to_suppliers:
+                type:
+                  - number
+                  - "null"
+              property_plant_and_equipment:
+                type:
+                  - number
+                  - "null"
+              total:
+                type:
+                  - number
+                  - "null"
+          non_current_liabilities:
+            type:
+              - object
+              - "null"
+            properties:
+              contributions_for_future_capital_increases:
+                type:
+                  - number
+                  - "null"
+              deferred_income_tax:
+                type:
+                  - number
+                  - "null"
+              deferred_revenue:
+                type:
+                  - number
+                  - "null"
+              employee_benefits:
+                type:
+                  - number
+                  - "null"
+              long_term_accounts_payable:
+                type:
+                  - number
+                  - "null"
+              long_term_financial_instruments:
+                type:
+                  - number
+                  - "null"
+              long_term_provisions:
+                type:
+                  - number
+                  - "null"
+              total:
+                type:
+                  - number
+                  - "null"
+      collected_at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      error:
+        type:
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      income_statement:
+        type:
+          - object
+          - "null"
+        properties:
+          cost_of_goods_sold:
+            type:
+              - number
+              - "null"
+          cost_of_services_sold:
+            type:
+              - number
+              - "null"
+          discontinued_operations:
+            type:
+              - number
+              - "null"
+          domestic_sales:
+            type:
+              - number
+              - "null"
+          equity_in_earnings_of_affiliates:
+            type:
+              - number
+              - "null"
+          financial_result:
+            type:
+              - number
+              - "null"
+          foreign_sales:
+            type:
+              - number
+              - "null"
+          gross_loss:
+            type:
+              - "null"
+          gross_profit:
+            type:
+              - number
+              - "null"
+          income_before_taxes:
+            type:
+              - number
+              - "null"
+          income_from_continuing_operations:
+            type:
+              - number
+              - "null"
+          income_taxes:
+            type:
+              - number
+              - "null"
+          loss_before_taxes:
+            type:
+              - "null"
+          loss_from_continuing_operations:
+            type:
+              - "null"
+          materials_used:
+            type:
+              - number
+              - "null"
+          net_income:
+            type:
+              - number
+              - "null"
+          net_loss:
+            type:
+              - "null"
+          net_revenue:
+            type:
+              - number
+              - "null"
+          operating_expenses:
+            type:
+              - number
+              - "null"
+          operating_income:
+            type:
+              - number
+              - "null"
+          operating_loss:
+            type:
+              - "null"
+      link:
+        type:
+          - string
+          - "null"
+      year:
+        type:
+          - number
+          - "null"
+    title: Generated schema for Root
+  tax_retentions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - string
+          - "null"
+      cancelled_at:
+        type:
+          - "null"
+      certified_at:
+        type:
+          - string
+          - "null"
+      code:
+        type:
+          - number
+          - "null"
+      collected_at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      invoice_identification:
+        type:
+          - string
+          - "null"
+      issued_at:
+        type:
+          - string
+          - "null"
+      link:
+        type:
+          - string
+          - "null"
+      receiver_id:
+        type:
+          - string
+          - "null"
+      receiver_name:
+        type:
+          - string
+          - "null"
+      receiver_nationality:
+        type:
+          - string
+          - "null"
+      retention_breakdown:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            base_amount:
+              type:
+                - number
+                - "null"
+            payment_status:
+              type:
+                - string
+                - "null"
+            retained_amount:
+              type:
+                - number
+                - "null"
+            tax_type:
+              type:
+                - string
+                - "null"
+      sender_id:
+        type:
+          - string
+          - "null"
+      sender_name:
+        type:
+          - string
+          - "null"
+      total_exempt_amount:
+        type:
+          - number
+          - "null"
+      total_invoice_amount:
+        type:
+          - number
+          - "null"
+      total_retained_amount:
+        type:
+          - number
+          - "null"
+      total_taxable_amount:
+        type:
+          - number
+          - "null"
+      xml:
+        type:
+          - string
+          - "null"
+    title: Generated schema for Root
+  tax_returns:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      collected_at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      datos_informativos:
+        type:
+          - object
+          - "null"
+        properties:
+          credito_fiscal_autorizado_inversion_equipos_fijos:
+            type:
+              - number
+              - "null"
+          credito_fiscal_autorizado_produccion_distribucion_cinematografica:
+            type:
+              - number
+              - "null"
+          credito_fiscal_autorizado_proyectos_apoyo_deporte_alto_rendimiento:
+            type:
+              - number
+              - "null"
+          credito_fiscal_autorizado_proyectos_inversion_artes:
+            type:
+              - number
+              - "null"
+          credito_fiscal_autorizado_proyectos_investigacion_desarrollo:
+            type:
+              - number
+              - "null"
+          saldo_credito_fiscal_anteriores_produccion_distribucion_cinematografica:
+            type:
+              - number
+              - "null"
+          saldo_credito_fiscal_anteriores_proyectos_inversion_artes:
+            type:
+              - number
+              - "null"
+          saldo_credito_fiscal_autorizado_anteriores_investigacion_desarrollo:
+            type:
+              - number
+              - "null"
+      deducciones_personales:
+        type:
+          - object
+          - "null"
+        properties:
+          aportaciones_voluntarias_complementarias_al_sar:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                monto_deducible:
+                  type:
+                    - number
+                    - "null"
+                rfc_emisor:
+                  type:
+                    - string
+                    - "null"
+          donativos:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                monto_deducible:
+                  type:
+                    - number
+                    - "null"
+                rfc_emisor:
+                  type:
+                    - string
+                    - "null"
+          honorarios_medicos_dentales_hospitalarios:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                monto_deducible:
+                  type:
+                    - number
+                    - "null"
+                rfc_emisor:
+                  type:
+                    - string
+                    - "null"
+          primas_por_seguros_de_gasto_medico:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                monto_deducible:
+                  type:
+                    - number
+                    - "null"
+                rfc_emisor:
+                  type:
+                    - string
+                    - "null"
+      determinacion_impuesto:
+        type:
+          - object
+          - "null"
+        properties:
+          accion_saldo_a_favor:
+            type:
+              - string
+              - "null"
+          base_gravable:
+            type:
+              - number
+              - "null"
+          deducciones_personales:
+            type:
+              - number
+              - "null"
+          ingresos_acumulables:
+            type:
+              - number
+              - "null"
+          isr_conforme_tarifa_final:
+            type:
+              - number
+              - "null"
+          isr_favorable:
+            type:
+              - number
+              - "null"
+          isr_retenido:
+            type:
+              - number
+              - "null"
+          nombre_banco:
+            type:
+              - string
+              - "null"
+          num_clabe:
+            type:
+              - string
+              - "null"
+          pagos_provisionales:
+            type:
+              - number
+              - "null"
+          titular_clabe_permite_verificacion:
+            type:
+              - string
+              - "null"
+      dividendos:
+        type:
+          - object
+          - "null"
+        properties:
+          monto_acumulable_dividendos_utilidades:
+            type:
+              - "null"
+          monto_total_isr_pagado_sociedad:
+            type:
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      informacion_general:
+        type:
+          - object
+          - "null"
+        properties:
+          ejercicio:
+            type:
+              - number
+              - "null"
+          fecha_hora_presentacion:
+            type:
+              - string
+              - "null"
+          nombre:
+            type:
+              - string
+              - "null"
+          numero_operacion:
+            type:
+              - string
+              - "null"
+          periodo_declaracion:
+            type:
+              - string
+              - "null"
+          rfc:
+            type:
+              - string
+              - "null"
+          tipo_declaracion:
+            type:
+              - string
+              - "null"
+      link:
+        type:
+          - string
+          - "null"
+      pdf:
+        type:
+          - string
+          - "null"
+      receipt_pdf:
+        type:
+          - string
+          - "null"
+      retenciones:
+        type:
+          - object
+          - "null"
+        properties:
+          dividendos:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - "null"
+          servicios_profesionales:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                monto_retenciones:
+                  type:
+                    - number
+                    - "null"
+                retenciones_isr:
+                  type:
+                    - number
+                    - "null"
+                rfc_retenedor:
+                  type:
+                    - string
+                    - "null"
+          sueldos_salarios:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                monto_retenciones:
+                  type:
+                    - number
+                    - "null"
+                retenciones_isr:
+                  type:
+                    - number
+                    - "null"
+                rfc_retenedor:
+                  type:
+                    - string
+                    - "null"
+      servicios_profesionales:
+        type:
+          - object
+          - "null"
+        properties:
+          deducciones_autorizadas:
+            type:
+              - object
+              - "null"
+            properties:
+              deducciones_autorizadas:
+                type:
+                  - number
+                  - "null"
+              detalle_deducciones:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    concepto:
+                      type:
+                        - string
+                        - "null"
+                    monto_detallado:
+                      type:
+                        - number
+                        - "null"
+                    tipo_deduccion:
+                      type:
+                        - string
+                        - "null"
+              otras_deducciones:
+                type:
+                  - "null"
+              total_deducciones_autorizadas:
+                type:
+                  - number
+                  - "null"
+          ingresos:
+            type:
+              - object
+              - "null"
+            properties:
+              ingresos_acumulables:
+                type:
+                  - number
+                  - "null"
+              ingresos_exentos:
+                type:
+                  - "null"
+              otros_ingresos:
+                type:
+                  - "null"
+              total_ingresos:
+                type:
+                  - number
+                  - "null"
+          pagos_provisionales:
+            type:
+              - object
+              - "null"
+            properties:
+              pagos_provisionales_efectuados_en_ejercicio:
+                type:
+                  - number
+                  - "null"
+          resultado_fiscal:
+            type:
+              - object
+              - "null"
+            properties:
+              perdidas_fiscales_ejercicios_anteriores_aplicadas:
+                type:
+                  - number
+                  - "null"
+              ptu_pagada_ejercicio:
+                type:
+                  - number
+                  - "null"
+              utilidad_fiscal:
+                type:
+                  - number
+                  - "null"
+              utilidad_gravable:
+                type:
+                  - number
+                  - "null"
+          retenciones_isr:
+            type:
+              - object
+              - "null"
+            properties:
+              isr_retenido_personas_morales:
+                type:
+                  - number
+                  - "null"
+      sueldos_salarios:
+        type:
+          - object
+          - "null"
+        properties:
+          impuesto_retenido:
+            type:
+              - number
+              - "null"
+          ingreso_anual:
+            type:
+              - number
+              - "null"
+          ingresos_acumulables:
+            type:
+              - number
+              - "null"
+          ingresos_exentos:
+            type:
+              - number
+              - "null"
+          retenedores:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                ingreso_anual:
+                  type:
+                    - number
+                    - "null"
+                ingresos_exentos:
+                  type:
+                    - number
+                    - "null"
+                nombre_denominacion_razon_social:
+                  type:
+                    - string
+                    - "null"
+                rfc_retenedor:
+                  type:
+                    - string
+                    - "null"
+                subsidio_empleo:
+                  type:
+                    - number
+                    - "null"
+          subsidio_empleo:
+            type:
+              - number
+              - "null"
+    title: Generated schema for Root
+  tax_status:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      address:
+        type:
+          - object
+          - "null"
+        properties:
+          between_street:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                street_one:
+                  type:
+                    - string
+                    - "null"
+                street_two:
+                  type:
+                    - string
+                    - "null"
+          exterior_number:
+            type:
+              - string
+              - "null"
+          interior_number:
+            type:
+              - string
+              - "null"
+          locality:
+            type:
+              - "null"
+          municipality:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          street:
+            type:
+              - string
+              - "null"
+          street_type:
+            type:
+              - string
+              - "null"
+          suburb:
+            type:
+              - string
+              - "null"
+      collected_at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      digital_stamp:
+        type:
+          - string
+          - "null"
+      digital_stamp_chain:
+        type:
+          - string
+          - "null"
+      economic_activity:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            economic_activity:
+              type:
+                - string
+                - "null"
+            end_date:
+              type:
+                - "null"
+            initial_date:
+              type:
+                - string
+                - "null"
+            order:
+              type:
+                - string
+                - "null"
+            percentage:
+              type:
+                - string
+                - "null"
+      id:
+        type:
+          - string
+          - "null"
+      id_cif:
+        type:
+          - string
+          - "null"
+      link:
+        type:
+          - string
+          - "null"
+      obligations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            end_date:
+              type:
+                - "null"
+            expiration:
+              type:
+                - string
+                - "null"
+            initial_date:
+              type:
+                - string
+                - "null"
+            obligation:
+              type:
+                - string
+                - "null"
+      official_name:
+        type:
+          - string
+          - "null"
+      pdf:
+        type:
+          - string
+          - "null"
+      place_and_date_of_issuance:
+        type:
+          - string
+          - "null"
+      regimes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            end_date:
+              type:
+                - "null"
+            initial_date:
+              type:
+                - string
+                - "null"
+            regimen:
+              type:
+                - string
+                - "null"
+      tax_payer_information:
+        type:
+          - object
+          - "null"
+        properties:
+          commercial_name:
+            type:
+              - string
+              - "null"
+          curp:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          first_last_name:
+            type:
+              - string
+              - "null"
+          last_status_change_date:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          rfc:
+            type:
+              - string
+              - "null"
+          second_last_name:
+            type:
+              - string
+              - "null"
+          social_name:
+            type:
+              - "null"
+          start_operations_date:
+            type:
+              - string
+              - "null"
+          status_padron:
+            type:
+              - string
+              - "null"
+    title: Generated schema for Root
+  incomes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      best_working_day_to_charge:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      first_transaction_date:
+        type:
+          - string
+          - "null"
+      good_working_days_to_charge:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      id:
+        type:
+          - string
+          - "null"
+      income_source_type:
+        type:
+          - string
+          - "null"
+      income_streams:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            account_id:
+              type:
+                - string
+                - "null"
+            average_income_amount:
+              type:
+                - number
+                - "null"
+            confidence:
+              type:
+                - string
+                - "null"
+            currency:
+              type:
+                - string
+                - "null"
+            frequency:
+              type:
+                - string
+                - "null"
+            full_periods:
+              type:
+                - number
+                - "null"
+            income_type:
+              type:
+                - string
+                - "null"
+            last_income_amount:
+              type:
+                - number
+                - "null"
+            last_income_date:
+              type:
+                - string
+                - "null"
+            last_income_description:
+              type:
+                - string
+                - "null"
+            lookback_periods:
+              type:
+                - number
+                - "null"
+            monthly_average:
+              type:
+                - number
+                - "null"
+            monthly_median:
+              type:
+                - number
+                - "null"
+            number_of_incomes:
+              type:
+                - number
+                - "null"
+            periods_with_income:
+              type:
+                - number
+                - "null"
+            regularity:
+              type:
+                - number
+                - "null"
+            stability:
+              type:
+                - number
+                - "null"
+            trend:
+              type:
+                - number
+                - "null"
+      last_transaction_date:
+        type:
+          - string
+          - "null"
+      link:
+        type:
+          - string
+          - "null"
+      monthly_average:
+        type:
+          - number
+          - "null"
+      monthly_average_high_confidence:
+        type:
+          - number
+          - "null"
+      monthly_average_irregular:
+        type:
+          - number
+          - "null"
+      monthly_average_low_confidence:
+        type:
+          - number
+          - "null"
+      monthly_average_medium_confidence:
+        type:
+          - number
+          - "null"
+      monthly_average_regular:
+        type:
+          - number
+          - "null"
+      number_of_income_streams:
+        type:
+          - number
+          - "null"
+      total_high_confidence:
+        type:
+          - number
+          - "null"
+      total_income_amount:
+        type:
+          - number
+          - "null"
+      total_irregular_income_amount:
+        type:
+          - number
+          - "null"
+      total_low_confidence:
+        type:
+          - number
+          - "null"
+      total_medium_confidence:
+        type:
+          - number
+          - "null"
+      total_regular_income_amount:
+        type:
+          - number
+          - "null"
+    title: Generated schema for Root
+  recurring_expenses:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      account:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          balance:
+            type:
+              - object
+              - "null"
+            properties:
+              available:
+                type:
+                  - number
+                  - "null"
+              current:
+                type:
+                  - number
+                  - "null"
+          balance_type:
+            type:
+              - string
+              - "null"
+          category:
+            type:
+              - string
+              - "null"
+          collected_at:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          credit_data:
+            type:
+              - object
+              - "null"
+            properties:
+              collected_at:
+                type:
+                  - string
+                  - "null"
+              credit_limit:
+                type:
+                  - number
+                  - "null"
+              cutting_date:
+                type:
+                  - string
+                  - "null"
+              interest_rate:
+                type:
+                  - number
+                  - "null"
+              minimum_payment:
+                type:
+                  - number
+                  - "null"
+              next_payment_date:
+                type:
+                  - string
+                  - "null"
+              no_interest_payment:
+                type:
+                  - number
+                  - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          funds_data:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                balance:
+                  type:
+                    - number
+                    - "null"
+                collected_at:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                percentage:
+                  type:
+                    - number
+                    - "null"
+                public_identifications:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+          id:
+            type:
+              - string
+              - "null"
+          institution:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          last_accessed_at:
+            type:
+              - string
+              - "null"
+          link:
+            type:
+              - string
+              - "null"
+          loan_data:
+            type:
+              - object
+              - "null"
+            properties:
+              collected_at:
+                type:
+                  - string
+                  - "null"
+              contract_amount:
+                type:
+                  - number
+                  - "null"
+              contract_end_date:
+                type:
+                  - string
+                  - "null"
+              contract_number:
+                type:
+                  - string
+                  - "null"
+              contract_start_date:
+                type:
+                  - string
+                  - "null"
+              fees:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    value:
+                      type:
+                        - number
+                        - "null"
+              interest_rates:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    value:
+                      type:
+                        - number
+                        - "null"
+              loan_type:
+                type:
+                  - string
+                  - "null"
+              monthly_payment:
+                type:
+                  - number
+                  - "null"
+              number_of_installments_outstanding:
+                type:
+                  - number
+                  - "null"
+              number_of_installments_total:
+                type:
+                  - number
+                  - "null"
+              outstanding_balance:
+                type:
+                  - number
+                  - "null"
+              outstanding_principal:
+                type:
+                  - number
+                  - "null"
+              payment_day:
+                type:
+                  - string
+                  - "null"
+              principal:
+                type:
+                  - number
+                  - "null"
+          name:
+            type:
+              - string
+              - "null"
+          number:
+            type:
+              - string
+              - "null"
+          public_identification_name:
+            type:
+              - string
+              - "null"
+          public_identification_value:
+            type:
+              - string
+              - "null"
+      average_transaction_amount:
+        type:
+          - number
+          - "null"
+      category:
+        type:
+          - string
+          - "null"
+      days_since_last_transaction:
+        type:
+          - number
+          - "null"
+      frequency:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      median_transaction_amount:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      payment_type:
+        type:
+          - string
+          - "null"
+      transactions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            amount:
+              type:
+                - number
+                - "null"
+            value_date:
+              type:
+                - string
+                - "null"
+    title: Generated schema for Root
+  risk_insights:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      accounts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      assets_metrics:
+        type:
+          - object
+          - "null"
+        properties:
+          checking_accounts_balance:
+            type:
+              - number
+              - "null"
+          institutions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          num_assets_accounts:
+            type:
+              - number
+              - "null"
+          num_checking_accounts:
+            type:
+              - number
+              - "null"
+          num_savings_accounts:
+            type:
+              - number
+              - "null"
+          savings_accounts_balance:
+            type:
+              - number
+              - "null"
+      balances_metrics:
+        type:
+          - object
+          - "null"
+        properties:
+          balance_threshold_x:
+            type:
+              - number
+              - "null"
+          balance_trend_12m:
+            type:
+              - number
+              - "null"
+          balance_trend_1m:
+            type:
+              - number
+              - "null"
+          balance_trend_1w:
+            type:
+              - number
+              - "null"
+          balance_trend_3d:
+            type:
+              - number
+              - "null"
+          balance_trend_3m:
+            type:
+              - number
+              - "null"
+          balance_trend_6m:
+            type:
+              - number
+              - "null"
+          closing_balance:
+            type:
+              - number
+              - "null"
+          days_balance_below_0_12m:
+            type:
+              - number
+              - "null"
+          days_balance_below_0_1m:
+            type:
+              - number
+              - "null"
+          days_balance_below_0_1w:
+            type:
+              - number
+              - "null"
+          days_balance_below_0_3d:
+            type:
+              - number
+              - "null"
+          days_balance_below_0_3m:
+            type:
+              - number
+              - "null"
+          days_balance_below_0_6m:
+            type:
+              - number
+              - "null"
+          days_balance_below_mean_12m:
+            type:
+              - number
+              - "null"
+          days_balance_below_mean_1m:
+            type:
+              - number
+              - "null"
+          days_balance_below_mean_1w:
+            type:
+              - number
+              - "null"
+          days_balance_below_mean_3d:
+            type:
+              - number
+              - "null"
+          days_balance_below_mean_3m:
+            type:
+              - number
+              - "null"
+          days_balance_below_mean_6m:
+            type:
+              - number
+              - "null"
+          days_balance_below_x_12m:
+            type:
+              - number
+              - "null"
+          days_balance_below_x_1m:
+            type:
+              - number
+              - "null"
+          days_balance_below_x_1w:
+            type:
+              - number
+              - "null"
+          days_balance_below_x_3d:
+            type:
+              - number
+              - "null"
+          days_balance_below_x_3m:
+            type:
+              - number
+              - "null"
+          days_balance_below_x_6m:
+            type:
+              - number
+              - "null"
+          max_balance_12m:
+            type:
+              - number
+              - "null"
+          max_balance_1m:
+            type:
+              - number
+              - "null"
+          max_balance_1w:
+            type:
+              - number
+              - "null"
+          max_balance_3d:
+            type:
+              - number
+              - "null"
+          max_balance_3m:
+            type:
+              - number
+              - "null"
+          max_balance_6m:
+            type:
+              - number
+              - "null"
+          mean_balance_12m:
+            type:
+              - number
+              - "null"
+          mean_balance_1m:
+            type:
+              - number
+              - "null"
+          mean_balance_1w:
+            type:
+              - number
+              - "null"
+          mean_balance_3d:
+            type:
+              - number
+              - "null"
+          mean_balance_3m:
+            type:
+              - number
+              - "null"
+          mean_balance_6m:
+            type:
+              - number
+              - "null"
+          min_balance_12m:
+            type:
+              - number
+              - "null"
+          min_balance_1m:
+            type:
+              - number
+              - "null"
+          min_balance_1w:
+            type:
+              - number
+              - "null"
+          min_balance_3d:
+            type:
+              - number
+              - "null"
+          min_balance_3m:
+            type:
+              - number
+              - "null"
+          min_balance_6m:
+            type:
+              - number
+              - "null"
+          std_balance_12m:
+            type:
+              - number
+              - "null"
+          std_balance_1m:
+            type:
+              - number
+              - "null"
+          std_balance_1w:
+            type:
+              - number
+              - "null"
+          std_balance_3d:
+            type:
+              - number
+              - "null"
+          std_balance_3m:
+            type:
+              - number
+              - "null"
+          std_balance_6m:
+            type:
+              - number
+              - "null"
+      cashflow_metrics:
+        type:
+          - object
+          - "null"
+        properties:
+          max_negative_12m:
+            type:
+              - number
+              - "null"
+          max_negative_1m:
+            type:
+              - number
+              - "null"
+          max_negative_1w:
+            type:
+              - number
+              - "null"
+          max_negative_3d:
+            type:
+              - number
+              - "null"
+          max_negative_3m:
+            type:
+              - number
+              - "null"
+          max_negative_6m:
+            type:
+              - number
+              - "null"
+          max_positive_12m:
+            type:
+              - number
+              - "null"
+          max_positive_1m:
+            type:
+              - number
+              - "null"
+          max_positive_1w:
+            type:
+              - number
+              - "null"
+          max_positive_3d:
+            type:
+              - number
+              - "null"
+          max_positive_3m:
+            type:
+              - number
+              - "null"
+          max_positive_6m:
+            type:
+              - number
+              - "null"
+          mean_negative_12m:
+            type:
+              - number
+              - "null"
+          mean_negative_1m:
+            type:
+              - number
+              - "null"
+          mean_negative_1w:
+            type:
+              - number
+              - "null"
+          mean_negative_3d:
+            type:
+              - number
+              - "null"
+          mean_negative_3m:
+            type:
+              - number
+              - "null"
+          mean_negative_6m:
+            type:
+              - number
+              - "null"
+          mean_positive_12m:
+            type:
+              - number
+              - "null"
+          mean_positive_1m:
+            type:
+              - number
+              - "null"
+          mean_positive_1w:
+            type:
+              - number
+              - "null"
+          mean_positive_3d:
+            type:
+              - number
+              - "null"
+          mean_positive_3m:
+            type:
+              - number
+              - "null"
+          mean_positive_6m:
+            type:
+              - number
+              - "null"
+          net_cashflow_12m:
+            type:
+              - number
+              - "null"
+          net_cashflow_1m:
+            type:
+              - number
+              - "null"
+          net_cashflow_1w:
+            type:
+              - number
+              - "null"
+          net_cashflow_3d:
+            type:
+              - number
+              - "null"
+          net_cashflow_3m:
+            type:
+              - number
+              - "null"
+          net_cashflow_6m:
+            type:
+              - number
+              - "null"
+          net_cashflow_trend_12m:
+            type:
+              - number
+              - "null"
+          net_cashflow_trend_1m:
+            type:
+              - number
+              - "null"
+          net_cashflow_trend_1w:
+            type:
+              - number
+              - "null"
+          net_cashflow_trend_3d:
+            type:
+              - number
+              - "null"
+          net_cashflow_trend_3m:
+            type:
+              - number
+              - "null"
+          net_cashflow_trend_6m:
+            type:
+              - number
+              - "null"
+          positive_to_negative_ratio_12m:
+            type:
+              - number
+              - "null"
+          positive_to_negative_ratio_1m:
+            type:
+              - number
+              - "null"
+          positive_to_negative_ratio_1w:
+            type:
+              - number
+              - "null"
+          positive_to_negative_ratio_3d:
+            type:
+              - number
+              - "null"
+          positive_to_negative_ratio_3m:
+            type:
+              - number
+              - "null"
+          positive_to_negative_ratio_6m:
+            type:
+              - number
+              - "null"
+          sum_negative_12m:
+            type:
+              - number
+              - "null"
+          sum_negative_1m:
+            type:
+              - number
+              - "null"
+          sum_negative_1w:
+            type:
+              - number
+              - "null"
+          sum_negative_3d:
+            type:
+              - number
+              - "null"
+          sum_negative_3m:
+            type:
+              - number
+              - "null"
+          sum_negative_6m:
+            type:
+              - number
+              - "null"
+          sum_negative_trend_12m:
+            type:
+              - number
+              - "null"
+          sum_negative_trend_1m:
+            type:
+              - number
+              - "null"
+          sum_negative_trend_1w:
+            type:
+              - number
+              - "null"
+          sum_negative_trend_3d:
+            type:
+              - number
+              - "null"
+          sum_negative_trend_3m:
+            type:
+              - number
+              - "null"
+          sum_negative_trend_6m:
+            type:
+              - number
+              - "null"
+          sum_positive_12m:
+            type:
+              - number
+              - "null"
+          sum_positive_1m:
+            type:
+              - number
+              - "null"
+          sum_positive_1w:
+            type:
+              - number
+              - "null"
+          sum_positive_3d:
+            type:
+              - number
+              - "null"
+          sum_positive_3m:
+            type:
+              - number
+              - "null"
+          sum_positive_6m:
+            type:
+              - number
+              - "null"
+          sum_positive_trend_12m:
+            type:
+              - number
+              - "null"
+          sum_positive_trend_1m:
+            type:
+              - number
+              - "null"
+          sum_positive_trend_1w:
+            type:
+              - number
+              - "null"
+          sum_positive_trend_3d:
+            type:
+              - number
+              - "null"
+          sum_positive_trend_3m:
+            type:
+              - number
+              - "null"
+          sum_positive_trend_6m:
+            type:
+              - number
+              - "null"
+      category_metrics:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            category:
+              type:
+                - string
+                - "null"
+            category_inflow_ratio_3m:
+              type:
+                - number
+                - "null"
+            net_amount_3m:
+              type:
+                - number
+                - "null"
+            subcategory:
+              type:
+                - string
+                - "null"
+            trend_3m:
+              type:
+                - number
+                - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      credit_cards_metrics:
+        type:
+          - object
+          - "null"
+        properties:
+          credit_card_limit_utilization:
+            type:
+              - number
+              - "null"
+          num_accounts:
+            type:
+              - number
+              - "null"
+          sum_credit_limit:
+            type:
+              - number
+              - "null"
+          sum_credit_used:
+            type:
+              - number
+              - "null"
+      id:
+        type:
+          - string
+          - "null"
+      link:
+        type:
+          - string
+          - "null"
+      loans_metrics:
+        type:
+          - object
+          - "null"
+        properties:
+          loan_limit_utilization:
+            type:
+              - number
+              - "null"
+          num_accounts:
+            type:
+              - number
+              - "null"
+          overdraft_limit:
+            type:
+              - number
+              - "null"
+          overdraft_limit_utilization:
+            type:
+              - number
+              - "null"
+          sum_loans_monthly_payment:
+            type:
+              - number
+              - "null"
+          sum_loans_outstanding_principal:
+            type:
+              - number
+              - "null"
+          sum_loans_principal:
+            type:
+              - number
+              - "null"
+      transactions_metrics:
+        type:
+          - object
+          - "null"
+        properties:
+          days_history:
+            type:
+              - number
+              - "null"
+          days_since_last_incoming_transaction:
+            type:
+              - number
+              - "null"
+          days_since_last_outgoing_transaction:
+            type:
+              - number
+              - "null"
+          days_since_last_transaction:
+            type:
+              - number
+              - "null"
+          days_without_transactions_12m:
+            type:
+              - number
+              - "null"
+          days_without_transactions_1m:
+            type:
+              - number
+              - "null"
+          days_without_transactions_1w:
+            type:
+              - number
+              - "null"
+          days_without_transactions_3d:
+            type:
+              - number
+              - "null"
+          days_without_transactions_3m:
+            type:
+              - number
+              - "null"
+          days_without_transactions_6m:
+            type:
+              - number
+              - "null"
+          max_incoming_amount_12m:
+            type:
+              - number
+              - "null"
+          max_incoming_amount_1m:
+            type:
+              - number
+              - "null"
+          max_incoming_amount_1w:
+            type:
+              - number
+              - "null"
+          max_incoming_amount_3d:
+            type:
+              - number
+              - "null"
+          max_incoming_amount_3m:
+            type:
+              - number
+              - "null"
+          max_incoming_amount_6m:
+            type:
+              - number
+              - "null"
+          max_num_incoming_transactions_12m:
+            type:
+              - number
+              - "null"
+          max_num_incoming_transactions_1m:
+            type:
+              - number
+              - "null"
+          max_num_incoming_transactions_1w:
+            type:
+              - number
+              - "null"
+          max_num_incoming_transactions_3d:
+            type:
+              - number
+              - "null"
+          max_num_incoming_transactions_3m:
+            type:
+              - number
+              - "null"
+          max_num_incoming_transactions_6m:
+            type:
+              - number
+              - "null"
+          max_num_outgoing_transactions_12m:
+            type:
+              - number
+              - "null"
+          max_num_outgoing_transactions_1m:
+            type:
+              - number
+              - "null"
+          max_num_outgoing_transactions_1w:
+            type:
+              - number
+              - "null"
+          max_num_outgoing_transactions_3d:
+            type:
+              - number
+              - "null"
+          max_num_outgoing_transactions_3m:
+            type:
+              - number
+              - "null"
+          max_num_outgoing_transactions_6m:
+            type:
+              - number
+              - "null"
+          max_num_transactions_12m:
+            type:
+              - number
+              - "null"
+          max_num_transactions_1m:
+            type:
+              - number
+              - "null"
+          max_num_transactions_1w:
+            type:
+              - number
+              - "null"
+          max_num_transactions_3d:
+            type:
+              - number
+              - "null"
+          max_num_transactions_3m:
+            type:
+              - number
+              - "null"
+          max_num_transactions_6m:
+            type:
+              - number
+              - "null"
+          max_outgoing_amount_12m:
+            type:
+              - number
+              - "null"
+          max_outgoing_amount_1m:
+            type:
+              - number
+              - "null"
+          max_outgoing_amount_1w:
+            type:
+              - number
+              - "null"
+          max_outgoing_amount_3d:
+            type:
+              - number
+              - "null"
+          max_outgoing_amount_3m:
+            type:
+              - number
+              - "null"
+          max_outgoing_amount_6m:
+            type:
+              - number
+              - "null"
+          mean_incoming_amount_12m:
+            type:
+              - number
+              - "null"
+          mean_incoming_amount_1m:
+            type:
+              - number
+              - "null"
+          mean_incoming_amount_1w:
+            type:
+              - number
+              - "null"
+          mean_incoming_amount_3d:
+            type:
+              - number
+              - "null"
+          mean_incoming_amount_3m:
+            type:
+              - number
+              - "null"
+          mean_incoming_amount_6m:
+            type:
+              - number
+              - "null"
+          mean_num_incoming_transactions_12m:
+            type:
+              - number
+              - "null"
+          mean_num_incoming_transactions_1m:
+            type:
+              - number
+              - "null"
+          mean_num_incoming_transactions_1w:
+            type:
+              - number
+              - "null"
+          mean_num_incoming_transactions_3d:
+            type:
+              - number
+              - "null"
+          mean_num_incoming_transactions_3m:
+            type:
+              - number
+              - "null"
+          mean_num_incoming_transactions_6m:
+            type:
+              - number
+              - "null"
+          mean_num_outgoing_transactions_12m:
+            type:
+              - number
+              - "null"
+          mean_num_outgoing_transactions_1m:
+            type:
+              - number
+              - "null"
+          mean_num_outgoing_transactions_1w:
+            type:
+              - number
+              - "null"
+          mean_num_outgoing_transactions_3d:
+            type:
+              - number
+              - "null"
+          mean_num_outgoing_transactions_3m:
+            type:
+              - number
+              - "null"
+          mean_num_outgoing_transactions_6m:
+            type:
+              - number
+              - "null"
+          mean_num_transactions_12m:
+            type:
+              - number
+              - "null"
+          mean_num_transactions_1m:
+            type:
+              - number
+              - "null"
+          mean_num_transactions_1w:
+            type:
+              - number
+              - "null"
+          mean_num_transactions_3d:
+            type:
+              - number
+              - "null"
+          mean_num_transactions_3m:
+            type:
+              - number
+              - "null"
+          mean_num_transactions_6m:
+            type:
+              - number
+              - "null"
+          mean_outgoing_amount_12m:
+            type:
+              - number
+              - "null"
+          mean_outgoing_amount_1m:
+            type:
+              - number
+              - "null"
+          mean_outgoing_amount_1w:
+            type:
+              - number
+              - "null"
+          mean_outgoing_amount_3d:
+            type:
+              - number
+              - "null"
+          mean_outgoing_amount_3m:
+            type:
+              - number
+              - "null"
+          mean_outgoing_amount_6m:
+            type:
+              - number
+              - "null"
+          num_incoming_transactions_12m:
+            type:
+              - number
+              - "null"
+          num_incoming_transactions_1m:
+            type:
+              - number
+              - "null"
+          num_incoming_transactions_1w:
+            type:
+              - number
+              - "null"
+          num_incoming_transactions_3d:
+            type:
+              - number
+              - "null"
+          num_incoming_transactions_3m:
+            type:
+              - number
+              - "null"
+          num_incoming_transactions_6m:
+            type:
+              - number
+              - "null"
+          num_outgoing_transactions_12m:
+            type:
+              - number
+              - "null"
+          num_outgoing_transactions_1m:
+            type:
+              - number
+              - "null"
+          num_outgoing_transactions_1w:
+            type:
+              - number
+              - "null"
+          num_outgoing_transactions_3d:
+            type:
+              - number
+              - "null"
+          num_outgoing_transactions_3m:
+            type:
+              - number
+              - "null"
+          num_outgoing_transactions_6m:
+            type:
+              - number
+              - "null"
+          num_transactions_12m:
+            type:
+              - number
+              - "null"
+          num_transactions_1m:
+            type:
+              - number
+              - "null"
+          num_transactions_1w:
+            type:
+              - number
+              - "null"
+          num_transactions_3d:
+            type:
+              - number
+              - "null"
+          num_transactions_3m:
+            type:
+              - number
+              - "null"
+          num_transactions_6m:
+            type:
+              - number
+              - "null"
+          sum_incoming_amount_12m:
+            type:
+              - number
+              - "null"
+          sum_incoming_amount_1m:
+            type:
+              - number
+              - "null"
+          sum_incoming_amount_1w:
+            type:
+              - number
+              - "null"
+          sum_incoming_amount_3d:
+            type:
+              - number
+              - "null"
+          sum_incoming_amount_3m:
+            type:
+              - number
+              - "null"
+          sum_incoming_amount_6m:
+            type:
+              - number
+              - "null"
+          sum_outgoing_amount_12m:
+            type:
+              - number
+              - "null"
+          sum_outgoing_amount_1m:
+            type:
+              - number
+              - "null"
+          sum_outgoing_amount_1w:
+            type:
+              - number
+              - "null"
+          sum_outgoing_amount_3d:
+            type:
+              - number
+              - "null"
+          sum_outgoing_amount_3m:
+            type:
+              - number
+              - "null"
+          sum_outgoing_amount_6m:
+            type:
+              - number
+              - "null"
+    title: Generated schema for Root
+  employment_metrics:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      age:
+        type:
+          - number
+          - "null"
+      average_monthly_salary_1y:
+        type:
+          - number
+          - "null"
+      average_monthly_salary_3y:
+        type:
+          - number
+          - "null"
+      average_monthly_salary_5y:
+        type:
+          - number
+          - "null"
+      base_salary_last:
+        type:
+          - number
+          - "null"
+      collected_at:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      current_employer_count:
+        type:
+          - number
+          - "null"
+      current_status:
+        type:
+          - string
+          - "null"
+      decreases_1y:
+        type:
+          - number
+          - "null"
+      decreases_3y:
+        type:
+          - number
+          - "null"
+      decreases_5y:
+        type:
+          - number
+          - "null"
+      decreases_after_change:
+        type:
+          - number
+          - "null"
+      decreases_last_job:
+        type:
+          - number
+          - "null"
+      decreases_overall:
+        type:
+          - number
+          - "null"
+      employer_count:
+        type:
+          - number
+          - "null"
+      employers_per_year:
+        type:
+          - number
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      increases_1y:
+        type:
+          - number
+          - "null"
+      increases_3y:
+        type:
+          - number
+          - "null"
+      increases_5y:
+        type:
+          - number
+          - "null"
+      increases_after_change:
+        type:
+          - number
+          - "null"
+      increases_last_job:
+        type:
+          - number
+          - "null"
+      increases_overall:
+        type:
+          - number
+          - "null"
+      link:
+        type:
+          - string
+          - "null"
+      max_monthly_salary_1y:
+        type:
+          - number
+          - "null"
+      max_monthly_salary_3y:
+        type:
+          - number
+          - "null"
+      max_monthly_salary_5y:
+        type:
+          - number
+          - "null"
+      max_weeks_between_jobs:
+        type:
+          - number
+          - "null"
+      min_monthly_salary_1y:
+        type:
+          - number
+          - "null"
+      min_monthly_salary_3y:
+        type:
+          - number
+          - "null"
+      min_monthly_salary_5y:
+        type:
+          - number
+          - "null"
+      reference_date:
+        type:
+          - string
+          - "null"
+      unique_employer_count:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      weeks_between_jobs:
+        type:
+          - number
+          - "null"
+      weeks_employed_last_job:
+        type:
+          - number
+          - "null"
+      weeks_employed_total:
+        type:
+          - number
+          - "null"
+      weeks_since_last_job:
+        type:
+          - number
+          - "null"
+      weeks_with_multiple_employers:
+        type:
+          - number
+          - "null"
+      yearly_change_1y:
+        type:
+          - number
+          - "null"
+      yearly_change_3y:
+        type:
+          - number
+          - "null"
+      yearly_change_5y:
+        type:
+          - number
+          - "null"
+    title: Generated schema for Root
