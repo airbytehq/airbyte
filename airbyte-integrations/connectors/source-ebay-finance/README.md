@@ -1,7 +1,8 @@
 # Ebay Finance
 This directory contains the manifest-only connector for `source-ebay-finance`.
 
-Ebay Finances API Connector
+Website: https://www.ebay.com/
+Documentation: https://developer.ebay.com/api-docs/sell/finances/overview.html
 
 ## Usage
 There are multiple ways to use this connector:

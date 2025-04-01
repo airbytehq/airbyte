@@ -1,5 +1,6 @@
 # Ebay Finance
-Ebay Finances API Connector
+Website: https://www.ebay.com/
+Documentation: https://developer.ebay.com/api-docs/sell/finances/overview.html
 
 ## Configuration
 

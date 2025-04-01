@@ -2,7 +2,9 @@ version: 6.41.5
 
 type: DeclarativeSource
 
-description: Ebay Finances API Connector
+description: |-
+  Website: https://www.ebay.com/
+  Documentation: https://developer.ebay.com/api-docs/sell/finances/overview.html
 
 check:
   type: CheckStream
