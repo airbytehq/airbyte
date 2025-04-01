@@ -478,12 +478,7 @@ class BaseStream(HttpStream, ABC):
             http_method=self.http_method,
             url=self._join_url(
                 self.url_base,
-                self.path(
-                    stream_state=stream_state,
-                    stream_slice=stream_slice,
-                    next_page_token=next_page_token,
-                    properties=properties
-                ),
+                self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, properties=properties),
             ),
             request_kwargs=request_kwargs,
             headers=dict(request_headers, **self._authenticator.get_auth_header()),

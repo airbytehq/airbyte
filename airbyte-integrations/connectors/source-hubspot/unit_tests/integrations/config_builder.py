@@ -5,9 +5,7 @@ from typing import Any, Mapping
 
 class ConfigBuilder:
     def __init__(self):
-        self._config = {
-            "enable_experimental_streams": True
-        }
+        self._config = {"enable_experimental_streams": True}
 
     def with_start_date(self, start_date: str):
         self._config["start_date"] = start_date

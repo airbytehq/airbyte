@@ -9,6 +9,7 @@ from . import HubspotTestCase
 from .request_builders.streams import ContactsStreamRequestBuilder
 from .response_builder.contact_response_builder import AllContactsResponseBuilder, ContactBuilder, ContactsMergeAuditsBuilder
 
+
 _START_TIME_BEFORE_ANY_RECORD = "1970-01-01T00:00:00Z"
 
 _VID_OFFSET = 5331889818
@@ -35,32 +36,49 @@ class TestContactsMergedAuditStream(TestCase, HubspotTestCase):
         self.mock_response(
             self._http_mocker,
             first_page_request,
-            AllContactsResponseBuilder().with_pagination(vid_offset=_VID_OFFSET).with_contacts([
-                ContactBuilder().with_merge_audits([
-                    ContactsMergeAuditsBuilder(),
-                    ContactsMergeAuditsBuilder(),
-                    ContactsMergeAuditsBuilder(),
-                    ContactsMergeAuditsBuilder(),
-                ]),
-                ContactBuilder().with_merge_audits([
-                    ContactsMergeAuditsBuilder(),
-                    ContactsMergeAuditsBuilder(),
-                    ContactsMergeAuditsBuilder(),
-                ]),
-            ]).build(),
+            AllContactsResponseBuilder()
+            .with_pagination(vid_offset=_VID_OFFSET)
+            .with_contacts(
+                [
+                    ContactBuilder().with_merge_audits(
+                        [
+                            ContactsMergeAuditsBuilder(),
+                            ContactsMergeAuditsBuilder(),
+                            ContactsMergeAuditsBuilder(),
+                            ContactsMergeAuditsBuilder(),
+                        ]
+                    ),
+                    ContactBuilder().with_merge_audits(
+                        [
+                            ContactsMergeAuditsBuilder(),
+                            ContactsMergeAuditsBuilder(),
+                            ContactsMergeAuditsBuilder(),
+                        ]
+                    ),
+                ]
+            )
+            .build(),
         )
         self.mock_response(
             self._http_mocker,
             second_page_request,
-            AllContactsResponseBuilder().with_contacts([
-                ContactBuilder().with_merge_audits([
-                    ContactsMergeAuditsBuilder(),
-                ]),
-                ContactBuilder().with_merge_audits([
-                    ContactsMergeAuditsBuilder(),
-                    ContactsMergeAuditsBuilder(),
-                ]),
-            ]).build(),
+            AllContactsResponseBuilder()
+            .with_contacts(
+                [
+                    ContactBuilder().with_merge_audits(
+                        [
+                            ContactsMergeAuditsBuilder(),
+                        ]
+                    ),
+                    ContactBuilder().with_merge_audits(
+                        [
+                            ContactsMergeAuditsBuilder(),
+                            ContactsMergeAuditsBuilder(),
+                        ]
+                    ),
+                ]
+            )
+            .build(),
         )
 
         output = self.read_from_stream(self.oauth_config(start_date=_START_TIME_BEFORE_ANY_RECORD), self.STREAM_NAME, SyncMode.full_refresh)
@@ -81,9 +99,8 @@ class TestContactsMergedAuditStream(TestCase, HubspotTestCase):
             AirbyteStateMessage(
                 type=AirbyteStateType.STREAM,
                 stream=AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name=self.STREAM_NAME),
-                    stream_state=AirbyteStateBlob(**{"vidOffset": "5331889818"})
-                )
+                    stream_descriptor=StreamDescriptor(name=self.STREAM_NAME), stream_state=AirbyteStateBlob(**{"vidOffset": "5331889818"})
+                ),
             )
         ]
 
@@ -93,39 +110,56 @@ class TestContactsMergedAuditStream(TestCase, HubspotTestCase):
         self.mock_response(
             self._http_mocker,
             first_page_request,
-            AllContactsResponseBuilder().with_pagination(vid_offset=_VID_OFFSET).with_contacts([
-                ContactBuilder().with_merge_audits([
-                    ContactsMergeAuditsBuilder(),
-                    ContactsMergeAuditsBuilder(),
-                    ContactsMergeAuditsBuilder(),
-                    ContactsMergeAuditsBuilder(),
-                ]),
-                ContactBuilder().with_merge_audits([
-                    ContactsMergeAuditsBuilder(),
-                    ContactsMergeAuditsBuilder(),
-                    ContactsMergeAuditsBuilder(),
-                ]),
-            ]).build(),
+            AllContactsResponseBuilder()
+            .with_pagination(vid_offset=_VID_OFFSET)
+            .with_contacts(
+                [
+                    ContactBuilder().with_merge_audits(
+                        [
+                            ContactsMergeAuditsBuilder(),
+                            ContactsMergeAuditsBuilder(),
+                            ContactsMergeAuditsBuilder(),
+                            ContactsMergeAuditsBuilder(),
+                        ]
+                    ),
+                    ContactBuilder().with_merge_audits(
+                        [
+                            ContactsMergeAuditsBuilder(),
+                            ContactsMergeAuditsBuilder(),
+                            ContactsMergeAuditsBuilder(),
+                        ]
+                    ),
+                ]
+            )
+            .build(),
         )
         self.mock_response(
             self._http_mocker,
             second_page_request,
-            AllContactsResponseBuilder().with_contacts([
-                ContactBuilder().with_merge_audits([
-                    ContactsMergeAuditsBuilder(),
-                ]),
-                ContactBuilder().with_merge_audits([
-                    ContactsMergeAuditsBuilder(),
-                    ContactsMergeAuditsBuilder(),
-                ]),
-            ]).build(),
+            AllContactsResponseBuilder()
+            .with_contacts(
+                [
+                    ContactBuilder().with_merge_audits(
+                        [
+                            ContactsMergeAuditsBuilder(),
+                        ]
+                    ),
+                    ContactBuilder().with_merge_audits(
+                        [
+                            ContactsMergeAuditsBuilder(),
+                            ContactsMergeAuditsBuilder(),
+                        ]
+                    ),
+                ]
+            )
+            .build(),
         )
 
         output = self.read_from_stream(
             cfg=self.oauth_config(start_date=_START_TIME_BEFORE_ANY_RECORD),
             stream=self.STREAM_NAME,
             sync_mode=SyncMode.full_refresh,
-            state=state
+            state=state,
         )
 
         self._http_mocker.assert_number_of_calls(second_page_request, 1)

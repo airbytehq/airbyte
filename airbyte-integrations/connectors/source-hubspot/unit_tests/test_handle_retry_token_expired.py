@@ -51,7 +51,6 @@ def test_handle_request_with_retry_token_expired(common_params):
     # Create a mock instance of the Stream class
     stream_instance = MarketingEmails(**common_params)
 
-
     # Mock the _send_request method of the Stream class to raise HubspotInvalidAuth exception
     with patch.object(stream_instance._http_client, "_send", side_effect=mock_retry_func) as mocked_send_request:
         with pytest.raises(HubspotInvalidAuth):

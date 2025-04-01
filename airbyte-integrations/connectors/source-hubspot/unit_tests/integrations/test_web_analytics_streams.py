@@ -8,6 +8,7 @@ import freezegun
 import mock
 import pytest
 import pytz
+
 from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
@@ -15,6 +16,7 @@ from airbyte_cdk.test.mock_http.response_builder import FieldPath
 from . import HubspotTestCase
 from .request_builders.streams import CRMStreamRequestBuilder, IncrementalCRMStreamRequestBuilder, WebAnalyticsRequestBuilder
 from .response_builder.streams import HubspotStreamResponseBuilder
+
 
 CRM_STREAMS = (
     ("tickets_web_analytics", "tickets", "ticket", ["contacts", "deals", "companies"]),
@@ -58,17 +60,11 @@ class WebAnalyticsTestCase(HubspotTestCase):
         object_type: str,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
-        first_page: bool = True
+        first_page: bool = True,
     ):
         start_date = start_date or cls.dt_str(cls.start_date())
         end_date = end_date or cls.dt_str(cls.now())
-        query = {
-            "limit": 100,
-            "occurredAfter": start_date,
-            "occurredBefore": end_date,
-            "objectId": object_id,
-            "objectType": object_type
-        }
+        query = {"limit": 100, "occurredAfter": start_date, "occurredBefore": end_date, "objectId": object_id, "objectType": object_type}
 
         if not first_page:
             query.update(cls.response_builder(stream).pagination_strategy.NEXT_PAGE_TOKEN)
@@ -102,10 +98,10 @@ class WebAnalyticsTestCase(HubspotTestCase):
     ):
         response_builder = cls.response_builder(stream_name)
         for object_id in object_ids:
-            record = cls.record_builder(stream_name, FieldPath(cls.PARENT_CURSOR_FIELD)).with_field(
-                FieldPath(cls.PARENT_CURSOR_FIELD), cls.dt_str(cls.updated_at())
-            ).with_field(
-                FieldPath("id"), object_id
+            record = (
+                cls.record_builder(stream_name, FieldPath(cls.PARENT_CURSOR_FIELD))
+                .with_field(FieldPath(cls.PARENT_CURSOR_FIELD), cls.dt_str(cls.updated_at()))
+                .with_field(FieldPath("id"), object_id)
             )
             response_builder = response_builder.with_record(record)
         if with_pagination:
@@ -143,7 +139,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         self.mock_response(
             http_mocker,
             self.web_analytics_request(stream_name, self.ACCESS_TOKEN, self.OBJECT_ID, object_type),
-            self.web_analytics_response(stream_name)
+            self.web_analytics_response(stream_name),
         )
         output = self.read_from_stream(self.oauth_config(), stream_name, SyncMode.full_refresh)
         assert len(output.records) == 1
@@ -162,7 +158,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         self.mock_response(
             http_mocker,
             self.web_analytics_request(stream_name, self.ACCESS_TOKEN, self.OBJECT_ID, object_type),
-            self.web_analytics_response(stream_name)
+            self.web_analytics_response(stream_name),
         )
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.full_refresh)
         assert len(output.records) == 1
@@ -181,12 +177,12 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         self.mock_response(
             http_mocker,
             self.web_analytics_request(stream_name, self.ACCESS_TOKEN, self.OBJECT_ID, object_type),
-            self.web_analytics_response(stream_name, with_pagination=True)
+            self.web_analytics_response(stream_name, with_pagination=True),
         )
         self.mock_response(
             http_mocker,
             self.web_analytics_request(stream_name, self.ACCESS_TOKEN, self.OBJECT_ID, object_type, first_page=False),
-            self.web_analytics_response(stream_name)
+            self.web_analytics_response(stream_name),
         )
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.full_refresh)
         assert len(output.records) == 2
@@ -206,7 +202,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
             parent_stream_name,
             parent_stream_associations,
             with_pagination=True,
-            properties=list(self.PROPERTIES.keys())
+            properties=list(self.PROPERTIES.keys()),
         )
         self.mock_parent_object(
             http_mocker,
@@ -215,17 +211,17 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
             parent_stream_name,
             parent_stream_associations,
             first_page=False,
-            properties=list(self.PROPERTIES.keys())
+            properties=list(self.PROPERTIES.keys()),
         )
         self.mock_response(
             http_mocker,
             self.web_analytics_request(stream_name, self.ACCESS_TOKEN, self.OBJECT_ID, object_type),
-            self.web_analytics_response(stream_name)
+            self.web_analytics_response(stream_name),
         )
         self.mock_response(
             http_mocker,
             self.web_analytics_request(stream_name, self.ACCESS_TOKEN, "another_object_id", object_type),
-            self.web_analytics_response(stream_name)
+            self.web_analytics_response(stream_name),
         )
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.full_refresh)
         assert len(output.records) == 2
@@ -247,7 +243,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
             parent_stream_name,
             parent_stream_associations,
             list(self.PROPERTIES.keys()),
-            date_range=start_to_end
+            date_range=start_to_end,
         )
         for dt_range in date_ranges:
             for _id in (self.OBJECT_ID, "another_object_id"):
@@ -256,7 +252,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
                 self.mock_response(
                     http_mocker,
                     self.web_analytics_request(stream_name, self.ACCESS_TOKEN, _id, object_type, start, end),
-                    web_analytics_response
+                    web_analytics_response,
                 )
         config_start_dt = date_ranges[0][0]
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN, config_start_dt), stream_name, SyncMode.full_refresh)
@@ -276,7 +272,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         self.mock_response(
             http_mocker,
             self.web_analytics_request(stream_name, self.ACCESS_TOKEN, self.OBJECT_ID, object_type),
-            HttpResponse(status_code=500, body="{}")
+            HttpResponse(status_code=500, body="{}"),
         )
         with mock.patch("time.sleep"):
             output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.full_refresh)
@@ -298,10 +294,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         self.mock_response(
             http_mocker,
             self.web_analytics_request(stream_name, self.ACCESS_TOKEN, self.OBJECT_ID, object_type),
-            [
-                HttpResponse(status_code=500, body="{}"),
-                self.web_analytics_response(stream_name)
-            ]
+            [HttpResponse(status_code=500, body="{}"), self.web_analytics_response(stream_name)],
         )
         with mock.patch("time.sleep"):
             output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.full_refresh)
@@ -313,12 +306,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
     def test_given_missing_scopes_error_when_read_then_hault(
-        self,
-        stream_name,
-        parent_stream_name,
-        object_type,
-        parent_stream_associations,
-        http_mocker: HttpMocker
+        self, stream_name, parent_stream_name, object_type, parent_stream_associations, http_mocker: HttpMocker
     ):
         self.mock_oauth(http_mocker, self.ACCESS_TOKEN)
         self.mock_scopes(http_mocker, self.ACCESS_TOKEN, [])
@@ -328,12 +316,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
     def test_given_unauthorized_error_when_read_then_hault(
-        self,
-        stream_name,
-        parent_stream_name,
-        object_type,
-        parent_stream_associations,
-        http_mocker: HttpMocker
+        self, stream_name, parent_stream_name, object_type, parent_stream_associations, http_mocker: HttpMocker
     ):
         self.mock_custom_objects(http_mocker)
         self.mock_properties(http_mocker, object_type, self.PROPERTIES)
@@ -343,7 +326,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         self.mock_response(
             http_mocker,
             self.web_analytics_request(stream_name, self.ACCESS_TOKEN, self.OBJECT_ID, object_type),
-            HttpResponse(status_code=http.HTTPStatus.UNAUTHORIZED, body="{}")
+            HttpResponse(status_code=http.HTTPStatus.UNAUTHORIZED, body="{}"),
         )
         with mock.patch("time.sleep"):
             output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.full_refresh)
@@ -355,12 +338,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
     def test_given_one_page_when_read_then_get_transformed_records(
-        self,
-        stream_name,
-        parent_stream_name,
-        object_type,
-        parent_stream_associations,
-        http_mocker: HttpMocker
+        self, stream_name, parent_stream_name, object_type, parent_stream_associations, http_mocker: HttpMocker
     ):
         self.mock_custom_objects(http_mocker)
         self.mock_properties(http_mocker, object_type, self.PROPERTIES)
@@ -370,7 +348,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         self.mock_response(
             http_mocker,
             self.web_analytics_request(stream_name, self.ACCESS_TOKEN, self.OBJECT_ID, object_type),
-            self.web_analytics_response(stream_name)
+            self.web_analytics_response(stream_name),
         )
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.full_refresh)
         record = output.records[0].record.data
@@ -382,12 +360,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_STREAMS)
     @HttpMocker()
     def test_given_one_page_when_read_then_get_no_records_filtered(
-        self,
-        stream_name,
-        parent_stream_name,
-        object_type,
-        parent_stream_associations,
-        http_mocker: HttpMocker
+        self, stream_name, parent_stream_name, object_type, parent_stream_associations, http_mocker: HttpMocker
     ):
         # validate that no filter is applied on the record set received from the API response
         self.mock_custom_objects(http_mocker)
@@ -398,7 +371,7 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         self.mock_response(
             http_mocker,
             self.web_analytics_request(stream_name, self.ACCESS_TOKEN, self.OBJECT_ID, object_type),
-            self.web_analytics_response(stream_name, updated_on=self.dt_str(self.now() - timedelta(days=365)))
+            self.web_analytics_response(stream_name, updated_on=self.dt_str(self.now() - timedelta(days=365))),
         )
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.full_refresh)
         assert len(output.records) == 1
@@ -417,16 +390,14 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         self.mock_response(
             http_mocker,
             self.web_analytics_request(stream_name, self.ACCESS_TOKEN, self.OBJECT_ID, object_type),
-            self.web_analytics_response(stream_name, id=self.OBJECT_ID)
+            self.web_analytics_response(stream_name, id=self.OBJECT_ID),
         )
-        output = self.read_from_stream(
-            self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.incremental
-        )
+        output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.incremental)
         assert len(output.state_messages) == 1
 
         cursor_value_from_latest_record = output.records[-1].record.data.get(self.CURSOR_FIELD)
         object_id_dict = getattr(output.most_recent_state.stream_state, self.OBJECT_ID)
-        cursor_value_from_most_recent_state =   object_id_dict.get(self.CURSOR_FIELD)
+        cursor_value_from_most_recent_state = object_id_dict.get(self.CURSOR_FIELD)
         assert cursor_value_from_most_recent_state == cursor_value_from_latest_record
         http_mocker.clear_all_matchers()
 
@@ -443,15 +414,15 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         self.mock_response(
             http_mocker,
             self.web_analytics_request(stream_name, self.ACCESS_TOKEN, self.OBJECT_ID, object_type),
-            self.web_analytics_response(stream_name, id=self.OBJECT_ID)
+            self.web_analytics_response(stream_name, id=self.OBJECT_ID),
         )
         another_object_id = "another_object_id"
         current_state = AirbyteStateMessage(
             type=AirbyteStateType.STREAM,
             stream=AirbyteStreamState(
                 stream_descriptor=StreamDescriptor(name=stream_name),
-                stream_state=AirbyteStateBlob(**{another_object_id: {self.CURSOR_FIELD: self.dt_str(self.now())}})
-            )
+                stream_state=AirbyteStateBlob(**{another_object_id: {self.CURSOR_FIELD: self.dt_str(self.now())}}),
+            ),
         )
         output = self.read_from_stream(
             self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.incremental, state=[current_state]
@@ -476,14 +447,14 @@ class TestCRMWebAnalyticsStream(WebAnalyticsTestCase):
         self.mock_response(
             http_mocker,
             self.web_analytics_request(stream_name, self.ACCESS_TOKEN, self.OBJECT_ID, object_type),
-            self.web_analytics_response(stream_name, id=self.OBJECT_ID)
+            self.web_analytics_response(stream_name, id=self.OBJECT_ID),
         )
         current_state = AirbyteStateMessage(
             type=AirbyteStateType.STREAM,
             stream=AirbyteStreamState(
                 stream_descriptor=StreamDescriptor(name=stream_name),
-                stream_state=AirbyteStateBlob(**{self.OBJECT_ID: {self.CURSOR_FIELD: self.dt_str(self.start_date() - timedelta(days=30))}})
-            )
+                stream_state=AirbyteStateBlob(**{self.OBJECT_ID: {self.CURSOR_FIELD: self.dt_str(self.start_date() - timedelta(days=30))}}),
+            ),
         )
         output = self.read_from_stream(
             self.private_token_config(self.ACCESS_TOKEN), stream_name, SyncMode.incremental, state=[current_state]
@@ -518,24 +489,23 @@ class TestIncrementalCRMWebAnalyticsStreamFullRefresh(TestCRMWebAnalyticsStream)
         date_range = date_range or (cls.dt_str(cls.start_date()), cls.dt_str(cls.now()))
         response_builder = cls.response_builder(stream_name)
         for object_id in object_ids:
-            record = cls.record_builder(stream_name, FieldPath(cls.PARENT_CURSOR_FIELD)).with_field(
-                FieldPath(cls.PARENT_CURSOR_FIELD), cls.dt_str(cls.updated_at())
-            ).with_field(
-                FieldPath("id"), object_id
+            record = (
+                cls.record_builder(stream_name, FieldPath(cls.PARENT_CURSOR_FIELD))
+                .with_field(FieldPath(cls.PARENT_CURSOR_FIELD), cls.dt_str(cls.updated_at()))
+                .with_field(FieldPath("id"), object_id)
             )
             response_builder = response_builder.with_record(record)
         if with_pagination:
             response_builder = response_builder.with_pagination()
 
         start, end = date_range
-        request_builder = IncrementalCRMStreamRequestBuilder().for_entity(
-            object_type
-        ).with_associations(
-            associations
-        ).with_dt_range(
-            ("startTimestamp", cls.dt_conversion(start)),
-            ("endTimestamp", cls.dt_conversion(end))
-        ).with_properties(properties)
+        request_builder = (
+            IncrementalCRMStreamRequestBuilder()
+            .for_entity(object_type)
+            .with_associations(associations)
+            .with_dt_range(("startTimestamp", cls.dt_conversion(start)), ("endTimestamp", cls.dt_conversion(end)))
+            .with_properties(properties)
+        )
         if not first_page:
             request_builder = request_builder.with_page_token(response_builder.pagination_strategy.NEXT_PAGE_TOKEN)
 
@@ -558,12 +528,8 @@ class TestIncrementalCRMWebAnalyticsStreamFullRefresh(TestCRMWebAnalyticsStream)
         )
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_INCREMENTAL_STREAMS)
-    def test_given_two_pages_when_read_then_return_records(
-        self, stream_name, parent_stream_name, object_type, parent_stream_associations
-    ):
-        super().test_given_two_pages_when_read_then_return_records(
-            stream_name, parent_stream_name, object_type, parent_stream_associations
-        )
+    def test_given_two_pages_when_read_then_return_records(self, stream_name, parent_stream_name, object_type, parent_stream_associations):
+        super().test_given_two_pages_when_read_then_return_records(stream_name, parent_stream_name, object_type, parent_stream_associations)
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_INCREMENTAL_STREAMS)
     def test_given_wide_date_range_and_multiple_parent_records_when_read_then_return_records(
@@ -598,12 +564,8 @@ class TestIncrementalCRMWebAnalyticsStreamFullRefresh(TestCRMWebAnalyticsStream)
         )
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_INCREMENTAL_STREAMS)
-    def test_given_unauthorized_error_when_read_then_hault(
-        self, stream_name, parent_stream_name, object_type, parent_stream_associations
-    ):
-        super().test_given_unauthorized_error_when_read_then_hault(
-            stream_name, parent_stream_name, object_type, parent_stream_associations
-        )
+    def test_given_unauthorized_error_when_read_then_hault(self, stream_name, parent_stream_name, object_type, parent_stream_associations):
+        super().test_given_unauthorized_error_when_read_then_hault(stream_name, parent_stream_name, object_type, parent_stream_associations)
 
     @pytest.mark.parametrize(("stream_name", "parent_stream_name", "object_type", "parent_stream_associations"), CRM_INCREMENTAL_STREAMS)
     def test_given_one_page_when_read_then_get_transformed_records(
