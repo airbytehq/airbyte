@@ -7,3 +7,7 @@ package io.airbyte.cdk.load.command.gcs
 class GcsClientSpecification {}
 
 class GcsClientConfiguration {}
+
+interface GcsClientConfigurationProvider {
+    val gcsClientConfiguration: GcsClientConfiguration
+}

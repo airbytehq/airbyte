@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.file.gcs
 
+import com.google.cloud.storage.Storage
 import io.airbyte.cdk.load.command.gcs.GcsClientConfiguration
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
@@ -11,11 +12,12 @@ import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import java.io.InputStream
 import kotlinx.coroutines.flow.Flow
 
-/** Represents a single blob in Azure. */
+/** Represents a single blob in GCS. */
 data class GcsBlob(override val key: String, override val storageConfig: GcsClientConfiguration) :
     RemoteObject<GcsClientConfiguration>
 
-class GcsClient : ObjectStorageClient<GcsBlob> {
+class GcsClient(private val storage: Storage, private val config: GcsClientConfiguration) :
+    ObjectStorageClient<GcsBlob> {
     override suspend fun list(prefix: String): Flow<GcsBlob> {
         TODO("Not yet implemented")
     }
