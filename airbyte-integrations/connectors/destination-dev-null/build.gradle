@@ -1,7 +1,12 @@
 plugins {
     id 'application'
     id 'airbyte-bulk-connector'
+    id 'java-library'
+    id 'maven-publish'
 }
+
+group = 'io.airbyte.connectors'
+version = '1.0.0-SNAPSHOT'
 
 airbyteBulkConnector {
     core = 'load'
@@ -28,3 +33,15 @@ dependencies {
 //run {
 //    standardInput = System.in
 //}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
+
+            from components.kotlin
+        }
+    }
+}
