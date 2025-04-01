@@ -16,7 +16,7 @@ To access the connection dashboard:
 
 2. Optionally, filter the connections on the page and on the dashboard based on connection status, source, destination, tag, and name.
 
-3. Click on any bar in the dashboard to open a side panel with every sync from that point in time.
+3. Click on any bar in the dashboard to open a side panel with every sync during that period of time.
 
 4. Click on the sync you want to know more about. Airbyte goes to the Connection Timeline page and filters on that particular sync.
 
