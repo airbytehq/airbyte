@@ -62,6 +62,7 @@ Connector will handle an issue with rate limiting as Klarna returns 429 status c
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.16 | 2025-03-29 | [56685](https://github.com/airbytehq/airbyte/pull/56685) | Update dependencies |
 | 0.3.15 | 2025-03-22 | [56040](https://github.com/airbytehq/airbyte/pull/56040) | Update dependencies |
 | 0.3.14 | 2025-03-08 | [55440](https://github.com/airbytehq/airbyte/pull/55440) | Update dependencies |
 | 0.3.13 | 2025-03-01 | [54743](https://github.com/airbytehq/airbyte/pull/54743) | Update dependencies |
