@@ -43,5 +43,41 @@
     "url": "https://docs.airbyte.com/integrations/enterprise-connectors/source-netsuite",
     "type": "enterprise_source",
     "definitionId": "b979cb59-34b3-4f8b-9bf7-ae82d6371e2a"
+  },
+  {
+    "id": "destination-salesforce",
+    "name": "Salesforce",
+    "label": "enterprise",
+    "icon": "https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/resources/connector_stubs/v0/icons/salesforce.svg",
+    "url": "https://docs.airbyte.com/integrations/enterprise-connectors/destination-salesforce",
+    "type": "enterprise_destination",
+    "definitionId": "227f7285-74af-44cf-9055-66d24695aee6"
+  },
+  {
+    "id": "source-sharepoint-enterprise",
+    "name": "Sharepoint Enterprise",
+    "label": "enterprise",
+    "icon": "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/resources/connector_stubs/v0/icons/sharepoint.svg",
+    "url": "https://docs.airbyte.com/integrations/enterprise-connectors/source-sharepoint-enterprise",
+    "type": "enterprise_source",
+    "codename": "cascade"
+  },
+  {
+    "id": "source-db2",
+    "name": "IBM DB2",
+    "label": "enterprise",
+    "icon": "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/resources/connector_stubs/v0/icons/db2.svg",
+    "url": "https://docs.airbyte.com/integrations/enterprise-connectors/source-db2",
+    "type": "enterprise_source",
+    "codename": "whale"
+  },
+  {
+    "id": "source-salesforce-marketing-cloud",
+    "name": "Salesforce Marketing Cloud",
+    "label": "enterprise",
+    "icon": "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/resources/connector_stubs/v0/icons/salesforce-marketing-cloud.svg",
+    "url": "https://docs.airbyte.com/integrations/enterprise-connectors/source-salesforce-marketing-cloud",
+    "type": "enterprise_source",
+    "codename": "bullseye"
   }
 ]
