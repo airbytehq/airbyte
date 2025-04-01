@@ -1,0 +1,23 @@
+plugins {
+    id 'application'
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.36.7'
+    features = ['db-destinations', 'typing-deduping']
+    useLocalCdk = false
+}
+
+airbyteJavaConnector.addCdkDependencies()
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.singlestore.SingleStoreDestination'
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+dependencies {
+    implementation 'com.singlestore:singlestore-jdbc-client:1.2.6'
+    testImplementation 'org.apache.commons:commons-lang3:3.11'
+    testImplementation 'org.testcontainers:jdbc:1.19.0'
+}

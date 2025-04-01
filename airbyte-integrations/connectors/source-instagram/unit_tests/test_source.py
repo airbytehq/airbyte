@@ -20,7 +20,9 @@ from airbyte_cdk.models import (
 
 logger = logging.getLogger("airbyte")
 
-GRAPH_URL = resolve_manifest(source=SourceInstagram()).record.data["manifest"]["definitions"]["base_requester"]["url_base"]
+GRAPH_URL = resolve_manifest(source=SourceInstagram(config={}, catalog=None, state=None)).record.data["manifest"]["definitions"][
+    "base_requester"
+]["url_base"]
 
 account_url = f"{GRAPH_URL}/me/accounts?fields=id%2Cinstagram_business_account"
 
@@ -33,21 +35,23 @@ account_url_response = {
 
 def test_check_connection_ok(api, requests_mock, some_config):
     requests_mock.register_uri("GET", account_url, [{"json": account_url_response}])
-    ok, error_msg = SourceInstagram().check_connection(logger, config=some_config)
+    ok, error_msg = SourceInstagram(config=some_config, catalog=None, state=None).check_connection(logger, config=some_config)
     assert ok
     assert not error_msg
 
 
 def test_check_connection_empty_config(api):
     config = {}
-    ok, error_msg = SourceInstagram().check_connection(logger, config=config)
+    ok, error_msg = SourceInstagram(config=config, catalog=None, state=None).check_connection(logger, config=config)
 
     assert not ok
     assert error_msg
 
 
 def test_check_connection_invalid_config_future_date(api, some_config_future_date):
-    ok, error_msg = SourceInstagram().check_connection(logger, config=some_config_future_date)
+    ok, error_msg = SourceInstagram(config=some_config_future_date, catalog=None, state=None).check_connection(
+        logger, config=some_config_future_date
+    )
 
     assert not ok
     assert error_msg
@@ -56,7 +60,7 @@ def test_check_connection_invalid_config_future_date(api, some_config_future_dat
 def test_check_connection_no_date_config(api, requests_mock, some_config):
     requests_mock.register_uri("GET", account_url, [{"json": account_url_response}])
     some_config.pop("start_date")
-    ok, error_msg = SourceInstagram().check_connection(logger, config=some_config)
+    ok, error_msg = SourceInstagram(config=some_config, catalog=None, state=None).check_connection(logger, config=some_config)
 
     assert ok
     assert not error_msg
@@ -64,26 +68,26 @@ def test_check_connection_no_date_config(api, requests_mock, some_config):
 
 def test_check_connection_exception(api, config):
     api.side_effect = RuntimeError("Something went wrong!")
-    ok, error_msg = SourceInstagram().check_connection(logger, config=config)
+    ok, error_msg = SourceInstagram(config=config, catalog=None, state=None).check_connection(logger, config=config)
 
     assert not ok
     assert error_msg
 
 
 def test_streams(api, config):
-    streams = SourceInstagram().streams(config)
+    streams = SourceInstagram(config=config, catalog=None, state=None).streams(config)
 
     assert len(streams) == 8
 
 
 def test_spec():
-    spec = SourceInstagram().spec(logger)
+    spec = SourceInstagram(config={}, catalog=None, state=None).spec(logger)
 
     assert isinstance(spec, ConnectorSpecification)
 
 
 def test_read(config):
-    source = SourceInstagram()
+    source = SourceInstagram(config=config, catalog=None, state=None)
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(

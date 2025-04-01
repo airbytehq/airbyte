@@ -246,6 +246,10 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.1 | 2025-03-29 | [56861](https://github.com/airbytehq/airbyte/pull/56861) | Update dependencies |
+| 3.0.0 | 2025-03-27 | [55823](https://github.com/airbytehq/airbyte/pull/55823) | Update API version |
+| 2.6.7 | 2025-03-22 | [56316](https://github.com/airbytehq/airbyte/pull/56316) | Update dependencies |
+| 2.6.6 | 2025-03-08 | [55621](https://github.com/airbytehq/airbyte/pull/55621) | Update dependencies |
 | 2.6.5 | 2025-03-01 | [55126](https://github.com/airbytehq/airbyte/pull/55126) | Update dependencies |
 | 2.6.4 | 2025-02-22 | [54477](https://github.com/airbytehq/airbyte/pull/54477) | Update dependencies |
 | 2.6.3 | 2025-02-15 | [51983](https://github.com/airbytehq/airbyte/pull/51983) | Update dependencies |

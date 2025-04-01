@@ -83,7 +83,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
         container.createStream()
         val i0 =
             ReadInput(
-                debeziumOperations.generateColdStartProperties(),
+                debeziumOperations.generateColdStartProperties(listOf(stream)),
                 debeziumOperations.generateColdStartOffset(),
                 schemaHistory = null,
                 isSynthetic = true,

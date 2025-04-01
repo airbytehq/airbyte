@@ -42,5 +42,12 @@
     },
     "custom_status_updated_at": "2022-09-19T14:53:49Z",
     "generated_timestamp": 1681308296
+  },
+  "meta": {
+    "has_more": false
+  },
+  "links": {
+    "first": "https://d3v-airbyte.zendesk.com/api/v2/help_center/community/posts/7253351904271/comments?page%5Bsize%5D=100",
+    "last": "https://d3v-airbyte.zendesk.com/api/v2/help_center/community/posts/7253351904271/comments?page%5Bbefore%5D=bGFzdF9wYWdl&page%5Bsize%5D=100"
   }
 }
