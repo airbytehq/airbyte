@@ -45,8 +45,8 @@ data:
     - cdk:python-file-based
   resourceRequirements:
     jobSpecific:
-     - jobType: discover_schema
-       resourceRequirements:
+      - jobType: discover_schema
+        resourceRequirements:
           memory_limit: 1024mi
           memory_request: 1024mi
   connectorTestSuitesOptions:
