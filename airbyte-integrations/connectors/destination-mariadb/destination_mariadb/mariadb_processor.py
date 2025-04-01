@@ -42,6 +42,7 @@ from destination_mariadb.globals import (
     METADATA_COLUMN,
 )
 
+from sqlalchemy.engine import Connection, Engine
 
 class DatabaseConfig(SqlConfig):
     """Configuration for the Postgres cache.
@@ -74,6 +75,7 @@ class DatabaseConfig(SqlConfig):
         return self.database
 
 
+
 class EmbeddingConfig(Protocol):
     """A protocol for embedding configuration.
 
@@ -98,6 +100,9 @@ class MariaDBProcessor(SqlProcessorBase):
 
     file_writer_class = JsonlWriter
 
+    sql_engine = None
+    """Allow the engine to be overwritten"""
+
     # No need to override `type_converter_class`.
 
     def __init__(
@@ -106,8 +111,8 @@ class MariaDBProcessor(SqlProcessorBase):
         splitter_config: DocumentSplitterConfig,
         embedder_config: EmbeddingConfig,
         catalog_provider: CatalogProvider,
-        temp_dir: Path,
-        temp_file_cleanup: bool = True,
+        #temp_dir: Path,
+        #temp_file_cleanup: bool = True,
     ) -> None:
         """Initialize the MariaDB processor."""
         self.splitter_config = splitter_config
@@ -119,11 +124,14 @@ class MariaDBProcessor(SqlProcessorBase):
             #temp_file_cleanup=temp_file_cleanup,
         )
 
+
+    # No, I will override it. Go away with your @final...
     def _get_sql_column_definitions(
         self,
         stream_name: str,
     ) -> dict[str, sqlalchemy.types.TypeEngine]:
-        """Return the column definitions for the given stream.
+        """
+        Return the column definitions for the given stream.
 
         Return the static column definitions for vector index tables.
         """
@@ -138,6 +146,10 @@ class MariaDBProcessor(SqlProcessorBase):
             DOCUMENT_CONTENT_COLUMN: sqlalchemy.types.TEXT(),
             EMBEDDING_COLUMN: VECTOR(self.embedding_dimensions) #Vector(self.embedding_dimensions),
         }
+
+
+    def _ensure_schema_exists(self):
+        pass
 
     def _merge_temp_table_to_final_table(
         self,
@@ -162,6 +174,13 @@ class MariaDBProcessor(SqlProcessorBase):
 
         with self.get_sql_connection() as conn:
             conn.execute(statement)
+
+    def _fully_qualified(
+        self,
+        table_name: str,
+    ) -> str:
+        """Return the fully qualified name of the given table."""
+        return f"{self._quote_identifier(table_name)}"
 
     def _emulated_merge_temp_table_to_final_table(
         self,
@@ -204,6 +223,10 @@ class MariaDBProcessor(SqlProcessorBase):
             # a user queries the data during the operation.
             conn.execute(delete_statement)
             conn.execute(append_statement)
+
+    def _quote_identifier(self, identifier: str) -> str:
+        """Return the given identifier, quoted."""
+        return f'`{identifier}`'
 
     def process_record_message(
         self,

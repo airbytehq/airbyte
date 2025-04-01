@@ -1,8 +1,10 @@
 import logging
+import typing
 import unittest
 from textwrap import dedent
 from unittest.mock import MagicMock, Mock, patch
 
+import pydantic
 from airbyte._batch_handles import BatchHandle
 from airbyte.strategies import WriteStrategy
 from airbyte_cdk.destinations.vector_db_based import ProcessingConfigModel
@@ -15,17 +17,15 @@ from airbyte_cdk.models import (
     AirbyteStreamState,
     Type,
 )
+from airbyte_cdk.sql.shared.catalog_providers import CatalogProvider
 from airbyte_protocol.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, \
     AirbyteStream
 
-from destination_mariadb.common.catalog.catalog_providers import CatalogProvider
 from destination_mariadb.config import ConfigModel
-from destination_mariadb.destination import DestinationMariaDB
 from destination_mariadb.mariadb_processor import DatabaseConfig
 from destination_mariadb.mariadb_processor import MariaDBProcessor
 from airbyte_cdk.destinations.vector_db_based import FakeEmbeddingConfigModel
 from pathlib import Path
-import tempfile
 from airbyte.secrets import SecretString
 
 SQL_CREATE_STATEMENT = """
@@ -59,16 +59,16 @@ class TestDestinationMariaDB(unittest.TestCase):
         self.config_model = ConfigModel.parse_obj(self.config)
         self.logger = logging.getLogger("airbyte")
 
-        test_splitter = ProcessingConfigModel(
+        self.test_splitter = ProcessingConfigModel(
             chunk_size=666
         )
 
-        fake_embedder = FakeEmbeddingConfigModel(
+        self.fake_embedder = FakeEmbeddingConfigModel(
             mode="fake"
         )
 
         # ok, we actually need a catalog provider
-        configured_catalog = ConfiguredAirbyteCatalog(
+        self.configured_catalog = ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
                     cursor_field=["updated_at"],
@@ -164,28 +164,22 @@ class TestDestinationMariaDB(unittest.TestCase):
 
         self.fileWriterMock = Mock()
 
-        # file_writer: FileWriterBase
-
-        self.testProcessor = MariaDBProcessor(
-            DatabaseConfig(
-                host=self.config_model.indexing.host,
-                port=self.config_model.indexing.port,
-                database=self.config_model.indexing.database,
-                # schema_name=config.indexing.default_schema,
-                username=self.config_model.indexing.username,
-                password=SecretString(self.config_model.indexing.credentials.password),
-            ),
-            splitter_config=test_splitter,
-            embedder_config=fake_embedder,
-            catalog_provider=CatalogProvider(configured_catalog),
-            temp_dir=Path(tempfile.mkdtemp()),
-            temp_file_cleanup=True,
+        self.sql_config = DatabaseConfig(
+            host=self.config_model.indexing.host,
+            port=self.config_model.indexing.port,
+            database=self.config_model.indexing.database,
+            username=self.config_model.indexing.username,
+            password=SecretString(self.config_model.indexing.credentials.password),
         )
 
-        self.testProcessor.file_writer = self.fileWriterMock
+        self.testProcessor = MariaDBProcessor(
+            self.sql_config,
+            splitter_config=self.test_splitter,
+            embedder_config=self.fake_embedder,
+            catalog_provider=CatalogProvider(self.configured_catalog),
+        )
 
-        fake_sql_engine = None
-        self.testProcessor.get_sql_engine = MagicMock(return_value=fake_sql_engine)
+
 
         # The batch_id is used later down the line for the name of the temp table
         self.batches_to_finalize = [BatchHandle(
@@ -251,9 +245,20 @@ class TestDestinationMariaDB(unittest.TestCase):
 
         return None
 
+    def get_mock_call_argument(self, mock: Mock, call_name, arg_nr):
+        call = self.find_mock_call(mock, call_name)
+        if call is None:
+            return None
 
-    def test_create_database(self):
-        self.testProcessor._table_exists = MagicMock(return_value=False)
+        if len(call.args) <= arg_nr:
+            return None
+
+        return call.args[0]
+
+    #airbyte_cdk.sql.shared.sqlalchemy?
+
+
+    def test_create_database_old(self):
 
         expected_qry = """
             CREATE TABLE `muhkuh` (
@@ -266,12 +271,46 @@ class TestDestinationMariaDB(unittest.TestCase):
             )
         """
 
+        self.testProcessor._table_exists = MagicMock(return_value=False)
         self.testProcessor._execute_sql = MagicMock()
         self.testProcessor._ensure_final_table_exists('muhkuh')
 
         self.assertEqual(self.testProcessor._execute_sql.call_count, 1)
 
         actual_qry = self.testProcessor._execute_sql.call_args_list[0].args[0]
+        self.assertMultilineTrimmed(actual_qry, expected_qry)
+
+
+    @patch("sqlalchemy.inspect")
+    def test_create_database(self, sqlalchemy_inspect):
+
+        inspector_mock = MagicMock()
+        sqlalchemy_inspect.return_value = inspector_mock
+
+        # probably should return the name of the DB for tests where we don't want the DB creation code to run
+        inspector_mock.get_schema_names = Mock(return_value=[])
+
+
+
+        self.testProcessor._table_exists = MagicMock(return_value=False)
+        self.testProcessor._execute_sql = MagicMock()
+
+
+        self.testProcessor._ensure_final_table_exists('users')
+        actual_qry = self.testProcessor._execute_sql.call_args[0][0]
+
+        expected_qry = """
+            CREATE TABLE `users` (
+                `document_id` VARCHAR(255),
+                `chunk_id` VARCHAR(255),
+                `metadata` JSON,
+                `document_content` TEXT,
+                `embedding` VECTOR(1536)
+            )
+        """
+        # Without any PK for now... PRIMARY KEY (document_id)
+
+
         self.assertMultilineTrimmed(actual_qry, expected_qry)
 
     @patch("destination_mariadb.common.sql.sql_processor.pd")
