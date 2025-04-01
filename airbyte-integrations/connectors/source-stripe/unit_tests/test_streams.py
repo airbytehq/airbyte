@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
 from urllib.parse import urlencode
@@ -8,6 +8,8 @@ import freezegun
 import pendulum
 import pytest
 from source_stripe.streams import SetupAttempts, StripeStream, UpdatedCursorIncrementalStripeSubStream
+
+from airbyte_cdk.sources.types import Record
 
 
 def read_from_stream(stream, sync_mode, state):
@@ -75,7 +77,6 @@ bank_accounts_full_refresh_test_case = (
     "full_refresh",
     {},
 )
-
 
 bank_accounts_incremental_test_case = (
     {
@@ -169,7 +170,6 @@ balance_transactions_api_objects = [
     {"id": "txn_tiJtvvhF7ox3YEmKvVQhfEcX", "object": "balance_transaction", "amount": -9164, "created": 1679568588, "status": "available"},
 ]
 
-
 refunds_api_objects = [
     {
         "id": "re_3NYB8LAHLf1oYfwN3EZRDIfF",
@@ -250,22 +250,28 @@ refunds_api_objects = [
                 ],
             },
             [
-                {
-                    "id": "txn_1KVQhfEcXtiJtvvhF7ox3YEm",
-                    "object": "balance_transaction",
-                    "amount": 435,
-                    "created": 1653299388,
-                    "status": "available",
-                },
-                {
-                    "id": "txn_tiJtvvhF7ox3YEmKvVQhfEcX",
-                    "object": "balance_transaction",
-                    "amount": -9164,
-                    "created": 1679568588,
-                    "status": "available",
-                },
+                Record(
+                    data={
+                        "id": "txn_1KVQhfEcXtiJtvvhF7ox3YEm",
+                        "object": "balance_transaction",
+                        "amount": 435,
+                        "created": 1653299388,
+                        "status": "available",
+                    },
+                    stream_name="balance_transactions",
+                ),
+                Record(
+                    data={
+                        "id": "txn_tiJtvvhF7ox3YEmKvVQhfEcX",
+                        "object": "balance_transaction",
+                        "amount": -9164,
+                        "created": 1679568588,
+                        "status": "available",
+                    },
+                    stream_name="balance_transactions",
+                ),
             ],
-            [{"created[gte]": 1631199615, "created[lte]": 1662735615}, {"created[gte]": 1662735616, "created[lte]": 1692802815}],
+            [{"start_time": "1632409215", "end_time": "1663945214"}, {"start_time": "1663945215", "end_time": "1692802815"}],
             "balance_transactions",
             "full_refresh",
             {},
@@ -282,15 +288,18 @@ refunds_api_objects = [
                 ],
             },
             [
-                {
-                    "id": "txn_tiJtvvhF7ox3YEmKvVQhfEcX",
-                    "object": "balance_transaction",
-                    "amount": -9164,
-                    "created": 1679568588,
-                    "status": "available",
-                },
+                Record(
+                    data={
+                        "id": "txn_tiJtvvhF7ox3YEmKvVQhfEcX",
+                        "object": "balance_transaction",
+                        "amount": -9164,
+                        "created": 1679568588,
+                        "status": "available",
+                    },
+                    stream_name="balance_transactions",
+                ),
             ],
-            [{"created[gte]": 1665308989, "created[lte]": 1692802815}],
+            [{"start_time": "1665308988", "end_time": "1692802815"}],
             "balance_transactions",
             "incremental",
             {"created": 1666518588},
@@ -389,6 +398,8 @@ def test_created_cursor_incremental_stream(
 ):
     config["start_date"] = str(pendulum.now().subtract(months=23))
     stream = stream_by_name(stream_name, {"lookback_window_days": 14, **config})
+    if state:
+        stream.state = state
     for url, response in requests_mock_map.items():
         requests_mock.get(url, response)
     slices = list(stream.stream_slices(sync_mode=sync_mode, stream_state=state))
@@ -397,10 +408,6 @@ def test_created_cursor_incremental_stream(
     assert records == expected_records
     for record in records:
         assert bool(record[stream.cursor_field])
-    call_history = iter(requests_mock.request_history)
-    for slice_ in slices:
-        call = next(call_history)
-        assert urlencode(slice_) in call.url
 
 
 @pytest.mark.parametrize(
@@ -422,7 +429,7 @@ def test_get_start_timestamp(
 ):
     config["start_date"] = start_date
     config["lookback_window_days"] = lookback_window
-    stream = stream_by_name("balance_transactions", config)
+    stream = stream_by_name("setup_attempts", config)
     stream.start_date_max_days_from_now = max_days_from_now
     assert stream.get_start_timestamp(stream_state) == pendulum.parse(expected_start_timestamp).int_timestamp
 

@@ -21,7 +21,7 @@ on:
 jobs:
   connectors_ci:
     name: Connector Pre-Release Checks
-    runs-on: linux-20.04-large # Custom runner, defined in GitHub org settings
+    runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
     if: >
       github.event.pull_request.head.repo.fork != true &&
       github.event.pull_request.draft == false
