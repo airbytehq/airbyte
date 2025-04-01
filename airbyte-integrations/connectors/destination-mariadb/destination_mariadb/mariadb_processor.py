@@ -10,11 +10,11 @@ from typing import Any
 
 import dpath
 import sqlalchemy
+from airbyte._writers import JsonlWriter
 
+# from airbyte._processors.file.jsonl import JsonlWriter
 
-from airbyte._processors.file.jsonl import JsonlWriter
-
-from airbyte.secrets import SecretString
+# from airbyte.secrets import SecretString
 from airbyte.types import SQLTypeConverter
 from airbyte_cdk.destinations.vector_db_based import embedder
 from airbyte_cdk.destinations.vector_db_based.document_processor import (
@@ -24,12 +24,16 @@ from airbyte_cdk.destinations.vector_db_based.document_processor import (
     ProcessingConfigModel as DocumentSplitterConfig,
 )
 from airbyte_cdk.models import AirbyteRecordMessage
+from airbyte_cdk.sql.secrets import SecretString
+from airbyte_cdk.sql.shared import SqlProcessorBase
+from airbyte_cdk.sql.shared.sql_processor import SqlConfig
 from overrides import overrides
 from typing_extensions import Protocol
 
 from destination_mariadb.common.catalog.catalog_providers import CatalogProvider
 from destination_mariadb.common.sql.mariadb_types import VECTOR
-from destination_mariadb.common.sql.sql_processor import SqlConfig, SqlProcessorBase
+# from destination_mariadb.common.sql.sql_processor import SqlConfig, SqlProcessorBase
+
 from destination_mariadb.globals import (
     CHUNK_ID_COLUMN,
     DOCUMENT_CONTENT_COLUMN,
@@ -111,8 +115,8 @@ class MariaDBProcessor(SqlProcessorBase):
         super().__init__(
             sql_config=sql_config,
             catalog_provider=catalog_provider,
-            temp_dir=temp_dir,
-            temp_file_cleanup=temp_file_cleanup,
+            #temp_dir=temp_dir,
+            #temp_file_cleanup=temp_file_cleanup,
         )
 
     def _get_sql_column_definitions(

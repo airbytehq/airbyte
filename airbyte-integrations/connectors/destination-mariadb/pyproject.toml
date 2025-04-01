@@ -16,65 +16,31 @@ repository = "http://to.do"
 [[tool.poetry.packages]]
 include = "destination_mariadb"
 
-[tool.poetry.dependencies.airbyte-cdk]
-# Version cnstrained by PyAirbyte (`airbyte`) version
-version = ">=1.0"
-extras = ["vector-db-based"]
-
 [tool.poetry.dependencies]
-python = ">=3.10,<3.12"
-airbyte = "^0.12.0"
+python = "^3.10,<3.12"
+airbyte-cdk = "^5"
+airbyte = "^0.20.0"
+langchain = "*" # why do I need to specify all of these manually, despite that other packages should pull them? NO IDEA!!
+# cached-property = "==1.5.2"
 sqlalchemy = "<2.0"
 pymysql = "^1.1.1"
 pydevd-pycharm = "~243.25659.43"
-pydantic = "^1.10.8"
+# pydantic = "^1.10.8"
+# pydantic = "^2.0.0" # fucking pydantic
+#pydantic = {version = "^2.0.0", extras = ["v1-compat"]}
+# airbyte_protocol / well_known_types seems to cause this
+# airbyte_protocol_models==0.14.2 pin this to something higher?
 
 [tool.poetry.group.dev.dependencies]
-# pytest = "^8.0.0"
-ruff = "^0.3.2"
-mypy = "^1.9.0"
-coverage = "^7.5.3"
-requests-mock = "*"
-pytest-mock = "*"
-pytest = "*"
+pytest-mock = "^3.6"
+freezegun = "^1.4.0"
+pytest = "^8.0.0"
+requests-mock = "^1.9.3"
+
 
 
 [tool.poetry.scripts]
 destination-mariadb = "destination_mariadb.run:run"
-
-[tool.ruff]
-target-version = "py310"
-preview = true
-line-length = 100
-
-[[tool.mypy.overrides]]
-module = [
-    "airbyte_protocol",
-    "airbyte_protocol.*",
-    "sqlalchemy",
-    "sqlalchemy.*",
-    "dpath",
-    "dpath.util",
-]
-ignore_missing_imports = true    # No stubs yet (😢)
-
-[tool.coverage.run]
-# branch = true
-# parallel = true
-omit = [
-    "unit_tests/*",
-    "integration_tests/*",
-    "destination_mariadb/common/*",
-]
-
-[tool.coverage.report]
-precision = 1
-fail_under = 90.0
-exclude_also = [
-    # # TYPE_CHECKING block is only executed while running mypy
-    "if TYPE_CHECKING:",
-    "\\.\\.\\."
-]
 
 [tool.poe]
 include = [
