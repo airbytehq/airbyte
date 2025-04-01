@@ -7,8 +7,9 @@ package io.airbyte.cdk.load.write
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.DestinationFile
-import io.airbyte.cdk.load.message.DestinationRecordAirbyteValue
+import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.MultiProducerChannel
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.state.StreamProcessingFailed
@@ -35,11 +36,11 @@ import io.airbyte.cdk.load.state.StreamProcessingFailed
  * [processBatch] is called once per incomplete batch returned by either [processRecords] or
  * [processBatch] itself. It must be thread-safe if
  * [io.airbyte.cdk.load.command.DestinationConfiguration.numProcessBatchWorkers] > 1. If
- * [processRecords] never returns a non-[Batch.State.COMPLETE] batch, [processBatch] will never be
- * called.
+ * [processRecords] never returns a non-[Batch.BatchState.COMPLETE] batch, [processBatch] will never
+ * be called.
  *
- * NOTE: even if [processBatch] returns a not-[Batch.State.COMPLETE] batch, it will be called again.
- * TODO: allow the client to specify subsequent processing stages instead.
+ * NOTE: even if [processBatch] returns a not-[Batch.BatchState.COMPLETE] batch, it will be called
+ * again. TODO: allow the client to specify subsequent processing stages instead.
  *
  * [close] is called once after all records have been processed, regardless of success or failure,
  * but only if [start] returned successfully. If any exception was thrown during processing, it is
@@ -55,13 +56,13 @@ interface StreamLoader : BatchAccumulator, FileBatchAccumulator {
         outputQueue: MultiProducerChannel<BatchEnvelope<*>>,
     ): FileBatchAccumulator = this
 
-    suspend fun processBatch(batch: Batch): Batch = SimpleBatch(Batch.State.COMPLETE)
+    suspend fun processBatch(batch: Batch): Batch = SimpleBatch(BatchState.COMPLETE)
     suspend fun close(streamFailure: StreamProcessingFailed? = null) {}
 }
 
 interface BatchAccumulator {
     suspend fun processRecords(
-        records: Iterator<DestinationRecordAirbyteValue>,
+        records: Iterator<DestinationRecordRaw>,
         totalSizeBytes: Long,
         endOfStream: Boolean = false
     ): Batch =

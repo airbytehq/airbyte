@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.pipeline
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
-import kotlin.math.abs
 
 /**
  * A dev interface for expressing how incoming data is partitioned. By default, data will be
@@ -17,10 +16,13 @@ interface InputPartitioner {
     fun getPartition(record: DestinationRecordRaw, numParts: Int): Int
 }
 
+/**
+ * The default input partitioner, which partitions by the stream name. TODO: Should be round-robin?
+ */
 @Singleton
 @Secondary
 class ByStreamInputPartitioner : InputPartitioner {
     override fun getPartition(record: DestinationRecordRaw, numParts: Int): Int {
-        return abs(record.stream.hashCode()) % numParts
+        return Math.floorMod(record.stream.hashCode(), numParts)
     }
 }

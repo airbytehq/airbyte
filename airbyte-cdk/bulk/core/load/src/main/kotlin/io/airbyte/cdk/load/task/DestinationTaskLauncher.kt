@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.task
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
@@ -145,11 +146,12 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     // New interface shim
     @Named("recordQueue")
     private val recordQueueForPipeline:
-        PartitionedQueue<Reserved<PipelineEvent<StreamKey, DestinationRecordRaw>>>,
+        PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     @Named("batchStateUpdateQueue") private val batchUpdateQueue: ChannelMessageQueue<BatchUpdate>,
     private val loadPipeline: LoadPipeline?,
     private val partitioner: InputPartitioner,
     private val updateBatchTaskFactory: UpdateBatchStateTaskFactory,
+    @Named("defaultDestinationTaskLauncherHasThrown") private val hasThrown: AtomicBoolean,
 ) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
 
@@ -160,10 +162,6 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     private val failSyncIsEnqueued = AtomicBoolean(false)
 
     private val closeStreamHasRun = ConcurrentHashMap<DestinationStream.Descriptor, AtomicBoolean>()
-
-    companion object {
-        val hasThrown = AtomicBoolean(false)
-    }
 
     inner class WrappedTask(
         private val innerTask: Task,
@@ -180,6 +178,13 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
                 log.error(e) { "Caught exception in task $innerTask" }
                 if (hasThrown.setOnce()) {
                     handleException(e)
+                } else {
+                    log.info { "Skipping exception handling, because it has already run." }
+                }
+            } catch (t: Throwable) {
+                log.error(t) { "Critical error in task $innerTask" }
+                if (hasThrown.setOnce()) {
+                    handleException(SystemErrorException(t.message, t))
                 } else {
                     log.info { "Skipping exception handling, because it has already run." }
                 }
@@ -284,6 +289,7 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     }
 
     override suspend fun handleSetupComplete() {
+        syncManager.markSetupComplete()
         if (loadPipeline == null) {
             log.info { "Setup task complete, opening streams" }
             catalog.streams.forEach { openStreamQueue.publish(it) }
