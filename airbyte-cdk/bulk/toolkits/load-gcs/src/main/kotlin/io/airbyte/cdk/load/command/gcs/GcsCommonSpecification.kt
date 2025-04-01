@@ -13,7 +13,7 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 interface GcsCommonSpecification {
     @get:JsonSchemaTitle("GCS Bucket Name")
     @get:JsonPropertyDescription(
-        """The name of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\">here</a>."""
+        """The name of the GCS bucket. Read more <a href="https://cloud.google.com/storage/docs/naming-buckets">here</a>."""
     )
     @get:JsonProperty("gcs_bucket_name")
     @get:JsonSchemaInject(json = """{"examples":["airbyte_sync"]}""")

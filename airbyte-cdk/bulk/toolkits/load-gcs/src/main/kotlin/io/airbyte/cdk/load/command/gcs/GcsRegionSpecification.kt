@@ -18,7 +18,7 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 interface GcsRegionSpecification {
     @get:JsonSchemaTitle("GCS Bucket Region")
     @get:JsonPropertyDescription(
-        """Select a Region of the GCS Bucket. Read more <a href=\"https://cloud.google.com/storage/docs/locations\">here</a>."""
+        """Select a Region of the GCS Bucket. Read more <a href="https://cloud.google.com/storage/docs/locations">here</a>."""
     )
     @get:JsonProperty("gcs_bucket_region", defaultValue = "us")
     val gcsBucketRegion: GcsRegion?
