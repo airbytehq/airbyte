@@ -1,0 +1,306 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: |-
+  Website: https://dashboard.belvo.com/
+  API Reference: https://developers.belvo.com/reference/using-the-api-reference
+
+check:
+  type: CheckStream
+  stream_names:
+    - institutions
+
+definitions:
+  streams:
+    institutions:
+      type: DeclarativeStream
+      name: institutions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/institutions
+          http_method: GET
+          request_parameters:
+            page_size: "{{ config['limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next') }}"
+            stop_condition: "{{ response.get('next') is none }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/institutions"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['subdomain'] }}.belvo.com
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"secret_password\"] }}"
+      username: "{{ config[\"secret_id\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/institutions"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - secret_id
+      - subdomain
+      - secret_password
+    properties:
+      secret_id:
+        type: string
+        description: >-
+          Your Belvo Secret ID. You can generate it by following the
+          instructions at
+          https://developers.belvo.com/docs/get-started-in-10-minutes#generate-your-api-keys.
+        name: secret_id
+        order: 0
+        title: Secret ID
+        airbyte_secret: true
+      subdomain:
+        type: string
+        description: >-
+          The subdomain for the Belvo API environment, such as 'sandbox' or
+          'api'.
+        enum:
+          - sandbox
+          - development
+          - api
+        name: subdomain
+        order: 1
+        title: Subdomain
+        default: api
+      secret_password:
+        type: string
+        description: >-
+          Your Belvo Secret Password. You can generate it by following the
+          instructions at
+          https://developers.belvo.com/docs/get-started-in-10-minutes#generate-your-api-keys.
+        name: secret_password
+        order: 2
+        title: Secret Password
+        airbyte_secret: true
+      limit:
+        type: string
+        description: Limit for each response objects
+        order: 3
+        title: Limit
+        default: "10"
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    institutions: true
+  testedStreams:
+    institutions:
+      hasRecords: true
+      streamHash: d9dcd476ac42ee3a36c4d8d8cc6450830095a2bd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://developers.belvo.com/reference/using-the-api-reference
+
+schemas:
+  institutions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      code:
+        type:
+          - string
+          - "null"
+      country_code:
+        type:
+          - string
+          - "null"
+      country_codes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      display_name:
+        type:
+          - string
+          - "null"
+      features:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      form_fields:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            label:
+              type:
+                - string
+                - "null"
+            length:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            optional:
+              type:
+                - boolean
+                - "null"
+            placeholder:
+              type:
+                - string
+                - "null"
+            pre_selected:
+              type:
+                - number
+                - "null"
+            validation:
+              type:
+                - string
+                - "null"
+            validation_message:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+            values:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  code:
+                    type:
+                      - string
+                      - "null"
+                  label:
+                    type:
+                      - string
+                      - "null"
+                  placeholder:
+                    type:
+                      - string
+                      - "null"
+                  validation:
+                    type:
+                      - string
+                      - "null"
+                  validation_message:
+                    type:
+                      - string
+                      - "null"
+      icon_logo:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      integration_type:
+        type:
+          - string
+          - "null"
+      logo:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      openbanking_information:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          participants:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      primary_color:
+        type:
+          - string
+          - "null"
+      resources:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      status:
+        type:
+          - string
+          - "null"
+      text_logo:
+        type:
+          - string
+          - "null"
+    required:
+      - id
