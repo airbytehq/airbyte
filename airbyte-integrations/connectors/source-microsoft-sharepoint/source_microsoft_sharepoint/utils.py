@@ -3,12 +3,10 @@ import logging
 import time
 from datetime import datetime
 from enum import Enum
-from functools import lru_cache
 from http import HTTPStatus
 from typing import List, Tuple
 
 from office365.graph_client import GraphClient
-from office365.onedrive.sites.site import Site
 
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -28,7 +26,16 @@ class FolderNotFoundException(Exception):
 
 
 class MicrosoftSharePointRemoteFile(RemoteFile):
+    """ "
+    id: str - The unique identifier of the DriveItem.
+    drive_id: str - The unique identifier of the Drive that contains the DriveItem.
+    from_shared_drive: bool - Indicates whether the DriveItem is from a shared drive.
+    """
+
     download_url: str
+    id: str
+    drive_id: str
+    from_shared_drive: bool
 
 
 def filter_http_urls(files, logger):
@@ -155,6 +162,44 @@ class PlaceholderUrlBuilder:
         query_string = "&".join(self._segments)
         query_string = "?" + query_string if query_string else ""
         return f"{self._scheme}://{self._host}{self._path}{query_string}"
+
+
+def execute_request_direct_with_retry(client, endpoint, max_retries=5, retry_delay=1):
+    """
+    Execute a direct request with retry capability.
+
+    Args:
+        client: The client to execute the request with
+        endpoint: The endpoint to request
+        max_retries: Maximum number of retries (default 5)
+        retry_delay: Initial delay between retries in seconds (default 1)
+
+    Returns:
+        The response from the API after successful execution
+
+    Raises:
+        Exception: If the request fails after all retries
+    """
+    attempt = 0
+    last_exception = None
+    while attempt < max_retries:
+        try:
+            response = client.execute_request_direct(endpoint)
+            response.raise_for_status()
+            return response
+        except Exception as e:
+            last_exception = e
+            logging.warning(f"Request to {endpoint} failed (attempt {attempt + 1}/{max_retries}): {str(e)}")
+
+            # Exponential backoff
+            sleep_time = retry_delay * (2**attempt)
+            logging.info(f"Retrying in {sleep_time} seconds...")
+            time.sleep(sleep_time)
+            attempt += 1
+
+    # If we've exhausted all retries, raise the last exception
+    logging.error(f"Request to {endpoint} failed after {max_retries} attempts: {str(last_exception)}")
+    raise last_exception
 
 
 def get_site_prefix(graph_client: GraphClient) -> Tuple[str, str]:

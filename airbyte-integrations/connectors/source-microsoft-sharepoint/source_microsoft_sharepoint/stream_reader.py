@@ -17,6 +17,7 @@ import smart_open
 from msal import ConfidentialClientApplication
 from office365.entity_collection import EntityCollection
 from office365.graph_client import GraphClient
+from office365.onedrive.driveitems.driveItem import DriveItem
 from office365.onedrive.drives.drive import Drive
 from office365.runtime.auth.token_response import TokenResponse
 from office365.sharepoint.client_context import ClientContext
@@ -28,7 +29,7 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
 
-from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
+from .exceptions import ErrorFetchingMetadata
 from .utils import (
     FolderNotFoundException,
     MicrosoftSharePointRemoteFile,
@@ -165,7 +166,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         assert isinstance(value, SourceMicrosoftSharePointSpec)
         self._config = value
 
-    def _get_shared_drive_object(self, drive_id: str, object_id: str, path: str) -> List[Tuple[str, str, datetime]]:
+    def _get_shared_drive_object(self, drive_id: str, object_id: str, path: str) -> Iterable[Tuple[str, str, datetime, str, str, bool]]:
         """
         Retrieves a list of all nested files under the specified object.
 
@@ -184,7 +185,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         headers = {"Authorization": f"Bearer {access_token}"}
         base_url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}"
 
-        def get_files(url: str, path: str) -> List[Tuple[str, str, datetime]]:
+        def get_files(url: str, path: str) -> Iterable[Tuple[str, str, datetime, str, str, bool]]:
             response = requests.get(url, headers=headers)
             if response.status_code != 200:
                 error_info = response.json().get("error", {}).get("message", "No additional error information provided.")
@@ -195,7 +196,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                 new_path = path + "/" + child["name"]
                 if child.get("file"):  # Object is a file
                     last_modified = datetime.strptime(child["lastModifiedDateTime"], "%Y-%m-%dT%H:%M:%SZ")
-                    yield (new_path, child["@microsoft.graph.downloadUrl"], last_modified)
+                    yield (new_path, child["@microsoft.graph.downloadUrl"], last_modified, child.get("id"), drive_id, True)
                 else:  # Object is a folder, retrieve children
                     child_url = f"{base_url}/items/{child['id']}/children"  # Use item endpoint for nested objects
                     yield from get_files(child_url, new_path)
@@ -216,20 +217,38 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         if item_data.get("file"):  # Initial object is a file
             new_path = path + "/" + item_data["name"]
             last_modified = datetime.strptime(item_data["lastModifiedDateTime"], "%Y-%m-%dT%H:%M:%SZ")
-            yield (new_path, item_data["@microsoft.graph.downloadUrl"], last_modified)
+            yield (new_path, item_data["@microsoft.graph.downloadUrl"], last_modified, item_data.get("id"), drive_id, True)
         else:
             # Initial object is a folder, start file retrieval
             yield from get_files(f"{item_url}/children", path)
 
-    def _list_directories_and_files(self, root_folder, path):
-        """Enumerates folders and files starting from a root folder."""
+    def _list_directories_and_files(
+        self, root_folder: DriveItem, path: str, drive_id: str
+    ) -> Iterable[Tuple[str, str, str, str, str, bool]]:
+        """Enumerates folders and files starting from a root folder.""" """
+        Enumerates folders and files starting from a root folder.
+    
+        Args:
+            root_folder (DriveItem): The root folder to start the enumeration from.
+            path (str): The current path in the directory structure.
+    
+        Yields:
+            Tuple[str, str, str, str]: A tuple containing the file path, download URL, last modified date, and file ID.
+        """
         drive_items = execute_query_with_retry(root_folder.children.get())
         for item in drive_items:
             item_path = path + "/" + item.name if path else item.name
             if item.is_file:
-                yield (item_path, item.properties["@microsoft.graph.downloadUrl"], item.properties["lastModifiedDateTime"])
+                yield (
+                    item_path,
+                    item.properties["@microsoft.graph.downloadUrl"],
+                    item.properties["lastModifiedDateTime"],
+                    item.id,
+                    drive_id,
+                    False,
+                )
             else:
-                yield from self._list_directories_and_files(item, item_path)
+                yield from self._list_directories_and_files(item, item_path, drive_id)
         yield from []
 
     def _get_files_by_drive_name(self, drives, folder_path):
@@ -251,7 +270,7 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                         continue
                     folder_path_url = drive.web_url + "/" + folder_path
 
-                yield from self._list_directories_and_files(folder, folder_path_url)
+                yield from self._list_directories_and_files(folder, folder_path_url, drive_id=drive.id)
 
     def get_all_sites(self) -> List[MutableMapping[str, Any]]:
         """
@@ -387,8 +406,11 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
                         uri=path,
                         download_url=download_url,
                         last_modified=last_modified,
+                        id=file_id,
+                        drive_id=drive_id,
+                        from_shared_drive=from_shared_drive,
                     )
-                    for path, download_url, last_modified in files
+                    for path, download_url, last_modified, file_id, drive_id, from_shared_drive in files
                 ],
                 globs,
             ),

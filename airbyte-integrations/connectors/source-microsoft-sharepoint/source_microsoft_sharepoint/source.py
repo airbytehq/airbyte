@@ -10,12 +10,14 @@ from airbyte_cdk.models import AuthFlowType, OauthConnectorInputSpecification
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
+from source_microsoft_sharepoint.stream_permissions_reader import SourceMicrosoftSharePointStreamPermissionsReader
 from source_microsoft_sharepoint.stream_reader import SourceMicrosoftSharePointStreamReader
 from source_microsoft_sharepoint.utils import PlaceholderUrlBuilder
 
 
 class SourceMicrosoftSharePoint(FileBasedSource):
     SCOPES = ["offline_access", "Files.Read.All", "Sites.Read.All", "Sites.Selected"]
+    IDENTITIES_SCOPES = ["User.Read.All", "Group.Read.All", "Application.Read.All", "Device.Read.All"]
 
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: Optional[TState]):
         super().__init__(
@@ -25,6 +27,7 @@ class SourceMicrosoftSharePoint(FileBasedSource):
             config=config,
             state=state,
             cursor_cls=DefaultFileBasedCursor,
+            stream_permissions_reader=SourceMicrosoftSharePointStreamPermissionsReader(),
         )
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
@@ -51,7 +54,7 @@ class SourceMicrosoftSharePoint(FileBasedSource):
             .set_path("/{{tenant_id}}/oauth2/v2.0/token")
             .build()
         )
-        scopes = " ".join(SourceMicrosoftSharePoint.SCOPES)
+        scopes = " ".join(SourceMicrosoftSharePoint.SCOPES + SourceMicrosoftSharePoint.IDENTITIES_SCOPES)
 
         oauth_connector_input_specification = OauthConnectorInputSpecification(
             consent_url=consent_url,

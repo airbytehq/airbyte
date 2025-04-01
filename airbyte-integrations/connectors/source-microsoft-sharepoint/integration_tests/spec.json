@@ -399,6 +399,27 @@
               },
               "description": "Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files.",
               "required": ["delivery_type"]
+            },
+            {
+              "title": "Replicate Permissions ACL",
+              "type": "object",
+              "properties": {
+                "delivery_type": {
+                  "title": "Delivery Type",
+                  "default": "use_permissions_transfer",
+                  "const": "use_permissions_transfer",
+                  "enum": ["use_permissions_transfer"],
+                  "type": "string"
+                },
+                "include_identities_stream": {
+                  "title": "Include Identity Stream",
+                  "description": "This data can be used in downstream systems to recreate permission restrictions mirroring the original source",
+                  "default": true,
+                  "type": "boolean"
+                }
+              },
+              "description": "Sends one identity stream and one for more permissions (ACL) streams to the destination. This data can be used in downstream systems to recreate permission restrictions mirroring the original source.",
+              "required": ["delivery_type"]
             }
           ]
         },
@@ -541,7 +562,7 @@
         "oauth_connector_input_specification": {
           "consent_url": "https://login.microsoftonline.com/{{tenant_id}}/oauth2/v2.0/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}&{{scope_param}}&response_type=code",
           "access_token_url": "https://login.microsoftonline.com/{{tenant_id}}/oauth2/v2.0/token",
-          "scope": "offline_access Files.Read.All Sites.Read.All",
+          "scope": "offline_access Files.Read.All User.Read.All Group.Read.All Sites.Read.All Application.Read.All Device.Read.All",
           "access_token_headers": {
             "Content-Type": "application/x-www-form-urlencoded"
           },

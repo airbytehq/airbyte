@@ -62,8 +62,8 @@ def create_mock_drive_files():
     Provides mock data for SharePoint drive files (personal drive).
     """
     return [
-        ("file1.csv", "https://example.com/file1.csv", datetime(2021, 1, 1)),
-        ("file2.txt", "https://example.com/file2.txt", datetime(2021, 1, 1)),
+        ("file1.csv", "https://example.com/file1.csv", datetime(2021, 1, 1), "item_id_1", "drive_id_1", False),
+        ("file2.txt", "https://example.com/file2.txt", datetime(2021, 1, 1), "item_id_2", "drive_id_1", False),
     ]
 
 
@@ -73,8 +73,8 @@ def create_mock_shared_drive_files():
     Provides mock data for SharePoint drive files (shared drives).
     """
     return [
-        ("file3.csv", "https://example.com/file3.csv", datetime(2021, 3, 1)),
-        ("file4.txt", "https://example.com/file4.txt", datetime(2021, 4, 1)),
+        ("file3.csv", "https://example.com/file3.csv", datetime(2021, 3, 1), "item_id_3", "drive_id_2", True),
+        ("file4.txt", "https://example.com/file4.txt", datetime(2021, 4, 1), "item_id_4", "drive_id_2", True),
     ]
 
 
@@ -362,12 +362,12 @@ def test_list_directories_and_files():
 
     stream_reader = SourceMicrosoftSharePointStreamReader()
 
-    result = list(stream_reader._list_directories_and_files(mock_root_folder, "https://example.com/root"))
+    result = list(stream_reader._list_directories_and_files(mock_root_folder, "https://example.com/root", "drive_id_1"))
 
     assert len(result) == 2
     assert result == [
-        ("https://example.com/root/folder1/file1.txt", "test_url", "1991-08-24"),
-        ("https://example.com/root/file2.txt", "test_url", "1991-08-24"),
+        ("https://example.com/root/folder1/file1.txt", "test_url", "1991-08-24", ANY, "drive_id_1", False),
+        ("https://example.com/root/file2.txt", "test_url", "1991-08-24", ANY, "drive_id_1", False),
     ]
 
 
@@ -507,6 +507,9 @@ not_empty_subfolder_response = {
                     "http://example.com/TestFile.txt",
                     "http://example.com/download",
                     datetime.strptime("2021-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+                    None,
+                    "dummy_drive_id",
+                    True,
                 )
             ],
             False,
@@ -528,6 +531,9 @@ not_empty_subfolder_response = {
                     "http://example.com/subfolder2/NestedFile.txt",
                     "http://example.com/nested",
                     datetime.strptime("2021-01-02T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+                    None,
+                    "dummy_drive_id",
+                    True,
                 )
             ],
             False,
