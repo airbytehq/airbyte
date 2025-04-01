@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 from source_hubspot.errors import HubspotInvalidAuth
-from source_hubspot.streams import MarketingEmails, BaseStream
+from source_hubspot.streams import BaseStream, MarketingEmails
 
 
 # Define a mock function to be used with backoff.on_exception
