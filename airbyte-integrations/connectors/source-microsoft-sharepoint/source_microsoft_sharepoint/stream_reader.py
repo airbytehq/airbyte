@@ -10,38 +10,30 @@ from functools import lru_cache
 from io import IOBase
 from os import makedirs, path
 from os.path import getsize
-from typing import Any, Callable, Dict, Iterable, List, MutableMapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, MutableMapping, Optional, Tuple
 
 import requests
 import smart_open
 from office365.entity_collection import EntityCollection
 from office365.onedrive.driveitems.driveItem import DriveItem
 from office365.onedrive.drives.drive import Drive
-from office365.sharepoint.client_context import ClientContext
 from office365.sharepoint.search.service import SearchService
 
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from source_microsoft_sharepoint.sharepoint_client import SourceMicrosoftSharePointClient
-from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
+from source_microsoft_sharepoint.sharepoint_base_reader import SharepointBaseReader
 
 from .exceptions import ErrorFetchingMetadata
-from .utils import (
-    FolderNotFoundException,
-    MicrosoftSharePointRemoteFile,
-    execute_query_with_retry,
-    filter_http_urls,
-    get_site_prefix,
-)
+from .utils import FolderNotFoundException, MicrosoftSharePointRemoteFile, execute_query_with_retry, filter_http_urls
 
 
 SITE_TITLE = "Title"
 SITE_PATH = "Path"
 
 
-class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
+class SourceMicrosoftSharePointStreamReader(SharepointBaseReader, AbstractFileBasedStreamReader):
     """
     A stream reader for Microsoft SharePoint. Handles file enumeration and reading from SharePoint.
     """
@@ -50,78 +42,12 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
     FILE_SIZE_LIMIT = 1_500_000_000
 
     def __init__(self):
-        super().__init__()
-        self._auth_client = None
-        self._one_drive_client = None
-        self._config = None
-        self._site_url = None
-        self._root_site_prefix = None
-
-    @property
-    def config(self) -> SourceMicrosoftSharePointSpec:
-        return self._config
-
-    @property
-    def auth_client(self):
-        # Lazy initialization of the auth_client
-        if self._auth_client is None:
-            self._auth_client = SourceMicrosoftSharePointClient(self._config)
-        return self._auth_client
-
-    @property
-    def one_drive_client(self):
-        # Lazy initialization of the one_drive_client
-        if self._one_drive_client is None:
-            self._one_drive_client = self.auth_client.client
-        return self._one_drive_client
-
-    def _set_sites_info(self):
-        self._site_url, self._root_site_prefix = get_site_prefix(self.one_drive_client)
-
-    @property
-    def site_url(self) -> str:
-        if not self._site_url:
-            self._set_sites_info()
-        return self._site_url
-
-    @property
-    def root_site_prefix(self) -> str:
-        if not self._root_site_prefix:
-            self._set_sites_info()
-        return self._root_site_prefix
+        AbstractFileBasedStreamReader.__init__(self)
+        SharepointBaseReader.__init__(self)
 
     def get_access_token(self):
         # Directly fetch a new access token from the auth_client each time it's called
-        return self.auth_client._get_access_token()["access_token"]
-
-    def get_token_response_object(self, tenant_prefix: str) -> Callable:
-        """
-        When building a ClientContext using with_access_token() method,
-        the token_func param is expected to be a method/callable that returns a TokenResponse object.
-        tenant_prefix is used to determine the scope of the access token.
-        return: A callable that returns a TokenResponse object.
-        """
-        return self.auth_client.get_token_response_object_wrapper(tenant_prefix=tenant_prefix)
-
-    def _get_client_context(self) -> ClientContext:
-        """
-        Creates a ClientContext for the specified SharePoint site URL.
-        """
-        client_context = ClientContext(self.site_url).with_access_token(
-            token_func=self.get_token_response_object(tenant_prefix=self.root_site_prefix)
-        )
-        return client_context
-
-    @config.setter
-    def config(self, value: SourceMicrosoftSharePointSpec):
-        """
-        The FileBasedSource reads and parses configuration from a file, then sets this configuration in its StreamReader. While it only
-        uses keys from its abstract configuration, concrete StreamReader implementations may need additional keys for third-party
-        authentication. Therefore, subclasses of AbstractFileBasedStreamReader should verify that the value in their config setter
-        matches the expected config type for their StreamReader.
-        """
-        assert isinstance(value, SourceMicrosoftSharePointSpec)
-        self._config = value
+        return self.auth_client.access_token
 
     def _get_shared_drive_object(self, drive_id: str, object_id: str, path: str) -> Iterable[Tuple[str, str, datetime, str, str, bool]]:
         """

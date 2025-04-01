@@ -7,98 +7,29 @@ from typing import Any, Callable, Dict, Iterable, Iterator, List, Tuple
 import requests
 from office365.directory.groups.collection import GroupCollection
 from office365.directory.users.collection import UserCollection
-from office365.sharepoint.client_context import ClientContext
 
 from airbyte_cdk.sources.file_based.file_based_stream_permissions_reader import AbstractFileBasedStreamPermissionsReader
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from source_microsoft_sharepoint.exceptions import ErrorFetchingMetadata
-from source_microsoft_sharepoint.sharepoint_client import SourceMicrosoftSharePointClient
-from source_microsoft_sharepoint.spec import RemoteIdentity, RemoteIdentityType, RemotePermissions, SourceMicrosoftSharePointSpec
+from source_microsoft_sharepoint.spec import RemoteIdentity, RemoteIdentityType, RemotePermissions
 from source_microsoft_sharepoint.stream_reader import MicrosoftSharePointRemoteFile
 from source_microsoft_sharepoint.utils import execute_query_with_retry, execute_request_direct_with_retry
+from source_microsoft_sharepoint.sharepoint_base_reader import SharepointBaseReader
 
-from .utils import get_site_prefix
 
-class SourceMicrosoftSharePointStreamPermissionsReader(AbstractFileBasedStreamPermissionsReader):
+class SourceMicrosoftSharePointStreamPermissionsReader(SharepointBaseReader, AbstractFileBasedStreamPermissionsReader):
     """
     A permissions file stream reader for Microsoft SharePoint. Handles file permissions and domain Identities.
     """
+
     def __init__(self):
-        super().__init__()
-        self._auth_client = None
-        self._one_drive_client = None
-        self._config = None
-        self._site_url = None
-        self._root_site_prefix = None
-
-    @property
-    def config(self) -> SourceMicrosoftSharePointSpec:
-        return self._config
-
-    @config.setter
-    def config(self, value: SourceMicrosoftSharePointSpec):
-        """
-        The FileBasedSource reads and parses configuration from a file, then sets this configuration in its StreamReader. While it only
-        uses keys from its abstract configuration, concrete StreamReader implementations may need additional keys for third-party
-        authentication. Therefore, subclasses of AbstractFileBasedStreamReader should verify that the value in their config setter
-        matches the expected config type for their StreamReader.
-        """
-        assert isinstance(value, SourceMicrosoftSharePointSpec)
-        self._config = value
-
-    @property
-    def auth_client(self):
-        # Lazy initialization of the auth_client
-        if self._auth_client is None:
-            self._auth_client = SourceMicrosoftSharePointClient(self._config)
-        return self._auth_client
+        AbstractFileBasedStreamPermissionsReader.__init__(self)
+        SharepointBaseReader.__init__(self)
 
     def _get_headers(self) -> Dict[str, str]:
         access_token = self.auth_client.access_token
         return {"Authorization": f"Bearer {access_token}"}
-
-    @property
-    def one_drive_client(self):
-        # Lazy initialization of the one_drive_client
-        if self._one_drive_client is None:
-            self._one_drive_client = self.auth_client.client
-        return self._one_drive_client
-
-    def _set_sites_info(self):
-        self._site_url, self._root_site_prefix = get_site_prefix(self.one_drive_client)
-
-    @property
-    def site_url(self) -> str:
-        if not self._site_url:
-            self._set_sites_info()
-        return self._site_url
-
-    @property
-    def root_site_prefix(self) -> str:
-        if not self._root_site_prefix:
-            self._set_sites_info()
-        return self._root_site_prefix
-
-    def get_token_response_object(self, tenant_prefix: str) -> Callable:
-        """ "
-        When building a ClientContext using with_access_token method,
-        the token_func param is expected to be a method/callable that returns a TokenResponse object.
-
-        tenant_prefix is used to determine the scope of the access token.
-        return: A callable that returns a TokenResponse object.
-        """
-        return self.auth_client.get_token_response_object_wrapper(tenant_prefix=tenant_prefix)
-
-
-    def _get_client_context(self):
-        """
-        Creates a ClientContext for the specified SharePoint site URL.
-        """
-        client_context = ClientContext(self.site_url).with_access_token(
-            token_func=self.get_token_response_object(tenant_prefix=self.root_site_prefix)
-        )
-        return client_context
 
     def get_users(self) -> UserCollection:
         users = execute_query_with_retry(self.one_drive_client.users.get())
