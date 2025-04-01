@@ -9,6 +9,7 @@ import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
+import io.airbyte.cdk.load.file.azureBlobStorage.GENERATION_ID_METADATA_KEY_OVERRIDE
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
@@ -33,7 +34,7 @@ data class MSSQLConfiguration(
      * underscores.
      */
     override val generationIdMetadataKey: String
-        get() = "ab_generation_id"
+        get() = GENERATION_ID_METADATA_KEY_OVERRIDE
 }
 
 @Singleton

@@ -158,9 +158,17 @@
             },
             "shared_access_signature" : {
               "type" : "string",
-              "description" : "A shared access signature (SAS) provides secure delegated access to resources in your storage account. See: https://learn.microsoft.com/azure/storage/common/storage-sas-overview",
+              "description" : "A shared access signature (SAS) provides secure delegated access to resources in your storage account. See: https://learn.microsoft.com/azure/storage/common/storage-sas-overview.Mutually exclusive with an account key",
               "title" : "Shared Access Signature",
               "examples" : [ "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY" ],
+              "airbyte_secret" : true,
+              "always_show" : true
+            },
+            "azure_blob_storage_account_key" : {
+              "type" : "string",
+              "description" : "The Azure blob storage account key. Mutually exclusive with a Shared Access Signature",
+              "title" : "Azure Blob Storage account key",
+              "examples" : [ "Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd==" ],
               "airbyte_secret" : true,
               "always_show" : true
             },
@@ -169,7 +177,7 @@
               "description" : "Specifies the external data source name configured in MSSQL, which references the Azure Blob container. See: https://learn.microsoft.com/sql/t-sql/statements/bulk-insert-transact-sql",
               "title" : "BULK Load Data Source",
               "examples" : [ "MyAzureBlobStorage" ],
-              "order" : 4,
+              "order" : 5,
               "always_show" : true
             },
             "bulk_load_validate_values_pre_load" : {
@@ -178,11 +186,11 @@
               "title" : "Pre-Load Value Validation",
               "examples" : [ "false" ],
               "default" : false,
-              "order" : 5,
+              "order" : 6,
               "always_show" : false
             }
           },
-          "required" : [ "load_type", "azure_blob_storage_account_name", "azure_blob_storage_container_name", "shared_access_signature", "bulk_load_data_source" ]
+          "required" : [ "load_type", "azure_blob_storage_account_name", "azure_blob_storage_container_name", "bulk_load_data_source" ]
         } ],
         "description" : "Specifies the type of load mechanism (e.g., BULK, INSERT) and its associated configuration.",
         "title" : "Load Type",
