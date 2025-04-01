@@ -37,13 +37,6 @@ CRM_INCREMENTAL_STREAMS = (
 )
 
 
-@pytest.fixture
-def http_mocker():
-    mocker = HttpMocker()
-    yield mocker
-    mocker.clear_all_matchers()
-
-
 class WebAnalyticsTestCase(HubspotTestCase):
     PARENT_CURSOR_FIELD = "updatedAt"
 

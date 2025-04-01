@@ -924,10 +924,6 @@ class BaseStream(HttpStream, ABC):
                     record[name.replace(" ", "_")] = [row["id"] for row in association.get("results", [])]
             yield record
 
-    # @property
-    # def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-    #     return HubspotAvailabilityStrategy()
-
 
 class ClientSideIncrementalStream(BaseStream, CheckpointMixin):
     _cursor_value = ""
