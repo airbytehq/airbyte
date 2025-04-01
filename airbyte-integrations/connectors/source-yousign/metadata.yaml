@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "https:"
+      - "https://*.yousign.app"
   registryOverrides:
     oss:
       enabled: true
