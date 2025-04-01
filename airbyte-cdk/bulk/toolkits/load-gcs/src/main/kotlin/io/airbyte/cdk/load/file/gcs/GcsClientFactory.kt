@@ -4,4 +4,4 @@
 
 package io.airbyte.cdk.load.file.gcs
 
-class GcsClientFactory {}
+class GcsClient {}
