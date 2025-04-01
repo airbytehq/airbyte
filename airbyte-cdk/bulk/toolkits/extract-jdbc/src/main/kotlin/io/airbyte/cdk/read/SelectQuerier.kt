@@ -58,7 +58,7 @@ class JdbcSelectQuerier(
         override var changes: MutableMap<Field, FieldValueChange> = mutableMapOf(),
     ) : SelectQuerier.ResultRow
 
-    class Result(
+    open class Result(
         val jdbcConnectionFactory: JdbcConnectionFactory,
         val q: SelectQuery,
         val parameters: SelectQuerier.Parameters,
@@ -86,7 +86,7 @@ class JdbcSelectQuerier(
         var hasLoggedException = false
 
         /** Initializes a connection and readies the resultset. */
-        fun initQueryExecution() {
+        open fun initQueryExecution() {
             conn = jdbcConnectionFactory.get()
             stmt = conn!!.prepareStatement(q.sql)
             parameters.statementFetchSize?.let { fetchSize: Int ->

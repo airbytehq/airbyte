@@ -8,6 +8,7 @@ import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.JdbcSelectQuerier
 import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.SelectQuery
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 
@@ -15,19 +16,35 @@ import jakarta.inject.Singleton
 @Singleton
 @Primary
 class MySqlSourceSelectQuerier(
-    jdbcConnectionFactory: JdbcConnectionFactory,
-) : SelectQuerier {
+    private val jdbcConnectionFactory: JdbcConnectionFactory,
+) : SelectQuerier by JdbcSelectQuerier(jdbcConnectionFactory) {
+    private val log = KotlinLogging.logger {}
 
-    private val wrapped = JdbcSelectQuerier(jdbcConnectionFactory)
+    inner class MySqlResult(
+        jdbcConnectionFactory: JdbcConnectionFactory,
+        q: SelectQuery,
+        parameters: SelectQuerier.Parameters,
+    ) : JdbcSelectQuerier.Result(jdbcConnectionFactory, q, parameters) {
+        override fun initQueryExecution() {
+            conn = jdbcConnectionFactory.get()
+            stmt = conn!!.prepareStatement(q.sql)
+            stmt!!.fetchSize = Int.MIN_VALUE
+            var paramIdx = 1
+            for (binding in q.bindings) {
+                log.info { "Setting parameter #$paramIdx to $binding." }
+                binding.type.set(stmt!!, paramIdx, binding.value)
+                paramIdx++
+            }
+            rs = stmt!!.executeQuery()
+            parameters.resultSetFetchSize?.let { fetchSize: Int ->
+                log.info { "Setting fetchSize to $fetchSize." }
+                rs!!.fetchSize = fetchSize
+            }
+        }
+    }
 
     override fun executeQuery(
         q: SelectQuery,
-        parameters: SelectQuerier.Parameters,
-    ): SelectQuerier.Result {
-        val mySqlParameters: SelectQuerier.Parameters =
-        // MySQL requires this fetchSize setting on JDBC Statements to enable adaptive fetching.
-        // The ResultSet fetchSize value is what's used as an actual hint by the JDBC driver.
-        parameters.copy(statementFetchSize = Int.MIN_VALUE)
-        return wrapped.executeQuery(q, mySqlParameters)
-    }
+        parameters: SelectQuerier.Parameters
+    ): SelectQuerier.Result = MySqlResult(jdbcConnectionFactory, q, parameters)
 }
