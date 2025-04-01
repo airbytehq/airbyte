@@ -29,7 +29,12 @@ class WebAnalyticsRequestBuilder(AbstractRequestBuilder):
         return self
 
     def build(self) -> HttpRequest:
-        return HttpRequest(url=self.URL, query_params=self._query_params, headers=self.headers, body=self._request_body)
+        return HttpRequest(
+            url=self.URL,
+            query_params=self._query_params,
+            headers=self.headers,
+            body=self._request_body
+        )
 
 
 class CRMStreamRequestBuilder(AbstractRequestBuilder):
@@ -73,7 +78,14 @@ class CRMStreamRequestBuilder(AbstractRequestBuilder):
 
     @property
     def _query_params(self):
-        return [self._archived, self._associations, self._limit, self._after, self._dt_range, self._properties]
+        return [
+            self._archived,
+            self._associations,
+            self._limit,
+            self._after,
+            self._dt_range,
+            self._properties
+        ]
 
     def build(self):
         q = "&".join(filter(None, self._query_params))
@@ -84,7 +96,14 @@ class CRMStreamRequestBuilder(AbstractRequestBuilder):
 class IncrementalCRMStreamRequestBuilder(CRMStreamRequestBuilder):
     @property
     def _query_params(self):
-        return [self._limit, self._after, self._dt_range, self._archived, self._associations, self._properties]
+        return [
+            self._limit,
+            self._after,
+            self._dt_range,
+            self._archived,
+            self._associations,
+            self._properties
+        ]
 
 
 class OwnersArchivedStreamRequestBuilder(AbstractRequestBuilder):
@@ -103,14 +122,11 @@ class OwnersArchivedStreamRequestBuilder(AbstractRequestBuilder):
 
     @property
     def _query_params(self):
-        return filter(
-            None,
-            [
-                self._limit,
-                self._after,
-                self._archived,
-            ],
-        )
+        return filter(None, [
+            self._limit,
+            self._after,
+            self._archived,
+        ])
 
     def with_page_token(self, next_page_token: Dict):
         self._after = "&".join([f"{str(key)}={str(val)}" for key, val in next_page_token.items()])

@@ -243,7 +243,6 @@ class API:
     def _parse_and_handle_errors(response) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
         """Handle response"""
         message = "Unknown error"
-        print(response)
         if response.headers.get("content-type") == "application/json;charset=utf-8" and response.status_code != HTTPStatus.OK:
             message = response.json().get("message")
 
@@ -432,17 +431,6 @@ class BaseStream(HttpStream, ABC):
         self._is_test = self.name in acceptance_test_config
         self._acceptance_test_config = acceptance_test_config.get(self.name, {})
 
-    # ToDo: Add ErrorHandler
-    # def should_retry(self, response: requests.Response) -> bool:
-    #     if response.status_code == HTTPStatus.UNAUTHORIZED:
-    #         message = response.json().get("message")
-    #         raise HubspotInvalidAuth(message, response=response)
-    #     return super().should_retry(response)
-
-    # def backoff_time(self, response: requests.Response) -> Optional[float]:
-    #     if response.status_code == codes.too_many_requests:
-    #         return float(response.headers.get("Retry-After", 3))
-
     def get_backoff_strategy(self):
         return HubspotBackoffStrategy()
 
@@ -484,13 +472,6 @@ class BaseStream(HttpStream, ABC):
         request_params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         self.update_request_properties(request_params, properties)
 
-        # request = self._create_prepared_request(
-        #     path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, properties=properties),
-        #     headers=dict(request_headers, **self._authenticator.get_auth_header()),
-        #     params=request_params,
-        #     json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-        #     data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-        # )
         request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
         request, response = self._http_client.send_request(
@@ -1540,7 +1521,7 @@ class ContactsAllBase(BaseStream):
         return params
 
 
-class ResumableFullRefreshMixin(Stream, CheckpointMixin, ABC):
+class ResumableFullRefreshMixin(BaseStream, CheckpointMixin, ABC):
     checkpoint_by_page = True
 
     @property
@@ -1593,17 +1574,15 @@ class ContactsListMemberships(ContactsAllBase, ClientSideIncrementalStream):
         return "x"
 
 
-class ContactsFormSubmissions(ContactsAllBase):
+class ContactsFormSubmissions(ContactsAllBase, ResumableFullRefreshMixin, ABC):
     records_field = "form-submissions"
     filter_field = "formSubmissionMode"
     filter_value = "all"
-    is_resumable = False
 
 
-class ContactsMergedAudit(ContactsAllBase):
+class ContactsMergedAudit(ContactsAllBase, ResumableFullRefreshMixin, ABC):
     records_field = "merge-audits"
     unnest_fields = ["merged_from_email", "merged_to_email"]
-    is_resumable = False
 
 
 class Deals(CRMSearchStream):
@@ -2445,7 +2424,7 @@ class EmailSubscriptions(BaseStream):
     filter_old_records = False
 
 
-class WebAnalyticsStream(HttpSubStream):
+class WebAnalyticsStream(HttpSubStream, BaseStream):
     """
     A base class for Web Analytics API
     Docs: https://developers.hubspot.com/docs/api/events/web-analytics
