@@ -268,7 +268,8 @@ definitions:
         schema_pointer: []
         types_mapping:
           - type: TypesMap
-            target_type: timestamp_with_timezone
+            # no format specified as values can be "2021-12-16T00:00:00", "1638298874", "15/08/53895"
+            target_type: string
             current_type: datetime
           - type: TypesMap
             target_type: array
@@ -572,6 +573,10 @@ definitions:
         - type: CustomTransformation
           class_name: "source_mixpanel.components.PropertiesTransformation"
         - type: AddFields
+          # Transformation is performed AFTER reading schema.
+          # If field, that transformation wants to add, already exists in schema it will be ignored.
+          # All fields are top level we are safe when using path[0]
+          condition: "{{ path[0] in record.keys() }}"
           fields:
             - path: ["event"]
               value: "{{ {'type': ['null', 'string']} }}"
@@ -736,16 +741,6 @@ definitions:
         key_pointer: []
         type_pointer: []
         schema_pointer: []
-        types_mapping:
-          - type: TypesMap
-            target_type: timestamp_with_timezone
-            current_type: datetime
-          - type: TypesMap
-            target_type: array
-            current_type: list
-          - type: TypesMap
-            target_type: string
-            current_type: unknown
 
 streams:
   - "#/definitions/cohorts_stream"
