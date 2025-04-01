@@ -258,29 +258,6 @@ class TestDestinationMariaDB(unittest.TestCase):
     #airbyte_cdk.sql.shared.sqlalchemy?
 
 
-    def test_create_database_old(self):
-
-        expected_qry = """
-            CREATE TABLE `muhkuh` (
-                `document_id` VARCHAR(255),
-                `chunk_id` VARCHAR(255),
-                `metadata` JSON,
-                `document_content` TEXT,
-                `embedding` VECTOR(1536),
-                PRIMARY KEY (document_id)
-            )
-        """
-
-        self.testProcessor._table_exists = MagicMock(return_value=False)
-        self.testProcessor._execute_sql = MagicMock()
-        self.testProcessor._ensure_final_table_exists('muhkuh')
-
-        self.assertEqual(self.testProcessor._execute_sql.call_count, 1)
-
-        actual_qry = self.testProcessor._execute_sql.call_args_list[0].args[0]
-        self.assertMultilineTrimmed(actual_qry, expected_qry)
-
-
     @patch("sqlalchemy.inspect")
     def test_create_database(self, sqlalchemy_inspect):
 
@@ -328,6 +305,8 @@ class TestDestinationMariaDB(unittest.TestCase):
         # Mock away the _execute_sql
         sql_mock = Mock()
         self.testProcessor._execute_sql = sql_mock
+
+
 
         # Process the message
         for _ in self.testProcessor.process_airbyte_messages_as_generator(
