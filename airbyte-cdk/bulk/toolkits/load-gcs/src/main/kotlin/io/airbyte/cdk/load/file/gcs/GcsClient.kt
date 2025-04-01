@@ -8,13 +8,10 @@ import com.google.cloud.storage.Storage
 import io.airbyte.cdk.load.command.gcs.GcsClientConfiguration
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
-import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import java.io.InputStream
 import java.nio.channels.Channels
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 
 /** Represents a single blob in Google Cloud Storage. */
 data class GcsBlob(override val key: String, override val storageConfig: GcsClientConfiguration) :
@@ -23,17 +20,14 @@ data class GcsBlob(override val key: String, override val storageConfig: GcsClie
 class GcsClient(private val storage: Storage, private val config: GcsClientConfiguration) :
     ObjectStorageClient<GcsBlob> {
 
-    override suspend fun list(prefix: String): Flow<GcsBlob> =
-        flow {
-                val fullPrefix = combinePath(config.bucketPath, prefix)
-                val blobs =
-                    storage.list(config.bucketName, Storage.BlobListOption.prefix(fullPrefix))
+    override suspend fun list(prefix: String): Flow<GcsBlob> = flow {
+        val fullPrefix = combinePath(config.bucketPath, prefix)
+        val blobs = storage.list(config.bucketName, Storage.BlobListOption.prefix(fullPrefix))
 
-                for (blob in blobs.iterateAll()) {
-                    emit(GcsBlob(blob.name, config))
-                }
-            }
-            .flowOn(Dispatchers.IO)
+        for (blob in blobs.iterateAll()) {
+            emit(GcsBlob(blob.name, config))
+        }
+    }
 
     override suspend fun move(key: String, toKey: String): GcsBlob {
         val fullSourceKey = combinePath(config.bucketPath, key)
@@ -47,7 +41,7 @@ class GcsClient(private val storage: Storage, private val config: GcsClientConfi
         )
         storage.delete(sourceBlobId)
 
-        GcsBlob(toKey, config)
+        return GcsBlob(toKey, config)
     }
 
     override suspend fun <U> get(key: String, block: (InputStream) -> U): U {
@@ -55,7 +49,7 @@ class GcsClient(private val storage: Storage, private val config: GcsClientConfi
         val blob = storage.get(BlobId.of(config.bucketName, fullKey))
 
         // Convert ReadChannel to InputStream
-        Channels.newInputStream(blob.reader()).use { inputStream -> block(inputStream) }
+        return Channels.newInputStream(blob.reader()).use { inputStream -> block(inputStream) }
     }
 
     override suspend fun getMetadata(key: String): Map<String, String> {
@@ -63,7 +57,7 @@ class GcsClient(private val storage: Storage, private val config: GcsClientConfi
         val blob = storage.get(BlobId.of(config.bucketName, fullKey))
 
         // Convert Map<String, String?> to Map<String, String> by filtering out null values
-        blob.metadata?.mapNotNull { (key, value) -> value?.let { key to it } }?.toMap()
+        return blob.metadata?.mapNotNull { (key, value) -> value?.let { key to it } }?.toMap()
             ?: emptyMap()
     }
 
@@ -74,7 +68,7 @@ class GcsClient(private val storage: Storage, private val config: GcsClientConfi
 
         storage.create(blobInfo, bytes)
 
-        GcsBlob(key, config)
+        return GcsBlob(key, config)
     }
 
     override suspend fun delete(key: String) {
@@ -92,12 +86,5 @@ class GcsClient(private val storage: Storage, private val config: GcsClientConfi
 
     private fun combinePath(bucketPath: String, key: String): String {
         return if (bucketPath.isEmpty()) key else "$bucketPath/$key".replace("//", "/")
-    }
-
-    override suspend fun startStreamingUpload(
-        key: String,
-        metadata: Map<String, String>
-    ): StreamingUpload<GcsBlob> {
-        TODO("Not yet implemented")
     }
 }
