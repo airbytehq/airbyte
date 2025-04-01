@@ -57,7 +57,7 @@ class TeradataDestination :
         return dataSource
     }
 
-    override fun getConnectionProperties(config: JsonNode): Map<String, String> {
+    public override fun getConnectionProperties(config: JsonNode): Map<String, String> {
         return MoreMaps.merge(appendLogMech(config), super.getConnectionProperties(config))
     }
     /** Appends Logging Mechanism to JDBC URL */
@@ -80,7 +80,7 @@ class TeradataDestination :
      * @param dataSource The DataSource to create the JdbcDatabase from.
      * @return The JdbcDatabase instance.
      */
-    override fun getDatabase(dataSource: DataSource): JdbcDatabase {
+    public override fun getDatabase(dataSource: DataSource): JdbcDatabase {
         return DefaultJdbcDatabase(dataSource)
     }
     /**
@@ -104,7 +104,7 @@ class TeradataDestination :
      * @param config The configuration settings as a JsonNode.
      * @return A map of default connection properties.
      */
-    override fun getDefaultConnectionProperties(config: JsonNode): Map<String, String> {
+    public override fun getDefaultConnectionProperties(config: JsonNode): Map<String, String> {
         val additionalParameters: MutableMap<String, String> = HashMap()
         if (
             config.has(TeradataConstants.PARAM_SSL) &&

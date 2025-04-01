@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.task.internal
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEndOfStream
 import io.airbyte.cdk.load.message.PipelineEvent
@@ -21,6 +21,8 @@ import io.airbyte.cdk.load.pipeline.FinalOutput
 import io.airbyte.cdk.load.pipeline.NoOutput
 import io.airbyte.cdk.load.pipeline.OutputPartitioner
 import io.airbyte.cdk.load.state.CheckpointId
+import io.airbyte.cdk.load.test.util.CoroutineTestUtils.Companion.assertDoesNotThrow
+import io.airbyte.cdk.load.test.util.CoroutineTestUtils.Companion.assertThrows
 import io.airbyte.cdk.load.util.setOnce
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -51,7 +53,7 @@ class LoadPipelineStepTaskUTest {
         override fun close() {}
     }
 
-    data class MyBatch(override val state: Batch.State) : WithBatchState
+    data class MyBatch(override val state: BatchState) : WithBatchState
 
     @BeforeEach
     fun setup() {
@@ -225,9 +227,9 @@ class LoadPipelineStepTaskUTest {
             {
                 when (acceptCalls++ % 4) {
                     0 -> NoOutput(Closeable())
-                    1 -> FinalOutput(MyBatch(Batch.State.PROCESSED))
-                    2 -> FinalOutput(MyBatch(Batch.State.PERSISTED))
-                    3 -> FinalOutput(MyBatch(Batch.State.COMPLETE))
+                    1 -> FinalOutput(MyBatch(BatchState.PROCESSED))
+                    2 -> FinalOutput(MyBatch(BatchState.PERSISTED))
+                    3 -> FinalOutput(MyBatch(BatchState.COMPLETE))
                     else -> error("unreachable")
                 }
             }
@@ -247,7 +249,7 @@ class LoadPipelineStepTaskUTest {
         } // only 1/4 are no output
         coVerify(exactly = 12) { batchAccumulatorWithUpdate.accept(any(), any()) } // all have data
         coVerify(exactly = 0) { batchAccumulatorWithUpdate.finish(any()) } // never end-of-stream
-        coVerify(exactly = 6) { batchUpdateQueue.publish(any()) } // half are PERSISTED/COMPLETE
+        coVerify(exactly = 9) { batchUpdateQueue.publish(any()) } // 3/4 are outputs w/ state
     }
 
     @Test
@@ -293,13 +295,13 @@ class LoadPipelineStepTaskUTest {
         repeat(10) {
             coEvery { batchAccumulatorWithUpdate.accept(any(), stream1States[it]) } returns
                 if (it % 3 == 0) {
-                    FinalOutput(MyBatch(Batch.State.PERSISTED))
+                    FinalOutput(MyBatch(BatchState.PERSISTED))
                 } else {
                     NoOutput(stream1States[it + 1])
                 }
             coEvery { batchAccumulatorWithUpdate.accept(any(), stream2States[it]) } returns
                 if (it % 2 == 0) {
-                    FinalOutput(MyBatch(Batch.State.PERSISTED))
+                    FinalOutput(MyBatch(BatchState.PERSISTED))
                 } else {
                     NoOutput(stream2States[it + 1])
                 }
@@ -319,7 +321,7 @@ class LoadPipelineStepTaskUTest {
             }
 
         coEvery { batchAccumulatorWithUpdate.finish(any()) } returns
-            FinalOutput(MyBatch(Batch.State.COMPLETE))
+            FinalOutput(MyBatch(BatchState.COMPLETE))
         coEvery { batchUpdateQueue.publish(any()) } returns Unit
 
         task.execute()
@@ -350,9 +352,9 @@ class LoadPipelineStepTaskUTest {
         coEvery { batchAccumulatorWithUpdate.accept("stream2_value", any()) } returns
             NoOutput(Closeable(2))
         coEvery { batchAccumulatorWithUpdate.finish(Closeable(1)) } returns
-            FinalOutput(MyBatch(Batch.State.COMPLETE))
+            FinalOutput(MyBatch(BatchState.COMPLETE))
         coEvery { batchAccumulatorWithUpdate.finish(Closeable(2)) } returns
-            FinalOutput(MyBatch(Batch.State.PERSISTED))
+            FinalOutput(MyBatch(BatchState.PERSISTED))
 
         coEvery { inputFlow.collect(any()) } coAnswers
             {
@@ -381,13 +383,19 @@ class LoadPipelineStepTaskUTest {
             BatchStateUpdate(
                 key1.stream,
                 mapOf(CheckpointId(0) to 15L, CheckpointId(1) to 51L),
-                Batch.State.COMPLETE
+                BatchState.COMPLETE,
+                batchAccumulatorNoUpdate::class.java.simpleName,
+                part,
+                inputCount = 12L
             )
         val expectedBatchUpdateStream2 =
             BatchStateUpdate(
                 key2.stream,
                 mapOf(CheckpointId(1) to 6L, CheckpointId(2) to 22L, CheckpointId(3) to 38L),
-                Batch.State.PERSISTED
+                BatchState.PERSISTED,
+                batchAccumulatorNoUpdate::class.java.simpleName,
+                part,
+                inputCount = 12L
             )
         coVerify(exactly = 1) { batchUpdateQueue.publish(expectedBatchUpdateStream1) }
         coVerify(exactly = 1) { batchUpdateQueue.publish(expectedBatchUpdateStream2) }
@@ -459,4 +467,45 @@ class LoadPipelineStepTaskUTest {
     fun `end-of-stream not forwarded if all tasks do not receive it`() = runEndOfStreamTest(false)
 
     @Test fun `end-of-stream forwarded to all tasks if all receive it`() = runEndOfStreamTest(true)
+
+    @Test
+    fun `records received after end-of-stream throws`() = runTest {
+        val key1 = StreamKey(DestinationStream.Descriptor("namespace", "stream1"))
+        val part = 66666
+
+        val task = createTask(part, batchAccumulatorWithUpdate)
+
+        coEvery { batchUpdateQueue.publish(any()) } returns Unit
+        coEvery { inputFlow.collect(any()) } coAnswers
+            {
+                val collector = firstArg<FlowCollector<PipelineEvent<StreamKey, String>>>()
+
+                // Emit end-of-stream for stream1, end-of-stream for stream2
+                collector.emit(endOfStreamEvent(key1))
+                collector.emit(messageEvent(key1, "value", emptyMap()))
+            }
+
+        assertThrows(IllegalStateException::class) { task.execute() }
+    }
+
+    @Test
+    fun `records received for stream A after end-of-stream B do not throw`() = runTest {
+        val key1 = StreamKey(DestinationStream.Descriptor("namespace", "stream1"))
+        val key2 = StreamKey(DestinationStream.Descriptor("namespace", "stream2"))
+        val part = 66666
+
+        val task = createTask(part, batchAccumulatorWithUpdate)
+
+        coEvery { batchUpdateQueue.publish(any()) } returns Unit
+        coEvery { batchAccumulatorWithUpdate.start(any(), any()) } returns Closeable()
+        coEvery { batchAccumulatorWithUpdate.accept(any(), any()) } returns NoOutput(Closeable())
+        coEvery { inputFlow.collect(any()) } coAnswers
+            {
+                val collector = firstArg<FlowCollector<PipelineEvent<StreamKey, String>>>()
+                collector.emit(endOfStreamEvent(key2))
+                collector.emit(messageEvent(key1, "value", emptyMap()))
+            }
+
+        assertDoesNotThrow { task.execute() }
+    }
 }

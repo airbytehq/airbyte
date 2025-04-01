@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.FlowCollector
 class ReservingDeserializingInputFlow(
     val config: DestinationConfiguration,
     val deserializer: ProtocolMessageDeserializer,
-    @Named("memoryManager") val memoryManager: ReservationManager,
+    @Named("queueMemoryManager") val memoryManager: ReservationManager,
     val inputStream: InputStream,
 ) : Flow<Pair<Long, Reserved<DestinationMessage>>> {
     val log = KotlinLogging.logger {}
@@ -29,7 +29,7 @@ class ReservingDeserializingInputFlow(
         collector: FlowCollector<Pair<Long, Reserved<DestinationMessage>>>
     ) {
         log.info {
-            "Reserved ${memoryManager.totalCapacityBytes/1024}mb memory for input processing"
+            "Reserved ${memoryManager.totalCapacityBytes/1024/1024}mb memory for input processing"
         }
 
         var index = 0L

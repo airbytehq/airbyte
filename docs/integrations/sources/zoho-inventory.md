@@ -35,6 +35,7 @@ The Zoho Inventory connector  enables seamless data synchronization between Zoho
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.17 | 2025-03-29 | [56835](https://github.com/airbytehq/airbyte/pull/56835) | Update dependencies |
 | 0.0.16 | 2025-03-22 | [56333](https://github.com/airbytehq/airbyte/pull/56333) | Update dependencies |
 | 0.0.15 | 2025-03-09 | [55653](https://github.com/airbytehq/airbyte/pull/55653) | Update dependencies |
 | 0.0.14 | 2025-03-01 | [55161](https://github.com/airbytehq/airbyte/pull/55161) | Update dependencies |

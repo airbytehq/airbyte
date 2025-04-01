@@ -6,8 +6,8 @@ package io.airbyte.cdk.load.state
 
 import com.google.common.collect.Range
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.SimpleBatch
 
 /**
@@ -20,6 +20,6 @@ import io.airbyte.cdk.load.message.SimpleBatch
 fun SyncManager.markPersisted(stream: DestinationStream, range: Range<Long>) {
     this.getStreamManager(stream.descriptor)
         .updateBatchState(
-            BatchEnvelope(SimpleBatch(Batch.State.PERSISTED), range, stream.descriptor)
+            BatchEnvelope(SimpleBatch(BatchState.PERSISTED), range, stream.descriptor)
         )
 }

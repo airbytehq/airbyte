@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.message.object_storage
 import io.airbyte.cdk.load.file.object_storage.Part
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.Batch
+import io.airbyte.cdk.load.message.BatchState
 
 sealed interface ObjectStorageBatch : Batch
 
@@ -14,7 +15,7 @@ sealed interface ObjectStorageBatch : Batch
 // Returned by the batch accumulator after processing records.
 data class LoadablePart(val part: Part) : ObjectStorageBatch {
     override val groupId = null
-    override val state = Batch.State.PROCESSED
+    override val state = BatchState.PROCESSED
 
     // Hide the data from the logs
     override fun toString(): String {
@@ -25,7 +26,7 @@ data class LoadablePart(val part: Part) : ObjectStorageBatch {
 // An UploadablePart that has been uploaded to an incomplete object.
 // Returned by processBatch
 data class IncompletePartialUpload(val key: String) : ObjectStorageBatch {
-    override val state: Batch.State = Batch.State.STAGED
+    override val state: BatchState = BatchState.STAGED
     override val groupId: String = key
 }
 
@@ -35,6 +36,6 @@ data class LoadedObject<T : RemoteObject<*>>(
     val fileNumber: Long,
     val isEmpty: Boolean
 ) : ObjectStorageBatch {
-    override val state: Batch.State = Batch.State.COMPLETE
+    override val state: BatchState = BatchState.COMPLETE
     override val groupId = remoteObject.key
 }

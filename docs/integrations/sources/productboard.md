@@ -36,6 +36,7 @@ A manifest only source for Productboard. https://www.productboard.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |---------|------------|----------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| 0.0.21 | 2025-03-29 | [56732](https://github.com/airbytehq/airbyte/pull/56732) | Update dependencies |
 | 0.0.20 | 2025-03-22 | [56183](https://github.com/airbytehq/airbyte/pull/56183) | Update dependencies |
 | 0.0.19 | 2025-03-08 | [55540](https://github.com/airbytehq/airbyte/pull/55540) | Update dependencies |
 | 0.0.18 | 2025-03-01 | [54999](https://github.com/airbytehq/airbyte/pull/54999) | Update dependencies |

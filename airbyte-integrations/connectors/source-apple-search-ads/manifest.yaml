@@ -968,6 +968,8 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      countryorregion:
+        type: string
       metadata:
         type: object
         properties:
@@ -1092,6 +1094,8 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      countryorregion:
+        type: string
       metadata:
         type: object
         properties:
@@ -1198,6 +1202,8 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      countryorregion:
+        type: string
       metadata:
         type: object
         properties:

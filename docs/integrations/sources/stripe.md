@@ -246,6 +246,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.8.14 | 2025-03-29 | [56871](https://github.com/airbytehq/airbyte/pull/56871) | Update dependencies |
 | 5.8.13 | 2025-03-22 | [56276](https://github.com/airbytehq/airbyte/pull/56276) | Update dependencies |
 | 5.8.12 | 2025-03-10 | [55682](https://github.com/airbytehq/airbyte/pull/55682) | Promoting release candidate 5.8.10-rc.1 to a main version. |
 | 5.8.11 | 2025-03-08 | [55598](https://github.com/airbytehq/airbyte/pull/55598) | Update dependencies |

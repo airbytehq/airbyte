@@ -6,7 +6,7 @@
 from typing import Any, Dict, Literal, Optional, Union
 
 import dpath.util
-from pydantic import AnyUrl, BaseModel, Field
+from pydantic.v1 import AnyUrl, BaseModel, Field
 
 from airbyte_cdk import OneOfOptionConfig
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec

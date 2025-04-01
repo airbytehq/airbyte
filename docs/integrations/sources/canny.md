@@ -28,6 +28,7 @@ A manifest only source for Canny. https://canny.io/
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |---------|------------|----------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| 0.0.18 | 2025-03-29 | [56580](https://github.com/airbytehq/airbyte/pull/56580) | Update dependencies |
 | 0.0.17 | 2025-03-22 | [56093](https://github.com/airbytehq/airbyte/pull/56093) | Update dependencies |
 | 0.0.16 | 2025-03-08 | [55398](https://github.com/airbytehq/airbyte/pull/55398) | Update dependencies |
 | 0.0.15 | 2025-03-01 | [54867](https://github.com/airbytehq/airbyte/pull/54867) | Update dependencies |

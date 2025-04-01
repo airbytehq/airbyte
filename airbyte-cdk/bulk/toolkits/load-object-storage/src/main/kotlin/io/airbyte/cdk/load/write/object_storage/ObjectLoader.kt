@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.write.object_storage
 
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.write.LoadStrategy
 
 /**
@@ -53,6 +54,19 @@ import io.airbyte.cdk.load.write.LoadStrategy
  *
  * The parts are distributed evenly across the loading and completing workers w/o regard to object
  * key or stream. This is currently not configurable, but tests have shown it is optimal.
+ *
+ * Extending for use in other interfaces:
+ *
+ * [ObjectLoader] is designed to compose with other interfaces that use object loading as a first
+ * step. To do so, provide an `@Named("objectLoaderCompletedUploadQueue")` queue of type
+ * [io.airbyte.cdk.load.message.PartitionedQueue] for the output and extend
+ * [io.airbyte.cdk.load.pipeline.object_storage.ObjectLoaderCompletedUploadPartitioner] to partition
+ * it. (See [io.airbyte.cdk.load.pipeline.db.BulkLoadCompletedUploadQueue] and
+ * [io.airbyte.cdk.load.pipeline.db.BulkLoadCompletedUploadPartitioner] for an example.
+ * Additionally, CDK devs building new interfaces will should set [stateAfterUpload] to something
+ * other than [BatchState.COMPLETE] to avoid prematurely closing the stream. Specifically, if the
+ * destination can recover a loaded object after a failed sync, use [BatchState.PERSISTED] to
+ * indicate records loaded objects can be checkpointed. Otherwise, use [BatchState.LOADED].
  */
 interface ObjectLoader : LoadStrategy {
     val numPartWorkers: Int
@@ -70,4 +84,7 @@ interface ObjectLoader : LoadStrategy {
 
     override val inputPartitions: Int
         get() = numPartWorkers
+
+    val stateAfterUpload: BatchState
+        get() = BatchState.COMPLETE
 }

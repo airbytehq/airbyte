@@ -34,6 +34,7 @@ This source can sync data from the [Lago API](https://doc.getlago.com/docs/guide
 
 | Version | Date       | Pull Request                                              | Subject                                   |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------- |
+| 0.7.17 | 2025-03-29 | [56550](https://github.com/airbytehq/airbyte/pull/56550) | Update dependencies |
 | 0.7.16 | 2025-03-22 | [55974](https://github.com/airbytehq/airbyte/pull/55974) | Update dependencies |
 | 0.7.15 | 2025-03-08 | [54939](https://github.com/airbytehq/airbyte/pull/54939) | Update dependencies |
 | 0.7.14 | 2025-03-04 | [55179](https://github.com/airbytehq/airbyte/pull/55179) | Replace double partition router with extra_fields, fix wallets stream |

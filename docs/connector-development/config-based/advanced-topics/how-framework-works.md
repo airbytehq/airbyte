@@ -7,4 +7,4 @@
    2. Select the records from the response
    3. Repeat for as long as the paginator points to a next page
 
-[connector-flow](../assets/connector-flow.png)
+![connector-flow](../assets/connector-flow.png)

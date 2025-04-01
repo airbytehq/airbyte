@@ -1880,7 +1880,16 @@ class Forms(ClientSideIncrementalStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
-        params["formTypes"] = ["hubspot", "captured", "flow", "blog_comment", "all"]
+        params["formTypes"] = [
+            "hubspot",
+            "captured",
+            "flow",
+            # Not supported by `v1` api version used by the FormSubmissions stream
+            # TODO: consider migrating FormSubmissions stream to use `/v3` api version
+            # then uncomment the last 2 form types.
+            # "blog_comment",
+            # "all",
+        ]
         return params
 
 

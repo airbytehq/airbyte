@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.test.util.destination_process.DestinationProcess
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
@@ -231,6 +232,78 @@ class SingleStreamFileTransfer(
             records = numFiles.toLong(),
             size = numFiles * fileSizeMb * 1024 * 1024L,
             expectedRecordsCount = numFiles.toLong()
+        )
+}
+
+/**
+ * This was a quick hack and doesn't yet support dedupe or interleaving. Note that the input records
+ * are all identical, which would have to be corrected before supporting the former.
+ */
+class MultiStreamInsert(
+    private val numStreams: Int,
+    private val streamNamePrefix: String,
+    private val idColumn: NamedField,
+    private val columns: List<NamedField>,
+    private val recordsToInsertPerStream: Long,
+    randomizedNamespace: String,
+    generationId: Long = 0,
+    minGenerationId: Long = 0,
+) : PerformanceTestScenario {
+
+    private val streams = run {
+        val importType = Append
+        val schema =
+            (listOf(idColumn) + columns).map {
+                Pair(it.name, FieldType(type = it.type, nullable = true))
+            }
+
+        (0 until numStreams).map {
+            DestinationStream(
+                descriptor =
+                    DestinationStream.Descriptor(randomizedNamespace, "${streamNamePrefix}__$it"),
+                importType = importType,
+                schema = ObjectType(linkedMapOf(*schema.toTypedArray())),
+                generationId = generationId,
+                minimumGenerationId = minGenerationId,
+                syncId = 1,
+            )
+        }
+    }
+
+    private var recordCount: Long = 0
+    private var byteCount: Long = 0
+
+    override val catalog = DestinationCatalog(streams)
+
+    override fun send(destination: DestinationProcess) {
+        streams.forEach { stream ->
+            val inputRecord =
+                InputRecord(
+                        namespace = stream.descriptor.namespace,
+                        name = stream.descriptor.name,
+                        data =
+                            Jsons.serialize(
+                                (listOf(idColumn) + columns).associate { Pair(it.name, it.sample) }
+                            ),
+                        emittedAtMs = System.currentTimeMillis(),
+                    )
+                    .asProtocolMessage()
+            val jsonString = inputRecord.serializeToString()
+            val size = jsonString.length.toLong()
+
+            (0 until recordsToInsertPerStream).forEach { _ ->
+                destination.sendMessage(inputRecord)
+                recordCount++
+                byteCount += size
+            }
+        }
+    }
+
+    override fun getSummary() =
+        PerformanceTestScenario.Summary(
+            recordCount,
+            byteCount,
+            expectedRecordsCount = recordsToInsertPerStream * streams.size
         )
 }
 

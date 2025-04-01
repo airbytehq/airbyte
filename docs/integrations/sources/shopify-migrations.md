@@ -1,5 +1,73 @@
 # Shopify Migration Guide
 
+## Upgrading to 3.0.0
+
+This version contains schema changes for the following streams:
+
+### Countries
+Due to API deprecation of [Admin REST endpoint](https://shopify.dev/docs/api/admin-rest/2024-04/resources/country) Countries stream now uses [Admin GrapthQl to retrieve all countries](https://shopify.dev/docs/api/admin-graphql/latest/queries/deliveryProfiles).
+
+**Important**: now stream requires `read_shipping` access scope. The source returns list of available streams according to existing scopes.
+To obtain the scope follow this steps:
+If you are using **OAuth2.0** authorization method, you need to Re-authenticate the source on Settings page to fetch new scope. 
+If you are using **API password** authorization method, ensure that your custom app have `read_shipping` access scope, if not add the scope and Re-authenticate the source on Settings page.
+
+Fields **removed** from schema:
+* `country.tax`
+* `country.tax_name`
+* `country.provinces[].tax`
+* `country.provinces[].tax_name`
+* `country.provinces[].tax_type`
+* `country.provinces[].tax_percentage`
+
+Fields **added** to schema:
+* `country.translated_name`
+* `country.rest_of_world`
+* `country.provinces[].translated_name`
+
+### Product Variants
+
+Fields **removed** from schema:
+* `product_variant.fulfillment_service` - API v2025-01 doesn't return this info as part product variant data as of now. Please contact us if you're interested in this info, data can be replaced by [Fulfillment Service](https://shopify.dev/docs/api/admin-graphql/latest/queries/fulfillmentservice) stream.
+* `product_variant.inventory_management` - The fulfillment service that tracks the number of items in stock for the product variant. Use `inventoryItem.tracked` instead.
+
+Fields **added** to schema:
+* `product_variant.tracked`
+
+### Orders
+
+Fields **added** to schema:
+* `order.duties_included`
+* `order.merchant_business_entity_id`
+* `order.total_cash_rounding_payment_adjustment_set`
+
+### Articles, Blogs and Pages
+
+Due to API version upgrade `admin_graphql_api_id` now contains `gid://shopify/OnlineStore<StreamEntity>/<ID>`(Updated naming to reflect actual purpose) instead `gid://shopify/<StreamEntity>/<ID>`(Legacy naming from older Admin API).
+
+**Important**: if you rely on `admin_graphql_api_id` field value in your destination, please clear affected streams and re-sync the data.
+
+### Refresh affected schemas
+
+1. Select **Connections** in the main navbar and select the connection(s) affected by the update.
+2. Select the **Schema** tab.
+   1. Select **Refresh source schema** to bring in any schema changes. Any detected schema changes will be listed for your review.
+   2. Select **OK** to approve changes.
+3. Select **Save changes** at the bottom of the page.
+   1. Ensure the **Clear affected streams** option is checked to ensure your streams continue syncing successfully with the new schema.
+4. Select **Save connection**.
+
+### Steps to Clear Streams
+
+To clear your data for the impacted streams, follow the steps below:
+
+1. Select **Connections** in the main nav bar.
+   1. Select the connection(s) affected by the update.
+2. Select the **Status** tab.
+   1. In the **Enabled streams** list, click the three dots on the right side of the stream and select **Clear Data**.
+
+After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](/operator-guides/clear).
+
 ## Upgrading to 2.6.1
 
 This version completely deprecates the following streams, because Shopify no longer supports them after Shopify API version `2024-04`:

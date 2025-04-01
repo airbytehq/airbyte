@@ -74,6 +74,7 @@ Gainsight-PX-API's [API reference](https://gainsightpx.docs.apiary.io/) has v1 a
 
 | Version | Date       | Pull Request                                             | Subject                                 |
 | :------ | :--------- | :------------------------------------------------------- |:----------------------------------------|
+| 0.2.17 | 2025-03-29 | [56481](https://github.com/airbytehq/airbyte/pull/56481) | Update dependencies |
 | 0.2.16 | 2025-03-22 | [55985](https://github.com/airbytehq/airbyte/pull/55985) | Update dependencies |
 | 0.2.15 | 2025-03-08 | [55337](https://github.com/airbytehq/airbyte/pull/55337) | Update dependencies |
 | 0.2.14 | 2025-03-01 | [54970](https://github.com/airbytehq/airbyte/pull/54970) | Update dependencies |
