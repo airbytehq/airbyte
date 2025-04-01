@@ -5,7 +5,7 @@ Ebay Finances API Connector
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `token_refresh_endpoint` | `string` | Refresh Token Endpoint.  |  |
+| `token_refresh_endpoint` | `string` | Refresh Token Endpoint.  | https://api.ebay.com/identity/v1/oauth2/token |
 | `client_access_token` | `string` | Access token.  |  |
 | `username` | `string` | Username. Ebay Developer Client ID |  |
 | `password` | `string` | Password. Ebay Client Secret |  |
