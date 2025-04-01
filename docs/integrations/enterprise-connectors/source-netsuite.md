@@ -50,12 +50,13 @@ Airbyte requires the following details in order to set up TBA:
 - **Client Secret (Consumer Secret)**
 - **Token ID**
 - **Token Secret**
-The value can be generated on netsuite as follows:
-1. Ensure the following features are enabled in Netsuite (Setup > Company > Enable Features > SuiteCloud)
+
+The values are generated on netsuite as follows:
+1. Confirm the following features are enabled in Netsuite (Setup > Company > Enable Features > SuiteCloud)
    - Client SuiteScript
    - Server SuiteScript
    - Token Based Authentication
-2. Create an integration record (Setup > Integration > Manage Integrations > New)
+2. Create an integration Record (Setup > Integration > Manage Integrations > New)
    - Check the Token Based Authentication box only. (No need for TBA Authorization Flow)
    - Upon creation copy and save the Consumer Key and Consumer Secret.
 3. Create an access token (Setup > Users/Roles > Access Tokens > New)
@@ -63,8 +64,8 @@ The value can be generated on netsuite as follows:
    - Select the user you want to use for the token. This user must have a role with the "Log in using Access Tokens" permission, in addition to "SuiteAnalytics Connect".
    - Select the role you want to use for the token. **This would typically be the "Data Warehouse Integrator" role**.
    - Upon creation copy and save the Token ID and Token Secret values.
-4. On Airbyte source-netsuite config page fill-in the Client ID, Client Secret, Token ID and Token Secret values and the role ID for the role the token was created for in step 3.
-5. Check that netsuite is accessible by clicking the "Test and save" button.
+4. On the Airbyte source-netsuite's config page fill-in the Client ID, Client Secret, Token ID and Token Secret values and the role ID for the role the token was created for in step 3.
+5. Confirm Netsuite is accessible by clicking the "Test and save" button.
 
 
 
