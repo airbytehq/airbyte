@@ -219,6 +219,8 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.7.4      | 2025-03-27  | [53689](https://github.com/airbytehq/airbyte/pull/53689) | catch JSONDecodeError for error response                                                                                                                                  |
+| 2.7.2      | 2025-03-24  | [55898](https://github.com/airbytehq/airbyte/pull/55898) | Fix input state serialization issues                                                                                                                                   |
 | 2.7.3 | 2025-03-29 | [56776](https://github.com/airbytehq/airbyte/pull/56776) | Update dependencies |
 | 2.7.2 | 2025-03-24 | [55898](https://github.com/airbytehq/airbyte/pull/55898) | Fix input state serialization issues |
 | 2.7.1 | 2025-03-22 | [51921](https://github.com/airbytehq/airbyte/pull/51921) | Update dependencies |
