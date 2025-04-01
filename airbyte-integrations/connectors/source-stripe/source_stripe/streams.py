@@ -833,19 +833,20 @@ class CustomerBalanceTransactions(ParentIncrementalStripeSubStream):
         return 1  # force state write
 
     def stream_slices(self, sync_mode: SyncMode, cursor_field=None, stream_state=None):
-        stream_state = stream_state or {}
-        normalized_state = self.normalize_state(stream_state)
+        if stream_state:
+            normalized_state = self.normalize_state(stream_state)
+        else:
+            normalized_state = {}
+
         seen = set()
         any_records = False
 
         for parent in self.parent_streams:
-            parent_cursor = normalized_state["parents"][parent.name]
-            self.logger.info(f"Starting parent stream {parent.name} with state {stream_state} with cursor {parent_cursor} other {parent.cursor_field}")
-            parent_state = {"cursor": parent_cursor}
-            slices = parent.stream_slices(sync_mode=sync_mode, cursor_field=parent.cursor_field, stream_state=stream_state) #parent_state
+            self.logger.info(f"Starting parent stream {parent.name} with state {stream_state} {normalized_state} other {parent.cursor_field}")
+            slices = parent.stream_slices(sync_mode=sync_mode, cursor_field=parent.cursor_field, stream_state=normalized_state) #parent_state
 
             for stream_slice in slices:
-                records = parent.read_records(sync_mode=sync_mode, cursor_field=parent.cursor_field, stream_slice=stream_slice, stream_state=stream_state) #parent_state
+                records = parent.read_records(sync_mode=sync_mode, cursor_field=parent.cursor_field, stream_slice=stream_slice, stream_state=normalized_state) #parent_state
                 for r in records:
                     if parent.name == "invoices":
                         parent_id = r.get("customer")
@@ -853,7 +854,7 @@ class CustomerBalanceTransactions(ParentIncrementalStripeSubStream):
                         parent_id = r.get("id")
 
                     self.logger.info(f"Customer ID {parent_id}")
-                    if True: #parent_id and parent_id not in seen:
+                    if parent_id and parent_id not in seen:
                         seen.add(parent_id)
                         any_records = True
                         yield {"parent": {"id": parent_id}}
@@ -866,8 +867,8 @@ class CustomerBalanceTransactions(ParentIncrementalStripeSubStream):
         lookback = state["cursor"] - int(timedelta(days=2).total_seconds())
 
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
-            #if record.get("created", 0) > lookback:
-            yield record
+            if record.get("created", 0) > lookback:
+                yield record
 
     def read(self, *args, **kwargs):
         has_records = False
