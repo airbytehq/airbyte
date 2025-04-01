@@ -836,25 +836,22 @@ class CustomerBalanceTransactions(ParentIncrementalStripeSubStream):
         if stream_state:
             normalized_state = self.normalize_state(stream_state)
         else:
-            normalized_state = {}
+            stream_state = {}
+            normalized_state = stream_state
 
         seen = set()
         any_records = False
 
         for parent in self.parent_streams:
-            self.logger.info(f"Starting parent stream {parent.name} with state {stream_state} {normalized_state} other {parent.cursor_field}")
-            slices = parent.stream_slices(sync_mode=sync_mode, cursor_field=parent.cursor_field, stream_state=normalized_state) #parent_state
+            self.logger.info(f"Starting parent stream {parent.name} with state {normalized_state}")
+            slices = parent.stream_slices(sync_mode=sync_mode, cursor_field=parent.cursor_field, stream_state=normalized_state)
 
             for stream_slice in slices:
-                records = parent.read_records(sync_mode=sync_mode, cursor_field=parent.cursor_field, stream_slice=stream_slice, stream_state=normalized_state) #parent_state
+                records = parent.read_records(sync_mode=sync_mode, cursor_field=parent.cursor_field, stream_slice=stream_slice, stream_state=normalized_state)
                 for r in records:
-                    if parent.name == "invoices":
-                        parent_id = r.get("customer")
-                    else:  # e.g., "customers" stream
-                        parent_id = r.get("id")
-
-                    self.logger.info(f"Customer ID {parent_id}")
-                    if parent_id and parent_id not in seen:
+                    parent_id = r.get("customer") or r.get("id")
+                    balance = r.get("balance") or r.get("total", 0)
+                    if parent_id and parent_id not in seen and balance != 0:
                         seen.add(parent_id)
                         any_records = True
                         yield {"parent": {"id": parent_id}}
@@ -871,13 +868,13 @@ class CustomerBalanceTransactions(ParentIncrementalStripeSubStream):
                 yield record
 
     def read(self, *args, **kwargs):
-        has_records = False
+        read_count = 0
 
         for record in super().read(*args, **kwargs):
-            has_records = True
+            read_count += 1
             yield record
 
-        if not has_records:
+        if read_count == 1:
             now = int(datetime.utcnow().timestamp())
             synthetic = {self.cursor_field: now}
             state = self.normalize_state(kwargs.get("stream_state"))
@@ -898,7 +895,7 @@ class CustomerBalanceTransactions(ParentIncrementalStripeSubStream):
         """Unifies legacy and new state format."""
         state = (state or {}).get("data", state or {})
         normalized = {
-            "cursor": state.get(f"{self.name}_cursor_created") or state.get("created") or state.get("updated") or state.get("cursor") or self.start_date,
+            "cursor": state.get(f"{self.name}_cursor_created") or state.get("created") or state.get("cursor") or self.start_date,
             "parents": {
                 p.name: state.get(f"{p.name}_cursor_updated") or state.get("updated") or state.get("created") or state.get("parents", {}).get(p.name) or self.start_date
                 for p in self.parent_streams
@@ -908,10 +905,10 @@ class CustomerBalanceTransactions(ParentIncrementalStripeSubStream):
 
     def get_updated_state(self, current_state: Mapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
 
-        previous_cursor = (current_state or {}).get("cursor", self.start_date)
-        latest_cursor_minus_2 = latest_record.get(self.cursor_field, previous_cursor) - int(timedelta(days=7).total_seconds())
+        previous_cursor_minus_2 = (current_state or {}).get("cursor", self.start_date) - int(timedelta(days=2).total_seconds())
+        latest_cursor_minus_2 = latest_record.get(self.cursor_field) - int(timedelta(days=2).total_seconds())
         today_minus_7 = int(datetime.utcnow().timestamp()) - int(timedelta(days=7).total_seconds())
-        new_cursor = max(latest_cursor_minus_2, today_minus_7)
+        new_cursor = max(latest_cursor_minus_2, today_minus_7, previous_cursor_minus_2)
 
         updated_parents = {
             p.name: new_cursor
