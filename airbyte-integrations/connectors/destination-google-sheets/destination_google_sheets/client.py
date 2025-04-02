@@ -4,6 +4,7 @@
 
 
 import json
+import logging
 from typing import Dict
 
 import pygsheets
@@ -11,8 +12,6 @@ from google.auth.transport.requests import Request
 from google.oauth2 import credentials as client_account
 from google.oauth2 import service_account
 from pygsheets.client import Client as pygsheets_client
-
-from airbyte_cdk import AirbyteLogger
 
 
 # the list of required scopes/permissions
@@ -24,7 +23,7 @@ SCOPES = [
 
 
 class GoogleSheetsClient:
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     def __init__(self, config: Dict):
         self.config = config
