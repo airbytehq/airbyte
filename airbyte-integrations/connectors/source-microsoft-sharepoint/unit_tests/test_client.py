@@ -1,9 +1,12 @@
-import pytest
-from unittest.mock import patch, MagicMock
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
-from source_microsoft_sharepoint.sharepoint_client import SourceMicrosoftSharePointClient
-from airbyte_cdk import AirbyteTracedException, FailureType
+from unittest.mock import MagicMock, patch
+
+import pytest
 from office365.runtime.auth.token_response import TokenResponse
+from source_microsoft_sharepoint.sharepoint_client import SourceMicrosoftSharePointClient
+
+from airbyte_cdk import AirbyteTracedException, FailureType
 
 
 def create_mock_config():
