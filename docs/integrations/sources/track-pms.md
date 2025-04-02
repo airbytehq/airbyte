@@ -101,7 +101,7 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 
 | Version          | Date       | Subject        |
 |------------------|------------|----------------|
-| 4.0.0 | 2025-03-30 | Add rents back to reservations stream; fix docs; update error handler |
+| 4.0.0 | 2025-03-30 | Add rents back to reservations stream; fix docs; update error handler; diable connector auto schema determination |
 | 3.0.0 | 2025-02-26 | Drop redundant streams & omit unneeded sensitive fields from accounting_* streams |
 | 2.0.0 | 2025-02-13 | Rename and alphabetize folio_id stream |
 | 1.0.0 | 2025-01-16 | Fix housekeeping_work_orders incremental field; add reservations endpoint |
