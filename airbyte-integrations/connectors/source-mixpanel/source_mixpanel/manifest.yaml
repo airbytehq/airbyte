@@ -576,7 +576,7 @@ definitions:
           # Transformation is performed AFTER reading schema.
           # If field, that transformation wants to add, already exists in schema it will be ignored.
           # All fields are top level we are safe when using path[0]
-          condition: "{{ path[0] in record.keys() }}"
+          condition: "{{ path[0] not in record.keys() }}"
           fields:
             - path: ["event"]
               value: "{{ {'type': ['null', 'string']} }}"
@@ -765,6 +765,8 @@ api_budget:
       rates:
         - limit: 60 # rate limit of 60 queries per hour
           interval: PT1H
+        - limit: 3 # rate limit of 3 queries per second
+          interval: PT1S
       matchers: []
 
 # concurrent streams: cohorts, engage, revenue, annotations, cohort_members, funnels
