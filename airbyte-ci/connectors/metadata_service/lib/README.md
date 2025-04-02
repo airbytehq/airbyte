@@ -29,6 +29,11 @@ This will read the JSON Schema specifications in `models/src` and generate Pytho
 poetry run pytest
 ```
 
+## Changelog
+
+### 0.24.1
+Update Python version requirement from 3.10 to 3.11.
+
 ## Validating Metadata Files
 
 To be considered valid, a connector must have a metadata.yaml file which must conform to the [ConnectorMetadataDefinitionV0](./metadata_service/models/src/ConnectorMetadataDefinitionV0.yaml) schema, and a documentation file.

@@ -5,8 +5,8 @@
 package io.airbyte.cdk.load.command
 
 import io.airbyte.cdk.load.data.AirbyteType
-import io.airbyte.cdk.load.data.AirbyteTypeToJsonSchema
-import io.airbyte.cdk.load.data.JsonSchemaToAirbyteType
+import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
+import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
@@ -36,7 +36,15 @@ data class DestinationStream(
                     it.namespace = namespace
                 }
             }
+
+        fun toPrettyString() = "$namespace.$name"
     }
+
+    /**
+     * This is the schema of what we currently write to destinations, but this might not reflect
+     * what actually exists, as many destinations have legacy data from before this schema was
+     * adopted.
+     */
 
     /**
      * This is not fully round-trippable. Destinations don't care about most of the stuff in an
@@ -70,6 +78,14 @@ data class DestinationStream(
                     }
                 }
             }
+
+    fun shouldBeTruncatedAtEndOfSync(): Boolean {
+        return importType is Overwrite ||
+            (minimumGenerationId == generationId && minimumGenerationId > 0)
+    }
+
+    fun isSingleGenerationTruncate() =
+        shouldBeTruncatedAtEndOfSync() && minimumGenerationId == generationId
 }
 
 @Singleton

@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "name": { "type": ["null", "string"] },
+    "campaignId": { "type": ["null", "number"] },
+    "adGroupId": { "type": ["null", "number"] },
+    "defaultBid": { "type": ["null", "number"] },
+    "bidOptimization": { "type": ["null", "string"] },
+    "state": { "type": ["null", "string"] },
+    "tactic": { "type": ["null", "string"] },
+    "creativeType": { "type": ["null", "string"] }
+  },
+  "title": "sponsored_display_ad_groups",
+  "type": ["null", "object"]
+}

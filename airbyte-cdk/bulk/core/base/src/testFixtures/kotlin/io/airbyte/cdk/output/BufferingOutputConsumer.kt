@@ -15,7 +15,6 @@ import io.micronaut.context.annotation.Requires
 import io.micronaut.context.env.Environment
 import jakarta.inject.Singleton
 import java.time.Clock
-import java.time.Instant
 
 /** [OutputConsumer] implementation for unit tests. Collects everything into thread-safe buffers. */
 @Singleton
@@ -23,8 +22,7 @@ import java.time.Instant
 @Replaces(OutputConsumer::class)
 class BufferingOutputConsumer(
     clock: Clock,
-) : OutputConsumer {
-    override val emittedAt: Instant = Instant.now(clock)
+) : OutputConsumer(clock) {
 
     private val records = mutableListOf<AirbyteRecordMessage>()
     private val states = mutableListOf<AirbyteStateMessage>()

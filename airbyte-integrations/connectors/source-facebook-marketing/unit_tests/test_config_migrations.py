@@ -8,14 +8,16 @@ import pathlib
 from typing import Any, Mapping
 
 import pytest
-from airbyte_cdk.models import OrchestratorType, Type
-from airbyte_cdk.sources import Source
 from source_facebook_marketing.config_migrations import (
     MigrateAccountIdToArray,
     MigrateIncludeDeletedToStatusFilters,
     MigrateSecretsPathInConnector,
 )
 from source_facebook_marketing.source import SourceFacebookMarketing
+
+from airbyte_cdk.models import OrchestratorType, Type
+from airbyte_cdk.sources import Source
+
 
 # BASE ARGS
 CMD = "check"
@@ -50,7 +52,7 @@ class TestMigrateAccountIdToArray:
                 config = json.dumps(config)
                 updated_config.write(config)
 
-    def test_migrate_config(self):
+    def test_migrate_config(self, capsys):
         migration_instance = MigrateAccountIdToArray()
         original_config = load_config(self.TEST_CONFIG_PATH)
         # migrate the test_config
@@ -68,15 +70,15 @@ class TestMigrateAccountIdToArray:
         # load the old custom reports VS migrated
         assert [original_config["account_id"]] == test_migrated_config["account_ids"]
         # test CONTROL MESSAGE was emitted
-        control_msg = migration_instance.message_repository._message_queue[0]
-        assert control_msg.type == Type.CONTROL
-        assert control_msg.control.type == OrchestratorType.CONNECTOR_CONFIG
+        control_msg = json.loads(capsys.readouterr().out)
+        assert control_msg["type"] == Type.CONTROL.value
+        assert control_msg["control"]["type"] == OrchestratorType.CONNECTOR_CONFIG.value
         # old custom_reports are stil type(str)
-        assert isinstance(control_msg.control.connectorConfig.config["account_id"], str)
+        assert isinstance(control_msg["control"]["connectorConfig"]["config"]["account_id"], str)
         # new custom_reports are type(list)
-        assert isinstance(control_msg.control.connectorConfig.config["account_ids"], list)
+        assert isinstance(control_msg["control"]["connectorConfig"]["config"]["account_ids"], list)
         # check the migrated values
-        assert control_msg.control.connectorConfig.config["account_ids"] == ["01234567890"]
+        assert control_msg["control"]["connectorConfig"]["config"]["account_ids"] == ["01234567890"]
         # revert the test_config to the starting point
         self.revert_migration()
 
@@ -131,7 +133,7 @@ class TestMigrateIncludeDeletedToStatusFilters:
         "old_config_path, new_config_path, include_deleted",
         [(OLD_TEST1_CONFIG_PATH, NEW_TEST1_CONFIG_PATH, False), (OLD_TEST2_CONFIG_PATH, NEW_TEST2_CONFIG_PATH, True)],
     )
-    def test_migrate_config(self, old_config_path, new_config_path, include_deleted):
+    def test_migrate_config(self, old_config_path, new_config_path, include_deleted, capsys):
         migration_instance = MigrateIncludeDeletedToStatusFilters()
         # migrate the test_config
         migration_instance.migrate([CMD, "--config", old_config_path], SOURCE)
@@ -151,9 +153,9 @@ class TestMigrateIncludeDeletedToStatusFilters:
         assert not migration_instance.should_migrate(test_migrated_config)
         if include_deleted:
             # test CONTROL MESSAGE was emitted
-            control_msg = migration_instance.message_repository._message_queue[0]
-            assert control_msg.type == Type.CONTROL
-            assert control_msg.control.type == OrchestratorType.CONNECTOR_CONFIG
+            control_msg = json.loads(capsys.readouterr().out)
+            assert control_msg["type"] == Type.CONTROL.value
+            assert control_msg["control"]["type"] == OrchestratorType.CONNECTOR_CONFIG.value
             # revert the test_config to the starting point
             self.revert_migration(old_config_path)
 
@@ -168,6 +170,7 @@ class TestMigrateIncludeDeletedToStatusFilters:
         migration_instance = MigrateIncludeDeletedToStatusFilters()
         assert not migration_instance.should_migrate(new_config)
 
+
 class TestMigrateSecretsPathInConnector:
     OLD_TEST_CONFIG_PATH_ACCESS_TOKEN = _config_path(f"{_SECRETS_TO_CREDENTIALS_CONFIGS_PATH}/test_old_access_token_config.json")
     NEW_TEST_CONFIG_PATH_ACCESS_TOKEN = _config_path(f"{_SECRETS_TO_CREDENTIALS_CONFIGS_PATH}/test_new_access_token_config.json")
@@ -178,7 +181,7 @@ class TestMigrateSecretsPathInConnector:
     def revert_migration(config_path: str) -> None:
         with open(config_path, "r") as test_config:
             config = json.load(test_config)
-            credentials = config.pop("credentials",{})
+            credentials = config.pop("credentials", {})
             credentials.pop("auth_type", None)
             with open(config_path, "w") as updated_config:
                 config = json.dumps({**config, **credentials})
@@ -202,7 +205,7 @@ class TestMigrateSecretsPathInConnector:
         assert original_config["access_token"] == credentials["access_token"]
         # revert the test_config to the starting point
         self.revert_migration(self.OLD_TEST_CONFIG_PATH_ACCESS_TOKEN)
-    
+
     def test_migrate_client_config(self):
         migration_instance = MigrateSecretsPathInConnector()
         original_config = load_config(self.OLD_TEST_CONFIG_PATH_CLIENT)
@@ -228,7 +231,7 @@ class TestMigrateSecretsPathInConnector:
         new_config = load_config(self.NEW_TEST_CONFIG_PATH_CLIENT)
         migration_instance = MigrateSecretsPathInConnector()
         assert not migration_instance._should_migrate(new_config)
-    
+
     def test_should_not_migrate_new_access_token_config(self):
         new_config = load_config(self.NEW_TEST_CONFIG_PATH_ACCESS_TOKEN)
         migration_instance = MigrateSecretsPathInConnector()

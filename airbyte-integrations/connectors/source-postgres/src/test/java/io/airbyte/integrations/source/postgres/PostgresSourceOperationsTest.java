@@ -14,6 +14,7 @@ import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -54,7 +55,7 @@ class PostgresSourceOperationsTest {
     for (int i = 1; i <= 4; i++) {
       final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
       jsonNode.put("id", i);
-      final long cursorValue = i * 10;
+      final BigInteger cursorValue = BigInteger.valueOf(i * 10);
       jsonNode.put(cursorColumn, cursorValue);
       final String insertQuery = String.format("INSERT INTO %s VALUES (%s, %s);",
           tableName,

@@ -17,7 +17,7 @@ Understanding the following limitations will help you more effectively manage Ai
 ---
 
 \* Limits on workspaces, sources, and destinations do not apply to customers of
-[Powered by Airbyte](https://airbyte.com/solutions/powered-by-airbyte). To learn more
+Airbyte Teams. To learn more
 [contact us](https://airbyte.com/talk-to-sales)!
 
 \*\* The effective maximum size of the record may vary based per destination. Some destinations may

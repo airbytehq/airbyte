@@ -8,6 +8,7 @@ from pprint import pprint
 # %%
 import requests
 
+
 logging.basicConfig(level=logging.DEBUG)
 
 # %%

@@ -8,6 +8,7 @@ import hu.webarticum.treeprinter.printer.listing.ListingTreePrinter
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.command.InputState
 import io.airbyte.cdk.command.SourceConfiguration
+import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -32,6 +33,7 @@ class ReadOperation(
     val inputState: InputState,
     val stateManagerFactory: StateManagerFactory,
     val outputConsumer: OutputConsumer,
+    val metaFieldDecorator: MetaFieldDecorator,
     val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
 ) : Operation {
     private val log = KotlinLogging.logger {}
@@ -45,14 +47,15 @@ class ReadOperation(
                 config.resourceAcquisitionHeartbeat,
                 config.checkpointTargetInterval,
                 outputConsumer,
+                metaFieldDecorator,
                 partitionsCreatorFactories,
             )
         runBlocking(ThreadRenamingCoroutineName("read") + Dispatchers.Default) {
-            rootReader.read { feedJobs: Map<Feed, Job> ->
+            rootReader.read { feedJobs: Collection<Job> ->
                 val rootJob = coroutineContext.job
                 launch(Job()) {
                     var previousJobTree = ""
-                    while (feedJobs.values.any { it.isActive }) {
+                    while (feedJobs.any { it.isActive }) {
                         val currentJobTree: String = renderTree(rootJob)
                         if (currentJobTree != previousJobTree) {
                             log.info { "coroutine state:\n$currentJobTree" }

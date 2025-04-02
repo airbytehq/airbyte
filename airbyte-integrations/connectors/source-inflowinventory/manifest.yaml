@@ -1,0 +1,2933 @@
+version: 5.15.0
+
+type: DeclarativeSource
+
+description: >-
+  As the name suggests , Inflowinventory is an inventory management software.
+
+  Using this connector we can extract data from various streams such as
+  customers , productts and sales orders.
+
+  Docs https://cloudapi.inflowinventory.com/docs/index.html#section/Overview
+
+check:
+  type: CheckStream
+  stream_names:
+    - adjustment reasons
+
+definitions:
+  streams:
+    adjustment reasons:
+      type: DeclarativeStream
+      name: adjustment reasons
+      primary_key:
+        - adjustmentReasonId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/adjustment-reasons"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/adjustment reasons"
+    categories:
+      type: DeclarativeStream
+      name: categories
+      primary_key:
+        - categoryId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/categories"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+    currencies:
+      type: DeclarativeStream
+      name: currencies
+      primary_key:
+        - currencyId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/currencies"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/currencies"
+    custom_fields:
+      type: DeclarativeStream
+      name: custom_fields
+      primary_key:
+        - customFieldsId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/custom-fields"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_fields"
+    locations:
+      type: DeclarativeStream
+      name: locations
+      primary_key:
+        - locationId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/locations"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/locations"
+    operation types:
+      type: DeclarativeStream
+      name: operation types
+      primary_key:
+        - operationTypeId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/operation-types"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/operation types"
+    payment terms:
+      type: DeclarativeStream
+      name: payment terms
+      primary_key:
+        - paymentTermsId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/payment-terms"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/payment terms"
+    pricing schemes:
+      type: DeclarativeStream
+      name: pricing schemes
+      primary_key:
+        - pricingSchemeId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/pricing-schemes"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pricing schemes"
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - productId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/products"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/products"
+    product cost adjustments:
+      type: DeclarativeStream
+      name: product cost adjustments
+      primary_key:
+        - productCostAdjustmentId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/product-cost-adjustments"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/product cost adjustments"
+    purchase orders:
+      type: DeclarativeStream
+      name: purchase orders
+      primary_key:
+        - purchaseOrderId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/purchase-orders"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/purchase orders"
+    sales orders:
+      type: DeclarativeStream
+      name: sales orders
+      primary_key:
+        - salesOrderId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/sales-orders"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sales orders"
+    stock adjustments:
+      type: DeclarativeStream
+      name: stock adjustments
+      primary_key:
+        - stockAdjustmentId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/stock-adjustments"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stock adjustments"
+    stock counts:
+      type: DeclarativeStream
+      name: stock counts
+      primary_key:
+        - stockCountId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/stock-counts"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stock counts"
+    stock transfers:
+      type: DeclarativeStream
+      name: stock transfers
+      primary_key:
+        - stockTransferId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/stock-transfers"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stock transfers"
+    tax codes:
+      type: DeclarativeStream
+      name: tax codes
+      primary_key:
+        - taxCodeId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/tax-codes"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tax codes"
+    taxing schemes:
+      type: DeclarativeStream
+      name: taxing schemes
+      primary_key:
+        - taxingSchemeId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/taxing-schemes"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/taxing schemes"
+    team members:
+      type: DeclarativeStream
+      name: team members
+      primary_key:
+        - teamMemberId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/team-members"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/team members"
+    vendors:
+      type: DeclarativeStream
+      name: vendors
+      primary_key:
+        - vendorId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/vendors"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/vendors"
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - customerId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['companyid'] }}/customers"
+          http_method: GET
+          request_headers:
+            Accept: application/json;version=2024-03-12
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+  base_requester:
+    type: HttpRequester
+    url_base: https://cloudapi.inflowinventory.com/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: Authorization
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/adjustment reasons"
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/currencies"
+  - $ref: "#/definitions/streams/custom_fields"
+  - $ref: "#/definitions/streams/locations"
+  - $ref: "#/definitions/streams/operation types"
+  - $ref: "#/definitions/streams/payment terms"
+  - $ref: "#/definitions/streams/pricing schemes"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/product cost adjustments"
+  - $ref: "#/definitions/streams/purchase orders"
+  - $ref: "#/definitions/streams/sales orders"
+  - $ref: "#/definitions/streams/stock adjustments"
+  - $ref: "#/definitions/streams/stock counts"
+  - $ref: "#/definitions/streams/stock transfers"
+  - $ref: "#/definitions/streams/tax codes"
+  - $ref: "#/definitions/streams/taxing schemes"
+  - $ref: "#/definitions/streams/team members"
+  - $ref: "#/definitions/streams/vendors"
+  - $ref: "#/definitions/streams/customers"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - companyid
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      companyid:
+        type: string
+        order: 1
+        title: CompanyID
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    adjustment reasons: true
+    categories: true
+    currencies: true
+    custom_fields: true
+    locations: true
+    operation types: true
+    payment terms: true
+    pricing schemes: true
+    products: true
+    product cost adjustments: true
+    purchase orders: true
+    sales orders: true
+    stock adjustments: true
+    stock counts: true
+    stock transfers: true
+    tax codes: true
+    taxing schemes: true
+    team members: true
+    vendors: true
+    customers: true
+  testedStreams:
+    adjustment reasons:
+      streamHash: 5f42a4f25f44127491b975e740d3799621b51613
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    categories:
+      streamHash: 680c3b978da6de4e8be556ed106a68f8fa5e36a7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    currencies:
+      hasRecords: true
+      streamHash: ca7350df8fafa5ea9018a489bbeca3c64358e892
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    custom_fields:
+      streamHash: 5fbbc2de197a866111a95ae4a737ddd6faaef161
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    locations:
+      hasRecords: true
+      streamHash: 8fe429a7058c796f8f2451df0339eae0a05d0188
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    operation types:
+      hasRecords: true
+      streamHash: 4cb9a7422c132579866c0ce91f6d74d7b0c9721d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    payment terms:
+      hasRecords: true
+      streamHash: 037f57800bd3634990b8efbb48d0806206794412
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    pricing schemes:
+      hasRecords: true
+      streamHash: 36a0e041e86b0a16da122df09f230193030cca52
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    products:
+      hasRecords: true
+      streamHash: b422665de15c476e9731b41751da187489741ebb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    product cost adjustments:
+      hasRecords: true
+      streamHash: aa641487eaf0626fc0e0098a5dc0947248bf2ef6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    purchase orders:
+      hasRecords: true
+      streamHash: a9977bcf60635ca1cdf5d6dbdf52def0722e9e09
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sales orders:
+      hasRecords: true
+      streamHash: f0978a9901201e8bb4cf8f880f408789117db250
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    stock adjustments:
+      hasRecords: true
+      streamHash: 26ac5620b509f9779b8ae7e5a9029d3429000e4d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    stock counts:
+      hasRecords: true
+      streamHash: 00b208c84b542c34734e5f59590a3a59f1d820a2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    stock transfers:
+      hasRecords: true
+      streamHash: f2f09842c9f658d52269f5b4a44144be2cfb9408
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tax codes:
+      hasRecords: true
+      streamHash: e8303c421ea3755fff34ec5164698b2c1b2e635d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    taxing schemes:
+      hasRecords: true
+      streamHash: c7e20e7d8b9ac24f3068d76844155f2b5896ed8c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    team members:
+      hasRecords: true
+      streamHash: 54a7197b624878df2c39ab55b97e59c69bf81954
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    vendors:
+      hasRecords: true
+      streamHash: d140e7743b16868e30022f782322f692ded89265
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    customers:
+      streamHash: c141bbd7b1361c0461e35d62cf84f9eccb3694f3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  adjustment reasons:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      adjustmentReasonId:
+        type: string
+      isActive:
+        type:
+          - boolean
+          - "null"
+      isInternal:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - adjustmentReasonId
+  categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      categoryId:
+        type: string
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      parentCategoryId:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - string
+          - "null"
+    required:
+      - categoryId
+  currencies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      currencyId:
+        type: string
+      decimalPlaces:
+        type:
+          - number
+          - "null"
+      decimalSeparator:
+        type:
+          - string
+          - "null"
+      isSymbolFirst:
+        type:
+          - boolean
+          - "null"
+      isoCode:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      negativeType:
+        type:
+          - string
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+      thousandsSeparator:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - string
+          - "null"
+    required:
+      - currencyId
+  custom_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      customFieldsId:
+        type: string
+      customerCustomFieldLabels:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1:
+            type:
+              - string
+              - "null"
+          custom10:
+            type:
+              - string
+              - "null"
+          custom2:
+            type:
+              - string
+              - "null"
+          custom3:
+            type:
+              - string
+              - "null"
+          custom4:
+            type:
+              - string
+              - "null"
+          custom5:
+            type:
+              - string
+              - "null"
+          custom6:
+            type:
+              - string
+              - "null"
+          custom7:
+            type:
+              - string
+              - "null"
+          custom8:
+            type:
+              - string
+              - "null"
+          custom9:
+            type:
+              - string
+              - "null"
+      productCustomFieldLabels:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1:
+            type:
+              - string
+              - "null"
+          custom10:
+            type:
+              - string
+              - "null"
+          custom2:
+            type:
+              - string
+              - "null"
+          custom3:
+            type:
+              - string
+              - "null"
+          custom4:
+            type:
+              - string
+              - "null"
+          custom5:
+            type:
+              - string
+              - "null"
+          custom6:
+            type:
+              - string
+              - "null"
+          custom7:
+            type:
+              - string
+              - "null"
+          custom8:
+            type:
+              - string
+              - "null"
+          custom9:
+            type:
+              - string
+              - "null"
+      purchaseOrderCustomFieldLabels:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1:
+            type:
+              - string
+              - "null"
+          custom10:
+            type:
+              - string
+              - "null"
+          custom2:
+            type:
+              - string
+              - "null"
+          custom3:
+            type:
+              - string
+              - "null"
+          custom4:
+            type:
+              - string
+              - "null"
+          custom5:
+            type:
+              - string
+              - "null"
+          custom6:
+            type:
+              - string
+              - "null"
+          custom7:
+            type:
+              - string
+              - "null"
+          custom8:
+            type:
+              - string
+              - "null"
+          custom9:
+            type:
+              - string
+              - "null"
+      purchaseOrderCustomFieldPrintLabels:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1Print:
+            type:
+              - boolean
+              - "null"
+          custom2Print:
+            type:
+              - boolean
+              - "null"
+          custom3Print:
+            type:
+              - boolean
+              - "null"
+      salesOrderCustomFieldLabels:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1:
+            type:
+              - string
+              - "null"
+          custom10:
+            type:
+              - string
+              - "null"
+          custom2:
+            type:
+              - string
+              - "null"
+          custom3:
+            type:
+              - string
+              - "null"
+          custom4:
+            type:
+              - string
+              - "null"
+          custom5:
+            type:
+              - string
+              - "null"
+          custom6:
+            type:
+              - string
+              - "null"
+          custom7:
+            type:
+              - string
+              - "null"
+          custom8:
+            type:
+              - string
+              - "null"
+          custom9:
+            type:
+              - string
+              - "null"
+      salesOrderCustomFieldPrintLabels:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1Print:
+            type:
+              - boolean
+              - "null"
+          custom2Print:
+            type:
+              - boolean
+              - "null"
+          custom3Print:
+            type:
+              - boolean
+              - "null"
+      stockAdjustmentCustomFieldLabels:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1:
+            type:
+              - string
+              - "null"
+          custom10:
+            type:
+              - string
+              - "null"
+          custom2:
+            type:
+              - string
+              - "null"
+          custom3:
+            type:
+              - string
+              - "null"
+          custom4:
+            type:
+              - string
+              - "null"
+          custom5:
+            type:
+              - string
+              - "null"
+          custom6:
+            type:
+              - string
+              - "null"
+          custom7:
+            type:
+              - string
+              - "null"
+          custom8:
+            type:
+              - string
+              - "null"
+          custom9:
+            type:
+              - string
+              - "null"
+      stockAdjustmentCustomFieldPrintLabels:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1Print:
+            type:
+              - boolean
+              - "null"
+          custom2Print:
+            type:
+              - boolean
+              - "null"
+          custom3Print:
+            type:
+              - boolean
+              - "null"
+      stockTransferCustomFieldLabels:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1:
+            type:
+              - string
+              - "null"
+          custom10:
+            type:
+              - string
+              - "null"
+          custom2:
+            type:
+              - string
+              - "null"
+          custom3:
+            type:
+              - string
+              - "null"
+          custom4:
+            type:
+              - string
+              - "null"
+          custom5:
+            type:
+              - string
+              - "null"
+          custom6:
+            type:
+              - string
+              - "null"
+          custom7:
+            type:
+              - string
+              - "null"
+          custom8:
+            type:
+              - string
+              - "null"
+          custom9:
+            type:
+              - string
+              - "null"
+      stockTransferCustomFieldPrintLabels:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1Print:
+            type:
+              - boolean
+              - "null"
+          custom2Print:
+            type:
+              - boolean
+              - "null"
+          custom3Print:
+            type:
+              - boolean
+              - "null"
+      vendorCustomFieldLabels:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1:
+            type:
+              - string
+              - "null"
+          custom10:
+            type:
+              - string
+              - "null"
+          custom2:
+            type:
+              - string
+              - "null"
+          custom3:
+            type:
+              - string
+              - "null"
+          custom4:
+            type:
+              - string
+              - "null"
+          custom5:
+            type:
+              - string
+              - "null"
+          custom6:
+            type:
+              - string
+              - "null"
+          custom7:
+            type:
+              - string
+              - "null"
+          custom8:
+            type:
+              - string
+              - "null"
+          custom9:
+            type:
+              - string
+              - "null"
+      workOrderCustomFieldLabels:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1:
+            type:
+              - string
+              - "null"
+          custom10:
+            type:
+              - string
+              - "null"
+          custom2:
+            type:
+              - string
+              - "null"
+          custom3:
+            type:
+              - string
+              - "null"
+          custom4:
+            type:
+              - string
+              - "null"
+          custom5:
+            type:
+              - string
+              - "null"
+          custom6:
+            type:
+              - string
+              - "null"
+          custom7:
+            type:
+              - string
+              - "null"
+          custom8:
+            type:
+              - string
+              - "null"
+          custom9:
+            type:
+              - string
+              - "null"
+      workOrderCustomFieldPrintLabels:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1Print:
+            type:
+              - boolean
+              - "null"
+          custom2Print:
+            type:
+              - boolean
+              - "null"
+          custom3Print:
+            type:
+              - boolean
+              - "null"
+    required:
+      - customFieldsId
+  locations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      address:
+        type:
+          - object
+          - "null"
+        properties:
+          address1:
+            type:
+              - string
+              - "null"
+          address2:
+            type:
+              - string
+              - "null"
+          addressType:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          postalCode:
+            type:
+              - string
+              - "null"
+          remarks:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+      isActive:
+        type:
+          - boolean
+          - "null"
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      locationId:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - string
+          - "null"
+    required:
+      - locationId
+  operation types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      isActive:
+        type:
+          - boolean
+          - "null"
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      operationTypeId:
+        type: string
+      timestamp:
+        type:
+          - string
+          - "null"
+    required:
+      - operationTypeId
+  payment terms:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      daysDue:
+        type:
+          - number
+          - "null"
+      isActive:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      paymentTermsId:
+        type: string
+      timestamp:
+        type:
+          - string
+          - "null"
+    required:
+      - paymentTermsId
+  pricing schemes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      currencyId:
+        type:
+          - string
+          - "null"
+      isActive:
+        type:
+          - boolean
+          - "null"
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      isTaxInclusive:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      pricingSchemeId:
+        type: string
+      timestamp:
+        type:
+          - string
+          - "null"
+    required:
+      - pricingSchemeId
+  products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      autoAssemble:
+        type:
+          - boolean
+          - "null"
+      categoryId:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1:
+            type:
+              - string
+              - "null"
+          custom10:
+            type:
+              - string
+              - "null"
+          custom2:
+            type:
+              - string
+              - "null"
+          custom3:
+            type:
+              - string
+              - "null"
+          custom4:
+            type:
+              - string
+              - "null"
+          custom5:
+            type:
+              - string
+              - "null"
+          custom6:
+            type:
+              - string
+              - "null"
+          custom7:
+            type:
+              - string
+              - "null"
+          custom8:
+            type:
+              - string
+              - "null"
+          custom9:
+            type:
+              - string
+              - "null"
+      height:
+        type:
+          - string
+          - "null"
+      hsTariffNumber:
+        type:
+          - string
+          - "null"
+      includeQuantityBuildable:
+        type:
+          - boolean
+          - "null"
+      isActive:
+        type:
+          - boolean
+          - "null"
+      isManufacturable:
+        type:
+          - boolean
+          - "null"
+      itemType:
+        type:
+          - string
+          - "null"
+      lastModifiedById:
+        type:
+          - string
+          - "null"
+      lastModifiedDateTime:
+        type:
+          - string
+          - "null"
+      lastVendorId:
+        type:
+          - string
+          - "null"
+      length:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      originCountry:
+        type:
+          - string
+          - "null"
+      productId:
+        type: string
+      purchasingUom:
+        type:
+          - object
+          - "null"
+        properties:
+          conversionRatio:
+            type:
+              - object
+              - "null"
+            properties:
+              standardQuantity:
+                type:
+                  - string
+                  - "null"
+              uomQuantity:
+                type:
+                  - string
+                  - "null"
+          name:
+            type:
+              - string
+              - "null"
+      remarks:
+        type:
+          - string
+          - "null"
+      salesUom:
+        type:
+          - object
+          - "null"
+        properties:
+          conversionRatio:
+            type:
+              - object
+              - "null"
+            properties:
+              standardQuantity:
+                type:
+                  - string
+                  - "null"
+              uomQuantity:
+                type:
+                  - string
+                  - "null"
+          name:
+            type:
+              - string
+              - "null"
+      sku:
+        type:
+          - string
+          - "null"
+      standardUomName:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - string
+          - "null"
+      trackSerials:
+        type:
+          - boolean
+          - "null"
+      weight:
+        type:
+          - string
+          - "null"
+      width:
+        type:
+          - string
+          - "null"
+    required:
+      - productId
+  product cost adjustments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      dateTime:
+        type:
+          - string
+          - "null"
+      lastModifiedById:
+        type:
+          - string
+          - "null"
+      productCostAdjustmentId:
+        type: string
+      productId:
+        type:
+          - string
+          - "null"
+      serial:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - string
+          - "null"
+      unitCost:
+        type:
+          - string
+          - "null"
+    required:
+      - productCostAdjustmentId
+  purchase orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      amountPaid:
+        type:
+          - string
+          - "null"
+      balance:
+        type:
+          - string
+          - "null"
+      calculateTax2OnTax1:
+        type:
+          - boolean
+          - "null"
+      carrier:
+        type:
+          - string
+          - "null"
+      contactName:
+        type:
+          - string
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1:
+            type:
+              - string
+              - "null"
+          custom10:
+            type:
+              - string
+              - "null"
+          custom2:
+            type:
+              - string
+              - "null"
+          custom3:
+            type:
+              - string
+              - "null"
+          custom4:
+            type:
+              - string
+              - "null"
+          custom5:
+            type:
+              - string
+              - "null"
+          custom6:
+            type:
+              - string
+              - "null"
+          custom7:
+            type:
+              - string
+              - "null"
+          custom8:
+            type:
+              - string
+              - "null"
+          custom9:
+            type:
+              - string
+              - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      exchangeRate:
+        type:
+          - string
+          - "null"
+      exchangeRateAutoPulled:
+        type:
+          - string
+          - "null"
+      freight:
+        type:
+          - string
+          - "null"
+      inventoryStatus:
+        type:
+          - string
+          - "null"
+      isCancelled:
+        type:
+          - boolean
+          - "null"
+      isCompleted:
+        type:
+          - boolean
+          - "null"
+      isQuote:
+        type:
+          - boolean
+          - "null"
+      isTaxInclusive:
+        type:
+          - boolean
+          - "null"
+      lastModifiedById:
+        type:
+          - string
+          - "null"
+      locationId:
+        type:
+          - string
+          - "null"
+      nonVendorCosts:
+        type:
+          - object
+          - "null"
+        properties:
+          isPercent:
+            type:
+              - boolean
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      orderDate:
+        type:
+          - string
+          - "null"
+      orderNumber:
+        type:
+          - string
+          - "null"
+      orderRemarks:
+        type:
+          - string
+          - "null"
+      paidDate:
+        type:
+          - string
+          - "null"
+      paymentStatus:
+        type:
+          - string
+          - "null"
+      paymentTermsId:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      purchaseOrderId:
+        type: string
+      receiveRemarks:
+        type:
+          - string
+          - "null"
+      requestShipDate:
+        type:
+          - string
+          - "null"
+      returnExtra:
+        type:
+          - string
+          - "null"
+      returnFee:
+        type:
+          - string
+          - "null"
+      returnRemarks:
+        type:
+          - string
+          - "null"
+      shipToAddress:
+        type:
+          - object
+          - "null"
+        properties:
+          address1:
+            type:
+              - string
+              - "null"
+          address2:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          postalCode:
+            type:
+              - string
+              - "null"
+          remarks:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+      shipToCompanyName:
+        type:
+          - string
+          - "null"
+      showShipping:
+        type:
+          - boolean
+          - "null"
+      subTotal:
+        type:
+          - string
+          - "null"
+      tax1:
+        type:
+          - string
+          - "null"
+      tax1Name:
+        type:
+          - string
+          - "null"
+      tax1OnShipping:
+        type:
+          - boolean
+          - "null"
+      tax1Rate:
+        type:
+          - string
+          - "null"
+      tax2:
+        type:
+          - string
+          - "null"
+      tax2Name:
+        type:
+          - string
+          - "null"
+      tax2OnShipping:
+        type:
+          - boolean
+          - "null"
+      tax2Rate:
+        type:
+          - string
+          - "null"
+      taxingSchemeId:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - string
+          - "null"
+      total:
+        type:
+          - string
+          - "null"
+      unstockRemarks:
+        type:
+          - string
+          - "null"
+      vendorAddress:
+        type:
+          - object
+          - "null"
+        properties:
+          address1:
+            type:
+              - string
+              - "null"
+          address2:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          postalCode:
+            type:
+              - string
+              - "null"
+          remarks:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+      vendorId:
+        type:
+          - string
+          - "null"
+      vendorOrderNumber:
+        type:
+          - string
+          - "null"
+    required:
+      - purchaseOrderId
+  sales orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      amountPaid:
+        type:
+          - string
+          - "null"
+      balance:
+        type:
+          - string
+          - "null"
+      billingAddress:
+        type:
+          - object
+          - "null"
+        properties:
+          address1:
+            type:
+              - string
+              - "null"
+          address2:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          postalCode:
+            type:
+              - string
+              - "null"
+          remarks:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+      calculateTax2OnTax1:
+        type:
+          - boolean
+          - "null"
+      contactName:
+        type:
+          - string
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1:
+            type:
+              - string
+              - "null"
+          custom10:
+            type:
+              - string
+              - "null"
+          custom2:
+            type:
+              - string
+              - "null"
+          custom3:
+            type:
+              - string
+              - "null"
+          custom4:
+            type:
+              - string
+              - "null"
+          custom5:
+            type:
+              - string
+              - "null"
+          custom6:
+            type:
+              - string
+              - "null"
+          custom7:
+            type:
+              - string
+              - "null"
+          custom8:
+            type:
+              - string
+              - "null"
+          custom9:
+            type:
+              - string
+              - "null"
+      customerId:
+        type:
+          - string
+          - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      exchangeRate:
+        type:
+          - string
+          - "null"
+      exchangeRateAutoPulled:
+        type:
+          - string
+          - "null"
+      externalId:
+        type:
+          - string
+          - "null"
+      inventoryStatus:
+        type:
+          - string
+          - "null"
+      invoicedDate:
+        type:
+          - string
+          - "null"
+      isCancelled:
+        type:
+          - boolean
+          - "null"
+      isCompleted:
+        type:
+          - boolean
+          - "null"
+      isInvoiced:
+        type:
+          - boolean
+          - "null"
+      isPrioritized:
+        type:
+          - boolean
+          - "null"
+      isQuote:
+        type:
+          - boolean
+          - "null"
+      isTaxInclusive:
+        type:
+          - boolean
+          - "null"
+      lastModifiedById:
+        type:
+          - string
+          - "null"
+      locationId:
+        type:
+          - string
+          - "null"
+      needsConfirmation:
+        type:
+          - boolean
+          - "null"
+      nonCustomerCost:
+        type:
+          - object
+          - "null"
+        properties:
+          isPercent:
+            type:
+              - boolean
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      orderDate:
+        type:
+          - string
+          - "null"
+      orderFreight:
+        type:
+          - string
+          - "null"
+      orderNumber:
+        type:
+          - string
+          - "null"
+      orderRemarks:
+        type:
+          - string
+          - "null"
+      packRemarks:
+        type:
+          - string
+          - "null"
+      paidDate:
+        type:
+          - string
+          - "null"
+      paymentStatus:
+        type:
+          - string
+          - "null"
+      paymentTermsId:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      pickRemarks:
+        type:
+          - string
+          - "null"
+      poNumber:
+        type:
+          - string
+          - "null"
+      pricingSchemeId:
+        type:
+          - string
+          - "null"
+      requestedShipDate:
+        type:
+          - string
+          - "null"
+      restockRemarks:
+        type:
+          - string
+          - "null"
+      returnFee:
+        type:
+          - string
+          - "null"
+      returnFreight:
+        type:
+          - string
+          - "null"
+      returnRemarks:
+        type:
+          - string
+          - "null"
+      salesOrderId:
+        type: string
+      salesRep:
+        type:
+          - string
+          - "null"
+      sameBillingAndShipping:
+        type:
+          - boolean
+          - "null"
+      shipRemarks:
+        type:
+          - string
+          - "null"
+      shipToCompanyName:
+        type:
+          - string
+          - "null"
+      shippedDate:
+        type:
+          - string
+          - "null"
+      shippingAddress:
+        type:
+          - object
+          - "null"
+        properties:
+          address1:
+            type:
+              - string
+              - "null"
+          address2:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          postalCode:
+            type:
+              - string
+              - "null"
+          remarks:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+      showShipping:
+        type:
+          - boolean
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      subTotal:
+        type:
+          - string
+          - "null"
+      tax1:
+        type:
+          - string
+          - "null"
+      tax1Name:
+        type:
+          - string
+          - "null"
+      tax1OnShipping:
+        type:
+          - boolean
+          - "null"
+      tax1Rate:
+        type:
+          - string
+          - "null"
+      tax2:
+        type:
+          - string
+          - "null"
+      tax2Name:
+        type:
+          - string
+          - "null"
+      tax2OnShipping:
+        type:
+          - boolean
+          - "null"
+      tax2Rate:
+        type:
+          - string
+          - "null"
+      taxingSchemeId:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - string
+          - "null"
+      total:
+        type:
+          - string
+          - "null"
+    required:
+      - salesOrderId
+  stock adjustments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      adjustmentNumber:
+        type:
+          - string
+          - "null"
+      adjustmentReasonId:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1:
+            type:
+              - string
+              - "null"
+          custom10:
+            type:
+              - string
+              - "null"
+          custom2:
+            type:
+              - string
+              - "null"
+          custom3:
+            type:
+              - string
+              - "null"
+          custom4:
+            type:
+              - string
+              - "null"
+          custom5:
+            type:
+              - string
+              - "null"
+          custom6:
+            type:
+              - string
+              - "null"
+          custom7:
+            type:
+              - string
+              - "null"
+          custom8:
+            type:
+              - string
+              - "null"
+          custom9:
+            type:
+              - string
+              - "null"
+      date:
+        type:
+          - string
+          - "null"
+      isCancelled:
+        type:
+          - boolean
+          - "null"
+      lastModifiedById:
+        type:
+          - string
+          - "null"
+      locationId:
+        type:
+          - string
+          - "null"
+      remarks:
+        type:
+          - string
+          - "null"
+      stockAdjustmentId:
+        type: string
+      timestamp:
+        type:
+          - string
+          - "null"
+    required:
+      - stockAdjustmentId
+  stock counts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      completedDate:
+        type:
+          - string
+          - "null"
+      isCancelled:
+        type:
+          - boolean
+          - "null"
+      isCompleted:
+        type:
+          - boolean
+          - "null"
+      isPrepared:
+        type:
+          - boolean
+          - "null"
+      isReviewed:
+        type:
+          - boolean
+          - "null"
+      isStarted:
+        type:
+          - boolean
+          - "null"
+      lastModifiedById:
+        type:
+          - string
+          - "null"
+      locationId:
+        type:
+          - string
+          - "null"
+      remarks:
+        type:
+          - string
+          - "null"
+      startedDate:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      stockCountId:
+        type: string
+      stockCountNumber:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - string
+          - "null"
+    required:
+      - stockCountId
+  stock transfers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      assignedToTeamMemberId:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1:
+            type:
+              - string
+              - "null"
+          custom10:
+            type:
+              - string
+              - "null"
+          custom2:
+            type:
+              - string
+              - "null"
+          custom3:
+            type:
+              - string
+              - "null"
+          custom4:
+            type:
+              - string
+              - "null"
+          custom5:
+            type:
+              - string
+              - "null"
+          custom6:
+            type:
+              - string
+              - "null"
+          custom7:
+            type:
+              - string
+              - "null"
+          custom8:
+            type:
+              - string
+              - "null"
+          custom9:
+            type:
+              - string
+              - "null"
+      fromLocationId:
+        type:
+          - string
+          - "null"
+      isCancelled:
+        type:
+          - boolean
+          - "null"
+      lastModifiedById:
+        type:
+          - string
+          - "null"
+      receivedDate:
+        type:
+          - string
+          - "null"
+      remarks:
+        type:
+          - string
+          - "null"
+      sentDate:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      stockTransferId:
+        type: string
+      timestamp:
+        type:
+          - string
+          - "null"
+      toLocationId:
+        type:
+          - string
+          - "null"
+      transferDate:
+        type:
+          - string
+          - "null"
+      transferNumber:
+        type:
+          - string
+          - "null"
+    required:
+      - stockTransferId
+  tax codes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      isActive:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      tax1Rate:
+        type:
+          - string
+          - "null"
+      tax2Rate:
+        type:
+          - string
+          - "null"
+      taxCodeId:
+        type: string
+      taxingSchemeId:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - string
+          - "null"
+    required:
+      - taxCodeId
+  taxing schemes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      calculateTax2OnTax1:
+        type:
+          - boolean
+          - "null"
+      defaultTaxCodeId:
+        type:
+          - string
+          - "null"
+      isActive:
+        type:
+          - boolean
+          - "null"
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      tax1Name:
+        type:
+          - string
+          - "null"
+      tax1OnShipping:
+        type:
+          - boolean
+          - "null"
+      tax2Name:
+        type:
+          - string
+          - "null"
+      tax2OnShipping:
+        type:
+          - boolean
+          - "null"
+      taxingSchemeId:
+        type: string
+      timestamp:
+        type:
+          - string
+          - "null"
+    required:
+      - taxingSchemeId
+  team members:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accessAllLocations:
+        type:
+          - boolean
+          - "null"
+      accessLocationIds:
+        type:
+          - array
+          - "null"
+      accessRights:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      canBeSalesRep:
+        type:
+          - boolean
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      isActive:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      teamMemberId:
+        type: string
+    required:
+      - teamMemberId
+  vendors:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      contactName:
+        type:
+          - string
+          - "null"
+      currencyId:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1:
+            type:
+              - string
+              - "null"
+          custom10:
+            type:
+              - string
+              - "null"
+          custom2:
+            type:
+              - string
+              - "null"
+          custom3:
+            type:
+              - string
+              - "null"
+          custom4:
+            type:
+              - string
+              - "null"
+          custom5:
+            type:
+              - string
+              - "null"
+          custom6:
+            type:
+              - string
+              - "null"
+          custom7:
+            type:
+              - string
+              - "null"
+          custom8:
+            type:
+              - string
+              - "null"
+          custom9:
+            type:
+              - string
+              - "null"
+      defaultAddressId:
+        type:
+          - string
+          - "null"
+      defaultCarrier:
+        type:
+          - string
+          - "null"
+      defaultPaymentMethod:
+        type:
+          - string
+          - "null"
+      defaultPaymentTermsId:
+        type:
+          - string
+          - "null"
+      discount:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      fax:
+        type:
+          - string
+          - "null"
+      isActive:
+        type:
+          - boolean
+          - "null"
+      isTaxInclusivePricing:
+        type:
+          - boolean
+          - "null"
+      lastModifiedById:
+        type:
+          - string
+          - "null"
+      leadTimeDays:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      remarks:
+        type:
+          - string
+          - "null"
+      taxingSchemeId:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - string
+          - "null"
+      vendorId:
+        type: string
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - vendorId
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      contactName:
+        type:
+          - string
+          - "null"
+      customFields:
+        type:
+          - object
+          - "null"
+        properties:
+          custom1:
+            type:
+              - string
+              - "null"
+          custom10:
+            type:
+              - string
+              - "null"
+          custom2:
+            type:
+              - string
+              - "null"
+          custom3:
+            type:
+              - string
+              - "null"
+          custom4:
+            type:
+              - string
+              - "null"
+          custom5:
+            type:
+              - string
+              - "null"
+          custom6:
+            type:
+              - string
+              - "null"
+          custom7:
+            type:
+              - string
+              - "null"
+          custom8:
+            type:
+              - string
+              - "null"
+          custom9:
+            type:
+              - string
+              - "null"
+      customerId:
+        type: string
+      defaultBillingAddressId:
+        type:
+          - string
+          - "null"
+      defaultCarrier:
+        type:
+          - string
+          - "null"
+      defaultLocationId:
+        type:
+          - string
+          - "null"
+      defaultPaymentMethod:
+        type:
+          - string
+          - "null"
+      defaultPaymentTermsId:
+        type:
+          - string
+          - "null"
+      defaultSalesRep:
+        type:
+          - string
+          - "null"
+      defaultShippingAddressId:
+        type:
+          - string
+          - "null"
+      discount:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      fax:
+        type:
+          - string
+          - "null"
+      isActive:
+        type:
+          - boolean
+          - "null"
+      lastModifiedById:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      pricingSchemeId:
+        type:
+          - string
+          - "null"
+      remarks:
+        type:
+          - string
+          - "null"
+      taxExemptNumber:
+        type:
+          - string
+          - "null"
+      taxingSchemeId:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - string
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+    required:
+      - customerId

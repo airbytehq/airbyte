@@ -10,6 +10,7 @@ from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 
+
 logger = logging.getLogger("airbyte_logger")
 
 

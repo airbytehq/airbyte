@@ -64,7 +64,7 @@ public class MssqlInitialLoadStreamStateManager extends MssqlInitialLoadStateMan
     Preconditions.checkNotNull(pair);
     Preconditions.checkNotNull(pair.getName());
     Preconditions.checkNotNull(pair.getNamespace());
-    LOGGER.info("State data for {}: {}", pair.getNamespace().concat("_").concat(pair.getName()), stateData);
+    LOGGER.debug("State data for {}: {}", pair.getNamespace().concat("_").concat(pair.getName()), stateData);
 
     return new AirbyteStreamState()
         .withStreamDescriptor(

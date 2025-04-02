@@ -1,4 +1,6 @@
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+#
 
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
@@ -6,6 +8,8 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import freezegun
+from source_stripe import SourceStripe
+
 from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -26,7 +30,7 @@ from integration.helpers import assert_stream_did_not_run
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
 from integration.response_builder import a_response_with_status
-from source_stripe import SourceStripe
+
 
 _EVENT_TYPES = ["application_fee.created", "application_fee.refunded"]
 

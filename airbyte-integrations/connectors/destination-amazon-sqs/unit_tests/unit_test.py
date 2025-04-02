@@ -8,12 +8,13 @@ import time
 from typing import Any, Mapping
 
 import boto3
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Status
 from destination_amazon_sqs import DestinationAmazonSqs
 
 # from airbyte_cdk.sources.source import Source
 from moto import mock_iam, mock_sqs
 from moto.core import set_initial_no_auth_action_count
+
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Status
 
 
 @mock_iam

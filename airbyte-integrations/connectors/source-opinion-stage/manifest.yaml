@@ -1,0 +1,429 @@
+version: 6.1.0
+
+type: DeclarativeSource
+
+description: >-
+  The Airbyte connector for [OpinionStage](https://opinionstage.com) enables
+  seamless data integration from the OpinionStage platform, facilitating the
+  extraction of interactive content data. It streams data from items such as
+  forms, quizzes, and polls, as well as capturing responses and specific
+  questions associated with each item. This connector is ideal for users looking
+  to analyze audience engagement, response patterns, and question insights from
+  OpinionStage in their data workflows.
+
+check:
+  type: CheckStream
+  stream_names:
+    - items
+
+definitions:
+  streams:
+    items:
+      type: DeclarativeStream
+      name: items
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/items
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[size]
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 50
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/items"
+    responses:
+      type: DeclarativeStream
+      name: responses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/items/{{ stream_partition.item_id }}/responses
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[size]
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 50
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: item_id
+              stream:
+                $ref: "#/definitions/streams/items"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/responses"
+    questions:
+      type: DeclarativeStream
+      name: questions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v2/items/{{ stream_partition.item_id }}/questions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[number]
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page[size]
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 50
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: item_id
+              stream:
+                $ref: "#/definitions/streams/items"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/questions"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.opinionstage.com
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/items"
+  - $ref: "#/definitions/streams/responses"
+  - $ref: "#/definitions/streams/questions"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 0
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    items: true
+    responses: true
+    questions: true
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams:
+    items:
+      streamHash: 3eb9bbc141d2ba106b4814eb8dd7dd2243565ab6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    responses:
+      streamHash: 931591907dcd96ac607fe6c058b59ab70fe9590c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    questions:
+      streamHash: ac650cec34e18e6e4717c41725e1c16fa5469aac
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://api.opinionstage.com/api-docs/index.html
+
+schemas:
+  items:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          embed:
+            type:
+              - object
+              - "null"
+            properties:
+              iframe:
+                type:
+                  - string
+                  - "null"
+              script:
+                type:
+                  - string
+                  - "null"
+          status:
+            type:
+              - string
+              - "null"
+          timestamps:
+            type:
+              - object
+              - "null"
+            properties:
+              created:
+                type:
+                  - string
+                  - "null"
+              modified:
+                type:
+                  - string
+                  - "null"
+          title:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          edit:
+            type:
+              - string
+              - "null"
+          iframe:
+            type:
+              - string
+              - "null"
+          landing:
+            type:
+              - string
+              - "null"
+          results:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+      relationships:
+        type:
+          - object
+          - "null"
+        properties:
+          questions:
+            type:
+              - object
+              - "null"
+            properties:
+              links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  related:
+                    type:
+                      - string
+                      - "null"
+    required:
+      - id
+  responses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          answers:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                question:
+                  type:
+                    - string
+                    - "null"
+                selection:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+          result:
+            type:
+              - object
+              - "null"
+            properties:
+              text:
+                type:
+                  - string
+                  - "null"
+              title:
+                type:
+                  - string
+                  - "null"
+          timestamps:
+            type:
+              - object
+              - "null"
+            properties:
+              created:
+                type:
+                  - string
+                  - "null"
+          timings:
+            type:
+              - object
+              - "null"
+            properties:
+              duration:
+                type:
+                  - number
+                  - "null"
+          utm:
+            type:
+              - object
+              - "null"
+            properties: {}
+      id:
+        type: string
+      links:
+        type:
+          - object
+          - "null"
+        properties:
+          hosting:
+            type:
+              - string
+              - "null"
+          self:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+  questions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - object
+          - "null"
+        properties:
+          kind:
+            type:
+              - string
+              - "null"
+          lead:
+            type:
+              - boolean
+              - "null"
+          timestamps:
+            type:
+              - object
+              - "null"
+            properties:
+              created:
+                type:
+                  - string
+                  - "null"
+              modified:
+                type:
+                  - string
+                  - "null"
+          title:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+    required:
+      - id

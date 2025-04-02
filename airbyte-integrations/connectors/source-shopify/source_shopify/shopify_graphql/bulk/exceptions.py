@@ -52,6 +52,11 @@ class ShopifyBulkExceptions:
 
         failure_type: FailureType = FailureType.transient_error
 
+    class BulkJobCheckpointCollisionError(BaseBulkException):
+        """Raised when an attempt to create a job using the `checkpointed cursor` value goes into inf.loop."""
+
+        failure_type: FailureType = FailureType.transient_error
+
     class BulkJobRedirectToOtherShopError(BaseBulkException):
         """Raised when the response contains another shop name"""
 

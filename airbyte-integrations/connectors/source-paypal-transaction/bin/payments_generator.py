@@ -82,7 +82,6 @@ def read_json(filepath):
 
 
 def main():
-
     CREDS = read_json("../secrets/config.json")
     client_id = CREDS.get("client_id")
     secret_id = CREDS.get("client_secret")

@@ -1,0 +1,5432 @@
+version: 6.27.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - campaigns
+
+definitions:
+  streams:
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/campaigns
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,name,isDeleted,folderId,cost,parentCampaignId,createdById,updatedById,createdAt,updatedAt,salesforceId
+            deleted: "{{ 'all' if not next_page_token.next_page_token }}"
+            orderBy: "{{ 'updatedAt ASC' if not next_page_token.next_page_token }}"
+            updatedAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            updatedAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    email_clicks:
+      type: DeclarativeStream
+      name: email_clicks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: emailClick/version/4/do/query
+          http_method: GET
+          request_parameters:
+            format: json
+            output: bulk
+            sort_by: id
+            sort_order: ascending
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - emailClick
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: id_greater_than
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: "{{ last_record.id }}"
+            stop_condition: >-
+              {{ not response.result.emailClick or
+              response.result.emailClick|length < 200 }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: created_after
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: created_before
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/email_clicks"
+    list_membership:
+      type: DeclarativeStream
+      name: list_membership
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/list-memberships
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,listId,prospectId,optedOut,createdAt,updatedAt,createdById,updatedById
+            deleted: "{{ 'all' if not next_page_token.next_page_token }}"
+            orderBy: "{{ 'updatedAt ASC' if not next_page_token.next_page_token }}"
+            updatedAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            updatedAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_membership"
+    lists:
+      type: DeclarativeStream
+      name: lists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/lists
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,name,title,description,isPublic,folderId,campaignId,isDeleted,isDynamic,createdAt,updatedAt,createdById,updatedById
+            deleted: "{{ 'all' if not next_page_token.next_page_token }}"
+            orderBy: "{{ 'updatedAt ASC' if not next_page_token.next_page_token }}"
+            updatedAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            updatedAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lists"
+    prospect_accounts:
+      type: DeclarativeStream
+      name: prospect_accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/prospect-accounts
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,name,salesforceId,isDeleted,annualRevenue,billingAddressOne,billingAddressTwo,billingCity,billingCountry,billingState,billingZip,description,employees,fax,industry,number,ownership,phone,rating,shippingAddressOne,shippingAddressTwo,shippingCity,shippingCountry,shippingState,shippingZip,sic,site,tickerSymbol,type,website,createdAt,updatedAt,createdById,updatedById,assignedToId
+            deleted: "{{ 'all' if not next_page_token.next_page_token }}"
+            orderBy: "{{ 'id ASC' if not next_page_token.next_page_token }}"
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+        partition_router:
+          type: ListPartitionRouter
+          values:
+            - "1"
+          cursor_field: >-
+            magic config: this is just a trick to make the next_page_token
+            object populate, which for some reason doesn't happen when only
+            Pagination is used (without Incremental or Param
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/prospect_accounts"
+    prospects:
+      type: DeclarativeStream
+      name: prospects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/prospects
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,email,optedOut,isDeleted,isDoNotCall,isDoNotEmail,isEmailHardBounced,isReviewed,isStarred,doNotSell,prospectAccountId,campaignId,profileId,lifecycleStageId,userId,lastActivityAt,recentInteraction,firstName,lastName,salutation,jobTitle,emailBouncedAt,emailBouncedReason,source,sourceParameter,campaignParameter,mediumParameter,contentParameter,termParameter,firstActivityAt,firstAssignedAt,firstReferrerQuery,firstReferrerType,firstReferrerUrl,salesforceId,salesforceContactId,salesforceLeadId,salesforceAccountId,salesforceCampaignId,salesforceOwnerId,salesforceUrl,salesforceLastSync,assignedToId,convertedAt,convertedFromObjectName,convertedFromObjectType,grade,phone,fax,addressOne,addressTwo,city,state,zip,country,company,annualRevenue,website,industry,department,yearsInBusiness,employees,score,territory,comments,notes,createdAt,updatedAt,createdById,updatedById
+            deleted: "{{ 'all' if not next_page_token.next_page_token }}"
+            orderBy: "{{ 'updatedAt ASC' if not next_page_token.next_page_token }}"
+            updatedAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            updatedAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/prospects"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/users
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,email,username,isDeleted,firstName,jobTitle,role,roleName,salesforceId,tagReplacementLanguage,createdAt,updatedAt,createdById,updatedById
+            deleted: "{{ 'all' if not next_page_token.next_page_token }}"
+            orderBy: "{{ 'updatedAt ASC' if not next_page_token.next_page_token }}"
+            updatedAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            updatedAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    visitor_activities:
+      type: DeclarativeStream
+      name: visitor_activities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/visitor-activities
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,visitId,prospectId,visitorId,emailId,type,typeName,details,campaignId,customRedirectId,emailTemplateId,fileId,formHandlerId,formId,landingPageId,listEmailId,multivariateTestVariationId,opportunityId,paidSearchAdId,siteSearchQueryId,visitorPageViewId,createdAt,updatedAt
+            orderBy: "{{ 'updatedAt ASC' if not next_page_token.next_page_token }}"
+            updatedAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            updatedAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/visitor_activities"
+    visitors:
+      type: DeclarativeStream
+      name: visitors
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/visitors
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,prospectId,pageViewCount,isIdentified,doNotSell,hostname,ipAddress,campaignId,sourceParameter,campaignParameter,mediumParameter,contentParameter,termParameter,createdAt,updatedAt
+            deleted: "{{ 'all' if not next_page_token.next_page_token }}"
+            orderBy: "{{ 'updatedAt ASC' if not next_page_token.next_page_token }}"
+            updatedAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            updatedAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/visitors"
+    visits:
+      type: DeclarativeStream
+      name: visits
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/visits
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,visitorId,prospectId,visitorPageViewCount,firstVisitorPageViewAt,lastVisitorPageViewAt,durationInSeconds,sourceParameter,campaignParameter,mediumParameter,contentParameter,termParameter,createdAt,updatedAt
+            orderBy: "{{ 'updatedAt ASC' if not next_page_token.next_page_token }}"
+            updatedAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            updatedAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/visits"
+    folders:
+      type: DeclarativeStream
+      name: folders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/folders
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,name,parentFolderId,path,usePermissions,createdAt,updatedAt,createdById,updatedById
+            orderBy: "{{ 'id ASC' if not next_page_token.next_page_token }}"
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+        partition_router:
+          type: ListPartitionRouter
+          values:
+            - "1"
+          cursor_field: >-
+            magic config: this is just a trick to make the next_page_token
+            object populate, which for some reason doesn't happen when only
+            Pagination is used (without Incremental or Param
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/folders"
+    custom_redirects:
+      type: DeclarativeStream
+      name: custom_redirects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/custom-redirects
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,name,url,destinationUrl,vanityUrl,campaignId,salesforceId,isDeleted,folderId,trackerDomainId,trackerDomain.domain,vanityUrlPath,trackedUrl,bitlyIsPersonalized,bitlyShortUrl,gaSource,gaMedium,gaTerm,gaContent,gaCampaign,createdAt,updatedAt,createdById,updatedById
+            deleted: "{{ 'all' if not next_page_token.next_page_token }}"
+            orderBy: "{{ 'id ASC' if not next_page_token.next_page_token }}"
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_redirects"
+    emails:
+      type: DeclarativeStream
+      name: emails
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/emails
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,name,type,sentAt,subject,clientType,isOperational,campaignId,prospectId,folderId,listId,listEmailId,emailTemplateId,trackerDomainId,senderOptions.type,senderOptions.address,senderOptions.name,senderOptions.userId,senderOptions.prospectCustomFieldId,senderOptions.accountCustomFieldId,replyToOptions.type,replyToOptions.address,replyToOptions.userId,replyToOptions.prospectCustomFieldId,replyToOptions.accountCustomFieldId,createdById
+            orderBy: "{{ 'sentAt ASC' if not next_page_token.next_page_token }}"
+            sentAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            sentAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: sentAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/emails"
+    engagement_studio_programs:
+      type: DeclarativeStream
+      name: engagement_studio_programs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/engagement-studio-programs
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,status,isDeleted,salesforceId,description,businessHours,prospectsMultipleEntry,schedule,scheduleCreatedById,recipientListIds,suppressionListIds,createdAt,updatedAt,createdById,updatedById
+            deleted: "{{ 'all' if not next_page_token.next_page_token }}"
+            orderBy: "{{ 'updatedAt ASC' if not next_page_token.next_page_token }}"
+            updatedAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            updatedAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/engagement_studio_programs"
+    files:
+      type: DeclarativeStream
+      name: files
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/files
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,name,folderId,campaignId,salesforceId,trackerDomainId,vanityUrl,vanityUrlPath,url,size,isTracked,bitlyIsPersonalized,bitlyShortUrl,createdAt,updatedAt,createdById,updatedById
+            orderBy: "{{ 'id ASC' if not next_page_token.next_page_token }}"
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/files"
+    folder_contents:
+      type: DeclarativeStream
+      name: folder_contents
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/folder-contents
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,folderId,folderRef,objectType,objectId,objectName,objectRef,createdAt,updatedAt,createdById,updatedById
+            orderBy: "{{ 'updatedAt ASC' if not next_page_token.next_page_token }}"
+            updatedAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            updatedAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/folder_contents"
+    forms:
+      type: DeclarativeStream
+      name: forms
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/forms
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,name,campaignId,layoutTemplateId,folderId,trackerDomainId,salesforceId,isDeleted,isUseRedirectLocation,isAlwaysDisplay,isCookieless,isCaptchaEnabled,showNotProspect,embedCode,submitButtonText,beforeFormContent,afterFormContent,thankYouContent,thankYouCode,redirectLocation,fontSize,fontFamily,fontColor,labelAlignment,radioAlignment,checkboxAlignment,requiredCharacter,createdById,updatedById,createdAt,updatedAt
+            deleted: "{{ 'all' if not next_page_token.next_page_token }}"
+            orderBy: "{{ 'id ASC' if not next_page_token.next_page_token }}"
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/forms"
+    form_fields:
+      type: DeclarativeStream
+      name: form_fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/form-fields
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,formId,prospectApiFieldId,type,dataFormat,sortOrder,hasDependents,hasProgressives,hasValues,label,errorMessage,cssClasses,isRequired,isAlwaysDisplay,isMaintainInitialValue,isDoNotPrefill,createdById,updatedById,createdAt,updatedAt
+            orderBy: "{{ 'updatedAt ASC' if not next_page_token.next_page_token }}"
+            updatedAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            updatedAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/form_fields"
+    form_handlers:
+      type: DeclarativeStream
+      name: form_handlers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/form-handlers
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,name,folderId,campaignId,trackerDomainId,isDataForwarded,successLocation,errorLocation,isAlwaysEmail,isCookieless,salesforceId,embedCode,createdAt,createdById,isDeleted,updatedById
+            deleted: "{{ 'all' if not next_page_token.next_page_token }}"
+            orderBy: "{{ 'id ASC' if not next_page_token.next_page_token }}"
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/form_handlers"
+    form_handler_fields:
+      type: DeclarativeStream
+      name: form_handler_fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/form-handler-fields
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,name,formHandlerId,dataFormat,prospectApiFieldId,isMaintainInitialValue,errorMessage,isRequired,createdAt,createdById
+            orderBy: "{{ 'id ASC' if not next_page_token.next_page_token }}"
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/form_handler_fields"
+    landing_pages:
+      type: DeclarativeStream
+      name: landing_pages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/landing-pages
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,name,campaignId,salesforceId,isDeleted,layoutType,layoutTableBorder,isUseRedirectLocation,bitlyIsPersonalized,bitlyShortUrl,url,vanityUrl,folderId,formId,layoutTemplateId,title,description,isDoNotIndex,vanityUrlPath,redirectLocation,trackerDomainId,archiveDate,createdAt,updatedAt,createdById,updatedById
+            deleted: "{{ 'all' if not next_page_token.next_page_token }}"
+            orderBy: "{{ 'updatedAt ASC' if not next_page_token.next_page_token }}"
+            updatedAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            updatedAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/landing_pages"
+    layout_templates:
+      type: DeclarativeStream
+      name: layout_templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/layout-templates
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,name,layoutContent,siteSearchContent,formContent,folderId,isDeleted,isIncludeDefaultCss,createdAt,updatedAt,createdById,updatedById
+            deleted: "{{ 'all' if not next_page_token.next_page_token }}"
+            orderBy: "{{ 'id ASC' if not next_page_token.next_page_token }}"
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/layout_templates"
+    lifecycle_stages:
+      type: DeclarativeStream
+      name: lifecycle_stages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/lifecycle-stages
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: id,name,isDeleted,isLocked,position,matchType,createdAt,updatedAt
+            deleted: "{{ 'all' if not next_page_token.next_page_token }}"
+            orderBy: "{{ 'updatedAt ASC' if not next_page_token.next_page_token }}"
+            updatedAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            updatedAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lifecycle_stages"
+    lifecycle_histories:
+      type: DeclarativeStream
+      name: lifecycle_histories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/lifecycle-histories
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: id,prospectId,previousStageId,nextStageId,secondsElapsed,createdAt
+            orderBy: "{{ 'createdAt ASC' if not next_page_token.next_page_token }}"
+            createdAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            createdAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lifecycle_histories"
+    list_emails:
+      type: DeclarativeStream
+      name: list_emails
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/list-emails
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,name,subject,isPaused,isSent,isDeleted,isOperational,sentAt,campaignId,clientType,senderOptions.type,senderOptions.address,senderOptions.name,senderOptions.userId,senderOptions.prospectCustomFieldId,senderOptions.accountCustomFieldId,replyToOptions.type,replyToOptions.address,replyToOptions.userId,replyToOptions.prospectCustomFieldId,replyToOptions.accountCustomFieldId,emailTemplateId,trackerDomainId,folderId,createdAt,updatedAt,createdById,updatedById
+            deleted: "{{ 'all' if not next_page_token.next_page_token }}"
+            orderBy: "{{ 'updatedAt ASC' if not next_page_token.next_page_token }}"
+            updatedAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            updatedAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_emails"
+    opportunities:
+      type: DeclarativeStream
+      name: opportunities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/opportunities
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,closedAt,name,type,stage,status,probability,value,campaignId,salesforceId,createdAt,updatedAt,createdById,updatedById
+            orderBy: "{{ 'updatedAt ASC' if not next_page_token.next_page_token }}"
+            updatedAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            updatedAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/opportunities"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/tags
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: id,name,objectCount,createdById,updatedById,createdAt,updatedAt
+            orderBy: "{{ 'updatedAt ASC' if not next_page_token.next_page_token }}"
+            updatedAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            updatedAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    tracker_domains:
+      type: DeclarativeStream
+      name: tracker_domains
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/tracker-domains
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,domain,isPrimary,isDeleted,defaultCampaignId,httpsStatus,sslStatus,sslStatusDetails,sslRequestedById,validationStatus,validatedAt,vanityUrlStatus,trackingCode,createdAt,updatedAt,createdById,updatedById
+            deleted: "{{ 'all' if not next_page_token.next_page_token }}"
+            orderBy: "{{ 'id ASC' if not next_page_token.next_page_token }}"
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tracker_domains"
+    visitor_page_views:
+      type: DeclarativeStream
+      name: visitor_page_views
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/visitor-page-views
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,url,title,visitorId,campaignId,visitId,durationInSeconds,salesforceId,createdAt
+            orderBy: "{{ 'createdAt ASC' if not next_page_token.next_page_token }}"
+            createdAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            createdAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/visitor_page_views"
+    account:
+      type: DeclarativeStream
+      name: account
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/account
+          http_method: GET
+          request_parameters:
+            fields: >-
+              id,company,level,website,pluginCampaignId,addressOne,addressTwo,city,state,zip,territory,country,phone,fax,adminId,maximumDailyApiCalls,apiCallsUsed,createdAt,updatedAt,createdById,updatedById
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account"
+    custom_fields:
+      type: DeclarativeStream
+      name: custom_fields
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/custom-fields
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,name,fieldId,type,salesforceId,isRequired,isRecordMultipleResponses,isUseValues,isAnalyticsSynced,createdAt,updatedAt,createdById,updatedById
+            orderBy: "{{ 'updatedAt ASC' if not next_page_token.next_page_token }}"
+            updatedAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            updatedAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_fields"
+    dynamic_contents:
+      type: DeclarativeStream
+      name: dynamic_contents
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/dynamic-contents
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: >-
+              id,name,basedOnProspectApiFieldId,embedCode,embedUrl,basedOn,tagReplacementLanguage,folderId,trackerDomainId,createdAt,updatedAt,isDeleted,createdById,updatedById
+            deleted: "{{ 'all' if not next_page_token.next_page_token }}"
+            orderBy: "{{ 'updatedAt ASC' if not next_page_token.next_page_token }}"
+            updatedAtAfterOrEqualTo: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token }}
+            updatedAtBeforeOrEqualTo: >-
+              {{ stream_interval.end_time if stream_interval.end_time and not
+              next_page_token.next_page_token }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/dynamic_contents"
+    dynamic_content_variations:
+      type: DeclarativeStream
+      name: dynamic_content_variations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/dynamic-content-variations
+          http_method: GET
+          request_parameters:
+            limit: "{{ config.page_size if not next_page_token.next_page_token }}"
+            fields: id,dynamicContentId,comparison,operator,value1,value2,content
+            orderBy: "{{ 'id ASC' if not next_page_token.next_page_token }}"
+            dynamicContentId: >-
+              {{ stream_partition.parent_id.dynamic_content_id if
+              stream_interval.start_time and not next_page_token.next_page_token
+              }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message_contains: Daily API rate limit met
+                    error_message: Daily API rate limit met
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"nextPageUrl\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageUrl\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/dynamic_contents"
+              parent_key: id
+              partition_field: dynamic_content_id
+              incremental_dependency: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/dynamic_content_variations"
+  base_requester:
+    type: HttpRequester
+    url_base: https://pi.pardot.com/api/
+    authenticator:
+      type: SessionTokenAuthenticator
+      login_requester:
+        type: HttpRequester
+        url_base: >-
+          https://{{ 'test' if config['is_sandbox'] else
+          'login'}}.salesforce.com/services/oauth2
+        path: token
+        authenticator:
+          type: NoAuth
+        http_method: POST
+        request_parameters: {}
+        request_headers: {}
+        request_body_data:
+          client_id: "'{{ config.client_id }}'"
+          grant_type: refresh_token
+          client_secret: "'{{ config.client_secret }}'"
+          refresh_token: "'{{ config.refresh_token }}'"
+      session_token_path:
+        - access_token
+      expiration_duration: PT24H
+      request_authentication:
+        type: Bearer
+
+streams:
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/email_clicks"
+  - $ref: "#/definitions/streams/list_membership"
+  - $ref: "#/definitions/streams/lists"
+  - $ref: "#/definitions/streams/prospect_accounts"
+  - $ref: "#/definitions/streams/prospects"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/visitor_activities"
+  - $ref: "#/definitions/streams/visitors"
+  - $ref: "#/definitions/streams/visits"
+  - $ref: "#/definitions/streams/folders"
+  - $ref: "#/definitions/streams/custom_redirects"
+  - $ref: "#/definitions/streams/emails"
+  - $ref: "#/definitions/streams/engagement_studio_programs"
+  - $ref: "#/definitions/streams/files"
+  - $ref: "#/definitions/streams/folder_contents"
+  - $ref: "#/definitions/streams/forms"
+  - $ref: "#/definitions/streams/form_fields"
+  - $ref: "#/definitions/streams/form_handlers"
+  - $ref: "#/definitions/streams/form_handler_fields"
+  - $ref: "#/definitions/streams/landing_pages"
+  - $ref: "#/definitions/streams/layout_templates"
+  - $ref: "#/definitions/streams/lifecycle_stages"
+  - $ref: "#/definitions/streams/lifecycle_histories"
+  - $ref: "#/definitions/streams/list_emails"
+  - $ref: "#/definitions/streams/opportunities"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/tracker_domains"
+  - $ref: "#/definitions/streams/visitor_page_views"
+  - $ref: "#/definitions/streams/account"
+  - $ref: "#/definitions/streams/custom_fields"
+  - $ref: "#/definitions/streams/dynamic_contents"
+  - $ref: "#/definitions/streams/dynamic_content_variations"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - pardot_business_unit_id
+      - client_id
+      - client_secret
+      - refresh_token
+    properties:
+      pardot_business_unit_id:
+        type: string
+        description: >-
+          Pardot Business ID, can be found at Setup > Pardot > Pardot Account
+          Setup
+        order: 0
+        title: Pardot Business Unit ID
+      client_id:
+        type: string
+        description: The Consumer Key that can be found when viewing your app in Salesforce
+        order: 1
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        description: >-
+          The Consumer Secret that can be found when viewing your app in
+          Salesforce
+        order: 2
+        title: Client Secret
+        airbyte_secret: true
+      refresh_token:
+        type: string
+        description: >-
+          Salesforce Refresh Token used for Airbyte to access your Salesforce
+          account. If you don't know what this is, follow this <a
+          href="https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b">guide</a>
+          to retrieve it.
+        order: 3
+        title: Refresh Token
+        airbyte_secret: true
+      start_date:
+        type: string
+        description: >-
+          UTC date and time in the format 2000-01-01T00:00:00Z. Any data before
+          this date will not be replicated. Defaults to the year Pardot was
+          released.
+        order: 4
+        title: Start Date
+        format: date-time
+        default: "2007-01-01T00:00:00Z"
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2021-07-25T00:00:00Z"
+      page_size:
+        type: string
+        description: The maximum number of records to return per request
+        order: 5
+        title: Page Size Limit
+        default: "1000"
+      is_sandbox:
+        type: boolean
+        description: >-
+          Whether or not the the app is in a Salesforce sandbox. If you do not
+          know what this, assume it is false.
+        order: 6
+        title: Is Sandbox App?
+        default: false
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    campaigns: false
+    email_clicks: false
+    list_membership: false
+    lists: false
+    prospect_accounts: false
+    prospects: false
+    users: false
+    visitor_activities: false
+    visitors: false
+    visits: false
+    folders: false
+    custom_redirects: false
+    emails: false
+    engagement_studio_programs: false
+    files: false
+    folder_contents: false
+    forms: false
+    form_fields: false
+    form_handlers: false
+    form_handler_fields: false
+    landing_pages: false
+    layout_templates: false
+    lifecycle_stages: false
+    lifecycle_histories: false
+    list_emails: false
+    opportunities: false
+    tags: false
+    tracker_domains: false
+    visitor_page_views: false
+    account: false
+    custom_fields: false
+    dynamic_contents: false
+    dynamic_content_variations: false
+  testedStreams:
+    campaigns:
+      hasRecords: true
+      streamHash: 7536ac4cfbf470a6b43e48d7733c7001cc8103f9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    email_clicks:
+      hasRecords: true
+      streamHash: bfc7e24950291e29382e51bb4ed61fdf9601642c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_membership:
+      hasRecords: true
+      streamHash: e3d9c46036a8c5281ad1cec8c9a1b1246ae6df97
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    lists:
+      hasRecords: true
+      streamHash: d6ee1f6521a0fc63d809c213ea53613d50d4c178
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    prospect_accounts:
+      hasRecords: true
+      streamHash: 37a2ac73f3e6564eba2aad749645c81ee4b7e8ba
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    prospects:
+      hasRecords: true
+      streamHash: eaf5ca07271f45b4128dcb4e6da41df2dd853f5d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      hasRecords: true
+      streamHash: bfaff23353daea243780a306ede24a6abc60ded3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    visitor_activities:
+      hasRecords: true
+      streamHash: 8544f58fbc35ed2e59f62caf60e6fdf7224d7cf8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    visitors:
+      hasRecords: true
+      streamHash: 2fdf03a97b7ae2186d2a32a3dcae26abd2b6d06c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    visits:
+      hasRecords: true
+      streamHash: 788619013dc2ed5e75320de887b02d3f0ffc0495
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    folders:
+      hasRecords: true
+      streamHash: 8f5e6b1eac5be51cd312ffd7a513fc7a813a1e51
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    custom_redirects:
+      hasRecords: true
+      streamHash: d4d6e3e082fcb92f42fb66274c141813450ca896
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    emails:
+      hasRecords: true
+      streamHash: 25e6dc61f25fb81825b764af684379d04e748854
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    engagement_studio_programs:
+      hasRecords: true
+      streamHash: 2108ab2546a6df889a2420e2d8cb3aac4b790b70
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    files:
+      hasRecords: true
+      streamHash: b14555b12fb2a68b662c00a974ddef56b3163012
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    folder_contents:
+      hasRecords: true
+      streamHash: 80dc85cda30756bb57fb750432ad8e580d32a245
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    forms:
+      hasRecords: true
+      streamHash: a8143b403bf769d4d24dc771da7888a45cc8cf0c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    form_fields:
+      hasRecords: true
+      streamHash: 6f148b11889ab260145dd5e865a142a85ee35d9f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    form_handlers:
+      hasRecords: true
+      streamHash: 8621f40695e6f14df6b5ac1c5c90f6334fc5866a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    form_handler_fields:
+      hasRecords: true
+      streamHash: 1827a46a501b04b0c21e6411d464c77a08dfb848
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    landing_pages:
+      hasRecords: true
+      streamHash: fc06118614b8de9f2c2c53e6c5bbe88745e28c55
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    layout_templates:
+      hasRecords: true
+      streamHash: 9088e72d125495ef1d72d881a8c6b72e4950e06d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    lifecycle_stages:
+      hasRecords: true
+      streamHash: c0eab225bad7533145cfeac38e57bb70745f9a79
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    lifecycle_histories:
+      hasRecords: true
+      streamHash: 21a5786703917ee27352156ea80fa93cce846954
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    list_emails:
+      streamHash: 1823761c89debf594562433f63c8661b3be55524
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    opportunities:
+      streamHash: 0def746ae5fd7dde2e85858a1be8b72501dca4d5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tags:
+      streamHash: 4ce0030af2ff46782dfdb5a1bea97e8b92e2a493
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tracker_domains:
+      streamHash: e441705cc25b37d24b9163afac9e22a734f2185f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    visitor_page_views:
+      streamHash: 561cc8d52b41daa6f4697d2e2a3efdee3cc3a14d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    account:
+      streamHash: 6142a595bef18df928175d18130b05c40876ea33
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    custom_fields:
+      streamHash: 020b57ff80114642d70f122a63b22f05d63d8386
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    dynamic_contents:
+      streamHash: 795500f19349e89d320fb4814aedf19f5bff9dff
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    dynamic_content_variations:
+      streamHash: 8979c7bbf2f7ec9b1e18f015cbce13eb64d88e94
+      hasRecords: true
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist: {}
+
+schemas:
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      cost:
+        type:
+          - "null"
+          - number
+      id:
+        type:
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      folderId:
+        type:
+          - "null"
+          - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      isDeleted:
+        type:
+          - "null"
+          - boolean
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdById:
+        type:
+          - "null"
+          - integer
+      updatedById:
+        type:
+          - "null"
+          - integer
+      salesforceId:
+        type:
+          - "null"
+          - string
+      parentCampaignId:
+        type:
+          - "null"
+          - integer
+    required:
+      - id
+      - updatedAt
+  email_clicks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
+      drip_program_action_id:
+        type:
+          - "null"
+          - integer
+      email_template_id:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - integer
+      list_email_id:
+        type:
+          - "null"
+          - integer
+      prospect_id:
+        type:
+          - "null"
+          - integer
+      tracker_redirect_id:
+        type:
+          - "null"
+          - integer
+      url:
+        type:
+          - "null"
+          - string
+  list_membership:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdById:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - integer
+      listId:
+        type:
+          - integer
+      optedOut:
+        type:
+          - "null"
+          - boolean
+      prospectId:
+        type:
+          - integer
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedById:
+        type:
+          - "null"
+          - integer
+    required:
+      - id
+      - updatedAt
+  lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdById:
+        type:
+          - "null"
+          - integer
+      folderId:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - integer
+      isDeleted:
+        type:
+          - "null"
+          - boolean
+      isDynamic:
+        type:
+          - "null"
+          - boolean
+      isPublic:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedById:
+        type:
+          - "null"
+          - integer
+  prospect_accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      annualRevenue:
+        type:
+          - "null"
+          - string
+      assignedToId:
+        type:
+          - "null"
+          - integer
+      billingAddressOne:
+        type:
+          - "null"
+          - string
+      billingAddressTwo:
+        type:
+          - "null"
+          - string
+      billingCity:
+        type:
+          - "null"
+          - string
+      billingCountry:
+        type:
+          - "null"
+          - string
+      billingState:
+        type:
+          - "null"
+          - string
+      billingZip:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdById:
+        type:
+          - "null"
+          - integer
+      employees:
+        type:
+          - "null"
+          - string
+      fax:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - integer
+      industry:
+        type:
+          - "null"
+          - string
+      isDeleted:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      number:
+        type:
+          - "null"
+          - string
+      ownership:
+        type:
+          - "null"
+          - string
+      phone:
+        type:
+          - "null"
+          - string
+      rating:
+        type:
+          - "null"
+          - string
+      salesforceId:
+        type:
+          - "null"
+          - string
+      shippingAddressOne:
+        type:
+          - "null"
+          - string
+      shippingAddressTwo:
+        type:
+          - "null"
+          - string
+      shippingCity:
+        type:
+          - "null"
+          - string
+      shippingCountry:
+        type:
+          - "null"
+          - string
+      shippingState:
+        type:
+          - "null"
+          - string
+      shippingZip:
+        type:
+          - "null"
+          - string
+      sic:
+        type:
+          - "null"
+          - string
+      site:
+        type:
+          - "null"
+          - string
+      tickerSymbol:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedById:
+        type:
+          - "null"
+          - integer
+      website:
+        type:
+          - "null"
+          - string
+  prospects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      addressOne:
+        type:
+          - "null"
+          - string
+      addressTwo:
+        type:
+          - "null"
+          - string
+      annualRevenue:
+        type:
+          - "null"
+          - string
+      assignedToId:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      campaignParameter:
+        type:
+          - "null"
+          - string
+      city:
+        type:
+          - "null"
+          - string
+      comments:
+        type:
+          - "null"
+          - string
+      company:
+        type:
+          - "null"
+          - string
+      contentParameter:
+        type:
+          - "null"
+          - string
+      convertedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      convertedFromObjectName:
+        type:
+          - "null"
+          - string
+      convertedFromObjectType:
+        type:
+          - "null"
+          - string
+      country:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdById:
+        type:
+          - "null"
+          - integer
+      department:
+        type:
+          - "null"
+          - string
+      doNotSell:
+        type:
+          - "null"
+          - boolean
+      email:
+        type:
+          - "null"
+          - string
+      emailBouncedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      emailBouncedReason:
+        type:
+          - "null"
+          - string
+      employees:
+        type:
+          - "null"
+          - string
+      fax:
+        type:
+          - "null"
+          - string
+      firstActivityAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      firstAssignedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      firstName:
+        type:
+          - "null"
+          - string
+      firstReferrerQuery:
+        type:
+          - "null"
+          - string
+      firstReferrerType:
+        type:
+          - "null"
+          - string
+      firstReferrerUrl:
+        type:
+          - "null"
+          - string
+      grade:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - integer
+      industry:
+        type:
+          - "null"
+          - string
+      isDeleted:
+        type:
+          - "null"
+          - boolean
+      isDoNotCall:
+        type:
+          - "null"
+          - boolean
+      isDoNotEmail:
+        type:
+          - "null"
+          - boolean
+      isEmailHardBounced:
+        type:
+          - "null"
+          - boolean
+      isReviewed:
+        type:
+          - "null"
+          - boolean
+      isStarred:
+        type:
+          - "null"
+          - boolean
+      jobTitle:
+        type:
+          - "null"
+          - string
+      lastActivityAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastName:
+        type:
+          - "null"
+          - string
+      lifecycleStageId:
+        type:
+          - "null"
+          - integer
+      mediumParameter:
+        type:
+          - "null"
+          - string
+      notes:
+        type:
+          - "null"
+          - string
+      optedOut:
+        type:
+          - "null"
+          - boolean
+      phone:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      prospectAccountId:
+        type:
+          - "null"
+          - integer
+      recentInteraction:
+        type:
+          - "null"
+          - string
+      salesforceAccountId:
+        type:
+          - "null"
+          - string
+      salesforceCampaignId:
+        type:
+          - "null"
+          - string
+      salesforceContactId:
+        type:
+          - "null"
+          - string
+      salesforceId:
+        type:
+          - "null"
+          - string
+      salesforceLastSync:
+        type:
+          - "null"
+          - string
+        format: date-time
+      salesforceLeadId:
+        type:
+          - "null"
+          - string
+      salesforceOwnerId:
+        type:
+          - "null"
+          - string
+      salesforceUrl:
+        type:
+          - "null"
+          - string
+      salutation:
+        type:
+          - "null"
+          - string
+      score:
+        type:
+          - "null"
+          - string
+      source:
+        type:
+          - "null"
+          - string
+      sourceParameter:
+        type:
+          - "null"
+          - string
+      state:
+        type:
+          - "null"
+          - string
+      termParameter:
+        type:
+          - "null"
+          - string
+      territory:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedById:
+        type:
+          - "null"
+          - integer
+      userId:
+        type:
+          - "null"
+          - integer
+      website:
+        type:
+          - "null"
+          - string
+      yearsInBusiness:
+        type:
+          - "null"
+          - string
+      zip:
+        type:
+          - "null"
+          - string
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdById:
+        type:
+          - "null"
+          - integer
+      email:
+        type:
+          - "null"
+          - string
+      firstName:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - integer
+      isDeleted:
+        type:
+          - "null"
+          - boolean
+      jobTitle:
+        type:
+          - "null"
+          - string
+      role:
+        type:
+          - "null"
+          - string
+      roleName:
+        type:
+          - "null"
+          - string
+      salesforceId:
+        type:
+          - "null"
+          - string
+      tagReplacementLanguage:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedById:
+        type:
+          - "null"
+          - integer
+      username:
+        type:
+          - "null"
+          - string
+  visitor_activities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - integer
+      campaignId:
+        type:
+          - "null"
+          - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      customRedirectId:
+        type:
+          - "null"
+          - integer
+      details:
+        type:
+          - "null"
+          - string
+      emailId:
+        type:
+          - "null"
+          - integer
+      emailTemplateId:
+        type:
+          - "null"
+          - integer
+      fileId:
+        type:
+          - "null"
+          - integer
+      formHandlerId:
+        type:
+          - "null"
+          - integer
+      formId:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - integer
+      landingPageId:
+        type:
+          - "null"
+          - integer
+      listEmailId:
+        type:
+          - "null"
+          - integer
+      multivariateTestVariationId:
+        type:
+          - "null"
+          - integer
+      opportunityId:
+        type:
+          - "null"
+          - integer
+      paidSearchAdId:
+        type:
+          - "null"
+          - integer
+      prospectId:
+        type:
+          - "null"
+          - integer
+      siteSearchQueryId:
+        type:
+          - "null"
+          - integer
+      typeName:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      visitId:
+        type:
+          - "null"
+          - integer
+      visitorId:
+        type:
+          - "null"
+          - integer
+      visitorPageViewId:
+        type:
+          - "null"
+          - integer
+  visitors:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      campaignId:
+        type:
+          - "null"
+          - integer
+      campaignParameter:
+        type:
+          - "null"
+          - string
+      contentParameter:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      doNotSell:
+        type:
+          - "null"
+          - boolean
+      hostname:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - integer
+      ipAddress:
+        type:
+          - "null"
+          - string
+      isIdentified:
+        type:
+          - "null"
+          - boolean
+      mediumParameter:
+        type:
+          - "null"
+          - string
+      pageViewCount:
+        type:
+          - "null"
+          - integer
+      prospectId:
+        type:
+          - "null"
+          - integer
+      sourceParameter:
+        type:
+          - "null"
+          - string
+      termParameter:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+  visits:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      campaignParameter:
+        type:
+          - "null"
+          - string
+      contentParameter:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      durationInSeconds:
+        type:
+          - "null"
+          - integer
+      firstVisitorPageViewAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type:
+          - integer
+      lastVisitorPageViewAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      mediumParameter:
+        type:
+          - "null"
+          - string
+      prospectId:
+        type:
+          - "null"
+          - integer
+      sourceParameter:
+        type:
+          - "null"
+          - string
+      termParameter:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      visitorId:
+        type:
+          - "null"
+          - integer
+      visitorPageViewCount:
+        type:
+          - "null"
+          - integer
+  folders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdById:
+        type:
+          - "null"
+          - integer
+      id:
+        type: integer
+      name:
+        type:
+          - "null"
+          - string
+      parentFolderId:
+        type:
+          - "null"
+          - integer
+      path:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedById:
+        type:
+          - "null"
+          - integer
+      usePermissions:
+        type:
+          - "null"
+          - boolean
+    required:
+      - id
+  custom_redirects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bitlyIsPersonalized:
+        type:
+          - "null"
+          - boolean
+      bitlyShortUrl:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdById:
+        type:
+          - "null"
+          - integer
+      destinationUrl:
+        type:
+          - "null"
+          - string
+      folderId:
+        type:
+          - "null"
+          - integer
+      gaCampaign:
+        type:
+          - "null"
+          - string
+      gaContent:
+        type:
+          - "null"
+          - string
+      gaMedium:
+        type:
+          - "null"
+          - string
+      gaSource:
+        type:
+          - "null"
+          - string
+      gaTerm:
+        type:
+          - "null"
+          - string
+      id:
+        type: integer
+      isDeleted:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      salesforceId:
+        type:
+          - "null"
+          - string
+      trackedUrl:
+        type:
+          - "null"
+          - string
+      trackerDomain.domain:
+        type:
+          - "null"
+          - string
+      trackerDomainId:
+        type:
+          - "null"
+          - integer
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedById:
+        type:
+          - "null"
+          - integer
+      url:
+        type:
+          - "null"
+          - string
+      vanityUrl:
+        type:
+          - "null"
+          - string
+      vanityUrlPath:
+        type:
+          - "null"
+          - string
+    required:
+      - id
+  emails:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      campaignId:
+        type:
+          - integer
+          - "null"
+      clientType:
+        type:
+          - string
+          - "null"
+      createdById:
+        type:
+          - integer
+          - "null"
+      emailTemplateId:
+        type:
+          - integer
+          - "null"
+      id:
+        type: integer
+      isOperational:
+        type:
+          - boolean
+          - "null"
+      listEmailId:
+        type:
+          - integer
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      prospectId:
+        type:
+          - integer
+          - "null"
+      replyToOptions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            accountCustomFieldId:
+              type:
+                - integer
+                - "null"
+            address:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            prospectCustomFieldId:
+              type:
+                - integer
+                - "null"
+            userId:
+              type:
+                - integer
+                - "null"
+      senderOptions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            accountCustomFieldId:
+              type:
+                - integer
+                - "null"
+            address:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            prospectCustomFieldId:
+              type:
+                - integer
+                - "null"
+            userId:
+              type:
+                - integer
+                - "null"
+      sentAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      subject:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - sentAt
+  engagement_studio_programs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      businessHours:
+        type:
+          - object
+          - "null"
+        properties:
+          days:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          endTime:
+            type:
+              - string
+              - "null"
+            airbyte_type: time_without_timezone
+            format: time
+          startTime:
+            type:
+              - string
+              - "null"
+            airbyte_type: time_without_timezone
+            format: time
+          timezone:
+            type:
+              - string
+              - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      createdById:
+        type:
+          - integer
+          - "null"
+      id:
+        type: integer
+      isDeleted:
+        type:
+          - boolean
+          - "null"
+      prospectsMultipleEntry:
+        type:
+          - object
+          - "null"
+        properties:
+          maximumEntries:
+            type:
+              - integer
+              - "null"
+          minimumDurationInDays:
+            type:
+              - integer
+              - "null"
+      recipientListIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - integer
+            - "null"
+      salesforceId:
+        type:
+          - string
+          - "null"
+      schedule:
+        type:
+          - object
+          - "null"
+        properties:
+          createdAt:
+            type:
+              - string
+              - "null"
+            format: date-time
+          startOn:
+            type:
+              - string
+              - "null"
+            format: date-time
+          stopOn:
+            type:
+              - string
+              - "null"
+            format: date-time
+      scheduleCreatedById:
+        type:
+          - integer
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      suppressionListIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - integer
+            - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      updatedById:
+        type:
+          - integer
+          - "null"
+    required:
+      - id
+      - updatedAt
+  files:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      bitlyIsPersonalized:
+        type:
+          - boolean
+          - "null"
+      bitlyShortUrl:
+        type:
+          - string
+          - "null"
+      campaignId:
+        type:
+          - integer
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      createdById:
+        type:
+          - integer
+          - "null"
+      folderId:
+        type:
+          - integer
+          - "null"
+      id:
+        type: integer
+      isTracked:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      salesforceId:
+        type:
+          - string
+          - "null"
+      size:
+        type:
+          - integer
+          - "null"
+      trackerDomainId:
+        type:
+          - integer
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      updatedById:
+        type:
+          - integer
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      vanityUrl:
+        type:
+          - string
+          - "null"
+      vanityUrlPath:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  folder_contents:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      createdById:
+        type:
+          - integer
+          - "null"
+      folderId:
+        type:
+          - integer
+          - "null"
+      folderRef:
+        type:
+          - string
+          - "null"
+      id:
+        type: integer
+      objectId:
+        type:
+          - integer
+          - "null"
+      objectName:
+        type:
+          - string
+          - "null"
+      objectRef:
+        type:
+          - string
+          - "null"
+      objectType:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      updatedById:
+        type:
+          - integer
+          - "null"
+    required:
+      - id
+      - updatedAt
+  forms:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      afterFormContent:
+        type:
+          - string
+          - "null"
+      beforeFormContent:
+        type:
+          - string
+          - "null"
+      campaignId:
+        type:
+          - integer
+          - "null"
+      checkboxAlignment:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      createdById:
+        type:
+          - integer
+          - "null"
+      embedCode:
+        type:
+          - string
+          - "null"
+      folderId:
+        type:
+          - integer
+          - "null"
+      fontColor:
+        type:
+          - string
+          - "null"
+      fontFamily:
+        type:
+          - string
+          - "null"
+      fontSize:
+        type:
+          - string
+          - "null"
+      id:
+        type: integer
+      isAlwaysDisplay:
+        type:
+          - boolean
+          - "null"
+      isCaptchaEnabled:
+        type:
+          - boolean
+          - "null"
+      isCookieless:
+        type:
+          - boolean
+          - "null"
+      isDeleted:
+        type:
+          - boolean
+          - "null"
+      isUseRedirectLocation:
+        type:
+          - boolean
+          - "null"
+      labelAlignment:
+        type:
+          - string
+          - "null"
+      layoutTemplateId:
+        type:
+          - integer
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      radioAlignment:
+        type:
+          - string
+          - "null"
+      redirectLocation:
+        type:
+          - string
+          - "null"
+      requiredCharacter:
+        type:
+          - string
+          - "null"
+      salesforceId:
+        type:
+          - string
+          - "null"
+      showNotProspect:
+        type:
+          - boolean
+          - "null"
+      submitButtonText:
+        type:
+          - string
+          - "null"
+      thankYouCode:
+        type:
+          - string
+          - "null"
+      thankYouContent:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      updatedById:
+        type:
+          - integer
+          - "null"
+    required:
+      - id
+  form_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      createdById:
+        type:
+          - integer
+          - "null"
+      cssClasses:
+        type:
+          - string
+          - "null"
+      dataFormat:
+        type:
+          - string
+          - "null"
+      errorMessage:
+        type:
+          - string
+          - "null"
+      formId:
+        type:
+          - integer
+          - "null"
+      hasDependents:
+        type:
+          - boolean
+          - "null"
+      hasProgressives:
+        type:
+          - boolean
+          - "null"
+      hasValues:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: integer
+      isAlwaysDisplay:
+        type:
+          - boolean
+          - "null"
+      isDoNotPrefill:
+        type:
+          - boolean
+          - "null"
+      isMaintainInitialValue:
+        type:
+          - boolean
+          - "null"
+      isRequired:
+        type:
+          - boolean
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      prospectApiFieldId:
+        type:
+          - string
+          - "null"
+      sortOrder:
+        type:
+          - integer
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      updatedById:
+        type:
+          - integer
+          - "null"
+    required:
+      - id
+      - updatedAt
+  form_handlers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      campaignId:
+        type:
+          - integer
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      createdById:
+        type:
+          - integer
+          - "null"
+      embedCode:
+        type:
+          - string
+          - "null"
+      errorLocation:
+        type:
+          - string
+          - "null"
+      folderId:
+        type:
+          - integer
+          - "null"
+      id:
+        type: integer
+      isAlwaysEmail:
+        type:
+          - boolean
+          - "null"
+      isCookieless:
+        type:
+          - boolean
+          - "null"
+      isDataForwarded:
+        type:
+          - boolean
+          - "null"
+      isDeleted:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      salesforceId:
+        type:
+          - string
+          - "null"
+      successLocation:
+        type:
+          - string
+          - "null"
+      trackerDomainId:
+        type:
+          - integer
+          - "null"
+      updatedById:
+        type:
+          - integer
+          - "null"
+    required:
+      - id
+  form_handler_fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      createdById:
+        type:
+          - integer
+          - "null"
+      dataFormat:
+        type:
+          - string
+          - "null"
+      errorMessage:
+        type:
+          - string
+          - "null"
+      formHandlerId:
+        type:
+          - integer
+          - "null"
+      id:
+        type: integer
+      isMaintainInitialValue:
+        type:
+          - boolean
+          - "null"
+      isRequired:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      prospectApiFieldId:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  landing_pages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      archiveDate:
+        type:
+          - string
+          - "null"
+        format: date
+      bitlyIsPersonalized:
+        type:
+          - boolean
+          - "null"
+      bitlyShortUrl:
+        type:
+          - string
+          - "null"
+      campaignId:
+        type:
+          - integer
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      createdById:
+        type:
+          - integer
+          - "null"
+      folderId:
+        type:
+          - integer
+          - "null"
+      formId:
+        type:
+          - integer
+          - "null"
+      id:
+        type: integer
+      isDeleted:
+        type:
+          - boolean
+          - "null"
+      isDoNotIndex:
+        type:
+          - boolean
+          - "null"
+      isUseRedirectLocation:
+        type:
+          - boolean
+          - "null"
+      layoutTableBorder:
+        type:
+          - integer
+          - "null"
+      layoutTemplateId:
+        type:
+          - integer
+          - "null"
+      layoutType:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      redirectLocation:
+        type:
+          - string
+          - "null"
+      salesforceId:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      trackerDomainId:
+        type:
+          - integer
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      updatedById:
+        type:
+          - integer
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      vanityUrl:
+        type:
+          - string
+          - "null"
+      vanityUrlPath:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - updatedAt
+  layout_templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      createdById:
+        type:
+          - integer
+          - "null"
+      folderId:
+        type:
+          - integer
+          - "null"
+      formContent:
+        type:
+          - string
+          - "null"
+      id:
+        type: integer
+      isDeleted:
+        type:
+          - boolean
+          - "null"
+      isIncludeDefaultCss:
+        type:
+          - boolean
+          - "null"
+      layoutContent:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      siteSearchContent:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      updatedById:
+        type:
+          - integer
+          - "null"
+    required:
+      - id
+  lifecycle_stages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+      format: date-time
+      id:
+        type: integer
+      isDeleted:
+        type:
+          - boolean
+          - "null"
+      isLocked:
+        type:
+          - boolean
+          - "null"
+      matchType:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - integer
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+    required:
+      - id
+      - updatedAt
+  lifecycle_histories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      id:
+        type: integer
+      nextStageId:
+        type:
+          - integer
+          - "null"
+      previousStageId:
+        type:
+          - integer
+          - "null"
+      prospectId:
+        type:
+          - integer
+          - "null"
+      secondsElapsed:
+        type:
+          - integer
+          - "null"
+    required:
+      - id
+      - createdAt
+  list_emails:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      campaignId:
+        type:
+          - integer
+          - "null"
+      clientType:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      createdById:
+        type:
+          - integer
+          - "null"
+      emailTemplateId:
+        type:
+          - integer
+          - "null"
+      folderId:
+        type:
+          - integer
+          - "null"
+      id:
+        type: integer
+      isDeleted:
+        type:
+          - boolean
+          - "null"
+      isOperational:
+        type:
+          - boolean
+          - "null"
+      isPaused:
+        type:
+          - boolean
+          - "null"
+      isSent:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      replyToOptions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            accountCustomFieldId:
+              type:
+                - integer
+                - "null"
+            address:
+              type:
+                - string
+                - "null"
+            prospectCustomFieldId:
+              type:
+                - integer
+                - "null"
+            userId:
+              type:
+                - integer
+                - "null"
+      senderOptions:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            accountCustomFieldId:
+              type:
+                - integer
+                - "null"
+            address:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            prospectCustomFieldId:
+              type:
+                - integer
+                - "null"
+            userId:
+              type:
+                - integer
+                - "null"
+      sentAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      subject:
+        type:
+          - string
+          - "null"
+      trackerDomainId:
+        type:
+          - integer
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      updatedById:
+        type:
+          - integer
+          - "null"
+    required:
+      - id
+      - updatedAt
+  opportunities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      campaignId:
+        type:
+          - integer
+          - "null"
+      closedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      createdById:
+        type:
+          - integer
+          - "null"
+      id:
+        type: integer
+      name:
+        type:
+          - string
+          - "null"
+      probability:
+        type:
+          - integer
+          - "null"
+      salesforceId:
+        type:
+          - string
+          - "null"
+      stage:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      updatedById:
+        type:
+          - integer
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - updatedAt
+  tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      createdById:
+        type:
+          - integer
+          - "null"
+      id:
+        type: integer
+      name:
+        type:
+          - string
+          - "null"
+      objectCount:
+        type:
+          - integer
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      updatedById:
+        type:
+          - integer
+          - "null"
+    required:
+      - id
+      - updatedAt
+  tracker_domains:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      createdById:
+        type:
+          - integer
+          - "null"
+      defaultCampaignId:
+        type:
+          - integer
+          - "null"
+      domain:
+        type:
+          - string
+          - "null"
+      httpsStatus:
+        type:
+          - string
+          - "null"
+      id:
+        type: integer
+      isDeleted:
+        type:
+          - boolean
+          - "null"
+      isPrimary:
+        type:
+          - boolean
+          - "null"
+      sslRequestedById:
+        type:
+          - integer
+          - "null"
+      sslStatus:
+        type:
+          - string
+          - "null"
+      sslStatusDetails:
+        type:
+          - string
+          - "null"
+      trackingCode:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      updatedById:
+        type:
+          - integer
+          - "null"
+      validatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      validationStatus:
+        type:
+          - string
+          - "null"
+      vanityUrlStatus:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  visitor_page_views:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      campaignId:
+        type:
+          - integer
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      durationInSeconds:
+        type:
+          - integer
+          - "null"
+      id:
+        type: integer
+      salesforceId:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      visitId:
+        type:
+          - integer
+          - "null"
+      visitorId:
+        type:
+          - integer
+          - "null"
+    required:
+      - id
+      - createdAt
+  account:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      addressOne:
+        type:
+          - string
+          - "null"
+      addressTwo:
+        type:
+          - string
+          - "null"
+      adminId:
+        type:
+          - integer
+          - "null"
+      apiCallsUsed:
+        type:
+          - integer
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      createdById:
+        type:
+          - integer
+          - "null"
+      fax:
+        type:
+          - string
+          - "null"
+      id:
+        type: integer
+      level:
+        type:
+          - string
+          - "null"
+      maximumDailyApiCalls:
+        type:
+          - integer
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      pluginCampaignId:
+        type:
+          - integer
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      territory:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      updatedById:
+        type:
+          - integer
+          - "null"
+      website:
+        type:
+          - string
+          - "null"
+      zip:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - updatedAt
+  custom_fields:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      createdById:
+        type:
+          - integer
+          - "null"
+      fieldId:
+        type:
+          - string
+          - "null"
+      id:
+        type: integer
+      isAnalyticsSynced:
+        type:
+          - boolean
+          - "null"
+      isRecordMultipleResponses:
+        type:
+          - boolean
+          - "null"
+      isRequired:
+        type:
+          - boolean
+          - "null"
+      isUseValues:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      salesforceId:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      updatedById:
+        type:
+          - integer
+          - "null"
+    required:
+      - id
+      - updatedAt
+  dynamic_contents:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      basedOn:
+        type:
+          - string
+          - "null"
+      basedOnProspectApiFieldId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      createdById:
+        type:
+          - integer
+          - "null"
+      embedCode:
+        type:
+          - string
+          - "null"
+      embedUrl:
+        type:
+          - string
+          - "null"
+      folderId:
+        type:
+          - integer
+          - "null"
+      id:
+        type: integer
+      isDeleted:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      tagReplacementLanguage:
+        type:
+          - string
+          - "null"
+      trackerDomainId:
+        type:
+          - integer
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      updatedById:
+        type:
+          - integer
+          - "null"
+    required:
+      - id
+      - updatedAt
+  dynamic_content_variations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      dynamicContentId:
+        type:
+          - integer
+          - "null"
+      comparison:
+        type:
+          - string
+          - "null"
+      operator:
+        type:
+          - string
+          - "null"
+      value1:
+        type:
+          - string
+          - "null"
+      value2:
+        type:
+          - string
+          - "null"
+      content:
+        type:
+          - string
+          - "null"
+    required:
+      - id

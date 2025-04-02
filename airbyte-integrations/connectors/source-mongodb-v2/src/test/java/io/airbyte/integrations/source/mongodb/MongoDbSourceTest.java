@@ -78,26 +78,6 @@ class MongoDbSourceTest {
   }
 
   @Test
-  void testCheckOperationMissingDatabase() throws IOException {
-    final ClusterDescription clusterDescription = mock(ClusterDescription.class);
-    final Document response = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
-    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
-    final MongoIterable<String> iterable = mock(MongoIterable.class);
-
-    when(iterable.spliterator()).thenReturn(List.of("other").spliterator());
-    when(mongoClient.listDatabaseNames()).thenReturn(iterable);
-
-    when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
-    when(mongoDatabase.runCommand(any())).thenReturn(response);
-    when(mongoClient.getDatabase(any())).thenReturn(mongoDatabase);
-    when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
-
-    final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
-    assertNotNull(airbyteConnectionStatus);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-  }
-
-  @Test
   void testCheckOperationWithMissingConfiguration() throws IOException {
     final ClusterDescription clusterDescription = mock(ClusterDescription.class);
     final Document response = Document.parse(MoreResources.readResource("authorized_collections_response.json"));

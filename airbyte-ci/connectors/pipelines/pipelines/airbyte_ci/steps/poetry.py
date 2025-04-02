@@ -33,5 +33,5 @@ class PoetryRunStep(Step):
         return self._title
 
     async def _run(self) -> StepResult:
-        poetry_run_exec = self.poetry_run_container.with_exec(self.poetry_run_args)
+        poetry_run_exec = self.poetry_run_container.with_exec(self.poetry_run_args, use_entrypoint=True)
         return await self.get_step_result(poetry_run_exec)

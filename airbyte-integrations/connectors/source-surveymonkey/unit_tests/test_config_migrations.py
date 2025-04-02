@@ -8,6 +8,7 @@ import json
 from source_surveymonkey.config_migrations import MigrateAccessTokenToCredentials
 from source_surveymonkey.source import SourceSurveymonkey
 
+
 TEST_CONFIG = "test_old_config.json"
 NEW_TEST_CONFIG = "test_new_config.json"
 UPGRADED_TEST_CONFIG = "test_upgraded_config.json"

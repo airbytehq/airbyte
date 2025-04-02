@@ -14,6 +14,7 @@ from airbyte_cdk.utils import AirbyteTracedException
 
 from .utils import GAQL
 
+
 FULL_REFRESH_CUSTOM_TABLE = [
     "asset",
     "asset_group_listing_group_filter",

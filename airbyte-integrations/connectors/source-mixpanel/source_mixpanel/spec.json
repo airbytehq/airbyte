@@ -127,6 +127,14 @@
         "type": "integer",
         "minimum": 1,
         "default": 1000
+      },
+      "export_lookback_window": {
+        "order": 10,
+        "title": "Export Lookback Window",
+        "description": "The number of seconds to look back from the last synced timestamp during incremental syncs of the Export stream. This ensures no data is missed due to delays in event recording. Default is 0 seconds. Must be a non-negative integer.",
+        "type": "integer",
+        "minimum": 0,
+        "default": 0
       }
     }
   }

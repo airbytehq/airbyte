@@ -4,13 +4,14 @@ import json
 from unittest import TestCase
 
 from advetiser_slices import mock_advertisers_slices
+from config_builder import ConfigBuilder
+from source_tiktok_marketing import SourceTiktokMarketing
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
-from config_builder import ConfigBuilder
-from source_tiktok_marketing import SourceTiktokMarketing
 
 
 class TestCreativeAssetsPortfolios(TestCase):
@@ -34,5 +35,5 @@ class TestCreativeAssetsPortfolios(TestCase):
             HttpResponse(body=json.dumps(find_template(self.stream_name, __file__)), status_code=200),
         )
 
-        output = read(SourceTiktokMarketing(), self.config(), self.catalog())
+        output = read(SourceTiktokMarketing(config=self.config(), catalog=None, state=None), self.config(), self.catalog())
         assert len(output.records) == 2

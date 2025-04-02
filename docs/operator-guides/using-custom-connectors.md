@@ -3,6 +3,8 @@ products: oss-*
 sidebar_label: Uploading custom connectors
 ---
 
+import ContainerProviders from '@site/static/_docker_image_registries.md';
+
 # Uploading Docker-based custom connectors
 
 :::info
@@ -25,13 +27,7 @@ Airbyte needs to pull its Docker images from a remote Docker registry to consume
 You should host your custom connectors image on a private Docker registry.
 Here are some resources to create a private Docker registry, in case your organization does not already have one:
 
-| Cloud provider | Service name                | Documentation                                                                                                                                                                                                                                                                                 |
-| -------------- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Google Cloud   | Artifact Registry           | [Quickstart](https://cloud.google.com/artifact-registry/docs/docker/quickstart)                                                                                                                                                                                                               |
-| AWS            | Amazon ECR                  | [Getting started with Amazon ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/getting-started-console.html)                                                                                                                                                                        |
-| Azure          | Container Registry          | [Quickstart](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-get-started-portal#:~:text=Azure%20Container%20Registry%20is%20a,container%20images%20and%20related%20artifacts.&text=Then%2C%20use%20Docker%20commands%20to,the%20image%20from%20your%20registry.) |
-| DockerHub      | Repositories                | [DockerHub Quickstart](https://docs.docker.com/docker-hub/)                                                                                                                                                                                                                                   |
-| Self hosted    | Open-source Docker Registry | [Deploy a registry server](https://docs.docker.com/registry/deploying/)                                                                                                                                                                                                                       |
+<ContainerProviders/>
 
 ## 2. Authenticate to your private Docker registry
 

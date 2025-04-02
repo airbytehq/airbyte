@@ -2,11 +2,12 @@
 package io.airbyte.cdk.discover
 
 import io.airbyte.cdk.data.AirbyteSchemaType
-import io.airbyte.cdk.data.IntCodec
+import io.airbyte.cdk.data.DoubleCodec
 import io.airbyte.cdk.data.JsonDecoder
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.JsonStringCodec
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
+import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import java.time.OffsetDateTime
 
@@ -63,9 +64,8 @@ interface MetaField : FieldOrMetaField {
 enum class CommonMetaField(
     override val type: FieldType,
 ) : MetaField {
-    CDC_LSN(CdcStringMetaFieldType),
-    CDC_UPDATED_AT(CdcOffsetDateTimeMetaFieldType),
-    CDC_DELETED_AT(CdcOffsetDateTimeMetaFieldType),
+    CDC_UPDATED_AT(CdcStringMetaFieldType),
+    CDC_DELETED_AT(CdcStringMetaFieldType),
     ;
 
     override val id: String
@@ -80,8 +80,8 @@ data object CdcStringMetaFieldType : LosslessFieldType {
 
 data object CdcIntegerMetaFieldType : LosslessFieldType {
     override val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.INTEGER
-    override val jsonEncoder: JsonEncoder<Int> = IntCodec
-    override val jsonDecoder: JsonDecoder<Int> = IntCodec
+    override val jsonEncoder: JsonEncoder<Long> = LongCodec
+    override val jsonDecoder: JsonDecoder<Long> = LongCodec
 }
 
 data object CdcOffsetDateTimeMetaFieldType : LosslessFieldType {
@@ -89,4 +89,10 @@ data object CdcOffsetDateTimeMetaFieldType : LosslessFieldType {
         LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
     override val jsonEncoder: JsonEncoder<OffsetDateTime> = OffsetDateTimeCodec
     override val jsonDecoder: JsonDecoder<OffsetDateTime> = OffsetDateTimeCodec
+}
+
+data object CdcNumberMetaFieldType : LosslessFieldType {
+    override val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.NUMBER
+    override val jsonEncoder: JsonEncoder<Double> = DoubleCodec
+    override val jsonDecoder: JsonDecoder<Double> = DoubleCodec
 }

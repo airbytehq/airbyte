@@ -1,4 +1,4 @@
-version: 5.10.2
+version: 6.33.0
 
 type: DeclarativeSource
 
@@ -200,9 +200,18 @@ definitions:
           grant_type: refresh_token
           client_secret: "{{ config['credentials']['client_secret'] }}"
           refresh_token: "{{ config['credentials']['refresh_token'] }}"
+          expires_in_name: expires_in
           access_token_name: access_token
+          refresh_token_updater:
+            refresh_token_name: refresh_token
+            access_token_config_path:
+              - oauth_access_token
+            token_expiry_date_config_path:
+              - oauth_token_expiry_date
+            refresh_token_config_path:
+              - client_refresh_token
           token_refresh_endpoint: >-
-            https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications/refresh
+            https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications/accesstoken
       authenticator_selection_path:
         - credentials
         - auth_type

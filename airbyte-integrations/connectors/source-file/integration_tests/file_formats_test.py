@@ -7,9 +7,11 @@ import logging
 from pathlib import Path
 
 import pytest
-from airbyte_cdk.utils import AirbyteTracedException
 from source_file import SourceFile
 from source_file.client import Client
+
+from airbyte_cdk.utils import AirbyteTracedException
+
 
 SAMPLE_DIRECTORY = Path(__file__).resolve().parent.joinpath("sample_files/formats")
 

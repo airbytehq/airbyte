@@ -74,7 +74,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
     ): ResultSet = dbmetadata.getTables(catalogName, id.rawNamespace, id.rawName + suffix, null)
 
     @Throws(Exception::class)
-    private fun isFinalTableEmpty(id: StreamId): Boolean {
+    protected open fun isFinalTableEmpty(id: StreamId): Boolean {
         return !jdbcDatabase.queryBoolean(
             dslContext
                 .select(
@@ -211,7 +211,8 @@ abstract class JdbcDestinationHandler<DestinationState>(
     }
 
     @Throws(SQLException::class)
-    protected fun getAllDestinationStates(): Map<AirbyteStreamNameNamespacePair, DestinationState> {
+    protected open fun getAllDestinationStates():
+        Map<AirbyteStreamNameNamespacePair, DestinationState> {
         try {
             // Guarantee the table exists.
             jdbcDatabase.execute(

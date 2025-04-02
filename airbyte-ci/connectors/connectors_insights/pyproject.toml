@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "connectors-insights"
-version = "0.3.3"
+version = "0.3.7"
 description = ""
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
@@ -8,7 +8,7 @@ packages = [{ include = "connectors_insights", from = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-dagger-io = "0.9.6"
+dagger-io = "0.13.3"
 click = "^8.1.7"
 pydantic = "^1.9"
 asyncer = "^0.0.7"
@@ -43,6 +43,6 @@ lint = "ruff check src --fix"
 ci = ["type_check", "lint"]
 
 [tool.airbyte_ci]
-python_versions = ["3.10"]
+python_versions = ["3.11"]
 optional_poetry_groups = ["dev"]
 poe_tasks = ["ci"]

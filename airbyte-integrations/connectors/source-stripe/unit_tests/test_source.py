@@ -1,17 +1,21 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
+
 import datetime
 import logging
 from contextlib import nullcontext as does_not_raise
 
 import pytest
+from source_stripe import SourceStripe
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalogSerializer, SyncMode
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.streams.call_rate import CachedLimiterSession, LimiterSession, Rate
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils import AirbyteTracedException
-from source_stripe import SourceStripe
+
 
 logger = logging.getLogger("airbyte")
 _ANY_CATALOG = ConfiguredAirbyteCatalogSerializer.load({"streams": []})
@@ -49,7 +53,7 @@ def _a_valid_config():
 
 def test_streams_are_unique(config):
     stream_names = [s.name for s in SourceStripe(_ANY_CATALOG, _ANY_CONFIG, _NO_STATE).streams(config=config)]
-    assert len(stream_names) == len(set(stream_names)) == 46
+    assert len(stream_names) == len(set(stream_names)) == 47
 
 
 @pytest.mark.parametrize(
@@ -75,8 +79,7 @@ def test_when_streams_return_full_refresh_as_concurrent():
     ).streams(_a_valid_config())
 
     # bank_accounts (as it is defined as full_refresh)
-    # balance_transactions, events, files, file_links and shipping_rates (as it is always concurrent now)
-    assert len(list(filter(lambda stream: isinstance(stream, StreamFacade), streams))) == 6
+    assert len(list(filter(lambda stream: isinstance(stream, StreamFacade), streams))) == 1
 
 
 @pytest.mark.parametrize(
@@ -126,9 +129,15 @@ def test_call_budget_passed_to_every_stream(mocker):
     assert streams
     get_api_call_budget_mock.assert_called_once()
 
-    for stream in streams:
+    def get_session(stream):
         if isinstance(stream, StreamFacade):
-            stream = stream._legacy_stream
-        session = stream._http_client._session
+            return stream._legacy_stream._http_client._session
+        if isinstance(stream, DeclarativeStream):
+            return stream.retriever.requester._http_client._session
+        return stream._http_client._session
+
+    for stream in streams:
+        session = get_session(stream)
+        if not isinstance(stream, DeclarativeStream):
+            assert session._api_budget == get_api_call_budget_mock.return_value
         assert isinstance(session, (CachedLimiterSession, LimiterSession))
-        assert session._api_budget == get_api_call_budget_mock.return_value

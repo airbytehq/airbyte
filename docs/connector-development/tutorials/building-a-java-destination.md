@@ -22,7 +22,7 @@ Docker and Java with the versions listed in the
 
 ### Creating a destination
 
-- Step 1: Create the destination using the template generator
+- Step 1: Create the destination using one of the other connectors as an example
 - Step 2: Build the newly generated destination
 - Step 3: Implement `spec` to define the configuration required to run the connector
 - Step 4: Implement `check` to provide a way to validate configurations provided to the connector
@@ -46,18 +46,9 @@ questions you have, or ask us on [slack](https://slack.airbyte.io).
 
 ## Explaining Each Step
 
-### Step 1: Create the destination using the template
+### Step 1: Create the destination
 
-Airbyte provides a code generator which bootstraps the scaffolding for our connector.
-
-```bash
-$ cd airbyte-integrations/connector-templates/generator # assumes you are starting from the root of the Airbyte project.
-$ ./generate.sh
-```
-
-Select the `Java Destination` template and then input the name of your connector. We'll refer to the
-destination as `<name>-destination` in this tutorial, but you should replace `<name>` with the
-actual name you used for your connector e.g: `BigQueryDestination` or `bigquery-destination`.
+Use `destination-s3` as an example and copy over the relevant build system pieces.
 
 ### Step 2: Build the newly generated destination
 

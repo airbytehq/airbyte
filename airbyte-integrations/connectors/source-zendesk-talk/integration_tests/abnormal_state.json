@@ -3,7 +3,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_at": "2121-01-01T00:00:00Z"
+        "updated_at": "4765132800"
       },
       "stream_descriptor": { "name": "calls" }
     }
@@ -12,7 +12,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_at": "2121-01-01T00:00:00Z"
+        "updated_at": "4765132800"
       },
       "stream_descriptor": { "name": "call_legs" }
     }

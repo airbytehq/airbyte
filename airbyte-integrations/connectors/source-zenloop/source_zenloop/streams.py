@@ -9,11 +9,11 @@ from datetime import datetime, timedelta
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
+
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class ZenloopStream(HttpStream, ABC):
-
     url_base = "https://api.zenloop.com/v1/"
     extra_params = None
     has_date_param = False
@@ -58,7 +58,6 @@ class ZenloopStream(HttpStream, ABC):
 
 
 class ChildStreamMixin:
-
     parent_stream_class: Optional[ZenloopStream] = None
 
     def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:

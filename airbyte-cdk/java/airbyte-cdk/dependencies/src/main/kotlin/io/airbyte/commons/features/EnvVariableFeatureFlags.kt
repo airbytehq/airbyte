@@ -4,6 +4,7 @@
 package io.airbyte.commons.features
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.nio.file.Path
 import java.util.function.Function
 
 private val log = KotlinLogging.logger {}
@@ -46,6 +47,16 @@ class EnvVariableFeatureFlags : FeatureFlags {
         return getEnvOrDefault(DEPLOYMENT_MODE, "") { arg: String -> arg }
     }
 
+    override fun airbyteStagingDirectory(): Path? {
+        return getEnvOrDefault(AIRBYTE_STAGING_DIRECTORY_PROPERTY_NAME, null) { arg: String ->
+            Path.of(arg)
+        }
+    }
+
+    override fun useFileTransfer(): Boolean {
+        return getEnvOrDefault(USE_FILE_TRANSFER, false) { it.toBoolean() }
+    }
+
     // TODO: refactor in order to use the same method than the ones in EnvConfigs.java
     fun <T> getEnvOrDefault(key: String?, defaultValue: T, parser: Function<String, T>): T {
         val value = System.getenv(key)
@@ -73,5 +84,8 @@ class EnvVariableFeatureFlags : FeatureFlags {
         const val STRICT_COMPARISON_NORMALIZATION_TAG: String =
             "STRICT_COMPARISON_NORMALIZATION_TAG"
         const val DEPLOYMENT_MODE: String = "DEPLOYMENT_MODE"
+        val DEFAULT_AIRBYTE_STAGING_DIRECTORY: Path = Path.of("/staging/files")
+        const val AIRBYTE_STAGING_DIRECTORY_PROPERTY_NAME: String = "AIRBYTE_STAGING_DIRECTORY"
+        const val USE_FILE_TRANSFER = "USE_FILE_TRANSFER"
     }
 }

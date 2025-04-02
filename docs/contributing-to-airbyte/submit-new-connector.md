@@ -35,7 +35,7 @@ The token must be a (classic) token with repo scope enabled. Follow these direct
 
 ### Find or start a Github Discussion about the connector
 
-While Connector Builder is great, some [connectors won't work in the Builder just yet](../connector-development/connector-builder-ui/connector-builder-compatibility.md).
+While our Connector Builder is constantly growing and evolving in flexibility and supported use cases, some connector implementations won't work in the Builder just yet.
 See the [Connector Development guide](../connector-development/README.md) for more details on how to build a connector. If you're building a custom Python CDK or Database (Java CDK) connector, please start with filing a discussion or an issue:
 
 1. Check to see if there is an existing [Discussion](https://github.com/airbytehq/airbyte/discussions/categories/new-connector-request) for a connector you have in mind

@@ -24,6 +24,10 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          # the `ProductGraphQL`, `CustomerSavedSearch` were removed from the stream catalog,
+          # because of the deprecation notice: https://shopify.dev/docs/api/release-notes/2024-04
+          disable_for_version: "2.5.17"
   basic_read:
     tests:
       - config_path: "secrets/config_transactions_with_user_id.json"
@@ -35,8 +39,6 @@ acceptance_tests:
             bypass_reason: The stream holds data up to 1 month then records are removed by Shopify.
           - name: balance_transactions
             bypass_reason: The stream requires real purchases to fill in the data.
-          - name: customer_saved_search
-            bypass_reason: The stream is not available for our sandbox.
           - name: disputes
             bypass_reason: The stream requires real purchases to fill in the data.
       - config_path: "secrets/config.json"
@@ -48,8 +50,6 @@ acceptance_tests:
             bypass_reason: The stream holds data up to 1 month then records are removed by Shopify.
           - name: balance_transactions
             bypass_reason: The stream requires real purchases to fill in the data.
-          - name: customer_saved_search
-            bypass_reason: The stream is not available for our sandbox.
           - name: disputes
             bypass_reason: The stream requires real purchases to fill in the data.
   incremental:
@@ -76,9 +76,6 @@ acceptance_tests:
               bypass_reason: May contain dynamically changed URL params
             - name: images/*/updated_at
               bypass_reason: Value can change as the account data is not frozen
-          products_graph_ql:
-            - name: onlineStorePreviewUrl
-              bypass_reason: Floating URL values
           product_variants:
             - name: updated_at
               bypass_reason: Value can change as the account data is not frozen

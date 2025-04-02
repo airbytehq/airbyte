@@ -14,7 +14,7 @@ The Standard Test Suite use pytest as a test runner and was built as pytest plug
 
 Each test suite has a timeout and will fail if the limit is exceeded.
 
-See all the test cases, their description, and inputs in [Connector Acceptance Tests](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/contributing-to-airbyte/building-new-connector/connector-acceptance-tests.md).
+See all the test cases, their description, and inputs described in the sections below.
 
 ## Setting up standard acceptance tests for your connector
 
@@ -75,7 +75,7 @@ And test via one of the two following Options
 Learn how to use and install [`airbyte-ci` here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md). Once installed, `airbyte-ci connectors test` command will run unit, integration, and acceptance tests against your connector. Pass `--name <your_connector_name>` to test just one connector.
 
 ```bash
-airbyte-ci connectors --name=<name-of-your-connector></name-of-your-connector> --use-remote-secrets=false test
+airbyte-ci connectors --name=<name-of-your-connector></name-of-your-connector> test
 ```
 
 ### Option 2 (Debugging): Run against the acceptance tests on your branch
@@ -143,6 +143,7 @@ Verify that a `spec` operation issued to the connector returns a valid connector
 Additional tests are validating the backward compatibility of the current specification compared to the specification of the previous connector version. If no previous connector version is found (by default the test looks for a docker image with the same name but with the `latest` tag), this test is skipped.
 These backward compatibility tests can be bypassed by changing the value of the `backward_compatibility_tests_config.disable_for_version` input in `acceptance-test-config.yml` (see below).
 One more test validates the specification against containing exposed secrets. This means fields that potentially could hold a secret value should be explicitly marked with `"airbyte_secret": true`. If an input field like `api_key` / `password` / `client_secret` / etc. is exposed, the test will fail.
+The inputs in the table are set under the `acceptance_tests.spec.tests` key. 
 
 | Input                                                            | Type    | Default             | Note                                                                                                                  |
 | :--------------------------------------------------------------- | :------ | :------------------ | :-------------------------------------------------------------------------------------------------------------------- |
@@ -157,6 +158,7 @@ One more test validates the specification against containing exposed secrets. Th
 ## Test Connection
 
 Verify that a check operation issued to the connector with the input config file returns a successful response.
+The inputs in the table are set under the `acceptance_tests.connection.tests` key. 
 
 | Input             | Type                           | Default               | Note                                                               |
 | :---------------- | :----------------------------- | :-------------------- | :----------------------------------------------------------------- |
@@ -169,6 +171,7 @@ Verify that a check operation issued to the connector with the input config file
 Verifies when a `discover` operation is run on the connector using the given config file, a valid catalog is produced by the connector.
 Additional tests are validating the backward compatibility of the discovered catalog compared to the catalog of the previous connector version. If no previous connector version is found (by default the test looks for a docker image with the same name but with the `latest` tag), this test is skipped.
 These backward compatibility tests can be bypassed by changing the value of the `backward_compatibility_tests_config.disable_for_version` input in `acceptance-test-config.yml` (see below).
+The inputs in the table are set under the `acceptance_tests.discovery.tests` key. 
 
 | Input                                                            | Type    | Default                                     | Note                                                                                                                  |
 |:-----------------------------------------------------------------|:--------|:--------------------------------------------|:----------------------------------------------------------------------------------------------------------------------|
@@ -183,6 +186,7 @@ These backward compatibility tests can be bypassed by changing the value of the 
 
 Configuring all streams in the input catalog to full refresh mode verifies that a read operation produces some RECORD messages. Each stream should have some data, if you can't guarantee this for particular streams - add them to the `empty_streams` list.
 Set `validate_data_points=True` if possible. This validation is going to be enabled by default and won't be configurable in future releases.
+The inputs in the table are set under the `acceptance_tests.basic_reac.tests` key.
 
 | Input                                           | Type             | Default                                     | Note                                                                                                         |
 |:------------------------------------------------|:-----------------|:--------------------------------------------|:-------------------------------------------------------------------------------------------------------------|
@@ -233,6 +237,8 @@ In general, the expected_records.jsonl should contain the subset of output of th
 
 ## Test Full Refresh sync
 
+The inputs in the tables below are set under the `acceptance_tests.full_refresh.tests` key.
+
 ### TestSequentialReads
 
 This test performs two read operations on all streams which support full refresh syncs. It then verifies that the RECORD messages output from both were identical or the former is a strict subset of the latter.
@@ -247,6 +253,8 @@ This test performs two read operations on all streams which support full refresh
 | `ignored_fields[stream][0].bypass_reason` | string | None                                        | Reason why this field is ignored                                       |
 
 ## Test Incremental sync
+
+The inputs in the tables below are set under the `acceptance_tests.incremental.tests` key.
 
 ### TestTwoSequentialReads
 
@@ -285,6 +293,8 @@ This test verifies that sync produces no records when run with the STATE with ab
 
 ## Test Connector Attributes
 
+The inputs in the tables below are set under the `acceptance_tests.connector_attributes.tests` key.
+
 Verifies that certain properties of the connector and its streams guarantee a higher level of usability standards for certified connectors.
 Some examples of the types of tests covered are verification that streams define primary keys, correct OAuth spec configuration, or a connector emits the correct stream status during a read.
 
@@ -298,6 +308,8 @@ Some examples of the types of tests covered are verification that streams define
 | `suggested_streams.bypass_reason`           | object with `bypass_reason` | None                  | Defines the `bypass_reason` description about why the `suggestedStreams` check for the certified connector should be skipped |
 
 ## Test Connector Documentation
+
+The inputs in the tables below are set under the `acceptance_tests.connector_documentation.tests` key.
 
 Verifies that connectors documentation follows our standard template, does have correct order of headings,
 does not have missing headings and all required fields in Prerequisites section.

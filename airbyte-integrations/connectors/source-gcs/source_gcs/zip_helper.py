@@ -7,7 +7,9 @@ import zipfile
 from typing import Iterable
 
 from google.cloud.storage.blob import Blob
+
 from source_gcs.helpers import GCSRemoteFile
+
 
 logger = logging.getLogger("airbyte")
 

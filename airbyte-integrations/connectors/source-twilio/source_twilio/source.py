@@ -7,6 +7,7 @@ import logging
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -47,6 +48,7 @@ from source_twilio.streams import (
     Users,
     VerifyServices,
 )
+
 
 RETENTION_WINDOW_LIMIT = 400
 

@@ -1,4 +1,6 @@
 # A list of URLs that should be redirected to new paths
+- from: /operator-guides/configuring-airbyte-db
+  to: /deploying-airbyte/integrations/database
 - from: /upgrading-airbyte
   to: /operator-guides/upgrading-airbyte
 - from: /catalog
@@ -118,3 +120,6 @@
 - from:
     - /deploying-airbyte/quickstart
   to: /using-airbyte/getting-started/oss-quickstart
+- from:
+    - /connector-development/connector-builder-ui/compatibility-guide
+  to: /connector-development/connector-builder-ui/overview

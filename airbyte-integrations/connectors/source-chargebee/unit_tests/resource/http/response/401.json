@@ -1,7 +1,0 @@
-{
-  "message": "Sorry,authentication failed.The basic authentication header has invalid format.",
-  "api_error_code": "api_authentication_failed",
-  "error_code": "api_authentication_wrong_format",
-  "error_msg": "Sorry,authentication failed.The basic authentication header has invalid format.",
-  "http_status_code": 401
-}

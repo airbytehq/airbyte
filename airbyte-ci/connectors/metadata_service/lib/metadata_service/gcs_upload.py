@@ -16,6 +16,9 @@ import requests
 import yaml
 from google.cloud import storage
 from google.oauth2 import service_account
+from pydash import set_
+from pydash.objects import get
+
 from metadata_service.constants import (
     COMPONENTS_PY_FILE_NAME,
     COMPONENTS_ZIP_FILE_NAME,
@@ -34,8 +37,6 @@ from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import Conn
 from metadata_service.models.generated.GitInfo import GitInfo
 from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
-from pydash import set_
-from pydash.objects import get
 
 # 🧩 TYPES
 
@@ -429,7 +430,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         raise ValueError(f"Metadata file {metadata_file_path} is invalid for uploading: {error}")
 
     is_pre_release = validator_opts.prerelease_tag is not None
-    is_release_candidate = getattr(metadata.data.releases, "isReleaseCandidate", False)
+    is_release_candidate = "-rc" in metadata.data.dockerImageTag
     should_upload_release_candidate = is_release_candidate and not is_pre_release
     should_upload_latest = not is_release_candidate and not is_pre_release
 

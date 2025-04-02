@@ -63,7 +63,7 @@ class BufferDequeue(
 
                 // otherwise pull records until we hit the memory limit.
                 val newSize: Long = (memoryItem.size) + bytesRead.get()
-                if (newSize <= optimalBytesToRead) {
+                if (newSize <= optimalBytesToRead || output.isEmpty()) {
                     memoryItem.size.let { bytesRead.addAndGet(it) }
                     queue.poll()?.item?.let { output.add(it) }
                 } else {

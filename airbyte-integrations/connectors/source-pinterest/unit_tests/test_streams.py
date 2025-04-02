@@ -8,11 +8,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
-from airbyte_cdk import AirbyteTracedException
-from airbyte_cdk.models.airbyte_protocol import SyncMode
-from airbyte_cdk.sources.declarative.types import StreamSlice
-from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+from source_pinterest.components.components import AdAccountRecordExtractor
 from source_pinterest.streams import (
+    AdAccountValidationStream,
     AnalyticsApiBackoffStrategyDecorator,
     NonJSONResponse,
     PinterestAnalyticsStream,
@@ -22,8 +20,14 @@ from source_pinterest.streams import (
 )
 from source_pinterest.utils import get_analytics_columns
 
+from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.models.airbyte_protocol import SyncMode
+from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+
 from .conftest import get_stream_by_name
 from .utils import create_requests_response
+
 
 os.environ["REQUEST_CACHE_PATH"] = "/tmp"
 _ANY_STREAM_NAME = "any_stream_name"
@@ -80,7 +84,8 @@ def test_parse_response_with_sensitive_data(requests_mock, test_config):
         json={"items": [{"id": "CatalogsFeeds1", "credentials": {"password": "bla"}}]},
     )
     actual_response = [
-        dict(record) for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh)
+        dict(record)
+        for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh)
         for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
     ]
     assert actual_response == [{"id": "CatalogsFeeds1"}]
@@ -122,7 +127,9 @@ def test_response_action(requests_mock, patch_base_class, http_status, expected_
     ),
 )
 @patch("time.sleep", return_value=None)
-def test_declarative_stream_response_action_on_max_rate_limit_error(mock_sleep, requests_mock, test_response, status_code, expected_response_action):
+def test_declarative_stream_response_action_on_max_rate_limit_error(
+    mock_sleep, requests_mock, test_response, status_code, expected_response_action
+):
     response_mock = create_requests_response(requests_mock, status_code, {})
     error_handler = PinterestErrorHandler(logger=MagicMock(), stream_name="any_stream_name")
     assert error_handler.interpret_response(response_mock).response_action == expected_response_action
@@ -209,3 +216,30 @@ def test_path(test_config, stream_name, stream_slice, expected_path):
 
     result = stream.retriever.requester.get_path(stream_slice=stream_slice, stream_state=None, next_page_token=None)
     assert result == expected_path
+
+
+def test_ad_account_request_params():
+    config = {"authenticator": MagicMock(), "account_id": "123456"}
+    stream = AdAccountValidationStream(config=config)
+
+    path = stream.path()
+    assert "123456" in path
+
+
+def test_ad_account_request_no_id():
+    config = {"authenticator": MagicMock()}
+    stream = AdAccountValidationStream(config=config)
+    params = stream.request_params(stream_slice={}, stream_state={})
+    assert "account_id" not in params
+
+
+def test_extract_records_with_items(test_response):
+    extractor = AdAccountRecordExtractor()
+    result = extractor.extract_records(test_response)
+    assert result == test_response.json()["items"]
+
+
+def test_extract_records_single_account(test_response_single_account):
+    extractor = AdAccountRecordExtractor()
+    result = extractor.extract_records(test_response_single_account)
+    assert result == [{"id": "1234"}]

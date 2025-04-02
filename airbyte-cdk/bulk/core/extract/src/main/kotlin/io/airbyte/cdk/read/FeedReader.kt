@@ -31,6 +31,9 @@ class FeedReader(
 ) {
     private val log = KotlinLogging.logger {}
 
+    private val feedBootstrap: FeedBootstrap<*> =
+        FeedBootstrap.create(root.outputConsumer, root.metaFieldDecorator, root.stateManager, feed)
+
     /** Reads records from this [feed]. */
     suspend fun read() {
         var partitionsCreatorID = 1L
@@ -73,7 +76,7 @@ class FeedReader(
         val partitionsCreator: PartitionsCreator = run {
             for (factory in root.partitionsCreatorFactories) {
                 log.info { "Attempting bootstrap using ${factory::class}." }
-                return@run factory.make(root.stateManager, feed) ?: continue
+                return@run factory.make(feedBootstrap) ?: continue
             }
             throw SystemErrorException(
                 "Unable to bootstrap for feed $feed with ${root.partitionsCreatorFactories}"
@@ -196,7 +199,14 @@ class FeedReader(
         }
         var checkpoint: PartitionReadCheckpoint
         try {
-            withTimeout(root.timeout.toKotlinDuration()) { partitionReader.run() }
+            if (partitionReader is UnlimitedTimePartitionReader) {
+                partitionReader.run()
+            } else {
+                log.info {
+                    "Running partition reader with ${root.timeout.toKotlinDuration()} timeout"
+                }
+                withTimeout(root.timeout.toKotlinDuration()) { partitionReader.run() }
+            }
             log.info {
                 "completed reading partition $partitionReaderID " +
                     "for '${feed.label}' in round $partitionsCreatorID"

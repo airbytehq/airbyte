@@ -106,18 +106,28 @@ In addition to Airbyte's automatic schema change detection, you can manually ref
 ## Major Connector Version Upgrades
 For Cloud users, connectors are generally shipped to you with enhancements and improvements without any action needed from you. 
 
-However, connectors may periodically require your approval to upgrade to a new major version. Airbyte will alert you of the new version but continue to sync until the cutoff date for upgrade, giving you a window in which to preview and prepare for any changes. It is **highly recommended** to upgrade before the cutoff date to ensure you continue syncing without interruption. After the window has closed, connections will be automatically disabled to prevent sync failures or sync anomalies, and you'll need to manually upgrade to the new version to continue syncing.
+However, connectors may periodically require your approval to upgrade to a new major version. Airbyte will alert you of the new version and give you a window to manually upgrade yourself to preview and prepare for any changes. 
+
+:::tip
+It is **highly recommended** to upgrade before the cutoff date to ensure you understand the upcoming changes to your data, as it may affect downstream services and data models. After the window has closed, connections will be automatically upgraded to the new version.
+:::
 
 When publishing a new version of a connector, Airbyte only considers the following scenarios as reasons as significant enough for a major version release:
 
 | Type of Change | Description    |
 | -------------- | -------------- |
-| Connector Specification Change    | The configuration has been changed and syncs will fail until users reconfigure or re-authenticate.       |
-| Schema Change                | The type of property previously present within a record has changed and a refresh of the source schema is required.       |
-| Stream or Property Removal      | Data that was previously being synced is no longer going to be synced                                                           |
+| Schema Change                | A field or stream was renamed, or the data type of a field has changed.       |
+| Stream or Property Removal      | Data that was previously being synced is no longer going to be synced                                               |
+| Addition of a new sync mode      | Airbyte now offers a new, more efficient way to sync data.                                               |
+| Modifications to a source-defined primary key      | The primary key has been added or modified to improve sync accuracy.                                               |
+| Connector Configuration (Specification) Change    | The configuration has  changed and may require re-authentication or a new configuration input.      |
 | Destination Format / Normalization Change | The way the destination writes the final data or how Airbyte cleans that data is changing in a way that requires a full refresh |
 | State Changes                             | The format of the source’s state has changed, and the full dataset will need to be re-synced                                    |
 
+We expect that most users will gracefully continue syncing successfully with most major version updates. However, users using a destination that does not utilize [Typing & Deduping](/using-airbyte/core-concepts/typing-deduping) will experience sync failures if the major version includes a data type change. 
+
+
+### Upgrading your connector
 To review major connector version changes and upgrade your connector: 
 
 1. In the Airbyte UI, click **Connections** and select the connection with a major version change.

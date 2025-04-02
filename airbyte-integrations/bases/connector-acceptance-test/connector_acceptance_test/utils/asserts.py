@@ -9,8 +9,10 @@ from collections import defaultdict
 from typing import Any, Dict, List, Mapping
 
 import pendulum
-from airbyte_protocol.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog
 from jsonschema import Draft7Validator, FormatChecker, FormatError, ValidationError, validators
+
+from airbyte_protocol.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog
+
 
 # fmt: off
 timestamp_regex = re.compile((r"^\d{4}-\d?\d-\d?\d"  # date

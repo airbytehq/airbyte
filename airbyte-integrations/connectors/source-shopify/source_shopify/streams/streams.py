@@ -6,13 +6,11 @@
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
-from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from requests.exceptions import RequestException
 from source_shopify.shopify_graphql.bulk.query import (
     Collection,
     CustomerAddresses,
     CustomerJourney,
+    DeliveryProfile,
     DiscountCode,
     FulfillmentOrder,
     InventoryItem,
@@ -30,13 +28,16 @@ from source_shopify.shopify_graphql.bulk.query import (
     Product,
     ProductImage,
     ProductVariant,
+    ProfileLocationGroups,
     Transaction,
 )
-from source_shopify.shopify_graphql.graphql import get_query_products
-from source_shopify.utils import ApiTypeEnum
-from source_shopify.utils import ShopifyRateLimiter as limiter
+
+from airbyte_cdk import HttpSubStream
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 from .base_streams import (
+    FullRefreshShopifyGraphQlBulkStream,
     IncrementalShopifyGraphQlBulkStream,
     IncrementalShopifyNestedStream,
     IncrementalShopifyStream,
@@ -119,57 +120,6 @@ class Products(IncrementalShopifyGraphQlBulkStream):
     bulk_query: Product = Product
 
 
-class ProductsGraphQl(IncrementalShopifyStream):
-    filter_field = "updatedAt"
-    cursor_field = "updatedAt"
-    data_field = "graphql"
-    http_method = "POST"
-    # pin the old api_version before this stream is deprecated
-    api_version = "2023-07"
-
-    def request_params(
-        self,
-        stream_state: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-        **kwargs,
-    ) -> MutableMapping[str, Any]:
-        return {}
-
-    def request_body_json(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping]:
-        state_value = stream_state.get(self.filter_field)
-        if state_value:
-            filter_value = state_value
-        else:
-            filter_value = self.default_filter_field_value
-        query = get_query_products(
-            first=self.limit, filter_field=self.filter_field, filter_value=filter_value, next_page_token=next_page_token
-        )
-        return {"query": query}
-
-    @staticmethod
-    def next_page_token(response: requests.Response) -> Optional[Mapping[str, Any]]:
-        page_info = response.json()["data"]["products"]["pageInfo"]
-        has_next_page = page_info["hasNextPage"]
-        if has_next_page:
-            return page_info["endCursor"]
-        else:
-            return None
-
-    @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.status_code is requests.codes.OK:
-            try:
-                json_response = response.json()["data"]["products"]["nodes"]
-                yield from self.produce_records(json_response)
-            except RequestException as e:
-                self.logger.warning(f"Unexpected error in `parse_ersponse`: {e}, the actual response data: {response.text}")
-
-
 class MetafieldProducts(IncrementalShopifyGraphQlBulkStream):
     parent_stream_class = Products
     bulk_query: MetafieldProduct = MetafieldProduct
@@ -249,7 +199,6 @@ class MetafieldCollections(IncrementalShopifyGraphQlBulkStream):
 
 
 class BalanceTransactions(IncrementalShopifyStream):
-
     """
     PaymentsTransactions stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
     https://shopify.dev/api/admin-rest/2021-07/resources/transactions
@@ -377,19 +326,96 @@ class MetafieldShops(IncrementalShopifyStream):
     data_field = "metafields"
 
 
-class CustomerSavedSearch(IncrementalShopifyStream):
-    api_version = "2022-01"
-    cursor_field = "id"
-    order_field = "id"
-    data_field = "customer_saved_searches"
-    filter_field = "since_id"
-
-
 class CustomerAddress(IncrementalShopifyGraphQlBulkStream):
     parent_stream_class = Customers
     bulk_query: CustomerAddresses = CustomerAddresses
     cursor_field = "id"
 
 
-class Countries(ShopifyStream):
-    data_field = "countries"
+class ProfileLocationGroups(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: ProfileLocationGroups = ProfileLocationGroups
+    filter_field = None
+
+
+class Countries(HttpSubStream, FullRefreshShopifyGraphQlBulkStream):
+    # https://shopify.dev/docs/api/admin-graphql/latest/queries/deliveryProfiles
+    _page_cursor = None
+    _sub_page_cursor = None
+
+    _synced_countries_ids = []
+
+    query = DeliveryProfile
+    response_field = "deliveryProfiles"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        json_response = response.json().get("data", {})
+        if not json_response:
+            return None
+
+        page_info = json_response.get("deliveryProfiles", {}).get("pageInfo", {})
+
+        sub_page_info = {"hasNextPage": False}
+        # only one top page in query
+        delivery_profiles_nodes = json_response.get("deliveryProfiles", {}).get("nodes")
+        if delivery_profiles_nodes:
+            profile_location_groups = delivery_profiles_nodes[0].get("profileLocationGroups")
+            if profile_location_groups:
+                sub_page_info = (
+                    # only first one
+                    profile_location_groups[0].get("locationGroupZones", {}).get("pageInfo", {})
+                )
+
+        if not sub_page_info["hasNextPage"] and not page_info["hasNextPage"]:
+            return None
+        if sub_page_info["hasNextPage"]:
+            # The cursor to retrieve nodes after in the connection. Typically, you should pass the endCursor of the previous page as after.
+            self._sub_page_cursor = sub_page_info["endCursor"]
+        if page_info["hasNextPage"] and not sub_page_info["hasNextPage"]:
+            # The cursor to retrieve nodes after in the connection. Typically, you should pass the endCursor of the previous page as after.
+            self._page_cursor = page_info["endCursor"]
+            self._sub_page_cursor = None
+
+        return {
+            "cursor": self._page_cursor,
+            "sub_cursor": self._sub_page_cursor,
+        }
+
+    def request_body_json(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[Mapping[str, Any]]:
+        location_group_id = stream_slice["parent"]["profile_location_groups"][0]["locationGroup"]["id"]
+        return {
+            "query": self.query(location_group_id=location_group_id, location_group_zones_cursor=self._sub_page_cursor).get(
+                query_args={
+                    "cursor": self._page_cursor,
+                }
+            ),
+        }
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        # TODO: to refactor this using functools + partial, see comment https://github.com/airbytehq/airbyte/pull/55823#discussion_r2016335672
+        for node in super().parse_response(response, **kwargs):
+            for location_group in node.get("profileLocationGroups", []):
+                for location_group_zone in location_group.get("locationGroupZones", {}).get("nodes", []):
+                    for country in location_group_zone.get("zone", {}).get("countries"):
+                        country = self._process_country(country)
+                        if country["id"] not in self._synced_countries_ids:
+                            self._synced_countries_ids.append(country["id"])
+                            yield country
+
+    def _process_country(self, country: Mapping[str, Any]) -> Mapping[str, Any]:
+        country["id"] = int(country["id"].split("/")[-1])
+
+        for province in country.get("provinces", []):
+            province["id"] = int(province["id"].split("/")[-1])
+            province["country_id"] = country["id"]
+
+        if country.get("code"):
+            country["rest_of_world"] = country["code"]["rest_of_world"] if country["code"].get("rest_of_world") is not None else "*"
+            country["code"] = country["code"]["country_code"] if country["code"].get("country_code") is not None else "*"
+
+        country["shop_url"] = self.config["shop"]
+        return country
