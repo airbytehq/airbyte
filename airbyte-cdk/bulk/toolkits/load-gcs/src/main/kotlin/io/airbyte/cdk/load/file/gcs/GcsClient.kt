@@ -8,6 +8,7 @@ import com.google.cloud.storage.Storage
 import io.airbyte.cdk.load.command.gcs.GcsClientConfiguration
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
+import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import java.io.InputStream
 import java.nio.channels.Channels
 import kotlinx.coroutines.flow.Flow
@@ -74,6 +75,13 @@ class GcsClient(private val storage: Storage, private val config: GcsClientConfi
     override suspend fun delete(key: String) {
         val fullKey = combinePath(config.bucketPath, key)
         storage.delete(BlobId.of(config.bucketName, fullKey))
+    }
+
+    override suspend fun startStreamingUpload(
+        key: String,
+        metadata: Map<String, String>
+    ): StreamingUpload<GcsBlob> {
+        TODO("Not yet implemented")
     }
 
     override suspend fun delete(remoteObject: GcsBlob) {
