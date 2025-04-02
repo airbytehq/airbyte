@@ -151,6 +151,7 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     private val loadPipeline: LoadPipeline?,
     private val partitioner: InputPartitioner,
     private val updateBatchTaskFactory: UpdateBatchStateTaskFactory,
+    @Named("defaultDestinationTaskLauncherHasThrown") private val hasThrown: AtomicBoolean,
 ) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
 
@@ -161,10 +162,6 @@ class DefaultDestinationTaskLauncher<K : WithStream>(
     private val failSyncIsEnqueued = AtomicBoolean(false)
 
     private val closeStreamHasRun = ConcurrentHashMap<DestinationStream.Descriptor, AtomicBoolean>()
-
-    companion object {
-        val hasThrown = AtomicBoolean(false)
-    }
 
     inner class WrappedTask(
         private val innerTask: Task,

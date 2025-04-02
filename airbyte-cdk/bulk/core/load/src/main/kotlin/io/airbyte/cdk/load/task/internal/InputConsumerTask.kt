@@ -7,8 +7,8 @@ package io.airbyte.cdk.load.task.internal
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
@@ -134,7 +134,7 @@ class DefaultInputConsumerTask(
                 manager.markEndOfStream(true)
                 val envelope =
                     BatchEnvelope(
-                        SimpleBatch(Batch.State.COMPLETE),
+                        SimpleBatch(BatchState.COMPLETE),
                         streamDescriptor = message.stream.descriptor,
                     )
                 destinationTaskLauncher.handleNewBatch(stream.descriptor, envelope)
@@ -197,7 +197,7 @@ class DefaultInputConsumerTask(
                 manager.markEndOfStream(true)
                 val envelope =
                     BatchEnvelope(
-                        SimpleBatch(Batch.State.COMPLETE),
+                        SimpleBatch(BatchState.COMPLETE),
                         streamDescriptor = message.stream.descriptor,
                     )
                 destinationTaskLauncher.handleNewBatch(stream.descriptor, envelope)

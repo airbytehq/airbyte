@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.BatchEnvelope
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.MessageQueue
@@ -95,7 +96,7 @@ class ProcessRecordsTaskTest {
 
     class MockBatch(
         override val groupId: String?,
-        override val state: Batch.State,
+        override val state: BatchState,
         recordIterator: Iterator<DestinationRecordRaw>
     ) : Batch {
         val records = recordIterator.asSequence().toList()
@@ -129,19 +130,15 @@ class ProcessRecordsTaskTest {
         // Process records returns batches in 3 states.
         coEvery { batchAccumulator.processRecords(any(), any()) } answers
             {
-                MockBatch(
-                    groupId = null,
-                    state = Batch.State.PERSISTED,
-                    recordIterator = firstArg()
-                )
+                MockBatch(groupId = null, state = BatchState.PERSISTED, recordIterator = firstArg())
             } andThenAnswer
             {
-                MockBatch(groupId = null, state = Batch.State.COMPLETE, recordIterator = firstArg())
+                MockBatch(groupId = null, state = BatchState.COMPLETE, recordIterator = firstArg())
             } andThenAnswer
             {
                 MockBatch(
                     groupId = "foo",
-                    state = Batch.State.PERSISTED,
+                    state = BatchState.PERSISTED,
                     recordIterator = firstArg()
                 )
             }
@@ -154,7 +151,7 @@ class ProcessRecordsTaskTest {
 
         task.execute()
 
-        fun batchMatcher(groupId: String?, state: Batch.State): (BatchEnvelope<*>) -> Boolean = {
+        fun batchMatcher(groupId: String?, state: BatchState): (BatchEnvelope<*>) -> Boolean = {
             it.ranges.encloses(Range.closed(0, recordCount)) &&
                 it.streamDescriptor == descriptor &&
                 it.batch.groupId == groupId &&
@@ -173,20 +170,20 @@ class ProcessRecordsTaskTest {
         // Verify the batch was *handled* 3 times but *published* ONLY when it is not complete AND
         // group id is null.
         coVerify(exactly = 1) {
-            outputQueue.publish(match { batchMatcher(null, Batch.State.PERSISTED)(it) })
+            outputQueue.publish(match { batchMatcher(null, BatchState.PERSISTED)(it) })
         }
         coVerifySequence {
             launcher.handleNewBatch(
                 MockDestinationCatalogFactory.stream1.descriptor,
-                match { batchMatcher(null, Batch.State.PERSISTED)(it) }
+                match { batchMatcher(null, BatchState.PERSISTED)(it) }
             )
             launcher.handleNewBatch(
                 MockDestinationCatalogFactory.stream1.descriptor,
-                match { batchMatcher(null, Batch.State.COMPLETE)(it) }
+                match { batchMatcher(null, BatchState.COMPLETE)(it) }
             )
             launcher.handleNewBatch(
                 MockDestinationCatalogFactory.stream1.descriptor,
-                match { batchMatcher("foo", Batch.State.PERSISTED)(it) }
+                match { batchMatcher("foo", BatchState.PERSISTED)(it) }
             )
         }
 

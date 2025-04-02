@@ -12,8 +12,10 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.Part
 import io.airbyte.cdk.load.file.object_storage.PartFactory
 import io.airbyte.cdk.load.file.object_storage.PathFactory
+import io.airbyte.cdk.load.message.BatchState
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.message.WithBatchState
 import io.airbyte.cdk.load.pipeline.BatchAccumulator
 import io.airbyte.cdk.load.pipeline.BatchAccumulatorResult
 import io.airbyte.cdk.load.pipeline.FinalOutput
@@ -25,6 +27,7 @@ import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.OutputStream
 
@@ -40,6 +43,7 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
     private val stateManager: DestinationStateManager<ObjectStorageDestinationState>,
     @Value("\${airbyte.destination.core.record-batch-size-override:null}")
     val batchSizeOverride: Long? = null,
+    @Named("objectLoaderClampedPartSizeBytes") val clampedPartSizeBytes: Long
 ) :
     BatchAccumulator<
         ObjectLoaderPartFormatter.State<T>,
@@ -50,7 +54,6 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
     private val log = KotlinLogging.logger {}
 
     private val objectSizeBytes = loader.objectSizeBytes
-    private val partSizeBytes = loader.partSizeBytes
 
     data class State<T : OutputStream>(
         val stream: DestinationStream,
@@ -62,7 +65,10 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
         }
     }
 
-    @JvmInline value class FormattedPart(val part: Part)
+    data class FormattedPart(
+        val part: Part,
+        override val state: BatchState = BatchState.PROCESSED
+    ) : WithBatchState
 
     private suspend fun newState(stream: DestinationStream): State<T> {
         // Determine unique file name.
@@ -105,7 +111,8 @@ class ObjectLoaderPartFormatter<T : OutputStream>(
         state: State<T>
     ): BatchAccumulatorResult<State<T>, FormattedPart> {
         state.writer.accept(input)
-        val dataSufficient = state.writer.bufferSize >= partSizeBytes || batchSizeOverride != null
+        val dataSufficient =
+            state.writer.bufferSize >= clampedPartSizeBytes || batchSizeOverride != null
         return if (dataSufficient) {
             val part = makePart(state)
             if (part.part.isFinal) {

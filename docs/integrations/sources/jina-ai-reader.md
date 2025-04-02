@@ -50,6 +50,7 @@ The website also provides a free bearer token for testing with its interface.
 
 | Version | Date       | Pull Request                                             | Subject                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------- |
+| 0.1.35 | 2025-03-29 | [56693](https://github.com/airbytehq/airbyte/pull/56693) | Update dependencies |
 | 0.1.34 | 2025-03-22 | [56076](https://github.com/airbytehq/airbyte/pull/56076) | Update dependencies |
 | 0.1.33 | 2025-03-08 | [55456](https://github.com/airbytehq/airbyte/pull/55456) | Update dependencies |
 | 0.1.32 | 2025-03-01 | [54822](https://github.com/airbytehq/airbyte/pull/54822) | Update dependencies |
