@@ -31,7 +31,7 @@ def read_input_messages(records_path: str) -> Iterable[AirbyteMessage]:
     with open(records_path, "rb") as f:
         input_stream = io.TextIOWrapper(f, encoding="utf-8")
         for line in input_stream:
-            yield AirbyteMessage.parse_raw(line)
+            yield AirbyteMessage.model_validate_json(line)
 
 
 # ----- BEGIN TESTS -----
