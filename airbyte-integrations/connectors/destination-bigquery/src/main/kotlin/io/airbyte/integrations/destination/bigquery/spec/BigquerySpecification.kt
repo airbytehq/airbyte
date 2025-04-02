@@ -127,6 +127,7 @@ abstract class GcsStaging : GcsCommonSpecification, LoadingMethodSpecification(L
 }
 
 // bigquery supports a subset of GCS regions.
+// See https://cloud.google.com/bigquery/docs/locations#supported_locations
 enum class BigqueryRegion(@get:JsonValue val region: String, val gcsRegion: GcsRegion) {
     EU("EU", GcsRegion.EU),
     US("US", GcsRegion.US),
