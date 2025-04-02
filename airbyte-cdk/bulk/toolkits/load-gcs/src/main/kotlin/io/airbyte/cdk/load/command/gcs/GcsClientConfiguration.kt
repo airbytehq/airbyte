@@ -21,6 +21,6 @@ data class GcsClientConfiguration(
     )
 }
 
-interface GcsConfigurationProvider {
+interface GcsClientConfigurationProvider {
     val gcsClientConfiguration: GcsClientConfiguration
 }
