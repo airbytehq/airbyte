@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.command.gcs
 
-data class GcsConfiguration(
+data class GcsClientConfiguration(
     val gcsBucketName: String,
     val path: String,
     val credential: GcsAuthConfiguration,
@@ -22,5 +22,5 @@ data class GcsConfiguration(
 }
 
 interface GcsConfigurationProvider {
-    val gcsConfiguration: GcsConfiguration
+    val gcsClientConfiguration: GcsClientConfiguration
 }
