@@ -14,7 +14,7 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - products
+    - categories
 
 definitions:
   streams:
