@@ -28,6 +28,84 @@
         "group" : "connection",
         "order" : 2
       },
+      "loading_method" : {
+        "oneOf" : [ {
+          "title" : "Batched Standard Inserts",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "method" : {
+              "type" : "string",
+              "enum" : [ "Standard" ],
+              "default" : "Standard"
+            }
+          },
+          "required" : [ "method" ]
+        }, {
+          "title" : "GCS Staging",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "method" : {
+              "type" : "string",
+              "enum" : [ "GCS Staging" ],
+              "default" : "GCS Staging"
+            },
+            "credential" : {
+              "oneOf" : [ {
+                "title" : "HMAC key",
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "credential_type" : {
+                    "type" : "string",
+                    "enum" : [ "HMAC key" ],
+                    "default" : "HMAC key"
+                  },
+                  "hmac_key_access_id" : {
+                    "type" : "string",
+                    "description" : "HMAC key access ID. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long.",
+                    "title" : "HMAC Access Key",
+                    "examples" : [ "1234567890abcdefghij1234" ],
+                    "airbyte_secret" : true,
+                    "always_show" : true
+                  },
+                  "hmac_key_secret" : {
+                    "type" : "string",
+                    "description" : "The corresponding secret for the access ID. It is a 40-character base-64 encoded string.",
+                    "title" : "HMAC Secret",
+                    "examples" : [ "1234567890abcdefghij1234567890ABCDEFGHIJ" ],
+                    "airbyte_secret" : true,
+                    "always_show" : true
+                  }
+                },
+                "required" : [ "credential_type", "hmac_key_access_id", "hmac_key_secret" ]
+              } ],
+              "title" : "Credential",
+              "type" : "object"
+            },
+            "gcs_bucket_path" : {
+              "type" : "string",
+              "description" : "Directory under the GCS bucket where data will be written.",
+              "title" : "GCS Bucket Path",
+              "examples" : [ "data_sync/test" ]
+            },
+            "gcs_bucket_name" : {
+              "type" : "string",
+              "description" : "The name of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\">here</a>.",
+              "title" : "GCS Bucket Name",
+              "examples" : [ "airbyte_sync" ]
+            }
+          },
+          "required" : [ "method", "credential", "gcs_bucket_path", "gcs_bucket_name" ]
+        } ],
+        "description" : "The way data will be uploaded to BigQuery.",
+        "title" : "Loading Method",
+        "group" : "connection",
+        "order" : 3,
+        "display_type" : "radio",
+        "type" : "object"
+      },
       "credentials_json" : {
         "type" : "string",
         "description" : "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#service-account-key\">docs</a> if you need help generating this key. Default credentials will be used if this field is left empty.",
