@@ -85,8 +85,8 @@ class NetsuiteSourceConfigurationFactory :
                 jdbcProperties[CLIENT_SECRET] = authenticationMethod.clientSecret
                 jdbcProperties[TOKEN_ID] = authenticationMethod.tokenId
                 jdbcProperties[TOKEN_SECRET] = authenticationMethod.tokenSecret
-                // Token password needs is no reusable to be recalculated for each connection.
-                // replace the plain JDBC properties map with a token dispensing map
+                // Token password needs is not reusable and recalculated for each connection.
+                // replace the plain JDBC properties map with a token dispensing map.
                 props = OAuth1TokenDispensingJdbcProperties(jdbcProperties, pojo.accountId)
             }
         }
@@ -108,9 +108,6 @@ class NetsuiteSourceConfigurationFactory :
         }
         Class.forName("com.netsuite.jdbc.openaccess.OpenAccessDriver")
 
-        // todo: fix netsuite address.
-        // example:
-        // jdbc:ns://<ServiceHost>:1708;ServerDataSource=NetSuite2.com;Encrypted=1;NegotiateSSLClose=false;CustomProperties=(AccountID=<accountID>;RoleID=<roleID>);
         val address =
             "%s:%d;ServerDataSource=NetSuite2.com;encrypted=1;NegotiateSSLClose=false;CustomProperties=(AccountID=${pojo.accountId};RoleID=${pojo.roleId})"
         val jdbcUrlFmt = "jdbc:ns://${address}"

@@ -5,7 +5,7 @@
 package io.airbyte.integrations.source.netsuite
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.Base64
+import java.util.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import org.apache.commons.lang3.RandomStringUtils
@@ -15,20 +15,22 @@ private val log = KotlinLogging.logger {}
 /**
  * How TBA works in SuiteAnalytics connect over jdbc: the values of client Id (aka consumer key),
  * client secret, token id and token secret are used to calculate an HMAC sha256 hash on a base
- * string that consists of the following: netsuite account id & client id & token id & nonce &
- * timestamp
+ * string that consists of the following: "netsuite account id & client id & token id & nonce &
+ * timestamp"
  *
- * nonce is randomly generated alphanumeric string of 20 characters. timestamp is current unix time.
+ * nonce is a randomly generated alphanumeric string of 20 characters. Timestamp is current unix
+ * time.
  *
- * The value of this string is then hased with a string that consists of: client secret $ token
- * secret
+ * The value of this string is then hased with a string that consists of: "client secret & token
+ * secret"
  *
  * In Jdbc connection the username is always "TBA" for token-based authentication, And the password
- * the hashed signature value is used in the following string: base string & signature &
- * "HMAC-SHA256"
+ * the hashed signature value is used in the following string: "base string & signature &
+ * HMAC-SHA256"
  *
- * The signature is valid for 5 minutes. Connecting to netsuite with a token password that was
- * previously used is not allowed A connection is valid for up to 60 minutes
+ * The signature is valid for 5 minutes. A token password is not reusable - connecting to netsuite
+ * with a token password that was previously used is not allowed. A TBA authenticated connection is
+ * valid for up to 60 minutes.
  */
 const val USERNAME = "user"
 const val PASSWORD = "password"
@@ -47,7 +49,7 @@ private fun computeShaHash(baseString: String, key: String, algorithm: String): 
     return String(Base64.getEncoder().encode(hash))
 }
 
-private fun computeSignature(
+fun computeSignature(
     account: String,
     clientId: String,
     clientSecret: String,
@@ -72,7 +74,7 @@ private fun generateNetsuiteOAuth1TokenPassword(
 
     // Nonce and timeStamp must be unique for each request.
     val nonce: String = RandomStringUtils.secure().nextAlphanumeric(20)
-    val timeStamp = System.currentTimeMillis() / 1000L
+    val timestamp = System.currentTimeMillis() / 1000L
 
     val signature: String =
         computeSignature(
@@ -82,7 +84,7 @@ private fun generateNetsuiteOAuth1TokenPassword(
             tokenId,
             tokenSecret,
             nonce,
-            timeStamp,
+            timestamp,
         )
     log.debug { "Generated token password: $signature" }
     return signature
