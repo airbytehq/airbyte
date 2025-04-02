@@ -1079,8 +1079,6 @@ class IncrementalStream(BaseStream, ABC):
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        # if self._sync_mode is None:
-        #     raise RuntimeError("sync_mode is not defined")
         if self._state:
             if self.state_pk == "timestamp":
                 return {self.cursor_field: int(self._state.timestamp() * 1000)}
