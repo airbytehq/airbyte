@@ -55,6 +55,6 @@ data class DefaultJdbcConstants(
         internal const val FIELD_OVERHEAD_BYTES = 16L
         // We're targeting use of 60% of the available memory in order to allow
         // for some headroom for other garbage collection.
-        internal const val MEM_CAPACITY_RATIO: Double = 0.6
+        internal const val MEM_CAPACITY_RATIO: Double = 0.9
     }
 }
