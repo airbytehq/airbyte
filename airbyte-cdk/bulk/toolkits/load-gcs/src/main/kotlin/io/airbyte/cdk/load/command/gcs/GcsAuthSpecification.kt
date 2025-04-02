@@ -23,7 +23,7 @@ sealed class GcsAuthSpecification(
     @get:JsonProperty("credential_type")
     val credentialType: Type
 ) {
-    enum class Type(@get:JsonValue val typeName: String) {
+    enum class Type(@get:JsonValue val authTypeName: String) {
         HMAC_KEY("HMAC_KEY"),
     }
 
