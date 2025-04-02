@@ -22,18 +22,22 @@ import io.airbyte.cdk.load.file.parquet.ParquetWriterConfigurationProvider
  * Mix-in to provide file format configuration.
  *
  * NOTE: This assumes a fixed set of file formats. If you need to support a different set, clone the
- * [ObjectStorageFormatSpecification] class with a new set of enums.
+ * [DeprecatedObjectStorageFormatSpecification] class with a new set of enums.
  *
  * See [io.airbyte.cdk.load.command.DestinationConfiguration] for more details on how to use this
  * interface.
+ *
+ * This class has been deprecated. The Avro and Parquet formats from this class exist to support the
+ * legacy S3 destination, in the future if we add avro and parquet back we will add back a less
+ * complicated version
  */
-interface ObjectStorageFormatSpecificationProvider {
+interface DeprecatedObjectStorageFormatSpecificationProvider {
     @get:JsonSchemaTitle("Output Format")
     @get:JsonPropertyDescription(
         "Format of the data output. See <a href=\"https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema\">here</a> for more details",
     )
     @get:JsonProperty("format")
-    val format: ObjectStorageFormatSpecification
+    val format: DeprecatedObjectStorageFormatSpecification
 
     fun toObjectStorageFormatConfiguration(): ObjectStorageFormatConfiguration {
         return when (format) {
@@ -95,7 +99,7 @@ interface ObjectStorageFormatSpecificationProvider {
     JsonSubTypes.Type(value = AvroFormatSpecification::class, name = "Avro"),
     JsonSubTypes.Type(value = ParquetFormatSpecification::class, name = "Parquet")
 )
-sealed class ObjectStorageFormatSpecification(
+sealed class DeprecatedObjectStorageFormatSpecification(
     @JsonSchemaTitle("Format Type") open val formatType: Type
 ) {
     enum class Type(@get:JsonValue val typeName: String) {
@@ -124,7 +128,7 @@ class CSVFormatSpecification(
     @JsonProperty("format_type")
     override val formatType: Type = Type.CSV
 ) :
-    ObjectStorageFormatSpecification(formatType),
+    DeprecatedObjectStorageFormatSpecification(formatType),
     FlatteningSpecificationProvider,
     ObjectStorageCompressionSpecificationProvider {
     override val flattening: FlatteningSpecificationProvider.Flattening =
@@ -140,7 +144,7 @@ class JsonFormatSpecification(
     @JsonProperty("format_type")
     override val formatType: Type = Type.JSONL
 ) :
-    ObjectStorageFormatSpecification(formatType),
+    DeprecatedObjectStorageFormatSpecification(formatType),
     FlatteningSpecificationProvider,
     ObjectStorageCompressionSpecificationProvider {
     override val flattening: FlatteningSpecificationProvider.Flattening? =
@@ -156,7 +160,7 @@ class AvroFormatSpecification(
     @JsonProperty("format_type")
     @JsonSchemaInject(json = """{"order":0}""")
     override val formatType: Type = Type.AVRO
-) : ObjectStorageFormatSpecification(formatType) {
+) : DeprecatedObjectStorageFormatSpecification(formatType) {
 
     @JsonSchemaTitle("Compression Codec")
     @JsonPropertyDescription(
@@ -174,7 +178,7 @@ class ParquetFormatSpecification(
     @JsonSchemaTitle("Format Type")
     @JsonProperty("format_type")
     override val formatType: Type = Type.PARQUET
-) : ObjectStorageFormatSpecification(formatType) {
+) : DeprecatedObjectStorageFormatSpecification(formatType) {
     enum class ParquetFormatCompressionCodec {
         UNCOMPRESSED,
         SNAPPY,
@@ -243,12 +247,6 @@ data class JsonFormatConfiguration(
 data class CSVFormatConfiguration(
     override val extension: String = "csv",
     override val rootLevelFlattening: Boolean = false
-) : ObjectStorageFormatConfiguration {}
-
-data class MSSQLCSVFormatConfiguration(
-    override val extension: String = "csv",
-    override val rootLevelFlattening: Boolean = true,
-    val validateValuesPreLoad: Boolean
 ) : ObjectStorageFormatConfiguration {}
 
 data class AvroFormatConfiguration(

@@ -31,6 +31,8 @@ OpenTelemetry
 Datadog
 [Dd]eduplication
 Python
+MarkDownLint
+markdownlint-cli2
 
 # Common acronyms and initialisms that don't need definitions
 

@@ -26,6 +26,7 @@ import io.debezium.connector.mongodb.MongoDbPartition;
 import io.debezium.connector.mongodb.ResumeTokens;
 import io.debezium.pipeline.spi.Partition;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -149,7 +150,9 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
     final DebeziumPropertiesManager debeziumPropertiesManager =
         new MongoDbDebeziumPropertiesManager(baseProperties, config, catalog, Collections.emptyList());
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
-    LOGGER.info("properties: " + debeziumProperties);
+    HashMap<Object, Object> safeProps = new HashMap<>(debeziumProperties);
+    safeProps.put("mongodb.password", "****");
+    LOGGER.info("properties: " + safeProps);
     return parseSavedOffset(debeziumProperties);
   }
 

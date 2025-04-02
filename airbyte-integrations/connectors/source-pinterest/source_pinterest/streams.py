@@ -15,9 +15,10 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import WaitTimeFromHeaderBackoffStrategy
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_protocol.models import FailureType
+from source_pinterest.components.error_mapping import get_pinterest_ad_account_error_mapping
 
 from .utils import get_analytics_columns, to_datetime_str
 
@@ -333,3 +334,34 @@ class PinterestAnalyticsStream(IncrementalPinterestSubStream):
             params.update({self.analytics_target_ids: stream_slice["parent"]["id"]})
 
         return params
+
+
+class AdAccountValidationStream(PinterestStream):
+    """
+    This stream checks if the given ad_account_id exists by making an API request.
+
+    - If the account exists, the API returns 200.
+    - If the account does not exist, it returns an error.
+    """
+
+    def __init__(self, config: Mapping[str, Any]) -> None:
+        self.account_id = config.get("account_id")
+        super().__init__(config)
+
+    def path(self, **kwargs) -> str:
+        """Returns the API endpoint for validating an account ID."""
+        return f"ad_accounts/{self.account_id}"
+
+    def get_error_mapping(self):
+        """Maps API errors using predefined error messages."""
+        return get_pinterest_ad_account_error_mapping(self.account_id)
+
+    def get_error_handler(self) -> HttpStatusErrorHandler:
+        return HttpStatusErrorHandler(logger=self.logger, error_mapping=self.get_error_mapping())
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """Returns the response if the account exists, otherwise throws an error."""
+        if response.status_code == 200:
+            yield response.json()
+        else:
+            yield from []
