@@ -6,10 +6,13 @@ package io.airbyte.integrations.destination.bigquery.spec
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.load.command.gcs.GcsCommonSpecification
 import io.airbyte.cdk.load.command.gcs.GcsRegion
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.protocol.models.v0.DestinationSyncMode
@@ -41,7 +44,11 @@ class BigquerySpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 2}""")
     val datasetId: String = ""
 
-    // TODO loading method
+    @get:JsonSchemaTitle("Loading Method")
+    @get:JsonPropertyDescription("""The way data will be uploaded to BigQuery.""")
+    @get:JsonProperty("loading_method")
+    @get:JsonSchemaInject(json = """{"group": "connection", "order": 3, "display_type": "radio"}""")
+    val loadingMethod: LoadingMethodSpecification? = BatchedStandardInsert()
 
     @get:JsonSchemaTitle("Service Account Key JSON (Required for cloud, optional for open-source)")
     @get:JsonPropertyDescription(
@@ -80,6 +87,28 @@ class BigquerySpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8, "default": false}""")
     val disableTypingDeduping: Boolean? = null
 }
+
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "method"
+)
+@JsonSubTypes(
+    JsonSubTypes.Type(value = BatchedStandardInsert::class, name = "Standard"),
+    JsonSubTypes.Type(value = GcsStaging::class, name = "GCS Staging"),
+)
+sealed class LoadingMethodSpecification(@JsonProperty("method") val method: LoadingMethod) {
+    enum class LoadingMethod(@get:JsonValue val typeName: String) {
+        BATCHED_STANDARD_INSERT("Standard"),
+        GCS("GCS Staging"),
+    }
+}
+
+@JsonSchemaTitle("Batched Standard Inserts")
+class BatchedStandardInsert : LoadingMethodSpecification(LoadingMethod.BATCHED_STANDARD_INSERT)
+
+@JsonSchemaTitle("GCS Staging")
+abstract class GcsStaging : GcsCommonSpecification, LoadingMethodSpecification(LoadingMethod.GCS)
 
 // bigquery supports a subset of GCS regions.
 enum class BigqueryRegion(@get:JsonValue val region: String, val gcsRegion: GcsRegion) {
