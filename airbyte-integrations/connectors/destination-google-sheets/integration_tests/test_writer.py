@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from pathlib import Path
+
 import pytest
 from destination_google_sheets.writer import GoogleSheetsWriter
 from integration_tests.test_spreadsheet import TEST_SPREADSHEET
@@ -15,7 +17,7 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog
 # path to configured_catalog json file
 TEST_CATALOG_PATH: str = "integration_tests/test_data/test_writer_catalog.json"
 # reading prepared catalog with streams
-TEST_CATALOG: ConfiguredAirbyteCatalog = ConfiguredAirbyteCatalog.parse_file(TEST_CATALOG_PATH)
+TEST_CATALOG: ConfiguredAirbyteCatalog = ConfiguredAirbyteCatalog.model_validate_json(Path(TEST_CATALOG_PATH).read_text())
 # define test writer
 TEST_WRITER: GoogleSheetsWriter = GoogleSheetsWriter(TEST_SPREADSHEET)
 # set flush buffer interval

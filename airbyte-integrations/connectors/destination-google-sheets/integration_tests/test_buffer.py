@@ -4,6 +4,7 @@
 
 
 import io
+from pathlib import Path
 from typing import Iterable
 
 import pytest
@@ -20,7 +21,7 @@ TEST_CATALOG_PATH: str = "integration_tests/test_data/test_buffer_catalog.json"
 # path to test records txt file
 TEST_RECORDS_PATH: str = "integration_tests/test_data/messages.txt"
 # reading prepared catalog with streams
-TEST_CATALOG: ConfiguredAirbyteCatalog = ConfiguredAirbyteCatalog.parse_file(TEST_CATALOG_PATH)
+TEST_CATALOG: ConfiguredAirbyteCatalog = ConfiguredAirbyteCatalog.model_validate_json(Path(TEST_CATALOG_PATH).read_text())
 # instance of WriteBufferMixin
 TEST_WRITE_BUFFER: WriteBufferMixin = WriteBufferMixin()
 
