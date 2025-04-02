@@ -31,7 +31,10 @@ class DestinationGoogleSheets(Destination):
         parsed_args = self.parse_args(args)
         output_messages = self.run_cmd(parsed_args)
         for message in output_messages:
-            print(orjson.dumps(message.model_dump(exclude_unset=True)).decode())
+            if hasattr(message, "model_dump"):
+                print(orjson.dumps(message.model_dump(exclude_unset=True)).decode())
+            else:
+                print(message.json(exclude_unset=True))
 
     def check(self, logger: logging.Logger, config: Dict[str, Any]) -> AirbyteConnectionStatus:
         """
