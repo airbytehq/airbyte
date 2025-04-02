@@ -909,7 +909,6 @@ class CustomerBalanceTransactions(ParentIncrementalStripeSubStream):
         latest_cursor_minus_2 = latest_record.get(self.cursor_field) - int(timedelta(days=2).total_seconds())
         today_minus_7 = int(datetime.utcnow().timestamp()) - int(timedelta(days=7).total_seconds())
         new_cursor = max(latest_cursor_minus_2, today_minus_7, previous_cursor_minus_2)
-
         updated_parents = {
             p.name: new_cursor
             for p in self.parent_streams
