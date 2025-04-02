@@ -19,7 +19,9 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 )
 @JsonSubTypes(JsonSubTypes.Type(value = GcsHmacKeySpecification::class, name = "HMAC key"))
 sealed class GcsAuthSpecification(
-    @JsonSchemaTitle("Credential Type") @JsonProperty("credential_type") val credentialType: Type
+    @JsonSchemaTitle("Credential Type")
+    @get:JsonProperty("credential_type")
+    val credentialType: Type
 ) {
     enum class Type(@get:JsonValue val typeName: String) {
         HMAC_KEY("HMAC_KEY"),
