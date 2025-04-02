@@ -973,8 +973,8 @@ class ClientSideIncrementalStream(BaseStream, CheckpointMixin):
                 state_value = self._start_date
             else:
                 state_value = (
-                    pendulum.parse(record.get(self.cursor_field))
-                    if isinstance(record.get(self.cursor_field), str)
+                    pendulum.parse(state_value)
+                    if isinstance(state_value, str)
                     else pendulum.from_format(str(state_value), self.cursor_field_datetime_format)
                 )
         # compare the state with record values and get the max value between of two
