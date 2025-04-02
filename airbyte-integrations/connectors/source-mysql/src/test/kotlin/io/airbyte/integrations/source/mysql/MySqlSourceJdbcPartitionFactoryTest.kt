@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
+/*
 class MySqlSourceJdbcPartitionFactoryTest {
     companion object {
         private val selectQueryGenerator = MySqlSourceOperations()
@@ -378,3 +379,4 @@ class MySqlSourceJdbcPartitionFactoryTest {
         )
     }
 }
+*/

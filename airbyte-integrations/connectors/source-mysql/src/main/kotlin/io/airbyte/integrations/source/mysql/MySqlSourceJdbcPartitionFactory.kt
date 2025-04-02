@@ -132,7 +132,10 @@ class MySqlSourceJdbcPartitionFactory(
             return MySqlSourceJdbcNonResumableSnapshotWithCursorPartition(
                 selectQueryGenerator,
                 streamState,
-                cursorChosenFromCatalog
+                cursorChosenFromCatalog,
+                skipWritingAndSerialization = config.skipSerializationAndWriting,
+                skipWriting = config.skipWriting,
+                skipSynchronizedCounts = config.skipSerializationAndWriting
             )
         }
         return MySqlSourceJdbcSnapshotWithCursorPartition(
@@ -435,7 +438,9 @@ class MySqlSourceJdbcPartitionFactory(
                 uBound,
                 cursor,
                 null,
-
+                skipWriting = config.skipWriting,
+                skipWritingAndSerialization = config.skipSerializationAndWriting,
+                skipSynchronizedCounts = config.skipSynchronizedCounts
             )
         }
     }

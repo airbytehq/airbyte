@@ -314,9 +314,9 @@ class FeedReader(
         if (stateMessages.isEmpty()) {
             return
         }
-        log.info { "checkpoint of ${stateMessages.size} state message(s)" }
-        for (stateMessage in stateMessages) {
-            root.outputConsumer.accept(stateMessage)
-        }
+        log.info { "dev-nulling checkpoint of ${stateMessages.size} state message(s)" }
+        //for (stateMessage in stateMessages) {
+            // root.outputConsumer.accept(stateMessage)
+        //}
     }
 }
