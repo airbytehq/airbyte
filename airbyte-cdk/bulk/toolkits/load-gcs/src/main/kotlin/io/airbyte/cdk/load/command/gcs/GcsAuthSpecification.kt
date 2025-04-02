@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 
@@ -31,6 +32,9 @@ sealed class GcsAuthSpecification(
 }
 
 @JsonSchemaTitle("HMAC key")
+@JsonSchemaDescription(
+    """An HMAC key is a type of credential and can be associated with a service account or a user account in Cloud Storage. Read more <a href="https://cloud.google.com/storage/docs/authentication/hmackeys">here</a>."""
+)
 class GcsHmacKeySpecification(
     @get:JsonSchemaTitle("HMAC Access Key")
     @get:JsonPropertyDescription(
@@ -38,8 +42,7 @@ class GcsHmacKeySpecification(
     )
     @get:JsonProperty("hmac_key_access_id")
     @get:JsonSchemaInject(
-        json =
-            """{"examples":["1234567890abcdefghij1234"],"airbyte_secret": true,"always_show": true}"""
+        json = """{"examples":["1234567890abcdefghij1234"],"airbyte_secret": true, "order": 0}"""
     )
     val accessKeyId: String,
     @get:JsonSchemaTitle("HMAC Secret")
@@ -49,7 +52,7 @@ class GcsHmacKeySpecification(
     @get:JsonProperty("hmac_key_secret")
     @get:JsonSchemaInject(
         json =
-            """{"examples":["1234567890abcdefghij1234567890ABCDEFGHIJ"],"airbyte_secret": true,"always_show": true}"""
+            """{"examples":["1234567890abcdefghij1234567890ABCDEFGHIJ"],"airbyte_secret": true, "order": 1}"""
     )
     val secretAccessKey: String,
 ) : GcsAuthSpecification(Type.HMAC_KEY) {
