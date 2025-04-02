@@ -2,6 +2,8 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
+package io.airbyte.cdk.load.file.gcs
+
 import com.google.cloud.storage.BlobId
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
@@ -81,7 +83,7 @@ class GcsClient(private val storage: Storage, private val config: GcsClientConfi
         key: String,
         metadata: Map<String, String>
     ): StreamingUpload<GcsBlob> {
-        TODO("Not yet implemented")
+        return GcsStreamingUpload(storage, config, metadata)
     }
 
     override suspend fun delete(remoteObject: GcsBlob) {
