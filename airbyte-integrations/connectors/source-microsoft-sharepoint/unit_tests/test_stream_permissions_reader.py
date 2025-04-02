@@ -24,7 +24,7 @@ def setup_permissions_reader_class():
     reader.config = config  # Set up the necessary configuration
 
     # Mock the client creation
-    with patch("source_microsoft_sharepoint.stream_permissions_reader.SourceMicrosoftSharePointClient") as mock_client_class:
+    with patch("source_microsoft_sharepoint.sharepoint_client.SourceMicrosoftSharePointClient") as mock_client_class:
         mock_client = mock_client_class.return_value
         mock_client.client = Mock()  # Mock the client attribute of SourceMicrosoftSharePointClient
         yield reader
@@ -730,7 +730,7 @@ def test_get_site_group_members_success(setup_permissions_reader_class):
     mock_group.users = mock_users
 
     # Mock the get_client_context method
-    with patch.object(instance, "get_client_context", return_value=mock_client_context):
+    with patch.object(instance, "_get_client_context", return_value=mock_client_context):
         # Mock the execute_query_with_retry function
         with patch("source_microsoft_sharepoint.stream_permissions_reader.execute_query_with_retry") as mock_execute:
             # Mock the logging
@@ -761,7 +761,7 @@ def test_get_site_group_members_error(setup_permissions_reader_class):
     mock_site_group.id = "test_site_group_id"
 
     # Mock the get_client_context method to raise an exception
-    with patch.object(instance, "get_client_context", side_effect=Exception("Client context error")):
+    with patch.object(instance, "_get_client_context", side_effect=Exception("Client context error")):
         # Mock the logging
         with patch("logging.info") as mock_info:
             with patch("logging.warning") as mock_warning:
@@ -803,7 +803,7 @@ def test_get_site_group_members_client_context_implementation(setup_permissions_
     mock_group.users = mock_users
 
     # Mock the get_client_context method
-    with patch.object(instance, "get_client_context", return_value=mock_client_context):
+    with patch.object(instance, "_get_client_context", return_value=mock_client_context):
         # Mock the execute_query_with_retry function
         with patch("source_microsoft_sharepoint.stream_permissions_reader.execute_query_with_retry") as mock_execute:
             # Call the method
@@ -820,109 +820,47 @@ def test_get_site_group_members_client_context_implementation(setup_permissions_
             assert result[1] == {"remote_id": "site_user2", "type": "siteUser"}
 
 
-def test_get_site_prefix(setup_permissions_reader_class):
-    """Test get_site_prefix static method."""
-    # Create a mock site object
-    mock_site = Mock()
-    mock_site.web_url = "https://airbyte.sharepoint.com/sites/TestSite"
-    mock_site.site_collection.hostname = "airbyte.sharepoint.com"
-
-    # Call the static method
-    site_url, root_site_prefix = setup_permissions_reader_class.get_site_prefix(mock_site)
-
-    # Verify the results
-    assert site_url == "https://airbyte.sharepoint.com/sites/TestSite"
-    assert root_site_prefix == "airbyte"
-
-
-def test_get_site(setup_permissions_reader_class):
-    """Test get_site method with and without site_url parameter."""
-    instance = setup_permissions_reader_class
-    mock_graph_client = Mock()
-
-    # Mock for get_by_url
-    mock_site_by_url = Mock()
-    mock_graph_client.sites.get_by_url.return_value = mock_site_by_url
-
-    # Mock for root.get
-    mock_root_site = Mock()
-    mock_graph_client.sites.root.get.return_value = mock_root_site
-
-    # Mock execute_query_with_retry
-    with patch("source_microsoft_sharepoint.stream_permissions_reader.execute_query_with_retry") as mock_execute:
-        # Set up mock_execute to return the appropriate site based on the input
-        mock_execute.side_effect = lambda x: x
-
-        # Test with site_url
-        site_url = "https://airbyte.sharepoint.com/sites/TestSite"
-        result_with_url = instance.get_site(mock_graph_client, site_url)
-
-        # Verify calls
-        mock_graph_client.sites.get_by_url.assert_called_once_with(site_url)
-        mock_execute.assert_called_with(mock_site_by_url)
-        assert result_with_url == mock_site_by_url
-
-        # Reset mocks
-        mock_execute.reset_mock()
-
-        # Test without site_url
-        result_without_url = instance.get_site(mock_graph_client)
-
-        # Verify calls
-        mock_graph_client.sites.root.get.assert_called_once()
-        mock_execute.assert_called_with(mock_root_site)
-        assert result_without_url == mock_root_site
-
-
 def test_get_client_context(setup_permissions_reader_class):
     """Test get_client_context method."""
     instance = setup_permissions_reader_class
 
-    # Mock get_site
-    mock_site = Mock()
-    mock_site.web_url = "https://airbyte.sharepoint.com/sites/TestSite"
-    mock_site.site_collection.hostname = "airbyte.sharepoint.com"
-
-    # Mock get_site_prefix to return the site URL and prefix
+    # Mock site_url and root_site_prefix properties
     site_url = "https://airbyte.sharepoint.com/sites/TestSite"
     root_site_prefix = "airbyte"
 
-    # Mock ClientContext
-    mock_client_context = Mock()
-    mock_client_context_with_token = Mock()
-    mock_client_context.with_access_token.return_value = mock_client_context_with_token
-
-    # Mock auth_client and its get_token_response_object_wrapper method
-    mock_auth_client = Mock()
-    mock_token_func = Mock()
-    mock_auth_client.get_token_response_object_wrapper.return_value = mock_token_func
-
-    # Set the mock auth_client directly to the _auth_client attribute
-    instance._auth_client = mock_auth_client
-
-    # Set the mock one_drive_client directly to the _one_drive_client attribute
-    mock_one_drive_client = Mock()
-    instance._one_drive_client = mock_one_drive_client
-
+    # Patch the properties directly to avoid calling _set_sites_info and get_site_prefix
     with (
-        patch.object(instance, "get_site", return_value=mock_site) as mock_get_site,
-        patch.object(instance, "get_site_prefix", return_value=(site_url, root_site_prefix)) as mock_get_site_prefix,
-        patch(
-            "source_microsoft_sharepoint.stream_permissions_reader.ClientContext", return_value=mock_client_context
-        ) as mock_client_context_class,
+        patch.object(SourceMicrosoftSharePointStreamPermissionsReader, "site_url", new_callable=PropertyMock, return_value=site_url),
+        patch.object(
+            SourceMicrosoftSharePointStreamPermissionsReader, "root_site_prefix", new_callable=PropertyMock, return_value=root_site_prefix
+        ),
     ):
-        # Call the method
-        result = instance.get_client_context()
+        # Mock ClientContext
+        mock_client_context = Mock()
+        mock_client_context_with_token = Mock()
+        mock_client_context.with_access_token.return_value = mock_client_context_with_token
 
-        # Verify calls
-        mock_get_site.assert_called_once_with(mock_one_drive_client)
-        mock_get_site_prefix.assert_called_once_with(mock_site)
-        mock_client_context_class.assert_called_once_with(site_url)
-        mock_auth_client.get_token_response_object_wrapper.assert_called_once_with(tenant_prefix=root_site_prefix)
-        mock_client_context.with_access_token.assert_called_once_with(mock_token_func)
+        # Mock auth_client and its get_token_response_object_wrapper method
+        mock_auth_client = Mock()
+        mock_token_func = Mock()
+        mock_auth_client.get_token_response_object_wrapper.return_value = mock_token_func
 
-        # Verify result
-        assert result == mock_client_context_with_token
+        # Set the mock auth_client directly to the _auth_client attribute
+        instance._auth_client = mock_auth_client
+
+        with patch(
+            "source_microsoft_sharepoint.sharepoint_base_reader.ClientContext", return_value=mock_client_context
+        ) as mock_client_context_class:
+            # Call the method
+            result = instance._get_client_context()
+
+            # Verify calls
+            mock_client_context_class.assert_called_once_with(site_url)
+            mock_auth_client.get_token_response_object_wrapper.assert_called_once_with(tenant_prefix=root_site_prefix)
+            mock_client_context.with_access_token.assert_called_once_with(token_func=mock_token_func)
+
+            # Verify result
+            assert result == mock_client_context_with_token
 
 
 def test_get_token_response_object(setup_permissions_reader_class):
@@ -941,14 +879,6 @@ def test_get_token_response_object(setup_permissions_reader_class):
     result_with_prefix = instance.get_token_response_object(tenant_prefix="airbyte")
     mock_auth_client.get_token_response_object_wrapper.assert_called_once_with(tenant_prefix="airbyte")
     assert result_with_prefix == mock_token_func
-
-    # Reset mock
-    mock_auth_client.get_token_response_object_wrapper.reset_mock()
-
-    # Test without tenant_prefix
-    result_without_prefix = instance.get_token_response_object()
-    mock_auth_client.get_token_response_object_wrapper.assert_called_once_with(tenant_prefix=None)
-    assert result_without_prefix == mock_token_func
 
 
 def test_get_users(setup_permissions_reader_class):
@@ -1019,7 +949,7 @@ def test_get_site_users(setup_permissions_reader_class):
     mock_client_context.web.site_users = mock_site_users
 
     # Mock get_client_context
-    with patch.object(instance, "get_client_context", return_value=mock_client_context) as mock_get_client_context:
+    with patch.object(instance, "_get_client_context", return_value=mock_client_context) as mock_get_client_context:
         # Add a mock for execute_query_with_retry
         with patch("source_microsoft_sharepoint.stream_permissions_reader.execute_query_with_retry") as mock_execute_with_retry:
             # Call the method
@@ -1047,7 +977,7 @@ def test_get_site_groups(setup_permissions_reader_class):
     mock_client_context.web.site_groups = mock_site_groups
 
     # Mock get_client_context
-    with patch.object(instance, "get_client_context", return_value=mock_client_context) as mock_get_client_context:
+    with patch.object(instance, "_get_client_context", return_value=mock_client_context) as mock_get_client_context:
         # Add mock for execute_query_with_retry
         with patch("source_microsoft_sharepoint.stream_permissions_reader.execute_query_with_retry") as mock_execute_with_retry:
             # Call the method
@@ -1099,16 +1029,23 @@ def test_get_devices(setup_permissions_reader_class):
     mock_devices_response = Mock()
     mock_devices_response.json.return_value = {"value": [{"id": "device1"}, {"id": "device2"}]}
 
-    # Mock execute_request_direct_with_retry instead of directly mocking execute_request_direct
-    with patch("source_microsoft_sharepoint.stream_permissions_reader.execute_request_direct_with_retry") as mock_execute_with_retry:
-        # Set up mock_execute_with_retry to return the devices response
-        mock_execute_with_retry.return_value = mock_devices_response
+    # Mock one_drive_client property to avoid real authentication
+    mock_one_drive_client = Mock()
 
-        # Call the method
-        result = instance.get_devices()
+    # Patch the one_drive_client property directly
+    with patch.object(
+        SourceMicrosoftSharePointStreamPermissionsReader, "one_drive_client", new_callable=PropertyMock, return_value=mock_one_drive_client
+    ):
+        # Mock execute_request_direct_with_retry instead of directly mocking execute_request_direct
+        with patch("source_microsoft_sharepoint.stream_permissions_reader.execute_request_direct_with_retry") as mock_execute_with_retry:
+            # Set up mock_execute_with_retry to return the devices response
+            mock_execute_with_retry.return_value = mock_devices_response
 
-        # Verify calls
-        mock_execute_with_retry.assert_called_once_with(instance._one_drive_client, "devices")
+            # Call the method
+            result = instance.get_devices()
 
-        # Verify result
-        assert result == [{"id": "device1"}, {"id": "device2"}]
+            # Verify calls
+            mock_execute_with_retry.assert_called_once_with(mock_one_drive_client, "devices")
+
+            # Verify result
+            assert result == [{"id": "device1"}, {"id": "device2"}]
