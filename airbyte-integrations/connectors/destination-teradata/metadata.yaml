@@ -2,12 +2,14 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 58e6f9da-904e-11ed-a1eb-0242ac120002
-  dockerImageTag: 0.2.1
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/destination-teradata
   githubIssueLabel: destination-teradata
   icon: teradata.svg
   license: MIT
   name: Teradata Vantage
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.0@sha256:5a1a21c75c5e1282606de9fa539ba136520abe2fbd013058e988bb0297a9f454
   registryOverrides:
     cloud:
       enabled: true
@@ -15,6 +17,8 @@ data:
       enabled: true
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/teradata
+  supportsDbt: true
+  supportsRefreshes: true
   tags:
     - language:java
   ab_internal:
