@@ -43,10 +43,10 @@ class BigQueryDirectLoadingStorageOperation(
     ) {
     private val rateLimiter: RateLimiter = RateLimiter.create(0.07)
     companion object {
-        private const val HTTP_STATUS_CODE_FORBIDDEN = 403
-        private const val HTTP_STATUS_CODE_NOT_FOUND = 404
+        const val HTTP_STATUS_CODE_FORBIDDEN = 403
+        const val HTTP_STATUS_CODE_NOT_FOUND = 404
 
-        private val CONFIG_ERROR_MSG =
+        val CONFIG_ERROR_MSG =
             """
             |Failed to write to destination schema.
             |   1. Make sure you have all required permissions for writing to the schema.
