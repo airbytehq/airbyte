@@ -31,10 +31,14 @@ class DestinationGoogleSheets(Destination):
         parsed_args = self.parse_args(args)
         output_messages = self.run_cmd(parsed_args)
         for message in output_messages:
-            if hasattr(message, "model_dump"):
+            if isinstance(message, str):
+                print(message)
+            elif hasattr(message, "model_dump"):
                 print(orjson.dumps(message.model_dump(exclude_unset=True)).decode())
-            else:
+            elif hasattr(message, "json"):
                 print(message.json(exclude_unset=True))
+            else:
+                print(orjson.dumps(message.__dict__).decode())
 
     def check(self, logger: logging.Logger, config: Dict[str, Any]) -> AirbyteConnectionStatus:
         """
