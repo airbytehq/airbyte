@@ -3,11 +3,13 @@
 #
 
 import logging
-from typing import Any, Iterable, Mapping
+import orjson
+from typing import Any, Dict, Iterable, List, Mapping
 
 from google.auth.exceptions import RefreshError
 
 from airbyte_cdk.destinations import Destination
+from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 
 from .client import GoogleSheetsClient
@@ -16,8 +18,22 @@ from .spreadsheet import GoogleSheets
 from .writer import GoogleSheetsWriter
 
 
+logger = logging.getLogger("airbyte")
+
+
 class DestinationGoogleSheets(Destination):
-    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def run(self, args: List[str]) -> None:
+        """
+        Override the run method to handle Pydantic v2 serialization changes.
+        This fixes the 'str' object has no attribute 'json' error.
+        """
+        init_uncaught_exception_handler(logger)
+        parsed_args = self.parse_args(args)
+        output_messages = self.run_cmd(parsed_args)
+        for message in output_messages:
+            print(orjson.dumps(message.model_dump(exclude_unset=True)).decode())
+
+    def check(self, logger: logging.Logger, config: Dict[str, Any]) -> AirbyteConnectionStatus:
         """
         Connection check method for Google Spreadsheets.
         Info:
@@ -39,7 +55,7 @@ class DestinationGoogleSheets(Destination):
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(err)}")
 
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Dict[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
         """
         Reads the input stream of messages, config, and catalog to write data to the destination.
