@@ -33,6 +33,7 @@
           "title" : "Batched Standard Inserts",
           "type" : "object",
           "additionalProperties" : true,
+          "description" : "Direct loading using batched SQL INSERT statements. This method uses the BigQuery driver to convert large INSERT statements into file uploads automatically.",
           "properties" : {
             "method" : {
               "type" : "string",
@@ -45,6 +46,7 @@
           "title" : "GCS Staging",
           "type" : "object",
           "additionalProperties" : true,
+          "description" : "Writes large batches of records to a file, uploads the file to GCS, then uses COPY INTO to load your data into BigQuery.",
           "properties" : {
             "method" : {
               "type" : "string",
@@ -56,6 +58,7 @@
                 "title" : "HMAC key",
                 "type" : "object",
                 "additionalProperties" : true,
+                "description" : "An HMAC key is a type of credential and can be associated with a service account or a user account in Cloud Storage. Read more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\">here</a>.",
                 "properties" : {
                   "credential_type" : {
                     "type" : "string",
@@ -68,7 +71,7 @@
                     "title" : "HMAC Access Key",
                     "examples" : [ "1234567890abcdefghij1234" ],
                     "airbyte_secret" : true,
-                    "always_show" : true
+                    "order" : 0
                   },
                   "hmac_key_secret" : {
                     "type" : "string",
@@ -76,25 +79,35 @@
                     "title" : "HMAC Secret",
                     "examples" : [ "1234567890abcdefghij1234567890ABCDEFGHIJ" ],
                     "airbyte_secret" : true,
-                    "always_show" : true
+                    "order" : 1
                   }
                 },
                 "required" : [ "credential_type", "hmac_key_access_id", "hmac_key_secret" ]
               } ],
               "title" : "Credential",
+              "order" : 0,
               "type" : "object"
+            },
+            "keep_files_in_gcs-bucket" : {
+              "type" : "string",
+              "enum" : [ "Delete all tmp files from GCS", "Keep all tmp files in GCS" ],
+              "description" : "This upload method is supposed to temporary store records in GCS bucket. By this select you can chose if these records should be removed from GCS when migration has finished. The default \"Delete all tmp files from GCS\" value is used if not set explicitly.",
+              "title" : "GCS Tmp Files Post-Processing",
+              "order" : 3
             },
             "gcs_bucket_path" : {
               "type" : "string",
               "description" : "Directory under the GCS bucket where data will be written.",
               "title" : "GCS Bucket Path",
-              "examples" : [ "data_sync/test" ]
+              "examples" : [ "data_sync/test" ],
+              "order" : 2
             },
             "gcs_bucket_name" : {
               "type" : "string",
               "description" : "The name of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\">here</a>.",
               "title" : "GCS Bucket Name",
-              "examples" : [ "airbyte_sync" ]
+              "examples" : [ "airbyte_sync" ],
+              "order" : 1
             }
           },
           "required" : [ "method", "credential", "gcs_bucket_path", "gcs_bucket_name" ]
