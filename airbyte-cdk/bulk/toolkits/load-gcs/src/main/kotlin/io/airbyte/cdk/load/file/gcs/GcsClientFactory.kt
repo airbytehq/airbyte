@@ -4,9 +4,11 @@
 
 package io.airbyte.cdk.load.file.gcs
 
+import GcsClient
 import com.google.auth.oauth2.AwsCredentials
 import com.google.cloud.storage.StorageOptions
 import io.airbyte.cdk.load.command.gcs.GcsClientConfigurationProvider
+import io.airbyte.cdk.load.command.gcs.GcsHmacKeyConfiguration
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -20,14 +22,16 @@ class GcsClientFactory(
     @Secondary
     fun make(): GcsClient {
         val config = gcsClientConfigurationProvider.gcsClientConfiguration
+        val credentials = config.credential as GcsHmacKeyConfiguration
+
+        val awsCredentials =
+            AwsCredentials.newBuilder()
+                .setClientId(credentials.accessKeyId)
+                .setClientSecret(credentials.secretAccessKey)
+                .build()
 
         // For HMAC authentication, we use StorageOptions with AwsCredentials
-        val storage =
-            StorageOptions.newBuilder()
-                .setProjectId(config.projectId)
-                .setCredentials(AwsCredentials.create(config.hmacKeyAccessId, config.hmacKeySecret))
-                .build()
-                .service
+        val storage = StorageOptions.newBuilder().setCredentials(awsCredentials).build().service
 
         return GcsClient(storage, config)
     }
