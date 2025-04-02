@@ -16,14 +16,16 @@ interface GcsCommonSpecification {
         """The name of the GCS bucket. Read more <a href="https://cloud.google.com/storage/docs/naming-buckets">here</a>."""
     )
     @get:JsonProperty("gcs_bucket_name")
-    @get:JsonSchemaInject(json = """{"examples":["airbyte_sync"]}""")
+    @get:JsonSchemaInject(json = """{"examples":["airbyte_sync"], "order": 1}""")
     val gcsBucketName: String
 
     @get:JsonSchemaTitle("GCS Bucket Path")
     @get:JsonPropertyDescription("Directory under the GCS bucket where data will be written.")
     @get:JsonProperty("gcs_bucket_path")
-    @get:JsonSchemaInject(json = """{"examples":["data_sync/test"]}""")
+    @get:JsonSchemaInject(json = """{"examples":["data_sync/test"], "order": 2}""")
     val path: String
 
-    @get:JsonSchemaTitle("Credential") val credential: GcsAuthSpecification
+    @get:JsonSchemaTitle("Credential")
+    @get:JsonSchemaInject(json = """{"order": 0}""")
+    val credential: GcsAuthSpecification
 }

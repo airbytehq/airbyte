@@ -12,12 +12,12 @@ data class GcsClientConfiguration(
 ) {
     constructor(
         commonSpecification: GcsCommonSpecification,
-        regionSpecification: GcsRegionSpecification,
+        regionSpecification: GcsRegion,
     ) : this(
         commonSpecification.gcsBucketName,
         commonSpecification.path,
         commonSpecification.credential.toGcsAuthConfiguration(),
-        regionSpecification.gcsBucketRegion,
+        regionSpecification,
     )
 }
 
