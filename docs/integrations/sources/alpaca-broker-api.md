@@ -30,6 +30,6 @@ API reference: https://docs.alpaca.markets/reference/getallaccounts
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2025-04-02 | | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
+| 0.0.1 | 2025-04-02 | [56962](https://github.com/airbytehq/airbyte/pull/56962) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>
