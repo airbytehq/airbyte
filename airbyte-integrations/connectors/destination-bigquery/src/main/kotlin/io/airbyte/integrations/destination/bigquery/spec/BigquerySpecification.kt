@@ -49,7 +49,7 @@ class BigquerySpecification : ConfigurationSpecification() {
     @get:JsonPropertyDescription("""The way data will be uploaded to BigQuery.""")
     @get:JsonProperty("loading_method")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 3, "display_type": "radio"}""")
-    val loadingMethod: LoadingMethodSpecification? = BatchedStandardInsert()
+    val loadingMethod: LoadingMethodSpecification? = BatchedStandardInsertSpecification()
 
     @get:JsonSchemaTitle("Service Account Key JSON (Required for cloud, optional for open-source)")
     @get:JsonPropertyDescription(
@@ -95,8 +95,8 @@ class BigquerySpecification : ConfigurationSpecification() {
     property = "method"
 )
 @JsonSubTypes(
-    JsonSubTypes.Type(value = BatchedStandardInsert::class, name = "Standard"),
-    JsonSubTypes.Type(value = GcsStaging::class, name = "GCS Staging"),
+    JsonSubTypes.Type(value = BatchedStandardInsertSpecification::class, name = "Standard"),
+    JsonSubTypes.Type(value = GcsStagingSpecification::class, name = "GCS Staging"),
 )
 sealed class LoadingMethodSpecification(@JsonProperty("method") val method: LoadingMethod) {
     enum class LoadingMethod(@get:JsonValue val typeName: String) {
@@ -109,13 +109,15 @@ sealed class LoadingMethodSpecification(@JsonProperty("method") val method: Load
 @JsonSchemaDescription(
     "Direct loading using batched SQL INSERT statements. This method uses the BigQuery driver to convert large INSERT statements into file uploads automatically."
 )
-class BatchedStandardInsert : LoadingMethodSpecification(LoadingMethod.BATCHED_STANDARD_INSERT)
+class BatchedStandardInsertSpecification :
+    LoadingMethodSpecification(LoadingMethod.BATCHED_STANDARD_INSERT)
 
 @JsonSchemaTitle("GCS Staging")
 @JsonSchemaDescription(
     "Writes large batches of records to a file, uploads the file to GCS, then uses COPY INTO to load your data into BigQuery."
 )
-abstract class GcsStaging : GcsCommonSpecification, LoadingMethodSpecification(LoadingMethod.GCS) {
+abstract class GcsStagingSpecification :
+    GcsCommonSpecification, LoadingMethodSpecification(LoadingMethod.GCS) {
     @get:JsonSchemaTitle("GCS Tmp Files Post-Processing")
     @get:JsonPropertyDescription(
         """This upload method is supposed to temporary store records in GCS bucket. By this select you can chose if these records should be removed from GCS when migration has finished. The default "Delete all tmp files from GCS" value is used if not set explicitly."""
