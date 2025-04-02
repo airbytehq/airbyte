@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
@@ -105,10 +106,25 @@ sealed class LoadingMethodSpecification(@JsonProperty("method") val method: Load
 }
 
 @JsonSchemaTitle("Batched Standard Inserts")
+@JsonSchemaDescription(
+    "Direct loading using batched SQL INSERT statements. This method uses the BigQuery driver to convert large INSERT statements into file uploads automatically."
+)
 class BatchedStandardInsert : LoadingMethodSpecification(LoadingMethod.BATCHED_STANDARD_INSERT)
 
 @JsonSchemaTitle("GCS Staging")
-abstract class GcsStaging : GcsCommonSpecification, LoadingMethodSpecification(LoadingMethod.GCS)
+@JsonSchemaDescription(
+    "Writes large batches of records to a file, uploads the file to GCS, then uses COPY INTO to load your data into BigQuery."
+)
+abstract class GcsStaging : GcsCommonSpecification, LoadingMethodSpecification(LoadingMethod.GCS) {
+    @get:JsonSchemaTitle("GCS Tmp Files Post-Processing")
+    @get:JsonPropertyDescription(
+        """This upload method is supposed to temporary store records in GCS bucket. By this select you can chose if these records should be removed from GCS when migration has finished. The default "Delete all tmp files from GCS" value is used if not set explicitly."""
+    )
+    // yes, this is mixed underscore+hyphen.
+    @get:JsonProperty("keep_files_in_gcs-bucket")
+    @get:JsonSchemaInject(json = """{"order": 3}""")
+    val filePostProcessing: GcsFilePostProcessing? = null
+}
 
 // bigquery supports a subset of GCS regions.
 enum class BigqueryRegion(@get:JsonValue val region: String, val gcsRegion: GcsRegion) {
@@ -156,6 +172,11 @@ enum class BigqueryRegion(@get:JsonValue val region: String, val gcsRegion: GcsR
     US_WEST2("us-west2", GcsRegion.US_WEST2),
     US_WEST3("us-west3", GcsRegion.US_WEST3),
     US_WEST4("us-west4", GcsRegion.US_WEST4),
+}
+
+enum class GcsFilePostProcessing(@get:JsonValue val postProcesing: String) {
+    DELETE("Delete all tmp files from GCS"),
+    KEEP("Keep all tmp files in GCS"),
 }
 
 enum class TransformationPriority(@get:JsonValue val transformationPriority: String) {
