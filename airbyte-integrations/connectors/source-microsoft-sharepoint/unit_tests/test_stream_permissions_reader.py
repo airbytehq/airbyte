@@ -131,7 +131,7 @@ def setup_permissions_reader_class():
 def test_get_file_permissions(setup_permissions_reader_class, permissions_response, expected_identities, expected_is_public):
     """Test get_file_permissions method with different permission scenarios.
     Tests empty permissions, public links, user permissions, and multiple identity types."""
-    
+
     instance = setup_permissions_reader_class
     mock_file = MicrosoftSharePointRemoteFile(
         uri="test.txt",
@@ -148,7 +148,7 @@ def test_get_file_permissions(setup_permissions_reader_class, permissions_respon
 
     with (
         patch("requests.get", return_value=mock_response) as mock_get,
-        patch.object(instance, "_get_headers", return_value={"Authorization": "Bearer test_token"}) as mock_headers
+        patch.object(instance, "_get_headers", return_value={"Authorization": "Bearer test_token"}) as mock_headers,
     ):
         identities, is_public = instance.get_file_permissions(mock_file, mock_logger)
 
@@ -172,7 +172,7 @@ def test_get_file_permissions(setup_permissions_reader_class, permissions_respon
 def test_get_file_permissions_error(setup_permissions_reader_class):
     """Tests error handling in get_file_permissions method.
     Verifies correct exception is raised with proper error message when API request fails."""
-    
+
     instance = setup_permissions_reader_class
     test_uri = "test.txt"
     test_url = "https://example.com/test.txt"
@@ -180,7 +180,7 @@ def test_get_file_permissions_error(setup_permissions_reader_class):
     test_drive_id = "test_drive_id"
     error_message = "Test error"
     auth_token = "Bearer test_token"
-    
+
     mock_file = MicrosoftSharePointRemoteFile(
         uri=test_uri,
         download_url=test_url,
@@ -193,11 +193,11 @@ def test_get_file_permissions_error(setup_permissions_reader_class):
 
     with (
         patch("requests.get", side_effect=requests.exceptions.RequestException(error_message)) as mock_get,
-        patch.object(instance, "_get_headers", return_value={"Authorization": auth_token}) as mock_headers
+        patch.object(instance, "_get_headers", return_value={"Authorization": auth_token}) as mock_headers,
     ):
         with pytest.raises(ErrorFetchingMetadata) as exc_info:
             instance.get_file_permissions(mock_file, mock_logger)
-            
+
         expected_error = f"An error occurred while retrieving file permissions: {error_message} Contact Support if you need assistance.\n"
         assert str(exc_info.value) == expected_error
 
@@ -205,14 +205,14 @@ def test_get_file_permissions_error(setup_permissions_reader_class):
 def test_load_identity_groups_users(setup_permissions_reader_class):
     """Tests load_identity_groups correctly handles user identities.
     Verifies method correctly returns user identities from get_users_identities."""
-    
+
     instance = setup_permissions_reader_class
     mock_logger = Mock(spec=logging.Logger)
-    
+
     user_id = "user1"
     user_name = "Test User"
     user_email = "test.user@example.com"
-    
+
     mock_user_identity = {
         "remote_id": user_id,
         "display_name": user_name,
@@ -227,10 +227,10 @@ def test_load_identity_groups_users(setup_permissions_reader_class):
         patch.object(instance, "get_site_groups_identities", return_value=[]),
         patch.object(instance, "get_applications_identities", return_value=[]),
         patch.object(instance, "get_devices_identities", return_value=[]),
-        patch.object(instance, "get_users_identities", return_value=[mock_user_identity])
+        patch.object(instance, "get_users_identities", return_value=[mock_user_identity]),
     ):
         identities = list(instance.load_identity_groups(mock_logger))
-        
+
         assert len(identities) == 1
         identity = identities[0]
         assert identity == mock_user_identity
@@ -239,15 +239,15 @@ def test_load_identity_groups_users(setup_permissions_reader_class):
 def test_load_identity_groups_groups(setup_permissions_reader_class):
     """Tests load_identity_groups correctly handles group identities.
     Verifies method correctly returns group identities from get_groups_identities."""
-    
+
     instance = setup_permissions_reader_class
     mock_logger = Mock(spec=logging.Logger)
-    
+
     group_id = "group1"
     group_name = "Test Group"
     group_description = "Test Group Description"
     group_email = "group@example.com"
-    
+
     mock_group_identity = {
         "remote_id": group_id,
         "display_name": group_name,
@@ -262,10 +262,10 @@ def test_load_identity_groups_groups(setup_permissions_reader_class):
         patch.object(instance, "get_site_groups_identities", return_value=[]),
         patch.object(instance, "get_applications_identities", return_value=[]),
         patch.object(instance, "get_devices_identities", return_value=[]),
-        patch.object(instance, "get_groups_identities", return_value=[mock_group_identity])
+        patch.object(instance, "get_groups_identities", return_value=[mock_group_identity]),
     ):
         identities = list(instance.load_identity_groups(mock_logger))
-        
+
         assert len(identities) == 1
         identity = identities[0]
         assert identity == mock_group_identity
@@ -274,14 +274,14 @@ def test_load_identity_groups_groups(setup_permissions_reader_class):
 def test_load_identity_groups_site_users(setup_permissions_reader_class):
     """Tests load_identity_groups correctly handles site user identities.
     Verifies method correctly returns site user identities from get_site_users_identities."""
-    
+
     instance = setup_permissions_reader_class
     mock_logger = Mock(spec=logging.Logger)
-    
+
     site_user_id = "site_user1"
     site_user_title = "Test Site User"
     user_email = "site.user@example.com"
-    
+
     mock_site_user_identity = {
         "remote_id": site_user_id,
         "title": site_user_title,
@@ -297,10 +297,10 @@ def test_load_identity_groups_site_users(setup_permissions_reader_class):
         patch.object(instance, "get_site_groups_identities", return_value=[]),
         patch.object(instance, "get_applications_identities", return_value=[]),
         patch.object(instance, "get_devices_identities", return_value=[]),
-        patch.object(instance, "get_site_users_identities", return_value=[mock_site_user_identity])
+        patch.object(instance, "get_site_users_identities", return_value=[mock_site_user_identity]),
     ):
         identities = list(instance.load_identity_groups(mock_logger))
-        
+
         assert len(identities) == 1
         identity = identities[0]
         assert identity == mock_site_user_identity
@@ -434,7 +434,7 @@ def test_get_users_identities(setup_permissions_reader_class):
 
         assert len(formatted_users) == 1
         assert formatted_users[0]["remote_id"] == "user1"
-        assert formatted_users[0]["display_name"] == "Test User" 
+        assert formatted_users[0]["display_name"] == "Test User"
         assert formatted_users[0]["user_principal_name"] == "test.user@example.com"
         assert formatted_users[0]["email_address"] == "test.user@example.com"
         assert formatted_users[0]["type"] == RemoteIdentityType.USER
@@ -504,7 +504,7 @@ def test_get_site_groups_identities(setup_permissions_reader_class):
     site_group_id = "site_group1"
     site_group_title = "Test Site Group"
     site_group_description = "Test Site Group Description"
-    
+
     mock_site_group = Mock()
     mock_site_group.id = site_group_id
     mock_site_group.properties = {
@@ -536,7 +536,7 @@ def test_get_applications_identities(setup_permissions_reader_class):
     app_id = "app1"
     app_name = "Test Application"
     app_description = "Test Application Description"
-    
+
     mock_application = Mock()
     mock_application.id = app_id
     mock_application.display_name = app_name
@@ -559,22 +559,21 @@ def test_get_devices(setup_permissions_reader_class):
     Verifies API call is made properly and results are returned as expected."""
     instance = setup_permissions_reader_class
     device_data = [{"id": "device1"}, {"id": "device2"}]
-    
+
     mock_devices_response = Mock()
     mock_devices_response.json.return_value = {"value": device_data}
-    
+
     mock_one_drive_client = Mock()
 
     with (
         patch.object(
-            SourceMicrosoftSharePointStreamPermissionsReader, 
-            "one_drive_client", 
-            new_callable=PropertyMock, 
-            return_value=mock_one_drive_client
+            SourceMicrosoftSharePointStreamPermissionsReader,
+            "one_drive_client",
+            new_callable=PropertyMock,
+            return_value=mock_one_drive_client,
         ),
         patch(
-            "source_microsoft_sharepoint.stream_permissions_reader.execute_request_direct_with_retry",
-            return_value=mock_devices_response
+            "source_microsoft_sharepoint.stream_permissions_reader.execute_request_direct_with_retry", return_value=mock_devices_response
         ) as mock_execute_with_retry,
     ):
         result = instance.get_devices()
@@ -610,8 +609,7 @@ def test_get_group_members_success(setup_permissions_reader_class):
         result = instance.get_group_members(group_id)
 
         mock_get.assert_called_once_with(
-            f"https://graph.microsoft.com/v1.0/groups/{group_id}/members", 
-            headers={"Authorization": auth_token}
+            f"https://graph.microsoft.com/v1.0/groups/{group_id}/members", headers={"Authorization": auth_token}
         )
 
         assert len(result) == 4
@@ -647,8 +645,7 @@ def test_get_group_members_unrecognized_type(setup_permissions_reader_class):
         result = instance.get_group_members(group_id)
 
         mock_get.assert_called_once_with(
-            f"https://graph.microsoft.com/v1.0/groups/{group_id}/members", 
-            headers={"Authorization": auth_token}
+            f"https://graph.microsoft.com/v1.0/groups/{group_id}/members", headers={"Authorization": auth_token}
         )
 
         assert len(result) == 1
@@ -698,7 +695,7 @@ def test_get_site_group_members_success(setup_permissions_reader_class):
     mock_users = [mock_user1, mock_user2]
     mock_group = Mock()
     mock_group.users = mock_users
-    
+
     mock_client_context = Mock()
     mock_client_context.web.site_groups.get_by_id.return_value = mock_group
 
@@ -725,7 +722,7 @@ def test_get_site_group_members_error(setup_permissions_reader_class):
     instance = setup_permissions_reader_class
     group_id = "test_site_group_id"
     error_message = "Client context error"
-    
+
     mock_site_group = Mock()
     mock_site_group.id = group_id
 
@@ -759,7 +756,7 @@ def test_get_site_group_members_client_context_implementation(setup_permissions_
     mock_users = [mock_user1, mock_user2, mock_user3]
     mock_group = Mock()
     mock_group.users = mock_users
-    
+
     mock_client_context = Mock()
     mock_client_context.web.site_groups.get_by_id.return_value = mock_group
 
@@ -784,23 +781,24 @@ def test_get_client_context(setup_permissions_reader_class):
     instance = setup_permissions_reader_class
     site_url = "https://airbyte.sharepoint.com/sites/TestSite"
     root_site_prefix = "airbyte"
-    
+
     mock_client_context = Mock()
     mock_client_context_with_token = Mock()
     mock_client_context.with_access_token.return_value = mock_client_context_with_token
-    
+
     mock_auth_client = Mock()
     mock_token_func = Mock()
     mock_auth_client.get_token_response_object_wrapper.return_value = mock_token_func
     instance._auth_client = mock_auth_client
 
     with (
-        patch.object(SourceMicrosoftSharePointStreamPermissionsReader, "site_url", 
-                     new_callable=PropertyMock, return_value=site_url),
-        patch.object(SourceMicrosoftSharePointStreamPermissionsReader, "root_site_prefix", 
-                     new_callable=PropertyMock, return_value=root_site_prefix),
-        patch("source_microsoft_sharepoint.sharepoint_base_reader.ClientContext", 
-              return_value=mock_client_context) as mock_client_context_class,
+        patch.object(SourceMicrosoftSharePointStreamPermissionsReader, "site_url", new_callable=PropertyMock, return_value=site_url),
+        patch.object(
+            SourceMicrosoftSharePointStreamPermissionsReader, "root_site_prefix", new_callable=PropertyMock, return_value=root_site_prefix
+        ),
+        patch(
+            "source_microsoft_sharepoint.sharepoint_base_reader.ClientContext", return_value=mock_client_context
+        ) as mock_client_context_class,
     ):
         result = instance._get_client_context()
 
@@ -815,14 +813,14 @@ def test_get_token_response_object(setup_permissions_reader_class):
     Verifies tenant prefix is properly passed and result is returned directly."""
     instance = setup_permissions_reader_class
     tenant_prefix = "airbyte"
-    
+
     mock_auth_client = Mock()
     mock_token_func = Mock()
     mock_auth_client.get_token_response_object_wrapper.return_value = mock_token_func
     instance._auth_client = mock_auth_client
 
     result = instance.get_token_response_object(tenant_prefix=tenant_prefix)
-    
+
     mock_auth_client.get_token_response_object_wrapper.assert_called_once_with(tenant_prefix=tenant_prefix)
     assert result == mock_token_func
 
