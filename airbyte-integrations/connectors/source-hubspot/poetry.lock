@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "6.42.1"
+version = "6.44.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.13,>=3.10"
 files = [
-    {file = "airbyte_cdk-6.42.1-py3-none-any.whl", hash = "sha256:7a23fa4d3711173b7dbc1f20d94c8f10bb3fae3f164464be63cf60ad631782ab"},
-    {file = "airbyte_cdk-6.42.1.tar.gz", hash = "sha256:c8fd4760cd68f8a93ea32bdafadd0d436f8274ee01ca316ab574f99433d4684b"},
+    {file = "airbyte_cdk-6.44.0-py3-none-any.whl", hash = "sha256:2896179a9d1c6b4f2f27827dd3b92f24493dd872308a679bbbee0bae1466525c"},
+    {file = "airbyte_cdk-6.44.0.tar.gz", hash = "sha256:47aa0c9c372b3d443dae50fea097c6eb37cb8e7c82797795d2831c4b492b4264"},
 ]
 
 [package.dependencies]
@@ -54,13 +54,13 @@ vector-db-based = ["cohere (==4.21)", "langchain (==0.1.16)", "openai[embeddings
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
-version = "0.14.2"
+version = "0.14.3"
 description = "Declares the Airbyte Protocol using Python Dataclasses. Dataclasses in Python have less performance overhead compared to Pydantic models, making them a more efficient choice for scenarios where speed and memory usage are critical"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "airbyte_protocol_models_dataclasses-0.14.2-py3-none-any.whl", hash = "sha256:ae06a406df031afa42f1156bacc587958197e5c7d9bbaf11893480903d4ded8b"},
-    {file = "airbyte_protocol_models_dataclasses-0.14.2.tar.gz", hash = "sha256:9279237156b722cdd54e7b9ec8f97d264bd96e3f3008bc5fc47c215288a2212a"},
+    {file = "airbyte_protocol_models_dataclasses-0.14.3-py3-none-any.whl", hash = "sha256:47407854fbf369f2469167170982afc6b6068d401df1ab3cd4b2d4d22cf197a0"},
+    {file = "airbyte_protocol_models_dataclasses-0.14.3.tar.gz", hash = "sha256:2b32d14ba1a3434b8f16ed1b53bbd27912e4817c617cd470808c0326a82410b1"},
 ]
 
 [[package]]
