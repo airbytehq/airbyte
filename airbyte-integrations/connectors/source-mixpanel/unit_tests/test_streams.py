@@ -473,7 +473,7 @@ def test_engage_schema(requests_mock, engage_schema_response, config_raw):
         "$schema": "https://json-schema.org/draft-07/schema#",
         "additionalProperties": True,
         "properties": {
-            "CreatedDate": {"type": ["null", "string"], "format": "date-time"},
+            "CreatedDate": {"type": ["null", "string"]},
             "CreatedDateTimestamp": {"type": ["null", "number"]},
             "browser": {"type": ["null", "string"]},
             "browser_version": {"type": ["null", "string"]},
