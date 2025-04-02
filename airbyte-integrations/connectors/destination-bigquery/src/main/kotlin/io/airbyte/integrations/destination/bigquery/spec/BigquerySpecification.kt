@@ -121,7 +121,7 @@ abstract class GcsStaging : GcsCommonSpecification, LoadingMethodSpecification(L
         """This upload method is supposed to temporary store records in GCS bucket. By this select you can chose if these records should be removed from GCS when migration has finished. The default "Delete all tmp files from GCS" value is used if not set explicitly."""
     )
     // yes, this is mixed underscore+hyphen.
-    @get:JsonProperty("keep_files_in_gcs-bucket")
+    @get:JsonProperty("keep_files_in_gcs-bucket", defaultValue = "Delete all tmp files from GCS")
     @get:JsonSchemaInject(json = """{"order": 3}""")
     val filePostProcessing: GcsFilePostProcessing? = null
 }
