@@ -3,9 +3,9 @@
 #
 
 import logging
-import orjson
 from typing import Any, Dict, Iterable, List, Mapping
 
+import orjson
 from google.auth.exceptions import RefreshError
 
 from airbyte_cdk.destinations import Destination
