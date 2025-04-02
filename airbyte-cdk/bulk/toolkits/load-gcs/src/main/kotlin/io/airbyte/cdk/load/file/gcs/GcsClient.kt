@@ -22,8 +22,8 @@ class GcsClient(private val storage: Storage, private val config: GcsClientConfi
     ObjectStorageClient<GcsBlob> {
 
     override suspend fun list(prefix: String): Flow<GcsBlob> = flow {
-        val fullPrefix = combinePath(config.bucketPath, prefix)
-        val blobs = storage.list(config.bucketName, Storage.BlobListOption.prefix(fullPrefix))
+        val fullPrefix = combinePath(config.gcsBucketName, prefix)
+        val blobs = storage.list(config.gcsBucketName, Storage.BlobListOption.prefix(fullPrefix))
 
         for (blob in blobs.iterateAll()) {
             emit(GcsBlob(blob.name, config))
@@ -31,11 +31,11 @@ class GcsClient(private val storage: Storage, private val config: GcsClientConfi
     }
 
     override suspend fun move(key: String, toKey: String): GcsBlob {
-        val fullSourceKey = combinePath(config.bucketPath, key)
-        val fullTargetKey = combinePath(config.bucketPath, toKey)
+        val fullSourceKey = combinePath(config.path, key)
+        val fullTargetKey = combinePath(config.path, toKey)
 
-        val sourceBlobId = BlobId.of(config.bucketName, fullSourceKey)
-        val targetBlobId = BlobId.of(config.bucketName, fullTargetKey)
+        val sourceBlobId = BlobId.of(config.gcsBucketName, fullSourceKey)
+        val targetBlobId = BlobId.of(config.gcsBucketName, fullTargetKey)
 
         storage.copy(
             Storage.CopyRequest.newBuilder().setSource(sourceBlobId).setTarget(targetBlobId).build()
@@ -46,16 +46,16 @@ class GcsClient(private val storage: Storage, private val config: GcsClientConfi
     }
 
     override suspend fun <U> get(key: String, block: (InputStream) -> U): U {
-        val fullKey = combinePath(config.bucketPath, key)
-        val blob = storage.get(BlobId.of(config.bucketName, fullKey))
+        val fullKey = combinePath(config.path, key)
+        val blob = storage.get(BlobId.of(config.gcsBucketName, fullKey))
 
         // Convert ReadChannel to InputStream
         return Channels.newInputStream(blob.reader()).use { inputStream -> block(inputStream) }
     }
 
     override suspend fun getMetadata(key: String): Map<String, String> {
-        val fullKey = combinePath(config.bucketPath, key)
-        val blob = storage.get(BlobId.of(config.bucketName, fullKey))
+        val fullKey = combinePath(config.path, key)
+        val blob = storage.get(BlobId.of(config.gcsBucketName, fullKey))
 
         // Convert Map<String, String?> to Map<String, String> by filtering out null values
         return blob.metadata?.mapNotNull { (key, value) -> value?.let { key to it } }?.toMap()
@@ -63,8 +63,8 @@ class GcsClient(private val storage: Storage, private val config: GcsClientConfi
     }
 
     override suspend fun put(key: String, bytes: ByteArray): GcsBlob {
-        val fullKey = combinePath(config.bucketPath, key)
-        val blobId = BlobId.of(config.bucketName, fullKey)
+        val fullKey = combinePath(config.path, key)
+        val blobId = BlobId.of(config.gcsBucketName, fullKey)
         val blobInfo = BlobInfo.newBuilder(blobId).build()
 
         storage.create(blobInfo, bytes)
@@ -73,8 +73,8 @@ class GcsClient(private val storage: Storage, private val config: GcsClientConfi
     }
 
     override suspend fun delete(key: String) {
-        val fullKey = combinePath(config.bucketPath, key)
-        storage.delete(BlobId.of(config.bucketName, fullKey))
+        val fullKey = combinePath(config.path, key)
+        storage.delete(BlobId.of(config.gcsBucketName, fullKey))
     }
 
     override suspend fun startStreamingUpload(
