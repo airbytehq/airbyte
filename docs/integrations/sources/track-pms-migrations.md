@@ -2,11 +2,11 @@
 
 ## Upgrading to 4.0.0
 Readded `reservations.guestBreakdown` to make the reservation rates available; however this doesn't typically return results so no declared schema has been alotted for it.
-These are also present in `reservations.quoteBreakdown` if `guestBreakdown` doesn't have any values.
+Reservation rates  are also present in `reservations.quoteBreakdown` if `guestBreakdown` doesn't have any values.
 
 Updates the units schema and removes `units.isOccupied` and `units.cleanStatusType`. These also don't typically return results.
 
-Please remove `units` exists such that `guestbreakdown` can synchronize. If the target is a database, this would mean creating a column `guestbreakdown` in the `reservations` table.
+Please account for any downstream changes to `units` (e.g. remove database columns).
 
 Other updates include fixes to the stream API links in the connector docs and updating error filter criteria - reducing 429 error retries from 10 to 3, and specifing a 409 error method.
 * The constant backoff strategy appears to be working (these seemed to be exponential in Airbyte versions < v1.5.1).
