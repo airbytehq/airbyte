@@ -25,7 +25,7 @@ class HeartbeatTask<K : WithStream, V>(
 
     override suspend fun execute() {
         while (true) {
-            delay(config.heartbeatIntervalS * 1000L)
+            delay(config.heartbeatIntervalSeconds * 1000L)
             recordQueue.broadcast(PipelineHeartbeat())
         }
     }

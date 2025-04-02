@@ -23,7 +23,7 @@ class HeartbeatTaskTest {
         val config = mockk<DestinationConfiguration>()
         val recordQueue = mockk<PartitionedQueue<PipelineEvent<K, V>>>()
         val task = HeartbeatTask(config, recordQueue)
-        every { config.heartbeatIntervalS } returns 5
+        every { config.heartbeatIntervalSeconds } returns 5
         coEvery { recordQueue.broadcast(any()) } returns Unit
         val job = launch { task.execute() }
         delay(10_001L)

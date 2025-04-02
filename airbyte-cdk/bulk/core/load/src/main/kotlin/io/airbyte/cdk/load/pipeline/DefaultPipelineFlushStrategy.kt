@@ -37,6 +37,6 @@ class DefaultPipelineFlushStrategy(
         }
 
         // Force finishing any data in flight that is older than the configured max timeout
-        return dataAgeMs >= config.maxTimeWithoutFlushingDataS * 1000L
+        return dataAgeMs >= config.maxTimeWithoutFlushingDataSeconds * 1000L
     }
 }

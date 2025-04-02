@@ -13,14 +13,14 @@ import org.junit.jupiter.api.Test
 
 class DefaultPipelineFlushStrategyTest {
     companion object {
-        private const val MAX_DATA_AGE_S = 10L
+        private const val MAX_DATA_AGE_SECONDS = 10L
     }
 
     @MockK(relaxed = true) lateinit var config: DestinationConfiguration
 
     @BeforeEach
     fun setup() {
-        every { config.maxTimeWithoutFlushingDataS } returns MAX_DATA_AGE_S
+        every { config.maxTimeWithoutFlushingDataSeconds } returns MAX_DATA_AGE_SECONDS
     }
 
     @Test
@@ -43,9 +43,9 @@ class DefaultPipelineFlushStrategyTest {
     fun `flush if microbatching is not set and data is too old`() {
         val strategy = DefaultPipelineFlushStrategy(null, config)
 
-        assert(strategy.shouldFlush(1, MAX_DATA_AGE_S * 1000L))
-        assert(strategy.shouldFlush(1, MAX_DATA_AGE_S * 1000L + 1))
-        assert(!strategy.shouldFlush(1, MAX_DATA_AGE_S * 1000L - 1))
-        assert(!strategy.shouldFlush(0, MAX_DATA_AGE_S * 1000L))
+        assert(strategy.shouldFlush(1, MAX_DATA_AGE_SECONDS * 1000L))
+        assert(strategy.shouldFlush(1, MAX_DATA_AGE_SECONDS * 1000L + 1))
+        assert(!strategy.shouldFlush(1, MAX_DATA_AGE_SECONDS * 1000L - 1))
+        assert(!strategy.shouldFlush(0, MAX_DATA_AGE_SECONDS * 1000L))
     }
 }

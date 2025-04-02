@@ -63,9 +63,10 @@ import java.nio.file.Path
 abstract class DestinationConfiguration : Configuration {
     // If this many seconds have passed without finishing data in flight, the framework will force
     // the workers to finish.
-    open val maxTimeWithoutFlushingDataS: Long = DEFAULT_MAX_TIME_WITHOUT_FLUSHING_DATA_S
+    open val maxTimeWithoutFlushingDataSeconds: Long =
+        DEFAULT_MAX_TIME_WITHOUT_FLUSHING_DATA_SECONDS
     // How often to perform the above check.
-    open val heartbeatIntervalS: Long = DEFAULT_HEARTBEAT_INTERVAL_S
+    open val heartbeatIntervalSeconds: Long = DEFAULT_HEARTBEAT_INTERVAL_SECONDS
 
     /** Memory queue settings */
     open val maxMessageQueueMemoryUsageRatio: Double = 0.2 // 0 => No limit, 1.0 => 100% of JVM heap
@@ -84,8 +85,8 @@ abstract class DestinationConfiguration : Configuration {
 
     companion object {
         const val DEFAULT_RECORD_BATCH_SIZE_BYTES = 200L * 1024L * 1024L
-        const val DEFAULT_HEARTBEAT_INTERVAL_S = 60L
-        const val DEFAULT_MAX_TIME_WITHOUT_FLUSHING_DATA_S = 15 * 60L
+        const val DEFAULT_HEARTBEAT_INTERVAL_SECONDS = 60L
+        const val DEFAULT_MAX_TIME_WITHOUT_FLUSHING_DATA_SECONDS = 15 * 60L
     }
 
     // DEPRECATED: Old interface config. TODO: Drop when we're totally migrated.
