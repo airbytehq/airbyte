@@ -87,7 +87,7 @@ class GcsClient(private val storage: Storage, private val config: GcsClientConfi
         metadata: Map<String, String>
     ): StreamingUpload<GcsBlob> {
         log.info { "Starting streaming upload for $key" }
-        return GcsStreamingUpload(storage, config, metadata)
+        return GcsStreamingUpload(storage, key, config, metadata)
     }
 
     override suspend fun delete(remoteObject: GcsBlob) {
