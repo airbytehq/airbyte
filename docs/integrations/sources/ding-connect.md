@@ -13,14 +13,14 @@ API Reference: https://www.dingconnect.com/Api/Description
 ## Streams
 | Stream Name                 | Primary Key | Pagination        | Supports Full Sync | Supports Incremental |
 |-----------------------------|-------------|-------------------|---------------------|----------------------|
-| getcountries                | uuid        | DefaultPaginator  | ✅                  | ❌                  |
-| getcurrencies               | uuid        | DefaultPaginator  | ✅                  | ❌                  |
-| geterrorcodedescriptions    | uuid        | DefaultPaginator  | ✅                  | ❌                  |
-| getproductdescriptions      | uuid        | DefaultPaginator  | ✅                  | ❌                  |
-| getproducts                 | uuid        | DefaultPaginator  | ✅                  | ❌                  |
-| getpromotions               | uuid        | DefaultPaginator  | ✅                  | ✅                  |
-| getproviders                | uuid        | DefaultPaginator  | ✅                  | ❌                  |
-| getregions                  | uuid        | DefaultPaginator  | ✅                  | ❌                  |
+| countries                   | uuid        | DefaultPaginator  | ✅                  | ❌                  |
+| currencies                  | uuid        | DefaultPaginator  | ✅                  | ❌                  |
+| error_code_descriptions     | uuid        | DefaultPaginator  | ✅                  | ❌                  |
+| product_descriptions        | uuid        | DefaultPaginator  | ✅                  | ❌                  |
+| products                    | uuid        | DefaultPaginator  | ✅                  | ❌                  |
+| promotions                  | uuid        | DefaultPaginator  | ✅                  | ✅                  |
+| providers                   | uuid        | DefaultPaginator  | ✅                  | ❌                  |
+| regions                     | uuid        | DefaultPaginator  | ✅                  | ❌                  |
 
 ## Changelog
 
