@@ -338,6 +338,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.0 | 2025-03-25 | [56393](https://github.com/airbytehq/airbyte/pull/56393) | Migrate from v1 Contact Lists API to v3 Lists API |
 | 4.5.6 | 2025-03-29 | [56647](https://github.com/airbytehq/airbyte/pull/56647) | Update dependencies |
 | 4.5.5 | 2025-03-26 | [56416](https://github.com/airbytehq/airbyte/pull/56416) | Disabled `blog_comment` and `all` form-types for `Forms` and `FormSubmissions` stream |
 | 4.5.4 | 2025-03-25 | [55822](https://github.com/airbytehq/airbyte/pull/55822) | add userIdIncludingInactive to owners and owners_archived streams |

@@ -1465,23 +1465,56 @@ class Campaigns(ClientSideIncrementalStream):
                 yield from self.record_unnester.unnest([{**row, **record}])
 
 
-class ContactLists(IncrementalStream):
-    """Contact lists, API v1
-    Docs: https://legacydocs.hubspot.com/docs/methods/lists/get_lists
+class ContactLists(ClientSideIncrementalStream):
+    """Contact lists, API v3
+    Docs: https://developers.hubspot.com/docs/reference/api/crm/lists#post-%2Fcrm%2Fv3%2Flists%2Fsearch
     """
 
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    url = "/contacts/v1/lists"
+    http_method = "POST"
+    url = "/crm/v3/lists/search"
     data_field = "lists"
-    more_key = "has-more"
+    more_key = "hasMore"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     limit_field = "count"
     primary_key = "listId"
     need_chunk = False
     scopes = {"crm.lists.read"}
-    unnest_fields = ["metaData"]
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        records = super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
+        for record in records:
+            if record["objectTypeId"] == "0-1":
+                yield record
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        default_params = {self.limit_field: self.limit}
+        params = {**default_params}
+        if next_page_token:
+            params.update(next_page_token)
+        return params
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        return
 
 
 # class ContactsAllBase(ClientSideIncrementalStream):
@@ -1549,29 +1582,42 @@ class ResumableFullRefreshMixin(Stream, CheckpointMixin, ABC):
 
 
 class ContactsListMemberships(ContactsAllBase, ClientSideIncrementalStream):
-    """Contacts list Memberships, API v1
+    """Contacts list Memberships, API v1 and v3
     The Stream was created due to issue #8477, where supporting List Memberships in Contacts stream was requested.
     According to the issue this feature is supported in API v1 by setting parameter showListMemberships=true
     in get all contacts endpoint. API will return list memberships for each contact record.
     But for syncing Contacts API v3 is used, where list memberships for contacts isn't supported.
     Therefore, new stream was created based on get all contacts endpoint of API V1.
+
+    EDIT: List Membership is no longer supported in v1. Hence, for each contact retrieved using v1, the corresponding
+    record id is used to retrieve the list memberships using v3.
+
     Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts
+
+          https://developers.hubspot.com/docs/reference/api/crm/lists#get-%2Fcrm%2Fv3%2Flists%2Frecords%2F%7Bobjecttypeid%7D%2F%7Brecordid%7D%2Fmemberships
     """
 
     records_field = "list-memberships"
-    filter_field = "showListMemberships"
-    filter_value = True
+    scopes = {"crm.objects.contacts.read", "crm.lists.read"}
     checkpoint_by_page = False
 
     @property
     def updated_at_field(self) -> str:
         """Name of the field associated with the state"""
-        return "timestamp"
+        return "lastAddedTimestamp"
 
     @property
     def cursor_field_datetime_format(self) -> str:
         """Cursor value expected to be a timestamp in milliseconds"""
-        return "x"
+        return "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
+
+    def _transform(self, records: Iterable) -> Iterable:
+        for record in records:
+            record_id = record.get(self.primary_key)
+            data, response = self._api.get(f"/crm/v3/lists/records/0-1/{record_id}/memberships")
+            list_memberships = data.get("results", [])
+            record["list-memberships"] = list_memberships
+            yield from super()._transform([record])
 
 
 class ContactsFormSubmissions(ContactsAllBase, ResumableFullRefreshMixin, ABC):
