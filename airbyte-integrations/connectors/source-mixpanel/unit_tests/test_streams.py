@@ -733,3 +733,109 @@ def test_export_stream_lookback_window(requests_mock, export_response, config_ra
     # Verify updated state is set to the latest record time
     new_state = stream.get_updated_state(stream_state, records[-1])
     assert new_state["time"] == "2021-06-16T17:28:00Z"
+
+
+@pytest.mark.parametrize(
+    "start_date, end_date, date_window_size, attribution_window, export_lookback_window, expected_slices",
+    (
+        (
+            "2021-01-01T00:00:00Z",
+            "2021-03-01T00:00:00Z",
+            None,
+            None,
+            None,
+            [
+                {"start_time": "2021-01-01T00:00:00Z", "end_time": "2021-01-30T23:59:59Z"},
+                {"start_time": "2021-01-31T00:00:00Z", "end_time": "2021-03-01T00:00:00Z"},
+            ],
+        ),
+        (
+            "2021-01-01T00:00:00Z",
+            "2021-03-01T00:00:00Z",
+            None,
+            5,
+            None,
+            [
+                {"start_time": "2021-01-06T00:00:00Z", "end_time": "2021-02-04T23:59:59Z"},
+                {"start_time": "2021-02-05T00:00:00Z", "end_time": "2021-03-01T00:00:00Z"},
+            ],
+        ),
+        (
+            "2021-01-01T00:00:00Z",
+            "2021-03-01T00:00:00Z",
+            None,
+            None,
+            5 * 24 * 60 * 60 + 10,
+            [
+                {"start_time": "2021-01-05T23:59:50Z", "end_time": "2021-02-04T23:59:49Z"},
+                {"start_time": "2021-02-04T23:59:50Z", "end_time": "2021-03-01T00:00:00Z"},
+            ],
+        ),
+        (
+            "2021-01-01T00:00:00Z",
+            "2021-03-01T00:00:00Z",
+            None,
+            5,
+            5 * 24 * 60 * 60 + 10,
+            [
+                {"start_time": "2021-01-05T23:59:50Z", "end_time": "2021-02-04T23:59:49Z"},
+                {"start_time": "2021-02-04T23:59:50Z", "end_time": "2021-03-01T00:00:00Z"},
+            ],
+        ),
+        (
+            "2021-01-01T00:00:00Z",
+            "2021-03-01T00:00:00Z",
+            None,
+            6,
+            5 * 24 * 60 * 60 + 10,
+            [
+                {"start_time": "2021-01-05T00:00:00Z", "end_time": "2021-02-03T23:59:59Z"},
+                {"start_time": "2021-02-04T00:00:00Z", "end_time": "2021-03-01T00:00:00Z"},
+            ],
+        ),
+        (
+            "2021-01-01T00:00:00Z",
+            "2021-03-01T00:00:00Z",
+            10,
+            None,
+            None,
+            [
+                {"start_time": "2021-01-01T00:00:00Z", "end_time": "2021-01-10T23:59:59Z"},
+                {"start_time": "2021-01-11T00:00:00Z", "end_time": "2021-01-20T23:59:59Z"},
+                {"start_time": "2021-01-21T00:00:00Z", "end_time": "2021-01-30T23:59:59Z"},
+                {"start_time": "2021-01-31T00:00:00Z", "end_time": "2021-02-09T23:59:59Z"},
+                {"start_time": "2021-02-10T00:00:00Z", "end_time": "2021-02-19T23:59:59Z"},
+                {"start_time": "2021-02-20T00:00:00Z", "end_time": "2021-03-01T00:00:00Z"},
+            ],
+        ),
+    ),
+    ids=(
+        "when step is default, lookback_window is default, state not provided",
+        "when config.attribution_window is 5 days and state provided",
+        "when config.export_lookback_window is 5 days and state provided",
+        "when config.export_lookback_window is bugger then config.attribution_window",
+        "when config.attribution_window is bugger then config.export_lookback_window",
+        "when config.date_window_size is 10",
+    ),
+)
+def test_export_stream_slices(
+    export_config, start_date, end_date, date_window_size, attribution_window, export_lookback_window, expected_slices
+):
+    export_config["start_date"] = start_date
+    export_config["end_date"] = end_date
+    if date_window_size:
+        export_config["date_window_size"] = date_window_size
+
+    with mock.patch("airbyte_cdk.sources.declarative.incremental.datetime_based_cursor.DatetimeBasedCursor.get_stream_state") as state_mock:
+        if attribution_window:
+            export_config["attribution_window"] = attribution_window
+            state_mock.return_value = {"time": (pendulum.parse(start_date) + timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%S%z")}
+        if export_lookback_window:
+            export_config["export_lookback_window"] = export_lookback_window
+            state_mock.return_value = {"time": (pendulum.parse(start_date) + timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%S%z")}
+
+        stream = init_stream("export", config=export_config)
+
+        stream_slices = list(stream.stream_slices(sync_mode=SyncMode.incremental))
+
+        assert stream_slices == expected_slices
