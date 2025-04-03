@@ -28,24 +28,23 @@ class UnixDomainSocketOutputConsumer(
 ) : StdoutOutputConsumer(stdout, clock, bufferByteSizeThresholdForFlush) {
     private val socketNum: Int = 1
     val socketPath = String.format(SOCKET_FULL_PATH, socketNum)
-    val sc: SocketChannel
-
-    init {
-        val socketFile = File(socketPath)
-        if (socketFile.exists()) {
-            socketFile.delete()
-        }
-        val address = UnixDomainSocketAddress.of(socketFile.toPath())
-        val serverSocketChannel: ServerSocketChannel =
-            ServerSocketChannel.open(StandardProtocolFamily.UNIX)
-        serverSocketChannel.bind(address)
-        sc = serverSocketChannel.accept()
-    }
+    var sc: SocketChannel? = null
 
     override fun withLockFlushRecord() {
+        sc ?: let {
+            val socketFile = File(socketPath)
+            if (socketFile.exists()) {
+                socketFile.delete()
+            }
+            val address = UnixDomainSocketAddress.of(socketFile.toPath())
+            val serverSocketChannel: ServerSocketChannel =
+                ServerSocketChannel.open(StandardProtocolFamily.UNIX)
+            serverSocketChannel.bind(address)
+            sc = ServerSocketChannel.open(StandardProtocolFamily.UNIX).accept()
+        }
         if (buffer.size() > 0) {
             val array: ByteArray = buffer.toByteArray() + "\n".toByteArray(Charsets.UTF_8)
-            sc.write(ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN))
+            sc?.write(ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN))
             buffer.reset()
         }
     }
