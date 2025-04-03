@@ -4,14 +4,11 @@
 
 import copy
 import logging
-import time
-import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from source_mixpanel.source import SourceMixpanel
 
-from airbyte_cdk.sources.streams.call_rate import MovingWindowCallRatePolicy
 from airbyte_cdk.utils import AirbyteTracedException
 
 from .utils import command_check, get_url_to_mock, init_stream, setup_response
