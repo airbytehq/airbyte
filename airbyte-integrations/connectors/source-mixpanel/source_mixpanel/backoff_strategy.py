@@ -8,5 +8,5 @@ from airbyte_cdk.sources.streams.call_rate import APIBudget, HttpRequestMatcher,
 
 
 DEFAULT_API_BUDGET = APIBudget(
-    policies=[MovingWindowCallRatePolicy(rates=[Rate(limit=60, interval=timedelta(hours=1.0))], matchers=[HttpRequestMatcher()])]
+    policies=[MovingWindowCallRatePolicy(rates=[Rate(limit=1, interval=timedelta(seconds=60.0))], matchers=[HttpRequestMatcher()])]
 )
