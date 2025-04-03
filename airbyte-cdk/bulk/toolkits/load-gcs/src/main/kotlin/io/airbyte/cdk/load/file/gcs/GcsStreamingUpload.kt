@@ -38,9 +38,6 @@ class GcsStreamingUpload(
      */
     private val parts = ConcurrentSkipListMap<Int, String>()
 
-    // GCS requires metadata keys to conform to RFC 2616 (HTTP/1.1)
-    private val invalidMetadataCharsRegex = Regex("[^\\w\\-_.]")
-
     /** Upload a part to GCS. Each part is stored as a temporary blob. */
     override suspend fun uploadPart(part: ByteArray, index: Int) {
         val partName = combinePath("$uploadId-part-$index")
@@ -69,8 +66,7 @@ class GcsStreamingUpload(
 
         // Prepare the final blob info with metadata
         val finalBlobId = BlobId.of(config.gcsBucketName, finalObjectKey)
-        val finalBlobInfo =
-            BlobInfo.newBuilder(finalBlobId).setMetadata(filterInvalidMetadata(metadata)).build()
+        val finalBlobInfo = BlobInfo.newBuilder(finalBlobId).setMetadata(metadata).build()
 
         if (parts.isEmpty()) {
             // Create an empty object if no parts were uploaded
@@ -102,9 +98,7 @@ class GcsStreamingUpload(
         } else {
             // Otherwise, just update metadata on it (in case it was created directly)
             val existing = storage.get(finalBlobId)
-            existing?.toBuilder()?.setMetadata(filterInvalidMetadata(metadata))?.build()?.also {
-                storage.update(it)
-            }
+            existing?.toBuilder()?.setMetadata(metadata)?.build()?.also { storage.update(it) }
         }
 
         // Clean up the individual part objects
@@ -186,16 +180,6 @@ class GcsStreamingUpload(
     private fun generateUploadId(): String {
         val randomSuffix = (1..8).map { ('a'..'z').random() }.joinToString("")
         return "gcs-upload-${System.currentTimeMillis()}-$randomSuffix"
-    }
-
-    /** Filter out invalid metadata keys/values and rename invalid chars in keys to underscores. */
-    private fun filterInvalidMetadata(metadata: Map<String, String>): Map<String, String> {
-        return metadata
-            .mapKeys { (key, _) ->
-                // Convert invalid characters to underscore and force lowercase
-                key.lowercase().replace(invalidMetadataCharsRegex, "_")
-            }
-            .filter { (key, value) -> key.isNotBlank() && value.isNotBlank() }
     }
 
     private fun combinePath(key: String): String {
