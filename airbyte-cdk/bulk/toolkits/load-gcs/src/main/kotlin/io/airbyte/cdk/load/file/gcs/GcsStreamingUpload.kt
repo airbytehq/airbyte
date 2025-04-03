@@ -42,7 +42,7 @@ class GcsStreamingUpload(
      */
     override suspend fun uploadPart(part: ByteArray, index: Int) {
         // Generate a unique part name using the upload ID and index
-        val partName = "$uploadId-part-$index"
+        val partName = combinePath("$uploadId-part-$index")
         log.info { "Uploading part #$index => $partName" }
 
         // Create a temporary blob for each part
@@ -64,7 +64,7 @@ class GcsStreamingUpload(
      */
     override suspend fun complete(): GcsBlob {
         // Generate final object key based on upload ID
-        val finalObjectKey = "$uploadId-final"
+        val finalObjectKey = combinePath("$uploadId-final")
 
         if (isComplete.setOnce()) {
             if (parts.isEmpty()) {
@@ -128,12 +128,10 @@ class GcsStreamingUpload(
         }
     }
 
-    /** Generate a unique upload ID for this session */
     private fun generateUploadId(): String {
         return "gcs-upload-${System.currentTimeMillis()}-${(1..8).map { ('a'..'z').random() }.joinToString("")}"
     }
 
-    /** Filter out invalid metadata keys according to GCS requirements */
     private fun filterInvalidMetadata(metadata: Map<String, String>): Map<String, String> {
         return metadata
             .mapKeys { (key, _) ->
@@ -144,5 +142,9 @@ class GcsStreamingUpload(
                 // Filter out entries with empty keys or values
                 key.isNotBlank() && value.isNotBlank()
             }
+    }
+
+    private fun combinePath(key: String): String {
+        return if (config.path.isBlank()) key else "${config.path}/$key".replace("//", "/")
     }
 }
