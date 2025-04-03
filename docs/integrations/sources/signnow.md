@@ -7,7 +7,8 @@ API Reference: https://docs.signnow.com/docs/signnow/welcome
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `start_date` | `string` | Start date.  |  |
-| `api_key` | `string` | API Key.  |  |
+| `api_key_id` | `string` | Api key which could be found in API section after enlarging keys section  |  |
+| `auth_token` | `string` | The authorization token is needed for `signing_links` stream which could be seen from enlarged view of `https://app.signnow.com/webapp/api-dashboard/keys`  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -24,6 +25,7 @@ API Reference: https://docs.signnow.com/docs/signnow/welcome
 | brands | unique_id | DefaultPaginator | ✅ |  ❌  |
 | crm_users | id | DefaultPaginator | ✅ |  ❌  |
 | crm_groups | id | DefaultPaginator | ✅ |  ✅  |
+| signing_links | id | DefaultPaginator | ✅ |  ✅  |
 
 ## Changelog
 

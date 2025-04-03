@@ -24,6 +24,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /user
           http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -60,6 +62,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /user/documentsv2
           http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -96,6 +100,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /user/documents
           http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -132,6 +138,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v2/crm/contacts
           http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -142,12 +150,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 20
@@ -191,6 +199,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v2/favorites
           http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -201,12 +211,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 20
@@ -229,6 +239,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: request-logs
           http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -239,12 +251,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 20
@@ -288,6 +300,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /user/folder
           http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -297,12 +311,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 20
@@ -339,6 +353,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v2/teams
           http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -349,12 +365,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 20
@@ -391,6 +407,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v2/teams/{{ stream_partition['team_id'] }}/admins
           http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -401,12 +419,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 20
@@ -458,6 +476,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v2/brands
           http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -468,12 +488,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 20
@@ -496,6 +516,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v2/crm/users
           http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -506,12 +528,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 20
@@ -534,6 +556,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v2/crm/groups
           http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -544,12 +568,12 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: per_page
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 20
@@ -575,12 +599,103 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/crm_groups"
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/organizations
+          http_method: GET
+          request_headers:
+            Authorization: Bearer {{ config['api_key_id'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+    signing_links:
+      type: DeclarativeStream
+      name: signing_links
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/application/signing-links
+          http_method: GET
+          request_headers:
+            Authorization: Basic {{ config['auth_token'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/signing_links"
   base_requester:
     type: HttpRequester
     url_base: https://api.signnow.com
-    authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/user"
@@ -595,6 +710,8 @@ streams:
   - $ref: "#/definitions/streams/brands"
   - $ref: "#/definitions/streams/crm_users"
   - $ref: "#/definitions/streams/crm_groups"
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/signing_links"
 
 spec:
   type: Spec
@@ -602,20 +719,38 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
+      - auth_token
+      - api_key_id
       - start_date
-      - api_key
     properties:
-      start_date:
+      auth_token:
         type: string
-        title: Start date
-        format: date-time
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        description: >-
+          The authorization token is needed for `signing_links` stream which
+          could be seen from enlarged view of
+          `https://app.signnow.com/webapp/api-dashboard/keys`
         order: 0
-      api_key:
+        title: Auth Token
+        airbyte_secret: true
+      api_key_id:
         type: string
+        description: >-
+          Api key which could be found in API section after enlarging keys
+          section
         title: API Key
         airbyte_secret: true
         order: 1
+      start_date:
+        type: string
+        order: 2
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      name_filter_for_documents:
+        type: array
+        description: Name filter for documents stream
+        order: 3
+        title: Name filter for documents
     additionalProperties: true
 
 metadata:
@@ -632,89 +767,105 @@ metadata:
     brands: true
     crm_users: true
     crm_groups: true
+    organizations: true
+    signing_links: false
   testedStreams:
     user:
-      streamHash: aefec1025de72790bffe821b03c28a5ae6163f45
+      streamHash: 5b5a1b44589b76c1c613bbf1683dd4d9be2d50db
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     user_modified_documents:
-      streamHash: 25e82dc92f9ad5c19822beb47b3f4464a376d9d0
+      streamHash: 42f8ff537f09ef8e0c8211a90c981dfd264012fa
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     user_documents:
-      streamHash: 19d8c5f9e0c095443283233d1fc176377fbef240
+      streamHash: e0fb80001a60fb221c8762ca34cfb6a7eefcc47f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     crm_contacts:
-      streamHash: 30fca6a99548904653b5e9db34885fd2af6a6631
+      streamHash: 5a3a8200c658d75178a422dd7f29e28e58416edf
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     favourites:
-      streamHash: 0fe1e27ded5271140847b9ef0a4c8fc5d2dc9130
+      streamHash: b241997c15fff195f55cdf11fc792babd930bacd
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     logs:
-      streamHash: baea3c2fe6d02c7fcc20eba65529d8825ea69028
+      streamHash: 1ccca65410679fe2b979e560f9988e6f7573c69f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     folder:
-      streamHash: ace71687b54d5f51c6352e1895225fae469e21f3
+      streamHash: 849584b92c1240d4a0a84ef416ffdf9e6d6fd866
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     teams:
-      streamHash: ffb5d0ae7c122187828c36bde0bab43acc3c15d1
+      streamHash: 634c3864e3e74df93967a476eca16cfab51ea971
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     team_admins:
-      streamHash: 321c4e12e364edb8d246287a00efd7bb7eb09da3
+      streamHash: 198ff7a19937fc9f97a0bc72e4e0540e1ddfb1ac
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     brands:
-      streamHash: bc4b948d816320253771838c1e6cf124394e34b2
+      streamHash: 88fea76a84d98e3ead159f5cfd5f3c7c70bdc423
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     crm_users:
-      streamHash: 5cdf1e64cdd79e58f398e74be73b5ebe3519f564
+      streamHash: 6b65019f430cb15fcba6f6bdab3836912536ac0a
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     crm_groups:
-      streamHash: df07a77ac67de893d15d2d47adccbab06127125e
+      streamHash: 694d14a247252080c689faa8b9ac4f5b4844914d
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    organizations:
+      streamHash: 52d8c4b845673892fa271ceacd0b610ee3a61f9b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    signing_links:
+      streamHash: ced9be71b0ff2ae1850d0d9a2b1c0269f8613a40
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
   assist:
@@ -1776,6 +1927,133 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            created:
+              type:
+                - string
+                - "null"
+            decline_by_signature:
+              type:
+                - string
+                - "null"
+            declined:
+              type:
+                - array
+                - "null"
+            delivery_type:
+              type:
+                - string
+                - "null"
+            electronic_consent_required:
+              type:
+                - number
+                - "null"
+            email:
+              type:
+                - string
+                - "null"
+            email_group:
+              type:
+                - object
+                - "null"
+              properties: {}
+            email_sent_statuses:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  created_at:
+                    type:
+                      - number
+                      - "null"
+                  last_reaction_at:
+                    type:
+                      - number
+                      - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+            expiration_time:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            id_verification_required:
+              type:
+                - string
+                - "null"
+            id_verified:
+              type:
+                - string
+                - "null"
+            is_document_locked:
+              type:
+                - string
+                - "null"
+            is_draft_exists:
+              type:
+                - string
+                - "null"
+            is_embedded:
+              type:
+                - boolean
+                - "null"
+            is_full_declined:
+              type:
+                - boolean
+                - "null"
+            password_method:
+              type:
+                - string
+                - "null"
+            password_protected:
+              type:
+                - string
+                - "null"
+            password_type:
+              type:
+                - string
+                - "null"
+            reassign:
+              type:
+                - string
+                - "null"
+            reminder:
+              type:
+                - string
+                - "null"
+            role:
+              type:
+                - string
+                - "null"
+            role_id:
+              type:
+                - string
+                - "null"
+            signer_user_id:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            updated:
+              type:
+                - string
+                - "null"
       field_validators:
         type:
           - array
@@ -1784,6 +2062,84 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            field_id:
+              type:
+                - string
+                - "null"
+            field_request_id:
+              type:
+                - string
+                - "null"
+            fulfiller:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            json_attributes:
+              type:
+                - object
+                - "null"
+              properties:
+                allowed_types:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                height:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                page_number:
+                  type:
+                    - number
+                    - "null"
+                required:
+                  type:
+                    - boolean
+                    - "null"
+                width:
+                  type:
+                    - number
+                    - "null"
+                x:
+                  type:
+                    - number
+                    - "null"
+                "y":
+                  type:
+                    - number
+                    - "null"
+            originator:
+              type:
+                - string
+                - "null"
+            role:
+              type:
+                - string
+                - "null"
+            role_id:
+              type:
+                - string
+                - "null"
       id:
         type: string
       inserts:
@@ -1896,6 +2252,23 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            signing_order:
+              type:
+                - string
+                - "null"
+            unique_id:
+              type:
+                - string
+                - "null"
       routing_details:
         type:
           - array
@@ -1925,6 +2298,35 @@ schemas:
               type:
                 - array
                 - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  default_email:
+                    type:
+                      - string
+                      - "null"
+                  delivery_type:
+                    type:
+                      - string
+                      - "null"
+                  inviter_role:
+                    type:
+                      - boolean
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  role_id:
+                    type:
+                      - string
+                      - "null"
+                  signing_order:
+                    type:
+                      - number
+                      - "null"
             id:
               type:
                 - string
@@ -3629,3 +4031,82 @@ schemas:
     required:
       - id
       - updated_at
+  organizations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      creator_id:
+        type:
+          - string
+          - "null"
+      has_admin:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      is_default_workspace:
+        type:
+          - boolean
+          - "null"
+      is_workspace:
+        type:
+          - boolean
+          - "null"
+      membership:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            invited_by:
+              type:
+                - array
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  signing_links:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      created:
+        type:
+          - integer
+          - "null"
+      count:
+        type:
+          - integer
+          - "null"
+      hash:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
