@@ -54,7 +54,7 @@ class GcsStreamingUpload(
         log.info { "Uploaded part #$index => $partName, size: ${part.size} bytes" }
     }
 
-    /** Compose all parts into the final object. If no parts exist, create an empty object. */
+    /** Compose all parts into the final object. */
     override suspend fun complete(): GcsBlob {
         if (!isComplete.setOnce()) {
             log.warn { "Complete called multiple times for gs://${config.gcsBucketName}/$key" }
@@ -77,7 +77,8 @@ class GcsStreamingUpload(
         // in the configuration (total size / chunk_size <= 32)
         val allPartNames = parts.values.toList()
         check(allPartNames.size > 32) {
-            "We are attempting to compose more than 32 parts for key $key. GCS is not capable of doing that."
+            "We are attempting to compose more than 32 parts for key $key."
+            "GCS is not capable of doing that."
         }
         log.info { "Composing ${allPartNames.size} parts into gs://${config.gcsBucketName}/$key" }
 
