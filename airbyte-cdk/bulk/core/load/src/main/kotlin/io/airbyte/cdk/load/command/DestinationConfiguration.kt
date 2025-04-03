@@ -97,6 +97,11 @@ abstract class DestinationConfiguration : Configuration {
     }
 
     /**
+     * TEMPORARY FOR SOCKET TEST
+     */
+    open val numSockets: Int = 4
+
+    /**
      * Micronaut factory which glues [ConfigurationSpecificationSupplier] and
      * [DestinationConfigurationFactory] together to produce a [DestinationConfiguration] singleton.
      */

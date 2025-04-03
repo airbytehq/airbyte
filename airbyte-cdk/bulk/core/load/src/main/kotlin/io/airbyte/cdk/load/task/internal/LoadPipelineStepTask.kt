@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.task.internal
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.file.SocketInputFlow
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEndOfStream
@@ -267,8 +268,10 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
 @Requires(bean = LoadStrategy::class)
 class LoadPipelineStepTaskFactory(
     @Named("batchStateUpdateQueue") val batchUpdateQueue: QueueWriter<BatchUpdate>,
-    @Named("recordQueue")
-    val recordQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+    // TEMPORARY FOR SOCKET TEST
+    // @Named("recordQueue")
+    // val recordQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
+    @Named("socketInputFlows") val socketInputFlows: Array<SocketInputFlow>,
     @Value("\${airbyte.destination.core.record-batch-size-override:null}")
     val batchSizeOverride: Long? = null,
 ) {
@@ -310,7 +313,7 @@ class LoadPipelineStepTaskFactory(
     ): LoadPipelineStepTask<S, StreamKey, DestinationRecordRaw, K2, U> {
         return create(
             batchAccumulator,
-            recordQueue.consume(part),
+            socketInputFlows[part],
             outputPartitioner,
             outputQueue,
             batchSizeOverride?.let { RecordCountFlushStrategy(it) },
