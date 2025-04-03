@@ -56,8 +56,4 @@ def init_stream(name="", config=None):
     streams = SourceMixpanel(MagicMock(), config, MagicMock()).streams(config)
     for stream in streams:
         if stream.name == name:
-            # override Api Budget policies, as unit tests can fail due to full bucket
-            stream.retriever.requester._http_client._api_budget = APIBudget(policies=[])
-            # _request_session uses self._api_budget to set up session
-            stream.retriever.requester._http_client._session = stream.retriever.requester._http_client._request_session()
             return stream

@@ -59,6 +59,8 @@ def export_config(export_start_date):
 @pytest.fixture(autouse=True)
 def patch_time(mocker):
     mocker.patch("time.sleep")
+    # when we mock sleep we also need to mock api budget calls to avoid full bucket errors
+    mocker.patch("airbyte_cdk.sources.streams.call_rate.APIBudget.acquire_call")
 
 
 ENV_REQUEST_CACHE_PATH = "REQUEST_CACHE_PATH"

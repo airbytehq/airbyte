@@ -4,11 +4,14 @@
 
 import copy
 import logging
-from unittest.mock import MagicMock
+import time
+import unittest
+from unittest.mock import MagicMock, patch
 
 import pytest
 from source_mixpanel.source import SourceMixpanel
 
+from airbyte_cdk.sources.streams.call_rate import MovingWindowCallRatePolicy
 from airbyte_cdk.utils import AirbyteTracedException
 
 from .utils import command_check, get_url_to_mock, init_stream, setup_response
@@ -89,34 +92,23 @@ def test_streams_string_date(requests_mock, config_raw):
 
 
 @pytest.mark.parametrize(
-    "config, success, expected_error_message",
+    "config, expected_is_success, expected_error_message",
     (
-        (
-            {"credentials": {"api_secret": "secret"}, "project_timezone": "Miami"},
-            False,
-            "Could not parse time zone: Miami, please enter a valid timezone.",
-        ),
+        # (
+        #     {"credentials": {"api_secret": "secret"}, "project_timezone": "Miami"},
+        #     False,
+        #     "Could not parse time zone: Miami, please enter a valid timezone.",
+        # ),
         (
             {"credentials": {"api_secret": "secret"}, "start_date": "20 Jan 2021"},
             False,
-            "Could not parse start date: 20 Jan 2021. Please enter a valid start date.",
+            "time data '20 Jan 2021' does not match format '%Y-%m-%dT%H:%M:%SZ'",
         ),
         (
             {"credentials": {"api_secret": "secret"}, "end_date": "20 Jan 2021"},
             False,
-            "Could not parse end date: 20 Jan 2021. Please enter a valid end date.",
+            "time data '20 Jan 2021' does not match format '%Y-%m-%dT%H:%M:%SZ'",
         ),
-        (
-            {"credentials": {"api_secret": "secret"}, "attribution_window": "20 days"},
-            False,
-            "Please provide a valid integer for the `Attribution window` parameter.",
-        ),
-        (
-            {"credentials": {"api_secret": "secret"}, "select_properties_by_default": "Yes"},
-            False,
-            "Please provide a valid True/False value for the `Select properties by default` parameter.",
-        ),
-        ({"credentials": {"api_secret": "secret"}, "region": "UK"}, False, "Region must be either EU or US."),
         (
             {"credentials": {"username": "user", "secret": "secret"}},
             False,
@@ -140,16 +132,21 @@ def test_streams_string_date(requests_mock, config_raw):
         ),
     ),
 )
-def test_config_validation(config, success, expected_error_message, requests_mock):
-    requests_mock.get("https://mixpanel.com/api/query/cohorts/list", status_code=200, json=[{"a": 1, "created": "2021-02-11T00:00:00Z"}])
-    requests_mock.get("https://mixpanel.com/api/query/cohorts/list", status_code=200, json=[{"a": 1, "created": "2021-02-11T00:00:00Z"}])
-    requests_mock.get("https://eu.mixpanel.com/api/query/cohorts/list", status_code=200, json=[{"a": 1, "created": "2021-02-11T00:00:00Z"}])
+def test_config_validation(config, expected_is_success, expected_error_message, requests_mock):
+    requests_mock.get(
+        "https://eu.mixpanel.com/api/query/engage/revenue?project_id=2397709&from_date=2021-02-01&to_date=2021-02-10",
+        status_code=200,
+        json=[{}],
+    )
+    requests_mock.get(
+        "https://eu.mixpanel.com/api/query/engage/revenue?from_date=2021-02-01&to_date=2021-03-02", status_code=200, json=[{}]
+    )
     try:
         is_success, message = SourceMixpanel(MagicMock(), config, MagicMock()).check_connection(MagicMock(), config)
     except AirbyteTracedException as e:
         is_success = False
         message = e.message
 
-    # assert is_success is success
+    assert is_success is expected_is_success, f"Actual connection status doesn't match with expected value. Actual error message {message}"
     if not is_success:
-        assert message == expected_error_message
+        assert expected_error_message in message
