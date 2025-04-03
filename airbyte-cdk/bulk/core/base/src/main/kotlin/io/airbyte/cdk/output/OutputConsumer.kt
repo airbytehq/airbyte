@@ -32,7 +32,8 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 
 /** Emits the [AirbyteMessage] instances produced by the connector. */
-@DefaultImplementation(StdoutOutputConsumer::class)
+//@DefaultImplementation(StdoutOutputConsumer::class)
+@DefaultImplementation(UnixDomainSocketOutputConsumer::class)
 abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessage>, AutoCloseable {
     /**
      * The constant emittedAt timestamp we use for record timestamps.
@@ -114,7 +115,7 @@ const val CONNECTOR_OUTPUT_PREFIX = "airbyte.connector.output"
 /** Default implementation of [OutputConsumer]. */
 @Singleton
 @Secondary
-private class StdoutOutputConsumer(
+open class StdoutOutputConsumer(
     val stdout: PrintStream,
     private val clock: Clock,
     /**
@@ -142,7 +143,7 @@ private class StdoutOutputConsumer(
     @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush:4096}")
     val bufferByteSizeThresholdForFlush: Int,
 ) : OutputConsumer(clock) {
-    private val buffer = ByteArrayOutputStream() // TODO: replace this with a StringWriter?
+    protected val buffer = ByteArrayOutputStream() // TODO: replace this with a StringWriter?
     private val jsonGenerator: JsonGenerator = Jsons.createGenerator(buffer)
     private val sequenceWriter: SequenceWriter = Jsons.writer().writeValues(jsonGenerator)
 
@@ -191,6 +192,9 @@ private class StdoutOutputConsumer(
         }
     }
 
+    open fun withLockFlushRecord() {
+       withLockFlush()
+    }
     override fun accept(record: AirbyteRecordMessage) {
         // The serialization of RECORD messages can become a performance bottleneck for source
         // connectors because they can come in much higher volumes than other message types.
@@ -225,7 +229,7 @@ private class StdoutOutputConsumer(
             // Flushing to stdout incurs some overhead (mutex, syscall, etc.)
             // which otherwise becomes very apparent when lots of tiny records are involved.
             if (buffer.size() >= bufferByteSizeThresholdForFlush) {
-                withLockFlush()
+                withLockFlushRecord()
             }
         }
     }
