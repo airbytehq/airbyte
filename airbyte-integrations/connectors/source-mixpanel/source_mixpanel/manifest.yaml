@@ -497,7 +497,7 @@ definitions:
         $ref: "#/definitions/requester"
         path: export
         http_method: GET
-        url_base: "https://data-{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/2.0/"
+        url_base: "https://data{{ '-eu' if config.region == 'EU' else '' }}.mixpanel.com/api/2.0/"
         error_handler:
           type: CustomErrorHandler
           class_name: "source_mixpanel.components.ExportErrorHandler"
@@ -754,7 +754,7 @@ streams:
 check:
   type: CheckStream
   stream_names:
-    - cohorts
+    - revenue
 
 api_budget:
   type: HTTPAPIBudget
@@ -763,10 +763,8 @@ api_budget:
     # https://developer.mixpanel.com/reference/raw-event-export#api-export-endpoint-rate-limits
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 60 # rate limit of 60 queries per hour
-          interval: PT1H
-        - limit: 3 # rate limit of 3 queries per second
-          interval: PT1S
+        - limit: 1 # rate limit of 60 queries per hour
+          interval: PT60S
       matchers: []
 
 # concurrent streams: cohorts, engage, revenue, annotations, cohort_members, funnels
