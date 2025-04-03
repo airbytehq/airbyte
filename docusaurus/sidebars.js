@@ -309,6 +309,7 @@ const buildAConnector = {
         "connector-development/cdk-python/incremental-stream",
         "connector-development/cdk-python/http-streams",
         "connector-development/cdk-python/stream-slices",
+        "connector-development/cdk-python/migration-to-base-image",
         {
           type: "category",
           label: "Tutorials",
@@ -421,6 +422,7 @@ const contributeToAirbyte = {
       items: [
         "contributing-to-airbyte/resources/pull-requests-handbook",
         "contributing-to-airbyte/resources/qa-checks",
+        "contributing-to-airbyte/resources/code-formatting",
       ],
     },
   ],
@@ -526,6 +528,7 @@ const understandingAirbyte = {
     "understanding-airbyte/json-avro-conversion",
     "understanding-airbyte/schemaless-sources-and-destinations",
     "understanding-airbyte/tech-stack",
+    "understanding-airbyte/heartbeats",
   ],
 };
 
@@ -565,6 +568,15 @@ module.exports = {
     {
       type: "doc",
       id: "using-airbyte/oauth",
+    },
+    {
+      type: "category",
+      label: "Snowflake Native Apps",
+      items: [
+        "snowflake-native-apps/event-sharing",
+        "snowflake-native-apps/facebook-marketing",
+        "snowflake-native-apps/linkedin-ads",
+      ],
     },
     sectionHeader("Using Airbyte"),
     connectionConfigurations,
