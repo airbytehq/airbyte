@@ -66,11 +66,10 @@ class GcsStreamingUpload(
         val finalBlobInfo = BlobInfo.newBuilder(finalBlobId).setMetadata(metadata).build()
 
         if (parts.isEmpty()) {
-            // Create an empty object if no parts were uploaded
-            log.warn {
-                "No parts uploaded. Creating empty object: gs://${config.gcsBucketName}/$key"
-            }
-            storage.create(finalBlobInfo, ByteArray(0))
+            // This is not ideal but follows what S3 is doing. Ideally we would return null
+            // or throw here. But until we update the CDK to handle that use case, this is
+            // better than creating an empty object in storage.
+            log.warn { "No parts uploaded. returning a blob pointing at nothing" }
             return GcsBlob(key, config)
         }
 
