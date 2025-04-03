@@ -2,6 +2,8 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
+package io.airbyte.cdk.load.file.gcs
+
 import com.google.cloud.storage.BlobId
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
@@ -9,6 +11,7 @@ import io.airbyte.cdk.load.command.gcs.GcsClientConfiguration
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.InputStream
 import java.nio.channels.Channels
 import kotlinx.coroutines.flow.Flow
@@ -20,6 +23,8 @@ data class GcsBlob(override val key: String, override val storageConfig: GcsClie
 
 class GcsClient(private val storage: Storage, private val config: GcsClientConfiguration) :
     ObjectStorageClient<GcsBlob> {
+
+    private val log = KotlinLogging.logger {}
 
     override suspend fun list(prefix: String): Flow<GcsBlob> = flow {
         val fullPrefix = combinePath(config.gcsBucketName, prefix)
@@ -81,7 +86,8 @@ class GcsClient(private val storage: Storage, private val config: GcsClientConfi
         key: String,
         metadata: Map<String, String>
     ): StreamingUpload<GcsBlob> {
-        TODO("Not yet implemented")
+        log.info { "Starting streaming upload for $key" }
+        return GcsStreamingUpload(storage, key, config, metadata)
     }
 
     override suspend fun delete(remoteObject: GcsBlob) {
