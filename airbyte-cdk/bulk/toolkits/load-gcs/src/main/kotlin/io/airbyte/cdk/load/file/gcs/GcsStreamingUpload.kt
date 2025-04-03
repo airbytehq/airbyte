@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 class GcsStreamingUpload(
     private val storage: Storage,
+    private val key: String,
     private val config: GcsClientConfiguration,
     private val metadata: Map<String, String>
 ) : StreamingUpload<GcsBlob> {
@@ -55,40 +56,34 @@ class GcsStreamingUpload(
 
     /** Compose all parts into the final object. If no parts exist, create an empty object. */
     override suspend fun complete(): GcsBlob {
-        val finalObjectKey = combinePath("$uploadId-final")
-
         if (!isComplete.setOnce()) {
-            log.warn {
-                "Complete called multiple times for gs://${config.gcsBucketName}/$finalObjectKey"
-            }
-            return GcsBlob(finalObjectKey, config)
+            log.warn { "Complete called multiple times for gs://${config.gcsBucketName}/$key" }
+            return GcsBlob(key, config)
         }
 
         // Prepare the final blob info with metadata
-        val finalBlobId = BlobId.of(config.gcsBucketName, finalObjectKey)
+        val finalBlobId = BlobId.of(config.gcsBucketName, key)
         val finalBlobInfo = BlobInfo.newBuilder(finalBlobId).setMetadata(metadata).build()
 
         if (parts.isEmpty()) {
             // Create an empty object if no parts were uploaded
             log.warn {
-                "No parts uploaded. Creating empty object: gs://${config.gcsBucketName}/$finalObjectKey"
+                "No parts uploaded. Creating empty object: gs://${config.gcsBucketName}/$key"
             }
             storage.create(finalBlobInfo, ByteArray(0))
-            return GcsBlob(finalObjectKey, config)
+            return GcsBlob(key, config)
         }
 
         // Compose all part objects (possibly more than 32) into one.
         val allPartNames = parts.values.toList()
-        log.info {
-            "Composing ${allPartNames.size} parts into gs://${config.gcsBucketName}/$finalObjectKey"
-        }
+        log.info { "Composing ${allPartNames.size} parts into gs://${config.gcsBucketName}/$key" }
 
         // multiLevelCompose returns the name of a single object that combines all parts
         val composedName = multiLevelCompose(allPartNames)
 
         // If multiLevelCompose did not produce finalObjectKey directly,
         // compose that single result into the final blob so we can set metadata
-        if (composedName != finalObjectKey) {
+        if (composedName != key) {
             val composeRequest =
                 ComposeRequest.newBuilder().setTarget(finalBlobInfo).addSource(composedName).build()
             storage.compose(composeRequest)
@@ -104,7 +99,7 @@ class GcsStreamingUpload(
         // Clean up the individual part objects
         cleanupParts()
 
-        return GcsBlob(finalObjectKey, config)
+        return GcsBlob(key, config)
     }
 
     /**
@@ -179,7 +174,7 @@ class GcsStreamingUpload(
 
     private fun generateUploadId(): String {
         val randomSuffix = (1..8).map { ('a'..'z').random() }.joinToString("")
-        return "gcs-upload-${System.currentTimeMillis()}-$randomSuffix"
+        return "$key-${System.currentTimeMillis()}-$randomSuffix"
     }
 
     private fun combinePath(key: String): String {
