@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.gcs.GcsClientConfiguration
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.InputStream
 import java.nio.channels.Channels
 import kotlinx.coroutines.flow.Flow
@@ -22,6 +23,8 @@ data class GcsBlob(override val key: String, override val storageConfig: GcsClie
 
 class GcsClient(private val storage: Storage, private val config: GcsClientConfiguration) :
     ObjectStorageClient<GcsBlob> {
+
+    private val log = KotlinLogging.logger {}
 
     override suspend fun list(prefix: String): Flow<GcsBlob> = flow {
         val fullPrefix = combinePath(config.gcsBucketName, prefix)
@@ -83,6 +86,7 @@ class GcsClient(private val storage: Storage, private val config: GcsClientConfi
         key: String,
         metadata: Map<String, String>
     ): StreamingUpload<GcsBlob> {
+        log.info { "Starting streaming upload for $key" }
         return GcsStreamingUpload(storage, config, metadata)
     }
 
