@@ -14,6 +14,14 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.ConcurrentSkipListMap
 import java.util.concurrent.atomic.AtomicBoolean
 
+/**
+ * This class is responsible for uploading individual parts to GSC and compose them at the end.
+ *
+ * /!\ One thing to note here is that, unlike a multipart upload, which does not render the file
+ * until everything has been finalized, this will create all the chunks on storage and they will be
+ * visible. This is breaking change for an eventual GCS destination. It should be okay however for
+ * BigQuery. We may also decide to add all the chunks under a specific Airbyte controlled folder /!\
+ */
 class GcsStreamingUpload(
     private val storage: Storage,
     private val config: GcsClientConfiguration,
@@ -33,11 +41,12 @@ class GcsStreamingUpload(
      * upload URL within the session.
      */
     override suspend fun uploadPart(part: ByteArray, index: Int) {
-        val partName = "$objectName-part-$index"
+        // Generate a unique part name using the upload ID and index
+        val partName = "$uploadId-part-$index"
         log.info { "Uploading part #$index => $partName" }
 
         // Create a temporary blob for each part
-        val partBlobId = BlobId.of(bucketName, partName)
+        val partBlobId = BlobId.of(config.gcsBucketName, partName)
         val partBlobInfo = BlobInfo.newBuilder(partBlobId).build()
 
         // Upload the part
@@ -54,58 +63,67 @@ class GcsStreamingUpload(
      * uploaded, create an empty object.
      */
     override suspend fun complete(): GcsBlob {
+        // Generate final object key based on upload ID
+        val finalObjectKey = "$uploadId-final"
+
         if (isComplete.setOnce()) {
             if (parts.isEmpty()) {
                 log.warn {
-                    "No parts uploaded. Creating empty object: gs://$bucketName/$objectName"
+                    "No parts uploaded. Creating empty object: gs://${config.gcsBucketName}/$finalObjectKey"
                 }
                 // Create an empty object
-                val blobId = BlobId.of(bucketName, objectName)
+                val blobId = BlobId.of(config.gcsBucketName, finalObjectKey)
                 val blobInfo =
                     BlobInfo.newBuilder(blobId).setMetadata(filterInvalidMetadata(metadata)).build()
 
                 storage.create(blobInfo, ByteArray(0))
             } else {
-                log.info { "Composing parts for gs://$bucketName/$objectName: ${parts.values}" }
-
-                // Create a list of source blobs from all the parts
-                val sourceBlobs =
-                    parts.values.map { partName ->
-                        Storage.BlobSourceOption.generationMatch()
-                        Storage.ComposeRequest.SourceBlob.newBuilder().setName(partName).build()
-                    }
+                log.info {
+                    "Composing parts for gs://${config.gcsBucketName}/$finalObjectKey: ${parts.values}"
+                }
 
                 // Create the final blob with metadata
-                val blobId = BlobId.of(bucketName, objectName)
+                val blobId = BlobId.of(config.gcsBucketName, finalObjectKey)
                 val blobInfo =
                     BlobInfo.newBuilder(blobId).setMetadata(filterInvalidMetadata(metadata)).build()
 
+                // WARNING We need to keep the order of the upload unchanged when we compose.
+                // Meaning that we will need to ensure that we compose based on the index
+                // I also just remembered that there is a limit of 32 parts at a time when we
+                // compose
+                // I need to deal with that
+
+                // Build the compose request with all part names as sources
+                val composeRequest = Storage.ComposeRequest.newBuilder().setTarget(blobInfo)
+
+                // Add each part as a source
+                parts.values.forEach { partName -> composeRequest.addSource(partName) }
+
                 // Compose all parts into the final object
-                storage.compose(
-                    Storage.ComposeRequest.newBuilder()
-                        .addSource(sourceBlobs)
-                        .setTarget(blobInfo)
-                        .build()
-                )
+                storage.compose(composeRequest.build())
 
                 // Clean up temporary part objects
                 cleanupParts()
             }
         } else {
-            log.warn { "Complete called multiple times for gs://$bucketName/$objectName" }
+            log.warn {
+                "Complete called multiple times for gs://${config.gcsBucketName}/$finalObjectKey"
+            }
         }
 
-        return GcsBlob(objectName, config)
+        return GcsBlob(finalObjectKey, config)
     }
 
     /** Delete all temporary part objects after successful composition */
     private fun cleanupParts() {
         parts.values.forEach { partName ->
             try {
-                storage.delete(BlobId.of(bucketName, partName))
-                log.info { "Deleted temporary part: gs://$bucketName/$partName" }
+                storage.delete(BlobId.of(config.gcsBucketName, partName))
+                log.info { "Deleted temporary part: gs://${config.gcsBucketName}/$partName" }
             } catch (e: Exception) {
-                log.warn(e) { "Failed to delete temporary part: gs://$bucketName/$partName" }
+                log.warn(e) {
+                    "Failed to delete temporary part: gs://${config.gcsBucketName}/$partName"
+                }
             }
         }
     }
