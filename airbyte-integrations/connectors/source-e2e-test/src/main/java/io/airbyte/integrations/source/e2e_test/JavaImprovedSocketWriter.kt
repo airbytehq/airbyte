@@ -20,6 +20,7 @@ private const val N_THREADS = 8
 
 class JavaImprovedSocketWriter {
     private val executor = Executors.newFixedThreadPool(N_THREADS)
+    private val writer = DummyMessageIterator.SMILE_MAPPER.writerFor(AirbyteMessage::class.java).with(MinimalPrettyPrinter(System.lineSeparator()))
 
     companion object {
         const val RECORD =
@@ -29,7 +30,7 @@ class JavaImprovedSocketWriter {
     }
 
     fun startJavaUnixSocketWriter() {
-        println("SOURCE SERIALISED 2")
+        println("SOURCE SERIALISED , Number of threads/sockets $N_THREADS")
         (0 until N_THREADS)
             .map { socketId ->
                 runAsync({
@@ -59,6 +60,7 @@ class JavaImprovedSocketWriter {
             bufferedOutputStream.use { outputStream ->
                 writeSerialised(outputStream)
 //                writeProtobuf(outputStream)
+                writeSmileSerialised(outputStream)
             }
 
             println("Source $sock : Finished writing to socket $sock")
@@ -67,6 +69,7 @@ class JavaImprovedSocketWriter {
 
     private fun writeSerialised(outputStream: OutputStream) {
         var records: Long = 0
+        println("Writing JSON...")
         DummyIterator().use { dummyIterator ->
             DummyIterator.OBJECT_MAPPER
                 .writerFor(AirbyteMessage::class.java)
@@ -85,7 +88,26 @@ class JavaImprovedSocketWriter {
         }
     }
 
+    private fun writeSmileSerialised(outputStream: OutputStream) {
+        var records: Long = 0
+        println("Writing SMILE Dummy .....")
+        DummyMessageIterator().use { dummyIterator ->
+            writer.writeValues(outputStream)
+                .use { seq ->
+                    dummyIterator.forEachRemaining { message ->
+                        seq.write(message)
+                        records++
+                        if (records == 100_000L) {
+                            outputStream.flush()
+                            records = 0
+                        }
+                    }
+                }
+        }
+    }
+
     private fun writeProtobuf(outputStream: OutputStream) {
+        println("Writing protobuf with 8 cpu...")
         var records: Long = 0
         DummyProtobufIterator().use { dummyIterator ->
             dummyIterator.forEachRemaining { message ->
@@ -101,6 +123,7 @@ class JavaImprovedSocketWriter {
 
     private fun writeFromOneThread(outputStream: OutputStream) {
         var records: Long = 0
+        println("Writing static string...")
         DummyIterator().use {
             it.forEachRemaining {
                 outputStream.write(array)
