@@ -19,11 +19,8 @@ import java.util.concurrent.atomic.AtomicBoolean
  * This class is responsible for uploading individual parts to GCS and composing them at the end.
  *
  * /!\ Unlike typical "multipart upload" semantics, each part is visible as a standalone object
- * until
- * ```
- *    it is composed into a final object. That’s usually acceptable for BigQuery usage, but be aware
- *    if building a pure GCS-based destination.
- * ```
+ * until it is composed into a final object. That’s usually acceptable for BigQuery usage, but Will
+ * be an issue with a dedicated GCS destination as it would probably be a breaking change
  */
 class GcsStreamingUpload(
     private val storage: Storage,
