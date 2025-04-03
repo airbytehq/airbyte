@@ -61,10 +61,6 @@ class GcsStreamingUpload(
             return GcsBlob(key, config)
         }
 
-        // Prepare the final blob info with metadata
-        val finalBlobId = BlobId.of(config.gcsBucketName, key)
-        val finalBlobInfo = BlobInfo.newBuilder(finalBlobId).setMetadata(metadata).build()
-
         if (parts.isEmpty()) {
             // This is not ideal but follows what S3 is doing. Ideally we would return null
             // or throw here. But until we update the CDK to handle that use case, this is
@@ -83,11 +79,11 @@ class GcsStreamingUpload(
         log.info { "Composing ${allPartNames.size} parts into gs://${config.gcsBucketName}/$key" }
 
         // Create the final blob with metadata
-        val blobId = BlobId.of(config.gcsBucketName, key)
-        val blobInfo = BlobInfo.newBuilder(blobId).setMetadata(metadata).build()
+        val finalBlobId = BlobId.of(config.gcsBucketName, key)
+        val finalBlobInfo = BlobInfo.newBuilder(finalBlobId).setMetadata(metadata).build()
 
         // Build the compose request with all part names as sources
-        val composeRequest = ComposeRequest.newBuilder().setTarget(blobInfo)
+        val composeRequest = ComposeRequest.newBuilder().setTarget(finalBlobInfo)
 
         // Add each part as a source
         parts.values.forEach { partName -> composeRequest.addSource(partName) }
