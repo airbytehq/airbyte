@@ -422,7 +422,6 @@ const contributeToAirbyte = {
       items: [
         "contributing-to-airbyte/resources/pull-requests-handbook",
         "contributing-to-airbyte/resources/qa-checks",
-        "contributing-to-airbyte/resources/code-formatting",
       ],
     },
   ],
