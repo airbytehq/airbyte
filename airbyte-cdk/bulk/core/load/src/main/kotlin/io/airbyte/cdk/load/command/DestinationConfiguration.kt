@@ -102,6 +102,11 @@ abstract class DestinationConfiguration : Configuration {
     open val generationIdMetadataKey: String = DEFAULT_GENERATION_ID_METADATA_KEY
 
     /**
+     * TEMPORARY FOR SOCKET TEST
+     */
+    open val numSockets: Int = 4
+
+    /**
      * Micronaut factory which glues [ConfigurationSpecificationSupplier] and
      * [DestinationConfigurationFactory] together to produce a [DestinationConfiguration] singleton.
      */

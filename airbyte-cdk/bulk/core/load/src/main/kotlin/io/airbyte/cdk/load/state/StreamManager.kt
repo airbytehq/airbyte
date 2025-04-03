@@ -42,7 +42,7 @@ interface StreamManager {
      * Count incoming record and return the record's *index*. If [markEndOfStream] has been called,
      * this should throw an exception.
      */
-    fun incrementReadCount(): Long
+    fun incrementReadCount(amount: Long = 1): Long
     fun readCount(): Long
 
     /**
@@ -168,12 +168,12 @@ class DefaultStreamManager(
         BatchState.entries.forEach { rangesState[it] = TreeRangeSet.create() }
     }
 
-    override fun incrementReadCount(): Long {
+    override fun incrementReadCount(amount: Long): Long {
         if (markedEndOfStream.get()) {
             throw IllegalStateException("Stream is closed for reading")
         }
 
-        return recordCount.getAndIncrement()
+        return recordCount.getAndAdd(amount)
     }
 
     override fun readCount(): Long {
@@ -439,7 +439,7 @@ class DefaultStreamManager(
         // Detailed debug logging for completeness checks. It's a little verbose but is only emitted
         // per-batch (every 10-20mb in most cases).
         // TODO: A more user-friendly aggregated version of this on a regular cadence?
-        log.debug {
+        log.info {
             val header =
                 "\nStream ${stream.descriptor.namespace}:${stream.descriptor.name}: Records Read: $readCount (done: ${markedEndOfStream.get()})"
             val byPart =
@@ -493,6 +493,8 @@ class DefaultStreamManager(
                 .values
                 .flatMap { it.values }
                 .sumOf { it.records }
+
+        log.info { "completedCount: $completedCount == readCount: $readCount" }
 
         return completedCount == readCount
     }

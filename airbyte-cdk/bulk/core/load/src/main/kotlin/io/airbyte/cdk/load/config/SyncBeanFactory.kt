@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.config
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.file.SocketInputFlow
 import io.airbyte.cdk.load.message.BatchEnvelope
 import io.airbyte.cdk.load.message.ChannelMessageQueue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -17,8 +18,10 @@ import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.StrictPartitionedQueue
 import io.airbyte.cdk.load.pipeline.BatchUpdate
 import io.airbyte.cdk.load.state.ReservationManager
+import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.FileAggregateMessage
 import io.airbyte.cdk.load.task.implementor.FileTransferQueueMessage
+import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.LoadStrategy
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
@@ -26,8 +29,11 @@ import io.micronaut.context.annotation.Secondary
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.min
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 
@@ -152,4 +158,33 @@ class SyncBeanFactory {
     @Singleton
     @Named("defaultDestinationTaskLauncherHasThrown")
     fun defaultDestinationTaskLauncherHasThrown(): AtomicBoolean = AtomicBoolean(false)
+
+    /** TEMPORARY FOR SOCKET TEST */
+    @Singleton
+    @Named("socketInputFlows")
+    fun socketInputFlows(
+        config: DestinationConfiguration,
+        catalog: DestinationCatalog,
+        syncManager: SyncManager,
+        destinationWriter: DestinationWriter,
+    ): Array<SocketInputFlow> {
+        // We know we're only running this for S3, so there's no start work required.
+        // Just make sure the stream loader is available for close, so we don't block.
+        catalog.streams.forEach {
+            runBlocking {
+                syncManager.registerStartedStreamLoader(
+                    it.descriptor,
+                    runCatching { destinationWriter.createStreamLoader(it) }
+                )
+            }
+        }
+        val completions = Array(config.numSockets) { CompletableDeferred<Unit>() }
+        val streamCompleteCountdown =
+            catalog.streams
+                .associate { it.descriptor to AtomicInteger(config.numSockets) }
+                .let { ConcurrentHashMap(it) }
+        return (0 until config.numSockets)
+            .map { SocketInputFlow(catalog, it, completions, streamCompleteCountdown, syncManager) }
+            .toTypedArray()
+    }
 }

@@ -41,11 +41,14 @@ data class S3V2Configuration<T : OutputStream>(
     override val processEmptyFiles: Boolean = true,
 
     // ObjectLoader-specific configuration
-    val numPartWorkers: Int = 2,
-    val numUploadWorkers: Int = 5,
+    val numPartWorkers: Int,
+    val numUploadWorkers: Int,
     val maxMemoryRatioReservedForParts: Double = 0.4,
     val objectSizeBytes: Long = 200L * 1024 * 1024,
     val partSizeBytes: Long = 10L * 1024 * 1024,
+
+    // TEMPORARY FOR SOCKET TESTS
+    override val numSockets: Int
 ) :
     DestinationConfiguration(),
     AWSAccessKeyConfigurationProvider,
@@ -67,6 +70,9 @@ class S3V2ConfigurationFactory :
             objectStoragePathConfiguration = pojo.toObjectStoragePathConfiguration(),
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration = pojo.toCompressionConfiguration(),
+            numSockets = pojo.numSockets ?: 1,
+            numUploadWorkers = pojo.numPartLoaders ?: 5,
+            numPartWorkers = pojo.numSockets ?: 1, // Should be ignored in favor of numsockets
         )
     }
 }
