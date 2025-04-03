@@ -37,7 +37,7 @@ data:
         message: "Removed redundant stream owners_statements_transactions_pii_redacted & folios_master_rules and the redundant _embedded from accounting_* streams. Updating schema and resycing data for these streams is needed."
         upgradeDeadline: "2025-03-28"
       4.0.0:
-        message: "Add reservation rates field to reservations field, fix connector API stream links in the docs, lower retries, disable connector auto schema generation."
+        message: "Prune units schema, add guestBreakdown back to reservations stream, fix connector API stream links in the docs, lower retries, disable connector auto schema generation."
         upgradeDeadline: "2025-04-10"
   supportLevel: community
   connectorTestSuitesOptions:
