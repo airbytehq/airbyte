@@ -569,15 +569,6 @@ module.exports = {
       type: "doc",
       id: "using-airbyte/oauth",
     },
-    {
-      type: "category",
-      label: "Snowflake Native Apps",
-      items: [
-        "snowflake-native-apps/event-sharing",
-        "snowflake-native-apps/facebook-marketing",
-        "snowflake-native-apps/linkedin-ads",
-      ],
-    },
     sectionHeader("Using Airbyte"),
     connectionConfigurations,
     {
