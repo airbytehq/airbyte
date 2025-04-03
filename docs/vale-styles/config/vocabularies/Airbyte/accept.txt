@@ -15,6 +15,7 @@ PyAirbyte
 Connector Builder
 abctl
 Low-Code CDK
+Connection Timeline
 
 #
 # Common terms Airbyte uses
