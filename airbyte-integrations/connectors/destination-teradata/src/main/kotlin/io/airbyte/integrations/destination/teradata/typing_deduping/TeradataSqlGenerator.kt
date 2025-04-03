@@ -432,7 +432,7 @@ class TeradataSqlGenerator() : JdbcSqlGenerator(namingTransformer = StandardName
                 COLUMN_NAME_EMITTED_AT,
                 COLUMN_NAME_AB_EXTRACTED_AT,
                 COLUMN_NAME_AB_LOADED_AT,
-                COLUMN_NAME_DATA,   
+                COLUMN_NAME_DATA,
                 COLUMN_NAME_DATA,
                 COLUMN_NAME_AB_META,
                 COLUMN_NAME_AB_GENERATION_ID,
